@@ -102,6 +102,36 @@ def automation_hygiene_findings(
     return findings
 
 
+ENTITY_ID_SHAPE = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
+MAX_ORPHANED_STATISTICS = 500
+
+
+def orphan_statistics(
+    statistics: list[dict[str, Any]], existing_entities: set[str], energy_ids: set[str]
+) -> list[dict[str, Any]]:
+    """Recorder statistics of entities that no longer exist.
+
+    External statistics (``domain:name``) and anything that is not an entity ID are
+    ignored. Statistics the Energy dashboard still refers to are flagged, not hidden.
+    """
+    orphans = [
+        {
+            "statistic_id": item["statistic_id"],
+            "unit": item.get("display_unit_of_measurement")
+            or item.get("statistics_unit_of_measurement"),
+            "has_mean": bool(item.get("has_mean")),
+            "has_sum": bool(item.get("has_sum")),
+            "in_energy": item["statistic_id"] in energy_ids,
+        }
+        for item in statistics
+        if item.get("source", "recorder") == "recorder"
+        and ENTITY_ID_SHAPE.match(item["statistic_id"])
+        and item["statistic_id"] not in existing_entities
+    ]
+    orphans.sort(key=lambda orphan: orphan["statistic_id"])
+    return orphans[:MAX_ORPHANED_STATISTICS]
+
+
 def battery_level(item: dict[str, Any]) -> tuple[float | None, bool]:
     """Return (percent, is_low_flag) for a working battery entity, else (None, False).
 

@@ -45,6 +45,7 @@ from .hygiene import (
     finding_key,
     low_battery_ids,
     mark_duplicates,
+    orphan_statistics,
 )
 from .ignored import IgnoreStore
 from .issues import async_sync_issues
@@ -496,7 +497,8 @@ class InventoryScanner:
             item["status_since"] = self.observations.since(
                 f"{kind}:{item['object_id']}", item["status"]
             )
-        statistic_ids = await self._statistic_ids()
+        statistics = await self._statistics()
+        statistic_ids = {item["statistic_id"] for item in statistics}
         for item in entities:
             item["has_statistics"] = item["object_id"] in statistic_ids
         mark_duplicates(entities)
@@ -524,6 +526,12 @@ class InventoryScanner:
             + group_findings
         )
 
+        orphaned_statistics = orphan_statistics(
+            statistics,
+            existing_objects["entity"],
+            {edge["target"][7:] for edge in energy_edges},
+        )
+
         entity_registry_entries = er.async_get(self.hass)
         for finding in findings:
             finding["key"] = finding_key(finding)
@@ -541,6 +549,7 @@ class InventoryScanner:
                 "ignore_label": IGNORE_LABEL,
                 "version": self.version,
                 "recorder_available": self._recorder_available,
+                "orphaned_statistics": len(orphaned_statistics),
                 "ha_version": HA_VERSION,
                 "scan_interval_hours": self.scan_interval_hours,
                 "low_battery_percent": self.low_battery_percent,
@@ -552,6 +561,7 @@ class InventoryScanner:
             "objects": objects,
             "edges": edges,
             "findings": findings,
+            "orphaned_statistics": orphaned_statistics,
         }
 
     def _ignored_by(self, finding: dict[str, Any], registry: Any) -> str | None:
@@ -793,19 +803,19 @@ class InventoryScanner:
                 )
         return edges, findings
 
-    async def _statistic_ids(self) -> set[str]:
-        """IDs that have long-term statistics in the recorder; empty without a recorder."""
+    async def _statistics(self) -> list[dict[str, Any]]:
+        """Long-term statistics known to the recorder; empty without a recorder."""
         self._recorder_available = False
         if "recorder" not in self.hass.config.components:
-            return set()
+            return []
         try:
             from homeassistant.components.recorder.statistics import async_list_statistic_ids
 
             statistics = await async_list_statistic_ids(self.hass)
         except Exception:  # The recorder may be unavailable or still starting.
-            return set()
+            return []
         self._recorder_available = True
-        return {item["statistic_id"] for item in statistics}
+        return list(statistics)
 
     async def _energy_inventory(
         self, existing: dict[str, set[str]]

@@ -95,6 +95,10 @@ const TEXT = {
     reason_has_statistics: "Hat Langzeitstatistiken im Recorder; sie blieben ohne Entity zurück.", reason_ignored_by_label: "Trägt das Label housekeeper_ignore.", reason_not_found: "Im letzten Scan nicht gefunden.", reason_unsupported_action: "Diese Aktion wird nicht unterstützt.",
     longTermStats: "Langzeitstatistik", yes: "Ja", no: "Nein", statsNote: "Für diese Entity gibt es Langzeitstatistiken im Recorder. Sie blieben nach einem Entfernen bestehen, gehörten dann aber zu keiner Entity mehr.",
     energyDashboard: "Energie-Dashboard",
+    orphanStats: "Verwaiste Statistiken", unreferencedEntities: "Entities", noOrphanStats: "Keine verwaisten Statistiken.", noRecorder: "Der Recorder ist nicht verfügbar; es gibt keine Statistiken zu prüfen.",
+    orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt. Housekeeper löscht nichts. Entfernen lässt sich so etwas in Home Assistant unter Entwicklerwerkzeuge → Statistiken.",
+    kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
+    staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
     perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
     unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
     unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entities können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entities sind ausgeblendet.",
@@ -229,6 +233,10 @@ const TEXT = {
     reason_has_statistics: "Has long-term statistics in the recorder; they would be left without an entity.", reason_ignored_by_label: "Carries the label housekeeper_ignore.", reason_not_found: "Not found in the latest scan.", reason_unsupported_action: "This action is not supported.",
     longTermStats: "Long-term statistics", yes: "Yes", no: "No", statsNote: "This entity has long-term statistics in the recorder. They would remain after a removal but belong to no entity any more.",
     energyDashboard: "Energy dashboard",
+    orphanStats: "Orphaned statistics", unreferencedEntities: "Entities", noOrphanStats: "No orphaned statistics.", noRecorder: "The recorder is not available; there are no statistics to check.",
+    orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity. Housekeeper deletes nothing. In Home Assistant such statistics can be removed under Developer tools → Statistics.",
+    kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
+    staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
     perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
     unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
     unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
@@ -348,6 +356,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.graphQuery = "";
     this.pages = {};
     this.lv = {};
+    this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.plan = null;
     this.journal = null;
@@ -730,6 +739,25 @@ class HAHousekeeperPanel extends HTMLElement {
     return `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
   }
 
+  // Hours since the last scan when it is clearly overdue for the configured interval, else null.
+  staleScan() {
+    const m = this.data?.meta;
+    if (!m?.scanned_at) return null;
+    const hours = (Date.now() - new Date(m.scanned_at).getTime()) / 3.6e6;
+    const interval = Number(m.scan_interval_hours) || 0;
+    if (!Number.isFinite(hours)) return null;
+    if (interval > 0 ? hours > interval * 1.5 + 1 : hours > 24 * 7) return { hours: Math.round(hours), interval };
+    return null;
+  }
+
+  staleBanner() {
+    const stale = this.staleScan();
+    if (!stale) return "";
+    const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
+    const text = stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age });
+    return `<div class="panel" style="margin-bottom:14px"><div class="row"><span class="tile warn"><ha-icon icon="mdi:clock-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(text)}</strong></span><button class="btn" data-action="scan">${this.t("scan")}</button></div></div>`;
+  }
+
   overview() {
     const m = this.data.meta, counts = m.status_counts || {}, types = m.type_counts || {}, health = this.health();
     const findings = this.sortedFindings();
@@ -741,7 +769,7 @@ class HAHousekeeperPanel extends HTMLElement {
     ];
     const order = ["active", "unknown", "unavailable", "orphaned", "disabled", "empty", "problem"].filter(s => counts[s]);
     const total = Math.max(1, m.object_count);
-    return `<div class="summary"><div class="card"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
+    return `${this.staleBanner()}<div class="summary"><div class="card"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
       <div class="grid2"><div class="stack"><div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
@@ -836,7 +864,12 @@ class HAHousekeeperPanel extends HTMLElement {
     const total = sections.reduce((n, [, , part]) => n + part.total, 0);
     const cards = sections.map(([label, icon, part]) => `<div class="card"><span class="tile ${part.total ? (label === "resolvedFindings" ? "ok" : label === "newFindings" ? "warn" : "") : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><div class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(part.total)}</strong></div></div>`).join("");
     const more = part => part.total > part.items.length ? `<p class="factnote">${this.t("moreItems", { count: part.total - part.items.length })}</p>` : "";
-    const paged = (id, items, render) => { const pg = this.paginate(`changes-${id}`, items); return pg.rows.map(render).join("") + pg.footer; };
+    const st = this.lvState("changes", "", "asc"), query = st.q.trim().toLowerCase();
+    const typeOf = it => it.object_type || String(it.rule_id || "").split(".")[0];
+    const matches = it => (!query || [it.name, it.object_id, it.rule_id, it.affected_object, typeOf(it)].join(" ").toLowerCase().includes(query)) && (!st.f.type || typeOf(it) === st.f.type);
+    const allTypes = [...new Set(sections.flatMap(([, , part]) => part.items.map(typeOf)).filter(Boolean))].sort();
+    const bar = total ? this.listBar("changes", { sorts: [], filters: [{ name: "type", all: this.t("allTypes"), options: allTypes.map(x => [x, this.t(x)]) }] }) : "";
+    const paged = (id, items, render) => { const pg = this.paginate(`changes-${id}`, items.filter(matches)); return pg.rows.map(render).join("") + pg.footer; };
     const objectRow = (o, note, pillHtml) => {
       const key = `${o.object_type}:${o.object_id}`, obj = this.findObject(key);
       const inner = `${this.tile(o.object_type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "mute")}<span class="row-text"><strong>${this.esc(o.name || obj?.name || o.object_id)}</strong><small>${this.esc(note)}</small></span>${pillHtml}`;
@@ -854,7 +887,7 @@ class HAHousekeeperPanel extends HTMLElement {
       removedObjects: paged("removedObjects", c.removed_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")),
     };
     const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
-    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p><div class="summary changesum">${cards}</div>${total ? panels : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
+    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p><div class="summary changesum">${cards}</div>${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
   }
 
   findingsView() {
@@ -1075,7 +1108,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
-    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}<select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></div>`;
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button>` : ""}</div>`;
   }
 
   // Shared paging for long lists: returns the visible slice and the footer markup.
@@ -1328,7 +1361,31 @@ class HAHousekeeperPanel extends HTMLElement {
       .sort((a, b) => a.object_id.localeCompare(b.object_id));
   }
 
+  unrefTabs() {
+    const stats = this.data.orphaned_statistics || [];
+    const chip = (tab, label, count) => `<button class="chip ${this.unrefTab === tab ? "active" : ""}" data-unref-tab="${tab}">${label} (${count})</button>`;
+    return `<div class="chips">${chip("entities", this.t("unreferencedEntities"), this.unreferencedRows().length)}${chip("statistics", this.t("orphanStats"), stats.length)}</div>`;
+  }
+
+  orphanStatsView() {
+    const all = this.data.orphaned_statistics || [];
+    this.lvState("orphanstats", "id", "asc");
+    const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
+    const sorts = [
+      { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
+      { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
+    ];
+    const kinds = [...new Set(all.map(kind))];
+    const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
+    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
+    const pg = this.paginate("orphanstats", rows);
+    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small></span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
+  }
+
   unreferencedView() {
+    if (this.unrefTab === "statistics") return this.orphanStatsView();
     const all = this.unreferencedRows();
     this.lvState("unreferenced", "id", "asc");
     const domains = [...new Set(all.map(o => o.object_id.split(".")[0]))].sort();
@@ -1352,7 +1409,7 @@ class HAHousekeeperPanel extends HTMLElement {
       const area = this.findObject(`area:${item.area_id || device?.area_id}`);
       return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile mute"><ha-icon icon="mdi:link-variant-off"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([item.object_id, device?.name, area?.name].filter(Boolean).join(" · "))}</small></span></button>`;
     };
-    return `<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`}${pg.footer}</div>`;
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`}${pg.footer}</div>`;
   }
 
   batterySorts() {
@@ -1390,9 +1447,13 @@ class HAHousekeeperPanel extends HTMLElement {
   integrationProblems() {
     const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem");
     if (!broken.length) return "";
-    const pg = this.paginate("integrations", broken);
+    this.lvState("integrations", "name", "asc");
+    const sorts = [{ key: "name", label: "sortName", dir: "asc", get: o => o.name }, { key: "state", label: "sortStatus", dir: "asc", get: o => o.state || "" }];
+    const bar = broken.length > 5 ? this.listBar("integrations", { sorts }) : "";
+    const shown = broken.length > 5 ? this.refine("integrations", broken, { text: o => [o.name, o.domain, o.state].join(" "), sorts, tie: o => o.object_id }) : broken;
+    const pg = this.paginate("integrations", shown);
     const rows = pg.rows.map(o => `<button class="row rel" data-object="${this.esc(this.objectKey(o))}">${this.tile("config_entry", "red")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.domain)} · ${this.t(`cs_${o.state || "not_loaded"}`)}</small></span>${this.pill(o.status)}</button>`).join("");
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("integrationProblems")} (${broken.length})</h2><p>${this.t("integrationProblemsHint")}</p></div></div>${rows}${pg.footer}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("integrationProblems")} (${broken.length})</h2><p>${this.t("integrationProblemsHint")}</p></div></div>${bar}${rows}${pg.footer}</div>`;
   }
 
   factsCard(item, key) {
@@ -1455,7 +1516,7 @@ class HAHousekeeperPanel extends HTMLElement {
   bind() {
     const root = this.shadowRoot;
     root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
-    root.querySelector("[data-action='scan']")?.addEventListener("click", () => this.load(true));
+    root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
       const obj = this.findObject(el.dataset.graphOpen);
@@ -1507,6 +1568,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
+    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });

@@ -113,3 +113,28 @@ def test_battery_levels_and_low_flags() -> None:
     assert battery_level(entities[2]) == (85.5, False)
     assert battery_level(entities[3]) == (None, False)
     assert low_battery_ids(entities, 20) == ["sensor.low", "sensor.edge", "binary_sensor.low_flag"]
+
+
+def test_orphaned_statistics_skip_existing_entities_and_external_sources() -> None:
+    from custom_components.ha_housekeeper.hygiene import orphan_statistics
+
+    stats = [
+        {"statistic_id": "sensor.alive", "source": "recorder"},
+        {
+            "statistic_id": "sensor.gone",
+            "source": "recorder",
+            "has_sum": True,
+            "display_unit_of_measurement": "kWh",
+        },
+        {"statistic_id": "sensor.in_energy", "source": "recorder", "has_mean": True},
+        {"statistic_id": "ext:import", "source": "ext"},
+        {"statistic_id": "weird id", "source": "recorder"},
+    ]
+    orphans = orphan_statistics(stats, {"sensor.alive"}, {"sensor.in_energy"})
+    assert [o["statistic_id"] for o in orphans] == ["sensor.gone", "sensor.in_energy"]
+    assert (
+        orphans[0]["has_sum"] is True
+        and orphans[0]["unit"] == "kWh"
+        and orphans[0]["in_energy"] is False
+    )
+    assert orphans[1]["in_energy"] is True

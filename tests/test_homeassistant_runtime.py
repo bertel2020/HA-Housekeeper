@@ -555,3 +555,23 @@ async def test_statistics_flag_is_false_without_a_recorder(hass: HomeAssistant) 
     assert all(
         o["has_statistics"] is False for o in snapshot["objects"] if o["object_type"] == "entity"
     )
+
+
+async def test_orphaned_statistics_are_listed_without_becoming_findings(
+    hass: HomeAssistant,
+) -> None:
+    """Statistics of vanished entities are a hint list, not findings, repairs or health."""
+    from unittest.mock import AsyncMock, patch
+
+    hass.states.async_set("sensor.alive", "1")
+    statistics = [
+        {"statistic_id": "sensor.alive", "source": "recorder"},
+        {"statistic_id": "sensor.gone", "source": "recorder", "has_sum": True},
+    ]
+    scanner = InventoryScanner(hass)
+    with patch.object(InventoryScanner, "_statistics", AsyncMock(return_value=statistics)):
+        snapshot = await scanner.async_scan()
+
+    assert [o["statistic_id"] for o in snapshot["orphaned_statistics"]] == ["sensor.gone"]
+    assert snapshot["meta"]["orphaned_statistics"] == 1
+    assert snapshot["findings"] == []

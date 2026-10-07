@@ -701,3 +701,74 @@ test("entities with long-term statistics get a note and a fact", () => {
   el.render();
   assert.ok(shadow.innerHTML.includes("Long-term statistics") && shadow.innerHTML.includes("long-term statistics in the recorder"));
 });
+
+test("orphaned statistics have their own tab with search, kind filter and energy flag", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [], edges: [], findings: [], orphaned_statistics: [
+    { statistic_id: "sensor.old_energy", unit: "kWh", has_sum: true, has_mean: false, in_energy: true },
+    { statistic_id: "sensor.old_temp", unit: "°C", has_sum: false, has_mean: true, in_energy: false },
+    { statistic_id: "sensor.old_both", unit: null, has_sum: true, has_mean: true, in_energy: false },
+  ] };
+  el.view = "unreferenced";
+  el.unrefTab = "statistics";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Orphaned statistics (3)") && html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("Developer tools"));
+  assert.equal((html.match(/In the Energy dashboard/g) || []).length, 1);
+  el.lv.orphanstats.f.kind = "kindMean";
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("sensor.old_temp") && !html.includes("sensor.old_energy"));
+  el.lv.orphanstats.q = "nothing";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("No matches"));
+  el.data = { ...el.data, meta: { ...el.data.meta, recorder_available: false }, orphaned_statistics: [] };
+  el.lv.orphanstats = undefined;
+  el.render();
+  assert.ok(shadow.innerHTML.includes("recorder is not available"));
+});
+
+test("changes can be searched and filtered by object type", () => {
+  const { el, shadow } = panel("en");
+  const part = items => ({ total: items.length, items });
+  el.compare = { available: true, baseline_at: "2026-10-06T10:00:00+00:00", scanned_at: "2026-10-07T10:00:00+00:00", baselines: [],
+    status_changes: part([]), new_findings: part([]), resolved_findings: part([]), removed_objects: part([]),
+    new_objects: part([{ object_type: "entity", object_id: "light.kitchen", name: "Kitchen", status: "active" }, { object_type: "automation", object_id: "automation.night", name: "Night", status: "active" }]) };
+  el.view = "changes";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("light.kitchen") && shadow.innerHTML.includes("automation.night") && shadow.innerHTML.includes('data-lq="changes"'));
+  el.lv.changes.f.type = "automation";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("light.kitchen") && shadow.innerHTML.includes("automation.night"));
+  el.lv.changes.f.type = "";
+  el.lv.changes.q = "kitch";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("light.kitchen") && !shadow.innerHTML.includes("automation.night"));
+  assert.ok(!shadow.innerHTML.includes("data-ls="));
+});
+
+test("many integration problems get a search; few do not", () => {
+  const { el, shadow } = panel("en");
+  const entry = i => ({ object_type: "config_entry", object_id: `e${i}`, name: `Integration ${i}`, domain: `d${i}`, status: "problem", state: "setup_retry" });
+  el.data = { ...DATA, objects: Array.from({ length: 3 }, (_, i) => entry(i)) };
+  assert.ok(!el.integrationProblems().includes("data-lq"));
+  el.data = { ...DATA, objects: Array.from({ length: 8 }, (_, i) => entry(i)) };
+  assert.ok(el.integrationProblems().includes('data-lq="integrations"'));
+  el.lv.integrations.q = "integration 7";
+  const html = el.integrationProblems();
+  assert.ok(html.includes("Integration 7") && !html.includes("Integration 2"));
+});
+
+test("an overdue scan shows a banner on the overview", () => {
+  const { el } = panel("en");
+  const meta = scanned => ({ ...DATA.meta, scanned_at: scanned, scan_interval_hours: 24 });
+  el.data = { ...DATA, meta: meta(new Date().toISOString()) };
+  assert.equal(el.staleScan(), null);
+  el.data = { ...DATA, meta: meta(new Date(Date.now() - 80 * 3.6e6).toISOString()) };
+  assert.equal(el.staleScan().hours, 80);
+  assert.ok(el.staleBanner().includes("scans every 24 hours"));
+  el.data = { ...DATA, meta: { ...meta(new Date(Date.now() - 80 * 3.6e6).toISOString()), scan_interval_hours: 0 } };
+  assert.equal(el.staleScan(), null); // manual scans: only after a week
+  el.data = { ...DATA, meta: { ...meta(new Date(Date.now() - 9 * 24 * 3.6e6).toISOString()), scan_interval_hours: 0 } };
+  assert.ok(el.staleBanner().includes("9 days old"));
+});
