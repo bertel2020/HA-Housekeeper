@@ -51,7 +51,7 @@ def _relation(path: str) -> str:
         return "TRIGGERS_ON"
     if root in {"condition", "conditions"}:
         return "USES_AS_CONDITION"
-    if root in {"action", "actions"}:
+    if root in {"action", "actions", "sequence"}:
         return "TARGETS"
     return "REFERENCES"
 
@@ -116,6 +116,17 @@ def summarize_automation_config(config: Mapping[str, Any] | None) -> dict[str, A
         "actions": json_safe(actions),
         "trigger_count": len(triggers),
         "condition_count": len(conditions),
+        "action_count": len(actions),
+        "references": extract_references(config),
+    }
+
+
+def summarize_script_config(config: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Return the inspectable script structure; scripts only have a sequence."""
+    actions = block_list(config, "sequence", "sequence")
+    return {
+        "description": str(config.get("description", "")) if config else "",
+        "actions": json_safe(actions),
         "action_count": len(actions),
         "references": extract_references(config),
     }

@@ -15,7 +15,7 @@ const TEXT = {
     graphHint: "Wähle ein Objekt aus, um seine direkten Beziehungen zu untersuchen.",
     select: "Objekt auswählen", firstObservation: "Erster durch Housekeeper bestätigter Zeitpunkt",
     entity: "Entity", device: "Gerät", config_entry: "Integration", area: "Bereich",
-    automation: "Automation", entity_disabled: "Entity wurde deaktiviert",
+    automation: "Automation", script: "Skript", scene: "Szene", dashboard: "Dashboard", SHOWS: "zeigt an", entity_disabled: "Entity wurde deaktiviert",
     floor: "Etage", label: "Label", broken_reference: "Defekte Referenz",
     triggers: "Trigger", conditions: "Bedingungen", actions: "Aktionen",
     automationStructure: "Automationsstruktur", previous: "Zurück", next: "Weiter",
@@ -45,11 +45,11 @@ const TEXT = {
     TRIGGERS_ON: "löst aus durch", USES_AS_CONDITION: "prüft als Bedingung", TARGETS: "steuert", REFERENCES: "verweist auf",
     runtimeState: "Laufzeit-Zustand", usedBy: "verwendet von",
     impactTitle: "Auswirkung einer Entfernung", impactSubtitle: "Reine Analyse – Housekeeper entfernt nichts.",
-    impactNone: "Keine bekannte Verwendung", impactNoneText: "Keine Automation verwendet dieses Objekt oder seine zugehörigen Entities.",
-    impactCertain: "Nicht sicher entfernbar", impactCertainText: "{count} Automation(en) verweisen sicher auf dieses Objekt und würden ins Leere laufen.",
-    impactProbable: "Vorher prüfen", impactProbableText: "{count} Automation(en) verweisen wahrscheinlich darauf (z. B. über Templates).",
+    impactNone: "Keine bekannte Verwendung", impactNoneText: "Keine Automation, kein Skript, keine Szene und kein Dashboard verwendet dieses Objekt oder seine zugehörigen Entities.",
+    impactCertain: "Nicht sicher entfernbar", impactCertainText: "{count} Automation(en), Skript(e), Szene(n) oder Dashboard(s) verweisen sicher auf dieses Objekt und würden ins Leere laufen.",
+    impactProbable: "Vorher prüfen", impactProbableText: "{count} Automation(en), Skript(e), Szene(n) oder Dashboard(s) verweisen wahrscheinlich darauf (z. B. über Templates).",
     impactScope: "Betrachtet werden das Objekt und {count} zugehörige Entities.", impactScopeOne: "Betrachtet wird nur dieses Objekt.",
-    impactLimits: "Nicht geprüft: Dashboards, Skripte, Szenen, Gruppen und die Recorder-Historie.",
+    impactLimits: "Nicht geprüft: Gruppen, Helfer-Konfigurationen, automatisch erzeugte Dashboards und die Recorder-Historie.",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
     available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: nicht verfügbare Entities werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
@@ -78,9 +78,9 @@ const TEXT = {
     cause_entry_ok: "Die Integration ist geladen.",
     cause_entry_problem: "Die Integration ist nicht geladen ({state}). Ihre Entities sind deshalb nicht verfügbar.",
     cause_entry_off: "Die Integration ist deaktiviert. Das ist kein Fehler.",
-    cause_automation_ok: "Alle Referenzen der Automation zeigen auf vorhandene Objekte.",
-    cause_automation_broken: "{count} Referenz(en) zeigen auf Objekte, die nicht mehr existieren. Die Automation läuft an diesen Stellen ins Leere.",
-    hint_automation_broken: "Die fehlenden Referenzen in der Automation ersetzen oder entfernen.",
+    cause_automation_ok: "Alle Referenzen zeigen auf vorhandene Objekte.",
+    cause_automation_broken: "{count} Referenz(en) zeigen auf Objekte, die nicht mehr existieren. An diesen Stellen läuft das Objekt ins Leere.",
+    hint_automation_broken: "Die fehlenden Referenzen ersetzen oder entfernen.",
   },
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
@@ -98,7 +98,7 @@ const TEXT = {
     graphHint: "Select an object to inspect its direct relationships.",
     select: "Select object", firstObservation: "First confirmed observation by Housekeeper",
     entity: "Entity", device: "Device", config_entry: "Integration", area: "Area",
-    automation: "Automation", entity_disabled: "Entity was disabled",
+    automation: "Automation", script: "Script", scene: "Scene", dashboard: "Dashboard", SHOWS: "shows", entity_disabled: "Entity was disabled",
     floor: "Floor", label: "Label", broken_reference: "Broken reference",
     triggers: "Triggers", conditions: "Conditions", actions: "Actions",
     automationStructure: "Automation structure", previous: "Previous", next: "Next",
@@ -128,11 +128,11 @@ const TEXT = {
     TRIGGERS_ON: "triggers on", USES_AS_CONDITION: "checks as condition", TARGETS: "targets", REFERENCES: "references",
     runtimeState: "Runtime state", usedBy: "used by",
     impactTitle: "Impact of removal", impactSubtitle: "Analysis only – Housekeeper removes nothing.",
-    impactNone: "No known usage", impactNoneText: "No automation uses this object or its related entities.",
-    impactCertain: "Not safe to remove", impactCertainText: "{count} automation(s) reference this object for certain and would run into nothing.",
-    impactProbable: "Check first", impactProbableText: "{count} automation(s) probably reference it (for example through templates).",
+    impactNone: "No known usage", impactNoneText: "No automation, script, scene or dashboard uses this object or its related entities.",
+    impactCertain: "Not safe to remove", impactCertainText: "{count} automation(s), script(s), scene(s) or dashboard(s) reference this object for certain and would run into nothing.",
+    impactProbable: "Check first", impactProbableText: "{count} automation(s), script(s), scene(s) or dashboard(s) probably reference it (for example through templates).",
     impactScope: "Covers this object and {count} related entities.", impactScopeOne: "Covers only this object.",
-    impactLimits: "Not checked: dashboards, scripts, scenes, groups and the recorder history.",
+    impactLimits: "Not checked: groups, helper configurations, auto-generated dashboards and the recorder history.",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
     available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
@@ -161,17 +161,19 @@ const TEXT = {
     cause_entry_ok: "The integration is loaded.",
     cause_entry_problem: "The integration is not loaded ({state}), so its entities are unavailable.",
     cause_entry_off: "The integration is disabled. This is not an error.",
-    cause_automation_ok: "All references of the automation point to existing objects.",
-    cause_automation_broken: "{count} reference(s) point to objects that no longer exist. The automation runs into nothing at these places.",
-    hint_automation_broken: "Replace or remove the missing references in the automation.",
+    cause_automation_ok: "All references point to existing objects.",
+    cause_automation_broken: "{count} reference(s) point to objects that no longer exist. At these places the object runs into nothing.",
+    hint_automation_broken: "Replace or remove the missing references.",
   },
 };
 
 const ICONS = {
   entity: "mdi:shape-outline", device: "mdi:devices", config_entry: "mdi:puzzle-outline",
   area: "mdi:floor-plan", automation: "mdi:robot-outline", floor: "mdi:layers-outline",
-  label: "mdi:label-outline",
+  label: "mdi:label-outline", script: "mdi:script-text-outline", scene: "mdi:palette-outline", dashboard: "mdi:view-dashboard-outline",
 };
+
+const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS"];
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
@@ -302,14 +304,14 @@ class HAHousekeeperPanel extends HTMLElement {
     return this._index.get(key);
   }
 
-  findingKey(finding) { return (finding.rule_id.startsWith("automation.") ? "automation:" : "entity:") + finding.object_id; }
+  findingKey(finding) { return `${finding.rule_id.split(".")[0]}:${finding.object_id}`; }
   sortedFindings() {
     return [...this.data.findings].sort((a, b) => (b.confidence - a.confidence)
       || String(a.object_id).localeCompare(String(b.object_id)));
   }
 
   health() {
-    const base = this.data.objects.filter(o => o.object_type === "entity" || o.object_type === "automation").length;
+    const base = this.data.objects.filter(o => ["entity", "automation", "script", "scene"].includes(o.object_type)).length;
     const percent = base ? Math.max(0, Math.round(100 * (1 - this.data.findings.length / base))) : 100;
     const tone = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
@@ -324,6 +326,11 @@ class HAHousekeeperPanel extends HTMLElement {
       case "automation": return item.automation_id
         ? `/config/automation/edit/${encodeURIComponent(item.automation_id)}`
         : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
+      case "script": return `/config/script/edit/${encodeURIComponent(item.object_id.replace(/^script\./, ""))}`;
+      case "scene": return item.scene_id
+        ? `/config/scene/edit/${encodeURIComponent(item.scene_id)}`
+        : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
+      case "dashboard": return `/${encodeURIComponent(item.url_path || "lovelace")}`;
       case "config_entry": return `/config/integrations/integration/${encodeURIComponent(item.domain)}`;
       case "floor": return "/config/areas/dashboard";
       case "label": return "/config/labels";
@@ -469,7 +476,7 @@ class HAHousekeeperPanel extends HTMLElement {
       <div class="stack"><div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
       <div class="bar">${order.map(s => `<i class="${this.tone(s)}" style="width:${(100 * counts[s] / total).toFixed(2)}%"></i>`).join("")}</div>
       <div class="legend">${order.map(s => `<div><span><i class="dot ${this.tone(s)}"></i>${this.t(s)}</span><b>${this.formatNumber(counts[s])}</b></div>`).join("")}</div></div>
-      <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
+      <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
   }
 
   exportRows() {
@@ -539,7 +546,7 @@ class HAHousekeeperPanel extends HTMLElement {
       return `${search}<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:graph-outline"></ha-icon>${this.t("graphHint")}</div></div>`;
     }
     const item = this.graphSelected, key = this.objectKey(item);
-    const USAGE = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"];
+    const USAGE = USAGE_RELATIONS;
     const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
     const originEdges = incoming.filter(e => !USAGE.includes(e.relation));
     const usageEntries = [
@@ -626,11 +633,11 @@ class HAHousekeeperPanel extends HTMLElement {
       if (item.disabled_by) { rows.push(this.check(t("status"), "mute", item.name, t("disabled"))); cause = t("cause_entry_off"); }
       else if (state === "loaded") { rows.push(this.check(t("status"), "ok", item.name, t("cs_loaded"))); cause = t("cause_entry_ok"); }
       else { rows.push(this.check(t("status"), tone, item.name, t(`cs_${state}`))); cause = t("cause_entry_problem", { state: t(`cs_${state}`) }); hint = t("hint_integration"); }
-    } else if (item.object_type === "automation") {
+    } else if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) {
       const key = this.objectKey(item);
-      const broken = this.data.findings.filter(f => this.findingKey(f) === key && f.rule_id.startsWith("automation.missing_"));
-      broken.forEach(f => rows.push(this.check(t(f.rule_id.replace("automation.", "")), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
-      if (item.status === "disabled") rows.push(this.check(t("status"), "mute", t("automationOff"), t("disabled")));
+      const broken = this.data.findings.filter(f => this.findingKey(f) === key && f.rule_id.includes(".missing_"));
+      broken.forEach(f => rows.push(this.check(t(f.rule_id.split(".")[1]), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
+      if (item.object_type === "automation" && item.status === "disabled") rows.push(this.check(t("status"), "mute", t("automationOff"), t("disabled")));
       if (!broken.length) rows.push(this.check(t("dependencies"), "ok", t("refsResolved"), t("present")));
       cause = broken.length ? t("cause_automation_broken", { count: broken.length }) : t("cause_automation_ok");
       if (broken.length) { hint = t("hint_automation_broken"); tone = "red"; }
@@ -651,8 +658,8 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // Read-only what-if: which automations would lose a reference if this object (and what it owns) were removed.
   impact(item, key) {
-    if (item.object_type === "automation") return null;
-    const OWNED = ["PROVIDES", "OWNS"], USAGE = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"];
+    if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) return null;
+    const OWNED = ["PROVIDES", "OWNS"], USAGE = USAGE_RELATIONS;
     const scope = new Set([key]);
     for (let grew = true; grew;) {
       grew = false;
@@ -662,7 +669,7 @@ class HAHousekeeperPanel extends HTMLElement {
     }
     const byAutomation = new Map();
     for (const e of this.data.edges) {
-      if (!USAGE.includes(e.relation) || !scope.has(e.target) || !e.source.startsWith("automation:")) continue;
+      if (!USAGE.includes(e.relation) || !scope.has(e.target) || !/^(automation|script|scene|dashboard):/.test(e.source)) continue;
       const hit = byAutomation.get(e.source) || { key: e.source, certain: false, places: [] };
       if (e.confidence === "certain") hit.certain = true;
       if (e.location && e.location !== "runtime_extraction") hit.places.push(e.location);
@@ -684,7 +691,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const rows = m.hits.slice(0, LIMIT).map(h => {
       const obj = this.findObject(h.key);
       const note = `${this.t(h.certain ? "certain" : "probable")}${h.places.length ? ` · ${h.places.slice(0, 2).join(", ")}` : ""}`;
-      return `<button class="row rel" data-object="${this.esc(h.key)}">${this.tile("automation", h.certain ? "red" : "warn")}<span class="row-text"><strong>${this.esc(obj?.name || h.key.split(":").slice(1).join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : ""}</button>`;
+      return `<button class="row rel" data-object="${this.esc(h.key)}">${this.tile(h.key.split(":")[0], h.certain ? "red" : "warn")}<span class="row-text"><strong>${this.esc(obj?.name || h.key.split(":").slice(1).join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : ""}</button>`;
     }).join("");
     const more = m.hits.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: m.hits.length - LIMIT })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("impactTitle")}</h2><p>${this.t("impactSubtitle")}</p></div></div>
@@ -694,11 +701,11 @@ class HAHousekeeperPanel extends HTMLElement {
 
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
-    const usage = this.data.edges.filter(e => e.target === key && ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"].includes(e.relation)).length;
+    const usage = this.data.edges.filter(e => e.target === key && USAGE_RELATIONS.includes(e.relation)).length;
     const min = this.data.meta.min_unavailable_days || 0;
     const facts = [[this.t("status"), this.pill(item.status)]];
     if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
-    if (item.object_type === "entity" || item.object_type === "automation") {
+    if (["entity", "automation", "script", "scene", "dashboard"].includes(item.object_type)) {
       facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
     }
     if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
@@ -707,7 +714,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   relationsCard(key) {
-    const USAGE = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"];
+    const USAGE = USAGE_RELATIONS;
     const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
     const groups = [
       [this.t("origin"), incoming.filter(e => !USAGE.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e }))],
@@ -733,8 +740,8 @@ class HAHousekeeperPanel extends HTMLElement {
     const key = this.objectKey(item);
     const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
     const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
-    const automation = item.object_type === "automation" && !this.detailLoading
-      ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${["triggers", "conditions", "actions"].map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
+    const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
+      ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
     const attrs = item.attributes && Object.keys(item.attributes).length
       ? `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>` : "";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);

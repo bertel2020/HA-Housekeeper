@@ -193,3 +193,91 @@ async def test_scan_creates_and_clears_repairs_hints(hass: HomeAssistant) -> Non
     hass.states.async_set(entry.entity_id, "1")
     await scanner.async_scan()
     assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is None
+
+
+async def test_scripts_and_scenes_are_inventoried_with_missing_references(
+    hass: HomeAssistant,
+) -> None:
+    """Scripts and scenes become objects, edges and findings like automations."""
+    from homeassistant.setup import async_setup_component
+
+    hass.states.async_set("light.present", "on")
+    assert await async_setup_component(
+        hass,
+        "script",
+        {
+            "script": {
+                "tidy": {
+                    "alias": "Tidy",
+                    "sequence": [
+                        {"action": "light.turn_off", "target": {"entity_id": "light.present"}},
+                        {"action": "light.turn_off", "target": {"entity_id": "light.gone"}},
+                    ],
+                }
+            }
+        },
+    )
+    hass.states.async_set(
+        "scene.evening",
+        "scening",
+        {"friendly_name": "Evening", "entity_id": ["light.present", "light.vanished"]},
+    )
+
+    scanner = InventoryScanner(hass)
+    snapshot = await scanner.async_scan()
+
+    types = {item["object_id"]: item["object_type"] for item in snapshot["objects"]}
+    assert types["script.tidy"] == "script"
+    assert types["scene.evening"] == "scene"
+
+    rules = {(f["rule_id"], f["object_id"], f["affected_object"]) for f in snapshot["findings"]}
+    assert ("script.missing_entity", "script.tidy", "light.gone") in rules
+    assert ("scene.missing_entity", "scene.evening", "light.vanished") in rules
+    assert not any(affected == "light.present" for _, _, affected in rules)
+
+    targets = {(e["source"], e["target"]) for e in snapshot["edges"]}
+    assert ("script:script.tidy", "entity:light.present") in targets
+    assert ("scene:scene.evening", "entity:light.present") in targets
+
+
+async def test_dashboards_are_inventoried_with_missing_entities(hass: HomeAssistant) -> None:
+    """Dashboard entity references become edges, and gone entities become findings."""
+    from types import SimpleNamespace
+
+    from homeassistant.components.lovelace.const import LOVELACE_DATA
+
+    class FakeDashboard:
+        mode = "storage"
+        config = {"title": "Wohnzimmer"}
+
+        async def async_load(self, force: bool) -> dict:
+            return {
+                "views": [
+                    {"cards": [{"type": "entity", "entity": "light.present"}]},
+                    {"cards": [{"type": "entity", "entity": "light.gone"}]},
+                ]
+            }
+
+    class BrokenDashboard:
+        async def async_load(self, force: bool) -> dict:
+            raise RuntimeError("auto-generated")
+
+    hass.states.async_set("light.present", "on")
+    hass.data[LOVELACE_DATA] = SimpleNamespace(
+        dashboards={"dash-living": FakeDashboard(), None: BrokenDashboard()}
+    )
+
+    snapshot = await InventoryScanner(hass).async_scan()
+
+    dashboards = [o for o in snapshot["objects"] if o["object_type"] == "dashboard"]
+    assert [d["object_id"] for d in dashboards] == ["dash-living"]
+    assert dashboards[0]["name"] == "Wohnzimmer"
+    assert dashboards[0]["view_count"] == 2
+    assert dashboards[0]["missing_reference_count"] == 1
+
+    assert ("dashboard:dash-living", "entity:light.present") in {
+        (e["source"], e["target"]) for e in snapshot["edges"]
+    }
+    finding = next(f for f in snapshot["findings"] if f["rule_id"] == "dashboard.missing_entity")
+    assert finding["affected_object"] == "light.gone"
+    assert finding["evidence"][0]["location"] == "views/1/cards/0/entity"

@@ -32,8 +32,8 @@
       "description": "Housekeeper found {count} entities that have been unavailable longer than the configured threshold. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
     },
     "broken_automations": {
-      "title": "{count} automations reference missing objects",
-      "description": "Housekeeper found {count} findings in automations that reference missing entities, devices or areas. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+      "title": "{count} automations, scripts, scenes or dashboards reference missing objects",
+      "description": "Housekeeper found {count} findings in automations, scripts, scenes or dashboards that reference missing entities, devices or areas. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
     }
   }
 }

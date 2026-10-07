@@ -17,8 +17,10 @@ from homeassistant.helpers import label_registry as lr
 from .automation_analysis import (
     missing_references,
     summarize_automation_config,
+    summarize_script_config,
 )
 from .const import DEFAULT_MIN_UNAVAILABLE_DAYS
+from .dashboard_analysis import extract_dashboard_references
 from .issues import async_sync_issues
 from .observations import ObservationStore
 
@@ -239,6 +241,30 @@ def _entity_findings(
     ]
 
 
+def _missing_findings(
+    domain: str, object_id: str, missing: list[dict[str, str]]
+) -> list[dict[str, Any]]:
+    """Create one finding per reference whose target no longer exists."""
+    return [
+        {
+            "rule_id": f"{domain}.missing_{reference['kind']}",
+            "object_id": object_id,
+            "classification": "broken_reference",
+            "confidence": 0.98,
+            "first_detected_at": None,
+            "affected_object": reference["object_id"],
+            "evidence": [
+                {
+                    "kind": "missing_reference",
+                    "source": f"{domain}_runtime_config",
+                    "location": reference["location"],
+                }
+            ],
+        }
+        for reference in missing
+    ]
+
+
 def _structure_edges(
     entities: list[dict[str, Any]],
     devices: list[dict[str, Any]],
@@ -387,12 +413,9 @@ class InventoryScanner:
 
         self.status.update(phase="automations", progress=60)
         await asyncio.sleep(0)
-        automations, automation_edges, automation_findings = self._automation_inventory(
-            entity_registry,
-            device_registry,
-            area_registry,
-            floor_registry,
-            label_registry,
+        automations, automation_edges, automation_findings = self._automation_inventory()
+        dashboards, dashboard_edges, dashboard_findings = await self._dashboard_inventory(
+            self._existing_objects()
         )
         known_automation_ids = {item["object_id"] for item in automations}
         automations.extend(
@@ -401,10 +424,14 @@ class InventoryScanner:
             if state.entity_id not in known_automation_ids
         )
 
-        edges = _structure_edges(entities, devices, areas) + automation_edges
-        objects = entities + devices + integrations + areas + floors + labels + automations
+        edges = _structure_edges(entities, devices, areas) + automation_edges + dashboard_edges
+        objects = (
+            entities + devices + integrations + areas + floors + labels + automations + dashboards
+        )
         findings = (
-            _entity_findings(entities, observed_at, self.min_unavailable_days) + automation_findings
+            _entity_findings(entities, observed_at, self.min_unavailable_days)
+            + automation_findings
+            + dashboard_findings
         )
 
         self.status.update(phase="finalizing", progress=90)
@@ -423,51 +450,62 @@ class InventoryScanner:
             "findings": findings,
         }
 
-    def _automation_inventory(
-        self,
-        entity_registry: Any,
-        device_registry: Any,
-        area_registry: Any,
-        floor_registry: Any,
-        label_registry: Any,
-    ) -> tuple[list[dict[str, Any]], list[dict[str, str]], list[dict[str, Any]]]:
-        """Inspect loaded automation entities through Home Assistant runtime APIs."""
-        try:
-            from homeassistant.components.automation import DATA_COMPONENT
-        except ImportError:
-            return [], [], []
+    def _existing_objects(self) -> dict[str, set[str]]:
+        """Collect the IDs a reference may legitimately point to."""
+        registries = {
+            "devices": dr.async_get(self.hass),
+            "areas": ar.async_get(self.hass),
+            "floors": fr.async_get(self.hass),
+            "labels": lr.async_get(self.hass),
+        }
+        return {
+            "entity": {
+                entry.entity_id for entry in _registry_entries(er.async_get(self.hass).entities)
+            }
+            | {state.entity_id for state in self.hass.states.async_all()},
+            "device": {entry.id for entry in _registry_entries(registries["devices"].devices)},
+            "area": {entry.id for entry in _registry_entries(registries["areas"].areas)},
+            "floor": {entry.floor_id for entry in _registry_entries(registries["floors"].floors)},
+            "label": {entry.label_id for entry in _registry_entries(registries["labels"].labels)},
+        }
 
-        component = self.hass.data.get(DATA_COMPONENT)
+    def _runtime_component(self, domain: str) -> Any | None:
+        """Return a loaded entity component such as automation or script."""
+        try:
+            module = __import__(f"homeassistant.components.{domain}", fromlist=["DATA_COMPONENT"])
+        except ImportError:
+            return None
+        return self.hass.data.get(getattr(module, "DATA_COMPONENT", domain))
+
+    def _config_object_inventory(
+        self,
+        domain: str,
+        summarize: Any,
+        existing: dict[str, set[str]],
+    ) -> tuple[list[dict[str, Any]], list[dict[str, str]], list[dict[str, Any]]]:
+        """Inspect automations or scripts through Home Assistant runtime APIs."""
+        component = self._runtime_component(domain)
         if component is None:
             return [], [], []
 
-        existing = {
-            "entity": {entry.entity_id for entry in _registry_entries(entity_registry.entities)}
-            | {state.entity_id for state in self.hass.states.async_all()},
-            "device": {entry.id for entry in _registry_entries(device_registry.devices)},
-            "area": {entry.id for entry in _registry_entries(area_registry.areas)},
-            "floor": {entry.floor_id for entry in _registry_entries(floor_registry.floors)},
-            "label": {entry.label_id for entry in _registry_entries(label_registry.labels)},
-        }
-        automations: list[dict[str, Any]] = []
+        items: list[dict[str, Any]] = []
         edges: list[dict[str, str]] = []
         findings: list[dict[str, Any]] = []
 
-        for automation in component.entities:
-            entity_id = automation.entity_id
+        for entity in component.entities:
+            entity_id = entity.entity_id
             state = self.hass.states.get(entity_id)
-            raw_config = getattr(automation, "raw_config", None)
-            summary = summarize_automation_config(raw_config)
+            summary = summarize(getattr(entity, "raw_config", None))
             references = summary["references"]
 
             # HA's runtime extraction also detects references inside templates.
             explicit_markers = {(ref["kind"], ref["object_id"]) for ref in references}
             runtime_sets = {
-                "entity": getattr(automation, "referenced_entities", set()),
-                "device": getattr(automation, "referenced_devices", set()),
-                "area": getattr(automation, "referenced_areas", set()),
-                "floor": getattr(automation, "referenced_floors", set()),
-                "label": getattr(automation, "referenced_labels", set()),
+                "entity": getattr(entity, "referenced_entities", set()),
+                "device": getattr(entity, "referenced_devices", set()),
+                "area": getattr(entity, "referenced_areas", set()),
+                "floor": getattr(entity, "referenced_floors", set()),
+                "label": getattr(entity, "referenced_labels", set()),
             }
             for kind, object_ids in runtime_sets.items():
                 for object_id in object_ids:
@@ -482,59 +520,164 @@ class InventoryScanner:
                             }
                         )
 
-            for reference in references:
-                edges.append(
-                    {
-                        "source": f"automation:{entity_id}",
-                        "target": f"{reference['kind']}:{reference['object_id']}",
-                        "relation": reference["relation"],
-                        "confidence": reference["confidence"],
-                        "location": reference["location"],
-                    }
-                )
-
-            missing = missing_references(references, existing)
-            for reference in missing:
-                findings.append(
-                    {
-                        "rule_id": f"automation.missing_{reference['kind']}",
-                        "object_id": entity_id,
-                        "classification": "broken_reference",
-                        "confidence": 0.98,
-                        "first_detected_at": None,
-                        "affected_object": reference["object_id"],
-                        "evidence": [
-                            {
-                                "kind": "missing_reference",
-                                "source": "automation_runtime_config",
-                                "location": reference["location"],
-                            }
-                        ],
-                    }
-                )
-
-            attrs = state.attributes if state else {}
-            blueprint = getattr(automation, "referenced_blueprint", None)
-            automations.append(
+            edges.extend(
                 {
-                    "object_type": "automation",
-                    "object_id": entity_id,
-                    "name": getattr(automation, "name", None)
-                    or attrs.get("friendly_name", entity_id),
-                    "automation_id": getattr(automation, "unique_id", None),
-                    "mode": attrs.get("mode"),
-                    "current": attrs.get("current", 0),
-                    "max": attrs.get("max"),
-                    "last_triggered": _iso(attrs.get("last_triggered")),
-                    "status": "unavailable"
-                    if state is None or state.state == "unavailable"
-                    else ("active" if state.state == "on" else "disabled"),
-                    "state": state.state if state else None,
-                    "source": "blueprint" if blueprint else "home_assistant_runtime",
-                    "blueprint": blueprint,
-                    "missing_reference_count": len(missing),
-                    **summary,
+                    "source": f"{domain}:{entity_id}",
+                    "target": f"{reference['kind']}:{reference['object_id']}",
+                    "relation": reference["relation"],
+                    "confidence": reference["confidence"],
+                    "location": reference["location"],
                 }
+                for reference in references
             )
 
-        return automations, edges, findings
+            missing = missing_references(references, existing)
+            findings.extend(_missing_findings(domain, entity_id, missing))
+
+            attrs = state.attributes if state else {}
+            blueprint = getattr(entity, "referenced_blueprint", None)
+            item = {
+                "object_type": domain,
+                "object_id": entity_id,
+                "name": getattr(entity, "name", None) or attrs.get("friendly_name", entity_id),
+                "status": "unavailable"
+                if state is None or state.state == "unavailable"
+                else ("active" if state.state == "on" or domain == "script" else "disabled"),
+                "state": state.state if state else None,
+                "source": "blueprint" if blueprint else "home_assistant_runtime",
+                "blueprint": blueprint,
+                "missing_reference_count": len(missing),
+                "last_triggered": _iso(attrs.get("last_triggered")),
+                **summary,
+            }
+            if domain == "automation":
+                item.update(
+                    {
+                        "automation_id": getattr(entity, "unique_id", None),
+                        "mode": attrs.get("mode"),
+                        "current": attrs.get("current", 0),
+                        "max": attrs.get("max"),
+                    }
+                )
+            else:
+                item["mode"] = attrs.get("mode")
+            items.append(item)
+
+        return items, edges, findings
+
+    def _automation_inventory(
+        self,
+    ) -> tuple[list[dict[str, Any]], list[dict[str, str]], list[dict[str, Any]]]:
+        """Inspect automations, scripts and scenes."""
+        existing = self._existing_objects()
+        automations, edges, findings = self._config_object_inventory(
+            "automation", summarize_automation_config, existing
+        )
+        scripts, script_edges, script_findings = self._config_object_inventory(
+            "script", summarize_script_config, existing
+        )
+        scenes, scene_edges, scene_findings = self._scene_inventory(existing)
+        return (
+            automations + scripts + scenes,
+            edges + script_edges + scene_edges,
+            findings + script_findings + scene_findings,
+        )
+
+    async def _dashboard_inventory(
+        self, existing: dict[str, set[str]]
+    ) -> tuple[list[dict[str, Any]], list[dict[str, str]], list[dict[str, Any]]]:
+        """Read dashboard configurations and link the entities they show."""
+        try:
+            from homeassistant.components.lovelace.const import LOVELACE_DATA
+        except ImportError:
+            return [], [], []
+        lovelace = self.hass.data.get(LOVELACE_DATA)
+        if lovelace is None:
+            return [], [], []
+
+        dashboards: list[dict[str, Any]] = []
+        edges: list[dict[str, str]] = []
+        findings: list[dict[str, Any]] = []
+        for url_path, dashboard in lovelace.dashboards.items():
+            try:
+                config = await dashboard.async_load(False)
+            except Exception:  # Auto-generated, missing or invalid dashboards have nothing to read.
+                continue
+            object_id = url_path or "lovelace"
+            references = extract_dashboard_references(config, existing["entity"])
+            edges.extend(
+                {
+                    "source": f"dashboard:{object_id}",
+                    "target": f"entity:{reference['object_id']}",
+                    "relation": reference["relation"],
+                    "confidence": reference["confidence"],
+                    "location": reference["location"],
+                }
+                for reference in references
+            )
+            missing = missing_references(references, existing)
+            findings.extend(_missing_findings("dashboard", object_id, missing))
+            settings = getattr(dashboard, "config", None) or {}
+            views = config.get("views") if isinstance(config.get("views"), list) else []
+            dashboards.append(
+                {
+                    "object_type": "dashboard",
+                    "object_id": object_id,
+                    "name": settings.get("title") or config.get("title") or object_id,
+                    "url_path": url_path,
+                    "mode": getattr(dashboard, "mode", None),
+                    "view_count": len(views),
+                    "entity_count": len({ref["object_id"] for ref in references}),
+                    "missing_reference_count": len(missing),
+                    "status": "active",
+                    "references": references,
+                }
+            )
+        return dashboards, edges, findings
+
+    def _scene_inventory(
+        self, existing: dict[str, set[str]]
+    ) -> tuple[list[dict[str, Any]], list[dict[str, str]], list[dict[str, Any]]]:
+        """Describe scenes through the entities listed in their state attributes."""
+        scenes: list[dict[str, Any]] = []
+        edges: list[dict[str, str]] = []
+        findings: list[dict[str, Any]] = []
+        for state in self.hass.states.async_all("scene"):
+            entity_ids = [value for value in state.attributes.get("entity_id", ()) if value]
+            references = [
+                {
+                    "kind": "entity",
+                    "object_id": entity_id,
+                    "relation": "TARGETS",
+                    "location": "entities",
+                    "confidence": "certain",
+                }
+                for entity_id in entity_ids
+            ]
+            edges.extend(
+                {
+                    "source": f"scene:{state.entity_id}",
+                    "target": f"entity:{reference['object_id']}",
+                    "relation": reference["relation"],
+                    "confidence": reference["confidence"],
+                    "location": reference["location"],
+                }
+                for reference in references
+            )
+            missing = missing_references(references, existing)
+            findings.extend(_missing_findings("scene", state.entity_id, missing))
+            scenes.append(
+                {
+                    "object_type": "scene",
+                    "object_id": state.entity_id,
+                    "name": state.attributes.get("friendly_name", state.entity_id),
+                    "status": "unavailable" if state.state == "unavailable" else "active",
+                    "state": state.state,
+                    "scene_id": state.attributes.get("id"),
+                    "entities": entity_ids,
+                    "entity_count": len(entity_ids),
+                    "missing_reference_count": len(missing),
+                    "references": references,
+                }
+            )
+        return scenes, edges, findings

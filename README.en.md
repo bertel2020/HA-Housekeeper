@@ -82,6 +82,7 @@ For every continuously observed classification, Housekeeper stores when it first
 - Includes references detected by the Home Assistant runtime, including many template references
 - Detects references whose target no longer exists
 - Retains the precise configuration location for explicit references when available
+- Scripts, scenes and dashboards are checked for references and missing targets in the same way; the detail page shows under **Impact of removal** what a removal would affect (analysis only, no changes)
 
 ### Dependency explorer
 

@@ -210,3 +210,37 @@ test("impact card is skipped for automations and shows the verdict", () => {
   assert.equal(el.impactCard(DATA.objects[2], "automation:automation.c"), "");
   assert.ok(el.impactCard(DATA.objects[1], "entity:sensor.b").includes("No known usage"));
 });
+
+test("scripts and scenes get paths, diagnosis, finding keys and impact sources", () => {
+  const { el } = panel();
+  assert.equal(el.haPath({ object_type: "script", object_id: "script.tidy" }), "/config/script/edit/tidy");
+  assert.equal(el.haPath({ object_type: "scene", object_id: "scene.a", scene_id: "42" }), "/config/scene/edit/42");
+  assert.equal(el.haPath({ object_type: "scene", object_id: "scene.a" }), "/config/entities?search=scene.a");
+  assert.equal(el.findingKey({ rule_id: "script.missing_entity", object_id: "script.tidy" }), "script:script.tidy");
+
+  const script = { object_type: "script", object_id: "script.tidy", name: "Tidy", status: "active" };
+  el.data = { ...DATA, objects: [...DATA.objects, script], findings: [
+    { rule_id: "script.missing_entity", object_id: "script.tidy", classification: "broken_reference", confidence: 0.98, affected_object: "light.gone", evidence: [{ location: "sequence/1/target/entity_id" }] },
+  ] };
+  const d = el.diagnose(script);
+  assert.equal(d.tone, "red");
+  assert.ok(d.rows[0].value.includes("light.gone"));
+
+  el.data.edges = [E("script:script.tidy", "entity:sensor.b", "TARGETS"), E("scene:scene.a", "entity:sensor.b", "TARGETS")];
+  const m = el.impact(DATA.objects[1], "entity:sensor.b");
+  assert.equal(m.certain, 2);
+  assert.equal(el.impact(script, "script:script.tidy"), null);
+  el.selected = script;
+  el.render();
+});
+
+test("dashboards get paths, diagnosis and count as usage in impact", () => {
+  const { el } = panel();
+  assert.equal(el.haPath({ object_type: "dashboard", object_id: "dash-living", url_path: "dash-living" }), "/dash-living");
+  assert.equal(el.haPath({ object_type: "dashboard", object_id: "lovelace", url_path: null }), "/lovelace");
+  el.data = { ...DATA, edges: [E("dashboard:dash-living", "entity:sensor.b", "SHOWS")] };
+  const m = el.impact(DATA.objects[1], "entity:sensor.b");
+  assert.equal(m.certain, 1);
+  assert.equal(el.impact({ object_type: "dashboard", object_id: "x" }, "dashboard:x"), null);
+  assert.ok(el.t("SHOWS") !== "SHOWS");
+});

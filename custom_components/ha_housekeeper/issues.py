@@ -13,7 +13,7 @@ ISSUE_IDS = ("orphaned_entities", "unavailable_entities", "broken_automations")
 
 
 def _category(finding: dict[str, Any]) -> str:
-    if finding["rule_id"].startswith("automation."):
+    if finding["rule_id"].startswith(("automation.", "script.", "scene.", "dashboard.")):
         return "broken_automations"
     if finding["classification"] == "orphaned":
         return "orphaned_entities"

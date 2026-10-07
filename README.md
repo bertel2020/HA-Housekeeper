@@ -82,6 +82,7 @@ Für jede durchgehend beobachtete Klassifikation speichert Housekeeper, wann sie
 - Einbeziehung der von Home Assistant zur Laufzeit erkannten Referenzen, darunter viele Templatereferenzen
 - Erkennung von Referenzen, deren Ziel nicht mehr existiert
 - genaue Fundstelle für explizite Referenzen, soweit verfügbar
+- Skripte, Szenen und Dashboards werden ebenso auf Referenzen und fehlende Ziele geprüft; die Detailseite zeigt unter **Auswirkung einer Entfernung**, was eine Entfernung betreffen würde (nur Analyse, ohne Änderung)
 
 ### Abhängigkeitsansicht
 

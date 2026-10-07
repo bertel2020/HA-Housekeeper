@@ -32,8 +32,8 @@
       "description": "Housekeeper hat {count} Entities gefunden, die länger als der eingestellte Schwellwert nicht verfügbar sind. Housekeeper in der Seitenleiste öffnen, um sie zu prüfen. Es wird nichts automatisch geändert."
     },
     "broken_automations": {
-      "title": "{count} Automationen mit fehlenden Referenzen",
-      "description": "Housekeeper hat {count} Befunde in Automationen gefunden, die auf fehlende Entities, Geräte oder Bereiche verweisen. Housekeeper in der Seitenleiste öffnen, um sie zu prüfen. Es wird nichts automatisch geändert."
+      "title": "{count} Automationen, Skripte, Szenen oder Dashboards mit fehlenden Referenzen",
+      "description": "Housekeeper hat {count} Befunde in Automationen, Skripten, Szenen oder Dashboards gefunden, die auf fehlende Entities, Geräte oder Bereiche verweisen. Housekeeper in der Seitenleiste öffnen, um sie zu prüfen. Es wird nichts automatisch geändert."
     }
   }
 }
