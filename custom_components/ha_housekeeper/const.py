@@ -4,7 +4,6 @@ from typing import Final
 
 DOMAIN: Final = "ha_housekeeper"
 NAME: Final = "HA Housekeeper"
-VERSION: Final = "0.1.0"
 
 PANEL_URL: Final = "ha-housekeeper"
 PANEL_ELEMENT: Final = "ha-housekeeper-panel"

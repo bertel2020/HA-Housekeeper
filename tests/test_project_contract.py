@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
@@ -28,6 +29,21 @@ def test_manifest_declares_installable_custom_integration() -> None:
     assert manifest["config_flow"] is True
     assert manifest["single_config_entry"] is True
     assert manifest["version"].startswith("0.1.")
+
+
+def test_manifest_version_matches_latest_changelog_entry() -> None:
+    manifest = _json(COMPONENT / "manifest.json")
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    match = re.search(r"^## (\d+\.\d+\.\d+)", changelog, re.MULTILINE)
+    assert match is not None
+    assert match.group(1) == manifest["version"]
+
+
+def test_manifest_points_to_the_owner_repository() -> None:
+    manifest = _json(COMPONENT / "manifest.json")
+    assert manifest["codeowners"] == ["@bertel2020"]
+    assert manifest["documentation"].startswith("https://github.com/bertel2020/")
+    assert manifest["issue_tracker"].startswith("https://github.com/bertel2020/")
 
 
 def test_german_and_english_translation_keys_match() -> None:

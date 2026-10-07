@@ -1,12 +1,19 @@
 {
   "domain": "ha_housekeeper",
   "name": "HA Housekeeper",
-  "codeowners": [],
+  "codeowners": [
+    "@bertel2020"
+  ],
   "config_flow": true,
-  "dependencies": ["frontend", "http", "websocket_api"],
-  "documentation": "https://github.com/roberto/HA-Housekeeping",
+  "dependencies": [
+    "frontend",
+    "http",
+    "websocket_api"
+  ],
+  "documentation": "https://github.com/bertel2020/HA-Housekeeping",
   "integration_type": "service",
-  "iot_class": "local_polling",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/bertel2020/HA-Housekeeping/issues",
   "single_config_entry": true,
   "version": "0.1.0"
 }

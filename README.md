@@ -2,12 +2,12 @@
 
 [Deutsch](README.de.md) · **English**
 
-[![GitHub release](https://img.shields.io/github/v/release/roberto/HA-Housekeeping?include_prereleases&style=flat-square)](https://github.com/roberto/HA-Housekeeping/releases)
+[![GitHub release](https://img.shields.io/github/v/release/bertel2020/HA-Housekeeping?include_prereleases&style=flat-square)](https://github.com/bertel2020/HA-Housekeeping/releases)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://hacs.xyz/docs/faq/custom_repositories/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-18BCF2.svg?style=flat-square&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Last commit](https://img.shields.io/github/last-commit/roberto/HA-Housekeeping?style=flat-square)](https://github.com/roberto/HA-Housekeeping/commits/)
-[![Validate](https://img.shields.io/github/actions/workflow/status/roberto/HA-Housekeeping/validate.yml?branch=main&style=flat-square&label=validation)](https://github.com/roberto/HA-Housekeeping/actions/workflows/validate.yml)
+[![Last commit](https://img.shields.io/github/last-commit/bertel2020/HA-Housekeeping?style=flat-square)](https://github.com/bertel2020/HA-Housekeeping/commits/)
+[![Validate](https://img.shields.io/github/actions/workflow/status/bertel2020/HA-Housekeeping/validate.yml?branch=main&style=flat-square&label=validation)](https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml)
 
 HA Housekeeper is a bilingual maintenance and analysis integration for Home Assistant. It creates a clear inventory of your installation, explains suspicious or orphaned objects, and shows how entities, devices, integrations, areas, and automations depend on each other.
 
@@ -87,14 +87,27 @@ Cleanup plans, backups, verification, and rollback are intentionally reserved fo
 
 ## Installation
 
-### Manual installation
+### Via HACS (recommended)
 
-1. Download or clone this repository.
-2. Copy `custom_components/ha_housekeeper` into the `custom_components` directory inside your Home Assistant configuration directory.
-3. Restart Home Assistant.
-4. Open **Settings → Devices & services → Add integration**.
-5. Search for **HA Housekeeper** and confirm the setup.
-6. Open **Housekeeper** in the sidebar while signed in as an administrator.
+[![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
+[![Add HA Housekeeper to My Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
+
+1. Use the first button to open the Housekeeper repository in HACS.
+2. Download **HA Housekeeper** and restart Home Assistant.
+3. Use the second button to add the integration. Alternatively, open
+   **Settings → Devices & services → Add integration → HA Housekeeper** in
+   Home Assistant.
+4. Then open **Housekeeper** in the sidebar while signed in as an administrator.
+
+If the first button does not work, add
+`https://github.com/bertel2020/HA-Housekeeping` in HACS under **Integrations →
+Custom repositories** with the category **Integration**.
+
+### Manual
+
+Copy the `custom_components/ha_housekeeper` directory to
+`/config/custom_components/ha_housekeeper` and restart Home Assistant. Then add
+the integration as described above.
 
 The resulting directory should look like this:
 
@@ -106,10 +119,6 @@ config/
         ├── manifest.json
         └── ...
 ```
-
-### HACS custom repository
-
-Once the repository is available on GitHub, it can be added to HACS as a custom repository with the category **Integration**. Restart Home Assistant after installation, then add HA Housekeeper from **Settings → Devices & services**.
 
 ## Usage
 
