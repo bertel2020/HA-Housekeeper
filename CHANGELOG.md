@@ -1,5 +1,88 @@
 # Changelog
 
+## 0.3.0 - 2026-10-07
+
+Mehr Quellen, Scanvergleich und Sensoren. Housekeeper arbeitet weiterhin
+ausschließlich lesend. Lokal gegen Home Assistant 2026.2.3 getestet.
+
+### Neu
+
+- **Skripte, Szenen und Dashboards** werden als Quellen berücksichtigt. Fehlende
+  Ziele werden als Befund gemeldet.
+- **Gruppen und Helfer** (Template, Ableitung, Min/Max, Schwellwert u. a.) zählen
+  als Quellen. Fehlende Mitglieder oder Quell-Entities werden gemeldet.
+- **Auswirkung einer Entfernung**: Die Detailseite zeigt, welche Automationen,
+  Skripte, Szenen, Dashboards, Gruppen und Helfer ein Objekt verwenden.
+- **Scanvergleich**: Die Ansicht **Änderungen** zeigt neue und behobene Befunde,
+  Statuswechsel sowie neue und entfernte Objekte gegenüber dem vorherigen Scan
+  oder dem Scan vor bis zu 7 Tagen.
+- **Automatischer Scan** (Standard alle 24 Stunden, `0` = aus).
+- **Mögliche Duplikate** (zum Beispiel `licht_2` neben einem aktiven `licht`)
+  und **ungenutzte Automationen** (nie ausgelöst, lange nicht ausgelöst, lange
+  deaktiviert; Standard 90 Tage, `0` = aus).
+- **Befunde ausblenden** im Panel oder per Label `housekeeper_ignore` an der
+  Entity. Ausgeblendete Befunde zählen nicht in Übersicht, Sensoren und
+  Reparaturhinweisen.
+- **Sensoren**: Ein Dienstgerät mit Zählern für Befunde, verwaiste und nicht
+  verfügbare Entities, defekte Referenzen, mögliche Duplikate, ungenutzte
+  Automationen, schwache Batterien und dem Zeitpunkt des letzten Scans.
+- **Batterien**: Neue Ansicht mit allen Batterie-Entities, niedrigste Werte
+  zuerst (niedrig ab 20 %).
+- **Integrationsprobleme** erscheinen als Karte auf der Übersicht.
+- **Direktlinks** ins Panel (`?view=…&filter=…`, `?object=…`). Reparaturhinweise
+  springen direkt in die passend gefilterte Befundliste.
+
+### Geändert
+
+- **Neue Detailseite** statt Seitenleiste, mit Zurück-Navigation, neu
+  aufgebauter Ursachendiagnose in Klartext mit Empfehlung und Diagnose auch für
+  Geräte, Integrationen und Automationen.
+- Das Panel nutzt die volle Breite; das Logo steht in der Seitenleiste.
+- Der Reparaturhinweis für defekte Automationen umfasst jetzt alle Quellen mit
+  fehlenden Referenzen.
+
+---
+
+### English
+
+More sources, scan comparison, and sensors. Housekeeper remains strictly
+read-only. Tested locally against Home Assistant 2026.2.3.
+
+#### New
+
+- **Scripts, scenes, and dashboards** are covered as sources. Missing targets
+  are reported as findings.
+- **Groups and helpers** (template, derivative, min/max, threshold, and others)
+  count as sources. Missing members or source entities are reported.
+- **Impact of a removal**: the detail page shows which automations, scripts,
+  scenes, dashboards, groups, and helpers use an object.
+- **Scan comparison**: the **Changes** view shows new and resolved findings,
+  status changes, and new and removed objects compared with the previous scan
+  or the scan from up to 7 days ago.
+- **Automatic scan** (default every 24 hours, `0` = off).
+- **Possible duplicates** (for example `light_2` next to an active `light`) and
+  **unused automations** (never triggered, not triggered for a long time,
+  disabled for a long time; default 90 days, `0` = off).
+- **Hide findings** in the panel or with the label `housekeeper_ignore` on the
+  entity. Hidden findings do not count in the overview, sensors, or repair hints.
+- **Sensors**: a service device with counters for findings, orphaned and
+  unavailable entities, broken references, possible duplicates, unused
+  automations, low batteries, and the time of the last scan.
+- **Batteries**: new view with all battery entities, lowest values first (low
+  from 20 %).
+- **Integration problems** appear as a card on the overview.
+- **Deep links** into the panel (`?view=…&filter=…`, `?object=…`). Repair hints
+  jump straight to the matching filtered findings list.
+
+#### Changed
+
+- **New detail page** instead of the sidebar, with back navigation, a rebuilt
+  plain-language root-cause diagnosis with a recommendation, and diagnosis for
+  devices, integrations, and automations as well.
+- The panel uses the full width; the logo is shown in the sidebar.
+- The repair hint for broken automations now covers all sources with missing
+  references.
+
 ## 0.2.0 - 2026-10-07
 
 Neu gestaltetes Panel, Befund-Export, Reparaturhinweise und schnellere Scans.
