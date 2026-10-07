@@ -16,6 +16,20 @@ REFERENCE_KEYS = {
 }
 
 
+# Service targets accept these selectors instead of IDs; blueprint inputs are placeholders.
+SELECTOR_VALUES = frozenset({"all", "none"})
+
+
+def _is_concrete_id(reference: Any) -> bool:
+    """Return whether a value names one object instead of a selector or template."""
+    return (
+        isinstance(reference, str)
+        and reference not in SELECTOR_VALUES
+        and "{{" not in reference
+        and not reference.startswith("!input")
+    )
+
+
 def json_safe(value: Any) -> Any:
     """Convert runtime configuration values to JSON-safe diagnostic data."""
     if value is None or isinstance(value, (bool, int, float, str)):
@@ -57,7 +71,7 @@ def extract_references(config: Mapping[str, Any] | None) -> list[dict[str, str]]
                 if kind:
                     values = child if isinstance(child, list) else [child]
                     for reference in values:
-                        if not isinstance(reference, str) or "{{" in reference:
+                        if not _is_concrete_id(reference):
                             continue
                         marker = (kind, reference, child_path)
                         if marker not in seen:

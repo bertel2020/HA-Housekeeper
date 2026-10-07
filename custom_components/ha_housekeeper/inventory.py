@@ -8,21 +8,11 @@ from datetime import UTC, datetime
 from typing import Any
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import (
-    area_registry as ar,
-)
-from homeassistant.helpers import (
-    device_registry as dr,
-)
-from homeassistant.helpers import (
-    entity_registry as er,
-)
-from homeassistant.helpers import (
-    floor_registry as fr,
-)
-from homeassistant.helpers import (
-    label_registry as lr,
-)
+from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import floor_registry as fr
+from homeassistant.helpers import label_registry as lr
 
 from .automation_analysis import (
     missing_references,
@@ -86,6 +76,183 @@ def _entity_status(
     return "active", "state_available"
 
 
+def _entity_item(
+    entry: Any, state: Any, config_entries: dict[str, Any], devices: dict[str, Any]
+) -> dict[str, Any]:
+    """Normalize one entity registry entry together with its live state."""
+    status, reason = _entity_status(entry, state, config_entries, devices)
+    return {
+        "object_type": "entity",
+        "object_id": entry.entity_id,
+        "name": entry.name or entry.original_name or (state.name if state else entry.entity_id),
+        "unique_id": entry.unique_id,
+        "platform": entry.platform,
+        "config_entry_id": entry.config_entry_id,
+        "device_id": entry.device_id,
+        "area_id": entry.area_id,
+        "labels": sorted(entry.labels),
+        "disabled_by": _enum(entry.disabled_by),
+        "hidden_by": _enum(entry.hidden_by),
+        "status": status,
+        "reason": reason,
+        "status_since": None,
+        "status_since_source": "first_housekeeper_observation",
+        "state": state.state if state else None,
+        "attributes": dict(state.attributes) if state else {},
+        "last_changed": _iso(state.last_changed) if state else None,
+        "last_updated": _iso(state.last_updated) if state else None,
+        "created_at": _iso(getattr(entry, "created_at", None)),
+        "modified_at": _iso(getattr(entry, "modified_at", None)),
+    }
+
+
+def _device_item(device: Any, entity_count: int) -> dict[str, Any]:
+    """Normalize one device registry entry."""
+    status = "disabled" if device.disabled_by is not None else "active" if entity_count else "empty"
+    return {
+        "object_type": "device",
+        "object_id": device.id,
+        "name": device.name_by_user or device.name or device.id,
+        "manufacturer": device.manufacturer,
+        "model": device.model,
+        "model_id": getattr(device, "model_id", None),
+        "serial_number": getattr(device, "serial_number", None),
+        "area_id": device.area_id,
+        "config_entry_ids": _device_config_entry_ids(device),
+        "via_device_id": device.via_device_id,
+        "labels": sorted(device.labels),
+        "disabled_by": _enum(device.disabled_by),
+        "status": status,
+        "entity_count": entity_count,
+        "created_at": _iso(getattr(device, "created_at", None)),
+        "modified_at": _iso(getattr(device, "modified_at", None)),
+    }
+
+
+def _area_item(area: Any) -> dict[str, Any]:
+    return {
+        "object_type": "area",
+        "object_id": area.id,
+        "name": area.name,
+        "floor_id": area.floor_id,
+        "labels": sorted(area.labels),
+        "aliases": sorted(area.aliases),
+        "status": "active",
+    }
+
+
+def _floor_item(floor: Any) -> dict[str, Any]:
+    return {
+        "object_type": "floor",
+        "object_id": floor.floor_id,
+        "name": floor.name,
+        "level": floor.level,
+        "aliases": sorted(floor.aliases),
+        "status": "active",
+    }
+
+
+def _label_item(label: Any) -> dict[str, Any]:
+    return {
+        "object_type": "label",
+        "object_id": label.label_id,
+        "name": label.name,
+        "description": label.description,
+        "color": label.color,
+        "status": "active",
+    }
+
+
+def _config_entry_item(entry: Any) -> dict[str, Any]:
+    state = _enum(entry.state)
+    status = "disabled" if entry.disabled_by else "active" if state == "loaded" else "problem"
+    return {
+        "object_type": "config_entry",
+        "object_id": entry.entry_id,
+        "name": entry.title,
+        "domain": entry.domain,
+        "source": entry.source,
+        "state": state,
+        "disabled_by": _enum(entry.disabled_by),
+        "status": status,
+    }
+
+
+def _fallback_automation_item(state: Any) -> dict[str, Any]:
+    """Describe an automation only known through its state object."""
+    attrs = state.attributes
+    return {
+        "object_type": "automation",
+        "object_id": state.entity_id,
+        "name": attrs.get("friendly_name", state.entity_id),
+        "automation_id": attrs.get("id"),
+        "mode": attrs.get("mode"),
+        "current": attrs.get("current", 0),
+        "max": attrs.get("max"),
+        "last_triggered": _iso(attrs.get("last_triggered")),
+        "status": "active" if state.state == "on" else "disabled",
+        "state": state.state,
+        "source": "state_fallback",
+        "description": "",
+        "triggers": [],
+        "conditions": [],
+        "actions": [],
+        "trigger_count": 0,
+        "condition_count": 0,
+        "action_count": 0,
+        "references": [],
+    }
+
+
+def _entity_findings(entities: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Create findings for entities that need attention."""
+    return [
+        {
+            "rule_id": f"entity.{item['reason']}",
+            "object_id": item["object_id"],
+            "classification": item["status"],
+            "confidence": 0.98 if item["reason"] == "config_entry_missing" else 0.75,
+            "first_detected_at": item["status_since"],
+            "evidence": [{"kind": item["reason"], "source": "entity_registry"}],
+        }
+        for item in entities
+        if item["status"] in {"orphaned", "unavailable"}
+    ]
+
+
+def _structure_edges(
+    entities: list[dict[str, Any]],
+    devices: list[dict[str, Any]],
+    areas: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Create registry-derived dependency edges."""
+    edges: list[dict[str, str]] = []
+    for entity in entities:
+        entity_key = f"entity:{entity['object_id']}"
+        if entity["device_id"]:
+            edges.append(_edge(f"device:{entity['device_id']}", entity_key, "PROVIDES"))
+        if entity["config_entry_id"]:
+            edges.append(_edge(f"config_entry:{entity['config_entry_id']}", entity_key, "PROVIDES"))
+        if entity["area_id"]:
+            edges.append(_edge(f"area:{entity['area_id']}", entity_key, "CONTAINS"))
+    for device in devices:
+        device_key = f"device:{device['object_id']}"
+        edges.extend(
+            _edge(f"config_entry:{entry_id}", device_key, "OWNS")
+            for entry_id in device["config_entry_ids"]
+        )
+        if device["via_device_id"]:
+            edges.append(_edge(f"device:{device['via_device_id']}", device_key, "VIA_DEVICE"))
+        if device["area_id"]:
+            edges.append(_edge(f"area:{device['area_id']}", device_key, "CONTAINS"))
+    edges.extend(
+        _edge(f"floor:{area['floor_id']}", f"area:{area['object_id']}", "CONTAINS")
+        for area in areas
+        if area["floor_id"]
+    )
+    return edges
+
+
 class InventoryScanner:
     """Build and cache a normalized, read-only inventory."""
 
@@ -136,166 +303,32 @@ class InventoryScanner:
         label_registry = lr.async_get(self.hass)
         config_entries = self.hass.config_entries.async_entries()
         config_entries_by_id = {entry.entry_id: entry for entry in config_entries}
-        entity_entries = _registry_entries(entity_registry.entities)
         device_entries = _registry_entries(device_registry.devices)
-        area_entries = _registry_entries(area_registry.areas)
-        floor_entries = _registry_entries(floor_registry.floors)
-        label_entries = _registry_entries(label_registry.labels)
         devices_by_id = {device.id: device for device in device_entries}
         observed_at = datetime.now(UTC)
 
-        entities: list[dict[str, Any]] = []
-        classifications: dict[str, str] = {}
-        edges: list[dict[str, str]] = []
-
-        for entry in entity_entries:
-            state = self.hass.states.get(entry.entity_id)
-            status, reason = _entity_status(entry, state, config_entries_by_id, devices_by_id)
-            classifications[f"entity:{entry.entity_id}"] = status
-            item = {
-                "object_type": "entity",
-                "object_id": entry.entity_id,
-                "name": entry.name
-                or entry.original_name
-                or (state.name if state else entry.entity_id),
-                "unique_id": entry.unique_id,
-                "platform": entry.platform,
-                "config_entry_id": entry.config_entry_id,
-                "device_id": entry.device_id,
-                "area_id": entry.area_id,
-                "labels": sorted(entry.labels),
-                "disabled_by": _enum(entry.disabled_by),
-                "hidden_by": _enum(entry.hidden_by),
-                "status": status,
-                "reason": reason,
-                "status_since": None,
-                "status_since_source": "first_housekeeper_observation",
-                "state": state.state if state else None,
-                "attributes": dict(state.attributes) if state else {},
-                "last_changed": _iso(state.last_changed) if state else None,
-                "last_updated": _iso(state.last_updated) if state else None,
-                "created_at": _iso(getattr(entry, "created_at", None)),
-                "modified_at": _iso(getattr(entry, "modified_at", None)),
-            }
-            entities.append(item)
-            if entry.device_id:
-                edges.append(
-                    _edge(f"device:{entry.device_id}", f"entity:{entry.entity_id}", "PROVIDES")
-                )
-            if entry.config_entry_id:
-                edges.append(
-                    _edge(
-                        f"config_entry:{entry.config_entry_id}",
-                        f"entity:{entry.entity_id}",
-                        "PROVIDES",
-                    )
-                )
-
+        entities = [
+            _entity_item(
+                entry, self.hass.states.get(entry.entity_id), config_entries_by_id, devices_by_id
+            )
+            for entry in _registry_entries(entity_registry.entities)
+        ]
         self.status.update(phase="devices", progress=30)
 
-        await self.observations.async_update(classifications, observed_at)
+        await self.observations.async_update(
+            {f"entity:{item['object_id']}": item["status"] for item in entities}, observed_at
+        )
         for item in entities:
             item["status_since"] = self.observations.since(
                 f"entity:{item['object_id']}", item["status"]
             )
 
         entity_counts = Counter(item["device_id"] for item in entities if item["device_id"])
-        devices: list[dict[str, Any]] = []
-        for device in device_entries:
-            entity_count = entity_counts[device.id]
-            device_config_entry_ids = _device_config_entry_ids(device)
-            status = (
-                "disabled"
-                if device.disabled_by is not None
-                else ("empty" if not entity_count else "active")
-            )
-            devices.append(
-                {
-                    "object_type": "device",
-                    "object_id": device.id,
-                    "name": device.name_by_user or device.name or device.id,
-                    "manufacturer": device.manufacturer,
-                    "model": device.model,
-                    "model_id": getattr(device, "model_id", None),
-                    "serial_number": getattr(device, "serial_number", None),
-                    "area_id": device.area_id,
-                    "config_entry_ids": device_config_entry_ids,
-                    "via_device_id": device.via_device_id,
-                    "labels": sorted(device.labels),
-                    "disabled_by": _enum(device.disabled_by),
-                    "status": status,
-                    "entity_count": entity_count,
-                    "created_at": _iso(getattr(device, "created_at", None)),
-                    "modified_at": _iso(getattr(device, "modified_at", None)),
-                }
-            )
-            for config_entry_id in device_config_entry_ids:
-                edges.append(
-                    _edge(f"config_entry:{config_entry_id}", f"device:{device.id}", "OWNS")
-                )
-            if device.via_device_id:
-                edges.append(
-                    _edge(f"device:{device.via_device_id}", f"device:{device.id}", "VIA_DEVICE")
-                )
-
-        areas = [
-            {
-                "object_type": "area",
-                "object_id": area.id,
-                "name": area.name,
-                "floor_id": area.floor_id,
-                "labels": sorted(area.labels),
-                "aliases": sorted(area.aliases),
-                "status": "active",
-            }
-            for area in area_entries
-        ]
-
-        floors = [
-            {
-                "object_type": "floor",
-                "object_id": floor.floor_id,
-                "name": floor.name,
-                "level": floor.level,
-                "aliases": sorted(floor.aliases),
-                "status": "active",
-            }
-            for floor in floor_entries
-        ]
-
-        labels = [
-            {
-                "object_type": "label",
-                "object_id": label.label_id,
-                "name": label.name,
-                "description": label.description,
-                "color": label.color,
-                "status": "active",
-            }
-            for label in label_entries
-        ]
-
-        for area in areas:
-            if area["floor_id"]:
-                edges.append(
-                    _edge(f"floor:{area['floor_id']}", f"area:{area['object_id']}", "CONTAINS")
-                )
-
-        integrations = [
-            {
-                "object_type": "config_entry",
-                "object_id": entry.entry_id,
-                "name": entry.title,
-                "domain": entry.domain,
-                "source": entry.source,
-                "state": _enum(entry.state),
-                "disabled_by": _enum(entry.disabled_by),
-                "status": "disabled"
-                if entry.disabled_by
-                else ("active" if _enum(entry.state) == "loaded" else "problem"),
-            }
-            for entry in config_entries
-        ]
+        devices = [_device_item(device, entity_counts[device.id]) for device in device_entries]
+        areas = [_area_item(area) for area in _registry_entries(area_registry.areas)]
+        floors = [_floor_item(floor) for floor in _registry_entries(floor_registry.floors)]
+        labels = [_label_item(label) for label in _registry_entries(label_registry.labels)]
+        integrations = [_config_entry_item(entry) for entry in config_entries]
 
         self.status.update(phase="automations", progress=60)
         automations, automation_edges, automation_findings = self._automation_inventory(
@@ -305,64 +338,16 @@ class InventoryScanner:
             floor_registry,
             label_registry,
         )
-        edges.extend(automation_edges)
-
         known_automation_ids = {item["object_id"] for item in automations}
-        for state in self.hass.states.async_all("automation"):
-            if state.entity_id in known_automation_ids:
-                continue
-            attrs = state.attributes
-            automations.append(
-                {
-                    "object_type": "automation",
-                    "object_id": state.entity_id,
-                    "name": attrs.get("friendly_name", state.entity_id),
-                    "automation_id": attrs.get("id"),
-                    "mode": attrs.get("mode"),
-                    "current": attrs.get("current", 0),
-                    "max": attrs.get("max"),
-                    "last_triggered": _iso(attrs.get("last_triggered")),
-                    "status": "active" if state.state == "on" else "disabled",
-                    "state": state.state,
-                    "source": "state_fallback",
-                    "description": "",
-                    "triggers": [],
-                    "conditions": [],
-                    "actions": [],
-                    "trigger_count": 0,
-                    "condition_count": 0,
-                    "action_count": 0,
-                    "references": [],
-                }
-            )
+        automations.extend(
+            _fallback_automation_item(state)
+            for state in self.hass.states.async_all("automation")
+            if state.entity_id not in known_automation_ids
+        )
 
-        for item in entities:
-            if item["area_id"]:
-                edges.append(
-                    _edge(f"area:{item['area_id']}", f"entity:{item['object_id']}", "CONTAINS")
-                )
-        for item in devices:
-            if item["area_id"]:
-                edges.append(
-                    _edge(f"area:{item['area_id']}", f"device:{item['object_id']}", "CONTAINS")
-                )
-
+        edges = _structure_edges(entities, devices, areas) + automation_edges
         objects = entities + devices + integrations + areas + floors + labels + automations
-        status_counts = Counter(item["status"] for item in objects)
-        type_counts = Counter(item["object_type"] for item in objects)
-        findings = [
-            {
-                "rule_id": f"entity.{item['reason']}",
-                "object_id": item["object_id"],
-                "classification": item["status"],
-                "confidence": 0.98 if item["reason"] == "config_entry_missing" else 0.75,
-                "first_detected_at": item["status_since"],
-                "evidence": [{"kind": item["reason"], "source": "entity_registry"}],
-            }
-            for item in entities
-            if item["status"] in {"orphaned", "unavailable"}
-        ]
-        findings.extend(automation_findings)
+        findings = _entity_findings(entities) + automation_findings
 
         self.status.update(phase="finalizing", progress=90)
 
@@ -371,8 +356,8 @@ class InventoryScanner:
                 "scanned_at": observed_at.isoformat(),
                 "read_only": True,
                 "object_count": len(objects),
-                "status_counts": dict(status_counts),
-                "type_counts": dict(type_counts),
+                "status_counts": dict(Counter(item["status"] for item in objects)),
+                "type_counts": dict(Counter(item["object_type"] for item in objects)),
             },
             "objects": objects,
             "edges": edges,

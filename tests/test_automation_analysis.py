@@ -100,3 +100,16 @@ def test_template_reference_is_left_to_home_assistant_runtime_extraction() -> No
         {"actions": [{"target": {"entity_id": "{{ states('input_text.target') }}"}}]}
     )
     assert references == []
+
+
+def test_selector_values_and_blueprint_inputs_are_not_references() -> None:
+    references = analysis.extract_references(
+        {
+            "actions": [
+                {"target": {"entity_id": "all", "area_id": "none", "device_id": "!input device"}},
+                {"target": {"floor_id": "none", "label_id": "all", "entity_id": "light.hall"}},
+            ]
+        }
+    )
+
+    assert [(item["kind"], item["object_id"]) for item in references] == [("entity", "light.hall")]
