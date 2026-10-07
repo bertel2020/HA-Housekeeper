@@ -17,6 +17,7 @@ from .const import (
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DOMAIN,
     FRONTEND_URL,
+    LOGO_URL,
     PANEL_ELEMENT,
     PANEL_URL,
 )
@@ -54,7 +55,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     frontend_dir = Path(__file__).parent / "frontend"
     if not hass.data[DOMAIN].get("static_path_registered"):
         await hass.http.async_register_static_paths(
-            [StaticPathConfig(FRONTEND_URL, str(frontend_dir / "ha-housekeeper-panel.js"), False)]
+            [
+                StaticPathConfig(
+                    FRONTEND_URL, str(frontend_dir / "ha-housekeeper-panel.js"), False
+                ),
+                StaticPathConfig(LOGO_URL, str(Path(__file__).parent / "brand" / "logo.png"), True),
+            ]
         )
         hass.data[DOMAIN]["static_path_registered"] = True
     await panel_custom.async_register_panel(

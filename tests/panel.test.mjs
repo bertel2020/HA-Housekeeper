@@ -62,11 +62,63 @@ test("every view renders without throwing and escapes object names", () => {
   }
 });
 
-test("drawer renders for an orphaned entity", () => {
+test("detail page renders for an orphaned entity and escapes the name", () => {
   const { el, shadow } = panel();
   el.selected = DATA.objects[0];
   el.render();
   assert.ok(shadow.innerHTML.includes("&lt;img src=x"));
+  assert.ok(!shadow.innerHTML.includes("<img src=x"));
+  assert.ok(shadow.innerHTML.includes('data-action="back"'));
+});
+
+test("navigation keeps a trail and goes back", () => {
+  const { el } = panel();
+  el.selected = DATA.objects[0];
+  el.trail = [];
+  el.openObject(DATA.objects[1]);
+  assert.equal(el.trail.length, 1);
+  el.goBack();
+  assert.equal(el.selected, DATA.objects[0]);
+  el.goBack();
+  assert.equal(el.selected, null);
+});
+
+function diagnoseWith(extra, entityOverrides) {
+  const { el } = panel();
+  el.data = { ...DATA, objects: [...DATA.objects, ...extra] };
+  const entity = { object_type: "entity", object_id: "light.x", name: "X", status: "unavailable", reason: "state_unavailable",
+    state: "unavailable", config_entry_id: "e1", device_id: "d1", ...entityOverrides };
+  return el.diagnose(entity);
+}
+const ENTRY = { object_type: "config_entry", object_id: "e1", name: "Hue", status: "active", state: "loaded" };
+const DEVICE = { object_type: "device", object_id: "d1", name: "Lampe", status: "active" };
+
+test("unavailable with healthy integration and device blames reachability", () => {
+  const d = diagnoseWith([ENTRY, DEVICE], {});
+  assert.deepEqual(Array.from(d.rows.map(r => r.tone)), ["ok", "ok", "red"]);
+  assert.ok(d.cause.includes("nicht erreichbar") || d.cause.includes("unreachable"));
+  assert.ok(d.hint);
+});
+
+test("unavailable with a failed integration blames the integration", () => {
+  const d = diagnoseWith([{ ...ENTRY, state: "setup_error", status: "problem" }, DEVICE], {});
+  assert.equal(d.rows[0].tone, "red");
+  assert.ok(d.cause.includes("unavailable") || d.cause.includes("not loaded") || d.cause.includes("nicht geladen"));
+  assert.ok(!d.cause.includes("nicht erreichbar"));
+});
+
+test("missing device and disabled entity are explained without alarm", () => {
+  assert.equal(diagnoseWith([ENTRY], { reason: "device_missing", status: "orphaned", state: null }).rows[1].tone, "red");
+  const off = diagnoseWith([ENTRY, DEVICE], { reason: "entity_disabled", status: "disabled", state: null, disabled_by: "user" });
+  assert.ok(off.rows.every(r => r.tone !== "red"));
+});
+
+test("automation diagnosis lists missing references", () => {
+  const { el } = panel();
+  const d = el.diagnose(DATA.objects[2]);
+  assert.equal(d.tone, "red");
+  assert.equal(d.rows[0].tone, "red");
+  assert.ok(d.rows[0].value.includes("actions[0]"));
 });
 
 test("haPath builds Home Assistant paths", () => {

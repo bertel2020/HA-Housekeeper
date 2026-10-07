@@ -413,6 +413,7 @@ class InventoryScanner:
             "meta": {
                 "scanned_at": observed_at.isoformat(),
                 "read_only": True,
+                "min_unavailable_days": self.min_unavailable_days,
                 "object_count": len(objects),
                 "status_counts": dict(Counter(item["status"] for item in objects)),
                 "type_counts": dict(Counter(item["object_type"] for item in objects)),

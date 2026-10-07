@@ -44,6 +44,37 @@ const TEXT = {
     PROVIDES: "stellt bereit", OWNS: "besitzt", CONTAINS: "enthält", VIA_DEVICE: "über Gerät",
     TRIGGERS_ON: "löst aus durch", USES_AS_CONDITION: "prüft als Bedingung", TARGETS: "steuert", REFERENCES: "verweist auf",
     runtimeState: "Laufzeit-Zustand", usedBy: "verwendet von",
+    backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
+    available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
+    belowThreshold: "Noch kein Befund: nicht verfügbare Entities werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
+    moreItems: "und {count} weitere", automationOff: "Automation ist ausgeschaltet", refsResolved: "Alle Referenzen aufgelöst", entities: "Entities",
+    cs_loaded: "Geladen", cs_setup_error: "Fehler beim Einrichten", cs_setup_retry: "Einrichtung wird wiederholt", cs_not_loaded: "Nicht geladen",
+    cs_migration_error: "Fehler bei der Migration", cs_failed_unload: "Entladen fehlgeschlagen", cs_setup_in_progress: "Wird eingerichtet",
+    missing_entity: "Entity", missing_device: "Gerät", missing_area: "Bereich", missing_floor: "Etage", missing_label: "Label",
+    cause_ok: "Integration, Gerät und Zustand sind in Ordnung. Hier ist nichts zu tun.",
+    cause_entity_disabled: "Die Entity wurde deaktiviert und besitzt deshalb keinen Zustand. Das ist kein Fehler.",
+    cause_device_disabled: "Das zugehörige Gerät ist deaktiviert, daher liefert die Entity keinen Zustand. Das ist kein Fehler.",
+    cause_integration_disabled: "Die zugehörige Integration ist deaktiviert, daher liefert die Entity keinen Zustand. Das ist kein Fehler.",
+    cause_device_missing: "Die Entity verweist auf ein Gerät, das nicht mehr in der Geräte-Registry existiert. Der Registry-Eintrag ist sehr wahrscheinlich ein Überbleibsel.",
+    cause_config_entry_missing: "Die Integration, zu der die Entity gehört, wurde entfernt. Der Registry-Eintrag ist verwaist.",
+    cause_state_missing: "Die Entity ist registriert, aber die Integration stellt sie nicht mehr bereit. Typisch nach dem Umbau einer Integration, geänderter unique_id oder entferntem Gerät.",
+    cause_state_missing_integration: "Die Integration ist nicht geladen ({state}). Deshalb fehlt der Zustand der Entity.",
+    cause_state_unavailable: "Integration und Gerät sind vorhanden, aber die Integration meldet die Entity als nicht verfügbar. Meist ist das Gerät oder der Dienst nicht erreichbar, etwa ausgeschaltet, ohne Netzwerk oder Cloud-Ausfall.",
+    cause_state_unavailable_integration: "Die Integration ist nicht geladen ({state}). Ihre Entities sind deshalb nicht verfügbar.",
+    cause_state_unknown: "Die Integration hat bisher keinen Wert geliefert. Das ist nach einem Neustart oder bei selten aktualisierten Entities normal.",
+    hint_state_unavailable: "Gerät oder Dienst auf Erreichbarkeit prüfen. Ist es erreichbar, die Integration neu laden.",
+    hint_integration: "In den Integrationen die Fehlermeldung der Integration prüfen und sie neu laden.",
+    hint_state_unknown: "Abwarten. Bleibt der Zustand dauerhaft unbekannt, die Integration prüfen.",
+    hint_orphan: "Vor dem Entfernen unter Beziehungen prüfen, ob Automationen oder andere Objekte die Entity noch verwenden.",
+    cause_device_active: "Das Gerät ist aktiv und stellt Entities bereit.",
+    cause_device_empty: "Dem Gerät ist keine Entity zugeordnet. Möglicherweise ist es ein Überbleibsel.",
+    cause_device_off: "Das Gerät ist deaktiviert. Das ist kein Fehler.",
+    cause_entry_ok: "Die Integration ist geladen.",
+    cause_entry_problem: "Die Integration ist nicht geladen ({state}). Ihre Entities sind deshalb nicht verfügbar.",
+    cause_entry_off: "Die Integration ist deaktiviert. Das ist kein Fehler.",
+    cause_automation_ok: "Alle Referenzen der Automation zeigen auf vorhandene Objekte.",
+    cause_automation_broken: "{count} Referenz(en) zeigen auf Objekte, die nicht mehr existieren. Die Automation läuft an diesen Stellen ins Leere.",
+    hint_automation_broken: "Die fehlenden Referenzen in der Automation ersetzen oder entfernen.",
   },
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
@@ -90,6 +121,37 @@ const TEXT = {
     PROVIDES: "provides", OWNS: "owns", CONTAINS: "contains", VIA_DEVICE: "via device",
     TRIGGERS_ON: "triggers on", USES_AS_CONDITION: "checks as condition", TARGETS: "targets", REFERENCES: "references",
     runtimeState: "Runtime state", usedBy: "used by",
+    backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
+    available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
+    belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
+    moreItems: "and {count} more", automationOff: "Automation is turned off", refsResolved: "All references resolved", entities: "Entities",
+    cs_loaded: "Loaded", cs_setup_error: "Setup error", cs_setup_retry: "Retrying setup", cs_not_loaded: "Not loaded",
+    cs_migration_error: "Migration error", cs_failed_unload: "Unload failed", cs_setup_in_progress: "Setting up",
+    missing_entity: "Entity", missing_device: "Device", missing_area: "Area", missing_floor: "Floor", missing_label: "Label",
+    cause_ok: "Integration, device and state are fine. Nothing to do here.",
+    cause_entity_disabled: "The entity was disabled and therefore has no state. This is not an error.",
+    cause_device_disabled: "The related device is disabled, so the entity provides no state. This is not an error.",
+    cause_integration_disabled: "The related integration is disabled, so the entity provides no state. This is not an error.",
+    cause_device_missing: "The entity points to a device that no longer exists in the device registry. The registry entry is very likely a leftover.",
+    cause_config_entry_missing: "The integration this entity belongs to was removed. The registry entry is orphaned.",
+    cause_state_missing: "The entity is registered, but the integration no longer provides it. Typical after an integration rework, a changed unique_id or a removed device.",
+    cause_state_missing_integration: "The integration is not loaded ({state}), which is why the entity has no state.",
+    cause_state_unavailable: "Integration and device exist, but the integration reports the entity as unavailable. Usually the device or service is unreachable, for example powered off, offline or a cloud outage.",
+    cause_state_unavailable_integration: "The integration is not loaded ({state}), so its entities are unavailable.",
+    cause_state_unknown: "The integration has not delivered a value yet. This is normal after a restart or for rarely updated entities.",
+    hint_state_unavailable: "Check whether the device or service is reachable. If it is, reload the integration.",
+    hint_integration: "Check the integration's error message under integrations and reload it.",
+    hint_state_unknown: "Wait. If the state stays unknown permanently, check the integration.",
+    hint_orphan: "Before removing it, check under relationships whether automations or other objects still use the entity.",
+    cause_device_active: "The device is active and provides entities.",
+    cause_device_empty: "No entity is assigned to the device. It may be a leftover.",
+    cause_device_off: "The device is disabled. This is not an error.",
+    cause_entry_ok: "The integration is loaded.",
+    cause_entry_problem: "The integration is not loaded ({state}), so its entities are unavailable.",
+    cause_entry_off: "The integration is disabled. This is not an error.",
+    cause_automation_ok: "All references of the automation point to existing objects.",
+    cause_automation_broken: "{count} reference(s) point to objects that no longer exist. The automation runs into nothing at these places.",
+    hint_automation_broken: "Replace or remove the missing references in the automation.",
   },
 };
 
@@ -124,6 +186,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.findingFilter = "";
     this.sort = "name";
     this.selected = null;
+    this.trail = [];
     this.graphSelected = null;
     this.details = new Map();
     this.detailLoading = false;
@@ -145,7 +208,10 @@ class HAHousekeeperPanel extends HTMLElement {
   connectedCallback() { this.render(); }
 
   get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
-  t(key) { return TEXT[this.lang][key] || TEXT.en[key] || key; }
+  t(key, vars) {
+    const text = TEXT[this.lang][key] || TEXT.en[key] || key;
+    return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
+  }
   esc(value) {
     return String(value ?? "—").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
   }
@@ -195,11 +261,13 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   async openObject(obj) {
+    if (this.selected && this.selected !== obj) this.trail.push(this.selected);
     this.selected = obj;
     const key = this.objectKey(obj);
-    if (this.details.has(key)) { this.render(); return; }
+    if (this.details.has(key)) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
     this.detailLoading = true;
     this.render();
+    this.scrollIntoView?.({ block: "start" });
     try {
       this.details.set(key, await this._hass.callWS({
         type: "ha_housekeeper/detail", object_type: obj.object_type, object_id: obj.object_id,
@@ -208,6 +276,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.detailLoading = false;
     if (this.selected === obj) this.render();
   }
+
+  goBack() { this.selected = this.trail.pop() || null; this.render(); }
 
   statusLabel(status) { return this.t(status); }
   objectKey(item) { return `${item.object_type}:${item.object_id}`; }
@@ -259,9 +329,9 @@ class HAHousekeeperPanel extends HTMLElement {
       :host{--hk-blue:var(--primary-color,#0789cf);--hk-surface:var(--card-background-color,#fff);--hk-bg:var(--primary-background-color,#f4f6f9);--hk-soft:var(--secondary-background-color,#f6f8fa);--hk-text:var(--primary-text-color,#17212b);--hk-muted:var(--secondary-text-color,#637281);--hk-border:var(--divider-color,#dde4ea);--hk-green:#1f9d63;--hk-amber:#d68a00;--hk-red:#d94452;--hk-violet:#7a62c9;--hk-gray:#7b8794;display:block;min-height:100%;background:var(--hk-bg);color:var(--hk-text);font-family:var(--paper-font-body1_-_font-family,Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif)}
       *{box-sizing:border-box} button,input,select{font:inherit;color:inherit} button{cursor:pointer} h1,h2,h3,h4,p{margin:0}
       ha-icon{--mdc-icon-size:20px}
-      .shell{max-width:1560px;margin:auto;min-height:100vh;display:grid;grid-template-columns:208px minmax(0,1fr)}
+      .shell{min-height:100vh;display:grid;grid-template-columns:208px minmax(0,1fr)}
       .side{display:flex;flex-direction:column;gap:18px;padding:20px 12px 14px;border-right:1px solid var(--hk-border);background:var(--hk-surface)}
-      .brand{display:flex;align-items:center;gap:10px;padding:0 8px}.brandmark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brand strong{font-weight:600;font-size:15px}.brand small{display:block;color:var(--hk-muted);font-size:10px;margin-top:1px}
+      .brand{display:flex;align-items:center;gap:10px;padding:0 8px}.brandmark{width:40px;height:40px;display:grid;place-items:center;flex:none}.brandmark img{width:40px;height:40px;object-fit:contain}.brandmark ha-icon{display:none}.brandmark.nologo{width:34px;height:34px;border-radius:10px;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brandmark.nologo ha-icon{display:block}.brand strong{font-weight:600;font-size:15px}.brand small{display:block;color:var(--hk-muted);font-size:10px;margin-top:1px}
       .side nav{display:grid;gap:4px}.nav{width:100%;min-height:40px;display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:9px;padding:7px 10px;border:0;border-radius:8px;color:var(--hk-muted);background:transparent;text-align:left}.nav:hover{background:var(--hk-soft)}
       .nav.active{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 12%,transparent);font-weight:600}.nav em{min-width:22px;padding:2px 6px;border-radius:10px;color:var(--hk-muted);background:var(--hk-soft);font-size:10px;font-style:normal;text-align:center}
       .side-foot{margin-top:auto;display:grid;gap:8px;padding:0 8px}.lock{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--hk-green)}.lock ha-icon{--mdc-icon-size:16px}
@@ -301,29 +371,35 @@ class HAHousekeeperPanel extends HTMLElement {
       .branch{margin:0 0 0 22px;padding:6px 0 0 18px;border-left:2px solid var(--hk-border);display:grid;gap:8px}
       .sectionlabel{padding:14px 16px 0;color:var(--hk-muted);font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase}
       .search{padding:14px;border-bottom:1px solid var(--hk-border)}.search input{width:100%}.hits{display:grid;max-height:280px;overflow:auto}.hit{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;padding:9px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left}.hit:hover{background:var(--hk-soft)}.hit .tile{width:30px;height:30px}
-      .drawerback{position:fixed;inset:0;background:#0006;z-index:10}.drawer{position:fixed;right:0;top:0;bottom:0;width:min(640px,94vw);background:var(--hk-surface);z-index:11;box-shadow:-8px 0 30px #0003;overflow:auto}
-      .drawerhead{position:sticky;top:0;z-index:1;background:var(--hk-surface);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px;border-bottom:1px solid var(--hk-border)}.drawerhead .titlerow{display:flex;gap:12px;align-items:center}.drawerhead h2{margin:6px 0 2px;font-size:19px;font-weight:600}
-      .iconbtn{border:0;background:var(--hk-soft);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none}.drawerbody{padding:22px;display:grid;gap:22px}.drawer h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--hk-muted);font-weight:600;margin-bottom:10px}
-      .diag{border:1px solid var(--hk-border);border-radius:12px;padding:14px;background:var(--hk-soft)}.diag.warn{background:color-mix(in srgb,var(--hk-amber) 10%,transparent);border-color:color-mix(in srgb,var(--hk-amber) 35%,transparent)}.diag.red{background:color-mix(in srgb,var(--hk-red) 9%,transparent);border-color:color-mix(in srgb,var(--hk-red) 35%,transparent)}.diag.ok{background:color-mix(in srgb,var(--hk-green) 9%,transparent);border-color:color-mix(in srgb,var(--hk-green) 35%,transparent)}
-      .diag p{font-size:13px;line-height:1.5}.diag small{display:block;margin-top:6px;color:var(--hk-muted);font-size:11px}.checks{display:grid;gap:8px;margin-top:12px}.check{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:9px;background:var(--hk-surface);border:1px solid var(--hk-border);font-size:12px}.check span{color:var(--hk-muted)}
+      .crumbs{display:flex;align-items:center;gap:12px;margin-bottom:14px}.crumbs .trail{color:var(--hk-muted);font-size:12px;text-transform:uppercase;letter-spacing:.07em}
+      .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:22px}.actions{display:flex;flex-wrap:wrap;gap:8px}
+      .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
+      .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:13px}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:11px;font-weight:400}
+      .factnote{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:12px;line-height:1.5}
+      .diagcard{display:grid;gap:12px;padding:16px}.checks{display:grid;gap:8px}
+      .check{display:grid;grid-template-columns:22px minmax(100px,150px) minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:13px}.check b{font-weight:600}.check .val{overflow:hidden;color:var(--hk-muted);text-overflow:ellipsis;white-space:nowrap}
+      .check ha-icon{--mdc-icon-size:20px}.check.ok ha-icon{color:var(--hk-green)}.check.warn ha-icon{color:var(--hk-amber)}.check.red ha-icon{color:var(--hk-red)}.check.mute ha-icon{color:var(--hk-gray)}.check.violet ha-icon{color:var(--hk-violet)}
+      .cause,.hintbox{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft)}.cause strong,.hintbox strong{display:block;margin-bottom:4px;color:var(--hk-muted);font-size:11px;letter-spacing:.07em;text-transform:uppercase}.cause p,.hintbox p{font-size:13px;line-height:1.55}
+      .cause.ok{background:color-mix(in srgb,var(--hk-green) 9%,transparent);border-color:color-mix(in srgb,var(--hk-green) 35%,transparent)}.cause.warn{background:color-mix(in srgb,var(--hk-amber) 10%,transparent);border-color:color-mix(in srgb,var(--hk-amber) 35%,transparent)}.cause.red{background:color-mix(in srgb,var(--hk-red) 9%,transparent);border-color:color-mix(in srgb,var(--hk-red) 35%,transparent)}.cause.violet{background:color-mix(in srgb,var(--hk-violet) 9%,transparent);border-color:color-mix(in srgb,var(--hk-violet) 35%,transparent)}
+      .cause ha-icon{color:var(--hk-muted)}.hintbox ha-icon{color:var(--hk-amber)}.row.rel{grid-template-columns:auto minmax(0,1fr) auto}
       .kv{display:grid;grid-template-columns:155px 1fr;gap:8px 14px;font-size:13px}.kv dt{color:var(--hk-muted)}.kv dd{margin:0;overflow-wrap:anywhere}
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:11px/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:12px;margin:12px 0 6px;color:var(--hk-muted)}
-      @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
-      @media(max-width:860px){.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.side-foot{display:none}.side nav{display:flex}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}}
+      @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
+      @media(max-width:860px){.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.side-foot{display:none}.side nav{display:flex}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       @media(max-width:520px){.summary{grid-template-columns:1fr}}
     </style>`;
   }
 
   render() {
     if (!this.shadowRoot) return;
-    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.heading()}${this.content()}</main></div>${this.drawer()}`;
+    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main></div>`;
     this.bind();
   }
 
   sidebar() {
     const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.length } : {};
-    return `<aside class="side"><div class="brand"><span class="brandmark"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
+    return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
       <nav>${NAV.map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
       <div class="side-foot"><span class="lock"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("readOnly")}</span></div></aside>`;
   }
@@ -468,43 +544,164 @@ class HAHousekeeperPanel extends HTMLElement {
       <div class="path">${origin}<div class="node current">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><small>${this.t(item.object_type)}</small><strong>${this.esc(item.name)}</strong><span class="meta">${this.esc(item.object_id)}</span></span>${this.pill(item.status)}</div>${usage}</div></div>`;
   }
 
-  diagnosisRows(item) {
-    if (item.object_type !== "entity") return "";
-    const row = (label, ok, text) => `<div class="check"><b>${label}</b><span>${this.esc(text)}</span><i class="pill ${ok ? "ok" : "red"}">${ok ? this.t("present") : this.t("missing")}</i></div>`;
-    const rows = [];
-    if (item.config_entry_id) {
-      const entry = this.findObject(`config_entry:${item.config_entry_id}`);
-      rows.push(row(this.t("integration"), !!entry && entry.status !== "disabled", entry ? `${entry.name} · ${entry.disabled_by ? this.t("disabled") : entry.state}` : item.config_entry_id));
+  relTime(value) {
+    if (!value) return "";
+    const diff = (Date.now() - new Date(value).getTime()) / 1000;
+    if (!(diff >= 0)) return "";
+    const rtf = new Intl.RelativeTimeFormat(this.lang, { numeric: "auto" });
+    for (const [unit, secs] of [["day", 86400], ["hour", 3600], ["minute", 60]]) {
+      if (diff >= secs) return rtf.format(-Math.floor(diff / secs), unit);
     }
-    if (item.device_id) {
-      const device = this.findObject(`device:${item.device_id}`);
-      rows.push(row(this.t("device"), !!device && device.status !== "disabled", device ? `${device.name} · ${device.status === "disabled" ? this.t("disabled") : this.t("active")}` : item.device_id));
-    }
-    rows.push(row(this.t("runtimeState"), item.state !== null && item.state !== undefined, item.state ?? this.t("missing")));
-    return `<div class="checks">${rows.join("")}</div>`;
+    return rtf.format(0, "second");
   }
 
-  drawer() {
-    if (!this.selected || !this.data) return "";
-    const item = { ...this.selected, ...(this.details.get(this.objectKey(this.selected)) || {}) };
-    const key = this.objectKey(item), incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
-    const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason"]);
+  check(label, tone, value, badge) { return { label, tone, value, badge }; }
+
+  integrationCheck(entryId) {
+    const entry = this.findObject(`config_entry:${entryId}`), label = this.t("integration");
+    if (!entry) return { row: this.check(label, "red", entryId, this.t("missing")), entry };
+    if (entry.disabled_by) return { row: this.check(label, "mute", entry.name, this.t("disabled")), entry };
+    const state = entry.state || "not_loaded";
+    const tone = state === "loaded" ? "ok" : ["setup_error", "migration_error", "failed_unload"].includes(state) ? "red" : "warn";
+    return { row: this.check(label, tone, entry.name, this.t(`cs_${state}`)), entry, broken: state !== "loaded", state };
+  }
+
+  // Builds the check list and the plain-language cause for one object. Returns null when nothing is worth explaining.
+  diagnose(item) {
+    const t = (k, v) => this.t(k, v);
+    const rows = [];
+    let cause = "", hint = "", tone = this.tone(item.status);
+    if (tone === "blue") tone = "ok";
+
+    if (item.object_type === "entity") {
+      const integ = item.config_entry_id ? this.integrationCheck(item.config_entry_id) : null;
+      if (integ) rows.push(integ.row);
+      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+      if (item.device_id) {
+        rows.push(!device ? this.check(t("device"), "red", item.device_id, t("missing"))
+          : device.status === "disabled" ? this.check(t("device"), "mute", device.name, t("disabled"))
+          : this.check(t("device"), "ok", device.name, t("active")));
+      }
+      if (item.disabled_by) rows.push(this.check(t("entity"), "mute", t("entity_disabled"), t("disabled")));
+      const state = item.state;
+      if (state === null || state === undefined) {
+        rows.push(this.check(t("runtimeState"), item.disabled_by ? "mute" : "red", t("noState"), item.disabled_by ? t("notExpected") : t("missing")));
+      } else if (state === "unavailable") rows.push(this.check(t("runtimeState"), "red", state, t("unavailable")));
+      else if (state === "unknown") rows.push(this.check(t("runtimeState"), "violet", state, t("unknown")));
+      else rows.push(this.check(t("runtimeState"), "ok", state, t("available")));
+
+      const broken = integ?.broken ? { state: t(`cs_${integ.state}`) } : null;
+      switch (item.reason) {
+        case "state_available": cause = t("cause_ok"); break;
+        case "entity_disabled": case "device_disabled": case "integration_disabled": case "device_missing": case "config_entry_missing":
+          cause = t(`cause_${item.reason}`); break;
+        case "state_missing": cause = broken ? t("cause_state_missing_integration", broken) : t("cause_state_missing"); break;
+        case "state_unavailable": cause = broken ? t("cause_state_unavailable_integration", broken) : t("cause_state_unavailable"); break;
+        case "state_unknown": cause = t("cause_state_unknown"); break;
+        default: cause = item.reason ? t(item.reason) : "";
+      }
+      if (item.reason === "state_unavailable") hint = broken ? t("hint_integration") : t("hint_state_unavailable");
+      else if (item.reason === "state_unknown") hint = t("hint_state_unknown");
+      else if (item.reason === "state_missing" && broken) hint = t("hint_integration");
+      else if (["state_missing", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
+    } else if (item.object_type === "device") {
+      const ids = item.config_entry_ids || [];
+      ids.forEach(id => rows.push(this.integrationCheck(id).row));
+      rows.push(this.check(t("entities"), item.entity_count ? "ok" : "warn", this.formatNumber(item.entity_count), item.entity_count ? t("present") : t("empty")));
+      cause = item.status === "disabled" ? t("cause_device_off") : item.status === "empty" ? t("cause_device_empty") : t("cause_device_active");
+    } else if (item.object_type === "config_entry") {
+      const state = item.state || "not_loaded";
+      if (item.disabled_by) { rows.push(this.check(t("status"), "mute", item.name, t("disabled"))); cause = t("cause_entry_off"); }
+      else if (state === "loaded") { rows.push(this.check(t("status"), "ok", item.name, t("cs_loaded"))); cause = t("cause_entry_ok"); }
+      else { rows.push(this.check(t("status"), tone, item.name, t(`cs_${state}`))); cause = t("cause_entry_problem", { state: t(`cs_${state}`) }); hint = t("hint_integration"); }
+    } else if (item.object_type === "automation") {
+      const key = this.objectKey(item);
+      const broken = this.data.findings.filter(f => this.findingKey(f) === key && f.rule_id.startsWith("automation.missing_"));
+      broken.forEach(f => rows.push(this.check(t(f.rule_id.replace("automation.", "")), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
+      if (item.status === "disabled") rows.push(this.check(t("status"), "mute", t("automationOff"), t("disabled")));
+      if (!broken.length) rows.push(this.check(t("dependencies"), "ok", t("refsResolved"), t("present")));
+      cause = broken.length ? t("cause_automation_broken", { count: broken.length }) : t("cause_automation_ok");
+      if (broken.length) { hint = t("hint_automation_broken"); tone = "red"; }
+    } else return null;
+    return { rows, cause, hint, tone };
+  }
+
+  diagnosisCard(item) {
+    const d = this.diagnose(item);
+    if (!d) return "";
+    const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:close-circle", mute: "mdi:minus-circle", violet: "mdi:help-circle" };
+    const rows = d.rows.map(r => `<div class="check ${r.tone}"><ha-icon icon="${icon[r.tone] || icon.ok}"></ha-icon><b>${this.esc(r.label)}</b><span class="val">${this.esc(r.value)}</span><i class="pill ${r.tone}">${this.esc(r.badge)}</i></div>`).join("");
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagnosis")}</h2>${item.reason ? `<p>${this.esc(this.t(item.reason))}</p>` : ""}</div></div>
+      <div class="diagcard"><div class="checks">${rows}</div>
+      ${d.cause ? `<div class="cause ${d.tone}"><ha-icon icon="mdi:text-search"></ha-icon><div><strong>${this.t("causeLabel")}</strong><p>${this.esc(d.cause)}</p></div></div>` : ""}
+      ${d.hint ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><strong>${this.t("hintLabel")}</strong><p>${this.esc(d.hint)}</p></div></div>` : ""}</div></section>`;
+  }
+
+  factsCard(item, key) {
+    const finding = this.data.findings.find(f => this.findingKey(f) === key);
+    const usage = this.data.edges.filter(e => e.target === key && ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"].includes(e.relation)).length;
+    const min = this.data.meta.min_unavailable_days || 0;
+    const facts = [[this.t("status"), this.pill(item.status)]];
+    if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
+    if (item.object_type === "entity" || item.object_type === "automation") {
+      facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
+    }
+    if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
+    const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
+  }
+
+  relationsCard(key) {
+    const USAGE = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"];
+    const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
+    const groups = [
+      [this.t("origin"), incoming.filter(e => !USAGE.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e }))],
+      [this.t("usage"), [
+        ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ other: e.source, label: `${this.t("usedBy")} · ${this.t(e.relation)}`, edge: e })),
+        ...outgoing.map(e => ({ other: e.target, label: this.t(e.relation), edge: e })),
+      ]],
+    ].filter(([, list]) => list.length);
+    const LIMIT = 25;
+    const row = ({ other, label, edge }) => {
+      const obj = this.findObject(other), [type, ...rest] = other.split(":");
+      const note = `${label}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`;
+      const text = `${this.tile(obj?.object_type || type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "red")}<span class="row-text"><strong>${this.esc(obj?.name || rest.join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}`;
+      return obj ? `<button class="row rel" data-object="${this.esc(other)}">${text}</button>` : `<div class="row rel">${text}</div>`;
+    };
+    const body = groups.map(([title, list]) => `<div class="sectionlabel">${title} (${list.length})</div>${list.slice(0, LIMIT).map(row).join("")}${list.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: list.length - LIMIT })}</p>` : ""}`).join("");
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${body || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
+  }
+
+  detail() {
+    const base = this.selected;
+    const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
+    const key = this.objectKey(item);
+    const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
     const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
-    const automation = item.object_type === "automation" && !this.detailLoading ? `<section><h3>${this.t("automationStructure")}</h3>${["triggers", "conditions", "actions"].map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</section>` : "";
-    const missingWarning = item.missing_reference_count ? `<div class="diag red"><p><strong>${this.t("missingReferences")}:</strong> ${item.missing_reference_count}</p></div>` : "";
-    const diagnosis = item.reason ? `<section><h3>${this.t("diagnosis")}</h3><div class="diag ${this.tone(item.status) === "blue" ? "" : this.tone(item.status)}"><p><strong>${this.t("reason")}:</strong> ${this.esc(this.t(item.reason))}</p>${item.status_since ? `<small>${this.t("firstObservation")}: ${this.formatDate(item.status_since)}</small>` : ""}${this.diagnosisRows(item)}</div></section>` : "";
-    const path = this.haPath(item);
-    return `<div class="drawerback" data-action="close"></div><aside class="drawer"><div class="drawerhead"><div class="titlerow">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div>${this.pill(item.status)}<h2>${this.esc(item.name)}</h2><span class="id">${this.esc(item.object_id)}</span></div></div><button class="iconbtn" data-action="close" title="${this.t("close")}"><ha-icon icon="mdi:close"></ha-icon></button></div>
-      <div class="drawerbody">${path ? `<div><button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button></div>` : ""}${diagnosis}${missingWarning}
-      <section><h3>${this.t("registry")}</h3><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></section>${automation}
-      <section><h3>${this.t("dependencies")} (${incoming.length + outgoing.length})</h3><div class="code">${this.esc([...incoming.map(e => `${e.source} → ${e.relation} → ${key}${e.location ? ` @ ${e.location}` : ""}`), ...outgoing.map(e => `${key} → ${e.relation} → ${e.target}${e.location ? ` @ ${e.location}` : ""}`)].join("\n") || "—")}</div></section>${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}${item.attributes && Object.keys(item.attributes).length ? `<section><h3>${this.t("state")}</h3><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></section>` : ""}</div></aside>`;
+    const automation = item.object_type === "automation" && !this.detailLoading
+      ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${["triggers", "conditions", "actions"].map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
+    const attrs = item.attributes && Object.keys(item.attributes).length
+      ? `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>` : "";
+    const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
+    const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
+    return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
+      <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
+      <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
+      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}
+        <section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>
+        ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
+      <div class="stack">${this.factsCard(item, key)}${this.relationsCard(key)}</div></div>`;
   }
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.selected = null; this.render(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.selected = null; this.trail = []; this.render(); });
     root.querySelector("[data-action='scan']")?.addEventListener("click", () => this.load(true));
-    root.querySelectorAll("[data-action='close']").forEach(el => el.onclick = () => { this.selected = null; this.render(); });
+    root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
+    root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
+      const obj = this.findObject(el.dataset.graphOpen);
+      if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
+    });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.view = el.dataset.jump;
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = ""; this.page = 1; }
