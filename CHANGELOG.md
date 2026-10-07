@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.3.1 - 2026-10-07
+
+Korrekturen für HACS und Hassfest sowie ein überarbeiteter Seitenleistenkopf.
+Housekeeper arbeitet weiterhin ausschließlich lesend. Lokal gegen Home
+Assistant 2026.2.3 getestet, zusätzlich in einer laufenden Instanz mit
+Home Assistant 2026.9.4 ausprobiert.
+
+### Geändert
+
+- Das Logo steht in der Seitenleiste jetzt über dem Titel, Schrift größer.
+- Die Integration deklariert `lovelace` als `after_dependencies` und eine
+  Konfigurationsschema-Angabe, wie es Hassfest verlangt.
+- `hacs.json` bereinigt, Repository-Themen ergänzt (HACS-Validierung).
+- README (Deutsch und Englisch) auf den aktuellen Funktionsumfang gebracht.
+
+---
+
+### English
+
+Fixes for HACS and Hassfest plus a reworked sidebar header. Housekeeper remains
+strictly read-only. Tested locally against Home Assistant 2026.2.3 and tried in
+a running instance on Home Assistant 2026.9.4.
+
+#### Changed
+
+- The logo now sits above the title in the sidebar, with larger type.
+- The integration declares `lovelace` as `after_dependencies` and a config
+  schema, as Hassfest requires.
+- `hacs.json` cleaned up, repository topics added (HACS validation).
+- README (German and English) brought up to date with the current feature set.
+
 ## 0.3.0 - 2026-10-07
 
 Mehr Quellen, Scanvergleich und Sensoren. Housekeeper arbeitet weiterhin
