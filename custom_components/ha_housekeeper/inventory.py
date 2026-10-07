@@ -304,6 +304,11 @@ class InventoryScanner:
                 )
                 raise
 
+    @property
+    def snapshot(self) -> dict[str, Any] | None:
+        """Return the latest snapshot without triggering a scan."""
+        return self._snapshot
+
     async def async_get_snapshot(self) -> dict[str, Any]:
         """Return the latest snapshot, scanning on first access."""
         if self._snapshot is None:

@@ -128,3 +128,31 @@ async def test_scan_payload_omits_attributes_but_details_are_available(hass: Hom
         "attributes": {"unit_of_measurement": "W"}
     }
     assert scanner.get_details("entity", "sensor.unknown") is None
+
+
+async def test_diagnostics_exports_only_aggregates(hass: HomeAssistant) -> None:
+    """The diagnostics download contains counts but no names or entity IDs."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
+
+    entry = er.async_get(hass).async_get_or_create(
+        domain="sensor", platform="test", unique_id="diag-1", suggested_object_id="secret_name"
+    )
+    scanner = InventoryScanner(hass)
+    hass.data.setdefault(DOMAIN, {})["scanner"] = scanner
+    await scanner.async_scan()
+
+    config_entry = MockConfigEntry(domain=DOMAIN)
+    result = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert result["loaded"] is True
+    assert result["meta"]["object_count"] >= 1
+    assert sum(result["findings_by_rule"].values()) == 1
+    assert entry.entity_id not in repr(result)
+    assert "secret_name" not in repr(result)
+
+    hass.data[DOMAIN].pop("scanner")
+    assert (await async_get_config_entry_diagnostics(hass, config_entry))["loaded"] is False
