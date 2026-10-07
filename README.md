@@ -88,6 +88,15 @@ Für jede durchgehend beobachtete Klassifikation speichert Housekeeper, wann sie
 
 Die Ansicht **Änderungen** vergleicht den aktuellen Stand mit dem Scan davor oder mit dem letzten Scan der vergangenen sieben Tage: Statuswechsel (verschlechtert zuerst), neue und behobene Befunde sowie neue und entfernte Objekte. Der Verlauf wird kompakt in Home Assistant gespeichert und enthält nur Status und IDs.
 
+### Weitere Ansichten und Quellen
+
+- **Befunde ausblenden**: Ein Befund lässt sich auf der Detailseite ausblenden (nur in Housekeepers eigener Liste, Home Assistant bleibt unverändert). Alternativ blendet das Label `housekeeper_ignore` an einer Entity alle ihre Befunde aus. Ausgeblendete Befunde zählen nicht in Übersicht, Sensoren und Reparaturhinweisen und lassen sich über **Ausgeblendete anzeigen** wieder einblenden.
+- **Sensoren**: Housekeeper legt ein Dienstgerät mit Zählern an (Befunde, verwaiste und nicht verfügbare Entities, defekte Referenzen, mögliche Duplikate, ungenutzte Automationen, schwache Batterien, letzter Scan), nutzbar in Dashboards und Automationen.
+- **Batterien**: Eigene Ansicht mit allen Batterie-Entities, niedrigste Werte zuerst (niedrig ab 20 %).
+- **Integrationen mit Problemen** erscheinen auf der Übersicht.
+- **Weitere Referenzquellen**: Gruppen (Mitglieder) und Helfer wie Template, Ableitung oder Min/Max-Sensor (Quell-Entities) werden in Abhängigkeiten und Auswirkungsanalyse berücksichtigt; fehlende Mitglieder und Quellen werden als Befund gemeldet.
+- **Deep-Links**: Das Panel unterstützt Adressen wie `/ha-housekeeper?view=findingsNav&filter=orphaned` oder `?object=entity:sensor.x`; die Reparaturhinweise nutzen sie.
+
 ### Abhängigkeitsansicht
 
 Die Abhängigkeitsansicht stellt direkte Beziehungen dar, zum Beispiel:

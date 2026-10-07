@@ -66,6 +66,11 @@ const TEXT = {
     INCLUDES: "hat als Mitglied", missing_member: "Gruppenmitglied",
     cause_group_broken: "Die Gruppe enthält {count} Mitglied(er), die nicht mehr existieren.", hint_group_broken: "Die Gruppe bearbeiten und die fehlenden Mitglieder entfernen.",
     cause_helper_broken: "Dieser Helfer baut auf {count} Entity/Entities auf, die nicht mehr existieren.", hint_helper_broken: "Den Helfer bearbeiten und die fehlenden Quellen ersetzen.",
+    hideFinding: "Befund ausblenden", showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
+    ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
+    batteries: "Batterien", batteriesSubtitle: "Batterie-Entities, die niedrigsten Werte zuerst.", batteryLow: "Niedrig", batteryAll: "Alle",
+    noBatteries: "Keine Batterie-Entities gefunden.", batteryLevel: "Ladestand", integrationProblems: "Integrationen mit Problemen",
+    integrationProblemsHint: "Diese Integrationen sind nicht geladen. Ihre Entities sind nicht verfügbar.",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
     available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: nicht verfügbare Entities werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
@@ -165,6 +170,11 @@ const TEXT = {
     INCLUDES: "has as member", missing_member: "Group member",
     cause_group_broken: "The group contains {count} member(s) that no longer exist.", hint_group_broken: "Edit the group and remove the missing members.",
     cause_helper_broken: "This helper builds on {count} entity/entities that no longer exist.", hint_helper_broken: "Edit the helper and replace the missing sources.",
+    hideFinding: "Hide finding", showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
+    ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
+    batteries: "Batteries", batteriesSubtitle: "Battery entities, lowest values first.", batteryLow: "Low", batteryAll: "All",
+    noBatteries: "No battery entities found.", batteryLevel: "Level", integrationProblems: "Integrations with problems",
+    integrationProblemsHint: "These integrations are not loaded. Their entities are unavailable.",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
     available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
@@ -212,6 +222,7 @@ const NAV = [
   ["inventory", "mdi:database-outline"],
   ["findingsNav", "mdi:alert-outline"],
   ["changes", "mdi:compare-horizontal"],
+  ["batteries", "mdi:battery-alert-variant-outline"],
   ["graph", "mdi:source-fork"],
 ];
 
@@ -231,6 +242,9 @@ class HAHousekeeperPanel extends HTMLElement {
     this.typeFilter = "";
     this.statusFilter = "";
     this.findingFilter = "";
+    this.showIgnored = false;
+    this.batteryFilter = "low";
+    this._urlApplied = false;
     this.sort = "name";
     this.selected = null;
     this.trail = [];
@@ -255,7 +269,10 @@ class HAHousekeeperPanel extends HTMLElement {
   }
   get hass() { return this._hass; }
 
-  connectedCallback() { this.render(); }
+  connectedCallback() {
+    this._basePath = typeof window === "undefined" ? null : window.location.pathname;
+    this.render();
+  }
 
   get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
   t(key, vars) {
@@ -281,6 +298,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
       this.details = new Map();
       this.compare = null;
+      this.applyUrl();
     } catch (err) {
       this.error = err?.message || String(err);
     } finally {
@@ -353,14 +371,14 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   findingKey(finding) { return `${finding.rule_id.split(".")[0]}:${finding.object_id}`; }
-  sortedFindings() {
-    return [...this.data.findings].sort((a, b) => (b.confidence - a.confidence)
+  sortedFindings(includeIgnored = false) {
+    return this.data.findings.filter(f => includeIgnored || !f.ignored).sort((a, b) => (b.confidence - a.confidence)
       || String(a.object_id).localeCompare(String(b.object_id)));
   }
 
   health() {
     const base = this.data.objects.filter(o => ["entity", "automation", "script", "scene"].includes(o.object_type)).length;
-    const percent = base ? Math.max(0, Math.round(100 * (1 - this.data.findings.length / base))) : 100;
+    const percent = base ? Math.max(0, Math.round(100 * (1 - this.data.findings.filter(f => !f.ignored).length / base))) : 100;
     const tone = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
     return { percent, tone, label };
@@ -450,6 +468,7 @@ class HAHousekeeperPanel extends HTMLElement {
       .cause.ok{background:color-mix(in srgb,var(--hk-green) 9%,transparent);border-color:color-mix(in srgb,var(--hk-green) 35%,transparent)}.cause.warn{background:color-mix(in srgb,var(--hk-amber) 10%,transparent);border-color:color-mix(in srgb,var(--hk-amber) 35%,transparent)}.cause.red{background:color-mix(in srgb,var(--hk-red) 9%,transparent);border-color:color-mix(in srgb,var(--hk-red) 35%,transparent)}.cause.violet{background:color-mix(in srgb,var(--hk-violet) 9%,transparent);border-color:color-mix(in srgb,var(--hk-violet) 35%,transparent)}
       .cause ha-icon{color:var(--hk-muted)}.hintbox ha-icon{color:var(--hk-amber)}.row.rel{grid-template-columns:auto minmax(0,1fr) auto}
       .changesum{grid-template-columns:repeat(5,1fr)}
+      .finding{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:13px}.finding strong{display:block;font-weight:600}.finding small{display:block;margin-top:3px;color:var(--hk-muted);font-size:11px}.row.dim{opacity:.6}
       .kv{display:grid;grid-template-columns:155px 1fr;gap:8px 14px;font-size:13px}.kv dt{color:var(--hk-muted)}.kv dd{margin:0;overflow-wrap:anywhere}
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:11px/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:12px;margin:12px 0 6px;color:var(--hk-muted)}
@@ -463,10 +482,37 @@ class HAHousekeeperPanel extends HTMLElement {
     if (!this.shadowRoot) return;
     this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main></div>`;
     this.bind();
+    if (this.data) this.syncUrl();
+  }
+
+  // Deep links: /ha-housekeeper?view=findingsNav&filter=orphaned or ?object=entity:sensor.x
+  applyUrl() {
+    if (this._urlApplied || typeof window === "undefined" || !this.data) return;
+    this._urlApplied = true;
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view");
+    if (view && NAV.some(([name]) => name === view)) this.view = view;
+    if (params.get("filter")) this.findingFilter = params.get("filter");
+    const obj = this.findObject(params.get("object") || "");
+    if (obj) this.openObject(obj);
+    else if (this.view === "changes" && !this.compare) this.loadCompare();
+  }
+
+  syncUrl() {
+    if (typeof window === "undefined" || !this.isConnected || !window.history?.replaceState) return;
+    if (window.location.pathname !== this._basePath) return; // HA already navigated elsewhere
+    const params = new URLSearchParams();
+    if (this.selected) params.set("object", this.objectKey(this.selected));
+    else {
+      if (this.view !== "overview") params.set("view", this.view);
+      if (this.view === "findingsNav" && this.findingFilter) params.set("filter", this.findingFilter);
+    }
+    const query = params.toString();
+    try { window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "")); } catch (_) { /* ignore */ }
   }
 
   sidebar() {
-    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.length } : {};
+    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
     return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
       <nav>${NAV.map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
       <div class="side-foot"><span class="lock"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("readOnly")}</span></div></aside>`;
@@ -478,6 +524,7 @@ class HAHousekeeperPanel extends HTMLElement {
       inventory: [this.t("objects"), this.t("inventory"), this.t("inventorySubtitle")],
       findingsNav: [this.t("diagnosis"), this.t("findings"), this.t("findingsSubtitle")],
       changes: [this.t("diagnosis"), this.t("changes"), this.t("changesSubtitle")],
+      batteries: [this.t("objects"), this.t("batteries"), this.t("batteriesSubtitle")],
       graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
@@ -492,6 +539,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "inventory") return this.inventory();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
+    if (this.view === "batteries") return this.batteriesView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -508,7 +556,7 @@ class HAHousekeeperPanel extends HTMLElement {
       : finding.affected_object
         ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
         : this.esc(object?.reason ? this.t(object.reason) : this.t(finding.rule_id));
-    return `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+    return `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
   }
 
   overview() {
@@ -526,14 +574,15 @@ class HAHousekeeperPanel extends HTMLElement {
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
       <div class="grid2"><div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>
-      <div class="stack"><div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
+      <div class="stack">${this.integrationProblems()}<div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
       <div class="bar">${order.map(s => `<i class="${this.tone(s)}" style="width:${(100 * counts[s] / total).toFixed(2)}%"></i>`).join("")}</div>
       <div class="legend">${order.map(s => `<div><span><i class="dot ${this.tone(s)}"></i>${this.t(s)}</span><b>${this.formatNumber(counts[s])}</b></div>`).join("")}</div></div>
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
   }
 
   exportRows() {
-    const list = this.findingFilter ? this.sortedFindings().filter(f => f.classification === this.findingFilter) : this.sortedFindings();
+    const all = this.sortedFindings(this.showIgnored);
+    const list = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
     return list.map(f => {
       const key = this.findingKey(f), object = this.findObject(key);
       return {
@@ -601,10 +650,11 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   findingsView() {
-    const all = this.sortedFindings();
+    const all = this.sortedFindings(this.showIgnored);
+    const ignoredCount = this.data.findings.filter(f => f.ignored).length;
     const classes = [...new Set(all.map(f => f.classification))];
     const list = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
-    return `<div class="panel"><div class="chips"><button class="chip ${this.findingFilter ? "" : "active"}" data-finding-filter="">${this.t("all")} (${all.length})</button>${classes.map(c => `<button class="chip ${this.findingFilter === c ? "active" : ""}" data-finding-filter="${this.esc(c)}">${this.t(c)} (${all.filter(f => f.classification === c).length})</button>`).join("")}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    return `<div class="panel"><div class="chips"><button class="chip ${this.findingFilter ? "" : "active"}" data-finding-filter="">${this.t("all")} (${all.length})</button>${classes.map(c => `<button class="chip ${this.findingFilter === c ? "active" : ""}" data-finding-filter="${this.esc(c)}">${this.t(c)} (${all.filter(f => f.classification === c).length})</button>`).join("")}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${list.length ? list.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>`;
   }
 
@@ -808,6 +858,57 @@ class HAHousekeeperPanel extends HTMLElement {
       <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
   }
 
+  findingTitle(f) {
+    const sub = f.rule_id.split(".")[1] || f.rule_id;
+    if (sub.startsWith("missing_")) return `${this.t(sub)}: ${f.affected_object}`;
+    if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
+    const text = this.t(f.rule_id);
+    return text === f.rule_id ? this.t(sub) : text;
+  }
+
+  findingsCard(key) {
+    const list = this.data.findings.filter(f => this.findingKey(f) === key);
+    if (!list.length) return "";
+    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small>${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" ? "" : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="${f.ignored ? 0 : 1}"><ha-icon icon="${f.ignored ? "mdi:eye-outline" : "mdi:eye-off-outline"}"></ha-icon>${this.t(f.ignored ? "showFinding" : "hideFinding")}</button>`}</div>`).join("");
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("findingsOfObject")} (${list.length})</h2></div>${rows}</section>`;
+  }
+
+  batteryRows() {
+    const rows = [];
+    for (const o of this.data.objects) {
+      if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active") continue;
+      const domain = o.object_id.split(".")[0];
+      if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
+      else if (domain === "sensor" && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
+    }
+    const limit = this.data.meta.low_battery_percent ?? 20;
+    rows.forEach(r => { r.low = r.low || (r.level !== null && r.level <= limit); });
+    return rows.sort((a, b) => (Number(b.low) - Number(a.low)) || ((a.level ?? -1) - (b.level ?? -1)) || a.item.name.localeCompare(b.item.name));
+  }
+
+  lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
+
+  batteriesView() {
+    const all = this.batteryRows(), low = all.filter(r => r.low);
+    const list = this.batteryFilter === "low" ? low : all;
+    const limit = this.data.meta.low_battery_percent ?? 20;
+    const chips = `<div class="chips"><button class="chip ${this.batteryFilter === "low" ? "active" : ""}" data-battery-filter="low">${this.t("batteryLow")} (${low.length})</button><button class="chip ${this.batteryFilter === "low" ? "" : "active"}" data-battery-filter="all">${this.t("batteryAll")} (${all.length})</button></div>`;
+    const row = ({ item, level, low: isLow }) => {
+      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
+      const tone = isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
+      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
+    };
+    return `<div class="panel">${chips}${list.length ? list.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t("noBatteries")}</div>`}</div>`;
+  }
+
+  integrationProblems() {
+    const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem");
+    if (!broken.length) return "";
+    const rows = broken.map(o => `<button class="row rel" data-object="${this.esc(this.objectKey(o))}">${this.tile("config_entry", "red")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.domain)} · ${this.t(`cs_${o.state || "not_loaded"}`)}</small></span>${this.pill(o.status)}</button>`).join("");
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("integrationProblems")} (${broken.length})</h2><p>${this.t("integrationProblemsHint")}</p></div></div>${rows}</div>`;
+  }
+
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
     const usage = this.data.edges.filter(e => e.target === key && USAGE_RELATIONS.includes(e.relation)).length;
@@ -861,7 +962,7 @@ class HAHousekeeperPanel extends HTMLElement {
       <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}
         <section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>
         ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
-      <div class="stack">${this.factsCard(item, key)}${this.relationsCard(key)}</div></div>`;
+      <div class="stack">${this.factsCard(item, key)}${this.findingsCard(key)}${this.relationsCard(key)}</div></div>`;
   }
 
   bind() {
@@ -880,6 +981,17 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.page = 1; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
+    root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.render(); });
+    root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.render(); });
+    root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
+      const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
+      try {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
+        const finding = this.data.findings.find(f => f.key === key);
+        if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; }
+      } catch (err) { this.error = err?.message || String(err); }
+      this.render();
+    });
     root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { this.findingFilter = el.dataset.findingFilter; this.render(); });
     const focusKeep = (selector, setter) => {
       const input = root.querySelector(selector);

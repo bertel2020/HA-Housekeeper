@@ -9,6 +9,12 @@ from homeassistant.helpers import issue_registry as ir
 
 from .const import DOMAIN, PANEL_URL
 
+ISSUE_FILTERS = {
+    "orphaned_entities": "orphaned",
+    "unavailable_entities": "unavailable",
+    "broken_automations": "broken_reference",
+}
+
 ISSUE_IDS = ("orphaned_entities", "unavailable_entities", "broken_automations")
 
 
@@ -38,7 +44,7 @@ def async_sync_issues(hass: HomeAssistant, findings: list[dict[str, Any]]) -> No
                 DOMAIN,
                 issue_id,
                 is_fixable=False,
-                learn_more_url=f"/{PANEL_URL}",
+                learn_more_url=f"/{PANEL_URL}?view=findingsNav&filter={ISSUE_FILTERS[issue_id]}",
                 severity=ir.IssueSeverity.WARNING,
                 translation_key=issue_id,
                 translation_placeholders={"count": str(count)},

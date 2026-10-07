@@ -88,6 +88,15 @@ For every continuously observed classification, Housekeeper stores when it first
 
 The **Changes** view compares the current state with the previous scan or with the last scan of each of the past seven days: status changes (worsened first), new and resolved findings, and new and removed objects. The history is stored compactly in Home Assistant and contains only statuses and IDs.
 
+### More views and sources
+
+- **Hide findings**: a finding can be hidden on the detail page (only in Housekeeper's own list, Home Assistant stays untouched). Alternatively the label `housekeeper_ignore` on an entity hides all of its findings. Hidden findings do not count in the overview, sensors, or repair hints and can be shown again with **Show hidden**.
+- **Sensors**: Housekeeper creates a service device with counters (findings, orphaned and unavailable entities, broken references, possible duplicates, unused automations, low batteries, last scan) for use in dashboards and automations.
+- **Batteries**: a dedicated view with all battery entities, lowest values first (low from 20 %).
+- **Integrations with problems** appear on the overview.
+- **More reference sources**: groups (members) and helpers such as template, derivative, or min/max sensors (source entities) are included in dependencies and impact analysis; missing members and sources are reported as findings.
+- **Deep links**: the panel supports addresses like `/ha-housekeeper?view=findingsNav&filter=orphaned` or `?object=entity:sensor.x`; the repair hints use them.
+
 ### Dependency explorer
 
 The dependency view visualizes direct relationships such as:

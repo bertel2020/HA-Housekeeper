@@ -6,7 +6,7 @@ import vm from "node:vm";
 
 const SOURCE = new URL("../custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js", import.meta.url);
 
-function loadPanel() {
+function loadPanel(extra = {}) {
   const downloads = [];
   let PanelClass;
   const shadow = { innerHTML: "", querySelectorAll: () => [], querySelector: () => null };
@@ -19,6 +19,8 @@ function loadPanel() {
     Blob: class { constructor(parts) { this.text = parts.join(""); } },
     URL: { createObjectURL: blob => { downloads.push(blob); return "blob:x"; }, revokeObjectURL() {} },
     document: { createElement: () => ({ click() {}, remove() {} }), body: { appendChild() {} } },
+    ...extra,
+    URLSearchParams,
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, setTimeout: () => 0,
   };
   vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT;", context);
@@ -39,8 +41,8 @@ const DATA = {
   ],
 };
 
-function panel(lang = "en") {
-  const env = loadPanel();
+function panel(lang = "en", extra = {}) {
+  const env = loadPanel(extra);
   const el = new env.PanelClass();
   el._hass = { language: lang };
   el.data = DATA;
@@ -318,4 +320,91 @@ test("duplicate entities and unused automations are explained", () => {
   el.render();
   assert.ok(el.findingRow(el.data.findings[0]).includes("Wurde nie ausgelöst"));
   assert.ok(el.findingRow({ rule_id: "entity.possible_duplicate", object_id: "media_player.tv_2", classification: "possible_duplicate", confidence: 0.7, affected_object: "media_player.tv" }).includes("Mögliches Duplikat von media_player.tv"));
+});
+
+test("hidden findings are excluded from counts, lists and export unless shown", () => {
+  const { el, downloads } = panel("en");
+  const findings = [{ ...DATA.findings[0], key: "k1", ignored: true, ignored_by: "user" }, { ...DATA.findings[1], key: "k2", ignored: false }];
+  el.data = { ...DATA, findings };
+  assert.equal(el.sortedFindings().length, 1);
+  assert.equal(el.sortedFindings(true).length, 2);
+  assert.equal(el.health().percent, 67);
+  el.exportFindings("json");
+  assert.equal(JSON.parse(downloads[0].text).findings.length, 1);
+  el.showIgnored = true;
+  el.exportFindings("json");
+  assert.equal(JSON.parse(downloads[1].text).findings.length, 2);
+  el.view = "findingsNav";
+  el.render();
+  assert.ok(el.shadowRoot.innerHTML.includes("Show hidden (1)"));
+});
+
+test("detail page offers to hide and show findings, but not label-hidden ones", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [
+    { ...DATA.findings[0], key: "k1", ignored: false },
+    { rule_id: "entity.state_unavailable", object_id: "sensor.a", classification: "unavailable", confidence: 0.75, key: "k3", ignored: true, ignored_by: "label" },
+  ] };
+  const html = el.findingsCard("entity:sensor.a");
+  assert.ok(html.includes('data-ignore="k1" data-ignore-value="1"'));
+  assert.ok(!html.includes('data-ignore="k3"'));
+  assert.ok(html.includes("housekeeper_ignore"));
+});
+
+test("battery view lists the lowest levels first and counts low ones", () => {
+  const { el, shadow } = panel("en");
+  const battery = (id, state, extra = {}) => ({ object_type: "entity", object_id: id, name: id, status: "active", device_class: "battery", state, unit: "%", ...extra });
+  el.data = { ...DATA, meta: { ...DATA.meta, low_battery_percent: 20 }, objects: [
+    battery("sensor.full", "95"), battery("sensor.low", "8"), battery("sensor.edge", "20"),
+    battery("binary_sensor.flag", "on"), battery("binary_sensor.fine", "off"), battery("sensor.nan", "unknown"),
+    battery("sensor.gone", "3", { status: "unavailable" }), { ...battery("sensor.temp", "1"), device_class: "temperature" },
+  ] };
+  assert.equal(el.lowBatteries().length, 3);
+  assert.equal(JSON.stringify(Array.from(el.batteryRows().map(r => r.item.object_id))), JSON.stringify(["binary_sensor.flag", "sensor.low", "sensor.edge", "binary_sensor.fine", "sensor.full"]));
+  el.view = "batteries";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Low (3)") && shadow.innerHTML.includes("All (5)"));
+  assert.ok(!shadow.innerHTML.includes("sensor.full"));
+  el.batteryFilter = "all";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("sensor.full"));
+});
+
+test("integrations with problems appear on the overview", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "config_entry", object_id: "e9", name: "Hue", domain: "hue", status: "problem", state: "setup_retry" }] };
+  const html = el.integrationProblems();
+  assert.ok(html.includes("Integrations with problems (1)") && html.includes("Retrying setup"));
+  el.data = DATA;
+  assert.equal(el.integrationProblems(), "");
+});
+
+test("deep links select view, filter and object once", () => {
+  const replaced = [];
+  const window = { location: { search: "?view=findingsNav&filter=orphaned", pathname: "/ha-housekeeper" }, history: { replaceState: (_s, _t, url) => replaced.push(url) } };
+  const { el } = panel("en", { window });
+  el.isConnected = true;
+  el._basePath = "/ha-housekeeper";
+  el.applyUrl();
+  assert.equal(el.view, "findingsNav");
+  assert.equal(el.findingFilter, "orphaned");
+  el.view = "overview";
+  el.applyUrl();
+  assert.equal(el.view, "overview", "applied only once");
+
+  window.location.search = "?object=entity:sensor.b";
+  const second = panel("en", { window });
+  second.el.applyUrl();
+  assert.equal(second.el.selected, DATA.objects[1]);
+
+  el.view = "inventory";
+  el.render();
+  assert.equal(replaced.at(-1), "/ha-housekeeper?view=inventory");
+  el.view = "overview";
+  el.render();
+  assert.equal(replaced.at(-1), "/ha-housekeeper");
+  el._basePath = "/somewhere-else";
+  const before = replaced.length;
+  el.render();
+  assert.equal(replaced.length, before, "never rewrites another page's URL");
 });
