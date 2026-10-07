@@ -9,7 +9,7 @@
 [![Letzter Commit](https://img.shields.io/github/last-commit/bertel2020/HA-Housekeeping?style=flat-square)](https://github.com/bertel2020/HA-Housekeeping/commits/)
 [![Validierung](https://img.shields.io/github/actions/workflow/status/bertel2020/HA-Housekeeping/validate.yml?branch=main&style=flat-square&label=Validierung)](https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml)
 
-HA Housekeeper ist eine deutsch- und englischsprachige Wartungs- und Analyseintegration für Home Assistant. Sie erstellt ein übersichtliches Inventar der Installation, erklärt verdächtige oder verwaiste Objekte und zeigt, wie Entities, Geräte, Integrationen, Bereiche und Automationen voneinander abhängen.
+HA Housekeeper ist eine Wartungs- und Analyseintegration für Home Assistant. Sie erstellt ein übersichtliches Inventar der Installation, erklärt verdächtige oder verwaiste Objekte und zeigt, wie Entities, Geräte, Integrationen, Bereiche und Automationen voneinander abhängen.
 
 Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunächst zu verstehen, welche Objekte existieren, weshalb etwas als problematisch gilt und welche anderen Bestandteile von einer späteren Änderung betroffen wären.
 
@@ -69,7 +69,7 @@ Automation → reagiert auf / prüft / steuert → Entity oder Gerät
 
 Jede Beziehung besitzt eine Vertrauensstufe. Explizite Registry- und Konfigurationsbeziehungen gelten als sicher; von Home Assistant zur Laufzeit ermittelte Referenzen werden gesondert gekennzeichnet.
 
-### Zweisprachige Benutzeroberfläche
+### Sprachen
 
 Panel und Einrichtungsdialog stehen auf Deutsch und Englisch zur Verfügung. Die in Home Assistant gewählte Sprache bestimmt die Sprache des Panels.
 
