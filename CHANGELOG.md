@@ -1,5 +1,96 @@
 # Changelog
 
+## 0.6.0 - 2026-10-07
+
+Bereinigung in drei Schritten (Deaktivieren, Entfernen, Geräte und Verweise),
+ein einstellbarer Scan-Verlauf und deutlich mehr Angaben auf den Detailseiten.
+**Housekeeper kann jetzt mehr ändern**, und zwar weiterhin nur nach
+ausdrücklicher Bestätigung eines Plans und mit Sicherungen. Für alles, was sich
+nicht einfach zurückschalten lässt, legt Housekeeper vorher ein
+Home-Assistant-Backup an und startet nur, wenn es gelingt. Automatisiert gegen
+Home Assistant 2026.2.3 getestet.
+
+### Neu
+
+- **Entities entfernen**: Erst nach mindestens 14 Tagen Quarantäne und mit
+  Backup. Der Registry-Eintrag steht im Journal, sodass sich die Entity
+  wiederherstellen lässt, solange ihre ID frei ist und die Integration noch
+  existiert. Die **Quarantäne-Karte** zeigt, seit wann eine Entity deaktiviert
+  ist und wann sie frühestens entfernt werden kann.
+- **Geräte**: deaktivieren (Quarantäne), nach der Quarantäne **entfernen**
+  (offizieller Weg, die Integration wird gefragt und kann ablehnen) oder, nur
+  wenn die Integration kein Entfernen anbietet, **lokal vergessen**. Hubs und
+  Geräte mit angeschlossenen Geräten sind gesperrt. Beim Entfernen verschwinden
+  auch die Entities des Geräts; jedes Entfernen braucht eine
+  Einzelbestätigung. Kommt ein vergessenes Gerät zurück, zeigt das die Karte
+  **Wiederkehrende Geräte**.
+- **Verweise ersetzen**: Eine alte Entity wird durch eine neue ersetzt, überall
+  wo sie exakt eingetragen ist: Automationen, Skripte und Szenen (YAML-Dateien),
+  Dashboards im Speichermodus und das Energie-Dashboard. Die Vorschau zeigt je
+  Quelle die Änderungen; Templates, YAML-Dashboards und Dateien mit
+  `!secret`/`!include` werden nur gemeldet. Jede Quelle wird vorab gesichert und
+  lässt sich zurücksetzen, solange sie unverändert ist. Historie und
+  Statistiken werden nicht verschoben.
+- **Scan-Verlauf**: Die Aufbewahrung ist einstellbar (1 bis 365 Tage, Standard
+  30). In „Änderungen“ zeigt eine Zeitleiste die gespeicherten Scans mit
+  Zählern; ein Klick wählt den Vergleichspunkt.
+- **Mehr Angaben auf den Detailseiten**: Entities und Geräte zeigen Integration,
+  Gerät, Bereich, Labels, Hersteller, Modell, Firmware, Kennungen und Zeiten in
+  Karten. Integrationen zeigen Herkunft (eingebaut oder benutzerdefiniert mit
+  Pfad), Einrichtungsweg, Fehlermeldung und Zähler.
+
+### Geändert
+
+- **Ignorierte Entdeckungen** gelten nicht mehr als Integrationsproblem und
+  werden als „kein Fehler“ erklärt.
+- Der Quelltext des Panels liegt in `panel-src/`; die ausgelieferte Datei wird
+  daraus gebaut (nur für Entwickler relevant).
+
+---
+
+### English
+
+Cleanup in three steps (disable, remove, devices and references), an
+adjustable scan history and much more information on the detail pages.
+**Housekeeper can now change more**, still only after you explicitly confirm a
+plan and with safeguards. For anything that cannot simply be switched back,
+Housekeeper creates a Home Assistant backup first and only continues if it
+succeeds. Tested automatically against Home Assistant 2026.2.3.
+
+#### New
+
+- **Remove entities**: only after at least 14 days of quarantine and with a
+  backup. The registry entry is kept in the journal so that the entity can be
+  restored while its ID is free and the integration still exists. The
+  **quarantine card** shows since when an entity has been disabled and when it
+  can be removed at the earliest.
+- **Devices**: disable (quarantine), **remove** after quarantine (official path,
+  the integration is asked and may refuse) or, only if the integration offers
+  no removal, **forget locally**. Hubs and devices with attached devices are
+  blocked. Removing a device also removes its entities; every removal needs an
+  individual confirmation. If a forgotten device comes back, the **Returning
+  devices** card says so.
+- **Replace references**: an old entity is replaced by a new one wherever it is
+  entered exactly: automations, scripts and scenes (YAML files), storage-mode
+  dashboards and the Energy dashboard. The preview lists the changes per
+  source; templates, YAML dashboards and files using `!secret`/`!include` are
+  only reported. Each source is saved beforehand and can be put back while it
+  is unchanged. History and statistics are not moved.
+- **Scan history**: retention is adjustable (1 to 365 days, default 30). In
+  “Changes” a timeline lists the stored scans with counts; a click picks the
+  comparison point.
+- **More information on the detail pages**: entities and devices show
+  integration, device, area, labels, manufacturer, model, firmware, identifiers
+  and times in cards. Integrations show origin (built-in or custom with path),
+  how they were set up, the error message and counts.
+
+#### Changed
+
+- **Ignored discoveries** no longer count as an integration problem and are
+  explained as “not an error”.
+- The panel source lives in `panel-src/`; the shipped file is built from it
+  (relevant for developers only).
+
 ## 0.5.0 - 2026-10-07
 
 Aufräumen mit Vorschau und umkehrbarer Quarantäne, Recorder und Energie in der
