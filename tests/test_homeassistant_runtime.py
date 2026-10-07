@@ -187,6 +187,7 @@ async def test_scan_creates_and_clears_repairs_hints(hass: HomeAssistant) -> Non
     issue = ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities")
     assert issue is not None
     assert issue.is_fixable is False
+    assert issue.learn_more_url == "/ha-housekeeper"
     assert issue.translation_placeholders == {"count": "1"}
 
     hass.states.async_set(entry.entity_id, "1")
