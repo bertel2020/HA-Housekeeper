@@ -118,6 +118,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if interval_hours > 0:
 
         def _scheduled_scan(_: Any) -> None:
+            if scanner.paused:  # A cleanup run is in progress and scans itself.
+                return
             entry.async_create_background_task(
                 hass, _async_initial_scan(scanner), "HA Housekeeper scheduled inventory scan"
             )

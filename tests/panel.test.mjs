@@ -684,7 +684,7 @@ test("cleanup view lists candidates, creates a dry-run plan and shows the verdic
   el.cleanupSel = new Set(["sensor.old", "sensor.used"]);
   await el.createPlan();
   const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
-  assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "remove_entity", object_id: "sensor.old" }, { kind: "remove_entity", object_id: "sensor.used" }]));
+  assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "disable_entity", object_id: "sensor.old" }, { kind: "disable_entity", object_id: "sensor.used" }]));
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("2 checked: 1 with no known use, 0 to review, 1 blocked.") && html.includes("Blocked") && html.includes("Definitely in use"));
@@ -771,4 +771,63 @@ test("an overdue scan shows a banner on the overview", () => {
   assert.equal(el.staleScan(), null); // manual scans: only after a week
   el.data = { ...DATA, meta: { ...meta(new Date(Date.now() - 9 * 24 * 3.6e6).toISOString()), scan_interval_hours: 0 } };
   assert.ok(el.staleBanner().includes("9 days old"));
+});
+
+test("a dry-run plan is confirmed, typed, executed with progress, and can be undone", async () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "A", status: "orphaned" }, { object_type: "entity", object_id: "sensor.b", name: "B", status: "orphaned" }], edges: [], findings: [] };
+  const action = (id, verdict, extra = {}) => ({ kind: "disable_entity", object_id: id, name: id, verdict, executable: verdict !== "blocked", reasons: [], used_by: [], ...extra });
+  const base = { plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 1, blocked: 0 },
+    actions: [action("sensor.a", "ok"), action("sensor.b", "review", { reasons: ["has_statistics"] })] };
+  el.plan = base;
+  el.view = "cleanup";
+  const sent = [];
+  let current = base;
+  el._hass = { language: "en", callWS: async msg => {
+    sent.push(msg);
+    if (msg.type === "ha_housekeeper/plan_list") return { plans: [current] };
+    if (msg.type === "ha_housekeeper/plan_confirm") return { plan_id: "p1", token: "tok", expires_at: "x", execute: msg.acknowledged.length ? ["sensor.a", "sensor.b"] : ["sensor.a"], needs_acknowledgement: msg.acknowledged.length ? [] : ["sensor.b"], skipped: [] };
+    if (msg.type === "ha_housekeeper/plan_execute") return { started: true };
+    if (msg.type === "ha_housekeeper/plan_cancel") return { cancelling: true };
+    if (msg.type === "ha_housekeeper/plan_status") return { progress: { running: false, done: 1, total: 1 }, plan: current };
+    if (msg.type === "ha_housekeeper/plan_undo") { current = { ...current, status: "undone" }; return { results: [{ object_id: "sensor.a", outcome: "undone" }], status: "undone" }; }
+    if (msg.type === "ha_housekeeper/scan" || msg.type === "ha_housekeeper/inventory") return el.data;
+    return {};
+  } };
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("data-plan-confirm") && html.includes('data-ack="sensor.b"') && !html.includes("data-plan-execute"));
+  el.ack.add("sensor.b");
+  await el.confirmPlan();
+  const confirm = sent.find(m => m.type === "ha_housekeeper/plan_confirm");
+  assert.equal(JSON.stringify(confirm.acknowledged), JSON.stringify(["sensor.b"]));
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("2 entities will be disabled") && html.includes("Type “DISABLE”") && html.includes("data-plan-execute") && html.includes("disabled>Run now"));
+  el.confirmWord = "disable";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("disabled>Run now"));
+  current = { ...base, status: "verified", executed: true, run: { started_at: "x" }, verification: { ok: true, checks: [{ check: "disabled", object_id: "sensor.a", ok: true }, { check: "no_new_broken_references", ok: true }] },
+    actions: [action("sensor.a", "ok", { result: { state: "done" } }), action("sensor.b", "review", { result: { state: "not_run", reason: "entity_changed" } })] };
+  await el.executePlan();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(sent.find(m => m.type === "ha_housekeeper/plan_execute").token, "tok");
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("Executed and verified") && html.includes("Disabled") && html.includes("changed after the preview") && html.includes("data-undo-all") && html.includes('data-undo-one="sensor.a"'));
+  assert.ok(html.includes("✓ Entity is disabled") && !html.includes("data-plan-delete"));
+  await el.undoPlan();
+  assert.ok(el.undoMessage.includes("sensor.a: enabled again"));
+  assert.equal(el.plan.status, "undone");
+});
+
+test("removal previews cannot be confirmed", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [] };
+  el.plan = { plan_id: "p2", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 1, review: 0, blocked: 0 },
+    actions: [{ kind: "remove_entity", object_id: "sensor.a", name: "A", verdict: "ok", executable: false, reasons: [], used_by: [] }] };
+  el.view = "cleanup";
+  el.journal = [];
+  el.render();
+  assert.ok(shadow.innerHTML.includes("cannot be executed yet") && !shadow.innerHTML.includes("data-plan-confirm"));
 });

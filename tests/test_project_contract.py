@@ -75,10 +75,21 @@ def test_cleanup_plans_never_change_home_assistant() -> None:
     assert "executed" in source
 
 
+def test_only_the_cleanup_runner_changes_the_registry() -> None:
+    """Writes live in cleanup_exec.py and are limited to reversible entity updates."""
+    runner = (COMPONENT / "cleanup_exec.py").read_text(encoding="utf-8")
+    assert "async_update_entity" in runner
+    assert "async_remove" not in runner  # removing entities is not implemented yet
+    for path in COMPONENT.glob("*.py"):
+        if path.name == "cleanup_exec.py":
+            continue
+        assert "async_update_entity" not in path.read_text(encoding="utf-8"), path.name
+
+
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
-    assert source.count("@websocket_api.websocket_command") == 10
-    assert source.count("@websocket_api.require_admin") == 10
+    assert source.count("@websocket_api.websocket_command") == 15
+    assert source.count("@websocket_api.require_admin") == 15
     assert "connection.require_admin" not in source
 
 

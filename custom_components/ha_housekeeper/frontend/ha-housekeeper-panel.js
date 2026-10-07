@@ -84,7 +84,6 @@ const TEXT = {
     optUnusedAutomation: "Ungenutzte Automationen nach (Tage, 0 = aus)", optScanInterval: "Automatischer Scan alle (Stunden, 0 = aus)", optLowBattery: "Schwache Batterie ab (Prozent)",
     saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
     cleanupSubtitle: "Vorschau für das Aufräumen: Housekeeper prüft Kandidaten und protokolliert das Ergebnis. Es wird nichts geändert.",
-    cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts in Home Assistant. Pläne können derzeit nicht ausgeführt werden.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entities.", cleanupNone: "Keine Kandidaten gefunden.",
     selectPage: "Seite auswählen", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
     planResult: "Ergebnis der Vorschau", planClose: "Schließen", planCreating: "Erstelle Vorschau …", planError: "Vorschau fehlgeschlagen",
@@ -99,6 +98,19 @@ const TEXT = {
     orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt. Housekeeper löscht nichts. Entfernen lässt sich so etwas in Home Assistant unter Entwicklerwerkzeuge → Statistiken.",
     kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
+    kindDisable: "Deaktivieren (Quarantäne, umkehrbar)", kindRemove: "Entfernen (nur Vorschau)", actionKind: "Aktion",
+    cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts, bis du einen Plan ausdrücklich bestätigst. Ausführbar ist nur das Deaktivieren; Historie und Statistiken bleiben unverändert.",
+    reason_already_disabled: "Die Entity ist bereits deaktiviert.",
+    skippedUnacknowledged: "{count} zu prüfende Einträge ohne ausdrückliche Bestätigung werden übersprungen.",
+    confirmPlan: "Bestätigen …", confirmPlanTitle: "Plan bestätigen", acknowledgeReview: "Zu prüfen – ausdrücklich bestätigen:", confirmedSummary: "{count} Entities werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange die Entity unverändert bleibt.",
+    confirmTypeWord: "Zur Bestätigung „{word}“ eintippen:", confirmWord: "DEAKTIVIEREN", runNow: "Jetzt ausführen", cancelRun: "Abbrechen", notExecutableYet: "Entfernen ist noch nicht ausführbar; diese Vorschau dient nur der Prüfung.",
+    running: "Läuft …", progressOf: "{done} von {total}", undoAll: "Alles rückgängig machen", undoOne: "Rückgängig", tokenExpired: "Die Bestätigung ist abgelaufen. Bitte erneut bestätigen.", nothingExecutable: "Keine ausführbaren Aktionen in diesem Plan.",
+    plan_status_dry_run: "Vorschau", plan_status_running: "Läuft", plan_status_executed: "Ausgeführt", plan_status_verified: "Ausgeführt und geprüft", plan_status_partial: "Teilweise ausgeführt", plan_status_aborted: "Abgebrochen", plan_status_undone: "Rückgängig gemacht", plan_status_partially_undone: "Teilweise rückgängig",
+    result_done: "Deaktiviert", result_not_run: "Nicht ausgeführt", result_undone: "Rückgängig gemacht",
+    abort_entity_changed: "Die Entity wurde nach der Vorschau geändert.", abort_entity_gone: "Die Entity existiert nicht mehr.", abort_now_blocked: "Die Entity wird inzwischen verwendet.", abort_needs_acknowledgement: "Ohne ausdrückliche Bestätigung.", abort_cancelled: "Auf Wunsch abgebrochen.", abort_aborted: "Wegen eines vorherigen Abbruchs.",
+    undo_undone: "wieder aktiviert", undo_conflict_changed: "nicht rückgängig gemacht: zwischenzeitlich geändert", undo_conflict_gone: "nicht rückgängig gemacht: Entity existiert nicht mehr",
+    verification: "Prüfung nach dem Lauf", check_disabled: "Entity ist deaktiviert", check_no_new_broken_references: "Keine neuen fehlenden Referenzen",
+    err_bad_token: "Bestätigung ungültig oder abgelaufen.", err_busy: "Es läuft bereits ein Plan.", err_plan_not_open: "Dieser Plan wurde bereits bestätigt oder ausgeführt.", err_plan_too_old: "Der Plan ist älter als 24 Stunden. Bitte neu erstellen.", err_nothing_to_do: "Nichts auszuführen: blockierte Einträge laufen nie, „Zu prüfen“ braucht eine ausdrückliche Bestätigung.", err_not_found: "Plan nicht gefunden.",
     perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
     unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
     unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entities können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entities sind ausgeblendet.",
@@ -222,7 +234,6 @@ const TEXT = {
     optUnusedAutomation: "Unused automations after (days, 0 = off)", optScanInterval: "Automatic scan every (hours, 0 = off)", optLowBattery: "Low battery at (percent)",
     saveOptions: "Save", optionsSaved: "Saved. Housekeeper is reloading …", optionsInvalid: "Please enter values within the allowed range.",
     cleanupSubtitle: "Preview for tidying up: Housekeeper checks candidates and records the result. Nothing is changed.",
-    cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing in Home Assistant. Plans cannot be executed at the moment.",
     cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
     selectPage: "Select page", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
     planResult: "Preview result", planClose: "Close", planCreating: "Creating preview …", planError: "Preview failed",
@@ -237,6 +248,19 @@ const TEXT = {
     orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity. Housekeeper deletes nothing. In Home Assistant such statistics can be removed under Developer tools → Statistics.",
     kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
+    kindDisable: "Disable (quarantine, reversible)", kindRemove: "Remove (preview only)", actionKind: "Action",
+    cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing until you explicitly confirm a plan. Only disabling can be executed; history and statistics stay untouched.",
+    reason_already_disabled: "The entity is already disabled.",
+    skippedUnacknowledged: "{count} entries to review without explicit confirmation will be skipped.",
+    confirmPlan: "Confirm …", confirmPlanTitle: "Confirm plan", acknowledgeReview: "To review – confirm explicitly:", confirmedSummary: "{count} entities will be disabled (quarantine). This is reversible at any time while the entity stays unchanged.",
+    confirmTypeWord: "Type “{word}” to confirm:", confirmWord: "DISABLE", runNow: "Run now", cancelRun: "Cancel", notExecutableYet: "Removal cannot be executed yet; this preview is for checking only.",
+    running: "Running …", progressOf: "{done} of {total}", undoAll: "Undo all", undoOne: "Undo", tokenExpired: "The confirmation expired. Please confirm again.", nothingExecutable: "No executable actions in this plan.",
+    plan_status_dry_run: "Preview", plan_status_running: "Running", plan_status_executed: "Executed", plan_status_verified: "Executed and verified", plan_status_partial: "Partially executed", plan_status_aborted: "Aborted", plan_status_undone: "Undone", plan_status_partially_undone: "Partially undone",
+    result_done: "Disabled", result_not_run: "Not executed", result_undone: "Undone",
+    abort_entity_changed: "The entity was changed after the preview.", abort_entity_gone: "The entity no longer exists.", abort_now_blocked: "The entity is in use now.", abort_needs_acknowledgement: "Not explicitly confirmed.", abort_cancelled: "Cancelled on request.", abort_aborted: "Because of an earlier abort.",
+    undo_undone: "enabled again", undo_conflict_changed: "not undone: changed in the meantime", undo_conflict_gone: "not undone: the entity no longer exists",
+    verification: "Check after the run", check_disabled: "Entity is disabled", check_no_new_broken_references: "No new missing references",
+    err_bad_token: "Confirmation invalid or expired.", err_busy: "A plan is already running.", err_plan_not_open: "This plan was already confirmed or executed.", err_plan_too_old: "The plan is older than 24 hours. Please create it again.", err_nothing_to_do: "Nothing to execute: blocked entries never run, “to review” needs an explicit confirmation.", err_not_found: "Plan not found.",
     perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
     unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
     unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
@@ -358,6 +382,10 @@ class HAHousekeeperPanel extends HTMLElement {
     this.lv = {};
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
+    this.cleanupKind = "disable_entity";
+    this.ack = new Set();
+    this.confirmation = null;
+    this.confirmWord = "";
     this.plan = null;
     this.journal = null;
     this.prefs = this.loadPrefs();
@@ -1012,11 +1040,68 @@ class HAHousekeeperPanel extends HTMLElement {
     if (!this.cleanupSel.size) return;
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [...this.cleanupSel].map(object_id => ({ kind: "remove_entity", object_id })) });
-      this.plan = plan;
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id })) });
+      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
+  }
+
+  errText(err) {
+    const key = `err_${err?.code}`;
+    return TEXT[this.lang][key] ? this.t(key) : (err?.message || String(err));
+  }
+
+  async confirmPlan() {
+    try {
+      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: [...this.ack] });
+      this.confirmWord = ""; this.cleanupError = "";
+    } catch (err) { this.cleanupError = this.errText(err); }
+    this.render();
+  }
+
+  async executePlan() {
+    const { plan_id, token } = this.confirmation;
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/plan_execute", plan_id, token });
+      this.confirmation = null; this.cleanupError = "";
+      this.pollPlan(plan_id);
+    } catch (err) { this.cleanupError = this.errText(err); this.confirmation = null; }
+    this.render();
+  }
+
+  async cancelPlan() { try { await this._hass.callWS({ type: "ha_housekeeper/plan_cancel" }); } catch (_) { /* nothing running */ } }
+
+  // Follow a running plan until it stops; the plan object is replaced everywhere it is shown.
+  async pollPlan(planId) {
+    this._polling = planId;
+    while (this._polling === planId) {
+      try {
+        const res = await this._hass.callWS({ type: "ha_housekeeper/plan_status", plan_id: planId });
+        this.adoptPlan(res.plan); this.planProgress = res.progress; this.render();
+        if (!res.progress.running && res.plan.status !== "running") break;
+      } catch (_) { break; }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    this._polling = null; this.planProgress = null;
+    if (this.data) this.load(false);
+    this.render();
+  }
+
+  adoptPlan(plan) {
+    if (this.plan?.plan_id === plan.plan_id) this.plan = plan;
+    this.journal = (this.journal || []).map(p => (p.plan_id === plan.plan_id ? plan : p));
+  }
+
+  async undoPlan(objectIds) {
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/plan_undo", plan_id: this.plan.plan_id, ...(objectIds ? { object_ids: objectIds } : {}) });
+      this.undoMessage = res.results.map(r => `${r.object_id}: ${this.t(`undo_${r.outcome}`)}`).join(" · ");
+      const status = await this._hass.callWS({ type: "ha_housekeeper/plan_status", plan_id: this.plan.plan_id });
+      this.adoptPlan(status.plan);
+      if (this.data) this.load(false);
+    } catch (err) { this.cleanupError = this.errText(err); }
+    this.render();
   }
 
   async deletePlan(id) {
@@ -1028,6 +1113,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   planCard(plan) {
     const sm = plan.summary || {};
+    const open = plan.status === "dry_run";
     const rows = plan.actions.map(a => {
       const tone = { ok: "ok", review: "warn", blocked: "red" }[a.verdict] || "mute";
       const uses = (a.used_by || []).slice(0, 4).map(u => {
@@ -1037,13 +1123,28 @@ class HAHousekeeperPanel extends HTMLElement {
       const more = (a.used_by || []).length > 4 ? `<small>+${a.used_by.length - 4}</small>` : "";
       const reasons = (a.reasons || []).map(r => this.t(`reason_${r}`)).join(" ");
       const obj = this.findObject(`entity:${a.object_id}`);
+      const result = a.result;
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(`result_${result.state}`)}</span>` : "";
+      const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "";
+      const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
+      const undo = result?.state === "done" ? `<button class="btn" data-undo-one="${this.esc(a.object_id)}">${this.t("undoOne")}</button>` : "";
       return `<div class="row ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
-        <span class="row-text"><strong>${obj ? `<button class="link" data-object="entity:${this.esc(a.object_id)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(a.object_id)}${reasons ? ` · ${this.esc(reasons)}` : ""}</small>${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</span>
-        <span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></div>`;
+        <span class="row-text"><strong>${obj ? `<button class="link" data-object="entity:${this.esc(a.object_id)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(a.object_id)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}${ack}</span>
+        <span style="display:flex;gap:8px;align-items:center">${resultPill}${undo}<span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></span></div>`;
     }).join("");
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · ${this.t("dryRun")}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      <p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}</section>`;
+    const executable = plan.actions.some(a => a.executable);
+    const word = this.t("confirmWord"), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
+    let control = "";
+    if (open && !executable) control = `<p class="factnote">${this.t(plan.actions.some(a => a.kind !== "disable_entity") ? "notExecutableYet" : "nothingExecutable")}</p>`;
+    else if (open && !conf) control = `<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
+    else if (open && conf) control = `<div class="setrow"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.t("confirmedSummary", { count: conf.execute.length })}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn primary" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
+    else if (plan.status === "running") control = `<div class="setrow"><small style="margin:0">${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
+    else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
+    const checks = plan.verification ? `<p class="factnote"><b>${this.t("verification")}:</b> ${plan.verification.checks.map(c => `${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}`).join(" · ")}</p>` : "";
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
+      <p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}${checks}${control}</section>`;
   }
 
   cleanupView() {
@@ -1068,11 +1169,12 @@ class HAHousekeeperPanel extends HTMLElement {
       <button class="row-text link" style="text-align:left" data-object="entity:${this.esc(item.object_id)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.object_id)}</small></button>${this.pill(finding.classification)}</div>`;
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${this.t("cleanupCandidatesHint")}</p></div>
-      <div class="actions" style="display:flex;gap:8px;align-items:center"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn" data-sel-page>${this.t("selectPage")}</button><button class="btn" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
+      <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select data-cleanup-kind aria-label="${this.t("actionKind")}"><option value="disable_entity" ${this.cleanupKind === "disable_entity" ? "selected" : ""}>${this.t("kindDisable")}</option><option value="remove_entity" ${this.cleanupKind === "remove_entity" ? "selected" : ""}>${this.t("kindRemove")}</option></select><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn" data-sel-page>${this.t("selectPage")}</button><button class="btn" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
     const journal = (this.journal || []).map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}</small></span>
-      <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button><button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button></span></div>`).join("");
+      <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
+      <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
     const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}</div>`;
     return `<div class="stack"><div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
       ${this.plan ? this.planCard(this.plan) : ""}${candidates}${journalCard}</div>`;
@@ -1572,6 +1674,19 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
+    const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.render(); };
+    root.querySelectorAll("[data-ack]").forEach(el => el.onchange = () => { el.checked ? this.ack.add(el.dataset.ack) : this.ack.delete(el.dataset.ack); this.render(); });
+    root.querySelector("[data-plan-confirm]")?.addEventListener("click", () => this.confirmPlan());
+    const word = root.querySelector("[data-confirm-word]");
+    if (word) word.oninput = () => {
+      this.confirmWord = word.value;
+      const run = this.shadowRoot.querySelector("[data-plan-execute]");
+      if (run) run.disabled = word.value.trim().toUpperCase() !== this.t("confirmWord");
+    };
+    root.querySelector("[data-plan-execute]")?.addEventListener("click", () => this.executePlan());
+    root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());
+    root.querySelector("[data-undo-all]")?.addEventListener("click", () => this.undoPlan());
+    root.querySelectorAll("[data-undo-one]").forEach(el => el.onclick = () => this.undoPlan([el.dataset.undoOne]));
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => { this.plan = (this.journal || []).find(p => p.plan_id === el.dataset.planOpen) || null; this.render(); });

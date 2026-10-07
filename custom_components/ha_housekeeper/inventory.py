@@ -23,6 +23,7 @@ from .automation_analysis import (
     summarize_script_config,
 )
 from .cleanup import JournalStore
+from .cleanup_exec import CleanupRunner
 from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
@@ -367,6 +368,8 @@ class InventoryScanner:
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
         self.journal = JournalStore(hass)
+        self.cleanup = CleanupRunner(hass, self)
+        self.paused = False
         self._recorder_available = False
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None

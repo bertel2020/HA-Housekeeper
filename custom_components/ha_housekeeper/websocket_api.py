@@ -8,8 +8,10 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 
-from .cleanup import ACTION_KINDS, MAX_ACTIONS, build_plan
+from .cleanup import ACTION_KINDS, MAX_ACTIONS, build_plan, registry_fingerprint
+from .cleanup_exec import CleanupError
 from .const import DOMAIN, OPTION_LIMITS
 from .inventory import InventoryScanner
 
@@ -213,7 +215,13 @@ async def websocket_plan_create(
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
-    plan = build_plan(snapshot, msg["actions"], datetime.now(UTC))
+    registry = er.async_get(hass)
+
+    def fingerprint(object_id: str) -> str | None:
+        entry = registry.async_get(object_id)
+        return registry_fingerprint(entry) if entry else None
+
+    plan = build_plan(snapshot, msg["actions"], datetime.now(UTC), fingerprint)
     scanner.journal.add(plan)
     connection.send_result(msg["id"], plan)
 
@@ -255,6 +263,129 @@ def websocket_plan_delete(
     connection.send_result(msg["id"], {"removed": True})
 
 
+def _cleanup_error(
+    connection: websocket_api.ActiveConnection, msg: dict[str, Any], err: CleanupError
+) -> None:
+    connection.send_error(msg["id"], str(err), f"Cleanup: {err}")
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/plan_confirm",
+        vol.Required("plan_id"): str,
+        vol.Optional("acknowledged", default=[]): [str],
+    }
+)
+@callback
+def websocket_plan_confirm(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Pick the actions that may run and return a short-lived confirmation token."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        result = scanner.cleanup.confirm(msg["plan_id"], msg["acknowledged"], connection.user.id)
+    except CleanupError as err:
+        _cleanup_error(connection, msg, err)
+        return
+    connection.send_result(msg["id"], result)
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/plan_execute",
+        vol.Required("plan_id"): str,
+        vol.Required("token"): str,
+    }
+)
+@callback
+def websocket_plan_execute(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Start a confirmed plan. It runs in the background; poll ``plan_status``."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        scanner.cleanup.start(msg["plan_id"], msg["token"], connection.user.id)
+    except CleanupError as err:
+        _cleanup_error(connection, msg, err)
+        return
+    connection.send_result(msg["id"], {"started": True})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/plan_cancel"})
+@callback
+def websocket_plan_cancel(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Stop a running plan after the current step."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    scanner.cleanup.cancel()
+    connection.send_result(msg["id"], {"cancelling": scanner.cleanup.running})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/plan_status", vol.Required("plan_id"): str}
+)
+@callback
+def websocket_plan_status(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Return progress and the current state of one plan."""
+    scanner = _scanner(hass)
+    plan = scanner.journal.get(msg["plan_id"]) if scanner else None
+    if scanner is None or plan is None:
+        connection.send_error(msg["id"], "not_found", "Plan not found")
+        return
+    connection.send_result(msg["id"], {"progress": scanner.cleanup.status, "plan": plan})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/plan_undo",
+        vol.Required("plan_id"): str,
+        vol.Optional("object_ids"): [str],
+    }
+)
+@websocket_api.async_response
+async def websocket_plan_undo(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Re-enable quarantined entities that are still as Housekeeper left them."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        result = await scanner.cleanup.undo(msg["plan_id"], msg.get("object_ids"))
+    except CleanupError as err:
+        _cleanup_error(connection, msg, err)
+        return
+    connection.send_result(msg["id"], result)
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register Housekeeper WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_inventory)
@@ -267,3 +398,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_list)
     websocket_api.async_register_command(hass, websocket_plan_delete)
+    websocket_api.async_register_command(hass, websocket_plan_confirm)
+    websocket_api.async_register_command(hass, websocket_plan_execute)
+    websocket_api.async_register_command(hass, websocket_plan_cancel)
+    websocket_api.async_register_command(hass, websocket_plan_status)
+    websocket_api.async_register_command(hass, websocket_plan_undo)
