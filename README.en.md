@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeping/main/logos/ha-housekeeper-logo-concept.png" alt="HA Housekeeper" width="160">
+  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeping/main/custom_components/ha_housekeeper/brand/logo.png" alt="HA Housekeeper" width="160">
 </p>
 
 <h1 align="center">HA Housekeeper</h1>
@@ -192,3 +192,4 @@ See [CHANGELOG.md](CHANGELOG.md) for release notes in English and German.
 ## License
 
 This project is released under the [MIT License](LICENSE).
+Copyright 2026 Roberto / bertel2020.
