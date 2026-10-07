@@ -24,11 +24,15 @@ USAGE_RELATIONS = frozenset(
 ENTITY_KINDS = frozenset({"disable_entity", "remove_entity"})
 DEVICE_KINDS = frozenset({"disable_device", "remove_device", "forget_device"})
 REFERENCE_KINDS = frozenset({"replace_references"})
-ACTION_KINDS = ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS
+METER_KINDS = frozenset({"migrate_meter"})
+METER_MODES = ("both", "statistics", "id")
+ACTION_KINDS = ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS | METER_KINDS
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
 # Kinds that cannot simply be switched back: a verified backup is created before they run.
-BACKUP_KINDS = frozenset({"remove_entity", "remove_device", "forget_device", "replace_references"})
+BACKUP_KINDS = frozenset(
+    {"remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter"}
+)
 # Kinds that remove something: they get the strongest confirmation word.
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 QUARANTINE_KINDS = {"disable_entity": "entity", "disable_device": "device"}
@@ -184,8 +188,11 @@ def judge_action(
     support: dict[str, Any] | None = None,
     target: str | None = None,
     sources: list[dict[str, Any]] | None = None,
+    meter: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Judge one candidate of any kind; see ``judge_entity_action`` for the verdicts."""
+    if kind in METER_KINDS:
+        return judge_meter_action(object_id, target, objects, edges, meter or {})
     if kind in DEVICE_KINDS:
         return judge_device_action(
             kind, object_id, objects, devices or {}, edges, quarantine, support, now
@@ -229,6 +236,15 @@ BLOCKING_REASONS = frozenset(
         "different_domain",
         "target_not_working",
         "nothing_to_replace",
+        "stats_missing_old",
+        "stats_unit_differs",
+        "stats_type_differs",
+        "stats_nothing_to_import",
+        "no_recorder",
+        "old_not_in_registry",
+        "target_not_in_registry",
+        "alt_id_taken",
+        "nothing_to_do",
     }
 )
 
@@ -377,6 +393,71 @@ def judge_reference_action(
     return action
 
 
+def judge_meter_action(
+    object_id: str,
+    target: str | None,
+    objects: dict[str, dict[str, Any]],
+    edges: list[dict[str, Any]],
+    meter: dict[str, Any],
+) -> dict[str, Any]:
+    """Judge joining a replaced meter's history onto its successor and/or its entity ID.
+
+    ``meter`` carries ``mode`` (``statistics``, ``id`` or ``both``), the statistics ``analysis``,
+    the free ``alt_id`` the old entity moves to, and whether both entities are in the registry.
+    Writing statistics is always at least ``review``; nothing in it can be undone without the
+    backup.
+    """
+    mode = meter.get("mode") or "both"
+    analysis = meter.get("analysis") or {}
+    action: dict[str, Any] = {
+        "kind": "migrate_meter",
+        "object_id": object_id,
+        "object_type": "entity",
+        "target": target,
+        "mode": mode,
+        "alt_id": meter.get("alt_id"),
+        "name": (objects.get(object_id) or {}).get("name") or object_id,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": _used_by(edges, f"entity:{object_id}"),
+        "has_statistics": True,
+        "statistics": {k: v for k, v in analysis.items() if k != "reasons"},
+    }
+    reasons = action["reasons"]
+    new = objects.get(target or "")
+    if mode not in METER_MODES:
+        reasons.append("nothing_to_do")
+    if not target or new is None:
+        reasons.append("target_missing")
+    elif target == object_id:
+        reasons.append("same_entity")
+    elif target.split(".", 1)[0] != object_id.split(".", 1)[0]:
+        reasons.append("different_domain")
+    elif new["status"] != "active":
+        reasons.append("target_not_working")
+    old = objects.get(object_id)
+    if new is not None and old is not None:
+        if new.get("unit") != old.get("unit"):
+            reasons.append("unit_differs")
+        if new.get("device_class") != old.get("device_class"):
+            reasons.append("class_differs")
+    if mode in {"both", "statistics"}:
+        reasons.extend(analysis.get("reasons", []))
+        reasons.append("stats_write")
+    if mode in {"both", "id"}:
+        if not meter.get("old_in_registry"):
+            reasons.append("old_not_in_registry")
+        if not meter.get("target_in_registry"):
+            reasons.append("target_not_in_registry")
+        if meter.get("alt_taken"):
+            reasons.append("alt_id_taken")
+        reasons.append("id_takeover")
+        if _used_by(edges, f"entity:{target}"):
+            reasons.append("target_in_use")
+    _verdict(action)
+    return action
+
+
 def judge_entity_action(
     kind: str,
     object_id: str,
@@ -448,6 +529,7 @@ def build_plan(
     *,
     device_info: Callable[[str], tuple[str | None, dict[str, Any]]] | None = None,
     reference_data: dict[tuple[str, str], tuple[str | None, list[dict[str, Any]]]] | None = None,
+    meter_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -455,7 +537,8 @@ def build_plan(
     detect changes made after the preview; ``restorable`` tells whether a removal could be
     undone. ``device_info`` gives a device's fingerprint and what its integration supports;
     ``reference_data`` maps ``(old, new)`` entity IDs to the fingerprint and the sources found
-    for a replacement. A plan holds at most one action per object.
+    for a replacement; ``meter_data`` maps ``(old, new, mode)`` to the fingerprint and judging data
+    of a meter migration. A plan holds at most one action per object.
     """
     quarantine = {q["object_id"]: q["since"] for q in snapshot.get("quarantine", [])}
     objects = {
@@ -485,6 +568,19 @@ def build_plan(
                 support=support,
             )
             action["fingerprint"] = device_print
+        elif kind in METER_KINDS:
+            target = request.get("target") or ""
+            mode = request.get("mode") or "both"
+            meter = (meter_data or {}).get((object_id, target, mode), {})
+            action = judge_action(
+                kind,
+                object_id,
+                objects,
+                snapshot["edges"],
+                target=target,
+                meter={**meter, "mode": mode},
+            )
+            action["fingerprint"] = meter.get("fingerprint")
         elif kind in REFERENCE_KINDS:
             target = request.get("target") or ""
             reference_print, sources = (reference_data or {}).get((object_id, target), (None, []))

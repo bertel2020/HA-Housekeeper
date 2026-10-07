@@ -44,6 +44,7 @@ const NAV = [
   ["batteries", "mdi:battery-alert-variant-outline"],
   ["unreferenced", "mdi:link-variant-off"],
   ["cleanup", "mdi:broom"],
+  ["maintenance", "mdi:wrench-clock"],
   ["settings", "mdi:cog-outline"],
   ["graph", "mdi:source-fork"],
 ];

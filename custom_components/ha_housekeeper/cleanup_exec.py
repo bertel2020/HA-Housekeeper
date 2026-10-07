@@ -21,6 +21,13 @@ References:
   storage dashboards and the Energy dashboard. Each source is stored in the journal before it is
   rewritten and put back on undo while it is still exactly as Housekeeper left it.
 
+Meters:
+
+* ``migrate_meter`` joins the long-term statistics of a replaced meter in front of its successor
+  (experimental: it writes into the recorder database, so a backup is mandatory and statistics
+  cannot be undone) and/or lets the new entity take over the old entity ID. The old entity moves
+  to a free ``_alt`` ID; Home Assistant moves history and statistics along with every rename.
+
 Every step is re-checked right before it runs, journaled, and the run stops at the first surprise.
 """
 
@@ -45,6 +52,7 @@ from .cleanup import (
     BACKUP_KINDS,
     DEVICE_KINDS,
     EXECUTABLE_KINDS,
+    METER_KINDS,
     PLAN_MAX_AGE_HOURS,
     REFERENCE_KINDS,
     REMOVAL_KINDS,
@@ -53,6 +61,7 @@ from .cleanup import (
     judge_action,
     registry_fingerprint,
 )
+from .meter import analyse, prepare_meter, read_series, recorder_ready
 from .references import (
     ENERGY_PARTS,
     SourceError,
@@ -65,6 +74,8 @@ from .references import (
 )
 
 TOKEN_TTL = timedelta(minutes=5)
+ID_FREE_TIMEOUT = 10.0  # seconds to wait until Home Assistant has removed a renamed entity's state
+STATISTIC_KEYS = ("state", "sum", "min", "max", "mean")
 BACKUP_TIMEOUT = 30 * 60  # seconds; large installations can take a while
 
 
@@ -239,6 +250,11 @@ class CleanupRunner:
                 for a in plan["actions"]
                 if a["object_id"] in selected and a["kind"] in REFERENCE_KINDS
             ],
+            "migrations": [
+                a["object_id"]
+                for a in plan["actions"]
+                if a["object_id"] in selected and a["kind"] in METER_KINDS
+            ],
             "needs_acknowledgement": needs_ack,
             "skipped": skipped,
         }
@@ -409,6 +425,8 @@ class CleanupRunner:
             return await self._remove_device(action), "device_removed"
         if kind == "forget_device":
             return await self._forget_device(action), "device_forgotten"
+        if kind in METER_KINDS:
+            return await self._migrate_meter(action), "meter_migrated"
         return await self._replace_references(action), "references_replaced"
 
     # -- devices ---------------------------------------------------------------------------
@@ -522,6 +540,168 @@ class CleanupRunner:
                 self._restore(entity_registry, entity["entity_id"], entity)
         return "undone"
 
+    # -- meters ----------------------------------------------------------------------------
+
+    async def _migrate_meter(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Join the statistics, then let the new entity take the old ID, as the mode asks.
+
+        What was written stays in the result even if a later part stops, so it is never lost.
+        """
+        mode = action["mode"]
+        result: dict[str, Any] = {
+            "before": action["fingerprint"],
+            "mode": mode,
+            "statistics": None,
+            "take_id": None,
+        }
+        if mode in {"both", "statistics"}:
+            result["statistics"] = await self._join_statistics(action)
+            if not result["statistics"]["verified"]:
+                result["stopped"] = "statistics_failed"
+                return result
+        if mode in {"both", "id"}:
+            try:
+                result["take_id"] = await self._take_id(action)
+            except StepAbort as stop:
+                if result["statistics"] is None:
+                    raise
+                result["stopped"] = stop.reason
+        return result
+
+    async def _join_statistics(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Copy the old hourly rows in front of the new series and shift the new sums."""
+        from homeassistant.components.recorder import get_instance
+        from homeassistant.components.recorder.statistics import async_import_statistics
+
+        old, new = action["object_id"], action["target"]
+        instance = get_instance(self.hass)
+        old_meta, old_rows = await instance.async_add_executor_job(read_series, self.hass, old)
+        new_meta, new_rows = await instance.async_add_executor_job(read_series, self.hass, new)
+        analysis = analyse(old_meta, old_rows, new_meta, new_rows)
+        if analysis["hash"] != action["statistics"]["hash"]:
+            raise StepAbort("statistics_changed")
+        blocking = {"stats_missing_old", "stats_unit_differs", "stats_type_differs"}
+        if blocking & set(analysis["reasons"]) or not analysis["import_count"]:
+            raise StepAbort("statistics_changed")
+        switch = new_rows[0]["start"] if new_rows else None
+        rows = [row for row in old_rows if switch is None or row["start"] < switch]
+        metadata = {
+            key: value for key, value in (new_meta or old_meta or {}).items() if key != "has_mean"
+        }
+        metadata.update(statistic_id=new, source="recorder")
+        if new_meta is None:
+            metadata["name"] = None
+        data = []
+        for row in rows:
+            point: dict[str, Any] = {"start": datetime.fromtimestamp(row["start"], UTC)}
+            point.update({key: row[key] for key in STATISTIC_KEYS if row.get(key) is not None})
+            point["last_reset"] = (
+                datetime.fromtimestamp(row["last_reset"], UTC) if row.get("last_reset") else None
+            )
+            data.append(point)
+        async_import_statistics(self.hass, metadata, data)
+        offset = analysis["offset"]
+        if offset is not None and switch is not None:
+            instance.async_adjust_statistics(
+                new,
+                datetime.fromtimestamp(switch, UTC),
+                offset,
+                metadata.get("unit_of_measurement"),
+            )
+        await instance.async_block_till_done()
+        _, after = await instance.async_add_executor_job(read_series, self.hass, new)
+        verified = len(after) == len(rows) + len(new_rows) and (
+            not after or after[0]["start"] == rows[0]["start"]
+        )
+        if verified and offset is not None and new_rows:
+            moved = next((r for r in after if r["start"] == switch), None)
+            verified = (
+                moved is not None
+                and abs((moved.get("sum") or 0) - ((new_rows[0].get("sum") or 0) + offset)) < 1e-6
+            )
+        return {
+            "imported": len(rows),
+            "dropped_overlap": analysis["dropped_overlap"],
+            "offset": offset,
+            "first": rows[0]["start"],
+            "switch": switch,
+            "unit": metadata.get("unit_of_measurement"),
+            "series_id": new,
+            "verified": verified,
+        }
+
+    async def _wait_free(self, entity_id: str) -> bool:
+        """Wait until the state of a renamed entity is gone, so its ID can be taken."""
+        waited = 0.0
+        while self.hass.states.get(entity_id) is not None:
+            if waited >= ID_FREE_TIMEOUT:
+                return False
+            await asyncio.sleep(0.1)
+            waited += 0.1
+        return True
+
+    async def _take_id(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Move the old entity to its ``_alt`` ID, then rename the new entity to the old ID."""
+        registry = er.async_get(self.hass)
+        old, new, alt = action["object_id"], action["target"], action["alt_id"]
+        old_entry, new_entry = registry.async_get(old), registry.async_get(new)
+        if old_entry is None or new_entry is None:
+            raise StepAbort("entity_gone")
+        if registry.async_get(alt) is not None or self.hass.states.get(alt) is not None:
+            raise StepAbort("alt_id_taken")
+        registry.async_update_entity(old, new_entity_id=alt)
+        try:
+            if not await self._wait_free(old):
+                raise StepAbort("id_not_freed")
+            registry.async_update_entity(new, new_entity_id=old)
+        except StepAbort:
+            registry.async_update_entity(alt, new_entity_id=old)  # put the old entity back
+            raise
+        except ValueError as err:
+            registry.async_update_entity(alt, new_entity_id=old)
+            raise StepAbort("id_takeover_failed") from err
+        if recorder_ready(self.hass):
+            from homeassistant.components.recorder import get_instance
+
+            await get_instance(self.hass).async_block_till_done()
+        return {
+            "old_id": old,
+            "alt_id": alt,
+            "new_id": new,
+            "new_unique_id": new_entry.unique_id,
+            "old_after": registry_fingerprint(registry.async_get(alt)),
+            "new_after": registry_fingerprint(registry.async_get(old)),
+        }
+
+    async def _undo_take_id(self, take: dict[str, Any]) -> str:
+        """Give both entities their IDs back while they are exactly as Housekeeper left them."""
+        registry = er.async_get(self.hass)
+        holder, moved = registry.async_get(take["old_id"]), registry.async_get(take["alt_id"])
+        if holder is None or moved is None:
+            return "conflict_gone"
+        if (
+            registry_fingerprint(holder) != take["new_after"]
+            or registry_fingerprint(moved) != take["old_after"]
+        ):
+            return "conflict_changed"
+        if registry.async_get(take["new_id"]) is not None or (
+            self.hass.states.get(take["new_id"]) is not None
+        ):
+            return "conflict_taken"
+        registry.async_update_entity(take["old_id"], new_entity_id=take["new_id"])
+        try:
+            if not await self._wait_free(take["old_id"]):
+                raise ValueError
+            registry.async_update_entity(take["alt_id"], new_entity_id=take["old_id"])
+        except ValueError:
+            registry.async_update_entity(take["new_id"], new_entity_id=take["old_id"])
+            return "conflict_unrestorable"
+        if recorder_ready(self.hass):
+            from homeassistant.components.recorder import get_instance
+
+            await get_instance(self.hass).async_block_till_done()
+        return "undone"
+
     # -- references ------------------------------------------------------------------------
 
     async def _replace_references(self, action: dict[str, Any]) -> dict[str, Any]:
@@ -625,6 +805,16 @@ class CleanupRunner:
                 "devices": context["devices"],
                 "support": device_support(self.hass, entry),
             }
+        elif kind in METER_KINDS:
+            if not recorder_ready(self.hass) and action["mode"] != "id":
+                return "no_recorder"
+            meter = await prepare_meter(self.hass, object_id, action["target"], action["mode"])
+            if action.get("fingerprint") is None or meter["fingerprint"] != action["fingerprint"]:
+                return "meter_changed"
+            verdict_args = {
+                "target": action["target"],
+                "meter": {**meter, "mode": action["mode"]},
+            }
         elif kind in REFERENCE_KINDS:
             fingerprint, sources = await preview_replacement(
                 self.hass, snapshot, object_id, action["target"]
@@ -717,6 +907,8 @@ class CleanupRunner:
                             "ok": not recurring,
                         }
                     )
+            elif kind in METER_KINDS:
+                checks.extend(await self._verify_meter(action))
             else:
                 done = {s["source"] for s in action["result"]["sources"]}
                 still = [
@@ -745,6 +937,34 @@ class CleanupRunner:
         _event(plan, "verified", ok=plan["verification"]["ok"])
         self.scanner.journal.save()
 
+    async def _verify_meter(self, action: dict[str, Any]) -> list[dict[str, Any]]:
+        result, checks = action["result"], []
+        object_id = action["object_id"]
+        if take := result.get("take_id"):
+            registry = er.async_get(self.hass)
+            holder, moved = registry.async_get(take["old_id"]), registry.async_get(take["alt_id"])
+            ok = (
+                holder is not None
+                and holder.unique_id == take["new_unique_id"]
+                and moved is not None
+                and registry.async_get(take["new_id"]) is None
+            )
+            checks.append({"check": "meter_id_taken", "object_id": object_id, "ok": ok})
+        if stats := result.get("statistics"):
+            series = (result["take_id"] or {}).get("old_id") if result.get("take_id") else None
+            series = series or stats["series_id"]
+            ok = False
+            if recorder_ready(self.hass):
+                from homeassistant.components.recorder import get_instance
+
+                _, rows = await get_instance(self.hass).async_add_executor_job(
+                    read_series, self.hass, series
+                )
+                ok = bool(stats["verified"]) and len(rows) >= stats["imported"]
+                ok = ok and bool(rows) and rows[0]["start"] == stats["first"]
+            checks.append({"check": "meter_statistics", "object_id": object_id, "ok": ok})
+        return checks
+
     async def undo(self, plan_id: str, object_ids: list[str] | None) -> dict[str, Any]:
         """Revert steps that are still exactly as Housekeeper left them."""
         if self.running:
@@ -767,6 +987,8 @@ class CleanupRunner:
                 outcome = self._reenable_device(action["object_id"], result)
             elif kind in REFERENCE_KINDS:
                 outcome = await self._undo_references(result)
+            elif kind in METER_KINDS:
+                outcome = await self._undo_meter(result)
             else:
                 outcome = self._reenable(registry, action["object_id"], result)
             if outcome == "undone":
@@ -789,6 +1011,15 @@ class CleanupRunner:
             with contextlib.suppress(Exception):
                 await self.scanner.async_scan()
         return {"results": results, "status": plan["status"]}
+
+    async def _undo_meter(self, result: dict[str, Any]) -> str:
+        """Only the ID takeover can be undone; joined statistics need the backup."""
+        if not result.get("take_id"):
+            return "conflict_statistics"
+        outcome = await self._undo_take_id(result["take_id"])
+        if outcome == "undone" and result.get("statistics"):
+            result["statistics_kept"] = True
+        return outcome
 
     async def _undo_references(self, result: dict[str, Any]) -> str:
         outcomes = [

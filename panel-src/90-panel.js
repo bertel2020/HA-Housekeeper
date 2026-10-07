@@ -29,6 +29,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupSel = new Set();
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
+    this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
+    this.preflight = null; this.costs = null; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -214,6 +216,7 @@ class HAHousekeeperPanel extends HTMLElement {
       graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
       settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
       cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
+      maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
@@ -232,6 +235,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "batteries") return this.batteriesView();
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
+    if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -322,6 +326,18 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelector("[data-repl-new]")?.addEventListener("change", e => { this.replNew = e.target.value.trim(); this.render(); });
+    root.querySelector("[data-meter-old]")?.addEventListener("change", e => { this.meterOld = e.target.value.trim(); if (this.meterNew && this.meterNew.split(".")[0] !== this.meterOld.split(".")[0]) this.meterNew = ""; this.render(); });
+    root.querySelector("[data-meter-new]")?.addEventListener("change", e => { this.meterNew = e.target.value.trim(); this.render(); });
+    root.querySelector("[data-meter-mode]")?.addEventListener("change", e => { this.meterMode = e.target.value; this.render(); });
+    root.querySelector("[data-costs-load]")?.addEventListener("click", () => this.loadCosts());
+    root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
+    root.querySelector("[data-pf-save]")?.addEventListener("click", () => this.loadPreflight("save"));
+    root.querySelector("[data-pf-clear]")?.addEventListener("click", () => this.loadPreflight("clear"));
+    root.querySelector("[data-copy-snippet]")?.addEventListener("click", async () => {
+      try { await globalThis.navigator?.clipboard?.writeText(this.exclusionSnippet()); this.snippetCopied = true; } catch (_) { this.snippetCopied = false; }
+      this.render();
+      setTimeout(() => { this.snippetCopied = false; this.render(); }, 1500);
+    });
     root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => { this.plan = (this.journal || []).find(p => p.plan_id === el.dataset.planOpen) || null; this.render(); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => this.deletePlan(el.dataset.planDelete));

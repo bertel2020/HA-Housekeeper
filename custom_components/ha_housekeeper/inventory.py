@@ -51,6 +51,7 @@ from .hygiene import (
 )
 from .ignored import IgnoreStore
 from .issues import async_sync_issues
+from .maintenance import PreflightStore
 from .observations import ObservationStore
 
 # Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
@@ -405,6 +406,7 @@ class InventoryScanner:
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
         self.journal = JournalStore(hass)
+        self.preflight = PreflightStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
         self._recorder_available = False
@@ -433,6 +435,7 @@ class InventoryScanner:
         await self.history.async_load()
         await self.ignored.async_load()
         await self.journal.async_load()
+        await self.preflight.async_load()
 
     async def async_scan(self) -> dict[str, Any]:
         """Scan registries and states. Concurrent callers share serialized work."""

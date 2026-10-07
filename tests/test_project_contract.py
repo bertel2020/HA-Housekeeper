@@ -86,6 +86,8 @@ def test_only_the_cleanup_runner_changes_the_registry() -> None:
         "write_utf8_file_atomic",
         "async_save(",
         "manager.async_update(",
+        "async_import_statistics(",
+        "async_adjust_statistics(",
     )
     assert all(write in runner for write in writes)
     for path in COMPONENT.glob("*.py"):
@@ -98,8 +100,8 @@ def test_only_the_cleanup_runner_changes_the_registry() -> None:
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
-    assert source.count("@websocket_api.websocket_command") == 15
-    assert source.count("@websocket_api.require_admin") == 15
+    assert source.count("@websocket_api.websocket_command") == 18
+    assert source.count("@websocket_api.require_admin") == 18
     assert "connection.require_admin" not in source
 
 

@@ -365,6 +365,7 @@ const NAV = [
   ["batteries", "mdi:battery-alert-variant-outline"],
   ["unreferenced", "mdi:link-variant-off"],
   ["cleanup", "mdi:broom"],
+  ["maintenance", "mdi:wrench-clock"],
   ["settings", "mdi:cog-outline"],
   ["graph", "mdi:source-fork"],
 ];
@@ -468,6 +469,83 @@ Object.assign(TEXT.en, {
   propMoreEntities: "… and {count} more (see relations)", propNoEntities: "This device has no entities.",
   by_user: "User", by_integration: "Integration", by_config_entry: "Integration entry (disabled)", by_device: "Device (disabled)", by_hass: "Home Assistant",
   cat_config: "Configuration", cat_diagnostic: "Diagnostic", type_service: "Service (not a physical device)",
+});
+
+// Texts for the meter migration and the maintenance assistant; merged into TEXT.
+Object.assign(TEXT.de, {
+  kindMeter: "Zählerwechsel (Statistik fortführen / ID übernehmen, mit Backup)",
+  meterTitle: "Zählerwechsel", meterHint: "Führt die Historie eines ersetzten Zählers mit dem neuen zusammen. Die Langzeitstatistik des alten Zählers wird vor die des neuen kopiert und die Summe des neuen um den alten Endstand verschoben; die Rohwerte des neuen Zählers bleiben unverändert. Alternativ oder zusätzlich übernimmt der neue Zähler die ID des alten, sodass Automationen, Dashboards und das Energie-Dashboard ohne Umschreiben weiterlaufen. Überlappende Werte werden nie überschrieben. Vor jedem Lauf entsteht ein Home-Assistant-Backup.",
+  meterOld: "Alter Zähler", meterNew: "Neuer Zähler", meterMode: "Was soll passieren?",
+  meterModeBoth: "Statistik fortführen und ID übernehmen (empfohlen)", meterModeStatistics: "Nur Statistik fortführen (neue ID bleibt)", meterModeId: "Nur ID übernehmen (Statistik bleibt getrennt)",
+  meterCopy: "{count} Stundenwerte von {from} bis {to} werden vor die Reihe des neuen Zählers kopiert.", meterSwitch: "Umschaltpunkt: {date}",
+  meterOffset: "Die Summe des neuen Zählers wird um {offset} {unit} erhöht, damit die Verbrauchssumme durchläuft.",
+  meterOverlap: "{count} überlappende Werte des alten Zählers werden nicht kopiert; vorhandene Werte werden nie überschrieben.", meterGap: "Lücke ohne Werte: {hours} Stunden.",
+  meterIdMove: "{old} → {alt}, danach {new} → {old}. Home Assistant verschiebt Historie und Statistik mit der ID.", meterPreviewRows: "Übergang (Summe)",
+  meterStatsKept: "IDs zurückgegeben; die zusammengeführte Statistik bleibt bestehen und lässt sich nur mit dem Backup zurücksetzen.",
+  reason_nothing_to_do: "Nichts auszuführen.", reason_stats_missing_old: "Für den alten Zähler gibt es keine Langzeitstatistik.", reason_stats_unit_differs: "Die Einheiten der Statistiken unterscheiden sich.",
+  reason_stats_type_differs: "Die Statistik-Arten (Summe oder Mittelwert) unterscheiden sich.", reason_stats_nothing_to_import: "Es gibt keine Werte des alten Zählers vor dem Start des neuen.",
+  reason_no_recorder: "Der Recorder läuft nicht.", reason_old_not_in_registry: "Der alte Zähler ist nicht (mehr) in der Entity-Registry; die ID lässt sich nicht tauschen.",
+  reason_target_not_in_registry: "Der neue Zähler ist nicht in der Entity-Registry.", reason_alt_id_taken: "Es ist keine freie Ausweich-ID für den alten Zähler da.",
+  reason_stats_overlap: "Die Statistiken überlappen; nur Werte vor dem Start des neuen Zählers werden kopiert.", reason_stats_gap: "Zwischen altem Ende und neuem Start fehlen Werte.",
+  reason_stats_new_empty: "Der neue Zähler hat noch keine Langzeitstatistik; prüfe die Summe nach der ersten Auswertung.",
+  reason_stats_write: "Experimentell: schreibt in die Recorder-Datenbank. Die Statistik lässt sich danach nur mit dem Backup zurücksetzen.",
+  reason_id_takeover: "Benennt zwei Entities um. Verweise auf die bisherige ID des neuen Zählers funktionieren danach nicht mehr.", reason_target_in_use: "Der neue Zähler wird selbst schon verwendet; diese Verweise müssen angepasst werden.",
+  confirmWordMeter: "MIGRIEREN", confirmedSummaryMeter: "{count} Zählerwechsel: Housekeeper legt zuerst ein Home-Assistant-Backup an und startet nur, wenn es erfolgreich ist. Danach schreibt es Langzeitstatistiken und/oder benennt Entities um. Die IDs lassen sich zurückgeben, die Statistik nur mit dem Backup.",
+  result_migrated: "Migriert", check_meter_statistics: "Statistik fortgeführt", check_meter_id_taken: "Neue Entity trägt die stabile ID", undo_conflict_statistics: "nicht rückgängig: Statistik lässt sich nur mit dem Backup zurücksetzen",
+  abort_meter_changed: "Entities oder Statistik wurden nach der Vorschau geändert.", abort_statistics_changed: "Die Statistik wurde nach der Vorschau geändert.", abort_statistics_failed: "Die Statistik konnte nicht bestätigt werden; der Lauf wurde angehalten.",
+  abort_no_recorder: "Der Recorder läuft nicht.", abort_alt_id_taken: "Die Ausweich-ID ist inzwischen belegt.", abort_id_not_freed: "Home Assistant hat die alte ID nicht rechtzeitig freigegeben; alles wurde zurückgesetzt.", abort_id_takeover_failed: "Das Umbenennen ist fehlgeschlagen; alles wurde zurückgesetzt.",
+  // maintenance
+  maintenance: "Wartung", maintenanceSubtitle: "Recorder-Kosten und Update-Preflight. Beides liest nur; gespeichert wird allein der Ausgangszustand von Housekeeper.",
+  recorderTitle: "Recorder-Kosten", recorderHint: "Welche Entities die Datenbank füllen. Ausschließen verkleinert die Datenbank, löscht aber nichts rückwirkend; Housekeeper ändert die Recorder-Konfiguration nicht.",
+  recorderLoad: "Analyse starten", recorderReload: "Neu berechnen", recorderLoading: "Datenbank wird ausgewertet …", recorderUnavailable: "Der Recorder läuft nicht, daher gibt es nichts auszuwerten.",
+  recorderSummary: "{states} gespeicherte Zustände · {size} · Aufbewahrung {days} Tage · {stats} Statistikwerte", recorderSizeUnknown: "Größe unbekannt", recorderPerDay: "{count} pro Tag", recorderShare: "{share} % aller Zustände",
+  recorderUsed: "{count} Verwendungen", recorderUnused: "nicht verwendet", recorderExcluded: "bereits ausgeschlossen", recorderSuggest: "Ausschluss möglich", recorderStats: "Statistikwerte nach Entity",
+  recorderSnippetTitle: "Vorschlag für die configuration.yaml", recorderSnippetHint: "Entities, die nichts verwendet, keine Statistik haben und sehr oft schreiben. Prüfe die Liste, bevor du sie übernimmst.", recorderCopy: "Kopieren", recorderCopied: "Kopiert",
+  preflightTitle: "Update-Preflight", preflightHint: "Prüft vor einem Home-Assistant-Update Backup, Reparaturen, ausgefallene Integrationen und fehlende Referenzen. Speichere den Ausgangszustand; nach dem Update zeigt Housekeeper, was sich geändert hat.",
+  preflightRefresh: "Neu prüfen", preflightSave: "Ausgangszustand speichern", preflightClear: "Gespeicherten Zustand verwerfen", preflightLoading: "Wird geprüft …",
+  pf_backup: "Backup", pf_repairs: "Offene Reparaturen", pf_failed_entries: "Ausgefallene Integrationen", pf_broken: "Fehlende Referenzen",
+  pf_backup_ok: "Letztes Backup vor {hours} Stunden", pf_backup_old: "Letztes Backup vor {hours} Stunden – ein neues ist ratsam", pf_backup_none: "Kein Backup eingerichtet oder vorhanden", pf_backup_unavailable: "Backup-Komponente nicht verfügbar",
+  pf_count_none: "keine", pf_updates: "Verfügbare Updates", pf_updates_none: "keine",
+  preflightRecord: "Gespeichert am {date} · Home Assistant {version} · {repairs} Reparaturen, {failed} ausgefallene Integrationen, {broken} fehlende Referenzen, {objects} Objekte",
+  preflightAfterTitle: "Seit dem Update: Home Assistant {from} → {to}", preflightAfterNone: "Seit dem gespeicherten Zustand ist nichts Neues aufgefallen.",
+  pfNewRepairs: "Neue Reparaturen", pfNewFailed: "Neu ausgefallene Integrationen", pfNewBroken: "Neue fehlende Referenzen", pfNoRecord: "Noch kein Ausgangszustand gespeichert.",
+});
+Object.assign(TEXT.en, {
+  kindMeter: "Meter change (continue statistics / take over ID, with backup)",
+  meterTitle: "Meter change", meterHint: "Joins the history of a replaced meter with the new one. The old meter's long-term statistics are copied in front of the new ones and the new total is shifted by the old final reading; the raw readings of the new meter stay as they are. Alternatively or additionally the new meter takes over the old one's ID, so automations, dashboards and the Energy dashboard keep working without rewriting. Overlapping values are never overwritten. A Home Assistant backup is created before every run.",
+  meterOld: "Old meter", meterNew: "New meter", meterMode: "What should happen?",
+  meterModeBoth: "Continue statistics and take over the ID (recommended)", meterModeStatistics: "Continue statistics only (new ID stays)", meterModeId: "Take over the ID only (statistics stay separate)",
+  meterCopy: "{count} hourly values from {from} to {to} are copied in front of the new meter's series.", meterSwitch: "Switch point: {date}",
+  meterOffset: "The new meter's total is raised by {offset} {unit} so that the consumption total continues.",
+  meterOverlap: "{count} overlapping values of the old meter are not copied; existing values are never overwritten.", meterGap: "Gap without values: {hours} hours.",
+  meterIdMove: "{old} → {alt}, then {new} → {old}. Home Assistant moves history and statistics along with the ID.", meterPreviewRows: "Transition (total)",
+  meterStatsKept: "IDs given back; the joined statistics remain and can only be reset with the backup.",
+  reason_nothing_to_do: "Nothing to do.", reason_stats_missing_old: "The old meter has no long-term statistics.", reason_stats_unit_differs: "The units of the statistics differ.",
+  reason_stats_type_differs: "The statistic types (total or mean) differ.", reason_stats_nothing_to_import: "There are no values of the old meter before the new one starts.",
+  reason_no_recorder: "The recorder is not running.", reason_old_not_in_registry: "The old meter is not (any more) in the entity registry; the ID cannot be swapped.",
+  reason_target_not_in_registry: "The new meter is not in the entity registry.", reason_alt_id_taken: "There is no free fallback ID for the old meter.",
+  reason_stats_overlap: "The statistics overlap; only values before the new meter's start are copied.", reason_stats_gap: "Values are missing between the old end and the new start.",
+  reason_stats_new_empty: "The new meter has no long-term statistics yet; check the total after the first evaluation.",
+  reason_stats_write: "Experimental: writes into the recorder database. Afterwards the statistics can only be reset with the backup.",
+  reason_id_takeover: "Renames two entities. References to the new meter's current ID stop working afterwards.", reason_target_in_use: "The new meter is already in use itself; those references have to be adjusted.",
+  confirmWordMeter: "MIGRATE", confirmedSummaryMeter: "{count} meter changes: Housekeeper first creates a Home Assistant backup and only continues if it succeeds. It then writes long-term statistics and/or renames entities. IDs can be given back, statistics only with the backup.",
+  result_migrated: "Migrated", check_meter_statistics: "Statistics continued", check_meter_id_taken: "New entity carries the stable ID", undo_conflict_statistics: "not undone: statistics can only be reset with the backup",
+  abort_meter_changed: "Entities or statistics were changed after the preview.", abort_statistics_changed: "The statistics were changed after the preview.", abort_statistics_failed: "The statistics could not be confirmed; the run stopped.",
+  abort_no_recorder: "The recorder is not running.", abort_alt_id_taken: "The fallback ID is taken now.", abort_id_not_freed: "Home Assistant did not free the old ID in time; everything was put back.", abort_id_takeover_failed: "Renaming failed; everything was put back.",
+  maintenance: "Maintenance", maintenanceSubtitle: "Recorder costs and update preflight. Both only read; the only thing stored is Housekeeper's own starting state.",
+  recorderTitle: "Recorder costs", recorderHint: "Which entities fill the database. Excluding shrinks the database going forward but does not delete anything retroactively; Housekeeper does not change the recorder configuration.",
+  recorderLoad: "Start analysis", recorderReload: "Recalculate", recorderLoading: "Evaluating the database …", recorderUnavailable: "The recorder is not running, so there is nothing to evaluate.",
+  recorderSummary: "{states} stored states · {size} · kept {days} days · {stats} statistics values", recorderSizeUnknown: "size unknown", recorderPerDay: "{count} per day", recorderShare: "{share} % of all states",
+  recorderUsed: "{count} uses", recorderUnused: "not used", recorderExcluded: "already excluded", recorderSuggest: "can be excluded", recorderStats: "Statistics values by entity",
+  recorderSnippetTitle: "Suggestion for configuration.yaml", recorderSnippetHint: "Entities that nothing uses, that have no statistics and that write very often. Review the list before you adopt it.", recorderCopy: "Copy", recorderCopied: "Copied",
+  preflightTitle: "Update preflight", preflightHint: "Before a Home Assistant update it checks backup, repairs, failed integrations and missing references. Save the starting state; after the update Housekeeper shows what changed.",
+  preflightRefresh: "Check again", preflightSave: "Save starting state", preflightClear: "Discard saved state", preflightLoading: "Checking …",
+  pf_backup: "Backup", pf_repairs: "Open repairs", pf_failed_entries: "Failed integrations", pf_broken: "Missing references",
+  pf_backup_ok: "Last backup {hours} hours ago", pf_backup_old: "Last backup {hours} hours ago – a new one is advisable", pf_backup_none: "No backup set up or available", pf_backup_unavailable: "Backup component not available",
+  pf_count_none: "none", pf_updates: "Available updates", pf_updates_none: "none",
+  preflightRecord: "Saved {date} · Home Assistant {version} · {repairs} repairs, {failed} failed integrations, {broken} missing references, {objects} objects",
+  preflightAfterTitle: "Since the update: Home Assistant {from} → {to}", preflightAfterNone: "Nothing new has shown up since the saved state.",
+  pfNewRepairs: "New repairs", pfNewFailed: "Newly failed integrations", pfNewBroken: "New missing references", pfNoRecord: "No starting state saved yet.",
 });
 
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -1075,6 +1153,7 @@ class CleanupMixin {
   planWord(plan) {
     const executable = (plan?.actions || []).filter(a => a.executable);
     if (executable.some(a => REMOVAL_KINDS.includes(a.kind))) return this.t("confirmWordRemove");
+    if (executable.some(a => a.kind === "migrate_meter")) return this.t("confirmWordMeter");
     if (executable.some(a => a.kind === "replace_references")) return this.t("confirmWordReplace");
     return this.t("confirmWord");
   }
@@ -1083,6 +1162,7 @@ class CleanupMixin {
     const executable = plan.actions.filter(a => a.executable);
     const devices = executable.some(a => DEVICE_KINDS.includes(a.kind));
     const key = executable.some(a => REMOVAL_KINDS.includes(a.kind)) ? (devices ? "confirmedSummaryDeviceRemove" : "confirmedSummaryRemove")
+      : executable.some(a => a.kind === "migrate_meter") ? "confirmedSummaryMeter"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
     return this.t(key, { count: key === "confirmedSummaryReplace" ? changes : count });
@@ -1100,16 +1180,38 @@ class CleanupMixin {
     return `<span style="display:block;padding:6px 0 0"><small>${this.t("replaceSources")}:</small>${rows}</span>`;
   }
 
+  // What a meter change will do: copied hours, the shift of the total, the ID move, and the transition.
+  meterDetail(action) {
+    const s = action.statistics || {}, lines = [];
+    const day = ts => this.formatDate(ts * 1000);
+    if (action.mode !== "id" && s.import_count) {
+      lines.push(this.t("meterCopy", { count: s.import_count, from: day(s.old_first), to: day(s.old_last) }));
+      if (s.switch) lines.push(this.t("meterSwitch", { date: day(s.switch) }));
+      if (s.offset !== null && s.offset !== undefined) lines.push(this.t("meterOffset", { offset: this.formatNumber(Math.round(s.offset * 1000) / 1000), unit: s.unit || "" }));
+      if (s.dropped_overlap) lines.push(this.t("meterOverlap", { count: s.dropped_overlap }));
+      if (s.gap_hours > 0) lines.push(this.t("meterGap", { hours: s.gap_hours }));
+    }
+    if (action.mode !== "statistics" && action.alt_id) lines.push(this.t("meterIdMove", { old: action.object_id, alt: action.alt_id, new: action.target }));
+    const before = (s.preview?.before || []), after = (s.preview?.after || []);
+    const cell = row => `${this.esc(day(row.start))}: ${this.esc(this.formatNumber(Math.round((row.sum_after ?? row.sum ?? 0) * 1000) / 1000))}`;
+    const rows = before.length || after.length ? `<small style="display:block;opacity:.8">${this.t("meterPreviewRows")}: ${[...before, ...after].map(cell).join(" · ")}</small>` : "";
+    const kept = action.result?.statistics_kept ? `<small style="display:block">${this.t("meterStatsKept")}</small>` : "";
+    return `<span style="display:block;padding:6px 0 0">${lines.map(l => `<small style="display:block">${this.esc(l)}</small>`).join("")}${rows}${kept}</span>`;
+  }
+
   async loadJournal() {
     try { this.journal = (await this._hass.callWS({ type: "ha_housekeeper/plan_list" })).plans || []; } catch (_) { this.journal = []; }
     this.render();
   }
 
   async createPlan() {
-    if (this.cleanupKind === "replace_references" ? !(this.replOld && this.replNew) : !this.cleanupSel.size) return;
+    const pair = this.cleanupKind === "replace_references" ? [this.replOld, this.replNew] : this.cleanupKind === "migrate_meter" ? [this.meterOld, this.meterNew] : null;
+    if (pair ? !(pair[0] && pair[1]) : !this.cleanupSel.size) return;
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
-      const actions = this.cleanupKind === "replace_references" ? [{ kind: "replace_references", object_id: this.replOld, target: this.replNew }] : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id }));
+      const actions = this.cleanupKind === "replace_references" ? [{ kind: "replace_references", object_id: this.replOld, target: this.replNew }]
+        : this.cleanupKind === "migrate_meter" ? [{ kind: "migrate_meter", object_id: this.meterOld, target: this.meterNew, mode: this.meterMode }]
+        : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
@@ -1195,9 +1297,9 @@ class CleanupMixin {
       const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : `result_${result.state}`)}</span>` : "";
-      const sub = a.kind === "replace_references" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
-      const sources = a.kind === "replace_references" ? this.sourceList(a) : "";
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : `result_${result.state}`)}</span>` : "";
+      const sub = a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
+      const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "";
       const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
       const undo = result?.state === "done" ? `<button class="btn" data-undo-one="${this.esc(a.object_id)}">${this.t("undoOne")}</button>` : "";
@@ -1221,7 +1323,7 @@ class CleanupMixin {
   }
 
   kindSelect() {
-    const kinds = [["disable_entity", "kindDisable"], ["remove_entity", "kindRemove"], ["disable_device", "kindDisableDevice"], ["remove_device", "kindRemoveDevice"], ["forget_device", "kindForgetDevice"], ["replace_references", "kindReplace"]];
+    const kinds = [["disable_entity", "kindDisable"], ["remove_entity", "kindRemove"], ["disable_device", "kindDisableDevice"], ["remove_device", "kindRemoveDevice"], ["forget_device", "kindForgetDevice"], ["replace_references", "kindReplace"], ["migrate_meter", "kindMeter"]];
     return `<select data-cleanup-kind aria-label="${this.t("actionKind")}">${kinds.map(([value, label]) => `<option value="${value}" ${this.cleanupKind === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select>`;
   }
 
@@ -1238,6 +1340,24 @@ class CleanupMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("replaceTitle")}</h2><p>${this.t("replaceHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
       <div class="setrow"><div><label>${this.t("replaceOld")}</label></div><input type="text" list="hk-repl-old" data-repl-old value="${this.esc(this.replOld || "")}" placeholder="sensor.old_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-old">${oldOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("replaceNew")}</label></div><input type="text" list="hk-repl-new" data-repl-new value="${this.esc(this.replNew || "")}" placeholder="sensor.new_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-new">${newOptions}</datalist></div>
+      <div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
+  }
+
+  // Join a replaced meter's history to its successor and/or let the successor take over the ID.
+  meterCard() {
+    const entities = this.data.objects.filter(o => o.object_type === "entity");
+    const byId = new Map(entities.map(o => [o.object_id, o]));
+    const oldOptions = entities.filter(o => o.has_statistics && o.object_id.startsWith("sensor.")).sort((a, b) => a.object_id.localeCompare(b.object_id)).slice(0, 2000)
+      .map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name)}</option>`).join("");
+    const domain = (this.meterOld || "").split(".")[0], unit = byId.get(this.meterOld)?.unit;
+    const newOptions = entities.filter(o => o.status === "active" && (!domain || o.object_id.startsWith(`${domain}.`)) && o.object_id !== this.meterOld && (!unit || o.unit === unit)).sort((a, b) => a.object_id.localeCompare(b.object_id)).slice(0, 2000)
+      .map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name)}</option>`).join("");
+    const modes = [["both", "meterModeBoth"], ["statistics", "meterModeStatistics"], ["id", "meterModeId"]];
+    const ready = this.meterOld && this.meterNew && !this.cleanupBusy;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("meterTitle")}</h2><p>${this.t("meterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
+      <div class="setrow"><div><label>${this.t("meterOld")}</label></div><input type="text" list="hk-meter-old" data-meter-old value="${this.esc(this.meterOld || "")}" placeholder="sensor.old_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-old">${oldOptions}</datalist></div>
+      <div class="setrow"><div><label>${this.t("meterNew")}</label></div><input type="text" list="hk-meter-new" data-meter-new value="${this.esc(this.meterNew || "")}" placeholder="sensor.new_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-new">${newOptions}</datalist></div>
+      <div class="setrow"><div><label>${this.t("meterMode")}</label></div><select data-meter-mode style="max-width:460px">${modes.map(([value, label]) => `<option value="${value}" ${this.meterMode === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select></div>
       <div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
@@ -1284,7 +1404,7 @@ class CleanupMixin {
       <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${this.kindSelect()}<span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn" data-sel-page>${this.t("selectPage")}</button><button class="btn" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
-    const assistant = this.cleanupKind === "replace_references" ? this.replaceCard() : candidates;
+    const assistant = this.cleanupKind === "replace_references" ? this.replaceCard() : this.cleanupKind === "migrate_meter" ? this.meterCard() : candidates;
     const journal = (this.journal || []).map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
@@ -1825,6 +1945,115 @@ class PropertiesMixin {
   }
 }
 
+// MaintenanceMixin: recorder costs and the update preflight; mixed into the panel in 99-register.js.
+class MaintenanceMixin {
+  async loadCosts() {
+    this.costsLoading = true; this.costsError = ""; this.render();
+    try { this.costs = await this._hass.callWS({ type: "ha_housekeeper/recorder_costs" }); } catch (err) { this.costs = null; this.costsError = err?.message || String(err); }
+    this.costsLoading = false; this.render();
+  }
+
+  // `action` is "save" (remember the state as the starting point), "clear" (forget it) or nothing (just check).
+  async loadPreflight(action) {
+    this.preflightLoading = true; this.preflightError = ""; this.render();
+    try {
+      this.preflight = await this._hass.callWS(action ? { type: "ha_housekeeper/preflight_save", clear: action === "clear" } : { type: "ha_housekeeper/preflight" });
+      if (action === "save" && this.data) this.load(false);
+    } catch (err) { this.preflightError = err?.message || String(err); }
+    this.preflightLoading = false; this.render();
+  }
+
+  formatBytes(bytes) {
+    if (bytes === null || bytes === undefined) return this.t("recorderSizeUnknown");
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let value = bytes, i = 0;
+    while (value >= 1024 && i < units.length - 1) { value /= 1024; i += 1; }
+    return `${this.formatNumber(Math.round(value * 10) / 10)} ${units[i]}`;
+  }
+
+  suggestedExclusions() { return (this.costs?.entities || []).filter(e => e.suggest_exclude && !e.excluded).map(e => e.entity_id); }
+
+  // A recorder exclusion for configuration.yaml; Housekeeper never writes it.
+  exclusionSnippet() { return `recorder:\n  exclude:\n    entities:\n${this.suggestedExclusions().map(id => `      - ${id}`).join("\n")}\n`; }
+
+  recorderCard() {
+    const c = this.costs;
+    const head = (extra = "") => `<div class="panelhead"><div><h2>${this.t("recorderTitle")}</h2><p>${this.t("recorderHint")}</p></div><div class="actions">${extra}</div></div>`;
+    if (this.costsLoading) return `<div class="panel">${head()}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("recorderLoading")}</p></div></div>`;
+    if (this.costsError) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<div class="error">${this.esc(this.costsError)}</div></div>`;
+    if (!c) return `<div class="panel">${head(`<button class="btn primary" data-costs-load>${this.t("recorderLoad")}</button>`)}</div>`;
+    if (!c.available) return `<div class="panel">${head()}<div class="emptymsg"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t("recorderUnavailable")}</div></div>`;
+    const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) });
+    const rows = c.entities.map(e => {
+      const obj = this.findObject(`entity:${e.entity_id}`);
+      const tags = [
+        `<span class="pill ${e.used ? "ok" : "mute"}">${e.used ? this.t("recorderUsed", { count: e.used }) : this.t("recorderUnused")}</span>`,
+        e.excluded ? `<span class="pill mute">${this.t("recorderExcluded")}</span>` : "",
+        e.suggest_exclude && !e.excluded ? `<span class="pill warn">${this.t("recorderSuggest")}</span>` : "",
+      ].join("");
+      const inner = `<span class="tile ${e.suggest_exclude && !e.excluded ? "warn" : "mute"}"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong><small>${this.esc(e.entity_id)} · ${this.formatNumber(e.states)} · ${this.t("recorderPerDay", { count: this.formatNumber(e.per_day) })} · ${this.t("recorderShare", { share: e.share })}</small><span class="bar" style="margin-top:4px"><i style="width:${Math.min(100, Math.round(e.share))}%"></i></span></span><span style="display:flex;gap:6px;flex-wrap:wrap">${tags}</span>`;
+      return obj ? `<button class="row rel" data-object="${this.esc(`entity:${e.entity_id}`)}">${inner}</button>` : `<div class="row rel">${inner}</div>`;
+    }).join("");
+    const statRows = (c.statistics || []).slice(0, 10).map(s => `<div class="row rel"><span class="tile mute"><ha-icon icon="mdi:chart-line"></ha-icon></span><span class="row-text"><strong>${this.esc(s.statistic_id)}</strong><small>${this.formatNumber(s.rows)}</small></span></div>`).join("");
+    const suggested = this.suggestedExclusions();
+    const snippet = suggested.length ? `<div class="panel" style="margin:14px 16px"><div class="panelhead"><div><h3>${this.t("recorderSnippetTitle")}</h3><p>${this.t("recorderSnippetHint")}</p></div><button class="btn" data-copy-snippet>${this.snippetCopied ? this.t("recorderCopied") : this.t("recorderCopy")}</button></div><pre class="code">${this.esc(this.exclusionSnippet())}</pre></div>` : "";
+    return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.esc(summary)}</p>${rows}${snippet}${statRows ? `<div class="panelhead" style="border-top:1px solid var(--hk-border)"><div><h3>${this.t("recorderStats")}</h3></div></div>${statRows}` : ""}</div>`;
+  }
+
+  // One line per check; `level` decides the colour.
+  preflightRows(state, checks) {
+    const detail = {
+      backup: () => {
+        const b = state.backup || {};
+        if (!b.available) return this.t("pf_backup_unavailable");
+        if (!b.configured || b.newest === null) return this.t("pf_backup_none");
+        return this.t(b.age_hours > 48 ? "pf_backup_old" : "pf_backup_ok", { hours: Math.round(b.age_hours) });
+      },
+    };
+    return checks.map(c => {
+      const items = { repairs: state.repairs, failed_entries: state.failed_entries, broken: state.broken }[c.check];
+      const names = (items || []).slice(0, 5).map(i => i.title || i.name || i.issue_id || i.object_id).filter(Boolean).map(n => this.esc(n)).join(", ");
+      const text = c.check === "backup" ? detail.backup() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
+      const tone = { ok: "ok", warn: "warn", red: "red" }[c.level] || "mute";
+      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : "mdi:alert-outline";
+      return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span></div>`;
+    }).join("");
+  }
+
+  preflightAfter(after) {
+    const parts = [
+      ["pfNewRepairs", after.new_repairs, r => `${r.domain} · ${r.issue_id}`],
+      ["pfNewFailed", after.new_failed_entries, e => `${e.title} (${e.domain})`],
+      ["pfNewBroken", after.new_broken, b => b.name],
+    ].filter(([, items]) => items.length);
+    const inv = after.inventory || {};
+    const counts = [["newObjects", inv.new_objects], ["removedObjects", inv.removed_objects], ["statusChanges", inv.status_changes], ["newFindings", inv.new_findings], ["resolvedFindings", inv.resolved_findings]].filter(([, part]) => part?.total);
+    const lists = parts.map(([label, items, text]) => `<div class="row rel"><span class="tile warn"><ha-icon icon="mdi:alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(label)} (${items.length})</strong><small>${items.slice(0, 8).map(i => this.esc(text(i))).join(" · ")}</small></span></div>`).join("");
+    const summary = counts.map(([label, part]) => `<div class="row rel"><span class="tile mute"><ha-icon icon="mdi:compare-horizontal"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill mute">${this.formatNumber(part.total)}</span></div>`).join("");
+    const body = lists + summary || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("preflightAfterNone")}</div>`;
+    return `<div class="panelhead" style="border-top:1px solid var(--hk-border)"><div><h3>${this.t("preflightAfterTitle", { from: this.esc(after.from_version), to: this.esc(after.to_version) })}</h3></div></div>${body}`;
+  }
+
+  preflightCard() {
+    const p = this.preflight;
+    const buttons = `<button class="btn" data-pf-refresh ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightRefresh")}</button><button class="btn primary" data-pf-save ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightSave")}</button>`;
+    const head = `<div class="panelhead"><div><h2>${this.t("preflightTitle")}</h2><p>${this.t("preflightHint")}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${buttons}</div></div>`;
+    if (this.preflightError) return `<div class="panel">${head}<div class="error">${this.esc(this.preflightError)}</div></div>`;
+    if (!p) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("preflightLoading")}</p></div></div>`;
+    const updates = p.state.pending_updates || [];
+    const updateRow = `<div class="row rel"><span class="tile ${updates.length ? "warn" : "ok"}"><ha-icon icon="mdi:package-up"></ha-icon></span><span class="row-text"><strong>${this.t("pf_updates")}</strong><small>${updates.length ? updates.slice(0, 6).map(u => `${this.esc(u.name)} ${this.esc(u.installed ?? "")} → ${this.esc(u.latest ?? "")}`).join(" · ") : this.t("pf_updates_none")}</small></span></div>`;
+    const record = p.record
+      ? `<p class="factnote">${this.t("preflightRecord", { date: this.formatDate(p.record.at), version: this.esc(p.record.ha_version), repairs: p.record.repairs, failed: p.record.failed_entries, broken: p.record.broken, objects: this.formatNumber(p.record.objects) })} <button class="btn" data-pf-clear>${this.t("preflightClear")}</button></p>`
+      : `<p class="factnote">${this.t("pfNoRecord")}</p>`;
+    return `<div class="panel">${head}${this.preflightRows(p.state, p.checks)}${updateRow}${record}${p.after ? this.preflightAfter(p.after) : ""}</div>`;
+  }
+
+  maintenanceView() {
+    if (!this.preflight && !this.preflightLoading && !this._pfRequested) { this._pfRequested = true; setTimeout(() => this.loadPreflight(), 0); }
+    return `<div class="stack">${this.preflightCard()}${this.recorderCard()}</div>`;
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -1856,6 +2085,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupSel = new Set();
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
+    this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
+    this.preflight = null; this.costs = null; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -2041,6 +2272,7 @@ class HAHousekeeperPanel extends HTMLElement {
       graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
       settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
       cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
+      maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
@@ -2059,6 +2291,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "batteries") return this.batteriesView();
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
+    if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -2149,6 +2382,18 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelector("[data-repl-new]")?.addEventListener("change", e => { this.replNew = e.target.value.trim(); this.render(); });
+    root.querySelector("[data-meter-old]")?.addEventListener("change", e => { this.meterOld = e.target.value.trim(); if (this.meterNew && this.meterNew.split(".")[0] !== this.meterOld.split(".")[0]) this.meterNew = ""; this.render(); });
+    root.querySelector("[data-meter-new]")?.addEventListener("change", e => { this.meterNew = e.target.value.trim(); this.render(); });
+    root.querySelector("[data-meter-mode]")?.addEventListener("change", e => { this.meterMode = e.target.value; this.render(); });
+    root.querySelector("[data-costs-load]")?.addEventListener("click", () => this.loadCosts());
+    root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
+    root.querySelector("[data-pf-save]")?.addEventListener("click", () => this.loadPreflight("save"));
+    root.querySelector("[data-pf-clear]")?.addEventListener("click", () => this.loadPreflight("clear"));
+    root.querySelector("[data-copy-snippet]")?.addEventListener("click", async () => {
+      try { await globalThis.navigator?.clipboard?.writeText(this.exclusionSnippet()); this.snippetCopied = true; } catch (_) { this.snippetCopied = false; }
+      this.render();
+      setTimeout(() => { this.snippetCopied = false; this.render(); }, 1500);
+    });
     root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => { this.plan = (this.journal || []).find(p => p.plan_id === el.dataset.planOpen) || null; this.render(); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => this.deletePlan(el.dataset.planDelete));
@@ -2175,7 +2420,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

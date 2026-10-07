@@ -51,6 +51,7 @@ class CleanupMixin {
   planWord(plan) {
     const executable = (plan?.actions || []).filter(a => a.executable);
     if (executable.some(a => REMOVAL_KINDS.includes(a.kind))) return this.t("confirmWordRemove");
+    if (executable.some(a => a.kind === "migrate_meter")) return this.t("confirmWordMeter");
     if (executable.some(a => a.kind === "replace_references")) return this.t("confirmWordReplace");
     return this.t("confirmWord");
   }
@@ -59,6 +60,7 @@ class CleanupMixin {
     const executable = plan.actions.filter(a => a.executable);
     const devices = executable.some(a => DEVICE_KINDS.includes(a.kind));
     const key = executable.some(a => REMOVAL_KINDS.includes(a.kind)) ? (devices ? "confirmedSummaryDeviceRemove" : "confirmedSummaryRemove")
+      : executable.some(a => a.kind === "migrate_meter") ? "confirmedSummaryMeter"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
     return this.t(key, { count: key === "confirmedSummaryReplace" ? changes : count });
@@ -76,16 +78,38 @@ class CleanupMixin {
     return `<span style="display:block;padding:6px 0 0"><small>${this.t("replaceSources")}:</small>${rows}</span>`;
   }
 
+  // What a meter change will do: copied hours, the shift of the total, the ID move, and the transition.
+  meterDetail(action) {
+    const s = action.statistics || {}, lines = [];
+    const day = ts => this.formatDate(ts * 1000);
+    if (action.mode !== "id" && s.import_count) {
+      lines.push(this.t("meterCopy", { count: s.import_count, from: day(s.old_first), to: day(s.old_last) }));
+      if (s.switch) lines.push(this.t("meterSwitch", { date: day(s.switch) }));
+      if (s.offset !== null && s.offset !== undefined) lines.push(this.t("meterOffset", { offset: this.formatNumber(Math.round(s.offset * 1000) / 1000), unit: s.unit || "" }));
+      if (s.dropped_overlap) lines.push(this.t("meterOverlap", { count: s.dropped_overlap }));
+      if (s.gap_hours > 0) lines.push(this.t("meterGap", { hours: s.gap_hours }));
+    }
+    if (action.mode !== "statistics" && action.alt_id) lines.push(this.t("meterIdMove", { old: action.object_id, alt: action.alt_id, new: action.target }));
+    const before = (s.preview?.before || []), after = (s.preview?.after || []);
+    const cell = row => `${this.esc(day(row.start))}: ${this.esc(this.formatNumber(Math.round((row.sum_after ?? row.sum ?? 0) * 1000) / 1000))}`;
+    const rows = before.length || after.length ? `<small style="display:block;opacity:.8">${this.t("meterPreviewRows")}: ${[...before, ...after].map(cell).join(" · ")}</small>` : "";
+    const kept = action.result?.statistics_kept ? `<small style="display:block">${this.t("meterStatsKept")}</small>` : "";
+    return `<span style="display:block;padding:6px 0 0">${lines.map(l => `<small style="display:block">${this.esc(l)}</small>`).join("")}${rows}${kept}</span>`;
+  }
+
   async loadJournal() {
     try { this.journal = (await this._hass.callWS({ type: "ha_housekeeper/plan_list" })).plans || []; } catch (_) { this.journal = []; }
     this.render();
   }
 
   async createPlan() {
-    if (this.cleanupKind === "replace_references" ? !(this.replOld && this.replNew) : !this.cleanupSel.size) return;
+    const pair = this.cleanupKind === "replace_references" ? [this.replOld, this.replNew] : this.cleanupKind === "migrate_meter" ? [this.meterOld, this.meterNew] : null;
+    if (pair ? !(pair[0] && pair[1]) : !this.cleanupSel.size) return;
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
-      const actions = this.cleanupKind === "replace_references" ? [{ kind: "replace_references", object_id: this.replOld, target: this.replNew }] : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id }));
+      const actions = this.cleanupKind === "replace_references" ? [{ kind: "replace_references", object_id: this.replOld, target: this.replNew }]
+        : this.cleanupKind === "migrate_meter" ? [{ kind: "migrate_meter", object_id: this.meterOld, target: this.meterNew, mode: this.meterMode }]
+        : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
@@ -171,9 +195,9 @@ class CleanupMixin {
       const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : `result_${result.state}`)}</span>` : "";
-      const sub = a.kind === "replace_references" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
-      const sources = a.kind === "replace_references" ? this.sourceList(a) : "";
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : `result_${result.state}`)}</span>` : "";
+      const sub = a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
+      const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "";
       const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
       const undo = result?.state === "done" ? `<button class="btn" data-undo-one="${this.esc(a.object_id)}">${this.t("undoOne")}</button>` : "";
@@ -197,7 +221,7 @@ class CleanupMixin {
   }
 
   kindSelect() {
-    const kinds = [["disable_entity", "kindDisable"], ["remove_entity", "kindRemove"], ["disable_device", "kindDisableDevice"], ["remove_device", "kindRemoveDevice"], ["forget_device", "kindForgetDevice"], ["replace_references", "kindReplace"]];
+    const kinds = [["disable_entity", "kindDisable"], ["remove_entity", "kindRemove"], ["disable_device", "kindDisableDevice"], ["remove_device", "kindRemoveDevice"], ["forget_device", "kindForgetDevice"], ["replace_references", "kindReplace"], ["migrate_meter", "kindMeter"]];
     return `<select data-cleanup-kind aria-label="${this.t("actionKind")}">${kinds.map(([value, label]) => `<option value="${value}" ${this.cleanupKind === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select>`;
   }
 
@@ -214,6 +238,24 @@ class CleanupMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("replaceTitle")}</h2><p>${this.t("replaceHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
       <div class="setrow"><div><label>${this.t("replaceOld")}</label></div><input type="text" list="hk-repl-old" data-repl-old value="${this.esc(this.replOld || "")}" placeholder="sensor.old_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-old">${oldOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("replaceNew")}</label></div><input type="text" list="hk-repl-new" data-repl-new value="${this.esc(this.replNew || "")}" placeholder="sensor.new_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-new">${newOptions}</datalist></div>
+      <div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
+  }
+
+  // Join a replaced meter's history to its successor and/or let the successor take over the ID.
+  meterCard() {
+    const entities = this.data.objects.filter(o => o.object_type === "entity");
+    const byId = new Map(entities.map(o => [o.object_id, o]));
+    const oldOptions = entities.filter(o => o.has_statistics && o.object_id.startsWith("sensor.")).sort((a, b) => a.object_id.localeCompare(b.object_id)).slice(0, 2000)
+      .map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name)}</option>`).join("");
+    const domain = (this.meterOld || "").split(".")[0], unit = byId.get(this.meterOld)?.unit;
+    const newOptions = entities.filter(o => o.status === "active" && (!domain || o.object_id.startsWith(`${domain}.`)) && o.object_id !== this.meterOld && (!unit || o.unit === unit)).sort((a, b) => a.object_id.localeCompare(b.object_id)).slice(0, 2000)
+      .map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name)}</option>`).join("");
+    const modes = [["both", "meterModeBoth"], ["statistics", "meterModeStatistics"], ["id", "meterModeId"]];
+    const ready = this.meterOld && this.meterNew && !this.cleanupBusy;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("meterTitle")}</h2><p>${this.t("meterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
+      <div class="setrow"><div><label>${this.t("meterOld")}</label></div><input type="text" list="hk-meter-old" data-meter-old value="${this.esc(this.meterOld || "")}" placeholder="sensor.old_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-old">${oldOptions}</datalist></div>
+      <div class="setrow"><div><label>${this.t("meterNew")}</label></div><input type="text" list="hk-meter-new" data-meter-new value="${this.esc(this.meterNew || "")}" placeholder="sensor.new_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-new">${newOptions}</datalist></div>
+      <div class="setrow"><div><label>${this.t("meterMode")}</label></div><select data-meter-mode style="max-width:460px">${modes.map(([value, label]) => `<option value="${value}" ${this.meterMode === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select></div>
       <div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
@@ -260,7 +302,7 @@ class CleanupMixin {
       <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${this.kindSelect()}<span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn" data-sel-page>${this.t("selectPage")}</button><button class="btn" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
-    const assistant = this.cleanupKind === "replace_references" ? this.replaceCard() : candidates;
+    const assistant = this.cleanupKind === "replace_references" ? this.replaceCard() : this.cleanupKind === "migrate_meter" ? this.meterCard() : candidates;
     const journal = (this.journal || []).map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");

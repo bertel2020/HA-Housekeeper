@@ -14,6 +14,8 @@ from homeassistant.helpers import entity_registry as er
 from .cleanup import (
     ACTION_KINDS,
     MAX_ACTIONS,
+    METER_KINDS,
+    METER_MODES,
     REFERENCE_KINDS,
     build_plan,
     device_fingerprint,
@@ -23,6 +25,8 @@ from .cleanup import (
 from .cleanup_exec import CleanupError, entity_restorable
 from .const import DOMAIN, OPTION_LIMITS
 from .inventory import InventoryScanner
+from .maintenance import preflight_report, recorder_costs
+from .meter import prepare_meter
 from .references import preview_replacement
 
 
@@ -204,6 +208,7 @@ def websocket_set_options(
                     vol.Required("kind"): vol.In(sorted(ACTION_KINDS)),
                     vol.Required("object_id"): str,
                     vol.Optional("target"): str,
+                    vol.Optional("mode"): vol.In(METER_MODES),
                 }
             ],
             vol.Length(min=1, max=MAX_ACTIONS),
@@ -248,6 +253,13 @@ async def websocket_plan_create(
             if pair not in reference_data and pair[0] != pair[1]:
                 reference_data[pair] = await preview_replacement(hass, snapshot, *pair)
 
+    meter_data = {}
+    for action in msg["actions"]:
+        if action["kind"] in METER_KINDS and action.get("target"):
+            key = (action["object_id"], action["target"], action.get("mode") or "both")
+            if key not in meter_data and key[0] != key[1]:
+                meter_data[key] = await prepare_meter(hass, key[0], key[1], key[2])
+
     plan = build_plan(
         snapshot,
         msg["actions"],
@@ -256,6 +268,7 @@ async def websocket_plan_create(
         restorable,
         device_info=device_info,
         reference_data=reference_data,
+        meter_data=meter_data,
     )
     scanner.journal.add(plan)
     connection.send_result(msg["id"], plan)
@@ -421,6 +434,80 @@ async def websocket_plan_undo(
     connection.send_result(msg["id"], result)
 
 
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/recorder_costs"})
+@websocket_api.async_response
+async def websocket_recorder_costs(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Rank the entities that fill the recorder database. Read-only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        result = await recorder_costs(hass, snapshot)
+    except Exception as err:
+        connection.send_error(msg["id"], "recorder_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], result)
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/preflight"})
+@websocket_api.async_response
+async def websocket_preflight(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Check backup, repairs, failing integrations and broken references; compare with the record."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        result = await preflight_report(hass, snapshot, scanner.preflight)
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], result)
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/preflight_save", vol.Optional("clear", default=False): bool}
+)
+@websocket_api.async_response
+async def websocket_preflight_save(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Remember the current state as the starting point for the next update check."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        if msg["clear"]:
+            scanner.preflight.clear()
+        else:
+            snapshot = await scanner.async_scan()
+            report = await preflight_report(hass, snapshot, scanner.preflight)
+            scanner.preflight.save(report["state"], snapshot)
+        snapshot = await scanner.async_get_snapshot()
+        result = await preflight_report(hass, snapshot, scanner.preflight)
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], result)
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register Housekeeper WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_inventory)
@@ -438,3 +525,6 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_plan_cancel)
     websocket_api.async_register_command(hass, websocket_plan_status)
     websocket_api.async_register_command(hass, websocket_plan_undo)
+    websocket_api.async_register_command(hass, websocket_recorder_costs)
+    websocket_api.async_register_command(hass, websocket_preflight)
+    websocket_api.async_register_command(hass, websocket_preflight_save)

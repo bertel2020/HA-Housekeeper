@@ -1,0 +1,108 @@
+// MaintenanceMixin: recorder costs and the update preflight; mixed into the panel in 99-register.js.
+class MaintenanceMixin {
+  async loadCosts() {
+    this.costsLoading = true; this.costsError = ""; this.render();
+    try { this.costs = await this._hass.callWS({ type: "ha_housekeeper/recorder_costs" }); } catch (err) { this.costs = null; this.costsError = err?.message || String(err); }
+    this.costsLoading = false; this.render();
+  }
+
+  // `action` is "save" (remember the state as the starting point), "clear" (forget it) or nothing (just check).
+  async loadPreflight(action) {
+    this.preflightLoading = true; this.preflightError = ""; this.render();
+    try {
+      this.preflight = await this._hass.callWS(action ? { type: "ha_housekeeper/preflight_save", clear: action === "clear" } : { type: "ha_housekeeper/preflight" });
+      if (action === "save" && this.data) this.load(false);
+    } catch (err) { this.preflightError = err?.message || String(err); }
+    this.preflightLoading = false; this.render();
+  }
+
+  formatBytes(bytes) {
+    if (bytes === null || bytes === undefined) return this.t("recorderSizeUnknown");
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let value = bytes, i = 0;
+    while (value >= 1024 && i < units.length - 1) { value /= 1024; i += 1; }
+    return `${this.formatNumber(Math.round(value * 10) / 10)} ${units[i]}`;
+  }
+
+  suggestedExclusions() { return (this.costs?.entities || []).filter(e => e.suggest_exclude && !e.excluded).map(e => e.entity_id); }
+
+  // A recorder exclusion for configuration.yaml; Housekeeper never writes it.
+  exclusionSnippet() { return `recorder:\n  exclude:\n    entities:\n${this.suggestedExclusions().map(id => `      - ${id}`).join("\n")}\n`; }
+
+  recorderCard() {
+    const c = this.costs;
+    const head = (extra = "") => `<div class="panelhead"><div><h2>${this.t("recorderTitle")}</h2><p>${this.t("recorderHint")}</p></div><div class="actions">${extra}</div></div>`;
+    if (this.costsLoading) return `<div class="panel">${head()}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("recorderLoading")}</p></div></div>`;
+    if (this.costsError) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<div class="error">${this.esc(this.costsError)}</div></div>`;
+    if (!c) return `<div class="panel">${head(`<button class="btn primary" data-costs-load>${this.t("recorderLoad")}</button>`)}</div>`;
+    if (!c.available) return `<div class="panel">${head()}<div class="emptymsg"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t("recorderUnavailable")}</div></div>`;
+    const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) });
+    const rows = c.entities.map(e => {
+      const obj = this.findObject(`entity:${e.entity_id}`);
+      const tags = [
+        `<span class="pill ${e.used ? "ok" : "mute"}">${e.used ? this.t("recorderUsed", { count: e.used }) : this.t("recorderUnused")}</span>`,
+        e.excluded ? `<span class="pill mute">${this.t("recorderExcluded")}</span>` : "",
+        e.suggest_exclude && !e.excluded ? `<span class="pill warn">${this.t("recorderSuggest")}</span>` : "",
+      ].join("");
+      const inner = `<span class="tile ${e.suggest_exclude && !e.excluded ? "warn" : "mute"}"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong><small>${this.esc(e.entity_id)} · ${this.formatNumber(e.states)} · ${this.t("recorderPerDay", { count: this.formatNumber(e.per_day) })} · ${this.t("recorderShare", { share: e.share })}</small><span class="bar" style="margin-top:4px"><i style="width:${Math.min(100, Math.round(e.share))}%"></i></span></span><span style="display:flex;gap:6px;flex-wrap:wrap">${tags}</span>`;
+      return obj ? `<button class="row rel" data-object="${this.esc(`entity:${e.entity_id}`)}">${inner}</button>` : `<div class="row rel">${inner}</div>`;
+    }).join("");
+    const statRows = (c.statistics || []).slice(0, 10).map(s => `<div class="row rel"><span class="tile mute"><ha-icon icon="mdi:chart-line"></ha-icon></span><span class="row-text"><strong>${this.esc(s.statistic_id)}</strong><small>${this.formatNumber(s.rows)}</small></span></div>`).join("");
+    const suggested = this.suggestedExclusions();
+    const snippet = suggested.length ? `<div class="panel" style="margin:14px 16px"><div class="panelhead"><div><h3>${this.t("recorderSnippetTitle")}</h3><p>${this.t("recorderSnippetHint")}</p></div><button class="btn" data-copy-snippet>${this.snippetCopied ? this.t("recorderCopied") : this.t("recorderCopy")}</button></div><pre class="code">${this.esc(this.exclusionSnippet())}</pre></div>` : "";
+    return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.esc(summary)}</p>${rows}${snippet}${statRows ? `<div class="panelhead" style="border-top:1px solid var(--hk-border)"><div><h3>${this.t("recorderStats")}</h3></div></div>${statRows}` : ""}</div>`;
+  }
+
+  // One line per check; `level` decides the colour.
+  preflightRows(state, checks) {
+    const detail = {
+      backup: () => {
+        const b = state.backup || {};
+        if (!b.available) return this.t("pf_backup_unavailable");
+        if (!b.configured || b.newest === null) return this.t("pf_backup_none");
+        return this.t(b.age_hours > 48 ? "pf_backup_old" : "pf_backup_ok", { hours: Math.round(b.age_hours) });
+      },
+    };
+    return checks.map(c => {
+      const items = { repairs: state.repairs, failed_entries: state.failed_entries, broken: state.broken }[c.check];
+      const names = (items || []).slice(0, 5).map(i => i.title || i.name || i.issue_id || i.object_id).filter(Boolean).map(n => this.esc(n)).join(", ");
+      const text = c.check === "backup" ? detail.backup() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
+      const tone = { ok: "ok", warn: "warn", red: "red" }[c.level] || "mute";
+      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : "mdi:alert-outline";
+      return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span></div>`;
+    }).join("");
+  }
+
+  preflightAfter(after) {
+    const parts = [
+      ["pfNewRepairs", after.new_repairs, r => `${r.domain} · ${r.issue_id}`],
+      ["pfNewFailed", after.new_failed_entries, e => `${e.title} (${e.domain})`],
+      ["pfNewBroken", after.new_broken, b => b.name],
+    ].filter(([, items]) => items.length);
+    const inv = after.inventory || {};
+    const counts = [["newObjects", inv.new_objects], ["removedObjects", inv.removed_objects], ["statusChanges", inv.status_changes], ["newFindings", inv.new_findings], ["resolvedFindings", inv.resolved_findings]].filter(([, part]) => part?.total);
+    const lists = parts.map(([label, items, text]) => `<div class="row rel"><span class="tile warn"><ha-icon icon="mdi:alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(label)} (${items.length})</strong><small>${items.slice(0, 8).map(i => this.esc(text(i))).join(" · ")}</small></span></div>`).join("");
+    const summary = counts.map(([label, part]) => `<div class="row rel"><span class="tile mute"><ha-icon icon="mdi:compare-horizontal"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill mute">${this.formatNumber(part.total)}</span></div>`).join("");
+    const body = lists + summary || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("preflightAfterNone")}</div>`;
+    return `<div class="panelhead" style="border-top:1px solid var(--hk-border)"><div><h3>${this.t("preflightAfterTitle", { from: this.esc(after.from_version), to: this.esc(after.to_version) })}</h3></div></div>${body}`;
+  }
+
+  preflightCard() {
+    const p = this.preflight;
+    const buttons = `<button class="btn" data-pf-refresh ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightRefresh")}</button><button class="btn primary" data-pf-save ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightSave")}</button>`;
+    const head = `<div class="panelhead"><div><h2>${this.t("preflightTitle")}</h2><p>${this.t("preflightHint")}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${buttons}</div></div>`;
+    if (this.preflightError) return `<div class="panel">${head}<div class="error">${this.esc(this.preflightError)}</div></div>`;
+    if (!p) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("preflightLoading")}</p></div></div>`;
+    const updates = p.state.pending_updates || [];
+    const updateRow = `<div class="row rel"><span class="tile ${updates.length ? "warn" : "ok"}"><ha-icon icon="mdi:package-up"></ha-icon></span><span class="row-text"><strong>${this.t("pf_updates")}</strong><small>${updates.length ? updates.slice(0, 6).map(u => `${this.esc(u.name)} ${this.esc(u.installed ?? "")} → ${this.esc(u.latest ?? "")}`).join(" · ") : this.t("pf_updates_none")}</small></span></div>`;
+    const record = p.record
+      ? `<p class="factnote">${this.t("preflightRecord", { date: this.formatDate(p.record.at), version: this.esc(p.record.ha_version), repairs: p.record.repairs, failed: p.record.failed_entries, broken: p.record.broken, objects: this.formatNumber(p.record.objects) })} <button class="btn" data-pf-clear>${this.t("preflightClear")}</button></p>`
+      : `<p class="factnote">${this.t("pfNoRecord")}</p>`;
+    return `<div class="panel">${head}${this.preflightRows(p.state, p.checks)}${updateRow}${record}${p.after ? this.preflightAfter(p.after) : ""}</div>`;
+  }
+
+  maintenanceView() {
+    if (!this.preflight && !this.preflightLoading && !this._pfRequested) { this._pfRequested = true; setTimeout(() => this.loadPreflight(), 0); }
+    return `<div class="stack">${this.preflightCard()}${this.recorderCard()}</div>`;
+  }
+}

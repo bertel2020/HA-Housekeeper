@@ -1058,3 +1058,104 @@ test("a device page lists manufacturer, firmware, links and its entities", () =>
   el.selected = el.data.objects.find(o => o.object_id === "hub"); el.render();
   assert.ok(shadow.innerHTML.includes("1 Geräte") && shadow.innerHTML.includes("hat keine Entities"));
 });
+
+const METER_PLAN = {
+  plan_id: "m1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
+  actions: [{ kind: "migrate_meter", object_type: "entity", object_id: "sensor.meter_old", target: "sensor.meter_new", mode: "both", alt_id: "sensor.meter_old_alt", name: "Old meter", verdict: "review", executable: true,
+    reasons: ["stats_write", "id_takeover", "stats_gap"], used_by: [],
+    statistics: { import_count: 48, old_first: 1788220800, old_last: 1788390000, switch: 1788480000, offset: 47, unit: "kWh", dropped_overlap: 3, gap_hours: 24,
+      preview: { before: [{ start: 1788386400, sum: 46 }, { start: 1788390000, sum: 47 }], after: [{ start: 1788480000, sum: 0, sum_after: 47 }] } } }],
+};
+
+test("the meter assistant offers the modes and sends the pair with the plan", async () => {
+  const { el, shadow } = panel("en");
+  const { data } = stepCData();
+  data.objects.push({ object_type: "entity", object_id: "sensor.meter_old", name: "Old meter", status: "unavailable", has_statistics: true, unit: "kWh" },
+    { object_type: "entity", object_id: "sensor.meter_new", name: "New meter", status: "active", unit: "kWh" },
+    { object_type: "entity", object_id: "sensor.other_unit", name: "Other", status: "active", unit: "W" });
+  el.data = data; el.journal = []; el.view = "cleanup"; el.cleanupKind = "migrate_meter";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Meter change") && html.includes("data-meter-old") && html.includes('<option value="sensor.meter_old">') && html.includes('value="migrate_meter"'));
+  assert.ok(html.includes("Continue statistics and take over the ID") && /data-plan-create\s+disabled/.test(html));
+  el.meterOld = "sensor.meter_old"; el.meterNew = "sensor.meter_new"; el.meterMode = "statistics";
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes('<option value="sensor.meter_new">') && !html.includes('<option value="sensor.other_unit">'), "only new meters with the same unit");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return METER_PLAN; } };
+  await el.createPlan();
+  assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/plan_create", actions: [{ kind: "migrate_meter", object_id: "sensor.meter_old", target: "sensor.meter_new", mode: "statistics" }] }));
+});
+
+test("a meter plan explains the copy, the shifted total and the ID move, and asks for MIGRATE", () => {
+  const { el, shadow } = panel("en");
+  const { data } = stepCData();
+  el.data = data; el.journal = []; el.view = "cleanup"; el.plan = METER_PLAN;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("sensor.meter_old → sensor.meter_new") && html.includes("48 hourly values"));
+  assert.ok(html.includes("raised by 47 kWh") && html.includes("3 overlapping values") && html.includes("Gap without values: 24 hours"));
+  assert.ok(html.includes("sensor.meter_old → sensor.meter_old_alt, then sensor.meter_new → sensor.meter_old"));
+  assert.ok(html.includes("Experimental: writes into the recorder database"));
+  assert.equal(el.planWord(METER_PLAN), "MIGRATE");
+  assert.ok(el.confirmSummary(METER_PLAN, 1).startsWith("1 meter changes: Housekeeper first creates a Home Assistant backup"));
+  assert.equal(panel("de").el.planWord(METER_PLAN), "MIGRIEREN");
+  const done = { ...METER_PLAN, status: "verified", actions: [{ ...METER_PLAN.actions[0], result: { state: "done", statistics_kept: true } }] };
+  el.plan = done; el.render();
+  assert.ok(shadow.innerHTML.includes("Migrated") && shadow.innerHTML.includes("only be reset with the backup"));
+});
+
+const COSTS = {
+  available: true, total_states: 12000, first: 0, last: 1, size_bytes: 5 * 1024 * 1024, keep_days: 10, statistics_total: 300,
+  entities: [
+    { entity_id: "sensor.noisy", name: "<b>Noisy</b>", states: 9000, per_day: 900, share: 75, used: 0, has_statistics: false, known: true, excluded: false, suggest_exclude: true },
+    { entity_id: "sensor.used", name: "Used", states: 2000, per_day: 200, share: 16.7, used: 3, has_statistics: false, known: true, excluded: false, suggest_exclude: false },
+    { entity_id: "sensor.gone", name: "Gone", states: 100, per_day: 10, share: 0.8, used: 0, has_statistics: false, known: true, excluded: true, suggest_exclude: false },
+  ],
+  statistics: [{ statistic_id: "sensor.energy", rows: 250, known: true }],
+};
+
+test("the maintenance view loads the preflight and offers the recorder analysis on request", async () => {
+  const { el, shadow } = panel("en");
+  const sent = [];
+  const state = { ha_version: "2026.2.3", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [{ issue_id: "old", domain: "demo" }], failed_entries: [], broken: [], pending_updates: [{ entity_id: "update.core", name: "Core", installed: "2026.2.3", latest: "2026.3.0" }] };
+  const report = { state, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "warn", count: 1 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg.type); return msg.type.endsWith("recorder_costs") ? COSTS : report; } };
+  el.view = "maintenance";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Update preflight") && shadow.innerHTML.includes("Start analysis") && shadow.innerHTML.includes("Checking"));
+  await el.loadPreflight();
+  let html = shadow.innerHTML;
+  assert.deepEqual(sent, ["ha_housekeeper/preflight"]);
+  assert.ok(html.includes("Last backup 5 hours ago") && html.includes("Open repairs") && html.includes("1 · old"));
+  assert.ok(html.includes("Core 2026.2.3 → 2026.3.0") && html.includes("No starting state saved yet."));
+  await el.loadCosts();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("12,000 stored states") && html.includes("5 MB") && html.includes("kept 10 days"));
+  assert.ok(html.includes("&lt;b&gt;Noisy&lt;/b&gt;") && !html.includes("<b>Noisy</b>"), "names are escaped");
+  assert.ok(html.includes("can be excluded") && html.includes("already excluded") && html.includes("3 uses"));
+  assert.equal(el.exclusionSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.noisy\n");
+  assert.ok(html.includes("Suggestion for configuration.yaml") && html.includes("- sensor.noisy") && !html.includes("- sensor.used"));
+});
+
+test("after an update the preflight lists what is new since the saved state", async () => {
+  const { el, shadow } = panel("en");
+  const state = { ha_version: "2026.3.0", backup: { available: false }, repairs: [], failed_entries: [], broken: [], pending_updates: [] };
+  const after = { from_version: "2026.2.3", to_version: "2026.3.0", new_repairs: [{ issue_id: "deprecated", domain: "hue", severity: "warning" }], new_failed_entries: [{ title: "Hub <x>", domain: "demo", entry_id: "e" }], new_broken: [],
+    inventory: { new_objects: { total: 2, items: [] }, removed_objects: { total: 0, items: [] }, status_changes: { total: 1, items: [] }, new_findings: { total: 0, items: [] }, resolved_findings: { total: 0, items: [] } } };
+  el.preflight = { state, checks: [{ check: "backup", level: "warn" }], record: { at: "2026-10-01T10:00:00+00:00", ha_version: "2026.2.3", repairs: 0, failed_entries: 0, broken: 0, objects: 40 }, after };
+  el.view = "maintenance"; el._pfRequested = true;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Since the update: Home Assistant 2026.2.3 → 2026.3.0") && html.includes("hue · deprecated") && html.includes("Hub &lt;x&gt; (demo)"));
+  assert.ok(html.includes("New objects") && html.includes("Backup component not available") && html.includes("Saved"));
+});
+
+test("the maintenance entry is in the navigation in both languages", () => {
+  for (const lang of ["de", "en"]) {
+    const { el, shadow } = panel(lang);
+    el.render();
+    assert.ok(shadow.innerHTML.includes('data-view="maintenance"') && shadow.innerHTML.includes(lang === "de" ? "Wartung" : "Maintenance"));
+  }
+});
