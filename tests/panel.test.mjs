@@ -425,7 +425,168 @@ test("unreferenced view lists active entities no source uses", () => {
   el.render();
   assert.ok(shadow.innerHTML.includes("light.lonely") && !shadow.innerHTML.includes("light.used"));
   assert.ok(shadow.innerHTML.includes("hint only"));
-  el.unrefDomain = "light";
+  el.lv.unreferenced.f.domain = "light";
   el.render();
   assert.ok(shadow.innerHTML.includes("light.lonely") && !shadow.innerHTML.includes("sensor.lonely_sensor"));
+});
+
+test("long lists are paged with a default of 20 and a page-size choice", () => {
+  const { el, shadow } = panel("en");
+  const ent = i => ({ object_type: "entity", object_id: `light.l${String(i).padStart(2, "0")}`, name: `Lamp ${String(i).padStart(2, "0")}`, status: "active" });
+  el.data = { ...DATA, objects: Array.from({ length: 45 }, (_, i) => ent(i)), edges: [] };
+  el.view = "unreferenced";
+  assert.equal(el.pageSize, 20);
+  el.render();
+  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 20);
+  assert.ok(shadow.innerHTML.includes("1–20 of 45") && shadow.innerHTML.includes("Page 1 of 3"));
+  el.pages.unreferenced = 3;
+  el.render();
+  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 5);
+  assert.ok(shadow.innerHTML.includes("41–45 of 45"));
+  el.pageSize = 50;
+  el.pages = {};
+  el.render();
+  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 45);
+  assert.ok(!shadow.innerHTML.includes("Page 1 of"));
+});
+
+test("short lists show no pager", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "A", status: "active" }], edges: [] };
+  el.view = "unreferenced";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("data-lpage") && !shadow.innerHTML.includes("data-pagesize"));
+});
+
+test("overview offers quick links to the tidy-up views", () => {
+  const { el, shadow } = panel("en");
+  const find = (rule, classification, id) => ({ rule_id: rule, classification, object_id: id, confidence: 0.7, ignored: false });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "A", status: "active" }], edges: [],
+    findings: [find("entity.possible_duplicate", "possible_duplicate", "sensor.x_2"), find("automation.stale", "unused", "automation.a"), find("automation.never_triggered", "unused", "automation.b")] };
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('data-jump="findingsNav" data-filter="unused"') && html.includes('data-jump="unreferenced"'));
+  assert.ok(html.includes("Tidy up"));
+});
+
+test("findings can be searched, filtered by type, and sorted; export follows", () => {
+  const { el, shadow } = panel("en");
+  const f = (rule, id, conf, since) => ({ rule_id: rule, classification: "orphaned", object_id: id, confidence: conf, first_detected_at: since, ignored: false });
+  el.data = { ...DATA, objects: [
+    { object_type: "entity", object_id: "sensor.b", name: "Bravo", status: "orphaned" },
+    { object_type: "entity", object_id: "sensor.a", name: "Alpha", status: "orphaned" },
+    { object_type: "automation", object_id: "automation.c", name: "Charlie", status: "active" },
+  ], edges: [], findings: [f("entity.x", "sensor.b", 0.9, "2026-01-02T00:00:00+00:00"), f("entity.x", "sensor.a", 0.8, null), f("automation.missing", "automation.c", 0.7, "2026-01-05T00:00:00+00:00")] };
+  const ids = () => Array.from(el.visibleFindings().map(x => x.object_id)).join(",");
+  el.view = "findingsNav";
+  el.render();
+  assert.equal(ids(), "sensor.b,sensor.a,automation.c");
+  el.lv.findings.sort = "name"; el.lv.findings.dir = "asc";
+  assert.equal(ids(), "sensor.a,sensor.b,automation.c");
+  el.lv.findings.dir = "desc";
+  assert.equal(ids(), "automation.c,sensor.b,sensor.a");
+  el.lv.findings.sort = "since"; el.lv.findings.dir = "desc";
+  assert.equal(ids(), "automation.c,sensor.b,sensor.a"); // missing date stays last
+  el.lv.findings.dir = "asc";
+  assert.equal(ids(), "sensor.b,automation.c,sensor.a");
+  el.lv.findings.f.type = "entity";
+  assert.equal(ids(), "sensor.b,sensor.a");
+  el.lv.findings.q = "alpha";
+  assert.equal(ids(), "sensor.a");
+  assert.equal(el.exportRows().length, 1);
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-lq="findings"') && shadow.innerHTML.includes("data-ld=\"findings\""));
+  el.lv.findings.q = "zzz";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("No matches"));
+});
+
+test("batteries and unreferenced lists filter by area and sort", () => {
+  const { el } = panel("en");
+  const ent = (id, name, area, extra = {}) => ({ object_type: "entity", object_id: id, name, area_id: area, status: "active", device_class: "battery", state: "50", unit: "%", ...extra });
+  el.data = { ...DATA, objects: [
+    { object_type: "area", object_id: "kitchen", name: "Kitchen" }, { object_type: "area", object_id: "hall", name: "Hall" },
+    ent("sensor.a", "Zeta", "kitchen", { state: "40" }), ent("sensor.b", "Alpha", "hall", { state: "90" }), ent("sensor.c", "Mid", "kitchen", { state: "10" }),
+  ], edges: [] };
+  el.view = "batteries"; el.batteryFilter = "all"; el.render();
+  const read = () => { el.render(); return el.shadowRoot.innerHTML.match(/<strong>(Zeta|Alpha|Mid)<\/strong>/g).map(m => m.replace(/<\/?strong>/g, "")).join(","); };
+  assert.equal(read(), "Mid,Zeta,Alpha"); // lowest level first
+  el.lv.batteries.dir = "desc";
+  assert.equal(read(), "Alpha,Zeta,Mid");
+  el.lv.batteries.sort = "name"; el.lv.batteries.dir = "asc";
+  assert.equal(read(), "Alpha,Mid,Zeta");
+  el.lv.batteries.f.area = "Kitchen";
+  assert.equal(read(), "Mid,Zeta");
+  el.lv.batteries.q = "zet";
+  assert.equal(read(), "Zeta");
+});
+
+function fakeStorage(initial = {}) {
+  const store = { ...initial };
+  return { store, getItem: key => (key in store ? store[key] : null), setItem: (key, value) => { store[key] = String(value); } };
+}
+
+test("settings view shows version info, appearance, behavior and hidden findings", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, version: "0.3.1", ha_version: "2026.9.4", scan_interval_hours: 24, min_unavailable_days: 7, unused_automation_days: 90, low_battery_percent: 20 },
+    findings: [{ ...DATA.findings[0], key: "k1", ignored: true, ignored_by: "user" }, { ...DATA.findings[1], key: "k2", ignored: true, ignored_by: "label" }] };
+  el.view = "settings";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("0.3.1") && html.includes("2026.9.4") && html.includes("every 24 hours") && html.includes("7 days") && html.includes("20 %"));
+  assert.ok(html.includes('data-pref="size|small"') && html.includes('data-pref="mode|dark"') && html.includes('data-pref="scheme|indigo"'));
+  assert.ok(html.includes('data-pref-select="pageSize"') && html.includes("Hidden findings (2)"));
+  assert.ok(html.includes('data-ignore="k1" data-ignore-value="0"') && !html.includes('data-ignore="k2"'));
+  assert.ok(html.includes("https://github.com/bertel2020/HA-Housekeeping/issues"));
+  assert.ok(el.infoText().includes("HA Housekeeper 0.3.1") && el.infoText().includes("Home Assistant 2026.9.4"));
+});
+
+test("settings are available before data has loaded", () => {
+  const { el, shadow } = panel("de");
+  el.data = null;
+  el.view = "settings";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Schriftgröße") && shadow.innerHTML.includes("Farbschema"));
+});
+
+test("display preferences are saved, validated, and turned into theme CSS", () => {
+  const storage = fakeStorage();
+  const { el } = panel("en", { localStorage: storage });
+  assert.equal(el.prefs.size, "normal");
+  assert.ok(el.themeCss().includes("--hk-zoom:1") && !el.themeCss().includes("--hk-surface")); // standard + automatic follows Home Assistant
+  el.setPref("size", "large");
+  el.setPref("mode", "dark");
+  el.setPref("scheme", "sage");
+  el.setPref("pageSize", "50");
+  const css = el.themeCss();
+  assert.ok(css.includes("--hk-zoom:1.12") && css.includes("color-scheme:dark") && css.includes("--hk-blue:#5cc7a0"));
+  assert.equal(el.pageSize, 50);
+  const saved = JSON.parse(storage.store["ha_housekeeper.prefs"]);
+  assert.equal(saved.scheme, "sage");
+  assert.equal(saved.pageSize, 50);
+  // a fresh panel reads them back; invalid values fall back to defaults
+  assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
+  const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope" }) }) }).el;
+  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", pageSize: 20, startView: "overview" }));
+});
+
+test("automatic mode follows the Home Assistant theme for the extra schemes", () => {
+  const { el } = panel("en");
+  el.prefs = { ...el.prefs, scheme: "indigo" };
+  el._hass = { language: "en", themes: { darkMode: false } };
+  assert.ok(el.themeCss().includes("--hk-blue:#5b5fd6") && el.themeCss().includes("color-scheme:light"));
+  el._hass = { language: "en", themes: { darkMode: true } };
+  assert.ok(el.themeCss().includes("--hk-blue:#8b8ff5") && el.themeCss().includes("color-scheme:dark"));
+});
+
+test("the start view preference applies unless a deep link says otherwise", () => {
+  const win = search => ({ location: { search, pathname: "/ha-housekeeper" }, dispatchEvent() {}, history: {} });
+  const a = panel("en", { window: win("") }).el;
+  a.prefs = { ...a.prefs, startView: "batteries" };
+  a.applyUrl();
+  assert.equal(a.view, "batteries");
+  const b = panel("en", { window: win("?view=inventory") }).el;
+  b.prefs = { ...b.prefs, startView: "batteries" };
+  b.applyUrl();
+  assert.equal(b.view, "inventory");
 });

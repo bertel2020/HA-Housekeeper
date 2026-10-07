@@ -7,6 +7,7 @@ from collections import Counter
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
@@ -14,6 +15,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import floor_registry as fr
 from homeassistant.helpers import label_registry as lr
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.loader import IntegrationNotFound, async_get_integration
 
 from .automation_analysis import (
     missing_references,
@@ -23,7 +25,9 @@ from .automation_analysis import (
 from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
+    DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
+    DOMAIN,
     IGNORE_LABEL,
     SIGNAL_SCAN_COMPLETE,
 )
@@ -350,6 +354,8 @@ class InventoryScanner:
         self.min_unavailable_days = DEFAULT_MIN_UNAVAILABLE_DAYS
         self.unused_automation_days = DEFAULT_UNUSED_AUTOMATION_DAYS
         self.low_battery_percent = DEFAULT_LOW_BATTERY_PERCENT
+        self.scan_interval_hours = DEFAULT_SCAN_INTERVAL_HOURS
+        self.version: str | None = None
         self.status: dict[str, Any] = {
             "running": False,
             "phase": "idle",
@@ -358,7 +364,11 @@ class InventoryScanner:
         }
 
     async def async_initialize(self) -> None:
-        """Load persisted observations."""
+        """Load persisted observations and read the installed version."""
+        try:
+            self.version = str((await async_get_integration(self.hass, DOMAIN)).version)
+        except IntegrationNotFound:
+            self.version = None
         await self.observations.async_load()
         await self.history.async_load()
         await self.ignored.async_load()
@@ -503,6 +513,9 @@ class InventoryScanner:
                 "min_unavailable_days": self.min_unavailable_days,
                 "unused_automation_days": self.unused_automation_days,
                 "ignore_label": IGNORE_LABEL,
+                "version": self.version,
+                "ha_version": HA_VERSION,
+                "scan_interval_hours": self.scan_interval_hours,
                 "low_battery_percent": self.low_battery_percent,
                 "low_batteries": len(low_battery_ids(entities, self.low_battery_percent)),
                 "object_count": len(objects),

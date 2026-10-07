@@ -97,7 +97,9 @@ Die Ansicht **Änderungen** vergleicht den aktuellen Stand mit dem Scan davor od
 - **Sensoren**: Housekeeper legt ein Dienstgerät mit Zählern an (Befunde, verwaiste und nicht verfügbare Entities, defekte Referenzen, mögliche Duplikate, ungenutzte Automationen, schwache Batterien, letzter Scan), nutzbar in Dashboards und Automationen.
 - **Batterien**: Eigene Ansicht mit allen Batterie-Entities, niedrigste Werte zuerst (niedrig ab 20 %, einstellbar).
 - **Nicht verwendet**: Eigene Ansicht mit aktiven Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen (ohne Diagnose- und Konfigurations-Entities, filterbar nach Domäne). Rein ein Hinweis und kein Befund: Sprachassistenten, Apps, automatisch erzeugte Dashboards oder externe Systeme sieht Housekeeper nicht.
-- **Integrationen mit Problemen** erscheinen auf der Übersicht.
+- **Integrationen mit Problemen** erscheinen auf der Übersicht, daneben die Karte **Aufräumen** mit Schnellzugriff auf Batterien, Duplikate, ungenutzte Automationen und nicht verwendete Entities.
+- **Einstellungen** (Zahnrad unten in der Seitenleiste): Version und Eckdaten von Housekeeper, Schriftgröße (klein/normal/groß), Modus (automatisch/hell/dunkel), Farbschema (Standard, Salbei, Indigo), Startansicht, Einträge pro Seite und die Verwaltung ausgeblendeter Befunde. Die Darstellung wird pro Browser gespeichert.
+- **Lange Listen** sind seitenweise aufgeteilt (Standard 20 pro Seite, wählbar 20/50/100) und lassen sich durchsuchen, filtern und sortieren (Befunde, Batterien, Nicht verwendet, Inventar). Der Export enthält genau die angezeigten Befunde.
 - **Weitere Referenzquellen**: Gruppen (Mitglieder) und Helfer wie Template, Ableitung oder Min/Max-Sensor (Quell-Entities) werden in Abhängigkeiten und Auswirkungsanalyse berücksichtigt; fehlende Mitglieder und Quellen werden als Befund gemeldet.
 - **Deep-Links**: Das Panel unterstützt Adressen wie `/ha-housekeeper?view=findingsNav&filter=orphaned` oder `?object=entity:sensor.x`; die Reparaturhinweise nutzen sie.
 

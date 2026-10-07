@@ -69,6 +69,16 @@ const TEXT = {
     hideFinding: "Befund ausblenden", showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
     ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
     batteries: "Batterien", batteriesSubtitle: "Batterie-Entities, die niedrigsten Werte zuerst.", batteryLow: "Niedrig", batteryAll: "Alle",
+    settings: "Einstellungen", settingsSubtitle: "Infos zu Housekeeper und Anpassung der Darstellung.", about: "Über Housekeeper", version: "Version", haVersion: "Home Assistant",
+    mode: "Betriebsart", readOnlyValue: "Nur lesend – ändert nichts in Home Assistant", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
+    daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
+    appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
+    colorScheme: "Farbschema", schemeStandard: "Standard", schemeSage: "Salbei", schemeIndigo: "Indigo", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
+    prefsNote: "Diese Einstellungen gelten nur für diesen Browser.", hiddenFindings: "Ausgeblendete Befunde", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
+    sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel",
+    sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
+    sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
+    perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
     unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
     unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entities können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entities sind ausgeblendet.",
     noUnreferenced: "Alle aktiven Entities werden irgendwo verwendet.", unrefShown: "{shown} von {total} angezeigt – nach Domäne filtern, um weitere zu sehen.", allDomains: "Alle Domänen",
@@ -176,6 +186,16 @@ const TEXT = {
     hideFinding: "Hide finding", showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
     ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
     batteries: "Batteries", batteriesSubtitle: "Battery entities, lowest values first.", batteryLow: "Low", batteryAll: "All",
+    settings: "Settings", settingsSubtitle: "About Housekeeper and appearance options.", about: "About Housekeeper", version: "Version", haVersion: "Home Assistant",
+    mode: "Mode", readOnlyValue: "Read-only – changes nothing in Home Assistant", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
+    daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
+    appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
+    colorScheme: "Color scheme", schemeStandard: "Standard", schemeSage: "Sage", schemeIndigo: "Indigo", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
+    prefsNote: "These settings apply to this browser only.", hiddenFindings: "Hidden findings", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
+    sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule",
+    sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
+    sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
+    perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
     unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
     unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
     noUnreferenced: "Every active entity is used somewhere.", unrefShown: "Showing {shown} of {total} – filter by domain to see more.", allDomains: "All domains",
@@ -221,6 +241,27 @@ const ICONS = {
   label: "mdi:label-outline", script: "mdi:script-text-outline", scene: "mdi:palette-outline", dashboard: "mdi:view-dashboard-outline",
 };
 
+const PREFS_KEY = "ha_housekeeper.prefs";
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", pageSize: 20, startView: "overview" };
+const SIZES = { small: 0.92, normal: 1, large: 1.12 };
+const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
+const REPO_URL = "https://github.com/bertel2020/HA-Housekeeping";
+// Palettes for explicit light/dark and the extra schemes; "standard" + automatic follows Home Assistant.
+const SCHEMES = {
+  standard: {
+    light: { accent: "var(--primary-color,#0789cf)", bg: "#f4f6f9", surface: "#ffffff", soft: "#f6f8fa", text: "#17212b", muted: "#637281", border: "#dde4ea" },
+    dark: { accent: "var(--primary-color,#38a9e8)", bg: "#101418", surface: "#1a2027", soft: "#222a33", text: "#e6edf3", muted: "#9aa7b4", border: "#2f3943" },
+  },
+  sage: {
+    light: { accent: "#2f8f6f", bg: "#f3f6f4", surface: "#ffffff", soft: "#eef3f0", text: "#17231d", muted: "#5f7268", border: "#d9e3dd" },
+    dark: { accent: "#5cc7a0", bg: "#0e1512", surface: "#151d19", soft: "#1c2622", text: "#e4efe9", muted: "#93a89d", border: "#2a3831" },
+  },
+  indigo: {
+    light: { accent: "#5b5fd6", bg: "#f5f5fb", surface: "#ffffff", soft: "#f0f0f9", text: "#1a1b2e", muted: "#66678a", border: "#e0e0ef" },
+    dark: { accent: "#8b8ff5", bg: "#0f1020", surface: "#171829", soft: "#1f2035", text: "#e8e8f6", muted: "#9c9dc0", border: "#2d2e48" },
+  },
+};
+
 const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"];
 
 const NAV = [
@@ -230,6 +271,7 @@ const NAV = [
   ["changes", "mdi:compare-horizontal"],
   ["batteries", "mdi:battery-alert-variant-outline"],
   ["unreferenced", "mdi:link-variant-off"],
+  ["settings", "mdi:cog-outline"],
   ["graph", "mdi:source-fork"],
 ];
 
@@ -251,7 +293,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.findingFilter = "";
     this.showIgnored = false;
     this.batteryFilter = "low";
-    this.unrefDomain = "";
+
     this._urlApplied = false;
     this.sort = "name";
     this.selected = null;
@@ -263,17 +305,57 @@ class HAHousekeeperPanel extends HTMLElement {
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
-    this.page = 1;
-    this.pageSize = 100;
+    this.pages = {};
+    this.lv = {};
+    this.prefs = this.loadPrefs();
+    this.pageSize = this.prefs.pageSize;
+    this.sortDir = "asc";
+    this.pages = {};
     this.busy = false;
     this.scanStatus = null;
     this.error = null;
   }
 
   set hass(value) {
-    const first = !this._hass;
+    const first = !this._hass, wasDark = this._hass?.themes?.darkMode;
     this._hass = value;
     if (first) this.load(false);
+    else if (this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) this.render();
+  }
+
+  // Display preferences live in this browser only; storage may be unavailable.
+  loadPrefs() {
+    try {
+      const saved = JSON.parse(globalThis.localStorage?.getItem(PREFS_KEY) || "{}");
+      const prefs = { ...DEFAULT_PREFS };
+      if (SIZES[saved.size]) prefs.size = saved.size;
+      if (["auto", "light", "dark"].includes(saved.mode)) prefs.mode = saved.mode;
+      if (SCHEMES[saved.scheme]) prefs.scheme = saved.scheme;
+      if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
+      if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
+      return prefs;
+    } catch (_) { return { ...DEFAULT_PREFS }; }
+  }
+
+  savePrefs() {
+    try { globalThis.localStorage?.setItem(PREFS_KEY, JSON.stringify(this.prefs)); } catch (_) { /* ignore */ }
+  }
+
+  isDark() {
+    if (this.prefs.mode !== "auto") return this.prefs.mode === "dark";
+    const ha = this._hass?.themes?.darkMode;
+    if (typeof ha === "boolean") return ha;
+    try { return Boolean(globalThis.matchMedia?.("(prefers-color-scheme: dark)").matches); } catch (_) { return false; }
+  }
+
+  themeCss() {
+    const { scheme, mode, size } = this.prefs;
+    let vars = `--hk-zoom:${SIZES[size] || 1}`;
+    if (!(scheme === "standard" && mode === "auto")) {
+      const dark = this.isDark(), p = (SCHEMES[scheme] || SCHEMES.standard)[dark ? "dark" : "light"];
+      vars += `;--hk-blue:${p.accent};--hk-bg:${p.bg};--hk-surface:${p.surface};--hk-soft:${p.soft};--hk-text:${p.text};--hk-muted:${p.muted};--hk-border:${p.border};color-scheme:${dark ? "dark" : "light"}`;
+    }
+    return `:host{${vars}}.shell{zoom:var(--hk-zoom,1);min-height:calc(100vh / var(--hk-zoom,1))}`;
   }
   get hass() { return this._hass; }
 
@@ -342,9 +424,11 @@ class HAHousekeeperPanel extends HTMLElement {
       return (!q || haystack.includes(q)) && (!this.typeFilter || item.object_type === this.typeFilter)
         && (!this.statusFilter || item.status === this.statusFilter);
     }).sort((a, b) => {
-      const left = this.sort === "status" ? a.status : this.sort === "type" ? a.object_type : (a.name || a.object_id);
-      const right = this.sort === "status" ? b.status : this.sort === "type" ? b.object_type : (b.name || b.object_id);
-      return String(left).localeCompare(String(right), this.lang, { numeric: true, sensitivity: "base" });
+      const pick = item => this.sort === "status" ? item.status : this.sort === "type" ? item.object_type : this.sort === "since" ? item.status_since : (item.name || item.object_id);
+      const x = pick(a), y = pick(b);
+      if (!x !== !y) return x ? -1 : 1; // missing values stay last in both directions
+      const order = String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
+      return (this.sortDir === "desc" ? -order : order) || String(a.object_id).localeCompare(String(b.object_id), this.lang, { numeric: true });
     });
   }
 
@@ -452,6 +536,9 @@ class HAHousekeeperPanel extends HTMLElement {
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:13px}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
+      .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:1 1 220px}.listbar select{flex:0 1 180px}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
+      .setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:11px}.setrow select{max-width:240px}.setrow .btn{justify-self:start}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
+      @media(max-width:700px){.setrow{grid-template-columns:1fr}}
       .tablewrap{overflow:auto}table{border-collapse:collapse;width:100%}th{text-align:left;color:var(--hk-muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;background:var(--hk-soft);cursor:pointer;white-space:nowrap}td{padding:11px 16px;border-top:1px solid var(--hk-border);font-size:13px}tbody tr{cursor:pointer}tbody tr:hover{background:var(--hk-soft)}
       .object{display:flex;align-items:center;gap:11px;min-width:260px}.object .tile{width:34px;height:34px}.object strong{display:block;font-weight:600}.id{display:block;color:var(--hk-muted);font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;margin-top:2px;max-width:390px;overflow:hidden;text-overflow:ellipsis}
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
@@ -481,8 +568,9 @@ class HAHousekeeperPanel extends HTMLElement {
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:11px/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:12px;margin:12px 0 6px;color:var(--hk-muted)}
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
-      @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:15px}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.side-foot{display:none}.side nav{display:flex}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
+      @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:15px}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.lock{display:none}.side-foot{margin:0;padding:0;display:flex}.side nav{display:flex}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       @media(max-width:520px){.summary{grid-template-columns:1fr}}
+      ${this.themeCss()}
     </style>`;
   }
 
@@ -500,6 +588,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const params = new URLSearchParams(window.location.search);
     const view = params.get("view");
     if (view && NAV.some(([name]) => name === view)) this.view = view;
+    else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
@@ -522,8 +611,8 @@ class HAHousekeeperPanel extends HTMLElement {
   sidebar() {
     const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
     return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
-      <nav>${NAV.map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
-      <div class="side-foot"><span class="lock"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("readOnly")}</span></div></aside>`;
+      <nav>${NAV.filter(([view]) => view !== "settings").map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
+      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings"><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button><span class="lock"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("readOnly")}</span></div></aside>`;
   }
 
   heading() {
@@ -535,6 +624,7 @@ class HAHousekeeperPanel extends HTMLElement {
       batteries: [this.t("objects"), this.t("batteries"), this.t("batteriesSubtitle")],
       unreferenced: [this.t("objects"), this.t("unreferenced"), this.t("unreferencedSubtitle")],
       graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
+      settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
@@ -543,6 +633,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   content() {
+    if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
     if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
     if (this.view === "inventory") return this.inventory();
@@ -582,17 +673,53 @@ class HAHousekeeperPanel extends HTMLElement {
     const total = Math.max(1, m.object_count);
     return `<div class="summary"><div class="card"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
-      <div class="grid2"><div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
-      ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>
-      <div class="stack">${this.integrationProblems()}<div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
+      <div class="grid2"><div class="stack"><div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
+      ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
+      <div class="stack">${this.cleanupCard()}<div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
       <div class="bar">${order.map(s => `<i class="${this.tone(s)}" style="width:${(100 * counts[s] / total).toFixed(2)}%"></i>`).join("")}</div>
       <div class="legend">${order.map(s => `<div><span><i class="dot ${this.tone(s)}"></i>${this.t(s)}</span><b>${this.formatNumber(counts[s])}</b></div>`).join("")}</div></div>
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
   }
 
-  exportRows() {
+  // Quick links to the hint views; counts exclude hidden findings.
+  cleanupCard() {
+    const open = this.data.findings.filter(f => !f.ignored);
+    const items = [
+      ["batteries", "mdi:battery-alert-variant-outline", "batteries", this.lowBatteries().length, "batteries"],
+      ["possible_duplicate", "mdi:content-duplicate", "findingsNav", open.filter(f => f.classification === "possible_duplicate").length, "possible_duplicate"],
+      ["unused", "mdi:sleep", "findingsNav", open.filter(f => f.classification === "unused").length, "unused"],
+      ["unreferenced", "mdi:link-variant-off", "unreferenced", this.unreferencedRows().length, undefined],
+    ];
+    const rows = items.map(([label, icon, view, count, filter]) => `<button class="row" data-jump="${view}"${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanup")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
+  }
+
+  findingType(f) { return this.findObject(this.findingKey(f))?.object_type || f.rule_id.split(".")[0]; }
+
+  findingSorts() {
+    return [
+      { key: "certainty", label: "sortCertainty", dir: "desc", get: f => f.confidence },
+      { key: "name", label: "sortName", dir: "asc", get: f => this.findObject(this.findingKey(f))?.name || f.object_id },
+      { key: "id", label: "sortId", dir: "asc", get: f => f.object_id },
+      { key: "since", label: "sortSince", dir: "desc", get: f => f.first_detected_at },
+      { key: "rule", label: "sortRule", dir: "asc", get: f => f.rule_id },
+    ];
+  }
+
+  // The findings as shown (classification chip, search, type filter, sort); the export uses the same list.
+  visibleFindings() {
     const all = this.sortedFindings(this.showIgnored);
-    const list = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
+    const byClass = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
+    this.lvState("findings", "certainty", "desc");
+    return this.refine("findings", byClass, {
+      text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
+      filters: { type: (f, v) => this.findingType(f) === v },
+      sorts: this.findingSorts(), tie: f => f.object_id,
+    });
+  }
+
+  exportRows() {
+    const list = this.visibleFindings();
     return list.map(f => {
       const key = this.findingKey(f), object = this.findObject(key);
       return {
@@ -639,6 +766,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const total = sections.reduce((n, [, , part]) => n + part.total, 0);
     const cards = sections.map(([label, icon, part]) => `<div class="card"><span class="tile ${part.total ? (label === "resolvedFindings" ? "ok" : label === "newFindings" ? "warn" : "") : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><div class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(part.total)}</strong></div></div>`).join("");
     const more = part => part.total > part.items.length ? `<p class="factnote">${this.t("moreItems", { count: part.total - part.items.length })}</p>` : "";
+    const paged = (id, items, render) => { const pg = this.paginate(`changes-${id}`, items); return pg.rows.map(render).join("") + pg.footer; };
     const objectRow = (o, note, pillHtml) => {
       const key = `${o.object_type}:${o.object_id}`, obj = this.findObject(key);
       const inner = `${this.tile(o.object_type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "mute")}<span class="row-text"><strong>${this.esc(o.name || obj?.name || o.object_id)}</strong><small>${this.esc(note)}</small></span>${pillHtml}`;
@@ -646,14 +774,14 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     const changes = [...c.status_changes.items].sort((a, b) => (this.changeRank(b.to) - this.changeRank(b.from)) - (this.changeRank(a.to) - this.changeRank(a.from)));
     const body = {
-      statusChanges: changes.map(ch => objectRow(ch, `${this.t(ch.from)} → ${this.t(ch.to)} · ${this.t(ch.object_type)}`, `<span class="pill ${this.changeRank(ch.to) > this.changeRank(ch.from) ? "red" : this.changeRank(ch.to) < this.changeRank(ch.from) ? "ok" : "mute"}">${this.t(this.changeRank(ch.to) > this.changeRank(ch.from) ? "worsened" : this.changeRank(ch.to) < this.changeRank(ch.from) ? "improved" : "changed")}</span>`)).join(""),
-      newFindings: c.new_findings.items.map(f => this.findingRow(f)).join(""),
-      resolvedFindings: c.resolved_findings.items.map(f => {
+      statusChanges: paged("statusChanges", changes, ch => objectRow(ch, `${this.t(ch.from)} → ${this.t(ch.to)} · ${this.t(ch.object_type)}`, `<span class="pill ${this.changeRank(ch.to) > this.changeRank(ch.from) ? "red" : this.changeRank(ch.to) < this.changeRank(ch.from) ? "ok" : "mute"}">${this.t(this.changeRank(ch.to) > this.changeRank(ch.from) ? "worsened" : this.changeRank(ch.to) < this.changeRank(ch.from) ? "improved" : "changed")}</span>`)),
+      newFindings: paged("newFindings", c.new_findings.items, f => this.findingRow(f)),
+      resolvedFindings: paged("resolvedFindings", c.resolved_findings.items, f => {
         const type = f.rule_id.split(".")[0];
         return objectRow({ object_type: type, object_id: f.object_id }, `${f.affected_object ? `${f.affected_object} · ` : ""}${f.rule_id}`, `<span class="pill ok">${this.t("improved")}</span>`);
-      }).join(""),
-      newObjects: c.new_objects.items.map(o => objectRow(o, `${this.t(o.object_type)} · ${o.object_id}`, this.pill(o.status))).join(""),
-      removedObjects: c.removed_objects.items.map(o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")).join(""),
+      }),
+      newObjects: paged("newObjects", c.new_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${o.object_id}`, this.pill(o.status))),
+      removedObjects: paged("removedObjects", c.removed_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")),
     };
     const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
     return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p><div class="summary changesum">${cards}</div>${total ? panels : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
@@ -663,21 +791,133 @@ class HAHousekeeperPanel extends HTMLElement {
     const all = this.sortedFindings(this.showIgnored);
     const ignoredCount = this.data.findings.filter(f => f.ignored).length;
     const classes = [...new Set(all.map(f => f.classification))];
-    const list = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
+    const list = this.visibleFindings();
+    const types = [...new Set(all.map(f => this.findingType(f)))].sort();
+    const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }] });
+    const pg = this.paginate("findings", list);
     return `<div class="panel"><div class="chips"><button class="chip ${this.findingFilter ? "" : "active"}" data-finding-filter="">${this.t("all")} (${all.length})</button>${classes.map(c => `<button class="chip ${this.findingFilter === c ? "active" : ""}" data-finding-filter="${this.esc(c)}">${this.t(c)} (${all.filter(f => f.classification === c).length})</button>`).join("")}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
-      ${list.length ? list.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>`;
+      ${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div>`;
+  }
+
+  th(key, label) {
+    const on = this.sort === key;
+    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</th>`;
+  }
+
+  infoText() {
+    const m = this.data?.meta || {};
+    return [`HA Housekeeper ${m.version || "?"}`, `Home Assistant ${m.ha_version || "?"}`, `${this.t("lastScan")}: ${m.scanned_at || "-"}`,
+      `${this.t("objects")}: ${m.object_count ?? "-"}`, `${this.t("findings")}: ${this.data ? this.data.findings.filter(f => !f.ignored).length : "-"}`].join("\n");
+  }
+
+  segment(pref, options) {
+    return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
+  }
+
+  settingsView() {
+    const m = this.data?.meta || {}, p = this.prefs;
+    const days = n => (n > 0 ? this.t("daysValue", { n }) : this.t("immediately"));
+    const fact = (k, v) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`;
+    const facts = [
+      fact(this.t("version"), this.esc(m.version || "–")), fact(this.t("haVersion"), this.esc(m.ha_version || "–")),
+      fact(this.t("mode"), this.t("readOnlyValue")),
+      fact(this.t("lastScan"), m.scanned_at ? this.formatDate(m.scanned_at) : "–"),
+      fact(this.t("objects"), this.formatNumber(m.object_count ?? 0)),
+      fact(this.t("scanInterval"), m.scan_interval_hours > 0 ? this.t("hoursValue", { n: m.scan_interval_hours }) : this.t("offValue")),
+      fact(this.t("unavailableAfter"), days(m.min_unavailable_days ?? 0)),
+      fact(this.t("unusedAfter"), m.unused_automation_days > 0 ? this.t("daysValue", { n: m.unused_automation_days }) : this.t("offValue")),
+      fact(this.t("lowBatteryAt"), `${this.esc(m.low_battery_percent ?? 20)} %`),
+    ].join("");
+    const links = `<div class="actions" style="padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button>
+      <a class="btn" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:github"></ha-icon>${this.t("repository")}</a>
+      <a class="btn" href="${REPO_URL}/issues" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:bug-outline"></ha-icon>${this.t("reportIssue")}</a>
+      <a class="btn" href="${REPO_URL}/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:history"></ha-icon>${this.t("changelog")}</a>
+      <button class="btn" data-copy-info><ha-icon icon="mdi:content-copy"></ha-icon>${this.t(this.copied ? "copied" : "copyInfo")}</button></div>`;
+    const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
+    const select = (key, options) => `<select data-pref-select="${key}">${options.map(([v, l]) => `<option value="${v}" ${String(p[key]) === String(v) ? "selected" : ""}>${l}</option>`).join("")}</select>`;
+    const appearance = `<section class="panel"><div class="panelhead"><h2>${this.t("appearance")}</h2></div>
+      ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
+      ${row(this.t("colorMode"), this.t("modeHint"), this.segment("mode", [["auto", this.t("modeAuto")], ["light", this.t("modeLight")], ["dark", this.t("modeDark")]]))}
+      ${row(this.t("colorScheme"), "", this.segment("scheme", [["standard", this.t("schemeStandard"), "#0789cf"], ["sage", this.t("schemeSage"), SCHEMES.sage.light.accent], ["indigo", this.t("schemeIndigo"), SCHEMES.indigo.light.accent]]))}</section>`;
+    const behavior = `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
+      ${row(this.t("startView"), "", select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
+      ${row(this.t("pageSizeSetting"), "", select("pageSize", [20, 50, 100].map(n => [n, n])))}
+      <div class="setrow"><small style="margin:0">${this.t("prefsNote")}</small><button class="btn" data-pref-reset>${this.t("resetPrefs")}</button></div></section>`;
+    const hidden = (this.data?.findings || []).filter(f => f.ignored);
+    const pg = this.paginate("hidden", hidden);
+    const hiddenRow = f => {
+      const object = this.findObject(this.findingKey(f));
+      const action = f.ignored_by === "label" ? `<span class="pill mute">${this.t("ignoredByLabel")}</span>` : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0">${this.t("showFinding")}</button>`;
+      return `<div class="row"><span class="tile mute"><ha-icon icon="mdi:eye-off-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || f.object_id)}</strong><small>${this.esc(f.object_id)} · ${this.t(f.rule_id)}</small></span>${action}</div>`;
+    };
+    const hiddenCard = `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${hidden.length ? pg.rows.map(hiddenRow).join("") : `<div class="emptymsg"><ha-icon icon="mdi:eye-check-outline"></ha-icon>${this.t("hiddenNone")}</div>`}${pg.footer}</section>`;
+    return `<div class="grid2"><div class="stack">${appearance}${behavior}${hiddenCard}</div><div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div>${links}</section></div></div>`;
+  }
+
+  setPref(key, raw) {
+    const value = key === "pageSize" ? Number(raw) : raw;
+    this.prefs = { ...this.prefs, [key]: value };
+    if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
+    this.savePrefs();
+    this.render();
+  }
+
+  // Shared list controls: per-list search, filters and sort kept in this.lv[id].
+  lvState(id, sort, dir) { return (this.lv[id] ||= { q: "", sort, dir, f: {} }); }
+
+  areaName(item) {
+    const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+    return this.findObject(`area:${item.area_id || device?.area_id}`)?.name || "";
+  }
+
+  // Filter by search text and select filters, then sort. Empty values always sort last.
+  refine(id, items, { text, filters = {}, sorts, tie }) {
+    const st = this.lv[id], q = st.q.trim().toLowerCase();
+    const get = sorts.find(x => x.key === st.sort)?.get || sorts[0].get;
+    const sign = st.dir === "desc" ? -1 : 1;
+    const empty = v => v === null || v === undefined || v === "";
+    return items.filter(it => (!q || text(it).toLowerCase().includes(q))
+      && Object.entries(st.f).every(([name, value]) => !value || !filters[name] || filters[name](it, value)))
+      .sort((a, b) => {
+        const x = get(a), y = get(b);
+        if (empty(x) !== empty(y)) return empty(x) ? 1 : -1;
+        const order = typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
+        return order * sign || String(tie(a)).localeCompare(String(tie(b)), this.lang, { numeric: true });
+      });
+  }
+
+  listBar(id, { sorts, filters = [] }) {
+    const st = this.lv[id];
+    (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
+    const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
+    const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
+    const desc = st.dir === "desc";
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}<select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></div>`;
+  }
+
+  // Shared paging for long lists: returns the visible slice and the footer markup.
+  paginate(id, items) {
+    const count = Math.max(1, Math.ceil(items.length / this.pageSize));
+    const page = Math.min(Math.max(1, this.pages[id] || 1), count);
+    this.pages[id] = page;
+    const from = (page - 1) * this.pageSize;
+    const rows = items.slice(from, from + this.pageSize);
+    if (items.length <= 20) return { rows, footer: "" };
+    const sizes = [20, 50, 100].map(n => `<option value="${n}" ${n === this.pageSize ? "selected" : ""}>${n}</option>`).join("");
+    const footer = `<div class="tablefoot"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select data-pagesize>${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
+    return { rows, footer };
   }
 
   inventory() {
     const rows = this.filtered();
-    const pageCount = Math.max(1, Math.ceil(rows.length / this.pageSize));
-    this.page = Math.min(this.page, pageCount);
-    const visibleRows = rows.slice((this.page - 1) * this.pageSize, this.page * this.pageSize);
+    const pg = this.paginate("inventory", rows);
+    const visibleRows = pg.rows;
     const types = [...new Set(this.data.objects.map(x => x.object_type))].sort();
     const statuses = [...new Set(this.data.objects.map(x => x.status))].sort();
     return `<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select></div>
-      <div class="tablewrap"><table><thead><tr><th data-sort="name">${this.t("name")}</th><th data-sort="type">${this.t("type")}</th><th data-sort="status">${this.t("status")}</th><th>${this.t("reason")}</th><th>${this.t("since")}</th></tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><strong>${this.esc(item.name)}</strong><span class="id">${this.esc(item.object_id)}</span></span></span></td><td>${this.t(item.object_type)}</td><td>${this.pill(item.status)}</td><td>${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td>${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
-      <div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(this.data.objects.length)} ${this.t("shown")}</span>${pageCount > 1 ? `<span class="pager"><button data-page="${this.page - 1}" ${this.page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${this.page} ${this.t("of")} ${pageCount} <button data-page="${this.page + 1}" ${this.page === pageCount ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div></div>`;
+      <div class="tablewrap"><table><thead><tr>${this.th("name", "name")}${this.th("type", "type")}${this.th("status", "status")}<th>${this.t("reason")}</th>${this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><strong>${this.esc(item.name)}</strong><span class="id">${this.esc(item.object_id)}</span></span></span></td><td>${this.t(item.object_type)}</td><td>${this.pill(item.status)}</td><td>${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td>${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
+      ${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(this.data.objects.length)} ${this.t("shown")}</span></div>`}</div>`;
   }
 
   nodeButton(key, label, tone = "") {
@@ -907,24 +1147,51 @@ class HAHousekeeperPanel extends HTMLElement {
 
   unreferencedView() {
     const all = this.unreferencedRows();
+    this.lvState("unreferenced", "id", "asc");
     const domains = [...new Set(all.map(o => o.object_id.split(".")[0]))].sort();
-    const rows = all.filter(o => !this.unrefDomain || o.object_id.startsWith(`${this.unrefDomain}.`));
-    const shown = rows.slice(0, 200);
-    const select = `<div class="filters"><select id="unrefDomain"><option value="">${this.t("allDomains")} (${all.length})</option>${domains.map(d => `<option value="${d}" ${this.unrefDomain === d ? "selected" : ""}>${this.esc(d)} (${all.filter(o => o.object_id.startsWith(`${d}.`)).length})</option>`).join("")}</select></div>`;
+    const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
+    const sorts = [
+      { key: "id", label: "sortId", dir: "asc", get: o => o.object_id },
+      { key: "name", label: "sortName", dir: "asc", get: o => o.name },
+      { key: "area", label: "sortArea", dir: "asc", get: o => this.areaName(o) },
+    ];
+    const bar = this.listBar("unreferenced", { sorts, filters: [
+      { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => o.object_id.startsWith(`${d}.`)).length})`]) },
+      { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
+    ] });
+    const rows = this.refine("unreferenced", all, {
+      text: o => [o.name, o.object_id, this.areaName(o)].join(" "),
+      filters: { domain: (o, v) => o.object_id.startsWith(`${v}.`), area: (o, v) => this.areaName(o) === v }, sorts, tie: o => o.object_id,
+    });
+    const pg = this.paginate("unreferenced", rows);
     const row = item => {
       const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
       const area = this.findObject(`area:${item.area_id || device?.area_id}`);
       return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile mute"><ha-icon icon="mdi:link-variant-off"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([item.object_id, device?.name, area?.name].filter(Boolean).join(" · "))}</small></span></button>`;
     };
-    const more = rows.length > shown.length ? `<p class="factnote">${this.t("unrefShown", { shown: shown.length, total: rows.length })}</p>` : "";
-    return `<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${select}${shown.length ? shown.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t("noUnreferenced")}</div>`}${more}</div>`;
+    return `<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`}${pg.footer}</div>`;
+  }
+
+  batterySorts() {
+    return [
+      // Low batteries first, then the lowest level.
+      { key: "level", label: "sortLevel", dir: "asc", get: r => (r.low ? 0 : 1e6) + (r.level ?? -1) },
+      { key: "name", label: "sortName", dir: "asc", get: r => r.item.name },
+      { key: "area", label: "sortArea", dir: "asc", get: r => this.areaName(r.item) },
+    ];
   }
 
   lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
 
   batteriesView() {
     const all = this.batteryRows(), low = all.filter(r => r.low);
-    const list = this.batteryFilter === "low" ? low : all;
+    this.lvState("batteries", "level", "asc");
+    const areas = [...new Set(all.map(r => this.areaName(r.item)).filter(Boolean))].sort();
+    const bar = this.listBar("batteries", { sorts: this.batterySorts(), filters: [{ name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) }] });
+    const list = this.refine("batteries", this.batteryFilter === "low" ? low : all, {
+      text: r => [r.item.name, r.item.object_id, this.areaName(r.item)].join(" "),
+      filters: { area: (r, v) => this.areaName(r.item) === v }, sorts: this.batterySorts(), tie: r => r.item.object_id,
+    });
     const limit = this.data.meta.low_battery_percent ?? 20;
     const chips = `<div class="chips"><button class="chip ${this.batteryFilter === "low" ? "active" : ""}" data-battery-filter="low">${this.t("batteryLow")} (${low.length})</button><button class="chip ${this.batteryFilter === "low" ? "" : "active"}" data-battery-filter="all">${this.t("batteryAll")} (${all.length})</button></div>`;
     const row = ({ item, level, low: isLow }) => {
@@ -933,14 +1200,16 @@ class HAHousekeeperPanel extends HTMLElement {
       const tone = isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
       return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
     };
-    return `<div class="panel">${chips}${list.length ? list.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t("noBatteries")}</div>`}</div>`;
+    const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
+    return `<div class="panel">${chips}${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>`;
   }
 
   integrationProblems() {
     const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem");
     if (!broken.length) return "";
-    const rows = broken.map(o => `<button class="row rel" data-object="${this.esc(this.objectKey(o))}">${this.tile("config_entry", "red")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.domain)} · ${this.t(`cs_${o.state || "not_loaded"}`)}</small></span>${this.pill(o.status)}</button>`).join("");
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("integrationProblems")} (${broken.length})</h2><p>${this.t("integrationProblemsHint")}</p></div></div>${rows}</div>`;
+    const pg = this.paginate("integrations", broken);
+    const rows = pg.rows.map(o => `<button class="row rel" data-object="${this.esc(this.objectKey(o))}">${this.tile("config_entry", "red")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.domain)} · ${this.t(`cs_${o.state || "not_loaded"}`)}</small></span>${this.pill(o.status)}</button>`).join("");
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("integrationProblems")} (${broken.length})</h2><p>${this.t("integrationProblemsHint")}</p></div></div>${rows}${pg.footer}</div>`;
   }
 
   factsCard(item, key) {
@@ -1001,7 +1270,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelector("[data-action='scan']")?.addEventListener("click", () => this.load(true));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
@@ -1009,15 +1278,15 @@ class HAHousekeeperPanel extends HTMLElement {
       if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
     });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
-      this.view = el.dataset.jump;
-      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = ""; this.page = 1; }
+      this.view = el.dataset.jump; this.pages = {};
+      if (el.dataset.filter !== undefined) this.findingFilter = el.dataset.filter;
+      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = ""; this.pages = {}; }
       this.render();
     });
-    root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.page = 1; this.view = "inventory"; this.render(); });
+    root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
-    root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.render(); });
-    const ud = root.querySelector("#unrefDomain"); if (ud) ud.onchange = () => { this.unrefDomain = ud.value; this.render(); };
-    root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.render(); });
+    root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
       try {
@@ -1027,7 +1296,7 @@ class HAHousekeeperPanel extends HTMLElement {
       } catch (err) { this.error = err?.message || String(err); }
       this.render();
     });
-    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { this.findingFilter = el.dataset.findingFilter; this.render(); });
+    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { this.findingFilter = el.dataset.findingFilter; this.pages = {}; this.render(); });
     const focusKeep = (selector, setter) => {
       const input = root.querySelector(selector);
       if (!input) return;
@@ -1039,16 +1308,39 @@ class HAHousekeeperPanel extends HTMLElement {
         if (next) { next.focus(); next.setSelectionRange(caret, caret); }
       };
     };
-    focusKeep("#query", v => { this.query = v; this.page = 1; });
+    focusKeep("#query", v => { this.query = v; this.pages = {}; });
     focusKeep("#graphQuery", v => { this.graphQuery = v; });
-    const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.loadCompare(); };
-    const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.page = 1; this.render(); };
-    const sf = root.querySelector("#statusFilter"); if (sf) sf.onchange = () => { this.statusFilter = sf.value; this.page = 1; this.render(); };
-    root.querySelectorAll("th[data-sort]").forEach(el => el.onclick = () => { this.sort = el.dataset.sort; this.render(); });
+    const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
+    const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.pages = {}; this.render(); };
+    const sf = root.querySelector("#statusFilter"); if (sf) sf.onchange = () => { this.statusFilter = sf.value; this.pages = {}; this.render(); };
+    root.querySelectorAll("th[data-sort]").forEach(el => el.onclick = () => {
+      if (this.sort === el.dataset.sort) this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
+      else { this.sort = el.dataset.sort; this.sortDir = "asc"; }
+      this.pages = {}; this.render();
+    });
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
-    root.querySelectorAll("[data-page]").forEach(el => el.onclick = () => { this.page = Number(el.dataset.page); this.render(); });
+    root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
+    root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
+    root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
+    root.querySelector("[data-copy-info]")?.addEventListener("click", async () => {
+      try { await globalThis.navigator?.clipboard?.writeText(this.infoText()); this.copied = true; } catch (_) { this.copied = false; }
+      this.render();
+      setTimeout(() => { this.copied = false; this.render(); }, 1500);
+    });
+    root.querySelectorAll("[data-lq]").forEach(input => input.oninput = () => {
+      this.lv[input.dataset.lq].q = input.value; this.pages = {};
+      const caret = input.selectionStart, selector = `[data-lq="${input.dataset.lq}"]`;
+      this.render();
+      const next = this.shadowRoot.querySelector(selector);
+      if (next) { next.focus(); next.setSelectionRange(caret, caret); }
+    });
+    root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); });
+    root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });
   }
 }
 

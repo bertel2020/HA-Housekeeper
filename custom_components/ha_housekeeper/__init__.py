@@ -70,6 +70,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scanner.low_battery_percent = entry.options.get(
         CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT
     )
+    scanner.scan_interval_hours = entry.options.get(
+        CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS
+    )
     await scanner.async_initialize()
     hass.data[DOMAIN]["scanner"] = scanner
 

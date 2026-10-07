@@ -189,6 +189,8 @@ async def test_low_battery_threshold_is_configurable(hass: HomeAssistant) -> Non
     snapshot = await scanner.async_scan()
     assert snapshot["meta"]["low_battery_percent"] == 20
     assert snapshot["meta"]["low_batteries"] == 0
+    assert snapshot["meta"]["ha_version"]
+    assert snapshot["meta"]["scan_interval_hours"] == 24
 
     scanner.low_battery_percent = 50
     snapshot = await scanner.async_scan()
