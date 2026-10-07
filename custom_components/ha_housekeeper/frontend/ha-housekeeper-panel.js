@@ -44,6 +44,12 @@ const TEXT = {
     PROVIDES: "stellt bereit", OWNS: "besitzt", CONTAINS: "enthält", VIA_DEVICE: "über Gerät",
     TRIGGERS_ON: "löst aus durch", USES_AS_CONDITION: "prüft als Bedingung", TARGETS: "steuert", REFERENCES: "verweist auf",
     runtimeState: "Laufzeit-Zustand", usedBy: "verwendet von",
+    impactTitle: "Auswirkung einer Entfernung", impactSubtitle: "Reine Analyse – Housekeeper entfernt nichts.",
+    impactNone: "Keine bekannte Verwendung", impactNoneText: "Keine Automation verwendet dieses Objekt oder seine zugehörigen Entities.",
+    impactCertain: "Nicht sicher entfernbar", impactCertainText: "{count} Automation(en) verweisen sicher auf dieses Objekt und würden ins Leere laufen.",
+    impactProbable: "Vorher prüfen", impactProbableText: "{count} Automation(en) verweisen wahrscheinlich darauf (z. B. über Templates).",
+    impactScope: "Betrachtet werden das Objekt und {count} zugehörige Entities.", impactScopeOne: "Betrachtet wird nur dieses Objekt.",
+    impactLimits: "Nicht geprüft: Dashboards, Skripte, Szenen, Gruppen und die Recorder-Historie.",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
     available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: nicht verfügbare Entities werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
@@ -121,6 +127,12 @@ const TEXT = {
     PROVIDES: "provides", OWNS: "owns", CONTAINS: "contains", VIA_DEVICE: "via device",
     TRIGGERS_ON: "triggers on", USES_AS_CONDITION: "checks as condition", TARGETS: "targets", REFERENCES: "references",
     runtimeState: "Runtime state", usedBy: "used by",
+    impactTitle: "Impact of removal", impactSubtitle: "Analysis only – Housekeeper removes nothing.",
+    impactNone: "No known usage", impactNoneText: "No automation uses this object or its related entities.",
+    impactCertain: "Not safe to remove", impactCertainText: "{count} automation(s) reference this object for certain and would run into nothing.",
+    impactProbable: "Check first", impactProbableText: "{count} automation(s) probably reference it (for example through templates).",
+    impactScope: "Covers this object and {count} related entities.", impactScopeOne: "Covers only this object.",
+    impactLimits: "Not checked: dashboards, scripts, scenes, groups and the recorder history.",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
     available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
@@ -637,6 +649,49 @@ class HAHousekeeperPanel extends HTMLElement {
       ${d.hint ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><strong>${this.t("hintLabel")}</strong><p>${this.esc(d.hint)}</p></div></div>` : ""}</div></section>`;
   }
 
+  // Read-only what-if: which automations would lose a reference if this object (and what it owns) were removed.
+  impact(item, key) {
+    if (item.object_type === "automation") return null;
+    const OWNED = ["PROVIDES", "OWNS"], USAGE = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"];
+    const scope = new Set([key]);
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const e of this.data.edges) {
+        if (OWNED.includes(e.relation) && scope.has(e.source) && !scope.has(e.target)) { scope.add(e.target); grew = true; }
+      }
+    }
+    const byAutomation = new Map();
+    for (const e of this.data.edges) {
+      if (!USAGE.includes(e.relation) || !scope.has(e.target) || !e.source.startsWith("automation:")) continue;
+      const hit = byAutomation.get(e.source) || { key: e.source, certain: false, places: [] };
+      if (e.confidence === "certain") hit.certain = true;
+      if (e.location && e.location !== "runtime_extraction") hit.places.push(e.location);
+      byAutomation.set(e.source, hit);
+    }
+    const hits = [...byAutomation.values()].sort((a, b) => Number(b.certain) - Number(a.certain));
+    const certain = hits.filter(h => h.certain).length;
+    const tone = certain ? "red" : hits.length ? "warn" : "ok";
+    return { hits, certain, probable: hits.length - certain, tone, related: scope.size - 1 };
+  }
+
+  impactCard(item, key) {
+    const m = this.impact(item, key);
+    if (!m) return "";
+    const title = m.certain ? "impactCertain" : m.hits.length ? "impactProbable" : "impactNone";
+    const text = m.certain ? this.t("impactCertainText", { count: m.certain }) : m.hits.length ? this.t("impactProbableText", { count: m.probable }) : this.t("impactNoneText");
+    const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:alert-octagon" }[m.tone];
+    const LIMIT = 15;
+    const rows = m.hits.slice(0, LIMIT).map(h => {
+      const obj = this.findObject(h.key);
+      const note = `${this.t(h.certain ? "certain" : "probable")}${h.places.length ? ` · ${h.places.slice(0, 2).join(", ")}` : ""}`;
+      return `<button class="row rel" data-object="${this.esc(h.key)}">${this.tile("automation", h.certain ? "red" : "warn")}<span class="row-text"><strong>${this.esc(obj?.name || h.key.split(":").slice(1).join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : ""}</button>`;
+    }).join("");
+    const more = m.hits.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: m.hits.length - LIMIT })}</p>` : "";
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("impactTitle")}</h2><p>${this.t("impactSubtitle")}</p></div></div>
+      <div class="diagcard"><div class="cause ${m.tone}"><ha-icon icon="${icon}"></ha-icon><div><strong>${this.t(title)}</strong><p>${this.esc(text)}</p></div></div></div>${rows}${more}
+      <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
+  }
+
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
     const usage = this.data.edges.filter(e => e.target === key && ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES"].includes(e.relation)).length;
@@ -687,7 +742,7 @@ class HAHousekeeperPanel extends HTMLElement {
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
       <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
-      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}
+      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}
         <section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>
         ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
       <div class="stack">${this.factsCard(item, key)}${this.relationsCard(key)}</div></div>`;

@@ -169,3 +169,44 @@ test("JSON export carries scan time and rows", () => {
   assert.equal(parsed.findings.length, 2);
   assert.equal(parsed.findings[0].rule_id, "automation.missing_entity");
 });
+
+function impactWith(edges, item, key) {
+  const { el } = panel();
+  el.data = { ...DATA, edges };
+  return el.impact(item, key);
+}
+const E = (source, target, relation, confidence = "certain", location = "actions[0]") => ({ source, target, relation, confidence, location });
+
+test("impact is safe when no automation uses the object", () => {
+  const m = impactWith([], DATA.objects[1], "entity:sensor.b");
+  assert.equal(m.tone, "ok");
+  assert.equal(m.hits.length, 0);
+});
+
+test("impact flags certain references and ranks them first", () => {
+  const edges = [
+    E("automation:automation.p", "entity:sensor.b", "REFERENCES", "probable", "runtime_extraction"),
+    E("automation:automation.c", "entity:sensor.b", "TRIGGERS_ON"),
+  ];
+  const m = impactWith(edges, DATA.objects[1], "entity:sensor.b");
+  assert.equal(m.tone, "red");
+  assert.equal(m.certain, 1);
+  assert.equal(m.hits[0].key, "automation:automation.c");
+});
+
+test("impact of a device includes its entities, probable-only is a warning", () => {
+  const edges = [
+    E("device:d1", "entity:sensor.b", "PROVIDES"),
+    E("automation:automation.c", "entity:sensor.b", "REFERENCES", "probable", "runtime_extraction"),
+  ];
+  const m = impactWith(edges, { object_type: "device", object_id: "d1" }, "device:d1");
+  assert.equal(m.related, 1);
+  assert.equal(m.tone, "warn");
+  assert.equal(m.probable, 1);
+});
+
+test("impact card is skipped for automations and shows the verdict", () => {
+  const { el } = panel();
+  assert.equal(el.impactCard(DATA.objects[2], "automation:automation.c"), "");
+  assert.ok(el.impactCard(DATA.objects[1], "entity:sensor.b").includes("No known usage"));
+});
