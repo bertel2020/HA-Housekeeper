@@ -42,6 +42,8 @@ jobs:
         run: python -m pytest -q --asyncio-mode=auto
       - name: Check Python syntax
         run: python -m compileall -q custom_components tests
+      - name: Check that the panel bundle is built from its sources
+        run: node scripts/build_panel.mjs --check
       - name: Check frontend syntax
         run: node --check custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js
 

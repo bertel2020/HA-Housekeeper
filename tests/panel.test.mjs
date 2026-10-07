@@ -4,6 +4,8 @@ import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 
+import { buildPanel } from "../scripts/build_panel.mjs";
+
 const SOURCE = new URL("../custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js", import.meta.url);
 
 function loadPanel(extra = {}) {
@@ -899,4 +901,8 @@ test("without quarantined entities the card is absent and the overview row is ze
   el.render();
   assert.ok(!shadow.innerHTML.includes("Quarantine ("));
   assert.ok(el.cleanupCard().includes('data-jump="cleanup"'));
+});
+
+test("the served panel file is built from panel-src and up to date", () => {
+  assert.equal(fs.readFileSync(SOURCE, "utf8"), buildPanel(), "run: node scripts/build_panel.mjs");
 });

@@ -1,0 +1,216 @@
+// DiagnosisMixin: methods of the panel element, mixed into the class in 99-register.js.
+class DiagnosisMixin {
+  relTime(value) {
+    if (!value) return "";
+    const diff = (Date.now() - new Date(value).getTime()) / 1000;
+    if (!(diff >= 0)) return "";
+    const rtf = new Intl.RelativeTimeFormat(this.lang, { numeric: "auto" });
+    for (const [unit, secs] of [["day", 86400], ["hour", 3600], ["minute", 60]]) {
+      if (diff >= secs) return rtf.format(-Math.floor(diff / secs), unit);
+    }
+    return rtf.format(0, "second");
+  }
+
+  integrationCheck(entryId) {
+    const entry = this.findObject(`config_entry:${entryId}`), label = this.t("integration");
+    if (!entry) return { row: this.check(label, "red", entryId, this.t("missing")), entry };
+    if (entry.disabled_by) return { row: this.check(label, "mute", entry.name, this.t("disabled")), entry };
+    const state = entry.state || "not_loaded";
+    const tone = state === "loaded" ? "ok" : ["setup_error", "migration_error", "failed_unload"].includes(state) ? "red" : "warn";
+    return { row: this.check(label, tone, entry.name, this.t(`cs_${state}`)), entry, broken: state !== "loaded", state };
+  }
+
+  // Builds the check list and the plain-language cause for one object. Returns null when nothing is worth explaining.
+  diagnose(item) {
+    const t = (k, v) => this.t(k, v);
+    const rows = [];
+    let cause = "", hint = "", tone = this.tone(item.status);
+    if (tone === "blue") tone = "ok";
+
+    if (item.object_type === "entity") {
+      const integ = item.config_entry_id ? this.integrationCheck(item.config_entry_id) : null;
+      if (integ) rows.push(integ.row);
+      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+      if (item.device_id) {
+        rows.push(!device ? this.check(t("device"), "red", item.device_id, t("missing"))
+          : device.status === "disabled" ? this.check(t("device"), "mute", device.name, t("disabled"))
+          : this.check(t("device"), "ok", device.name, t("active")));
+      }
+      if (item.disabled_by) rows.push(this.check(t("entity"), "mute", t("entity_disabled"), t("disabled")));
+      const state = item.state;
+      if (state === null || state === undefined) {
+        rows.push(this.check(t("runtimeState"), item.disabled_by ? "mute" : "red", t("noState"), item.disabled_by ? t("notExpected") : t("missing")));
+      } else if (state === "unavailable") rows.push(this.check(t("runtimeState"), "red", state, t("unavailable")));
+      else if (state === "unknown") rows.push(this.check(t("runtimeState"), "violet", state, t("unknown")));
+      else rows.push(this.check(t("runtimeState"), "ok", state, t("available")));
+
+      const broken = integ?.broken ? { state: t(`cs_${integ.state}`) } : null;
+      switch (item.reason) {
+        case "state_available": cause = t("cause_ok"); break;
+        case "entity_disabled": case "device_disabled": case "integration_disabled": case "device_missing": case "config_entry_missing":
+          cause = t(`cause_${item.reason}`); break;
+        case "state_missing": cause = broken ? t("cause_state_missing_integration", broken) : t("cause_state_missing"); break;
+        case "state_unavailable": cause = broken ? t("cause_state_unavailable_integration", broken) : t("cause_state_unavailable"); break;
+        case "state_unknown": cause = t("cause_state_unknown"); break;
+        default: cause = item.reason ? t(item.reason) : "";
+      }
+      const brokenMembers = this.data.findings.filter(f => f.rule_id === "entity.missing_member" && f.object_id === item.object_id);
+      brokenMembers.forEach(f => rows.push(this.check(t("missing_member"), "red", f.affected_object, t("missing"))));
+      if (item.duplicate_of) {
+        rows.push(this.check(t("duplicateTwin"), "violet", item.duplicate_of, t("possible_duplicate")));
+        cause = `${t("cause_duplicate", { twin: item.duplicate_of })} ${cause}`;
+      }
+      if (item.reason === "state_unavailable") hint = broken ? t("hint_integration") : t("hint_state_unavailable");
+      else if (item.reason === "state_unknown") hint = t("hint_state_unknown");
+      else if (item.reason === "state_missing" && broken) hint = t("hint_integration");
+      else if (["state_missing", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
+      if (item.duplicate_of) hint = t("hint_duplicate");
+      if (brokenMembers.length) {
+        cause = `${t("cause_group_broken", { count: brokenMembers.length })} ${cause}`;
+        hint = t("hint_group_broken");
+        tone = "red";
+      }
+    } else if (item.object_type === "device") {
+      const ids = item.config_entry_ids || [];
+      ids.forEach(id => rows.push(this.integrationCheck(id).row));
+      rows.push(this.check(t("entities"), item.entity_count ? "ok" : "warn", this.formatNumber(item.entity_count), item.entity_count ? t("present") : t("empty")));
+      cause = item.status === "disabled" ? t("cause_device_off") : item.status === "empty" ? t("cause_device_empty") : t("cause_device_active");
+    } else if (item.object_type === "config_entry") {
+      const state = item.state || "not_loaded";
+      if (item.disabled_by) { rows.push(this.check(t("status"), "mute", item.name, t("disabled"))); cause = t("cause_entry_off"); }
+      else if (state === "loaded") { rows.push(this.check(t("status"), "ok", item.name, t("cs_loaded"))); cause = t("cause_entry_ok"); }
+      else { rows.push(this.check(t("status"), tone, item.name, t(`cs_${state}`))); cause = t("cause_entry_problem", { state: t(`cs_${state}`) }); hint = t("hint_integration"); }
+      const helperBroken = this.data.findings.filter(f => f.rule_id === "config_entry.missing_entity" && f.object_id === item.object_id);
+      helperBroken.forEach(f => rows.push(this.check(t("missing_entity"), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
+      if (helperBroken.length) { cause = t("cause_helper_broken", { count: helperBroken.length }); hint = t("hint_helper_broken"); tone = "red"; }
+    } else if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) {
+      const key = this.objectKey(item);
+      const broken = this.data.findings.filter(f => this.findingKey(f) === key && f.rule_id.includes(".missing_"));
+      broken.forEach(f => rows.push(this.check(t(f.rule_id.split(".")[1]), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
+      if (item.object_type === "automation" && item.status === "disabled") rows.push(this.check(t("status"), "mute", t("automationOff"), t("disabled")));
+      if (!broken.length) rows.push(this.check(t("dependencies"), "ok", t("refsResolved"), t("present")));
+      const unused = item.object_type === "automation" ? this.data.findings.find(f => this.findingKey(f) === key && f.classification === "unused") : null;
+      if (item.object_type === "automation") {
+        rows.push(this.check(t("lastTriggered"), unused ? "warn" : "ok", item.last_triggered ? this.formatDate(item.last_triggered) : t("never"), unused ? t("unused") : t("available")));
+      }
+      cause = broken.length ? t("cause_automation_broken", { count: broken.length }) : unused ? t(`cause_${unused.rule_id.split(".")[1]}`, { days: unused.evidence?.[0]?.days ?? "" }) : t("cause_automation_ok");
+      if (unused && !broken.length) { hint = t("hint_unused"); tone = "warn"; }
+      if (broken.length) { hint = t("hint_automation_broken"); tone = "red"; }
+    } else return null;
+    return { rows, cause, hint, tone };
+  }
+
+  diagnosisCard(item) {
+    const d = this.diagnose(item);
+    if (!d) return "";
+    const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:close-circle", mute: "mdi:minus-circle", violet: "mdi:help-circle" };
+    const rows = d.rows.map(r => `<div class="check ${r.tone}"><ha-icon icon="${icon[r.tone] || icon.ok}"></ha-icon><b>${this.esc(r.label)}</b><span class="val">${this.esc(r.value)}</span><i class="pill ${r.tone}">${this.esc(r.badge)}</i></div>`).join("");
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagnosis")}</h2>${item.reason ? `<p>${this.esc(this.t(item.reason))}</p>` : ""}</div></div>
+      <div class="diagcard"><div class="checks">${rows}</div>
+      ${d.cause ? `<div class="cause ${d.tone}"><ha-icon icon="mdi:text-search"></ha-icon><div><strong>${this.t("causeLabel")}</strong><p>${this.esc(d.cause)}</p></div></div>` : ""}
+      ${d.hint ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><strong>${this.t("hintLabel")}</strong><p>${this.esc(d.hint)}</p></div></div>` : ""}</div></section>`;
+  }
+
+  // Read-only what-if: which automations would lose a reference if this object (and what it owns) were removed.
+  impact(item, key) {
+    if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) return null;
+    const OWNED = ["PROVIDES", "OWNS"], USAGE = USAGE_RELATIONS;
+    const scope = new Set([key]);
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const e of this.data.edges) {
+        if (OWNED.includes(e.relation) && scope.has(e.source) && !scope.has(e.target)) { scope.add(e.target); grew = true; }
+      }
+    }
+    const byAutomation = new Map();
+    for (const e of this.data.edges) {
+      if (!USAGE.includes(e.relation) || !scope.has(e.target) || scope.has(e.source) || !(/^(automation|script|scene|dashboard|config_entry):/.test(e.source) || e.relation === "INCLUDES")) continue;
+      const hit = byAutomation.get(e.source) || { key: e.source, certain: false, places: [] };
+      if (e.confidence === "certain") hit.certain = true;
+      if (e.location && e.location !== "runtime_extraction") hit.places.push(e.location);
+      byAutomation.set(e.source, hit);
+    }
+    const hits = [...byAutomation.values()].sort((a, b) => Number(b.certain) - Number(a.certain));
+    const certain = hits.filter(h => h.certain).length;
+    const tone = certain ? "red" : hits.length ? "warn" : "ok";
+    return { hits, certain, probable: hits.length - certain, tone, related: scope.size - 1 };
+  }
+
+  impactCard(item, key) {
+    const m = this.impact(item, key);
+    if (!m) return "";
+    const title = m.certain ? "impactCertain" : m.hits.length ? "impactProbable" : "impactNone";
+    const text = m.certain ? this.t("impactCertainText", { count: m.certain }) : m.hits.length ? this.t("impactProbableText", { count: m.probable }) : this.t("impactNoneText");
+    const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:alert-octagon" }[m.tone];
+    const LIMIT = 15;
+    const rows = m.hits.slice(0, LIMIT).map(h => {
+      const obj = this.findObject(h.key);
+      const note = `${this.t(h.certain ? "certain" : "probable")}${h.places.length ? ` · ${h.places.slice(0, 2).join(", ")}` : ""}`;
+      return `<button class="row rel" data-object="${this.esc(h.key)}">${this.tile(h.key.split(":")[0], h.certain ? "red" : "warn")}<span class="row-text"><strong>${this.esc(obj?.name || h.key.split(":").slice(1).join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : ""}</button>`;
+    }).join("");
+    const more = m.hits.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: m.hits.length - LIMIT })}</p>` : "";
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("impactTitle")}</h2><p>${this.t("impactSubtitle")}</p></div></div>
+      <div class="diagcard"><div class="cause ${m.tone}"><ha-icon icon="${icon}"></ha-icon><div><strong>${this.t(title)}</strong><p>${this.esc(text)}</p></div></div></div>${rows}${more}
+      ${item.object_type === "entity" && item.has_statistics ? `<p class="factnote">${this.t("statsNote")}</p>` : ""}
+      <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
+  }
+
+  factsCard(item, key) {
+    const finding = this.data.findings.find(f => this.findingKey(f) === key);
+    const usage = this.data.edges.filter(e => e.target === key && USAGE_RELATIONS.includes(e.relation)).length;
+    const min = this.data.meta.min_unavailable_days || 0;
+    const facts = [[this.t("status"), this.pill(item.status)]];
+    if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
+    if (["entity", "automation", "script", "scene", "dashboard"].includes(item.object_type)) {
+      facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
+    }
+    if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
+    const quarantined = item.object_type === "entity" ? this.quarantineOf(item.object_id) : null;
+    if (quarantined) facts.push([this.t("quarantine"), this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })]);
+    if (item.object_type === "entity" && this.data.meta.recorder_available) facts.push([this.t("longTermStats"), this.t(item.has_statistics ? "yes" : "no")]);
+    const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
+  }
+
+  relationsCard(key) {
+    const USAGE = USAGE_RELATIONS;
+    const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
+    const groups = [
+      [this.t("origin"), incoming.filter(e => !USAGE.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e }))],
+      [this.t("usage"), [
+        ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ other: e.source, label: `${this.t("usedBy")} · ${this.t(e.relation)}`, edge: e })),
+        ...outgoing.map(e => ({ other: e.target, label: this.t(e.relation), edge: e })),
+      ]],
+    ].filter(([, list]) => list.length);
+    const LIMIT = 25;
+    const row = ({ other, label, edge }) => {
+      const obj = this.findObject(other), [type, ...rest] = other.split(":");
+      const note = `${label}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`;
+      const text = `${this.tile(obj?.object_type || type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "red")}<span class="row-text"><strong>${this.esc(obj?.name || rest.join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}`;
+      return obj ? `<button class="row rel" data-object="${this.esc(other)}">${text}</button>` : `<div class="row rel">${text}</div>`;
+    };
+    const body = groups.map(([title, list]) => `<div class="sectionlabel">${title} (${list.length})</div>${list.slice(0, LIMIT).map(row).join("")}${list.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: list.length - LIMIT })}</p>` : ""}`).join("");
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${body || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
+  }
+
+  detail() {
+    const base = this.selected;
+    const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
+    const key = this.objectKey(item);
+    const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
+    const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
+    const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
+      ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
+    const attrs = item.attributes && Object.keys(item.attributes).length
+      ? `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>` : "";
+    const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
+    const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
+    return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
+      <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
+      <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
+      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}
+        <section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>
+        ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
+      <div class="stack">${this.factsCard(item, key)}${this.findingsCard(key)}${this.relationsCard(key)}</div></div>`;
+  }
+}

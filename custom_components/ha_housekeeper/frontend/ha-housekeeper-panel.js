@@ -1,3 +1,5 @@
+// GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
+
 const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
@@ -367,57 +369,8 @@ const STATUS_TONE = {
   disabled: "mute", empty: "mute", unknown: "violet", possible_duplicate: "violet", unused: "mute",
 };
 
-class HAHousekeeperPanel extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-    this._hass = null;
-    this.data = null;
-    this.view = "overview";
-    this.query = "";
-    this.typeFilter = "";
-    this.statusFilter = "";
-    this.findingFilter = "";
-    this.showIgnored = false;
-    this.batteryFilter = "low";
-
-    this._urlApplied = false;
-    this.sort = "name";
-    this.selected = null;
-    this.trail = [];
-    this.compare = null;
-    this.compareBaseline = "previous";
-    this.compareLoading = false;
-    this.graphSelected = null;
-    this.details = new Map();
-    this.detailLoading = false;
-    this.graphQuery = "";
-    this.pages = {};
-    this.lv = {};
-    this.unrefTab = "entities";
-    this.cleanupSel = new Set();
-    this.cleanupKind = "disable_entity";
-    this.ack = new Set();
-    this.confirmation = null;
-    this.confirmWord = "";
-    this.plan = null;
-    this.journal = null;
-    this.prefs = this.loadPrefs();
-    this.pageSize = this.prefs.pageSize;
-    this.sortDir = "asc";
-    this.pages = {};
-    this.busy = false;
-    this.scanStatus = null;
-    this.error = null;
-  }
-
-  set hass(value) {
-    const first = !this._hass, wasDark = this._hass?.themes?.darkMode;
-    this._hass = value;
-    if (first) { this.load(false); this.loadUserPrefs(); }
-    else if (this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) this.render();
-  }
-
+// ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
+class ThemeMixin {
   // Display preferences live in this browser only; storage may be unavailable.
   loadPrefs() {
     try { return this.sanitizePrefs(JSON.parse(globalThis.localStorage?.getItem(PREFS_KEY) || "{}")); } catch (_) { return { ...DEFAULT_PREFS }; }
@@ -475,150 +428,18 @@ class HAHousekeeperPanel extends HTMLElement {
     const motion = this.prefs.motion === "reduced" ? calm : `@media(prefers-reduced-motion:reduce){${calm}}`;
     return `:host{${vars}}${compact}${motion}`;
   }
-  get hass() { return this._hass; }
 
-  connectedCallback() {
-    this._basePath = typeof window === "undefined" ? null : window.location.pathname;
+  setPref(key, raw) {
+    const value = key === "pageSize" ? Number(raw) : raw;
+    this.prefs = { ...this.prefs, [key]: value };
+    if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
+    this.savePrefs();
     this.render();
   }
+}
 
-  get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
-  t(key, vars) {
-    const text = TEXT[this.lang][key] || TEXT.en[key] || key;
-    return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
-  }
-  esc(value) {
-    return String(value ?? "—").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
-  }
-  formatDate(value) {
-    if (!value) return "—";
-    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
-    catch (_) { return value; }
-  }
-  formatNumber(value) { return new Intl.NumberFormat(this.lang).format(value ?? 0); }
-
-  async load(fresh = false) {
-    if (!this._hass || this.busy) return;
-    this.busy = true; this.error = null; this.render();
-    let progressTimer = null;
-    if (fresh) progressTimer = window.setInterval(() => this.updateScanStatus(), 250);
-    try {
-      this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
-      this.details = new Map();
-      this.compare = null;
-      this.applyUrl();
-    } catch (err) {
-      this.error = err?.message || String(err);
-    } finally {
-      if (progressTimer) window.clearInterval(progressTimer);
-      this.scanStatus = null;
-      this.busy = false; this.render();
-    }
-    if (this.view === "changes" && this.data) this.loadCompare();
-  }
-
-  async loadCompare() {
-    this.compareLoading = true; this.render();
-    try {
-      this.compare = await this._hass.callWS({ type: "ha_housekeeper/compare", baseline: this.compareBaseline });
-    } catch (err) {
-      this.compare = null; this.error = err?.message || String(err);
-    }
-    this.compareLoading = false; this.render();
-  }
-
-  async updateScanStatus() {
-    try {
-      this.scanStatus = await this._hass.callWS({ type: "ha_housekeeper/status" });
-      this.render();
-    } catch (_) { /* The main scan request reports actionable errors. */ }
-  }
-
-  filtered() {
-    if (!this.data) return [];
-    const q = this.query.trim().toLowerCase();
-    return this.data.objects.filter(item => {
-      const haystack = [item.name, item.object_id, item.platform, item.domain, item.unique_id].join(" ").toLowerCase();
-      return (!q || haystack.includes(q)) && (!this.typeFilter || item.object_type === this.typeFilter)
-        && (!this.statusFilter || item.status === this.statusFilter);
-    }).sort((a, b) => {
-      const pick = item => this.sort === "status" ? item.status : this.sort === "type" ? item.object_type : this.sort === "since" ? item.status_since : (item.name || item.object_id);
-      const x = pick(a), y = pick(b);
-      if (!x !== !y) return x ? -1 : 1; // missing values stay last in both directions
-      const order = String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
-      return (this.sortDir === "desc" ? -order : order) || String(a.object_id).localeCompare(String(b.object_id), this.lang, { numeric: true });
-    });
-  }
-
-  async openObject(obj) {
-    if (this.selected && this.selected !== obj) this.trail.push(this.selected);
-    this.selected = obj;
-    const key = this.objectKey(obj);
-    if (this.details.has(key)) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
-    this.detailLoading = true;
-    this.render();
-    this.scrollIntoView?.({ block: "start" });
-    try {
-      this.details.set(key, await this._hass.callWS({
-        type: "ha_housekeeper/detail", object_type: obj.object_type, object_id: obj.object_id,
-      }));
-    } catch (_) { this.details.set(key, {}); }
-    this.detailLoading = false;
-    if (this.selected === obj) this.render();
-  }
-
-  goBack() { this.selected = this.trail.pop() || null; this.render(); }
-
-  statusLabel(status) { return this.t(status); }
-  objectKey(item) { return `${item.object_type}:${item.object_id}`; }
-  findObject(key) {
-    if (!this.data) return undefined;
-    if (!this._index || this._indexSource !== this.data) {
-      this._index = new Map(this.data.objects.map(item => [this.objectKey(item), item]));
-      this._indexSource = this.data;
-    }
-    return this._index.get(key);
-  }
-
-  findingKey(finding) { return `${finding.rule_id.split(".")[0]}:${finding.object_id}`; }
-  sortedFindings(includeIgnored = false) {
-    return this.data.findings.filter(f => includeIgnored || !f.ignored).sort((a, b) => (b.confidence - a.confidence)
-      || String(a.object_id).localeCompare(String(b.object_id)));
-  }
-
-  health() {
-    const base = this.data.objects.filter(o => ["entity", "automation", "script", "scene"].includes(o.object_type)).length;
-    const percent = base ? Math.max(0, Math.round(100 * (1 - this.data.findings.filter(f => !f.ignored).length / base))) : 100;
-    const tone = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
-    const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label };
-  }
-
-  haPath(item) {
-    switch (item.object_type) {
-      case "entity": return `/config/entities?search=${encodeURIComponent(item.object_id)}`;
-      case "device": return `/config/devices/device/${encodeURIComponent(item.object_id)}`;
-      case "area": return `/config/areas/area/${encodeURIComponent(item.object_id)}`;
-      case "automation": return item.automation_id
-        ? `/config/automation/edit/${encodeURIComponent(item.automation_id)}`
-        : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
-      case "script": return `/config/script/edit/${encodeURIComponent(item.object_id.replace(/^script\./, ""))}`;
-      case "scene": return item.scene_id
-        ? `/config/scene/edit/${encodeURIComponent(item.scene_id)}`
-        : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
-      case "dashboard": return `/${encodeURIComponent(item.url_path || "lovelace")}`;
-      case "config_entry": return `/config/integrations/integration/${encodeURIComponent(item.domain)}`;
-      case "floor": return "/config/areas/dashboard";
-      case "label": return "/config/labels";
-      default: return null;
-    }
-  }
-
-  navigateHA(path) {
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new CustomEvent("location-changed"));
-  }
-
+// StylesMixin: methods of the panel element, mixed into the class in 99-register.js.
+class StylesMixin {
   styles() {
     return `<style>
       :host{--hk-blue:var(--primary-color,#0789cf);--hk-surface:var(--card-background-color,#fff);--hk-bg:var(--primary-background-color,#f4f6f9);--hk-soft:var(--secondary-background-color,#f6f8fa);--hk-text:var(--primary-text-color,#17212b);--hk-muted:var(--secondary-text-color,#637281);--hk-border:var(--divider-color,#dde4ea);--hk-green:#1f9d63;--hk-amber:#d68a00;--hk-red:#d94452;--hk-violet:#7a62c9;--hk-gray:#7b8794;display:block;min-height:100%;background:var(--hk-bg);color:var(--hk-text);font-family:var(--paper-font-body1_-_font-family,Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif)}
@@ -712,96 +533,64 @@ class HAHousekeeperPanel extends HTMLElement {
       ${this.themeCss()}
     </style>`;
   }
+}
 
-  render() {
-    if (!this.shadowRoot) return;
-    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main></div>`;
-    this.bind();
-    if (this.data) this.syncUrl();
+// ListsMixin: methods of the panel element, mixed into the class in 99-register.js.
+class ListsMixin {
+  th(key, label) {
+    const on = this.sort === key;
+    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</th>`;
   }
 
-  // Deep links: /ha-housekeeper?view=findingsNav&filter=orphaned or ?object=entity:sensor.x
-  applyUrl() {
-    if (this._urlApplied || typeof window === "undefined" || !this.data) return;
-    this._urlApplied = true;
-    const params = new URLSearchParams(window.location.search);
-    const view = params.get("view");
-    if (view && NAV.some(([name]) => name === view)) this.view = view;
-    else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
-    if (params.get("filter")) this.findingFilter = params.get("filter");
-    const obj = this.findObject(params.get("object") || "");
-    if (obj) this.openObject(obj);
-    else if (this.view === "changes" && !this.compare) this.loadCompare();
+  // Shared list controls: per-list search, filters and sort kept in this.lv[id].
+  lvState(id, sort, dir) { return (this.lv[id] ||= { q: "", sort, dir, f: {} }); }
+
+  areaName(item) {
+    const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+    return this.findObject(`area:${item.area_id || device?.area_id}`)?.name || "";
   }
 
-  syncUrl() {
-    if (typeof window === "undefined" || !this.isConnected || !window.history?.replaceState) return;
-    if (window.location.pathname !== this._basePath) return; // HA already navigated elsewhere
-    const params = new URLSearchParams();
-    if (this.selected) params.set("object", this.objectKey(this.selected));
-    else {
-      if (this.view !== "overview") params.set("view", this.view);
-      if (this.view === "findingsNav" && this.findingFilter) params.set("filter", this.findingFilter);
-    }
-    const query = params.toString();
-    try { window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "")); } catch (_) { /* ignore */ }
+  // Filter by search text and select filters, then sort. Empty values always sort last.
+  refine(id, items, { text, filters = {}, sorts, tie }) {
+    const st = this.lv[id], q = st.q.trim().toLowerCase();
+    const get = sorts.find(x => x.key === st.sort)?.get || sorts[0].get;
+    const sign = st.dir === "desc" ? -1 : 1;
+    const empty = v => v === null || v === undefined || v === "";
+    return items.filter(it => (!q || text(it).toLowerCase().includes(q))
+      && Object.entries(st.f).every(([name, value]) => !value || !filters[name] || filters[name](it, value)))
+      .sort((a, b) => {
+        const x = get(a), y = get(b);
+        if (empty(x) !== empty(y)) return empty(x) ? 1 : -1;
+        const order = typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
+        return order * sign || String(tie(a)).localeCompare(String(tie(b)), this.lang, { numeric: true });
+      });
   }
 
-  sidebar() {
-    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
-    return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
-      <nav>${NAV.filter(([view]) => view !== "settings").map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
-      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings"><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
+  listBar(id, { sorts, filters = [] }) {
+    const st = this.lv[id];
+    (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
+    const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
+    const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
+    const desc = st.dir === "desc";
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button>` : ""}</div>`;
   }
 
-  heading() {
-    const titles = {
-      overview: [this.t("systemState"), this.t("health"), this.data ? `${this.t("lastScan")}: <b>${this.formatDate(this.data.meta.scanned_at)}</b>` : this.t("subtitle")],
-      inventory: [this.t("objects"), this.t("inventory"), this.t("inventorySubtitle")],
-      findingsNav: [this.t("diagnosis"), this.t("findings"), this.t("findingsSubtitle")],
-      changes: [this.t("diagnosis"), this.t("changes"), this.t("changesSubtitle")],
-      batteries: [this.t("objects"), this.t("batteries"), this.t("batteriesSubtitle")],
-      unreferenced: [this.t("objects"), this.t("unreferenced"), this.t("unreferencedSubtitle")],
-      graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
-      settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
-      cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
-    };
-    const [eyebrow, title, sub] = titles[this.view] || titles.overview;
-    const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
-    return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>`;
+  // Shared paging for long lists: returns the visible slice and the footer markup.
+  paginate(id, items) {
+    const count = Math.max(1, Math.ceil(items.length / this.pageSize));
+    const page = Math.min(Math.max(1, this.pages[id] || 1), count);
+    this.pages[id] = page;
+    const from = (page - 1) * this.pageSize;
+    const rows = items.slice(from, from + this.pageSize);
+    if (items.length <= 20) return { rows, footer: "" };
+    const sizes = [20, 50, 100].map(n => `<option value="${n}" ${n === this.pageSize ? "selected" : ""}>${n}</option>`).join("");
+    const footer = `<div class="tablefoot"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select data-pagesize>${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
+    return { rows, footer };
   }
+}
 
-  content() {
-    if (this.view === "settings") return this.settingsView();
-    if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
-    if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
-    if (this.view === "inventory") return this.inventory();
-    if (this.view === "findingsNav") return this.findingsView();
-    if (this.view === "changes") return this.changesView();
-    if (this.view === "batteries") return this.batteriesView();
-    if (this.view === "unreferenced") return this.unreferencedView();
-    if (this.view === "cleanup") return this.cleanupView();
-    if (this.view === "graph") return this.graph();
-    return this.overview();
-  }
-
-  tone(status) { return STATUS_TONE[status] || "blue"; }
-  pill(status) { return `<span class="pill ${this.tone(status)}">${this.esc(this.statusLabel(status))}</span>`; }
-  tile(type, tone = "") { return `<span class="tile ${tone}"><ha-icon icon="${ICONS[type] || "mdi:help-circle-outline"}"></ha-icon></span>`; }
-
-  findingRow(finding) {
-    const key = this.findingKey(finding), object = this.findObject(key);
-    const title = object?.name || finding.object_id;
-    const subtitle = finding.rule_id === "entity.possible_duplicate"
-      ? `${this.t("duplicateOf")} ${this.esc(finding.affected_object)}`
-      : finding.affected_object
-        ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
-        : this.esc(object?.reason ? this.t(object.reason) : this.t(finding.rule_id));
-    return `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
-  }
-
+// OverviewMixin: methods of the panel element, mixed into the class in 99-register.js.
+class OverviewMixin {
   // Hours since the last scan when it is clearly overdue for the configured interval, else null.
   staleScan() {
     const m = this.data?.meta;
@@ -856,7 +645,44 @@ class HAHousekeeperPanel extends HTMLElement {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanup")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
   }
 
-  findingType(f) { return this.findObject(this.findingKey(f))?.object_type || f.rule_id.split(".")[0]; }
+  integrationProblems() {
+    const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem");
+    if (!broken.length) return "";
+    this.lvState("integrations", "name", "asc");
+    const sorts = [{ key: "name", label: "sortName", dir: "asc", get: o => o.name }, { key: "state", label: "sortStatus", dir: "asc", get: o => o.state || "" }];
+    const bar = broken.length > 5 ? this.listBar("integrations", { sorts }) : "";
+    const shown = broken.length > 5 ? this.refine("integrations", broken, { text: o => [o.name, o.domain, o.state].join(" "), sorts, tie: o => o.object_id }) : broken;
+    const pg = this.paginate("integrations", shown);
+    const rows = pg.rows.map(o => `<button class="row rel" data-object="${this.esc(this.objectKey(o))}">${this.tile("config_entry", "red")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.domain)} · ${this.t(`cs_${o.state || "not_loaded"}`)}</small></span>${this.pill(o.status)}</button>`).join("");
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("integrationProblems")} (${broken.length})</h2><p>${this.t("integrationProblemsHint")}</p></div></div>${bar}${rows}${pg.footer}</div>`;
+  }
+}
+
+// FindingsMixin: methods of the panel element, mixed into the class in 99-register.js.
+class FindingsMixin {
+  sortedFindings(includeIgnored = false) {
+    return this.data.findings.filter(f => includeIgnored || !f.ignored).sort((a, b) => (b.confidence - a.confidence)
+      || String(a.object_id).localeCompare(String(b.object_id)));
+  }
+
+  health() {
+    const base = this.data.objects.filter(o => ["entity", "automation", "script", "scene"].includes(o.object_type)).length;
+    const percent = base ? Math.max(0, Math.round(100 * (1 - this.data.findings.filter(f => !f.ignored).length / base))) : 100;
+    const tone = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
+    const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
+    return { percent, tone, label };
+  }
+
+  findingRow(finding) {
+    const key = this.findingKey(finding), object = this.findObject(key);
+    const title = object?.name || finding.object_id;
+    const subtitle = finding.rule_id === "entity.possible_duplicate"
+      ? `${this.t("duplicateOf")} ${this.esc(finding.affected_object)}`
+      : finding.affected_object
+        ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
+        : this.esc(object?.reason ? this.t(object.reason) : this.t(finding.rule_id));
+    return `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+  }
 
   findingSorts() {
     return [
@@ -912,6 +738,46 @@ class HAHousekeeperPanel extends HTMLElement {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  findingsView() {
+    const all = this.sortedFindings(this.showIgnored);
+    const ignoredCount = this.data.findings.filter(f => f.ignored).length;
+    const classes = [...new Set(all.map(f => f.classification))];
+    const list = this.visibleFindings();
+    const types = [...new Set(all.map(f => this.findingType(f)))].sort();
+    const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }] });
+    const pg = this.paginate("findings", list);
+    return `<div class="panel"><div class="chips"><button class="chip ${this.findingFilter ? "" : "active"}" data-finding-filter="">${this.t("all")} (${all.length})</button>${classes.map(c => `<button class="chip ${this.findingFilter === c ? "active" : ""}" data-finding-filter="${this.esc(c)}">${this.t(c)} (${all.filter(f => f.classification === c).length})</button>`).join("")}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+      ${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div>`;
+  }
+
+  findingTitle(f) {
+    const sub = f.rule_id.split(".")[1] || f.rule_id;
+    if (sub.startsWith("missing_")) return `${this.t(sub)}: ${f.affected_object}`;
+    if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
+    const text = this.t(f.rule_id);
+    return text === f.rule_id ? this.t(sub) : text;
+  }
+
+  findingsCard(key) {
+    const list = this.data.findings.filter(f => this.findingKey(f) === key);
+    if (!list.length) return "";
+    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small>${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" ? "" : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="${f.ignored ? 0 : 1}"><ha-icon icon="${f.ignored ? "mdi:eye-outline" : "mdi:eye-off-outline"}"></ha-icon>${this.t(f.ignored ? "showFinding" : "hideFinding")}</button>`}</div>`).join("");
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("findingsOfObject")} (${list.length})</h2></div>${rows}</section>`;
+  }
+}
+
+// ChangesMixin: methods of the panel element, mixed into the class in 99-register.js.
+class ChangesMixin {
+  async loadCompare() {
+    this.compareLoading = true; this.render();
+    try {
+      this.compare = await this._hass.callWS({ type: "ha_housekeeper/compare", baseline: this.compareBaseline });
+    } catch (err) {
+      this.compare = null; this.error = err?.message || String(err);
+    }
+    this.compareLoading = false; this.render();
+  }
+
   changeRank(status) { return { active: 0, disabled: 1, empty: 1, unknown: 2, problem: 3, orphaned: 3, unavailable: 3 }[status] ?? 1; }
 
   changesView() {
@@ -953,24 +819,10 @@ class HAHousekeeperPanel extends HTMLElement {
     const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
     return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p><div class="summary changesum">${cards}</div>${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
   }
+}
 
-  findingsView() {
-    const all = this.sortedFindings(this.showIgnored);
-    const ignoredCount = this.data.findings.filter(f => f.ignored).length;
-    const classes = [...new Set(all.map(f => f.classification))];
-    const list = this.visibleFindings();
-    const types = [...new Set(all.map(f => this.findingType(f)))].sort();
-    const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }] });
-    const pg = this.paginate("findings", list);
-    return `<div class="panel"><div class="chips"><button class="chip ${this.findingFilter ? "" : "active"}" data-finding-filter="">${this.t("all")} (${all.length})</button>${classes.map(c => `<button class="chip ${this.findingFilter === c ? "active" : ""}" data-finding-filter="${this.esc(c)}">${this.t(c)} (${all.filter(f => f.classification === c).length})</button>`).join("")}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
-      ${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div>`;
-  }
-
-  th(key, label) {
-    const on = this.sort === key;
-    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</th>`;
-  }
-
+// SettingsMixin: methods of the panel element, mixed into the class in 99-register.js.
+class SettingsMixin {
   infoText() {
     const m = this.data?.meta || {};
     return [`HA Housekeeper ${m.version || "?"}`, `Home Assistant ${m.ha_version || "?"}`, `${this.t("lastScan")}: ${m.scanned_at || "-"}`,
@@ -1046,15 +898,10 @@ class HAHousekeeperPanel extends HTMLElement {
       setTimeout(() => { this.optionsMessage = ""; this.busy = false; this.load(false); }, 4000);
     } catch (err) { this.optionsMessage = err?.message || String(err); this.render(); }
   }
+}
 
-  setPref(key, raw) {
-    const value = key === "pageSize" ? Number(raw) : raw;
-    this.prefs = { ...this.prefs, [key]: value };
-    if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
-    this.savePrefs();
-    this.render();
-  }
-
+// CleanupMixin: methods of the panel element, mixed into the class in 99-register.js.
+class CleanupMixin {
   // Days since an ISO timestamp, never negative.
   daysSince(value) {
     const ms = Date.now() - new Date(value).getTime();
@@ -1247,51 +1094,24 @@ class HAHousekeeperPanel extends HTMLElement {
     return `<div class="stack"><div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
       ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${candidates}${journalCard}</div>`;
   }
+}
 
-  // Shared list controls: per-list search, filters and sort kept in this.lv[id].
-  lvState(id, sort, dir) { return (this.lv[id] ||= { q: "", sort, dir, f: {} }); }
-
-  areaName(item) {
-    const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
-    return this.findObject(`area:${item.area_id || device?.area_id}`)?.name || "";
-  }
-
-  // Filter by search text and select filters, then sort. Empty values always sort last.
-  refine(id, items, { text, filters = {}, sorts, tie }) {
-    const st = this.lv[id], q = st.q.trim().toLowerCase();
-    const get = sorts.find(x => x.key === st.sort)?.get || sorts[0].get;
-    const sign = st.dir === "desc" ? -1 : 1;
-    const empty = v => v === null || v === undefined || v === "";
-    return items.filter(it => (!q || text(it).toLowerCase().includes(q))
-      && Object.entries(st.f).every(([name, value]) => !value || !filters[name] || filters[name](it, value)))
-      .sort((a, b) => {
-        const x = get(a), y = get(b);
-        if (empty(x) !== empty(y)) return empty(x) ? 1 : -1;
-        const order = typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
-        return order * sign || String(tie(a)).localeCompare(String(tie(b)), this.lang, { numeric: true });
-      });
-  }
-
-  listBar(id, { sorts, filters = [] }) {
-    const st = this.lv[id];
-    (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
-    const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
-    const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
-    const desc = st.dir === "desc";
-    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button>` : ""}</div>`;
-  }
-
-  // Shared paging for long lists: returns the visible slice and the footer markup.
-  paginate(id, items) {
-    const count = Math.max(1, Math.ceil(items.length / this.pageSize));
-    const page = Math.min(Math.max(1, this.pages[id] || 1), count);
-    this.pages[id] = page;
-    const from = (page - 1) * this.pageSize;
-    const rows = items.slice(from, from + this.pageSize);
-    if (items.length <= 20) return { rows, footer: "" };
-    const sizes = [20, 50, 100].map(n => `<option value="${n}" ${n === this.pageSize ? "selected" : ""}>${n}</option>`).join("");
-    const footer = `<div class="tablefoot"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select data-pagesize>${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
-    return { rows, footer };
+// InventoryMixin: methods of the panel element, mixed into the class in 99-register.js.
+class InventoryMixin {
+  filtered() {
+    if (!this.data) return [];
+    const q = this.query.trim().toLowerCase();
+    return this.data.objects.filter(item => {
+      const haystack = [item.name, item.object_id, item.platform, item.domain, item.unique_id].join(" ").toLowerCase();
+      return (!q || haystack.includes(q)) && (!this.typeFilter || item.object_type === this.typeFilter)
+        && (!this.statusFilter || item.status === this.statusFilter);
+    }).sort((a, b) => {
+      const pick = item => this.sort === "status" ? item.status : this.sort === "type" ? item.object_type : this.sort === "since" ? item.status_since : (item.name || item.object_id);
+      const x = pick(a), y = pick(b);
+      if (!x !== !y) return x ? -1 : 1; // missing values stay last in both directions
+      const order = String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
+      return (this.sortDir === "desc" ? -order : order) || String(a.object_id).localeCompare(String(b.object_id), this.lang, { numeric: true });
+    });
   }
 
   inventory() {
@@ -1336,7 +1156,118 @@ class HAHousekeeperPanel extends HTMLElement {
       <div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("origin")} ${originEdges.length} · ${this.t("usage")} ${usageEntries.length}</span></div>
       <div class="path">${origin}<div class="node current">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><small>${this.t(item.object_type)}</small><strong>${this.esc(item.name)}</strong><span class="meta">${this.esc(item.object_id)}</span></span>${this.pill(item.status)}</div>${usage}</div></div>`;
   }
+}
 
+// UnusedMixin: methods of the panel element, mixed into the class in 99-register.js.
+class UnusedMixin {
+  batteryRows() {
+    const rows = [];
+    for (const o of this.data.objects) {
+      if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active") continue;
+      const domain = o.object_id.split(".")[0];
+      if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
+      else if (domain === "sensor" && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
+    }
+    const limit = this.data.meta.low_battery_percent ?? 20;
+    rows.forEach(r => { r.low = r.low || (r.level !== null && r.level <= limit); });
+    return rows.sort((a, b) => (Number(b.low) - Number(a.low)) || ((a.level ?? -1) - (b.level ?? -1)) || a.item.name.localeCompare(b.item.name));
+  }
+
+  // Active entities no source refers to. A hint only; see unreferencedHint for the blind spots.
+  unreferencedRows() {
+    const used = new Set(this.data.edges.filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => e.target));
+    const SELF = ["automation", "script", "scene"];
+    return this.data.objects.filter(o => o.object_type === "entity" && o.status === "active" && !o.entity_category
+      && !SELF.includes(o.object_id.split(".")[0]) && !used.has(this.objectKey(o)))
+      .sort((a, b) => a.object_id.localeCompare(b.object_id));
+  }
+
+  unrefTabs() {
+    const stats = this.data.orphaned_statistics || [];
+    const chip = (tab, label, count) => `<button class="chip ${this.unrefTab === tab ? "active" : ""}" data-unref-tab="${tab}">${label} (${count})</button>`;
+    return `<div class="chips">${chip("entities", this.t("unreferencedEntities"), this.unreferencedRows().length)}${chip("statistics", this.t("orphanStats"), stats.length)}</div>`;
+  }
+
+  orphanStatsView() {
+    const all = this.data.orphaned_statistics || [];
+    this.lvState("orphanstats", "id", "asc");
+    const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
+    const sorts = [
+      { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
+      { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
+    ];
+    const kinds = [...new Set(all.map(kind))];
+    const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
+    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
+    const pg = this.paginate("orphanstats", rows);
+    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small></span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
+  }
+
+  unreferencedView() {
+    if (this.unrefTab === "statistics") return this.orphanStatsView();
+    const all = this.unreferencedRows();
+    this.lvState("unreferenced", "id", "asc");
+    const domains = [...new Set(all.map(o => o.object_id.split(".")[0]))].sort();
+    const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
+    const sorts = [
+      { key: "id", label: "sortId", dir: "asc", get: o => o.object_id },
+      { key: "name", label: "sortName", dir: "asc", get: o => o.name },
+      { key: "area", label: "sortArea", dir: "asc", get: o => this.areaName(o) },
+    ];
+    const bar = this.listBar("unreferenced", { sorts, filters: [
+      { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => o.object_id.startsWith(`${d}.`)).length})`]) },
+      { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
+    ] });
+    const rows = this.refine("unreferenced", all, {
+      text: o => [o.name, o.object_id, this.areaName(o)].join(" "),
+      filters: { domain: (o, v) => o.object_id.startsWith(`${v}.`), area: (o, v) => this.areaName(o) === v }, sorts, tie: o => o.object_id,
+    });
+    const pg = this.paginate("unreferenced", rows);
+    const row = item => {
+      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
+      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile mute"><ha-icon icon="mdi:link-variant-off"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([item.object_id, device?.name, area?.name].filter(Boolean).join(" · "))}</small></span></button>`;
+    };
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`}${pg.footer}</div>`;
+  }
+
+  batterySorts() {
+    return [
+      // Low batteries first, then the lowest level.
+      { key: "level", label: "sortLevel", dir: "asc", get: r => (r.low ? 0 : 1e6) + (r.level ?? -1) },
+      { key: "name", label: "sortName", dir: "asc", get: r => r.item.name },
+      { key: "area", label: "sortArea", dir: "asc", get: r => this.areaName(r.item) },
+    ];
+  }
+
+  lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
+
+  batteriesView() {
+    const all = this.batteryRows(), low = all.filter(r => r.low);
+    this.lvState("batteries", "level", "asc");
+    const areas = [...new Set(all.map(r => this.areaName(r.item)).filter(Boolean))].sort();
+    const bar = this.listBar("batteries", { sorts: this.batterySorts(), filters: [{ name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) }] });
+    const list = this.refine("batteries", this.batteryFilter === "low" ? low : all, {
+      text: r => [r.item.name, r.item.object_id, this.areaName(r.item)].join(" "),
+      filters: { area: (r, v) => this.areaName(r.item) === v }, sorts: this.batterySorts(), tie: r => r.item.object_id,
+    });
+    const limit = this.data.meta.low_battery_percent ?? 20;
+    const chips = `<div class="chips"><button class="chip ${this.batteryFilter === "low" ? "active" : ""}" data-battery-filter="low">${this.t("batteryLow")} (${low.length})</button><button class="chip ${this.batteryFilter === "low" ? "" : "active"}" data-battery-filter="all">${this.t("batteryAll")} (${all.length})</button></div>`;
+    const row = ({ item, level, low: isLow }) => {
+      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
+      const tone = isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
+      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
+    };
+    const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
+    return `<div class="panel">${chips}${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>`;
+  }
+}
+
+// DiagnosisMixin: methods of the panel element, mixed into the class in 99-register.js.
+class DiagnosisMixin {
   relTime(value) {
     if (!value) return "";
     const diff = (Date.now() - new Date(value).getTime()) / 1000;
@@ -1347,8 +1278,6 @@ class HAHousekeeperPanel extends HTMLElement {
     }
     return rtf.format(0, "second");
   }
-
-  check(label, tone, value, badge) { return { label, tone, value, badge }; }
 
   integrationCheck(entryId) {
     const entry = this.findObject(`config_entry:${entryId}`), label = this.t("integration");
@@ -1494,138 +1423,6 @@ class HAHousekeeperPanel extends HTMLElement {
       <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
   }
 
-  findingTitle(f) {
-    const sub = f.rule_id.split(".")[1] || f.rule_id;
-    if (sub.startsWith("missing_")) return `${this.t(sub)}: ${f.affected_object}`;
-    if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
-    const text = this.t(f.rule_id);
-    return text === f.rule_id ? this.t(sub) : text;
-  }
-
-  findingsCard(key) {
-    const list = this.data.findings.filter(f => this.findingKey(f) === key);
-    if (!list.length) return "";
-    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small>${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" ? "" : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="${f.ignored ? 0 : 1}"><ha-icon icon="${f.ignored ? "mdi:eye-outline" : "mdi:eye-off-outline"}"></ha-icon>${this.t(f.ignored ? "showFinding" : "hideFinding")}</button>`}</div>`).join("");
-    return `<section class="panel"><div class="panelhead"><h2>${this.t("findingsOfObject")} (${list.length})</h2></div>${rows}</section>`;
-  }
-
-  batteryRows() {
-    const rows = [];
-    for (const o of this.data.objects) {
-      if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active") continue;
-      const domain = o.object_id.split(".")[0];
-      if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
-      else if (domain === "sensor" && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
-    }
-    const limit = this.data.meta.low_battery_percent ?? 20;
-    rows.forEach(r => { r.low = r.low || (r.level !== null && r.level <= limit); });
-    return rows.sort((a, b) => (Number(b.low) - Number(a.low)) || ((a.level ?? -1) - (b.level ?? -1)) || a.item.name.localeCompare(b.item.name));
-  }
-
-  // Active entities no source refers to. A hint only; see unreferencedHint for the blind spots.
-  unreferencedRows() {
-    const used = new Set(this.data.edges.filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => e.target));
-    const SELF = ["automation", "script", "scene"];
-    return this.data.objects.filter(o => o.object_type === "entity" && o.status === "active" && !o.entity_category
-      && !SELF.includes(o.object_id.split(".")[0]) && !used.has(this.objectKey(o)))
-      .sort((a, b) => a.object_id.localeCompare(b.object_id));
-  }
-
-  unrefTabs() {
-    const stats = this.data.orphaned_statistics || [];
-    const chip = (tab, label, count) => `<button class="chip ${this.unrefTab === tab ? "active" : ""}" data-unref-tab="${tab}">${label} (${count})</button>`;
-    return `<div class="chips">${chip("entities", this.t("unreferencedEntities"), this.unreferencedRows().length)}${chip("statistics", this.t("orphanStats"), stats.length)}</div>`;
-  }
-
-  orphanStatsView() {
-    const all = this.data.orphaned_statistics || [];
-    this.lvState("orphanstats", "id", "asc");
-    const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
-    const sorts = [
-      { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
-      { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
-    ];
-    const kinds = [...new Set(all.map(kind))];
-    const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
-    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
-    const pg = this.paginate("orphanstats", rows);
-    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small></span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
-    const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
-  }
-
-  unreferencedView() {
-    if (this.unrefTab === "statistics") return this.orphanStatsView();
-    const all = this.unreferencedRows();
-    this.lvState("unreferenced", "id", "asc");
-    const domains = [...new Set(all.map(o => o.object_id.split(".")[0]))].sort();
-    const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
-    const sorts = [
-      { key: "id", label: "sortId", dir: "asc", get: o => o.object_id },
-      { key: "name", label: "sortName", dir: "asc", get: o => o.name },
-      { key: "area", label: "sortArea", dir: "asc", get: o => this.areaName(o) },
-    ];
-    const bar = this.listBar("unreferenced", { sorts, filters: [
-      { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => o.object_id.startsWith(`${d}.`)).length})`]) },
-      { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
-    ] });
-    const rows = this.refine("unreferenced", all, {
-      text: o => [o.name, o.object_id, this.areaName(o)].join(" "),
-      filters: { domain: (o, v) => o.object_id.startsWith(`${v}.`), area: (o, v) => this.areaName(o) === v }, sorts, tie: o => o.object_id,
-    });
-    const pg = this.paginate("unreferenced", rows);
-    const row = item => {
-      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
-      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
-      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile mute"><ha-icon icon="mdi:link-variant-off"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([item.object_id, device?.name, area?.name].filter(Boolean).join(" · "))}</small></span></button>`;
-    };
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`}${pg.footer}</div>`;
-  }
-
-  batterySorts() {
-    return [
-      // Low batteries first, then the lowest level.
-      { key: "level", label: "sortLevel", dir: "asc", get: r => (r.low ? 0 : 1e6) + (r.level ?? -1) },
-      { key: "name", label: "sortName", dir: "asc", get: r => r.item.name },
-      { key: "area", label: "sortArea", dir: "asc", get: r => this.areaName(r.item) },
-    ];
-  }
-
-  lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
-
-  batteriesView() {
-    const all = this.batteryRows(), low = all.filter(r => r.low);
-    this.lvState("batteries", "level", "asc");
-    const areas = [...new Set(all.map(r => this.areaName(r.item)).filter(Boolean))].sort();
-    const bar = this.listBar("batteries", { sorts: this.batterySorts(), filters: [{ name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) }] });
-    const list = this.refine("batteries", this.batteryFilter === "low" ? low : all, {
-      text: r => [r.item.name, r.item.object_id, this.areaName(r.item)].join(" "),
-      filters: { area: (r, v) => this.areaName(r.item) === v }, sorts: this.batterySorts(), tie: r => r.item.object_id,
-    });
-    const limit = this.data.meta.low_battery_percent ?? 20;
-    const chips = `<div class="chips"><button class="chip ${this.batteryFilter === "low" ? "active" : ""}" data-battery-filter="low">${this.t("batteryLow")} (${low.length})</button><button class="chip ${this.batteryFilter === "low" ? "" : "active"}" data-battery-filter="all">${this.t("batteryAll")} (${all.length})</button></div>`;
-    const row = ({ item, level, low: isLow }) => {
-      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
-      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
-      const tone = isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
-      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
-    };
-    const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
-    return `<div class="panel">${chips}${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>`;
-  }
-
-  integrationProblems() {
-    const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem");
-    if (!broken.length) return "";
-    this.lvState("integrations", "name", "asc");
-    const sorts = [{ key: "name", label: "sortName", dir: "asc", get: o => o.name }, { key: "state", label: "sortStatus", dir: "asc", get: o => o.state || "" }];
-    const bar = broken.length > 5 ? this.listBar("integrations", { sorts }) : "";
-    const shown = broken.length > 5 ? this.refine("integrations", broken, { text: o => [o.name, o.domain, o.state].join(" "), sorts, tie: o => o.object_id }) : broken;
-    const pg = this.paginate("integrations", shown);
-    const rows = pg.rows.map(o => `<button class="row rel" data-object="${this.esc(this.objectKey(o))}">${this.tile("config_entry", "red")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.domain)} · ${this.t(`cs_${o.state || "not_loaded"}`)}</small></span>${this.pill(o.status)}</button>`).join("");
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("integrationProblems")} (${broken.length})</h2><p>${this.t("integrationProblemsHint")}</p></div></div>${bar}${rows}${pg.footer}</div>`;
-  }
-
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
     const usage = this.data.edges.filter(e => e.target === key && USAGE_RELATIONS.includes(e.relation)).length;
@@ -1684,6 +1481,254 @@ class HAHousekeeperPanel extends HTMLElement {
         ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
       <div class="stack">${this.factsCard(item, key)}${this.findingsCard(key)}${this.relationsCard(key)}</div></div>`;
   }
+}
+
+class HAHousekeeperPanel extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+    this._hass = null;
+    this.data = null;
+    this.view = "overview";
+    this.query = "";
+    this.typeFilter = "";
+    this.statusFilter = "";
+    this.findingFilter = "";
+    this.showIgnored = false;
+    this.batteryFilter = "low";
+
+    this._urlApplied = false;
+    this.sort = "name";
+    this.selected = null;
+    this.trail = [];
+    this.compare = null;
+    this.compareBaseline = "previous";
+    this.compareLoading = false;
+    this.graphSelected = null;
+    this.details = new Map();
+    this.detailLoading = false;
+    this.graphQuery = "";
+    this.pages = {};
+    this.lv = {};
+    this.unrefTab = "entities";
+    this.cleanupSel = new Set();
+    this.cleanupKind = "disable_entity";
+    this.ack = new Set();
+    this.confirmation = null;
+    this.confirmWord = "";
+    this.plan = null;
+    this.journal = null;
+    this.prefs = this.loadPrefs();
+    this.pageSize = this.prefs.pageSize;
+    this.sortDir = "asc";
+    this.pages = {};
+    this.busy = false;
+    this.scanStatus = null;
+    this.error = null;
+  }
+
+  set hass(value) {
+    const first = !this._hass, wasDark = this._hass?.themes?.darkMode;
+    this._hass = value;
+    if (first) { this.load(false); this.loadUserPrefs(); }
+    else if (this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) this.render();
+  }
+
+  get hass() { return this._hass; }
+
+  connectedCallback() {
+    this._basePath = typeof window === "undefined" ? null : window.location.pathname;
+    this.render();
+  }
+
+  get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
+
+  t(key, vars) {
+    const text = TEXT[this.lang][key] || TEXT.en[key] || key;
+    return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
+  }
+
+  esc(value) {
+    return String(value ?? "—").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
+  }
+
+  formatDate(value) {
+    if (!value) return "—";
+    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
+    catch (_) { return value; }
+  }
+
+  formatNumber(value) { return new Intl.NumberFormat(this.lang).format(value ?? 0); }
+
+  async load(fresh = false) {
+    if (!this._hass || this.busy) return;
+    this.busy = true; this.error = null; this.render();
+    let progressTimer = null;
+    if (fresh) progressTimer = window.setInterval(() => this.updateScanStatus(), 250);
+    try {
+      this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
+      this.details = new Map();
+      this.compare = null;
+      this.applyUrl();
+    } catch (err) {
+      this.error = err?.message || String(err);
+    } finally {
+      if (progressTimer) window.clearInterval(progressTimer);
+      this.scanStatus = null;
+      this.busy = false; this.render();
+    }
+    if (this.view === "changes" && this.data) this.loadCompare();
+  }
+
+  async updateScanStatus() {
+    try {
+      this.scanStatus = await this._hass.callWS({ type: "ha_housekeeper/status" });
+      this.render();
+    } catch (_) { /* The main scan request reports actionable errors. */ }
+  }
+
+  async openObject(obj) {
+    if (this.selected && this.selected !== obj) this.trail.push(this.selected);
+    this.selected = obj;
+    const key = this.objectKey(obj);
+    if (this.details.has(key)) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
+    this.detailLoading = true;
+    this.render();
+    this.scrollIntoView?.({ block: "start" });
+    try {
+      this.details.set(key, await this._hass.callWS({
+        type: "ha_housekeeper/detail", object_type: obj.object_type, object_id: obj.object_id,
+      }));
+    } catch (_) { this.details.set(key, {}); }
+    this.detailLoading = false;
+    if (this.selected === obj) this.render();
+  }
+
+  goBack() { this.selected = this.trail.pop() || null; this.render(); }
+
+  statusLabel(status) { return this.t(status); }
+
+  objectKey(item) { return `${item.object_type}:${item.object_id}`; }
+
+  findObject(key) {
+    if (!this.data) return undefined;
+    if (!this._index || this._indexSource !== this.data) {
+      this._index = new Map(this.data.objects.map(item => [this.objectKey(item), item]));
+      this._indexSource = this.data;
+    }
+    return this._index.get(key);
+  }
+
+  findingKey(finding) { return `${finding.rule_id.split(".")[0]}:${finding.object_id}`; }
+
+  haPath(item) {
+    switch (item.object_type) {
+      case "entity": return `/config/entities?search=${encodeURIComponent(item.object_id)}`;
+      case "device": return `/config/devices/device/${encodeURIComponent(item.object_id)}`;
+      case "area": return `/config/areas/area/${encodeURIComponent(item.object_id)}`;
+      case "automation": return item.automation_id
+        ? `/config/automation/edit/${encodeURIComponent(item.automation_id)}`
+        : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
+      case "script": return `/config/script/edit/${encodeURIComponent(item.object_id.replace(/^script\./, ""))}`;
+      case "scene": return item.scene_id
+        ? `/config/scene/edit/${encodeURIComponent(item.scene_id)}`
+        : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
+      case "dashboard": return `/${encodeURIComponent(item.url_path || "lovelace")}`;
+      case "config_entry": return `/config/integrations/integration/${encodeURIComponent(item.domain)}`;
+      case "floor": return "/config/areas/dashboard";
+      case "label": return "/config/labels";
+      default: return null;
+    }
+  }
+
+  navigateHA(path) {
+    window.history.pushState(null, "", path);
+    window.dispatchEvent(new CustomEvent("location-changed"));
+  }
+
+  render() {
+    if (!this.shadowRoot) return;
+    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main></div>`;
+    this.bind();
+    if (this.data) this.syncUrl();
+  }
+
+  // Deep links: /ha-housekeeper?view=findingsNav&filter=orphaned or ?object=entity:sensor.x
+  applyUrl() {
+    if (this._urlApplied || typeof window === "undefined" || !this.data) return;
+    this._urlApplied = true;
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view");
+    if (view && NAV.some(([name]) => name === view)) this.view = view;
+    else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
+    if (params.get("filter")) this.findingFilter = params.get("filter");
+    const obj = this.findObject(params.get("object") || "");
+    if (obj) this.openObject(obj);
+    else if (this.view === "changes" && !this.compare) this.loadCompare();
+  }
+
+  syncUrl() {
+    if (typeof window === "undefined" || !this.isConnected || !window.history?.replaceState) return;
+    if (window.location.pathname !== this._basePath) return; // HA already navigated elsewhere
+    const params = new URLSearchParams();
+    if (this.selected) params.set("object", this.objectKey(this.selected));
+    else {
+      if (this.view !== "overview") params.set("view", this.view);
+      if (this.view === "findingsNav" && this.findingFilter) params.set("filter", this.findingFilter);
+    }
+    const query = params.toString();
+    try { window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "")); } catch (_) { /* ignore */ }
+  }
+
+  sidebar() {
+    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
+    return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
+      <nav>${NAV.filter(([view]) => view !== "settings").map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
+      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings"><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
+  }
+
+  heading() {
+    const titles = {
+      overview: [this.t("systemState"), this.t("health"), this.data ? `${this.t("lastScan")}: <b>${this.formatDate(this.data.meta.scanned_at)}</b>` : this.t("subtitle")],
+      inventory: [this.t("objects"), this.t("inventory"), this.t("inventorySubtitle")],
+      findingsNav: [this.t("diagnosis"), this.t("findings"), this.t("findingsSubtitle")],
+      changes: [this.t("diagnosis"), this.t("changes"), this.t("changesSubtitle")],
+      batteries: [this.t("objects"), this.t("batteries"), this.t("batteriesSubtitle")],
+      unreferenced: [this.t("objects"), this.t("unreferenced"), this.t("unreferencedSubtitle")],
+      graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
+      settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
+      cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
+    };
+    const [eyebrow, title, sub] = titles[this.view] || titles.overview;
+    const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
+    return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
+      <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
+      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>`;
+  }
+
+  content() {
+    if (this.view === "settings") return this.settingsView();
+    if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
+    if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
+    if (this.view === "inventory") return this.inventory();
+    if (this.view === "findingsNav") return this.findingsView();
+    if (this.view === "changes") return this.changesView();
+    if (this.view === "batteries") return this.batteriesView();
+    if (this.view === "unreferenced") return this.unreferencedView();
+    if (this.view === "cleanup") return this.cleanupView();
+    if (this.view === "graph") return this.graph();
+    return this.overview();
+  }
+
+  tone(status) { return STATUS_TONE[status] || "blue"; }
+
+  pill(status) { return `<span class="pill ${this.tone(status)}">${this.esc(this.statusLabel(status))}</span>`; }
+
+  tile(type, tone = "") { return `<span class="tile ${tone}"><ha-icon icon="${ICONS[type] || "mdi:help-circle-outline"}"></ha-icon></span>`; }
+
+  findingType(f) { return this.findObject(this.findingKey(f))?.object_type || f.rule_id.split(".")[0]; }
+
+  check(label, tone, value, badge) { return { label, tone, value, badge }; }
 
   bind() {
     const root = this.shadowRoot;
@@ -1781,6 +1826,13 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); });
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });
+  }
+}
+
+// Mix the grouped methods into the panel element and register it.
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, UnusedMixin, DiagnosisMixin]) {
+  for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
+    if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }
 }
 

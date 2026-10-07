@@ -213,6 +213,8 @@ Housekeeper wurde mit Home Assistant 2026.2.3 automatisiert getestet (lokal und 
 - Panel-Logik (Ansichten, Filter, Export, Escaping) mit Node.js
 - Python- und Frontend-Syntax
 
+Das Panel liegt als Quelltext in `panel-src/` (mehrere kleine Dateien) und wird mit `node scripts/build_panel.mjs` zu der einen Datei `custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js` gebaut, die Home Assistant ausliefert. Tests und CI prüfen mit `--check`, dass sie aktuell ist; nach Änderungen an `panel-src/` also neu bauen.
+
 Die von Home Assistant unabhängigen Tests lassen sich so ausführen:
 
 ```bash

@@ -1,0 +1,51 @@
+const ICONS = {
+  entity: "mdi:shape-outline", device: "mdi:devices", config_entry: "mdi:puzzle-outline",
+  area: "mdi:floor-plan", automation: "mdi:robot-outline", floor: "mdi:layers-outline",
+  label: "mdi:label-outline", script: "mdi:script-text-outline", scene: "mdi:palette-outline", dashboard: "mdi:view-dashboard-outline",
+};
+
+const PREFS_KEY = "ha_housekeeper.prefs";
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" };
+const USER_DATA_KEY = "ha_housekeeper";
+const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100] };
+// Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
+const SIZES = { small: 1, normal: 1.1, large: 1.25 };
+const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
+const REPO_URL = "https://github.com/bertel2020/HA-Housekeeping";
+// Palettes for explicit light/dark; taken from the Zeitarchiv app's design system (app.css).
+// "standard" keeps the Home Assistant accent and, in automatic mode, the Home Assistant theme itself.
+const SCHEMES = {
+  standard: {
+    light: { accent: "var(--primary-color,#0789cf)", bg: "#f3f3f3", surface: "#ffffff", soft: "#ececec", text: "#202020", muted: "#5e5e5e", border: "#e6e6e6", positive: "#2e7d32", warning: "#b77a00", danger: "#b30532" },
+    dark: { accent: "var(--primary-color,#37c8fd)", on: "#141414", bg: "#141414", surface: "#202020", soft: "#363636", text: "#f3f3f3", muted: "#cccccc", border: "#4a4a4a", positive: "#66bb6a", warning: "#ffd166", danger: "#fd8f90" },
+  },
+  housekeeper: {
+    light: { accent: "#0c6b5d", bg: "#f5f6f1", surface: "#ffffff", soft: "#eef1e9", text: "#131c17", muted: "#4b584e", border: "#e1e6db", positive: "#2e7d46", warning: "#8a6d1e", danger: "#a23b36" },
+    dark: { accent: "#4fc3ae", on: "#0e1512", bg: "#0e1512", surface: "#171f1b", soft: "#1e2822", text: "#e8ece4", muted: "#9fac9b", border: "#2a362f", positive: "#6fcb88", warning: "#d4b65e", danger: "#e28a85" },
+  },
+  modern: {
+    light: { accent: "#3157c8", bg: "#f6f7fb", surface: "#ffffff", soft: "#eef1f6", text: "#172033", muted: "#566176", border: "#d9dee8", positive: "#1f8a54", warning: "#a96700", danger: "#c83737" },
+    dark: { accent: "#7ea1ff", on: "#0f1218", bg: "#0f1218", surface: "#171c25", soft: "#222936", text: "#f3f6fb", muted: "#b3bdcc", border: "#303949", positive: "#5fcb89", warning: "#e6a15a", danger: "#f07a7a" },
+  },
+};
+// Earlier builds saved other scheme names.
+const SCHEME_ALIASES = { teal: "housekeeper", amber: "housekeeper", sage: "housekeeper", zeitarchiv: "housekeeper", indigo: "modern" };
+
+const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"];
+
+const NAV = [
+  ["overview", "mdi:view-dashboard-outline"],
+  ["inventory", "mdi:database-outline"],
+  ["findingsNav", "mdi:alert-outline"],
+  ["changes", "mdi:compare-horizontal"],
+  ["batteries", "mdi:battery-alert-variant-outline"],
+  ["unreferenced", "mdi:link-variant-off"],
+  ["cleanup", "mdi:broom"],
+  ["settings", "mdi:cog-outline"],
+  ["graph", "mdi:source-fork"],
+];
+
+const STATUS_TONE = {
+  active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
+  disabled: "mute", empty: "mute", unknown: "violet", possible_duplicate: "violet", unused: "mute",
+};
