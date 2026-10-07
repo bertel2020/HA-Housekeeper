@@ -1,5 +1,89 @@
 # Changelog
 
+## 0.2.0 - ENTWURF
+
+Neu gestaltetes Panel, Befund-Export, Reparaturhinweise und schnellere Scans.
+Housekeeper arbeitet weiterhin ausschließlich lesend. Lokal gegen Home Assistant
+2026.2.3 getestet.
+
+### Neu
+
+- **Neues Panel-Design** mit Seitennavigation, Gesundheitsanzeige, Kennzahlen,
+  „Benötigt Aufmerksamkeit“, Inventarstatus und eigener Befundansicht.
+- **Detailansicht** mit Ursachendiagnose (Integration, Gerät, Zustand) und der
+  Schaltfläche **In Home Assistant öffnen**.
+- **Abhängigkeitsansicht** zeigt Herkunft und Verwendung eines Objekts getrennt.
+- **Export der Befunde** als CSV oder JSON, passend zum gewählten Filter.
+- **Schwellwert für nicht verfügbare Entities**: Unter **Konfigurieren** wird
+  eingestellt, nach wie vielen Tagen (Standard 7, `0` = sofort) eine nicht
+  verfügbare Entity als Befund gilt. Verwaiste Entities werden weiterhin sofort
+  gemeldet.
+- **Reparaturhinweise** unter **Einstellungen → Reparaturen**: höchstens drei
+  zusammengefasste Einträge mit Link ins Panel. Sie sind rein informativ.
+- **Diagnosedaten** zum Herunterladen für Fehlerberichte; sie enthalten nur
+  Zählwerte, keine Namen oder IDs.
+
+### Geändert
+
+- Nicht verfügbare Entities erscheinen standardmäßig erst nach 7 Tagen als
+  Befund (zuvor sofort). Im Inventar bleibt der Status unverändert.
+- Der erste Scan startet erst, wenn Home Assistant vollständig gestartet ist.
+  Das verhindert fälschlich als verwaist erkannte Entities nach einem Neustart.
+- Attribute und Automationsstrukturen werden erst beim Öffnen eines Objekts
+  geladen. Das verkleinert die Scan-Antwort deutlich.
+- Beobachtungszeitpunkte werden gebündelt gespeichert statt bei jeder Änderung.
+- Der Scanstatus zeigt während des Scans Zwischenstände.
+
+### Behoben
+
+- Selektorwerte wie `all` und `none` sowie Blueprint-Platzhalter (`!input`)
+  gelten nicht mehr als Referenzen. Das behebt falsche Befunde wie „fehlender
+  Bereich“ bei `area_id: none`.
+- Die WebSocket-Befehle antworten zwischen Entladen und Neuladen der
+  Integration mit einer klaren Fehlermeldung.
+
+---
+
+### English
+
+New panel design, findings export, repair hints, and faster scans. Housekeeper
+remains strictly read-only. Tested locally against Home Assistant 2026.2.3.
+
+#### New
+
+- **New panel design** with side navigation, health indicator, key figures,
+  "Needs attention", inventory status, and a dedicated findings view.
+- **Detail view** with root-cause diagnosis (integration, device, state) and an
+  **Open in Home Assistant** button.
+- **Dependency view** shows origin and usage of an object separately.
+- **Findings export** as CSV or JSON, matching the selected filter.
+- **Threshold for unavailable entities**: under **Configure** you choose after
+  how many days (default 7, `0` = immediately) an unavailable entity becomes a
+  finding. Orphaned entities are still reported immediately.
+- **Repair hints** under **Settings → Repairs**: at most three aggregated
+  entries linking to the panel. They are informational only.
+- **Downloadable diagnostics** for bug reports; they contain counts only, no
+  names or IDs.
+
+#### Changed
+
+- Unavailable entities become findings only after 7 days by default (previously
+  immediately). The status in the inventory is unchanged.
+- The first scan waits until Home Assistant has fully started. This prevents
+  entities from being wrongly detected as orphaned after a restart.
+- Attributes and automation structures are loaded only when an object is
+  opened, which makes the scan response much smaller.
+- Observation timestamps are saved in batches instead of on every change.
+- The scan status shows intermediate progress while scanning.
+
+#### Fixed
+
+- Selector values such as `all` and `none` and blueprint placeholders (`!input`)
+  no longer count as references. This fixes false findings such as "missing
+  area" for `area_id: none`.
+- WebSocket commands answer with a clear error between unloading and reloading
+  the integration.
+
 ## 0.1.0 - 2026-10-07
 
 Erste Version. Housekeeper arbeitet ausschließlich lesend und verändert
