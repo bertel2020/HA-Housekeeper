@@ -130,3 +130,19 @@ def test_panel_javascript_unit_tests_pass() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_every_optional_component_that_is_imported_is_an_after_dependency() -> None:
+    """Hassfest rejects imports of other components that the manifest does not mention."""
+    import json
+    import re
+
+    manifest = json.loads((COMPONENT / "manifest.json").read_text(encoding="utf-8"))
+    declared = set(manifest.get("dependencies", [])) | set(manifest.get("after_dependencies", []))
+    used = set()
+    for path in COMPONENT.glob("*.py"):
+        used |= set(
+            re.findall(r"homeassistant\.components\.(\w+)", path.read_text(encoding="utf-8"))
+        )
+    # sensor is an entity platform and http/websocket_api/frontend are core; Hassfest accepts them
+    assert used - {"websocket_api", "frontend", "http", "sensor"} <= declared, used - declared

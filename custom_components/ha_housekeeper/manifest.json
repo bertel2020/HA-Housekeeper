@@ -4,7 +4,8 @@
   "after_dependencies": [
     "lovelace",
     "recorder",
-    "energy"
+    "energy",
+    "backup"
   ],
   "codeowners": [
     "@bertel2020"
