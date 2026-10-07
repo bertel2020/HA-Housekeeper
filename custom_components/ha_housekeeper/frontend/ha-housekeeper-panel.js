@@ -73,7 +73,7 @@ const TEXT = {
     mode: "Betriebsart", readOnlyValue: "Nur lesend – ändert nichts in Home Assistant", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
-    colorScheme: "Farbschema", schemeStandard: "Standard", schemeTeal: "Türkis", schemeAmber: "Bernstein", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
+    colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
     prefsNote: "Diese Einstellungen gelten nur für diesen Browser.", hiddenFindings: "Ausgeblendete Befunde", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
     sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
@@ -190,7 +190,7 @@ const TEXT = {
     mode: "Mode", readOnlyValue: "Read-only – changes nothing in Home Assistant", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
-    colorScheme: "Color scheme", schemeStandard: "Standard", schemeTeal: "Teal", schemeAmber: "Amber", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
+    colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
     prefsNote: "These settings apply to this browser only.", hiddenFindings: "Hidden findings", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
     sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule",
     sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
@@ -247,22 +247,24 @@ const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", pageSi
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
 const REPO_URL = "https://github.com/bertel2020/HA-Housekeeping";
-// Palettes for explicit light/dark and the extra schemes; "standard" + automatic follows Home Assistant.
+// Palettes for explicit light/dark; taken from the Zeitarchiv app's design system (app.css).
+// "standard" keeps the Home Assistant accent and, in automatic mode, the Home Assistant theme itself.
 const SCHEMES = {
   standard: {
-    light: { accent: "var(--primary-color,#0789cf)", bg: "#f4f6f9", surface: "#ffffff", soft: "#f6f8fa", text: "#17212b", muted: "#637281", border: "#dde4ea" },
-    dark: { accent: "var(--primary-color,#38a9e8)", on: "#0b1410", bg: "#101418", surface: "#1a2027", soft: "#222a33", text: "#e6edf3", muted: "#9aa7b4", border: "#2f3943" },
+    light: { accent: "var(--primary-color,#0789cf)", bg: "#f3f3f3", surface: "#ffffff", soft: "#ececec", text: "#202020", muted: "#5e5e5e", border: "#e6e6e6", positive: "#2e7d32", warning: "#b77a00", danger: "#b30532" },
+    dark: { accent: "var(--primary-color,#37c8fd)", on: "#141414", bg: "#141414", surface: "#202020", soft: "#363636", text: "#f3f3f3", muted: "#cccccc", border: "#4a4a4a", positive: "#66bb6a", warning: "#ffd166", danger: "#fd8f90" },
   },
-  // Inspired by the Zeitarchiv brand: teal #57C9BB, amber #E79A5B and the deep green #13211C.
-  teal: {
-    light: { accent: "#228f81", bg: "#f2f8f6", surface: "#ffffff", soft: "#ecf4f1", text: "#13211c", muted: "#587169", border: "#d6e5e0" },
-    dark: { accent: "#57c9bb", on: "#0b1410", bg: "#0d1612", surface: "#13211c", soft: "#1b2d26", text: "#e6f2ee", muted: "#8fa89f", border: "#2a3f36" },
+  housekeeper: {
+    light: { accent: "#0c6b5d", bg: "#f5f6f1", surface: "#ffffff", soft: "#eef1e9", text: "#131c17", muted: "#4b584e", border: "#e1e6db", positive: "#2e7d46", warning: "#8a6d1e", danger: "#a23b36" },
+    dark: { accent: "#4fc3ae", on: "#0e1512", bg: "#0e1512", surface: "#171f1b", soft: "#1e2822", text: "#e8ece4", muted: "#9fac9b", border: "#2a362f", positive: "#6fcb88", warning: "#d4b65e", danger: "#e28a85" },
   },
-  amber: {
-    light: { accent: "#c0702a", bg: "#fbf6f1", surface: "#ffffff", soft: "#f7efe7", text: "#2a1f14", muted: "#7a6857", border: "#eadfd2" },
-    dark: { accent: "#e79a5b", on: "#0b1410", bg: "#17120e", surface: "#201912", soft: "#2a2118", text: "#f3ebe2", muted: "#b0a091", border: "#3b2f23" },
+  modern: {
+    light: { accent: "#3157c8", bg: "#f6f7fb", surface: "#ffffff", soft: "#eef1f6", text: "#172033", muted: "#566176", border: "#d9dee8", positive: "#1f8a54", warning: "#a96700", danger: "#c83737" },
+    dark: { accent: "#7ea1ff", on: "#0f1218", bg: "#0f1218", surface: "#171c25", soft: "#222936", text: "#f3f6fb", muted: "#b3bdcc", border: "#303949", positive: "#5fcb89", warning: "#e6a15a", danger: "#f07a7a" },
   },
 };
+// Earlier builds saved other scheme names.
+const SCHEME_ALIASES = { teal: "housekeeper", amber: "housekeeper", sage: "housekeeper", zeitarchiv: "housekeeper", indigo: "modern" };
 
 const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"];
 
@@ -332,7 +334,8 @@ class HAHousekeeperPanel extends HTMLElement {
       const prefs = { ...DEFAULT_PREFS };
       if (SIZES[saved.size]) prefs.size = saved.size;
       if (["auto", "light", "dark"].includes(saved.mode)) prefs.mode = saved.mode;
-      if (SCHEMES[saved.scheme]) prefs.scheme = saved.scheme;
+      const scheme = SCHEME_ALIASES[saved.scheme] || saved.scheme;
+      if (SCHEMES[scheme]) prefs.scheme = scheme;
       if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
       if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
       return prefs;
@@ -355,7 +358,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let vars = `--hk-fs:${SIZES[size] || 1};font-size:calc(14px*${SIZES[size] || 1})`;
     if (!(scheme === "standard" && mode === "auto")) {
       const dark = this.isDark(), p = (SCHEMES[scheme] || SCHEMES.standard)[dark ? "dark" : "light"];
-      vars += `;--hk-blue:${p.accent};--hk-bg:${p.bg};--hk-surface:${p.surface};--hk-soft:${p.soft};--hk-text:${p.text};--hk-muted:${p.muted};--hk-border:${p.border};--hk-on:${p.on || "#ffffff"};color-scheme:${dark ? "dark" : "light"}`;
+      vars += `;--hk-blue:${p.accent};--hk-bg:${p.bg};--hk-surface:${p.surface};--hk-soft:${p.soft};--hk-text:${p.text};--hk-muted:${p.muted};--hk-border:${p.border};--hk-on:${p.on || "#ffffff"};--hk-green:${p.positive};--hk-amber:${p.warning};--hk-red:${p.danger};color-scheme:${dark ? "dark" : "light"}`;
     }
     return `:host{${vars}}`;
   }
@@ -841,7 +844,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const appearance = `<section class="panel"><div class="panelhead"><h2>${this.t("appearance")}</h2></div>
       ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
       ${row(this.t("colorMode"), this.t("modeHint"), this.segment("mode", [["auto", this.t("modeAuto")], ["light", this.t("modeLight")], ["dark", this.t("modeDark")]]))}
-      ${row(this.t("colorScheme"), "", this.segment("scheme", [["standard", this.t("schemeStandard"), "#0789cf"], ["teal", this.t("schemeTeal"), SCHEMES.teal.dark.accent], ["amber", this.t("schemeAmber"), SCHEMES.amber.dark.accent]]))}</section>`;
+      ${row(this.t("colorScheme"), "", this.segment("scheme", [["standard", this.t("schemeStandard"), "#0789cf"], ["housekeeper", this.t("schemeHousekeeper"), SCHEMES.housekeeper.light.accent], ["modern", this.t("schemeModern"), SCHEMES.modern.light.accent]]))}</section>`;
     const behavior = `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
       ${row(this.t("startView"), "", select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
       ${row(this.t("pageSizeSetting"), "", select("pageSize", [20, 50, 100].map(n => [n, n])))}

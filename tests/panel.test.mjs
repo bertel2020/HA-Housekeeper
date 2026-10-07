@@ -534,7 +534,7 @@ test("settings view shows version info, appearance, behavior and hidden findings
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("0.3.1") && html.includes("2026.9.4") && html.includes("every 24 hours") && html.includes("7 days") && html.includes("20 %"));
-  assert.ok(html.includes('data-pref="size|small"') && html.includes('data-pref="mode|dark"') && html.includes('data-pref="scheme|amber"'));
+  assert.ok(html.includes('data-pref="size|small"') && html.includes('data-pref="mode|dark"') && html.includes('data-pref="scheme|modern"'));
   assert.ok(html.includes('data-pref-select="pageSize"') && html.includes("Hidden findings (2)"));
   assert.ok(html.includes('data-ignore="k1" data-ignore-value="0"') && !html.includes('data-ignore="k2"'));
   assert.ok(html.includes("https://github.com/bertel2020/HA-Housekeeping/issues"));
@@ -556,13 +556,13 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   assert.ok(el.themeCss().includes("--hk-fs:1.1;") && !el.themeCss().includes("--hk-surface")); // standard + automatic follows Home Assistant
   el.setPref("size", "large");
   el.setPref("mode", "dark");
-  el.setPref("scheme", "teal");
+  el.setPref("scheme", "housekeeper");
   el.setPref("pageSize", "50");
   const css = el.themeCss();
-  assert.ok(css.includes("--hk-fs:1.25") && css.includes("color-scheme:dark") && css.includes("--hk-blue:#57c9bb"));
+  assert.ok(css.includes("--hk-fs:1.25") && css.includes("color-scheme:dark") && css.includes("--hk-blue:#4fc3ae"));
   assert.equal(el.pageSize, 50);
   const saved = JSON.parse(storage.store["ha_housekeeper.prefs"]);
-  assert.equal(saved.scheme, "teal");
+  assert.equal(saved.scheme, "housekeeper");
   assert.equal(saved.pageSize, 50);
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
@@ -572,11 +572,11 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
 
 test("automatic mode follows the Home Assistant theme for the extra schemes", () => {
   const { el } = panel("en");
-  el.prefs = { ...el.prefs, scheme: "amber" };
+  el.prefs = { ...el.prefs, scheme: "modern" };
   el._hass = { language: "en", themes: { darkMode: false } };
-  assert.ok(el.themeCss().includes("--hk-blue:#c0702a") && el.themeCss().includes("color-scheme:light"));
+  assert.ok(el.themeCss().includes("--hk-blue:#3157c8") && el.themeCss().includes("color-scheme:light"));
   el._hass = { language: "en", themes: { darkMode: true } };
-  assert.ok(el.themeCss().includes("--hk-blue:#e79a5b") && el.themeCss().includes("color-scheme:dark"));
+  assert.ok(el.themeCss().includes("--hk-blue:#7ea1ff") && el.themeCss().includes("color-scheme:dark"));
 });
 
 test("the start view preference applies unless a deep link says otherwise", () => {
@@ -589,4 +589,23 @@ test("the start view preference applies unless a deep link says otherwise", () =
   b.prefs = { ...b.prefs, startView: "batteries" };
   b.applyUrl();
   assert.equal(b.view, "inventory");
+});
+
+test("old scheme names from earlier builds are migrated", () => {
+  const stored = scheme => fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ scheme }) });
+  assert.equal(panel("en", { localStorage: stored("teal") }).el.prefs.scheme, "housekeeper");
+  assert.equal(panel("en", { localStorage: stored("indigo") }).el.prefs.scheme, "modern");
+  assert.equal(panel("en", { localStorage: stored("housekeeper") }).el.prefs.scheme, "housekeeper");
+});
+
+test("schemes also set the status colors", () => {
+  const { el } = panel("en");
+  el.prefs = { ...el.prefs, scheme: "housekeeper", mode: "light" };
+  const css = el.themeCss();
+  assert.ok(css.includes("--hk-green:#2e7d46") && css.includes("--hk-amber:#8a6d1e") && css.includes("--hk-red:#a23b36") && css.includes("--hk-bg:#f5f6f1"));
+});
+
+test("the former Zeitarchiv scheme name is migrated to Housekeeper", () => {
+  const { el } = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ scheme: "zeitarchiv" }) }) });
+  assert.equal(el.prefs.scheme, "housekeeper");
 });
