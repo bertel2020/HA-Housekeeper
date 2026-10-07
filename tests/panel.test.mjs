@@ -408,3 +408,24 @@ test("deep links select view, filter and object once", () => {
   el.render();
   assert.equal(replaced.length, before, "never rewrites another page's URL");
 });
+
+test("unreferenced view lists active entities no source uses", () => {
+  const { el, shadow } = panel("en");
+  const ent = (id, extra = {}) => ({ object_type: "entity", object_id: id, name: id, status: "active", ...extra });
+  el.data = { ...DATA, objects: [
+    ent("light.used"), ent("light.lonely"), ent("sensor.lonely_sensor"), ent("sensor.diag", { entity_category: "diagnostic" }),
+    ent("sensor.gone", { status: "unavailable" }), ent("automation.a"), ent("switch.in_group"),
+  ], edges: [
+    { source: "automation:automation.a", target: "entity:light.used", relation: "TARGETS" },
+    { source: "entity:group.all", target: "entity:switch.in_group", relation: "INCLUDES" },
+    { source: "device:d", target: "entity:sensor.lonely_sensor", relation: "PROVIDES" },
+  ] };
+  assert.equal(JSON.stringify(Array.from(el.unreferencedRows().map(o => o.object_id))), JSON.stringify(["light.lonely", "sensor.lonely_sensor"]));
+  el.view = "unreferenced";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("light.lonely") && !shadow.innerHTML.includes("light.used"));
+  assert.ok(shadow.innerHTML.includes("hint only"));
+  el.unrefDomain = "light";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("light.lonely") && !shadow.innerHTML.includes("sensor.lonely_sensor"));
+});

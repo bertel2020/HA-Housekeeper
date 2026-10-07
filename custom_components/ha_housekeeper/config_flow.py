@@ -9,9 +9,11 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
 
 from .const import (
+    CONF_LOW_BATTERY_PERCENT,
     CONF_MIN_UNAVAILABLE_DAYS,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_UNUSED_AUTOMATION_DAYS,
+    DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
@@ -29,10 +31,10 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
             return self.async_create_entry(data=user_input)
         options = self.config_entry.options
 
-        def field(key: str, default: int, maximum: int) -> tuple[Any, Any]:
+        def field(key: str, default: int, maximum: int, minimum: int = 0) -> tuple[Any, Any]:
             return (
                 vol.Required(key, default=options.get(key, default)),
-                vol.All(vol.Coerce(int), vol.Range(min=0, max=maximum)),
+                vol.All(vol.Coerce(int), vol.Range(min=minimum, max=maximum)),
             )
 
         schema = vol.Schema(
@@ -41,6 +43,7 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
                     field(CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS, 365),
                     field(CONF_UNUSED_AUTOMATION_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS, 3650),
                     field(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS, 720),
+                    field(CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT, 100, 1),
                 ]
             )
         )

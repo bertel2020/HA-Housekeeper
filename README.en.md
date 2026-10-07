@@ -95,7 +95,8 @@ The **Changes** view compares the current state with the previous scan or with t
 
 - **Hide findings**: a finding can be hidden on the detail page (only in Housekeeper's own list, Home Assistant stays untouched). Alternatively the label `housekeeper_ignore` on an entity hides all of its findings. Hidden findings do not count in the overview, sensors, or repair hints and can be shown again with **Show hidden**.
 - **Sensors**: Housekeeper creates a service device with counters (findings, orphaned and unavailable entities, broken references, possible duplicates, unused automations, low batteries, last scan) for use in dashboards and automations.
-- **Batteries**: a dedicated view with all battery entities, lowest values first (low from 20 %).
+- **Batteries**: a dedicated view with all battery entities, lowest values first (low from 20 %, configurable).
+- **Not used**: a view of active entities that appear in no automation, script, scene, group, helper, or readable dashboard (without diagnostic and configuration entities, filterable by domain). A hint only, not a finding: voice assistants, apps, auto-generated dashboards, and external systems are invisible to Housekeeper.
 - **Integrations with problems** appear on the overview.
 - **More reference sources**: groups (members) and helpers such as template, derivative, or min/max sensors (source entities) are included in dependencies and impact analysis; missing members and sources are reported as findings.
 - **Deep links**: the panel supports addresses like `/ha-housekeeper?view=findingsNav&filter=orphaned` or `?object=entity:sensor.x`; the repair hints use them.
@@ -181,8 +182,8 @@ Open **Housekeeper** from the Home Assistant sidebar. The overview shows object 
 - Select an object to inspect registry information, state data, diagnosis, and direct dependencies.
 - Open **Dependencies** and select an object to explore incoming and outgoing relationships.
 - Use **Scan now** to refresh the snapshot after configuration or device changes. Without intervention Housekeeper scans automatically every 24 hours.
-- Under **Settings → Devices & services → HA Housekeeper → Configure** you can set three values: days until an unavailable entity becomes a finding (default 7), days until an automation counts as unused (default 90, `0` = off), and the scan interval in hours (default 24, `0` = off).
-- The **Findings**, **Changes**, and **Batteries** views are available from the panel navigation.
+- Under **Settings → Devices & services → HA Housekeeper → Configure** you can set four values: days until an unavailable entity becomes a finding (default 7), days until an automation counts as unused (default 90, `0` = off), the scan interval in hours (default 24, `0` = off), and the low-battery threshold in percent (default 20).
+- The **Findings**, **Changes**, **Batteries**, and **Not used** views are available from the panel navigation.
 
 The first scan establishes the initial observation timestamps. Later scans preserve the start of an unchanged classification and reset it when the classification changes.
 
@@ -193,7 +194,6 @@ The first scan establishes the initial observation timestamps. Later scans prese
 - Dynamic templates cannot always be resolved to one definite target. Such relationships are never presented as certain without supporting runtime information.
 - The dependency view focuses on direct relationships. The recorder (history, statistics) and unreadable or auto-generated dashboards are not part of the impact analysis; it is a hint, not a guarantee.
 - Possible duplicates and unused automations are based on heuristics and are hints, not certainty.
-- The low-battery threshold (20 %) is fixed.
 
 ## Development and validation
 

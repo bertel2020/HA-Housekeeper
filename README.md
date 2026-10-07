@@ -95,7 +95,8 @@ Die Ansicht **Änderungen** vergleicht den aktuellen Stand mit dem Scan davor od
 
 - **Befunde ausblenden**: Ein Befund lässt sich auf der Detailseite ausblenden (nur in Housekeepers eigener Liste, Home Assistant bleibt unverändert). Alternativ blendet das Label `housekeeper_ignore` an einer Entity alle ihre Befunde aus. Ausgeblendete Befunde zählen nicht in Übersicht, Sensoren und Reparaturhinweisen und lassen sich über **Ausgeblendete anzeigen** wieder einblenden.
 - **Sensoren**: Housekeeper legt ein Dienstgerät mit Zählern an (Befunde, verwaiste und nicht verfügbare Entities, defekte Referenzen, mögliche Duplikate, ungenutzte Automationen, schwache Batterien, letzter Scan), nutzbar in Dashboards und Automationen.
-- **Batterien**: Eigene Ansicht mit allen Batterie-Entities, niedrigste Werte zuerst (niedrig ab 20 %).
+- **Batterien**: Eigene Ansicht mit allen Batterie-Entities, niedrigste Werte zuerst (niedrig ab 20 %, einstellbar).
+- **Nicht verwendet**: Eigene Ansicht mit aktiven Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen (ohne Diagnose- und Konfigurations-Entities, filterbar nach Domäne). Rein ein Hinweis und kein Befund: Sprachassistenten, Apps, automatisch erzeugte Dashboards oder externe Systeme sieht Housekeeper nicht.
 - **Integrationen mit Problemen** erscheinen auf der Übersicht.
 - **Weitere Referenzquellen**: Gruppen (Mitglieder) und Helfer wie Template, Ableitung oder Min/Max-Sensor (Quell-Entities) werden in Abhängigkeiten und Auswirkungsanalyse berücksichtigt; fehlende Mitglieder und Quellen werden als Befund gemeldet.
 - **Deep-Links**: Das Panel unterstützt Adressen wie `/ha-housekeeper?view=findingsNav&filter=orphaned` oder `?object=entity:sensor.x`; die Reparaturhinweise nutzen sie.
@@ -181,8 +182,8 @@ config/
 - Ein Objekt auswählen, um Registry-Informationen, Zustandsdaten, Diagnose und direkte Abhängigkeiten anzuzeigen.
 - Unter **Abhängigkeiten** ein Objekt auswählen, um eingehende und ausgehende Beziehungen zu untersuchen.
 - Mit **Neu scannen** den Datenbestand nach Konfigurations- oder Geräteänderungen aktualisieren. Ohne Eingriff scannt Housekeeper automatisch alle 24 Stunden.
-- Unter **Einstellungen → Geräte & Dienste → HA Housekeeper → Konfigurieren** lassen sich drei Werte einstellen: Tage bis eine nicht verfügbare Entity als Befund gilt (Standard 7), Tage bis eine Automation als ungenutzt gilt (Standard 90, `0` = aus) und das Scanintervall in Stunden (Standard 24, `0` = aus).
-- Die Ansichten **Befunde**, **Änderungen** und **Batterien** erreichst du über die Navigation im Panel.
+- Unter **Einstellungen → Geräte & Dienste → HA Housekeeper → Konfigurieren** lassen sich vier Werte einstellen: Tage bis eine nicht verfügbare Entity als Befund gilt (Standard 7), Tage bis eine Automation als ungenutzt gilt (Standard 90, `0` = aus) das Scanintervall in Stunden (Standard 24, `0` = aus) und die Schwelle für schwache Batterien in Prozent (Standard 20).
+- Die Ansichten **Befunde**, **Änderungen**, **Batterien** und **Nicht verwendet** erreichst du über die Navigation im Panel.
 
 Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende Scans behalten den Beginn einer unveränderten Klassifikation bei und setzen ihn zurück, sobald sich die Klassifikation ändert.
 
@@ -193,7 +194,6 @@ Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende 
 - Dynamische Templates lassen sich nicht immer eindeutig einem Ziel zuordnen. Solche Beziehungen werden ohne Laufzeitbeleg niemals als sicher dargestellt.
 - Die Abhängigkeitsansicht konzentriert sich auf direkte Beziehungen. Der Recorder (Verlauf, Statistiken) und nicht lesbare oder automatisch erzeugte Dashboards fließen nicht in die Auswirkungsanalyse ein; sie ist ein Hinweis, keine Garantie.
 - Mögliche Duplikate und ungenutzte Automationen beruhen auf Heuristiken und sind Hinweise, keine Gewissheit.
-- Die Schwelle für schwache Batterien (20 %) ist fest.
 
 ## Entwicklung und Validierung
 

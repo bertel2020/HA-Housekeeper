@@ -21,10 +21,10 @@ from .automation_analysis import (
     summarize_script_config,
 )
 from .const import (
+    DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
     IGNORE_LABEL,
-    LOW_BATTERY_PERCENT,
     SIGNAL_SCAN_COMPLETE,
 )
 from .dashboard_analysis import (
@@ -115,6 +115,7 @@ def _entity_item(
         or getattr(entry, "device_class", None)
         or getattr(entry, "original_device_class", None),
         "unit": state.attributes.get("unit_of_measurement") if state else None,
+        "entity_category": _enum(entry.entity_category),
         "config_entry_id": entry.config_entry_id,
         "device_id": entry.device_id,
         "area_id": entry.area_id,
@@ -348,6 +349,7 @@ class InventoryScanner:
         self._details: dict[str, dict[str, Any]] = {}
         self.min_unavailable_days = DEFAULT_MIN_UNAVAILABLE_DAYS
         self.unused_automation_days = DEFAULT_UNUSED_AUTOMATION_DAYS
+        self.low_battery_percent = DEFAULT_LOW_BATTERY_PERCENT
         self.status: dict[str, Any] = {
             "running": False,
             "phase": "idle",
@@ -501,8 +503,8 @@ class InventoryScanner:
                 "min_unavailable_days": self.min_unavailable_days,
                 "unused_automation_days": self.unused_automation_days,
                 "ignore_label": IGNORE_LABEL,
-                "low_battery_percent": LOW_BATTERY_PERCENT,
-                "low_batteries": len(low_battery_ids(entities, LOW_BATTERY_PERCENT)),
+                "low_battery_percent": self.low_battery_percent,
+                "low_batteries": len(low_battery_ids(entities, self.low_battery_percent)),
                 "object_count": len(objects),
                 "status_counts": dict(Counter(item["status"] for item in objects)),
                 "type_counts": dict(Counter(item["object_type"] for item in objects)),

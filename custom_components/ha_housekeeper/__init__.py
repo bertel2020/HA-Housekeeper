@@ -18,9 +18,11 @@ from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
 from .const import (
+    CONF_LOW_BATTERY_PERCENT,
     CONF_MIN_UNAVAILABLE_DAYS,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_UNUSED_AUTOMATION_DAYS,
+    DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
@@ -64,6 +66,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     scanner.unused_automation_days = entry.options.get(
         CONF_UNUSED_AUTOMATION_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS
+    )
+    scanner.low_battery_percent = entry.options.get(
+        CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT
     )
     await scanner.async_initialize()
     hass.data[DOMAIN]["scanner"] = scanner

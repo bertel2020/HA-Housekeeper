@@ -173,6 +173,27 @@ async def test_options_flow_stores_threshold(hass: HomeAssistant) -> None:
     assert entry.options["min_unavailable_days"] == 7
     assert entry.options["scan_interval_hours"] == 24
     assert entry.options["unused_automation_days"] == 90
+    assert entry.options["low_battery_percent"] == 20
+
+
+async def test_low_battery_threshold_is_configurable(hass: HomeAssistant) -> None:
+    """The scanner uses its configured threshold for low batteries."""
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="bat-1", suggested_object_id="remote_battery"
+    )
+    hass.states.async_set(
+        entry.entity_id, "35", {"device_class": "battery", "unit_of_measurement": "%"}
+    )
+    scanner = InventoryScanner(hass)
+    snapshot = await scanner.async_scan()
+    assert snapshot["meta"]["low_battery_percent"] == 20
+    assert snapshot["meta"]["low_batteries"] == 0
+
+    scanner.low_battery_percent = 50
+    snapshot = await scanner.async_scan()
+    assert snapshot["meta"]["low_battery_percent"] == 50
+    assert snapshot["meta"]["low_batteries"] == 1
 
 
 async def test_scan_creates_and_clears_repairs_hints(hass: HomeAssistant) -> None:

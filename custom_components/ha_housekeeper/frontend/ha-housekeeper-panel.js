@@ -69,6 +69,9 @@ const TEXT = {
     hideFinding: "Befund ausblenden", showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
     ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
     batteries: "Batterien", batteriesSubtitle: "Batterie-Entities, die niedrigsten Werte zuerst.", batteryLow: "Niedrig", batteryAll: "Alle",
+    unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
+    unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entities können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entities sind ausgeblendet.",
+    noUnreferenced: "Alle aktiven Entities werden irgendwo verwendet.", unrefShown: "{shown} von {total} angezeigt – nach Domäne filtern, um weitere zu sehen.", allDomains: "Alle Domänen",
     noBatteries: "Keine Batterie-Entities gefunden.", batteryLevel: "Ladestand", integrationProblems: "Integrationen mit Problemen",
     integrationProblemsHint: "Diese Integrationen sind nicht geladen. Ihre Entities sind nicht verfügbar.",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
@@ -173,6 +176,9 @@ const TEXT = {
     hideFinding: "Hide finding", showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
     ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
     batteries: "Batteries", batteriesSubtitle: "Battery entities, lowest values first.", batteryLow: "Low", batteryAll: "All",
+    unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
+    unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
+    noUnreferenced: "Every active entity is used somewhere.", unrefShown: "Showing {shown} of {total} – filter by domain to see more.", allDomains: "All domains",
     noBatteries: "No battery entities found.", batteryLevel: "Level", integrationProblems: "Integrations with problems",
     integrationProblemsHint: "These integrations are not loaded. Their entities are unavailable.",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
@@ -223,6 +229,7 @@ const NAV = [
   ["findingsNav", "mdi:alert-outline"],
   ["changes", "mdi:compare-horizontal"],
   ["batteries", "mdi:battery-alert-variant-outline"],
+  ["unreferenced", "mdi:link-variant-off"],
   ["graph", "mdi:source-fork"],
 ];
 
@@ -244,6 +251,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.findingFilter = "";
     this.showIgnored = false;
     this.batteryFilter = "low";
+    this.unrefDomain = "";
     this._urlApplied = false;
     this.sort = "name";
     this.selected = null;
@@ -525,6 +533,7 @@ class HAHousekeeperPanel extends HTMLElement {
       findingsNav: [this.t("diagnosis"), this.t("findings"), this.t("findingsSubtitle")],
       changes: [this.t("diagnosis"), this.t("changes"), this.t("changesSubtitle")],
       batteries: [this.t("objects"), this.t("batteries"), this.t("batteriesSubtitle")],
+      unreferenced: [this.t("objects"), this.t("unreferenced"), this.t("unreferencedSubtitle")],
       graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
@@ -540,6 +549,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
     if (this.view === "batteries") return this.batteriesView();
+    if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -886,6 +896,30 @@ class HAHousekeeperPanel extends HTMLElement {
     return rows.sort((a, b) => (Number(b.low) - Number(a.low)) || ((a.level ?? -1) - (b.level ?? -1)) || a.item.name.localeCompare(b.item.name));
   }
 
+  // Active entities no source refers to. A hint only; see unreferencedHint for the blind spots.
+  unreferencedRows() {
+    const used = new Set(this.data.edges.filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => e.target));
+    const SELF = ["automation", "script", "scene"];
+    return this.data.objects.filter(o => o.object_type === "entity" && o.status === "active" && !o.entity_category
+      && !SELF.includes(o.object_id.split(".")[0]) && !used.has(this.objectKey(o)))
+      .sort((a, b) => a.object_id.localeCompare(b.object_id));
+  }
+
+  unreferencedView() {
+    const all = this.unreferencedRows();
+    const domains = [...new Set(all.map(o => o.object_id.split(".")[0]))].sort();
+    const rows = all.filter(o => !this.unrefDomain || o.object_id.startsWith(`${this.unrefDomain}.`));
+    const shown = rows.slice(0, 200);
+    const select = `<div class="filters"><select id="unrefDomain"><option value="">${this.t("allDomains")} (${all.length})</option>${domains.map(d => `<option value="${d}" ${this.unrefDomain === d ? "selected" : ""}>${this.esc(d)} (${all.filter(o => o.object_id.startsWith(`${d}.`)).length})</option>`).join("")}</select></div>`;
+    const row = item => {
+      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
+      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile mute"><ha-icon icon="mdi:link-variant-off"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([item.object_id, device?.name, area?.name].filter(Boolean).join(" · "))}</small></span></button>`;
+    };
+    const more = rows.length > shown.length ? `<p class="factnote">${this.t("unrefShown", { shown: shown.length, total: rows.length })}</p>` : "";
+    return `<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${select}${shown.length ? shown.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t("noUnreferenced")}</div>`}${more}</div>`;
+  }
+
   lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
 
   batteriesView() {
@@ -982,6 +1016,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.page = 1; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.render(); });
+    const ud = root.querySelector("#unrefDomain"); if (ud) ud.onchange = () => { this.unrefDomain = ud.value; this.render(); };
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.render(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
