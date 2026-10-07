@@ -560,6 +560,7 @@ class InventoryScanner:
                 "ha_version": HA_VERSION,
                 "scan_interval_hours": self.scan_interval_hours,
                 "low_battery_percent": self.low_battery_percent,
+                "history_days": self.history.retention_days,
                 "low_batteries": len(low_battery_ids(entities, self.low_battery_percent)),
                 "object_count": len(objects),
                 "status_counts": dict(Counter(item["status"] for item in objects)),

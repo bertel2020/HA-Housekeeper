@@ -23,6 +23,8 @@ CONF_UNUSED_AUTOMATION_DAYS: Final = "unused_automation_days"
 DEFAULT_UNUSED_AUTOMATION_DAYS: Final = 90
 CONF_LOW_BATTERY_PERCENT: Final = "low_battery_percent"
 DEFAULT_LOW_BATTERY_PERCENT: Final = 20
+CONF_HISTORY_DAYS: Final = "history_days"
+DEFAULT_HISTORY_DAYS: Final = 30
 JOURNAL_STORAGE_KEY: Final = f"{DOMAIN}.journal"
 # Earliest point at which a quarantined entity may be removed (a later step, preview only today).
 QUARANTINE_DAYS: Final = 14
@@ -33,5 +35,6 @@ OPTION_LIMITS: Final = {
     CONF_UNUSED_AUTOMATION_DAYS: (0, 3650),
     CONF_SCAN_INTERVAL_HOURS: (0, 720),
     CONF_LOW_BATTERY_PERCENT: (1, 100),
+    CONF_HISTORY_DAYS: (1, 365),
 }
 SIGNAL_SCAN_COMPLETE: Final = f"{DOMAIN}_scan_complete"

@@ -47,7 +47,7 @@ class SettingsMixin {
       return row(label, "", `<input type="number" data-opt="${key}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}" style="max-width:160px">`);
     };
     const optionsCard = this.data ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>
-      ${optionRow("min_unavailable_days", this.t("optMinUnavailable"))}${optionRow("unused_automation_days", this.t("optUnusedAutomation"))}${optionRow("scan_interval_hours", this.t("optScanInterval"))}${optionRow("low_battery_percent", this.t("optLowBattery"))}
+      ${optionRow("min_unavailable_days", this.t("optMinUnavailable"))}${optionRow("unused_automation_days", this.t("optUnusedAutomation"))}${optionRow("scan_interval_hours", this.t("optScanInterval"))}${optionRow("low_battery_percent", this.t("optLowBattery"))}${optionRow("history_days", this.t("optHistoryDays"))}
       <div class="setrow"><small style="margin:0">${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-opts-save>${this.t("saveOptions")}</button></div></section>` : "";
     const hidden = (this.data?.findings || []).filter(f => f.ignored);
     const pg = this.paginate("hidden", hidden);

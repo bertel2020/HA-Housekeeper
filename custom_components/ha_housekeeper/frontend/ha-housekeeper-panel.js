@@ -53,6 +53,7 @@ const TEXT = {
     impactScope: "Betrachtet werden das Objekt und {count} zugehörige Entities.", impactScopeOne: "Betrachtet wird nur dieses Objekt.",
     impactLimits: "Nicht geprüft: automatisch erzeugte Dashboards, die Zustandshistorie im Recorder und externe Systeme.",
     changes: "Änderungen", changesSubtitle: "Was sich seit einem früheren Scan verändert hat.", compareWith: "Vergleichen mit", previousScan: "Letzter Scan davor",
+    historyTitle: "Verlauf der Scans", historyHint: "Je Tag bleibt der letzte Scan {days} Tage erhalten. Ein Klick wählt ihn als Vergleichsbasis.", historyBuilding: "Der Verlauf baut sich auf: Housekeeper speichert den letzten Scan jedes Tages {days} Tage lang (einstellbar unter Einstellungen). Weitere Vergleichspunkte erscheinen mit jedem neuen Tag.", currentScan: "Aktueller Scan", storedScan: "Gespeicherter Scan", historyCounts: "{objects} Objekte · {findings} Befunde", optHistoryDays: "Scan-Verlauf aufbewahren (Tage)",
     noBaseline: "Noch kein früherer Scan vorhanden. Nach dem nächsten Scan erscheint hier der Vergleich.", noChanges: "Keine Änderungen seit diesem Scan.",
     statusChanges: "Statuswechsel", newFindings: "Neue Befunde", resolvedFindings: "Behobene Befunde", newObjects: "Neue Objekte", removedObjects: "Entfernte Objekte",
     worsened: "Verschlechtert", changedLabel: "Geändert", improved: "Verbessert", gone: "Nicht mehr vorhanden", comparedWith: "Vergleich mit dem Scan vom",
@@ -210,6 +211,7 @@ const TEXT = {
     impactScope: "Covers this object and {count} related entities.", impactScopeOne: "Covers only this object.",
     impactLimits: "Not checked: auto-generated dashboards, the state history in the recorder, and external systems.",
     changes: "Changes", changesSubtitle: "What changed since an earlier scan.", compareWith: "Compare with", previousScan: "Previous scan",
+    historyTitle: "Scan history", historyHint: "The last scan of each day is kept for {days} days. Click one to use it as the comparison base.", historyBuilding: "The history is building up: Housekeeper keeps the last scan of each day for {days} days (adjustable in Settings). More comparison points appear with each new day.", currentScan: "Current scan", storedScan: "Stored scan", historyCounts: "{objects} objects · {findings} findings", optHistoryDays: "Keep scan history for (days)",
     noBaseline: "No earlier scan yet. The comparison appears after the next scan.", noChanges: "No changes since this scan.",
     statusChanges: "Status changes", newFindings: "New findings", resolvedFindings: "Resolved findings", newObjects: "New objects", removedObjects: "Removed objects",
     worsened: "Worse", changedLabel: "Changed", improved: "Better", gone: "No longer present", comparedWith: "Compared with the scan from",
@@ -326,7 +328,7 @@ const ICONS = {
 const PREFS_KEY = "ha_housekeeper.prefs";
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" };
 const USER_DATA_KEY = "ha_housekeeper";
-const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100] };
+const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], history_days: [1, 365] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
@@ -525,6 +527,7 @@ class StylesMixin {
       h1{font-size:calc(28px*var(--hk-fs,1));letter-spacing:-.015em}.eyebrow{font-weight:700}
       .nav.active{box-shadow:inset 3px 0 0 var(--hk-blue)}.nav{border-radius:10px}.nav em{font-weight:600}.nav.active em{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
       .panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
+      .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
       .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}
       .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
@@ -778,13 +781,31 @@ class ChangesMixin {
     this.compareLoading = false; this.render();
   }
 
+  // One row per stored scan (newest first) with its totals; a click picks it as the comparison base.
+  historyTimeline(c, baselines) {
+    if (baselines.length < 2) return "";
+    const rows = [{ id: "", at: this.data?.meta?.scanned_at, ...c.current, now: true }, ...baselines];
+    const max = Math.max(1, ...rows.map(r => r.findings || 0));
+    const body = rows.map((r, i) => {
+      const older = rows[i + 1], delta = older ? (r.findings || 0) - (older.findings || 0) : 0;
+      const pill = delta ? `<span class="pill ${delta > 0 ? "red" : "ok"}">${delta > 0 ? "+" : ""}${delta}</span>` : "";
+      const selected = !r.now && r.id === this.compareBaseline;
+      const label = r.now ? this.t("currentScan") : r.id === "previous" ? this.t("previousScan") : this.t("storedScan");
+      const inner = `<span class="tile ${selected ? "" : "mute"}"><ha-icon icon="${r.now ? "mdi:clock-check-outline" : "mdi:history"}"></ha-icon></span><span class="row-text"><strong>${label} · ${this.esc(this.formatDate(r.at))}</strong><small>${this.t("historyCounts", { objects: this.formatNumber(r.objects || 0), findings: this.formatNumber(r.findings || 0) })}</small><span class="bar" style="margin-top:4px"><i style="width:${Math.round(((r.findings || 0) / max) * 100)}%"></i></span></span>${pill}`;
+      return r.now ? `<div class="row rel">${inner}</div>` : `<button class="row rel ${selected ? "sel" : ""}" data-baseline="${this.esc(r.id)}">${inner}</button>`;
+    }).join("");
+    return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("historyTitle")}</h2><p>${this.t("historyHint", { days: c.retention_days ?? 30 })}</p></div></div>${body}</section>`;
+  }
+
   changeRank(status) { return { active: 0, disabled: 1, empty: 1, unknown: 2, problem: 3, orphaned: 3, unavailable: 3 }[status] ?? 1; }
 
   changesView() {
     const c = this.compare;
     if (!c) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
-    const options = (c.baselines || []).map(b => `<option value="${this.esc(b.id)}" ${b.id === this.compareBaseline ? "selected" : ""}>${b.id === "previous" ? `${this.t("previousScan")} · ` : ""}${this.esc(this.formatDate(b.at))}</option>`).join("");
-    const picker = options ? `<div class="panel" style="margin-bottom:14px"><div class="filters" style="grid-template-columns:auto minmax(220px,360px)"><label style="align-self:center;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))">${this.t("compareWith")}</label><select id="baseline">${options}</select></div></div>` : "";
+    const baselines = c.baselines || [];
+    const options = baselines.map(b => `<option value="${this.esc(b.id)}" ${b.id === this.compareBaseline ? "selected" : ""}>${b.id === "previous" ? `${this.t("previousScan")} · ` : ""}${this.esc(this.formatDate(b.at))}</option>`).join("");
+    const hint = baselines.length <= 1 ? `<p class="factnote" style="margin:10px 0 0">${this.t("historyBuilding", { days: c.retention_days ?? 30 })}</p>` : "";
+    const picker = options ? `<div class="panel" style="margin-bottom:14px"><div class="filters" style="grid-template-columns:auto minmax(220px,360px)"><label style="align-self:center;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))">${this.t("compareWith")}</label><select id="baseline">${options}</select></div>${hint}</div>${this.historyTimeline(c, baselines)}` : "";
     if (!c.available) return `${picker}<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:history"></ha-icon>${this.t("noBaseline")}</div></div>`;
     const sections = [
       ["statusChanges", "mdi:swap-horizontal", c.status_changes], ["newFindings", "mdi:alert-outline", c.new_findings],
@@ -870,7 +891,7 @@ class SettingsMixin {
       return row(label, "", `<input type="number" data-opt="${key}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}" style="max-width:160px">`);
     };
     const optionsCard = this.data ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>
-      ${optionRow("min_unavailable_days", this.t("optMinUnavailable"))}${optionRow("unused_automation_days", this.t("optUnusedAutomation"))}${optionRow("scan_interval_hours", this.t("optScanInterval"))}${optionRow("low_battery_percent", this.t("optLowBattery"))}
+      ${optionRow("min_unavailable_days", this.t("optMinUnavailable"))}${optionRow("unused_automation_days", this.t("optUnusedAutomation"))}${optionRow("scan_interval_hours", this.t("optScanInterval"))}${optionRow("low_battery_percent", this.t("optLowBattery"))}${optionRow("history_days", this.t("optHistoryDays"))}
       <div class="setrow"><small style="margin:0">${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-opts-save>${this.t("saveOptions")}</button></div></section>` : "";
     const hidden = (this.data?.findings || []).filter(f => f.ignored);
     const pg = this.paginate("hidden", hidden);
@@ -1772,6 +1793,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     focusKeep("#query", v => { this.query = v; this.pages = {}; });
     focusKeep("#graphQuery", v => { this.graphQuery = v; });
+    root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
     const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.pages = {}; this.render(); };
     const sf = root.querySelector("#statusFilter"); if (sf) sf.onchange = () => { this.statusFilter = sf.value; this.pages = {}; this.render(); };

@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import HISTORY_STORAGE_KEY, STORAGE_VERSION
+from .const import DEFAULT_HISTORY_DAYS, HISTORY_STORAGE_KEY, STORAGE_VERSION
 from .hygiene import finding_key as _finding_key
 
 SAVE_DELAY = 10
-MAX_DAILY = 7  # last scan of each of the previous days
 LIST_LIMIT = 500  # entries per section sent to the panel; totals stay exact
 
 
@@ -81,10 +81,27 @@ def diff_checkpoints(base: dict[str, Any], snapshot: dict[str, Any]) -> dict[str
     }
 
 
+def checkpoint_counts(checkpoint: dict[str, Any]) -> dict[str, int]:
+    """Totals for the timeline, derived from what a checkpoint already stores."""
+    return {
+        "objects": sum(len(objs) for objs in checkpoint["objects"].values()),
+        "findings": len(checkpoint["findings"]),
+    }
+
+
+def _age_cutoff(at: str, days: int) -> str:
+    """ISO timestamp ``days`` before ``at``; checkpoints older than this are dropped."""
+    try:
+        return (datetime.fromisoformat(at) - timedelta(days=days)).isoformat()
+    except ValueError:
+        return ""
+
+
 class ScanHistory:
-    """Persist the previous scan and the last scan of the previous days."""
+    """Persist the previous scan and the last scan of each earlier day, for a set number of days."""
 
     def __init__(self, hass: HomeAssistant) -> None:
+        self.retention_days = DEFAULT_HISTORY_DAYS
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, HISTORY_STORAGE_KEY)
         self._latest: dict[str, Any] | None = None
         self._previous: dict[str, Any] | None = None
@@ -105,7 +122,10 @@ class ScanHistory:
         if self._latest is not None:
             self._previous = self._latest
             if self._latest["at"][:10] != checkpoint["at"][:10]:
-                self._daily = [*self._daily, self._latest][-MAX_DAILY:]
+                self._daily = [*self._daily, self._latest]
+        if self._daily:
+            cutoff = _age_cutoff(checkpoint["at"], self.retention_days)
+            self._daily = [cp for cp in self._daily if cp["at"] >= cutoff]
         self._latest = checkpoint
         self._store.async_delay_save(self._as_dict, SAVE_DELAY)
 
@@ -116,8 +136,14 @@ class ScanHistory:
         """List selectable comparison points, newest first."""
         options = []
         if self._previous is not None:
-            options.append({"id": "previous", "at": self._previous["at"]})
-        options.extend({"id": cp["at"], "at": cp["at"]} for cp in reversed(self._daily))
+            options.append(
+                {"id": "previous", "at": self._previous["at"], **checkpoint_counts(self._previous)}
+            )
+        options.extend(
+            {"id": cp["at"], "at": cp["at"], **checkpoint_counts(cp)}
+            for cp in reversed(self._daily)
+            if self._previous is None or cp["at"] != self._previous["at"]
+        )
         return options
 
     def compare(self, snapshot: dict[str, Any], baseline: str = "previous") -> dict[str, Any]:
@@ -127,7 +153,12 @@ class ScanHistory:
             if baseline == "previous"
             else next((cp for cp in self._daily if cp["at"] == baseline), None)
         )
-        result: dict[str, Any] = {"baselines": self.baselines(), "baseline": baseline}
+        result: dict[str, Any] = {
+            "baselines": self.baselines(),
+            "baseline": baseline,
+            "retention_days": self.retention_days,
+            "current": checkpoint_counts(make_checkpoint(snapshot)),
+        }
         if base is None:
             return {**result, "available": False}
         return {**result, "available": True, **diff_checkpoints(base, snapshot)}

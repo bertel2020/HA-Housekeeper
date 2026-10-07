@@ -9,10 +9,12 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
 
 from .const import (
+    CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
     CONF_MIN_UNAVAILABLE_DAYS,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_UNUSED_AUTOMATION_DAYS,
+    DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
@@ -46,6 +48,7 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
                     field(CONF_UNUSED_AUTOMATION_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS),
                     field(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS),
                     field(CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT),
+                    field(CONF_HISTORY_DAYS, DEFAULT_HISTORY_DAYS),
                 ]
             )
         )

@@ -98,9 +98,24 @@ def test_history_keeps_previous_and_one_checkpoint_per_day(hass) -> None:
     history.record(day2)
 
     options = history.baselines()
-    assert options[0] == {"id": "previous", "at": day1b["meta"]["scanned_at"]}
-    assert [o["at"] for o in options[1:]] == [day1b["meta"]["scanned_at"]]
+    assert options[0]["id"] == "previous" and options[0]["at"] == day1b["meta"]["scanned_at"]
+    assert options[0]["findings"] == 0 and options[0]["objects"] == 1
+    # the day's last scan is already the previous one, so it is listed once
+    assert len(options) == 1
 
     result = history.compare(day2, "previous")
     assert result["available"] and result["status_changes"]["total"] == 1
     assert history.compare(day2, "unknown")["available"] is False
+
+
+def test_history_drops_checkpoints_older_than_the_retention(hass) -> None:
+    history = ScanHistory(hass)
+    history.retention_days = 3
+    for day in range(1, 8):
+        history.record(_snapshot(f"2026-10-0{day}T08:00:00+00:00", [("entity", "x.a", "active")]))
+
+    ats = [o["at"][:10] for o in history.baselines()]
+    assert ats[0] == "2026-10-06"
+    assert min(ats) >= "2026-10-04"
+    result = history.compare(_snapshot("2026-10-07T09:00:00+00:00", []), "previous")
+    assert result["retention_days"] == 3 and result["current"] == {"objects": 0, "findings": 0}

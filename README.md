@@ -89,7 +89,7 @@ Für jede durchgehend beobachtete Klassifikation speichert Housekeeper, wann sie
 
 ### Änderungen seit dem letzten Scan
 
-Die Ansicht **Änderungen** vergleicht den aktuellen Stand mit dem Scan davor oder mit dem letzten Scan der vergangenen sieben Tage: Statuswechsel (verschlechtert zuerst), neue und behobene Befunde sowie neue und entfernte Objekte. Der Verlauf wird kompakt in Home Assistant gespeichert und enthält nur Status und IDs.
+Die Ansicht **Änderungen** vergleicht den aktuellen Stand mit dem Scan davor oder mit dem letzten Scan jedes früheren Tages (standardmäßig 30 Tage aufbewahrt, unter Einstellungen von 1 bis 365 einstellbar, mit Zeitleiste der gespeicherten Scans): Statuswechsel (verschlechtert zuerst), neue und behobene Befunde sowie neue und entfernte Objekte. Der Verlauf wird kompakt in Home Assistant gespeichert und enthält nur Status und IDs.
 
 ### Weitere Ansichten und Quellen
 

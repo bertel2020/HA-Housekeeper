@@ -290,6 +290,21 @@ test("changes view handles missing baseline, empty diff and loading", () => {
   assert.ok(shadow.innerHTML.includes("Loading"));
 });
 
+test("changes view explains a young history and lists stored scans as comparison bases", () => {
+  const { el, shadow } = panel("de");
+  el.view = "changes";
+  el.compare = { ...COMPARE, retention_days: 30, current: { objects: 12, findings: 5 }, baselines: [{ id: "previous", at: "2026-10-07T19:19:00+00:00", objects: 12, findings: 3 }] };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Der Verlauf baut sich auf") && shadow.innerHTML.includes("30 Tage"));
+  assert.ok(!shadow.innerHTML.includes("data-baseline"));
+  el.compare = { ...el.compare, baselines: [el.compare.baselines[0], { id: "2026-10-06T20:00:00+00:00", at: "2026-10-06T20:00:00+00:00", objects: 10, findings: 7 }] };
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(!html.includes("Der Verlauf baut sich auf"));
+  assert.ok(html.includes("Verlauf der Scans") && html.includes('data-baseline="previous"') && html.includes('data-baseline="2026-10-06T20:00:00+00:00"'));
+  assert.ok(html.includes("5 Befunde") && html.includes("+2") && html.includes("-4"));
+});
+
 test("loadCompare asks the backend with the selected baseline", async () => {
   const { el } = panel();
   const calls = [];

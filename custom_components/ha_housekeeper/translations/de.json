@@ -20,7 +20,8 @@
           "min_unavailable_days": "Nicht verfügbare Entities melden nach (Tage)",
           "unused_automation_days": "Ungenutzte Automationen melden nach (Tage, 0 = aus)",
           "low_battery_percent": "Batterie als schwach melden ab (Prozent)",
-          "scan_interval_hours": "Automatisch scannen alle (Stunden, 0 = aus)"
+          "scan_interval_hours": "Automatisch scannen alle (Stunden, 0 = aus)",
+          "history_days": "Verlauf aufbewahren (Tage)"
         }
       }
     }

@@ -89,7 +89,7 @@ For every continuously observed classification, Housekeeper stores when it first
 
 ### Changes since the last scan
 
-The **Changes** view compares the current state with the previous scan or with the last scan of each of the past seven days: status changes (worsened first), new and resolved findings, and new and removed objects. The history is stored compactly in Home Assistant and contains only statuses and IDs.
+The **Changes** view compares the current state with the previous scan or with the last scan of each earlier day (kept for 30 days by default, adjustable from 1 to 365 under Settings, with a timeline of the stored scans): status changes (worsened first), new and resolved findings, and new and removed objects. The history is stored compactly in Home Assistant and contains only statuses and IDs.
 
 ### More views and sources
 
