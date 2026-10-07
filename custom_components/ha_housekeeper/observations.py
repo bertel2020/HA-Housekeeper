@@ -10,6 +10,8 @@ from homeassistant.helpers.storage import Store
 
 from .const import STORAGE_KEY, STORAGE_VERSION
 
+SAVE_DELAY = 10  # seconds; coalesces writes and is flushed when Home Assistant stops
+
 
 class ObservationStore:
     """Remember when Housekeeper first observed a classification."""
@@ -44,7 +46,7 @@ class ObservationStore:
             changed = True
 
         if changed:
-            await self._store.async_save({"items": self._items})
+            self._store.async_delay_save(lambda: {"items": self._items}, SAVE_DELAY)
 
     def since(self, object_id: str, classification: str) -> str | None:
         """Return the start of the current continuously observed classification."""

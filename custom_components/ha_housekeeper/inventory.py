@@ -36,6 +36,11 @@ def _iso(value: Any) -> str | None:
     return value.isoformat() if hasattr(value, "isoformat") else None
 
 
+def _edge(source: str, target: str, relation: str) -> dict[str, str]:
+    """Build a registry-derived dependency edge."""
+    return {"source": source, "target": target, "relation": relation, "confidence": "certain"}
+
+
 def _enum(value: Any) -> str | None:
     """Serialize an enum-like registry value."""
     if value is None:
@@ -175,21 +180,15 @@ class InventoryScanner:
             entities.append(item)
             if entry.device_id:
                 edges.append(
-                    {
-                        "source": f"device:{entry.device_id}",
-                        "target": f"entity:{entry.entity_id}",
-                        "relation": "PROVIDES",
-                        "confidence": "certain",
-                    }
+                    _edge(f"device:{entry.device_id}", f"entity:{entry.entity_id}", "PROVIDES")
                 )
             if entry.config_entry_id:
                 edges.append(
-                    {
-                        "source": f"config_entry:{entry.config_entry_id}",
-                        "target": f"entity:{entry.entity_id}",
-                        "relation": "PROVIDES",
-                        "confidence": "certain",
-                    }
+                    _edge(
+                        f"config_entry:{entry.config_entry_id}",
+                        f"entity:{entry.entity_id}",
+                        "PROVIDES",
+                    )
                 )
 
         self.status.update(phase="devices", progress=30)
@@ -200,14 +199,15 @@ class InventoryScanner:
                 f"entity:{item['object_id']}", item["status"]
             )
 
+        entity_counts = Counter(item["device_id"] for item in entities if item["device_id"])
         devices: list[dict[str, Any]] = []
         for device in device_entries:
-            device_entities = [e for e in entities if e["device_id"] == device.id]
+            entity_count = entity_counts[device.id]
             device_config_entry_ids = _device_config_entry_ids(device)
             status = (
                 "disabled"
                 if device.disabled_by is not None
-                else ("empty" if not device_entities else "active")
+                else ("empty" if not entity_count else "active")
             )
             devices.append(
                 {
@@ -224,28 +224,18 @@ class InventoryScanner:
                     "labels": sorted(device.labels),
                     "disabled_by": _enum(device.disabled_by),
                     "status": status,
-                    "entity_count": len(device_entities),
+                    "entity_count": entity_count,
                     "created_at": _iso(getattr(device, "created_at", None)),
                     "modified_at": _iso(getattr(device, "modified_at", None)),
                 }
             )
             for config_entry_id in device_config_entry_ids:
                 edges.append(
-                    {
-                        "source": f"config_entry:{config_entry_id}",
-                        "target": f"device:{device.id}",
-                        "relation": "OWNS",
-                        "confidence": "certain",
-                    }
+                    _edge(f"config_entry:{config_entry_id}", f"device:{device.id}", "OWNS")
                 )
             if device.via_device_id:
                 edges.append(
-                    {
-                        "source": f"device:{device.via_device_id}",
-                        "target": f"device:{device.id}",
-                        "relation": "VIA_DEVICE",
-                        "confidence": "certain",
-                    }
+                    _edge(f"device:{device.via_device_id}", f"device:{device.id}", "VIA_DEVICE")
                 )
 
         areas = [
@@ -288,12 +278,7 @@ class InventoryScanner:
         for area in areas:
             if area["floor_id"]:
                 edges.append(
-                    {
-                        "source": f"floor:{area['floor_id']}",
-                        "target": f"area:{area['object_id']}",
-                        "relation": "CONTAINS",
-                        "confidence": "certain",
-                    }
+                    _edge(f"floor:{area['floor_id']}", f"area:{area['object_id']}", "CONTAINS")
                 )
 
         integrations = [
@@ -322,8 +307,6 @@ class InventoryScanner:
         )
         edges.extend(automation_edges)
 
-        if not automations:
-            automations = []
         known_automation_ids = {item["object_id"] for item in automations}
         for state in self.hass.states.async_all("automation"):
             if state.entity_id in known_automation_ids:
@@ -356,22 +339,12 @@ class InventoryScanner:
         for item in entities:
             if item["area_id"]:
                 edges.append(
-                    {
-                        "source": f"area:{item['area_id']}",
-                        "target": f"entity:{item['object_id']}",
-                        "relation": "CONTAINS",
-                        "confidence": "certain",
-                    }
+                    _edge(f"area:{item['area_id']}", f"entity:{item['object_id']}", "CONTAINS")
                 )
         for item in devices:
             if item["area_id"]:
                 edges.append(
-                    {
-                        "source": f"area:{item['area_id']}",
-                        "target": f"device:{item['object_id']}",
-                        "relation": "CONTAINS",
-                        "confidence": "certain",
-                    }
+                    _edge(f"area:{item['area_id']}", f"device:{item['object_id']}", "CONTAINS")
                 )
 
         objects = entities + devices + integrations + areas + floors + labels + automations

@@ -12,9 +12,9 @@ from .const import DOMAIN
 from .inventory import InventoryScanner
 
 
-def _scanner(hass: HomeAssistant) -> InventoryScanner:
-    """Return the configured scanner."""
-    return hass.data[DOMAIN]["scanner"]
+def _scanner(hass: HomeAssistant) -> InventoryScanner | None:
+    """Return the configured scanner, or None while the entry is not loaded."""
+    return hass.data.get(DOMAIN, {}).get("scanner")
 
 
 async def _send_inventory_result(
@@ -26,6 +26,9 @@ async def _send_inventory_result(
 ) -> None:
     """Send inventory data or a useful, admin-only scanner error."""
     scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
     try:
         result = await (scanner.async_scan() if refresh else scanner.async_get_snapshot())
     except Exception as err:
@@ -67,7 +70,11 @@ def websocket_status(
     msg: dict[str, Any],
 ) -> None:
     """Return scan progress without triggering work."""
-    connection.send_result(msg["id"], _scanner(hass).status)
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    connection.send_result(msg["id"], scanner.status)
 
 
 def async_register(hass: HomeAssistant) -> None:

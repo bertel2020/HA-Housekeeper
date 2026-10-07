@@ -9,6 +9,7 @@ from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, FRONTEND_URL, PANEL_ELEMENT, PANEL_URL
@@ -56,11 +57,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config={"entry_id": entry.entry_id},
         config_panel_domain=DOMAIN,
     )
-    entry.async_create_background_task(
-        hass,
-        _async_initial_scan(scanner),
-        "HA Housekeeper initial inventory scan",
-    )
+
+    # Scanning while Home Assistant is still starting would classify entities of
+    # integrations that have not finished loading as orphaned and persist that.
+    def _start_initial_scan(_: HomeAssistant) -> None:
+        entry.async_create_background_task(
+            hass,
+            _async_initial_scan(scanner),
+            "HA Housekeeper initial inventory scan",
+        )
+
+    entry.async_on_unload(async_at_started(hass, _start_initial_scan))
     return True
 
 

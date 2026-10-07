@@ -79,3 +79,32 @@ async def test_registry_helpers_accept_old_and_new_home_assistant_shapes() -> No
     modern_device = type("ModernDevice", (), {"config_entry_id": "modern"})()
     assert _device_config_entry_ids(legacy_device) == ["legacy"]
     assert _device_config_entry_ids(modern_device) == ["modern"]
+
+
+async def test_scanner_counts_entities_per_device(hass: HomeAssistant) -> None:
+    """Devices report how many registry entities they provide."""
+    from homeassistant.helpers import device_registry as dr
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    config_entry = MockConfigEntry(domain="test")
+    config_entry.add_to_hass(hass)
+    device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=config_entry.entry_id, identifiers={("test", "device-1")}
+    )
+    registry = er.async_get(hass)
+    for index in range(2):
+        registry.async_get_or_create(
+            domain="sensor",
+            platform="test",
+            unique_id=f"count-{index}",
+            config_entry=config_entry,
+            device_id=device.id,
+        )
+
+    scanner = InventoryScanner(hass)
+    await scanner.async_initialize()
+    snapshot = await scanner.async_scan()
+
+    item = next(value for value in snapshot["objects"] if value["object_id"] == device.id)
+    assert item["entity_count"] == 2
+    assert item["status"] == "active"
