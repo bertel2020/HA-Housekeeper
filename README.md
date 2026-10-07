@@ -1,115 +1,141 @@
-# HA Housekeeper
+<p align="center">
+  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeping/main/logos/ha-housekeeper-logo-concept.png" alt="HA Housekeeper" width="160">
+</p>
 
-[Deutsch](README.de.md) · **English**
+<h1 align="center">HA Housekeeper</h1>
 
-[![GitHub release](https://img.shields.io/github/v/release/bertel2020/HA-Housekeeping?include_prereleases&style=flat-square)](https://github.com/bertel2020/HA-Housekeeping/releases)
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=flat-square)](https://hacs.xyz/docs/faq/custom_repositories/)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-18BCF2.svg?style=flat-square&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Last commit](https://img.shields.io/github/last-commit/bertel2020/HA-Housekeeping?style=flat-square)](https://github.com/bertel2020/HA-Housekeeping/commits/)
-[![Validate](https://img.shields.io/github/actions/workflow/status/bertel2020/HA-Housekeeping/validate.yml?branch=main&style=flat-square&label=validation)](https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml)
+<p align="center">
+  Wartung und Analyse für Home Assistant: Inventar, Diagnose und Abhängigkeiten auf einen Blick.
+</p>
 
-HA Housekeeper is a maintenance and analysis integration for Home Assistant. It creates a clear inventory of your installation, explains suspicious or orphaned objects, and shows how entities, devices, integrations, areas, and automations depend on each other.
+<p align="center">
+  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
+  <a href="https://www.home-assistant.io/"><img src="https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-18BCF2.svg?logo=home-assistant&logoColor=white" alt="Home Assistant"></a>
+  <a href="https://github.com/bertel2020/HA-Housekeeping/releases"><img src="https://img.shields.io/github/v/release/bertel2020/HA-Housekeeping?sort=semver&include_prereleases" alt="Release"></a>
+  <a href="https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml"><img src="https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/bertel2020/HA-Housekeeping" alt="License"></a>
+</p>
 
-The goal is not aggressive automatic cleanup. Housekeeper helps you understand what exists, why something is considered problematic, and what would be affected before any future cleanup operation is introduced.
+<p align="center">
+  <a href="https://buymeacoffee.com/bertel2020"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee"></a>
+  <a href="https://ko-fi.com/bertel2020"><img src="https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
+  <a href="https://paypal.me/RobertoMartins"><img src="https://img.shields.io/badge/PayPal-donate-00457C?logo=paypal&logoColor=white" alt="PayPal"></a>
+</p>
 
-> Version 0.1 is strictly read-only. It does not delete, disable, rename, or otherwise modify Home Assistant objects.
+<p align="center"><em><a href="README.en.md">English version</a></em></p>
 
-## Why HA Housekeeper?
+HA Housekeeper ist eine Wartungs- und Analyseintegration für Home Assistant. Sie erstellt ein übersichtliches Inventar der Installation, erklärt verdächtige oder verwaiste Objekte und zeigt, wie Entities, Geräte, Integrationen, Bereiche und Automationen voneinander abhängen.
 
-Mature Home Assistant installations often accumulate registry entries, unavailable entities, replaced devices, old statistics, and automation references that are difficult to assess safely. A missing state alone does not explain whether an entity was intentionally disabled, whether its integration is disabled, or whether the underlying device no longer exists.
+Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunächst zu verstehen, welche Objekte existieren, weshalb etwas als problematisch gilt und welche anderen Bestandteile von einer späteren Änderung betroffen wären.
 
-Housekeeper combines registry data and the live Home Assistant runtime to provide that context in one administrator-only panel.
+> Version 0.1 arbeitet ausschließlich lesend. Sie löscht, deaktiviert oder benennt keine Home-Assistant-Objekte um und nimmt auch sonst keine Änderungen daran vor.
 
-## Features in version 0.1
+## Was Housekeeper übernimmt
 
-### Installation overview
+| Aufgabe | Verhalten |
+| --- | --- |
+| **Inventar** | Entities, Geräte, Integrationen, Bereiche, Etagen, Labels und Automationen mit Suche, Filter und Sortierung |
+| **Diagnose** | Unterscheidet aktiv, nicht verfügbar, unbekannt, deaktiviert und verwaist — jeweils mit Begründung |
+| **Beobachtungszeitpunkt** | Speichert, seit wann Housekeeper eine Klassifikation beobachtet |
+| **Automationsanalyse** | Trigger, Bedingungen, Aktionen, Blueprints und fehlende Referenzen |
+| **Abhängigkeiten** | Beziehungen zwischen Integration, Gerät, Entity, Bereich und Automation mit Vertrauensstufe |
+| **Sicherheit** | Nur für Administratoren, strikt schreibgeschützt |
 
-- Inventory of entities, devices, integrations/config entries, areas, floors, labels, and automations
-- Search by name, object ID, unique ID, platform, or integration
-- Filter by object type and status
-- Sortable and paginated inventory for larger installations
-- Summary of object counts and current findings
+## Warum HA Housekeeper?
 
-### Entity and device diagnostics
+In gewachsenen Home-Assistant-Installationen sammeln sich häufig Registry-Einträge, nicht verfügbare Entities, ausgetauschte Geräte, alte Statistiken und schwer nachvollziehbare Automationsreferenzen an. Ein fehlender Zustand allein erklärt nicht, ob eine Entity absichtlich deaktiviert wurde, ihre Integration deaktiviert ist oder das zugrunde liegende Gerät nicht mehr existiert.
 
-Housekeeper distinguishes between:
+Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz und stellt diesen Zusammenhang in einem gemeinsamen, nur für Administratoren erreichbaren Panel dar.
 
-- an active entity with a current state
-- an entity reporting `unknown`
-- an entity reporting `unavailable`
-- an intentionally disabled entity
-- an entity belonging to a disabled device
-- an entity belonging to a disabled integration
-- an entity whose device no longer exists in the device registry
-- an entity whose config entry no longer exists
-- a registry entity that no longer has a state
+## Funktionen in Version 0.1
 
-For every continuously observed classification, Housekeeper stores when it first detected that condition. This timestamp is explicitly presented as a **first Housekeeper observation**, not as an invented deletion or failure date.
+### Installationsübersicht
 
-### Automation analysis
+- Inventar für Entities, Geräte, Integrationen beziehungsweise Config Entries, Bereiche, Etagen, Labels und Automationen
+- Suche nach Name, Objekt-ID, Unique ID, Plattform oder Integration
+- Filter nach Objekttyp und Zustand
+- sortierbares und paginiertes Inventar für größere Installationen
+- Übersicht der Objektanzahl und aktuellen Befunde
 
-- Lists loaded automations and their current state
-- Shows mode, concurrency limits, last trigger time, and blueprint origin
-- Displays triggers, conditions, and actions in the detail view
-- Extracts entity, device, area, floor, and label references
-- Includes references detected by the Home Assistant runtime, including many template references
-- Detects references whose target no longer exists
-- Retains the precise configuration location for explicit references when available
+### Entity- und Gerätediagnose
 
-### Dependency explorer
+Housekeeper unterscheidet zwischen:
 
-The dependency view visualizes direct relationships such as:
+- einer aktiven Entity mit aktuellem Zustand
+- einer Entity mit dem Zustand `unknown`
+- einer Entity mit dem Zustand `unavailable`
+- einer absichtlich deaktivierten Entity
+- einer Entity an einem deaktivierten Gerät
+- einer Entity aus einer deaktivierten Integration
+- einer Entity, deren Gerät nicht mehr in der Geräte-Registry existiert
+- einer Entity, deren Config Entry nicht mehr existiert
+- einer registrierten Entity, für die kein Zustand mehr vorhanden ist
+
+Für jede durchgehend beobachtete Klassifikation speichert Housekeeper, wann sie erstmals erkannt wurde. Dieser Zeitpunkt wird ausdrücklich als **erster Housekeeper-Nachweis** bezeichnet – nicht als vermeintliches Lösch- oder Ausfalldatum.
+
+### Automationsanalyse
+
+- Auflistung der geladenen Automationen und ihres aktuellen Zustands
+- Anzeige von Modus, Parallelitätsgrenzen, letzter Auslösung und Blueprint-Herkunft
+- Darstellung von Triggern, Bedingungen und Aktionen in der Detailansicht
+- Ermittlung von Entity-, Geräte-, Bereichs-, Etagen- und Labelreferenzen
+- Einbeziehung der von Home Assistant zur Laufzeit erkannten Referenzen, darunter viele Templatereferenzen
+- Erkennung von Referenzen, deren Ziel nicht mehr existiert
+- genaue Fundstelle für explizite Referenzen, soweit verfügbar
+
+### Abhängigkeitsansicht
+
+Die Abhängigkeitsansicht stellt direkte Beziehungen dar, zum Beispiel:
 
 ```text
-Integration → owns → Device → provides → Entity
-Floor → contains → Area → contains → Device
-Automation → triggers on / checks / targets → Entity or Device
+Integration → besitzt → Gerät → stellt bereit → Entity
+Etage → enthält → Bereich → enthält → Gerät
+Automation → reagiert auf / prüft / steuert → Entity oder Gerät
 ```
 
-Each relationship includes a confidence level. Explicit registry and configuration relationships are marked as certain; references inferred by Home Assistant at runtime are identified separately.
+Jede Beziehung besitzt eine Vertrauensstufe. Explizite Registry- und Konfigurationsbeziehungen gelten als sicher; von Home Assistant zur Laufzeit ermittelte Referenzen werden gesondert gekennzeichnet.
 
-### Languages
+### Sprachen
 
-The panel and configuration flow are available in German and English. The active Home Assistant language determines which panel language is shown.
+Panel und Einrichtungsdialog stehen auf Deutsch und Englisch zur Verfügung. Die in Home Assistant gewählte Sprache bestimmt die Sprache des Panels.
 
-## Safety model
+## Sicherheitsmodell
 
-- The panel is available to Home Assistant administrators only.
-- All Housekeeper WebSocket endpoints require administrator privileges.
-- Version 0.1 exposes read and scan operations only.
-- `unavailable` is never treated as automatically orphaned.
-- Disabled devices and integrations are distinguished from missing objects.
-- No `.storage` file is edited directly.
-- No cleanup action runs automatically.
+- Das Panel ist ausschließlich für Home-Assistant-Administratoren verfügbar.
+- Alle Housekeeper-WebSocket-Endpunkte erfordern Administratorrechte.
+- Version 0.1 bietet ausschließlich Lese- und Scanoperationen an.
+- `unavailable` wird niemals automatisch mit „verwaist“ gleichgesetzt.
+- Deaktivierte Geräte und Integrationen werden von fehlenden Objekten unterschieden.
+- `.storage`-Dateien werden nicht direkt bearbeitet.
+- Es wird keine Bereinigung automatisch ausgeführt.
 
-Cleanup plans, backups, verification, and rollback are intentionally reserved for later versions.
+Bereinigungspläne, Backups, Verifikation und Rollback sind bewusst späteren Versionen vorbehalten.
 
 ## Installation
 
-### Via HACS (recommended)
+### Über HACS (empfohlen)
 
-[![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
-[![Add HA Housekeeper to My Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
+[![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
+[![HA Housekeeper zu My Home Assistant hinzufügen](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
 
-1. Use the first button to open the Housekeeper repository in HACS.
-2. Download **HA Housekeeper** and restart Home Assistant.
-3. Use the second button to add the integration. Alternatively, open
-   **Settings → Devices & services → Add integration → HA Housekeeper** in
-   Home Assistant.
-4. Then open **Housekeeper** in the sidebar while signed in as an administrator.
+1. Über den ersten Button das Housekeeper-Repository in HACS öffnen.
+2. **HA Housekeeper** herunterladen und Home Assistant neu starten.
+3. Über den zweiten Button die Integration hinzufügen. Alternativ in Home
+   Assistant **Einstellungen → Geräte & Dienste → Integration hinzufügen →
+   HA Housekeeper** öffnen.
+4. Anschließend als Administrator **Housekeeper** in der Seitenleiste öffnen.
 
-If the first button does not work, add
-`https://github.com/bertel2020/HA-Housekeeping` in HACS under **Integrations →
-Custom repositories** with the category **Integration**.
+Falls der erste Button nicht funktioniert, in HACS unter **Integrationen →
+Benutzerdefinierte Repositories** `https://github.com/bertel2020/HA-Housekeeping`
+als Kategorie **Integration** eintragen.
 
-### Manual
+### Manuell
 
-Copy the `custom_components/ha_housekeeper` directory to
-`/config/custom_components/ha_housekeeper` and restart Home Assistant. Then add
-the integration as described above.
+Das Verzeichnis `custom_components/ha_housekeeper` nach
+`/config/custom_components/ha_housekeeper` kopieren und Home Assistant neu
+starten. Danach die Integration wie oben beschrieben hinzufügen.
 
-The resulting directory should look like this:
+Das Ergebnis sollte so aussehen:
 
 ```text
 config/
@@ -120,49 +146,49 @@ config/
         └── ...
 ```
 
-## Usage
+## Verwendung
 
-Open **Housekeeper** from the Home Assistant sidebar. The overview shows object totals, findings, and the time of the last scan.
+**Housekeeper** über die Home-Assistant-Seitenleiste öffnen. Die Übersicht zeigt Objektzahlen, Befunde und den Zeitpunkt des letzten Scans.
 
-- Select a category card to open a filtered inventory.
-- Select an object to inspect registry information, state data, diagnosis, and direct dependencies.
-- Open **Dependencies** and select an object to explore incoming and outgoing relationships.
-- Use **Scan now** to refresh the snapshot after configuration or device changes.
+- Eine Kategoriekarte auswählen, um das entsprechend gefilterte Inventar zu öffnen.
+- Ein Objekt auswählen, um Registry-Informationen, Zustandsdaten, Diagnose und direkte Abhängigkeiten anzuzeigen.
+- Unter **Abhängigkeiten** ein Objekt auswählen, um eingehende und ausgehende Beziehungen zu untersuchen.
+- Mit **Neu scannen** den Datenbestand nach Konfigurations- oder Geräteänderungen aktualisieren.
 
-The first scan establishes the initial observation timestamps. Later scans preserve the start of an unchanged classification and reset it when the classification changes.
+Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende Scans behalten den Beginn einer unveränderten Klassifikation bei und setzen ihn zurück, sobald sich die Klassifikation ändert.
 
-## Current limitations
+## Aktuelle Einschränkungen
 
-- Version 0.1 does not perform cleanup or history/statistics migration.
-- Automation analysis covers automations currently loaded by Home Assistant. The amount of available detail can vary for invalid or externally managed automations.
-- Dynamic templates cannot always be resolved to one definite target. Such relationships are never presented as certain without supporting runtime information.
-- The dependency view currently focuses on direct registry and automation relationships.
-- HACS and Hassfest workflows are configured, but require a published GitHub repository to run remotely.
+- Version 0.1 führt keine Bereinigung und keine Historien- oder Statistikmigration durch.
+- Die Automationsanalyse umfasst die aktuell von Home Assistant geladenen Automationen. Bei ungültigen oder extern verwalteten Automationen können weniger Details verfügbar sein.
+- Dynamische Templates lassen sich nicht immer eindeutig einem Ziel zuordnen. Solche Beziehungen werden ohne Laufzeitbeleg niemals als sicher dargestellt.
+- Die Abhängigkeitsansicht konzentriert sich derzeit auf direkte Registry- und Automationsbeziehungen.
+- Die HACS- und Hassfest-Workflows sind konfiguriert, können aber erst in einem veröffentlichten GitHub-Repository ausgeführt werden.
 
-## Development and validation
+## Entwicklung und Validierung
 
-Version 0.1 has been tested locally against Home Assistant 2026.2.3. The test suite covers:
+Version 0.1 wurde lokal gegen Home Assistant 2026.2.3 getestet. Die Tests decken Folgendes ab:
 
-- manifest and package contracts
-- German/English backend translation parity
-- automation reference extraction and missing-target detection
-- Config Flow creation and complete Config Entry setup
-- registry and state inventory scanning
-- Python linting and formatting
-- Python and frontend syntax
+- Manifest- und Paketverträge
+- Parität der deutschen und englischen Backend-Übersetzungen
+- Ermittlung von Automationsreferenzen und Erkennung fehlender Ziele
+- Config Flow und vollständige Einrichtung des Config Entry
+- Inventarisierung von Registry-Einträgen und Zuständen
+- Python-Linting und -Formatierung
+- Python- und Frontend-Syntax
 
-Run the dependency-free local tests with:
+Die von Home Assistant unabhängigen Tests lassen sich so ausführen:
 
 ```bash
 python3 -m pytest -q
 ```
 
-The GitHub validation workflow additionally installs Home Assistant and its frontend to execute the runtime integration tests, HACS validation, and Hassfest.
+Der GitHub-Validierungsworkflow installiert zusätzlich Home Assistant und dessen Frontend, um die Laufzeit-Integrationstests sowie HACS- und Hassfest-Prüfungen auszuführen.
 
-## Changelog
+## Änderungsprotokoll
 
-See [CHANGELOG.md](CHANGELOG.md) for release notes in English and German.
+Die Versionshinweise auf Deutsch und Englisch stehen in [CHANGELOG.md](CHANGELOG.md).
 
-## License
+## Lizenz
 
-HA Housekeeper is released under the [MIT License](LICENSE).
+Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
