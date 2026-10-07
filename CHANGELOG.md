@@ -1,5 +1,78 @@
 # Changelog
 
+## 0.4.0 - 2026-10-07
+
+Einstellungen, Filter und Sortierung für Listen, neue Übersicht und zwei
+weitere Hinweise. Housekeeper arbeitet weiterhin ausschließlich lesend. Lokal
+gegen Home Assistant 2026.2.3 getestet, zusätzlich in einer laufenden Instanz
+mit Home Assistant 2026.9.4 ausprobiert.
+
+### Neu
+
+- **Einstellungen** (unten in der Seitenleiste): Version und Eckdaten von
+  Housekeeper, Schriftgröße (klein, normal, groß), Modus (automatisch, hell,
+  dunkel), Farbschema (Standard, Salbei, Indigo), Startansicht, Einträge pro
+  Seite und Verwaltung ausgeblendeter Befunde. Die Darstellung wird pro Browser
+  gespeichert. **Info kopieren** legt die wichtigsten Angaben für Fehlerberichte
+  in die Zwischenablage.
+- **Nicht verwendet**: Ansicht mit aktiven Entities, die in keiner Automation,
+  keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren
+  Dashboard vorkommen. Nur ein Hinweis, kein Befund.
+- **Batterie-Schwelle** einstellbar unter **Konfigurieren** (Standard 20 %).
+- **Listen durchsuchen, filtern und sortieren**: Befunde, Batterien, Nicht
+  verwendet und Inventar. Der Export enthält genau die angezeigten Befunde.
+- **Seitenweise Listen** (Standard 20 pro Seite, wählbar 20, 50 oder 100).
+- **Link in den Reparaturhinweisen**: Die Beschreibung enthält einen Link, der
+  direkt in die passend gefilterte Befundliste springt.
+
+### Geändert
+
+- **Neu angeordnete Übersicht** mit der Karte **Aufräumen** (schwache
+  Batterien, mögliche Duplikate, ungenutzte Automationen, nicht verwendete
+  Entities) und den Integrationsproblemen unter „Benötigt Aufmerksamkeit“.
+- Das Inventar zeigt standardmäßig 20 statt 100 Einträge pro Seite und lässt
+  sich per Klick auf die Spaltenüberschriften auf- und absteigend sortieren.
+
+### Behoben
+
+- Die Batterie-Ansicht zeigt die Seitenfußzeile mit der Seitennavigation.
+
+---
+
+### English
+
+Settings, filtering and sorting for lists, a new overview, and two more hints.
+Housekeeper remains strictly read-only. Tested locally against Home Assistant
+2026.2.3 and tried in a running instance on Home Assistant 2026.9.4.
+
+#### New
+
+- **Settings** (bottom of the sidebar): version and key facts about Housekeeper,
+  font size (small, normal, large), mode (automatic, light, dark), color scheme
+  (Standard, Sage, Indigo), start view, entries per page, and management of
+  hidden findings. Appearance is stored per browser. **Copy info** puts the
+  essentials for bug reports on the clipboard.
+- **Not used**: view of active entities that appear in no automation, script,
+  scene, group, helper, or readable dashboard. A hint only, not a finding.
+- **Configurable low-battery threshold** under **Configure** (default 20 %).
+- **Search, filter, and sort lists**: findings, batteries, not used, and
+  inventory. The export contains exactly the findings shown.
+- **Paged lists** (default 20 per page, selectable 20, 50, or 100).
+- **Link in the repair hints**: the description contains a link that jumps
+  straight to the matching filtered findings list.
+
+#### Changed
+
+- **Rearranged overview** with the **Tidy up** card (low batteries, possible
+  duplicates, unused automations, unused entities) and the integration problems
+  under "Needs attention".
+- The inventory shows 20 instead of 100 entries per page by default and can be
+  sorted ascending or descending by clicking the column headers.
+
+#### Fixed
+
+- The batteries view shows the page footer with the page navigation.
+
 ## 0.3.1 - 2026-10-07
 
 Korrekturen für HACS und Hassfest sowie ein überarbeiteter Seitenleistenkopf.
