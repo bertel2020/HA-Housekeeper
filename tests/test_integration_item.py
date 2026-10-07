@@ -77,3 +77,15 @@ async def test_entities_and_devices_carry_what_their_pages_show(hass: HomeAssist
     assert item["sw_version"] == "1.88" and item["hw_version"] == "2"
     assert item["entry_type"] == "service" and item["configuration_url"] == "https://hue.local"
     assert item["identifiers"] == ["hue:abc"] and item["connections"] == ["mac:aa:bb"]
+
+
+async def test_devices_with_longer_identifiers_do_not_break_the_scan(hass: HomeAssistant) -> None:
+    """Some integrations register identifiers with three parts; the scan must still work."""
+    entry = MockConfigEntry(domain="odd", title="Odd")
+    entry.add_to_hass(hass)
+    device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id, identifiers={("odd", "a", "b")}, name="Odd device"
+    )
+    snapshot = await InventoryScanner(hass).async_scan()
+    item = next(o for o in snapshot["objects"] if o["object_id"] == device.id)
+    assert item["identifiers"] == ["odd:a:b"]
