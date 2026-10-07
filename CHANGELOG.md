@@ -1,5 +1,92 @@
 # Changelog
 
+## 0.5.0 - 2026-10-07
+
+Aufräumen mit Vorschau und umkehrbarer Quarantäne, Recorder und Energie in der
+Auswirkungsanalyse sowie ein überarbeitetes Panel. **Housekeeper kann jetzt
+erstmals etwas ändern**, und zwar ausschließlich nach ausdrücklicher
+Bestätigung eines Plans und nur als umkehrbare Quarantäne (Entity
+deaktivieren). Automatisiert gegen Home Assistant 2026.2.3 getestet.
+
+### Neu
+
+- **Aufräumen**: Ausgewählte verwaiste oder lange nicht verfügbare Entities
+  werden zuerst in einem **Dry Run** geprüft (ohne bekannte Verwendung, zu
+  prüfen, blockiert) und im **Journal** protokolliert. Ein Plan lässt sich
+  bestätigen (Wort eintippen) und ausführen: Das **Deaktivieren** setzt die
+  Entity in Quarantäne, Historie und Statistiken bleiben unverändert. Vor jedem
+  Schritt wird neu geprüft, bei Änderungen bricht der Lauf ab, danach prüft
+  Housekeeper das Ergebnis, und jeder Schritt lässt sich **rückgängig machen**.
+  Blockierte Einträge laufen nie, „zu prüfen“ nur mit Einzelbestätigung. Das
+  Entfernen ist weiterhin nur eine Vorschau.
+- **Recorder und Energie-Dashboard** in der Auswirkungsanalyse: Entities des
+  Energie-Dashboards gelten als verwendet, Entities mit Langzeitstatistiken sind
+  markiert.
+- **Verwaiste Statistiken**: Reiter in „Nicht verwendet“ mit
+  Langzeitstatistiken, zu denen es keine Entity mehr gibt (nur ein Hinweis).
+- **Optionen im Panel ändern**: Scanintervall und Schwellenwerte unter
+  **Einstellungen**.
+- **Darstellung im Benutzerprofil**: Die Einstellungen werden pro
+  Home-Assistant-Benutzer gespeichert. Neu sind **kompakte Dichte** und
+  **reduzierte Animationen**.
+- **Hinweis bei veraltetem Scan** auf der Übersicht.
+- **Suche und Filter** für „Änderungen“ und für viele Integrationsprobleme.
+
+### Geändert
+
+- **Neue Farbschemata** aus dem Design der Zeitarchiv-App: Standard,
+  Housekeeper und Modern, jeweils hell und dunkel (ersetzen Salbei und Indigo).
+- Die **Schriftgröße** skaliert nur noch den Text statt der ganzen Oberfläche;
+  „Normal“ ist etwas größer als zuvor.
+- **Seitenleiste fixiert**, mit Einstellungen am unteren sichtbaren Rand. Das
+  Badge im Seitenkopf lautet „Ändert nur nach Bestätigung“ statt
+  „Schreibgeschützt“.
+- **Gleich breite Kacheln** auf der Übersicht und ein überarbeitetes Aussehen.
+- Dokumentation und Texte beschreiben jetzt zutreffend, was Housekeeper ändert.
+
+---
+
+### English
+
+Tidy up with preview and reversible quarantine, recorder and energy in the
+impact analysis, and a reworked panel. **Housekeeper can now change something
+for the first time**, only after you explicitly confirm a plan and only as a
+reversible quarantine (disabling an entity). Tested automatically against Home
+Assistant 2026.2.3.
+
+#### New
+
+- **Tidy up**: selected orphaned or long-unavailable entities are first checked
+  in a **dry run** (no known use, to review, blocked) and recorded in the
+  **journal**. A plan can be confirmed (type a word) and executed: **disabling**
+  puts the entity into quarantine, history and statistics stay untouched. Every
+  step is re-checked first, the run aborts if something changed, Housekeeper
+  verifies the result afterwards, and every step can be **undone**. Blocked
+  entries never run, “to review” only with an individual confirmation. Removal
+  is still a preview only.
+- **Recorder and Energy dashboard** in the impact analysis: entities of the
+  Energy dashboard count as used, entities with long-term statistics are
+  marked.
+- **Orphaned statistics**: tab in “Not used” listing long-term statistics that
+  no longer have an entity (a hint only).
+- **Change options in the panel**: scan interval and thresholds under
+  **Settings**.
+- **Appearance in your user profile**: settings are stored per Home Assistant
+  user. New are **compact density** and **reduced animation**.
+- **Notice for an outdated scan** on the overview.
+- **Search and filters** for “Changes” and for many integration problems.
+
+#### Changed
+
+- **New color schemes** from the Zeitarchiv app design: Standard, Housekeeper,
+  and Modern, each in light and dark (replacing Sage and Indigo).
+- **Font size** now scales only the text instead of the whole interface;
+  “Normal” is slightly larger than before.
+- **Fixed sidebar**, with Settings at the visible bottom edge. The header badge
+  reads “Changes only on confirmation” instead of “Read only”.
+- **Equal-width tiles** on the overview and a more polished look.
+- Documentation and texts now describe accurately what Housekeeper changes.
+
 ## 0.4.0 - 2026-10-07
 
 Einstellungen, Filter und Sortierung für Listen, neue Übersicht und zwei
