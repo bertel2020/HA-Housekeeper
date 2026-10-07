@@ -80,7 +80,14 @@ async def test_quarantine_runs_is_verified_and_can_be_undone(hass: HomeAssistant
     ]
     assert scanner.paused is False
 
+    assert [q["object_id"] for q in scanner.snapshot["quarantine"]] == [entry.entity_id]
+    assert (
+        scanner.snapshot["meta"]["quarantined"] == 1
+        and scanner.snapshot["meta"]["quarantine_days"] == 14
+    )
+
     result = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert scanner.snapshot["quarantine"] == []  # the undo refreshed the inventory
     assert result["results"] == [{"object_id": entry.entity_id, "outcome": "undone"}]
     assert registry.async_get(entry.entity_id).disabled_by is None
     assert plan["status"] == "undone"

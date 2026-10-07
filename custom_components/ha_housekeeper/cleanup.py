@@ -54,6 +54,38 @@ def registry_fingerprint(entry: Any) -> str:
     return hashlib.sha256(json.dumps(fields, default=str).encode()).hexdigest()[:16]
 
 
+def quarantine_entries(
+    plans: list[dict[str, Any]], entities: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Entities Housekeeper quarantined that are still disabled by the user.
+
+    The journal says when an entity was disabled; the live inventory says whether it still
+    is. Entities that were re-enabled, undone or removed since are no longer in quarantine.
+    """
+    live = {item["object_id"]: item for item in entities}
+    latest: dict[str, dict[str, Any]] = {}
+    for plan in plans:
+        for action in plan.get("actions", []):
+            result = action.get("result") or {}
+            if action["kind"] != "disable_entity" or result.get("state") != "done":
+                continue
+            current = latest.get(action["object_id"])
+            if current is None or result["at"] > current["since"]:
+                latest[action["object_id"]] = {
+                    "object_id": action["object_id"],
+                    "plan_id": plan["plan_id"],
+                    "since": result["at"],
+                }
+    return sorted(
+        (
+            entry
+            for object_id, entry in latest.items()
+            if (item := live.get(object_id)) and item.get("disabled_by") == "user"
+        ),
+        key=lambda entry: entry["since"],
+    )
+
+
 def _used_by(edges: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
     """Objects that use ``key``, with how sure Housekeeper is."""
     return [

@@ -841,3 +841,32 @@ test("the safety badge sits in the header, the sidebar is fixed, and tiles are e
   assert.ok(html.includes(".side{position:sticky;top:0") && html.includes("repeat(auto-fit,minmax(210px,1fr))"));
   assert.ok(html.indexOf('class="safe-badge"') > html.indexOf('class="heading"'));
 });
+
+test("quarantined entities show how long they have been disabled and when removal is earliest", () => {
+  const { el, shadow } = panel("en");
+  const days = n => new Date(Date.now() - n * 864e5 - 3600e3).toISOString();
+  const item = id => ({ object_type: "entity", object_id: id, name: id.toUpperCase(), status: "disabled" });
+  el.data = { ...DATA, meta: { ...DATA.meta, quarantine_days: 14 }, objects: [item("sensor.young"), item("sensor.mature")], edges: [], findings: [],
+    quarantine: [{ object_id: "sensor.mature", plan_id: "p1", since: days(20) }, { object_id: "sensor.young", plan_id: "p1", since: days(3) }] };
+  el.journal = [];
+  el.view = "cleanup";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Quarantine (2)") && html.includes("11 days to go") && html.includes("Removable at the earliest") && html.includes("no earlier than after 14 days"));
+  assert.ok(html.includes("· 20 days") && html.includes("· 3 days"));
+  assert.equal(el.daysSince(days(3)), 3);
+  assert.equal(el.daysSince("not a date"), 0);
+  el.openObject(item("sensor.young"));
+  el.render();
+  assert.ok(shadow.innerHTML.includes("since") && shadow.innerHTML.includes("(3 days)"));
+});
+
+test("without quarantined entities the card is absent and the overview row is zero", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  el.journal = [];
+  el.view = "cleanup";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("Quarantine ("));
+  assert.ok(el.cleanupCard().includes('data-jump="cleanup"'));
+});

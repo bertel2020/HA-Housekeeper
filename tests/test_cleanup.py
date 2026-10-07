@@ -108,3 +108,44 @@ def test_journal_keeps_the_newest_plans_and_only_removes_dry_runs() -> None:
     journal.plans[0]["executed"] = True
     assert journal.remove(journal.plans[0]["plan_id"]) is False
     assert journal.remove(journal.plans[1]["plan_id"]) is True
+
+
+def test_quarantine_lists_only_entities_still_disabled_by_the_user() -> None:
+    from custom_components.ha_housekeeper.cleanup import quarantine_entries
+
+    def done(object_id: str, at: str, state: str = "done", kind: str = "disable_entity"):
+        return {"kind": kind, "object_id": object_id, "result": {"state": state, "at": at}}
+
+    plans = [
+        {
+            "plan_id": "p1",
+            "actions": [
+                done("sensor.a", "2026-09-01T00:00:00+00:00"),
+                done("sensor.b", "2026-09-02T00:00:00+00:00"),
+                done("sensor.c", "2026-09-03T00:00:00+00:00", "undone"),
+            ],
+        },
+        {
+            "plan_id": "p2",
+            "actions": [
+                done("sensor.a", "2026-09-10T00:00:00+00:00"),
+                done("sensor.d", "2026-09-04T00:00:00+00:00", kind="remove_entity"),
+                {"kind": "disable_entity", "object_id": "sensor.e"},
+            ],
+        },
+    ]
+    entities = [
+        {"object_id": "sensor.a", "disabled_by": "user"},
+        {"object_id": "sensor.b", "disabled_by": None},  # re-enabled by the user
+        {"object_id": "sensor.c", "disabled_by": "user"},  # undone
+        {"object_id": "sensor.d", "disabled_by": "user"},
+    ]
+    entries = quarantine_entries(plans, entities)
+    assert [e["object_id"] for e in entries] == [
+        "sensor.a"
+    ]  # latest disable wins, undone/re-enabled drop out
+    assert entries[0] == {
+        "object_id": "sensor.a",
+        "plan_id": "p2",
+        "since": "2026-09-10T00:00:00+00:00",
+    }

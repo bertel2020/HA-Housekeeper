@@ -22,7 +22,7 @@ from .automation_analysis import (
     summarize_automation_config,
     summarize_script_config,
 )
-from .cleanup import JournalStore
+from .cleanup import JournalStore, quarantine_entries
 from .cleanup_exec import CleanupRunner
 from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
@@ -31,6 +31,7 @@ from .const import (
     DEFAULT_UNUSED_AUTOMATION_DAYS,
     DOMAIN,
     IGNORE_LABEL,
+    QUARANTINE_DAYS,
     SIGNAL_SCAN_COMPLETE,
 )
 from .dashboard_analysis import (
@@ -529,6 +530,7 @@ class InventoryScanner:
             + group_findings
         )
 
+        quarantine = quarantine_entries(self.journal.plans, entities)
         orphaned_statistics = orphan_statistics(
             statistics,
             existing_objects["entity"],
@@ -553,6 +555,8 @@ class InventoryScanner:
                 "version": self.version,
                 "recorder_available": self._recorder_available,
                 "orphaned_statistics": len(orphaned_statistics),
+                "quarantined": len(quarantine),
+                "quarantine_days": QUARANTINE_DAYS,
                 "ha_version": HA_VERSION,
                 "scan_interval_hours": self.scan_interval_hours,
                 "low_battery_percent": self.low_battery_percent,
@@ -565,6 +569,7 @@ class InventoryScanner:
             "edges": edges,
             "findings": findings,
             "orphaned_statistics": orphaned_statistics,
+            "quarantine": quarantine,
         }
 
     def _ignored_by(self, finding: dict[str, Any], registry: Any) -> str | None:

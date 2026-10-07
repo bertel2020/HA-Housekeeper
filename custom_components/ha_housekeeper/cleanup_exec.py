@@ -8,6 +8,7 @@ step is re-checked, journaled and can be undone while the entity is still as Hou
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -261,6 +262,10 @@ class CleanupRunner:
             ]
             plan["status"] = "partially_undone" if open_actions else "undone"
         self.scanner.journal.save()
+        if any(r["outcome"] == "undone" for r in results):
+            # Refresh the inventory so the quarantine list is current; the undo itself succeeded.
+            with contextlib.suppress(Exception):
+                await self.scanner.async_scan()
         return {"results": results, "status": plan["status"]}
 
     def _plan(self, plan_id: str) -> dict[str, Any]:

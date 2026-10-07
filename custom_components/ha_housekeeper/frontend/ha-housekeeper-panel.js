@@ -111,6 +111,8 @@ const TEXT = {
     undo_undone: "wieder aktiviert", undo_conflict_changed: "nicht rückgängig gemacht: zwischenzeitlich geändert", undo_conflict_gone: "nicht rückgängig gemacht: Entity existiert nicht mehr",
     verification: "Prüfung nach dem Lauf", check_disabled: "Entity ist deaktiviert", check_no_new_broken_references: "Keine neuen fehlenden Referenzen",
     err_bad_token: "Bestätigung ungültig oder abgelaufen.", err_busy: "Es läuft bereits ein Plan.", err_plan_not_open: "Dieser Plan wurde bereits bestätigt oder ausgeführt.", err_plan_too_old: "Der Plan ist älter als 24 Stunden. Bitte neu erstellen.", err_nothing_to_do: "Nichts auszuführen: blockierte Einträge laufen nie, „Zu prüfen“ braucht eine ausdrückliche Bestätigung.", err_not_found: "Plan nicht gefunden.",
+    quarantine: "Quarantäne", quarantineHint: "Entities, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen vorgesehen (noch nicht ausführbar). Rückgängig machst du es über das Journal.",
+    quarantineSince: "seit {date} · {days} Tagen", quarantineWait: "Noch {days} Tage", quarantineReady: "Frühestens entfernbar", quarantineFact: "seit {date} ({days} Tage)",
     perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
     unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
     unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entities können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entities sind ausgeblendet.",
@@ -261,6 +263,8 @@ const TEXT = {
     undo_undone: "enabled again", undo_conflict_changed: "not undone: changed in the meantime", undo_conflict_gone: "not undone: the entity no longer exists",
     verification: "Check after the run", check_disabled: "Entity is disabled", check_no_new_broken_references: "No new missing references",
     err_bad_token: "Confirmation invalid or expired.", err_busy: "A plan is already running.", err_plan_not_open: "This plan was already confirmed or executed.", err_plan_too_old: "The plan is older than 24 hours. Please create it again.", err_nothing_to_do: "Nothing to execute: blocked entries never run, “to review” needs an explicit confirmation.", err_not_found: "Plan not found.",
+    quarantine: "Quarantine", quarantineHint: "Entities Housekeeper has disabled. Removal is planned no earlier than after {days} days (not executable yet). You can undo it from the journal.",
+    quarantineSince: "since {date} · {days} days", quarantineWait: "{days} days to go", quarantineReady: "Removable at the earliest", quarantineFact: "since {date} ({days} days)",
     perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
     unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
     unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
@@ -836,6 +840,7 @@ class HAHousekeeperPanel extends HTMLElement {
       ["possible_duplicate", "mdi:content-duplicate", "findingsNav", open.filter(f => f.classification === "possible_duplicate").length, "possible_duplicate"],
       ["unused", "mdi:sleep", "findingsNav", open.filter(f => f.classification === "unused").length, "unused"],
       ["unreferenced", "mdi:link-variant-off", "unreferenced", this.unreferencedRows().length, undefined],
+      ["quarantine", "mdi:archive-clock-outline", "cleanup", (this.data.quarantine || []).length, undefined],
     ];
     const rows = items.map(([label, icon, view, count, filter]) => `<button class="row" data-jump="${view}"${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanup")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
@@ -1040,6 +1045,25 @@ class HAHousekeeperPanel extends HTMLElement {
     this.render();
   }
 
+  // Days since an ISO timestamp, never negative.
+  daysSince(value) {
+    const ms = Date.now() - new Date(value).getTime();
+    return Number.isFinite(ms) ? Math.max(0, Math.floor(ms / 864e5)) : 0;
+  }
+
+  quarantineOf(objectId) { return (this.data?.quarantine || []).find(q => q.object_id === objectId) || null; }
+
+  quarantineCard() {
+    const entries = this.data.quarantine || [];
+    if (!entries.length) return "";
+    const limit = this.data.meta.quarantine_days ?? 14;
+    const rows = entries.map(q => {
+      const item = this.findObject(`entity:${q.object_id}`), days = this.daysSince(q.since), left = limit - days;
+      return `<button class="row rel" data-object="entity:${this.esc(q.object_id)}"><span class="tile mute"><ha-icon icon="mdi:archive-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(item?.name || q.object_id)}</strong><small>${this.esc(q.object_id)} · ${this.t("quarantineSince", { date: this.formatDate(q.since), days })}</small></span><span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("quarantineWait", { days: left }) : this.t("quarantineReady")}</span></button>`;
+    }).join("");
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("quarantine")} (${entries.length})</h2><p>${this.t("quarantineHint", { days: limit })}</p></div></div>${rows}</div>`;
+  }
+
   cleanupCandidates() {
     const seen = new Set(), rows = [];
     for (const f of this.data.findings) {
@@ -1198,7 +1222,7 @@ class HAHousekeeperPanel extends HTMLElement {
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
     const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}</div>`;
     return `<div class="stack"><div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
-      ${this.plan ? this.planCard(this.plan) : ""}${candidates}${journalCard}</div>`;
+      ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${candidates}${journalCard}</div>`;
   }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
@@ -1589,6 +1613,8 @@ class HAHousekeeperPanel extends HTMLElement {
       facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
     }
     if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
+    const quarantined = item.object_type === "entity" ? this.quarantineOf(item.object_id) : null;
+    if (quarantined) facts.push([this.t("quarantine"), this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })]);
     if (item.object_type === "entity" && this.data.meta.recorder_available) facts.push([this.t("longTermStats"), this.t(item.has_statistics ? "yes" : "no")]);
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;

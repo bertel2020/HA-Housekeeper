@@ -24,6 +24,8 @@ DEFAULT_UNUSED_AUTOMATION_DAYS: Final = 90
 CONF_LOW_BATTERY_PERCENT: Final = "low_battery_percent"
 DEFAULT_LOW_BATTERY_PERCENT: Final = 20
 JOURNAL_STORAGE_KEY: Final = f"{DOMAIN}.journal"
+# Earliest point at which a quarantined entity may be removed (a later step, preview only today).
+QUARANTINE_DAYS: Final = 14
 IGNORE_LABEL: Final = "housekeeper_ignore"
 # Allowed range (min, max) per option, shared by the options flow and the panel command.
 OPTION_LIMITS: Final = {
