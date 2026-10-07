@@ -1,0 +1,14 @@
+{
+  "title": "HA Housekeeper",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up HA Housekeeper",
+        "description": "Adds the read-only Housekeeper panel for administrators. No cleanup action is executed automatically."
+      }
+    },
+    "abort": {
+      "already_configured": "HA Housekeeper is already configured."
+    }
+  }
+}

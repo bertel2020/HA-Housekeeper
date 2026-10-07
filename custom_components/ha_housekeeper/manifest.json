@@ -1,0 +1,12 @@
+{
+  "domain": "ha_housekeeper",
+  "name": "HA Housekeeper",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "websocket_api"],
+  "documentation": "https://github.com/roberto/HA-Housekeeping",
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

@@ -1,0 +1,49 @@
+"""Dependency-free contract tests for the installable alpha package."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).parents[1]
+COMPONENT = ROOT / "custom_components" / "ha_housekeeper"
+
+
+def _json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _leaf_paths(value: object, prefix: str = "") -> set[str]:
+    if isinstance(value, dict):
+        result: set[str] = set()
+        for key, child in value.items():
+            result |= _leaf_paths(child, f"{prefix}.{key}" if prefix else key)
+        return result
+    return {prefix}
+
+
+def test_manifest_declares_installable_custom_integration() -> None:
+    manifest = _json(COMPONENT / "manifest.json")
+    assert manifest["domain"] == "ha_housekeeper"
+    assert manifest["config_flow"] is True
+    assert manifest["single_config_entry"] is True
+    assert manifest["version"].startswith("0.1.")
+
+
+def test_german_and_english_translation_keys_match() -> None:
+    german = _json(COMPONENT / "translations" / "de.json")
+    english = _json(COMPONENT / "translations" / "en.json")
+    assert _leaf_paths(german) == _leaf_paths(english)
+
+
+def test_frontend_bundle_is_packaged() -> None:
+    bundle = COMPONENT / "frontend" / "ha-housekeeper-panel.js"
+    assert bundle.stat().st_size > 1_000
+    assert "customElements.define" in bundle.read_text(encoding="utf-8")
+
+
+def test_websocket_api_is_read_only() -> None:
+    source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    assert "ha_housekeeper/inventory" not in source  # assembled from DOMAIN
+    assert "async_remove" not in source
+    assert "async_update_entity" not in source

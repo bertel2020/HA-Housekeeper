@@ -1,0 +1,14 @@
+{
+  "title": "HA Housekeeper",
+  "config": {
+    "step": {
+      "user": {
+        "title": "HA Housekeeper einrichten",
+        "description": "Fügt das schreibgeschützte Housekeeper-Panel für Administratoren hinzu. Es werden keine Bereinigungen automatisch ausgeführt."
+      }
+    },
+    "abort": {
+      "already_configured": "HA Housekeeper ist bereits eingerichtet."
+    }
+  }
+}
