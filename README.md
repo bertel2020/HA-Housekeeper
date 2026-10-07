@@ -95,6 +95,13 @@ Automation → reagiert auf / prüft / steuert → Entity oder Gerät
 
 Jede Beziehung besitzt eine Vertrauensstufe. Explizite Registry- und Konfigurationsbeziehungen gelten als sicher; von Home Assistant zur Laufzeit ermittelte Referenzen werden gesondert gekennzeichnet.
 
+### Befunde, Export und Reparaturhinweise
+
+- Befundliste mit Begründung und Sicherheit der Diagnose; Export als **CSV** oder **JSON** (berücksichtigt den gewählten Filter)
+- Schwellwert für nicht verfügbare Entities: Unter **Konfigurieren** lässt sich einstellen, nach wie vielen Tagen (Standard 7, `0` = sofort) eine nicht verfügbare Entity als Befund gilt. Kurze Ausfälle, etwa nach einem Neustart, bleiben so unberücksichtigt. Verwaiste Entities werden immer sofort gemeldet.
+- Hinweise unter **Einstellungen → Reparaturen**: höchstens drei zusammengefasste Einträge (verwaiste Entities, lange nicht verfügbare Entities, Automationen mit fehlenden Referenzen) mit Link ins Panel. Sie sind rein informativ und bieten keine Reparatur an.
+- **Diagnosedaten** für Fehlerberichte (Integration → Diagnosedaten herunterladen) enthalten nur Zählwerte, keine Namen oder IDs.
+
 ### Sprachen
 
 Panel und Einrichtungsdialog stehen auf Deutsch und Englisch zur Verfügung. Die in Home Assistant gewählte Sprache bestimmt die Sprache des Panels.
@@ -175,6 +182,7 @@ Version 0.1 wurde lokal gegen Home Assistant 2026.2.3 getestet. Die Tests decken
 - Config Flow und vollständige Einrichtung des Config Entry
 - Inventarisierung von Registry-Einträgen und Zuständen
 - Python-Linting und -Formatierung
+- Panel-Logik (Ansichten, Filter, Export, Escaping) mit Node.js
 - Python- und Frontend-Syntax
 
 Die von Home Assistant unabhängigen Tests lassen sich so ausführen:

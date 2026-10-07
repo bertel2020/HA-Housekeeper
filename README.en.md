@@ -95,6 +95,13 @@ Automation → triggers on / checks / targets → Entity or Device
 
 Each relationship includes a confidence level. Explicit registry and configuration relationships are marked as certain; references inferred by Home Assistant at runtime are identified separately.
 
+### Findings, export, and repair hints
+
+- Findings list with reasons and diagnosis confidence; export as **CSV** or **JSON** (respects the selected filter)
+- Threshold for unavailable entities: under **Configure** you choose after how many days (default 7, `0` = immediately) an unavailable entity becomes a finding. Short outages, for example after a restart, are ignored. Orphaned entities are always reported immediately.
+- Hints under **Settings → Repairs**: at most three aggregated entries (orphaned entities, long-unavailable entities, automations with missing references) linking to the panel. They are informational only and offer no repair.
+- **Diagnostics download** for bug reports (integration → Download diagnostics) contains counts only, no names or IDs.
+
 ### Languages
 
 The panel and configuration flow are available in German and English. The active Home Assistant language determines which panel language is shown.
@@ -175,6 +182,7 @@ Version 0.1 has been tested locally against Home Assistant 2026.2.3. The test su
 - Config Flow creation and complete Config Entry setup
 - registry and state inventory scanning
 - Python linting and formatting
+- panel logic (views, filters, export, escaping) with Node.js
 - Python and frontend syntax
 
 Run the dependency-free local tests with:

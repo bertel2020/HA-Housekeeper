@@ -6,6 +6,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).parents[1]
 COMPONENT = ROOT / "custom_components" / "ha_housekeeper"
 
@@ -81,3 +83,21 @@ def test_initial_scan_uses_a_tracked_background_task() -> None:
     source = (COMPONENT / "__init__.py").read_text(encoding="utf-8")
     assert "entry.async_create_background_task" in source
     assert "hass.async_create_task(scanner.async_scan())" not in source
+
+
+def test_panel_javascript_unit_tests_pass() -> None:
+    """Run the Node-based panel tests; skipped where Node.js is unavailable."""
+    import shutil
+    import subprocess
+
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node.js not installed")
+    result = subprocess.run(
+        [node, "--test", "tests/panel.test.mjs"],
+        cwd=COMPONENT.parents[1],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
