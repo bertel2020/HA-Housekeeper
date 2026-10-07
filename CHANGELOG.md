@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 - ENTWURF
+## 0.2.0 - 2026-10-07
 
 Neu gestaltetes Panel, Befund-Export, Reparaturhinweise und schnellere Scans.
 Housekeeper arbeitet weiterhin ausschließlich lesend. Lokal gegen Home Assistant
