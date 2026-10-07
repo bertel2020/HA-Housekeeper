@@ -145,3 +145,33 @@ def test_split_details_moves_bulky_fields_out_of_the_list_payload() -> None:
     assert "attributes" not in objects[0]
     assert objects[0]["state"] == "1"
     assert "triggers" not in objects[1]
+
+
+def test_unavailable_threshold_hides_short_outages_only() -> None:
+    from datetime import UTC, datetime
+
+    now = datetime(2026, 10, 10, tzinfo=UTC)
+    entities = [
+        {
+            "object_id": "old",
+            "status": "unavailable",
+            "reason": "r",
+            "status_since": "2026-10-01T00:00:00+00:00",
+        },
+        {
+            "object_id": "new",
+            "status": "unavailable",
+            "reason": "r",
+            "status_since": "2026-10-09T00:00:00+00:00",
+        },
+        {"object_id": "none", "status": "unavailable", "reason": "r", "status_since": None},
+        {
+            "object_id": "orph",
+            "status": "orphaned",
+            "reason": "r",
+            "status_since": "2026-10-09T00:00:00+00:00",
+        },
+    ]
+    ids = lambda days: [f["object_id"] for f in _entity_findings(entities, now, days)]  # noqa: E731
+    assert ids(0) == ["old", "new", "none", "orph"]
+    assert ids(7) == ["old", "orph"]

@@ -10,5 +10,16 @@
     "abort": {
       "already_configured": "HA Housekeeper is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA Housekeeper options",
+        "description": "Entities that are unavailable only briefly (for example after a restart) are not reported. 0 reports every unavailable entity.",
+        "data": {
+          "min_unavailable_days": "Report unavailable entities after (days)"
+        }
+      }
+    }
   }
 }

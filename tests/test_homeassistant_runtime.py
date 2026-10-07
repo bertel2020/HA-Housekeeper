@@ -156,3 +156,18 @@ async def test_diagnostics_exports_only_aggregates(hass: HomeAssistant) -> None:
 
     hass.data[DOMAIN].pop("scanner")
     assert (await async_get_config_entry_diagnostics(hass, config_entry))["loaded"] is False
+
+
+async def test_options_flow_stores_threshold(hass: HomeAssistant) -> None:
+    """The unavailable threshold is editable through the options flow."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] == FlowResultType.FORM
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"min_unavailable_days": 7}
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert entry.options["min_unavailable_days"] == 7

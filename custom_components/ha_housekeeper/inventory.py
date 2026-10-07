@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -204,8 +204,24 @@ def _fallback_automation_item(state: Any) -> dict[str, Any]:
     }
 
 
-def _entity_findings(entities: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _long_enough(item: dict[str, Any], now: datetime, min_days: int) -> bool:
+    """Whether an unavailable entity has been so for at least ``min_days``.
+
+    Orphaned entities always qualify; only transient outages are filtered.
+    """
+    if min_days <= 0 or item["status"] != "unavailable":
+        return True
+    since = item.get("status_since")
+    return bool(since) and now - datetime.fromisoformat(since) >= timedelta(days=min_days)
+
+
+def _entity_findings(
+    entities: list[dict[str, Any]],
+    now: datetime | None = None,
+    min_unavailable_days: int = 0,
+) -> list[dict[str, Any]]:
     """Create findings for entities that need attention."""
+    now = now or datetime.now(UTC)
     return [
         {
             "rule_id": f"entity.{item['reason']}",
@@ -217,6 +233,7 @@ def _entity_findings(entities: list[dict[str, Any]]) -> list[dict[str, Any]]:
         }
         for item in entities
         if item["status"] in {"orphaned", "unavailable"}
+        and _long_enough(item, now, min_unavailable_days)
     ]
 
 
@@ -275,6 +292,7 @@ class InventoryScanner:
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None
         self._details: dict[str, dict[str, Any]] = {}
+        self.min_unavailable_days = 0
         self.status: dict[str, Any] = {
             "running": False,
             "phase": "idle",
@@ -382,7 +400,9 @@ class InventoryScanner:
 
         edges = _structure_edges(entities, devices, areas) + automation_edges
         objects = entities + devices + integrations + areas + floors + labels + automations
-        findings = _entity_findings(entities) + automation_findings
+        findings = (
+            _entity_findings(entities, observed_at, self.min_unavailable_days) + automation_findings
+        )
 
         self.status.update(phase="finalizing", progress=90)
 

@@ -10,5 +10,16 @@
     "abort": {
       "already_configured": "HA Housekeeper ist bereits eingerichtet."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HA-Housekeeper-Optionen",
+        "description": "Entities, die nur kurz nicht verfügbar sind (z. B. nach einem Neustart), werden nicht gemeldet. 0 meldet jede nicht verfügbare Entity.",
+        "data": {
+          "min_unavailable_days": "Nicht verfügbare Entities melden nach (Tage)"
+        }
+      }
+    }
   }
 }
