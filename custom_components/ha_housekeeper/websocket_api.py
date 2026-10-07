@@ -77,8 +77,35 @@ def websocket_status(
     connection.send_result(msg["id"], scanner.status)
 
 
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/detail",
+        vol.Required("object_type"): str,
+        vol.Required("object_id"): str,
+    }
+)
+@callback
+def websocket_detail(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Return attributes and automation structure of one inventory object."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    details = scanner.get_details(msg["object_type"], msg["object_id"])
+    if details is None:
+        connection.send_error(msg["id"], "not_found", "Object not found in the latest scan")
+        return
+    connection.send_result(msg["id"], details)
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register Housekeeper WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_inventory)
     websocket_api.async_register_command(hass, websocket_scan)
     websocket_api.async_register_command(hass, websocket_status)
+    websocket_api.async_register_command(hass, websocket_detail)

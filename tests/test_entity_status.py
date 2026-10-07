@@ -11,6 +11,7 @@ pytest.importorskip("homeassistant")
 from custom_components.ha_housekeeper.inventory import (  # noqa: E402
     _entity_findings,
     _entity_status,
+    _split_details,
     _structure_edges,
 )
 
@@ -117,3 +118,30 @@ def test_structure_edges_cover_registry_relationships() -> None:
         ("device:hub", "device:d1", "VIA_DEVICE"),
         ("floor:ground", "area:kitchen", "CONTAINS"),
     }
+
+
+def test_split_details_moves_bulky_fields_out_of_the_list_payload() -> None:
+    objects = [
+        {
+            "object_type": "entity",
+            "object_id": "sensor.a",
+            "attributes": {"unit": "W"},
+            "state": "1",
+        },
+        {
+            "object_type": "automation",
+            "object_id": "automation.b",
+            "triggers": [{"p": 1}],
+            "actions": [],
+        },
+        {"object_type": "area", "object_id": "kitchen"},
+    ]
+    details = _split_details(objects)
+
+    assert details == {
+        "entity:sensor.a": {"attributes": {"unit": "W"}},
+        "automation:automation.b": {"triggers": [{"p": 1}], "actions": []},
+    }
+    assert "attributes" not in objects[0]
+    assert objects[0]["state"] == "1"
+    assert "triggers" not in objects[1]

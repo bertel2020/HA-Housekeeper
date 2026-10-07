@@ -108,3 +108,23 @@ async def test_scanner_counts_entities_per_device(hass: HomeAssistant) -> None:
     item = next(value for value in snapshot["objects"] if value["object_id"] == device.id)
     assert item["entity_count"] == 2
     assert item["status"] == "active"
+
+
+async def test_scan_payload_omits_attributes_but_details_are_available(hass: HomeAssistant) -> None:
+    """Attributes are served on demand instead of inside the list payload."""
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="detail-test", suggested_object_id="detail_test"
+    )
+    hass.states.async_set(entry.entity_id, "7", {"unit_of_measurement": "W"})
+
+    scanner = InventoryScanner(hass)
+    await scanner.async_initialize()
+    snapshot = await scanner.async_scan()
+
+    item = next(value for value in snapshot["objects"] if value["object_id"] == entry.entity_id)
+    assert "attributes" not in item
+    assert scanner.get_details("entity", entry.entity_id) == {
+        "attributes": {"unit_of_measurement": "W"}
+    }
+    assert scanner.get_details("entity", "sensor.unknown") is None

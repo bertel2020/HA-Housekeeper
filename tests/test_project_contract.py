@@ -67,8 +67,8 @@ def test_websocket_api_is_read_only() -> None:
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
-    assert source.count("@websocket_api.websocket_command") == 3
-    assert source.count("@websocket_api.require_admin") == 3
+    assert source.count("@websocket_api.websocket_command") == 4
+    assert source.count("@websocket_api.require_admin") == 4
     assert "connection.require_admin" not in source
 
 

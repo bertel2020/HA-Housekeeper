@@ -125,6 +125,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.sort = "name";
     this.selected = null;
     this.graphSelected = null;
+    this.details = new Map();
+    this.detailLoading = false;
     this.graphQuery = "";
     this.page = 1;
     this.pageSize = 100;
@@ -161,6 +163,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (fresh) progressTimer = window.setInterval(() => this.updateScanStatus(), 250);
     try {
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
+      this.details = new Map();
     } catch (err) {
       this.error = err?.message || String(err);
     } finally {
@@ -189,6 +192,21 @@ class HAHousekeeperPanel extends HTMLElement {
       const right = this.sort === "status" ? b.status : this.sort === "type" ? b.object_type : (b.name || b.object_id);
       return String(left).localeCompare(String(right), this.lang, { numeric: true, sensitivity: "base" });
     });
+  }
+
+  async openObject(obj) {
+    this.selected = obj;
+    const key = this.objectKey(obj);
+    if (this.details.has(key)) { this.render(); return; }
+    this.detailLoading = true;
+    this.render();
+    try {
+      this.details.set(key, await this._hass.callWS({
+        type: "ha_housekeeper/detail", object_type: obj.object_type, object_id: obj.object_id,
+      }));
+    } catch (_) { this.details.set(key, {}); }
+    this.detailLoading = false;
+    if (this.selected === obj) this.render();
   }
 
   statusLabel(status) { return this.t(status); }
@@ -435,19 +453,19 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   drawer() {
-    const item = this.selected;
-    if (!item || !this.data) return "";
+    if (!this.selected || !this.data) return "";
+    const item = { ...this.selected, ...(this.details.get(this.objectKey(this.selected)) || {}) };
     const key = this.objectKey(item), incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
-    const skip = new Set(["attributes", "name", "object_id", "object_type", "status", "reason"]);
+    const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason"]);
     const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
-    const automation = item.object_type === "automation" ? `<section><h3>${this.t("automationStructure")}</h3>${["triggers", "conditions", "actions"].map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</section>` : "";
+    const automation = item.object_type === "automation" && !this.detailLoading ? `<section><h3>${this.t("automationStructure")}</h3>${["triggers", "conditions", "actions"].map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</section>` : "";
     const missingWarning = item.missing_reference_count ? `<div class="diag red"><p><strong>${this.t("missingReferences")}:</strong> ${item.missing_reference_count}</p></div>` : "";
     const diagnosis = item.reason ? `<section><h3>${this.t("diagnosis")}</h3><div class="diag ${this.tone(item.status) === "blue" ? "" : this.tone(item.status)}"><p><strong>${this.t("reason")}:</strong> ${this.esc(this.t(item.reason))}</p>${item.status_since ? `<small>${this.t("firstObservation")}: ${this.formatDate(item.status_since)}</small>` : ""}${this.diagnosisRows(item)}</div></section>` : "";
     const path = this.haPath(item);
     return `<div class="drawerback" data-action="close"></div><aside class="drawer"><div class="drawerhead"><div class="titlerow">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div>${this.pill(item.status)}<h2>${this.esc(item.name)}</h2><span class="id">${this.esc(item.object_id)}</span></div></div><button class="iconbtn" data-action="close" title="${this.t("close")}"><ha-icon icon="mdi:close"></ha-icon></button></div>
       <div class="drawerbody">${path ? `<div><button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button></div>` : ""}${diagnosis}${missingWarning}
       <section><h3>${this.t("registry")}</h3><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></section>${automation}
-      <section><h3>${this.t("dependencies")} (${incoming.length + outgoing.length})</h3><div class="code">${this.esc([...incoming.map(e => `${e.source} → ${e.relation} → ${key}${e.location ? ` @ ${e.location}` : ""}`), ...outgoing.map(e => `${key} → ${e.relation} → ${e.target}${e.location ? ` @ ${e.location}` : ""}`)].join("\n") || "—")}</div></section>${item.attributes && Object.keys(item.attributes).length ? `<section><h3>${this.t("state")}</h3><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></section>` : ""}</div></aside>`;
+      <section><h3>${this.t("dependencies")} (${incoming.length + outgoing.length})</h3><div class="code">${this.esc([...incoming.map(e => `${e.source} → ${e.relation} → ${key}${e.location ? ` @ ${e.location}` : ""}`), ...outgoing.map(e => `${key} → ${e.relation} → ${e.target}${e.location ? ` @ ${e.location}` : ""}`)].join("\n") || "—")}</div></section>${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}${item.attributes && Object.keys(item.attributes).length ? `<section><h3>${this.t("state")}</h3><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></section>` : ""}</div></aside>`;
   }
 
   bind() {
@@ -478,7 +496,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.page = 1; this.render(); };
     const sf = root.querySelector("#statusFilter"); if (sf) sf.onchange = () => { this.statusFilter = sf.value; this.page = 1; this.render(); };
     root.querySelectorAll("th[data-sort]").forEach(el => el.onclick = () => { this.sort = el.dataset.sort; this.render(); });
-    root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) { this.selected = obj; this.render(); } });
+    root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-page]").forEach(el => el.onclick = () => { this.page = Number(el.dataset.page); this.render(); });

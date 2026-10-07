@@ -253,6 +253,19 @@ def _structure_edges(
     return edges
 
 
+DETAIL_FIELDS = ("attributes", "triggers", "conditions", "actions", "references")
+
+
+def _split_details(objects: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Move bulky per-object fields out of the list payload into a detail index."""
+    details: dict[str, dict[str, Any]] = {}
+    for item in objects:
+        bulky = {name: item.pop(name) for name in DETAIL_FIELDS if name in item}
+        if bulky:
+            details[f"{item['object_type']}:{item['object_id']}"] = bulky
+    return details
+
+
 class InventoryScanner:
     """Build and cache a normalized, read-only inventory."""
 
@@ -261,6 +274,7 @@ class InventoryScanner:
         self.observations = ObservationStore(hass)
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None
+        self._details: dict[str, dict[str, Any]] = {}
         self.status: dict[str, Any] = {
             "running": False,
             "phase": "idle",
@@ -278,6 +292,7 @@ class InventoryScanner:
             self.status.update(running=True, phase="registries", progress=5, last_error=None)
             try:
                 snapshot = await self._async_build_snapshot()
+                self._details = _split_details(snapshot["objects"])
                 self._snapshot = snapshot
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
@@ -294,6 +309,19 @@ class InventoryScanner:
         if self._snapshot is None:
             return await self.async_scan()
         return self._snapshot
+
+    def get_details(self, object_type: str, object_id: str) -> dict[str, Any] | None:
+        """Return bulky fields of one object from the latest snapshot."""
+        if self._snapshot is None:
+            return None
+        key = f"{object_type}:{object_id}"
+        if key in self._details:
+            return self._details[key]
+        known = any(
+            f"{item['object_type']}:{item['object_id']}" == key
+            for item in self._snapshot["objects"]
+        )
+        return {} if known else None
 
     async def _async_build_snapshot(self) -> dict[str, Any]:
         entity_registry = er.async_get(self.hass)
@@ -314,6 +342,7 @@ class InventoryScanner:
             for entry in _registry_entries(entity_registry.entities)
         ]
         self.status.update(phase="devices", progress=30)
+        await asyncio.sleep(0)
 
         await self.observations.async_update(
             {f"entity:{item['object_id']}": item["status"] for item in entities}, observed_at
@@ -331,6 +360,7 @@ class InventoryScanner:
         integrations = [_config_entry_item(entry) for entry in config_entries]
 
         self.status.update(phase="automations", progress=60)
+        await asyncio.sleep(0)
         automations, automation_edges, automation_findings = self._automation_inventory(
             entity_registry,
             device_registry,
