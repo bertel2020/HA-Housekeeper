@@ -85,6 +85,7 @@ class StylesMixin {
       h1{font-size:calc(28px*var(--hk-fs,1));letter-spacing:-.015em}.eyebrow{font-weight:700}
       .nav.active{box-shadow:inset 3px 0 0 var(--hk-blue)}.nav{border-radius:10px}.nav em{font-weight:600}.nav.active em{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
       .panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
+      .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
       .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}

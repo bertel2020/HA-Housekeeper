@@ -145,6 +145,7 @@ def test_quarantine_lists_only_entities_still_disabled_by_the_user() -> None:
         "sensor.a"
     ]  # latest disable wins, undone/re-enabled drop out
     assert entries[0] == {
+        "object_type": "entity",
         "object_id": "sensor.a",
         "plan_id": "p2",
         "since": "2026-09-10T00:00:00+00:00",

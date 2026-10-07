@@ -78,8 +78,13 @@ class DiagnosisMixin {
     } else if (item.object_type === "config_entry") {
       const state = item.state || "not_loaded";
       if (item.disabled_by) { rows.push(this.check(t("status"), "mute", item.name, t("disabled"))); cause = t("cause_entry_off"); }
+      else if (item.source === "ignore") { rows.push(this.check(t("status"), "mute", item.name, t("ignored"))); cause = t("cause_entry_ignored"); hint = t("hint_entry_ignored"); tone = "ok"; }
       else if (state === "loaded") { rows.push(this.check(t("status"), "ok", item.name, t("cs_loaded"))); cause = t("cause_entry_ok"); }
-      else { rows.push(this.check(t("status"), tone, item.name, t(`cs_${state}`))); cause = t("cause_entry_problem", { state: t(`cs_${state}`) }); hint = t("hint_integration"); }
+      else {
+        rows.push(this.check(t("status"), tone, item.name, t(`cs_${state}`)));
+        if (item.error) rows.push(this.check(t("entryError"), tone, item.error, ""));
+        cause = t(item.error ? "cause_entry_problem_error" : "cause_entry_problem", { state: t(`cs_${state}`), error: item.error || "" }); hint = t("hint_integration");
+      }
       const helperBroken = this.data.findings.filter(f => f.rule_id === "config_entry.missing_entity" && f.object_id === item.object_id);
       helperBroken.forEach(f => rows.push(this.check(t("missing_entity"), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
       if (helperBroken.length) { cause = t("cause_helper_broken", { count: helperBroken.length }); hint = t("hint_helper_broken"); tone = "red"; }
@@ -193,11 +198,42 @@ class DiagnosisMixin {
     return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${body || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
   }
 
+  entrySourceLabel(source) {
+    const known = ["user", "import", "ignore", "system", "reauth", "reconfigure"];
+    return known.includes(source) ? this.t(`src_${source}`) : this.t("src_discovery", { source });
+  }
+
+  // Everything that says which integration an entry belongs to and where it comes from.
+  integrationCard(item) {
+    if (item.object_type !== "config_entry") return "";
+    const state = item.state || "not_loaded";
+    const path = this.haPath(item);
+    const origin = item.custom ? this.t("originCustom", { path: item.integration_dir || item.domain, version: item.integration_version ? ` · v${item.integration_version}` : "" }) : this.t("originBuiltIn");
+    const link = (href, text) => `<a href="${this.esc(href)}" target="_blank" rel="noopener noreferrer">${this.esc(text)}</a>`;
+    const rows = [
+      [this.t("integrationName"), `${this.esc(item.integration_name || item.domain)} <small>(${this.esc(item.domain)})</small>`],
+      [this.t("origin"), this.esc(origin)],
+      [this.t("entrySource"), `${this.esc(this.entrySourceLabel(item.source))} <small>(${this.esc(item.source)})</small>`],
+      [this.t("status"), `${this.esc(item.disabled_by ? this.t("disabled") : this.t(`cs_${state}`))}${item.disabled_by ? ` <small>(${this.esc(item.disabled_by)})</small>` : ""}`],
+      item.error ? [this.t("entryError"), this.esc(item.error)] : null,
+      [this.t("entryEntities"), this.formatNumber(item.entity_count ?? 0)],
+      [this.t("entryDevices"), this.formatNumber(item.device_count ?? 0)],
+      [this.t("entryId"), `<code>${this.esc(item.object_id)}</code>`],
+      item.unique_id ? [this.t("entryUniqueId"), `<code>${this.esc(item.unique_id)}</code>`] : null,
+      item.created_at ? [this.t("entryCreated"), this.esc(this.formatDate(item.created_at))] : null,
+      item.modified_at ? [this.t("entryModified"), this.esc(this.formatDate(item.modified_at))] : null,
+      path ? [this.t("entryHaPath"), `<code>${this.esc(path)}</code>`] : null,
+      item.documentation ? [this.t("entryDocs"), link(item.documentation, item.documentation)] : null,
+    ].filter(Boolean);
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("integrationCard")}</h2></div><div class="pad"><dl class="kv">${rows.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${v}</dd>`).join("")}</dl></div></section>`;
+  }
+
   detail() {
     const base = this.selected;
     const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
     const key = this.objectKey(item);
     const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
+    if (item.object_type === "config_entry") ["domain", "integration_name", "custom", "integration_dir", "integration_version", "documentation", "source", "error", "unique_id", "entity_count", "device_count", "created_at", "modified_at", "disabled_by"].forEach(k => skip.add(k));
     const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
     const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
       ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
@@ -208,7 +244,7 @@ class DiagnosisMixin {
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
       <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
-      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}
+      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.integrationCard(item)}${this.impactCard(item, key)}
         <section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>
         ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
       <div class="stack">${this.factsCard(item, key)}${this.findingsCard(key)}${this.relationsCard(key)}</div></div>`;

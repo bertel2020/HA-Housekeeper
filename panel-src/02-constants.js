@@ -4,6 +4,9 @@ const ICONS = {
   label: "mdi:label-outline", script: "mdi:script-text-outline", scene: "mdi:palette-outline", dashboard: "mdi:view-dashboard-outline",
 };
 
+const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
+const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
+
 const PREFS_KEY = "ha_housekeeper.prefs";
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" };
 const USER_DATA_KEY = "ha_housekeeper";
@@ -47,5 +50,5 @@ const NAV = [
 
 const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
-  disabled: "mute", empty: "mute", unknown: "violet", possible_duplicate: "violet", unused: "mute",
+  disabled: "mute", empty: "mute", unknown: "violet", ignored: "mute", possible_duplicate: "violet", unused: "mute",
 };

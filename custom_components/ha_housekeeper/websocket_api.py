@@ -8,12 +8,22 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
-from .cleanup import ACTION_KINDS, MAX_ACTIONS, build_plan, registry_fingerprint
+from .cleanup import (
+    ACTION_KINDS,
+    MAX_ACTIONS,
+    REFERENCE_KINDS,
+    build_plan,
+    device_fingerprint,
+    device_support,
+    registry_fingerprint,
+)
 from .cleanup_exec import CleanupError, entity_restorable
 from .const import DOMAIN, OPTION_LIMITS
 from .inventory import InventoryScanner
+from .references import preview_replacement
 
 
 def _scanner(hass: HomeAssistant) -> InventoryScanner | None:
@@ -193,6 +203,7 @@ def websocket_set_options(
                 {
                     vol.Required("kind"): vol.In(sorted(ACTION_KINDS)),
                     vol.Required("object_id"): str,
+                    vol.Optional("target"): str,
                 }
             ],
             vol.Length(min=1, max=MAX_ACTIONS),
@@ -224,7 +235,28 @@ async def websocket_plan_create(
     def restorable(object_id: str) -> bool | None:
         return entity_restorable(hass, registry.async_get(object_id))
 
-    plan = build_plan(snapshot, msg["actions"], datetime.now(UTC), fingerprint, restorable)
+    devices = dr.async_get(hass)
+
+    def device_info(device_id: str) -> tuple[str | None, dict[str, Any]]:
+        entry = devices.async_get(device_id)
+        return (device_fingerprint(entry), device_support(hass, entry)) if entry else (None, {})
+
+    reference_data = {}
+    for action in msg["actions"]:
+        if action["kind"] in REFERENCE_KINDS and action.get("target"):
+            pair = (action["object_id"], action["target"])
+            if pair not in reference_data and pair[0] != pair[1]:
+                reference_data[pair] = await preview_replacement(hass, snapshot, *pair)
+
+    plan = build_plan(
+        snapshot,
+        msg["actions"],
+        datetime.now(UTC),
+        fingerprint,
+        restorable,
+        device_info=device_info,
+        reference_data=reference_data,
+    )
     scanner.journal.add(plan)
     connection.send_result(msg["id"], plan)
 

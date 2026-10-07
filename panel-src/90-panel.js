@@ -28,6 +28,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.cleanupKind = "disable_entity";
+    this.replOld = ""; this.replNew = "";
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -312,14 +313,15 @@ class HAHousekeeperPanel extends HTMLElement {
     if (word) word.oninput = () => {
       this.confirmWord = word.value;
       const run = this.shadowRoot.querySelector("[data-plan-execute]");
-      const removalPlan = (this.plan?.actions || []).some(a => a.kind === "remove_entity" && a.executable);
-      if (run) run.disabled = word.value.trim().toUpperCase() !== this.t(removalPlan ? "confirmWordRemove" : "confirmWord");
+      if (run) run.disabled = word.value.trim().toUpperCase() !== this.planWord(this.plan);
     };
     root.querySelector("[data-plan-execute]")?.addEventListener("click", () => this.executePlan());
     root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());
     root.querySelector("[data-undo-all]")?.addEventListener("click", () => this.undoPlan());
     root.querySelectorAll("[data-undo-one]").forEach(el => el.onclick = () => this.undoPlan([el.dataset.undoOne]));
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
+    root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
+    root.querySelector("[data-repl-new]")?.addEventListener("change", e => { this.replNew = e.target.value.trim(); this.render(); });
     root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => { this.plan = (this.journal || []).find(p => p.plan_id === el.dataset.planOpen) || null; this.render(); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => this.deletePlan(el.dataset.planDelete));

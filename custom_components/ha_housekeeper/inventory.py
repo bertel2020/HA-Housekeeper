@@ -15,14 +15,14 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import floor_registry as fr
 from homeassistant.helpers import label_registry as lr
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.loader import IntegrationNotFound, async_get_integration
+from homeassistant.loader import IntegrationNotFound, async_get_integration, async_get_integrations
 
 from .automation_analysis import (
     missing_references,
     summarize_automation_config,
     summarize_script_config,
 )
-from .cleanup import JournalStore, quarantine_entries
+from .cleanup import JournalStore, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
 from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
@@ -216,17 +216,42 @@ def _label_item(label: Any) -> dict[str, Any]:
     }
 
 
-def _config_entry_item(entry: Any) -> dict[str, Any]:
+def _config_entry_item(
+    entry: Any,
+    integration: Any = None,
+    entity_count: int = 0,
+    device_count: int = 0,
+) -> dict[str, Any]:
+    """Normalize one config entry; ``integration`` is the loader's description of its domain."""
     state = _enum(entry.state)
-    status = "disabled" if entry.disabled_by else "active" if state == "loaded" else "problem"
+    if entry.disabled_by:
+        status = "disabled"
+    elif entry.source == "ignore":
+        status = "ignored"  # a discovery the user dismissed: never set up, so not a problem
+    else:
+        status = "active" if state == "loaded" else "problem"
+    custom = integration is not None and not getattr(integration, "is_built_in", True)
     return {
         "object_type": "config_entry",
         "object_id": entry.entry_id,
         "name": entry.title,
         "domain": entry.domain,
+        "integration_name": getattr(integration, "name", None),
+        "custom": custom,
+        "integration_dir": f"custom_components/{entry.domain}" if custom else None,
+        "integration_version": str(integration.version)
+        if custom and getattr(integration, "version", None)
+        else None,
+        "documentation": getattr(integration, "documentation", None),
         "source": entry.source,
         "state": state,
+        "error": getattr(entry, "reason", None),
+        "unique_id": entry.unique_id,
         "disabled_by": _enum(entry.disabled_by),
+        "entity_count": entity_count,
+        "device_count": device_count,
+        "created_at": _iso(getattr(entry, "created_at", None)),
+        "modified_at": _iso(getattr(entry, "modified_at", None)),
         "status": status,
     }
 
@@ -469,7 +494,24 @@ class InventoryScanner:
         areas = [_area_item(area) for area in _registry_entries(area_registry.areas)]
         floors = [_floor_item(floor) for floor in _registry_entries(floor_registry.floors)]
         labels = [_label_item(label) for label in _registry_entries(label_registry.labels)]
-        integrations = [_config_entry_item(entry) for entry in config_entries]
+        entities_per_entry = Counter(item["config_entry_id"] for item in entities)
+        devices_per_entry = Counter(
+            entry_id for device in device_entries for entry_id in _device_config_entry_ids(device)
+        )
+        described = await async_get_integrations(
+            self.hass, {entry.domain for entry in config_entries}
+        )
+        integrations = [
+            _config_entry_item(
+                entry,
+                described.get(entry.domain)
+                if not isinstance(described.get(entry.domain), BaseException)
+                else None,
+                entities_per_entry[entry.entry_id],
+                devices_per_entry[entry.entry_id],
+            )
+            for entry in config_entries
+        ]
 
         self.status.update(phase="automations", progress=60)
         await asyncio.sleep(0)
@@ -530,7 +572,18 @@ class InventoryScanner:
             + group_findings
         )
 
-        quarantine = quarantine_entries(self.journal.plans, entities)
+        quarantine = quarantine_entries(self.journal.plans, [*entities, *devices])
+        recurring = recurring_devices(
+            self.journal.plans,
+            [
+                (
+                    device.id,
+                    device.name_by_user or device.name or device.id,
+                    {*map(tuple, device.identifiers), *map(tuple, device.connections)},
+                )
+                for device in device_entries
+            ],
+        )
         orphaned_statistics = orphan_statistics(
             statistics,
             existing_objects["entity"],
@@ -556,6 +609,7 @@ class InventoryScanner:
                 "recorder_available": self._recorder_available,
                 "orphaned_statistics": len(orphaned_statistics),
                 "quarantined": len(quarantine),
+                "recurring_devices": len(recurring),
                 "quarantine_days": QUARANTINE_DAYS,
                 "ha_version": HA_VERSION,
                 "scan_interval_hours": self.scan_interval_hours,
@@ -571,6 +625,7 @@ class InventoryScanner:
             "findings": findings,
             "orphaned_statistics": orphaned_statistics,
             "quarantine": quarantine,
+            "recurring_devices": recurring,
         }
 
     def _ignored_by(self, finding: dict[str, Any], registry: Any) -> str | None:

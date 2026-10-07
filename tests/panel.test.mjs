@@ -921,3 +921,107 @@ test("without quarantined entities the card is absent and the overview row is ze
 test("the served panel file is built from panel-src and up to date", () => {
   assert.equal(fs.readFileSync(SOURCE, "utf8"), buildPanel(), "run: node scripts/build_panel.mjs");
 });
+
+const stepCData = () => {
+  const ago = n => new Date(Date.now() - n * 864e5 - 3600e3).toISOString();
+  const entity = (id, status, device_id) => ({ object_type: "entity", object_id: id, name: id, status, device_id });
+  const device = (id, name, status = "active", extra = {}) => ({ object_type: "device", object_id: id, name, status, manufacturer: "Acme", model: "X1", ...extra });
+  return { ago, data: { ...DATA, meta: { ...DATA.meta, quarantine_days: 14 }, findings: [], edges: [{ source: "automation:automation.heat", target: "entity:sensor.old", relation: "TRIGGERS_ON", confidence: "certain" }],
+    objects: [device("d-dead", "Dead lamp"), device("d-live", "Live lamp"), device("d-q", "Quarantined plug", "disabled"), entity("light.dead", "orphaned", "d-dead"), entity("light.live", "active", "d-live"),
+      entity("sensor.old", "unavailable"), entity("sensor.new", "active")],
+    quarantine: [{ object_type: "device", object_id: "d-q", plan_id: "p", since: ago(20) }],
+    recurring_devices: [{ device_id: "d-dead", name: "Dead lamp", forgotten_at: ago(3), plan_id: "p", domains: ["hue"] }] } };
+};
+
+test("device candidates are the devices without working entities; removal lists quarantined devices", () => {
+  const { el, shadow } = panel("en");
+  const { data } = stepCData();
+  el.data = data; el.journal = []; el.view = "cleanup";
+  el.cleanupKind = "disable_device";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Candidates (1)") && html.includes('data-sel="d-dead"') && !html.includes('data-sel="d-live"') && !html.includes('data-sel="d-q"'));
+  assert.ok(html.includes("1 entities") && html.includes('data-object="device:d-dead"'));
+  for (const kind of ["remove_device", "forget_device"]) {
+    el.cleanupKind = kind; el.lv.cleanup = undefined; el.render();
+    html = shadow.innerHTML;
+    assert.ok(html.includes('data-sel="d-q"') && html.includes("Devices in quarantine") && !html.includes('data-sel="d-dead"'), kind);
+  }
+  for (const value of ["disable_device", "remove_device", "forget_device", "replace_references"]) assert.ok(html.includes(`value="${value}"`));
+});
+
+test("quarantine and returning devices have their own rows", () => {
+  const { el, shadow } = panel("en");
+  const { data } = stepCData();
+  el.data = data; el.journal = []; el.view = "cleanup";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Quarantine (1)") && html.includes("Quarantined plug") && html.includes("Acme X1") && html.includes('data-object="device:d-q"'));
+  assert.ok(html.includes("Returning devices (1)") && html.includes("Dead lamp") && html.includes("integration: hue"));
+});
+
+test("the replace assistant previews sources and sends the new entity with the plan", async () => {
+  const { el, shadow } = panel("en");
+  const { data } = stepCData();
+  el.data = data; el.journal = []; el.view = "cleanup"; el.cleanupKind = "replace_references";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Replace references") && html.includes('<option value="sensor.old">') && html.includes("data-repl-old"));
+  assert.ok(/data-plan-create\s+disabled/.test(html));
+  el.replOld = "sensor.old"; el.replNew = "sensor.new";
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes('<option value="sensor.new">') && !html.includes('<option value="light.live">') && !/data-plan-create\s+disabled/.test(html));
+  const sent = [];
+  const plan = { plan_id: "r1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
+    actions: [{ kind: "replace_references", object_type: "entity", object_id: "sensor.old", target: "sensor.new", name: "sensor.old", verdict: "review", executable: true, reasons: ["config_rewrite", "source_manual"], used_by: [],
+      sources: [{ source: "automation:automation.heat", type: "automation", name: "Heating", writable: true, reason: null, change_count: 2, changes: [{ location: "trigger/0/entity_id", from: "sensor.old", to: "sensor.new" }], manual: ["action/0/data/message"] },
+        { source: "dashboard:yamlboard", type: "dashboard", name: "yamlboard", writable: false, reason: "yaml_mode", change_count: 0, changes: [], manual: [] }] }] };
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return plan; } };
+  await el.createPlan();
+  assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/plan_create", actions: [{ kind: "replace_references", object_id: "sensor.old", target: "sensor.new" }] }));
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("sensor.old → sensor.new") && html.includes("Heating") && html.includes("2 changes") && html.includes("trigger/0/entity_id: sensor.old → sensor.new"));
+  assert.ok(html.includes("check by hand: 1 templates") && html.includes("YAML dashboard") && html.includes("Rewrites configuration"));
+  assert.equal(el.planWord(plan), "REPLACE");
+  assert.ok(el.confirmSummary(plan, 1).startsWith("In 2 entity references"));
+});
+
+test("removing a device asks for the removal word and says that its entities go with it", () => {
+  const { el } = panel("en");
+  const plan = { actions: [{ kind: "forget_device", executable: true }, { kind: "disable_device", executable: true }] };
+  assert.equal(el.planWord(plan), "REMOVE");
+  assert.ok(el.confirmSummary(plan, 2).includes("2 devices will be removed together with their entities"));
+  const quarantine = { actions: [{ kind: "disable_device", executable: true }] };
+  assert.equal(el.planWord(quarantine), "DISABLE");
+  assert.ok(el.confirmSummary(quarantine, 3).startsWith("3 devices will be disabled"));
+  assert.equal(panel("de").el.planWord({ actions: [{ kind: "replace_references", executable: true }] }), "ERSETZEN");
+});
+
+test("an integration page says which integration it is, where it comes from and how it was set up", () => {
+  const { el, shadow } = panel("de");
+  const entry = { object_type: "config_entry", object_id: "01K72", name: "Bridge", domain: "hue", integration_name: "Philips Hue", custom: true, integration_dir: "custom_components/hue", integration_version: "1.2.3",
+    documentation: "https://example.org/hue", source: "zeroconf", state: "setup_error", error: "Cannot connect", unique_id: "abc", entity_count: 4, device_count: 2, created_at: "2026-09-01T10:00:00+00:00", status: "problem" };
+  el.data = { ...DATA, objects: [entry], edges: [], findings: [] };
+  el.selected = entry; el.view = "detail"; el.details = new Map();
+  el.render();
+  const html = shadow.innerHTML;
+  for (const text of ["Philips Hue", "(hue)", "custom_components/hue · v1.2.3", "Automatisch entdeckt (zeroconf)", "Cannot connect", "01K72", "abc", "/config/integrations/integration/hue", 'href="https://example.org/hue"']) assert.ok(html.includes(text), text);
+  assert.ok(html.includes("Meldung: Cannot connect"));
+});
+
+test("an ignored discovery is explained and not shown as a problem", () => {
+  const { el, shadow } = panel("de");
+  const entry = { object_type: "config_entry", object_id: "01K73", name: "FBH Diele", domain: "battery_notes", source: "ignore", state: "not_loaded", status: "ignored", custom: false, entity_count: 0, device_count: 0 };
+  el.data = { ...DATA, objects: [entry], edges: [], findings: [] };
+  el.selected = entry; el.view = "detail"; el.details = new Map();
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Ignorierte Entdeckung") && html.includes("kein Fehler") && html.includes("Hinzufügen"));
+  assert.ok(html.includes(">Ignoriert<") && !html.includes("Fehler beim Einrichten"));
+  assert.equal(el.tone("ignored"), "mute");
+  el.data = { ...DATA, objects: [entry], edges: [], findings: [] };
+  el.selected = null; el.view = "overview"; el.render();
+  assert.ok(!shadow.innerHTML.includes("FBH Diele"));
+});
