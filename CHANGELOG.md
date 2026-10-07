@@ -1,59 +1,87 @@
-# Changelog / Änderungsprotokoll
+# Changelog
 
-All notable changes are documented in English and German.
+## 0.1.0 - 2026-10-07
 
-Alle wesentlichen Änderungen werden auf Englisch und Deutsch dokumentiert.
+Erste Version. Housekeeper arbeitet ausschließlich lesend und verändert
+keine Home-Assistant-Objekte. Lokal gegen Home Assistant 2026.2.3 getestet.
 
-## 0.1.0 — 2026-10-07
+### Neu
 
-Validated locally against Home Assistant 2026.2.3.
+- **Housekeeper-Panel** in der Seitenleiste, nur für Administratoren, auf
+  Deutsch und Englisch.
+- **Inventar** von Entities, Geräten, Integrationen, Bereichen, Etagen, Labels
+  und Automationen mit Suche, Filtern, Sortierung und Detailansicht.
+- **Diagnose** mit Begründung: aktiv, nicht verfügbar, unbekannt, deaktiviert
+  (Entity, Gerät oder Integration) sowie verwaist (Gerät, Konfigurationseintrag
+  oder Zustand fehlt).
+- **Beobachtet seit**: Housekeeper speichert, seit wann eine Klassifikation
+  besteht. Der Zeitpunkt gilt ab der ersten Beobachtung durch Housekeeper, nicht
+  als tatsächliches Ausfalldatum.
+- **Automationsanalyse** mit Triggern, Bedingungen, Aktionen und Blueprints.
+  Fehlende Entity-, Geräte- und Bereichsreferenzen werden erkannt, samt
+  Fundstelle in der Konfiguration, soweit verfügbar.
+- **Abhängigkeitsansicht** zwischen Integration, Gerät, Entity, Bereich und
+  Automation, mit Vertrauensstufe je Beziehung.
+- **Befundtabelle**, die Diagnosen mit den betroffenen Entities und Automationen
+  verknüpft.
+- **Scanstatus**; bei einem fehlgeschlagenen Scan zeigt das Panel eine
+  verständliche Fehlermeldung.
 
-Lokal gegen Home Assistant 2026.2.3 validiert.
+### Behoben
 
-### English
+- Die Administrator-Prüfung der WebSocket-Befehle funktioniert auf aktuellen
+  Home-Assistant-Versionen.
+- Die Registries aktueller Home-Assistant-Versionen werden ohne veraltete
+  Zugriffe gelesen.
 
-- Add a UI-configurable, single-entry Home Assistant custom integration.
-- Add an administrator-only Housekeeper sidebar panel in German and English.
-- Inventory entities, devices, config entries, areas, and automations.
-- Inspect loaded automation structures including triggers, conditions, actions, blueprints, and runtime-extracted references.
-- Detect missing entity, device, and area references in automations and retain their configuration locations when available.
-- Distinguish active, unavailable, unknown, disabled, missing-device, missing-config-entry, and missing-state cases.
-- Persist the first Housekeeper observation of the current entity classification.
-- Add filtering, search, sorting, object details, and a registry and automation dependency graph.
-- Add scan status reporting while keeping all backend endpoints strictly read-only.
-- Add local contract tests, Home Assistant runtime tests, Ruff checks, HACS validation, and Hassfest validation.
-- Add a visible findings table that links diagnoses to affected entity and automation details.
-- Replace the short project note with complete English and German README documentation and reciprocal language links.
-- Fix WebSocket authorization on current Home Assistant releases by using the supported `require_admin` command decorator.
-- Support the read-only registry collection API introduced by current Home Assistant releases and the single-owner device model without deprecated accessors.
-- Return an actionable `scan_failed` message to the panel and track the initial background scan so failures are logged deliberately instead of as unhandled tasks.
-
-### Deutsch
-
-- Über die Benutzeroberfläche konfigurierbare Home-Assistant-Custom-Integration mit genau einem Konfigurationseintrag hinzugefügt.
-- Administrator-Panel in der Seitenleiste auf Deutsch und Englisch hinzugefügt.
-- Inventarisierung von Entities, Geräten, Konfigurationseinträgen, Bereichen und Automationen umgesetzt.
-- Geladene Automationsstrukturen einschließlich Triggern, Bedingungen, Aktionen, Blueprints und durch Home Assistant ermittelten Referenzen werden analysiert.
-- Fehlende Entity-, Geräte- und Bereichsreferenzen in Automationen werden erkannt; soweit verfügbar wird die genaue Fundstelle gespeichert.
-- Aktive, nicht verfügbare, unbekannte, deaktivierte sowie durch fehlende Geräte, Konfigurationseinträge oder Zustände verursachte Fälle werden unterschieden.
-- Der Zeitpunkt des ersten Housekeeper-Nachweises der aktuellen Entity-Klassifikation wird dauerhaft gespeichert.
-- Filter, Suche, Sortierung, Objektdetails sowie ein Registry- und Automations-Abhängigkeitsgraph wurden ergänzt.
-- Scanstatus-Abfrage ergänzt; alle Backend-Endpunkte bleiben strikt schreibgeschützt.
-- Lokale Vertragstests, Home-Assistant-Laufzeittests, Ruff-Prüfung, HACS-Validierung und Hassfest-Validierung ergänzt.
-- Sichtbare Befundtabelle ergänzt, die Diagnosen mit den betroffenen Entity- und Automationsdetails verknüpft.
-- Die kurze Projektbeschreibung durch vollständige englische und deutsche README-Dokumentation mit gegenseitigen Sprachverweisen ersetzt.
-- WebSocket-Autorisierung auf aktuellen Home-Assistant-Versionen durch Verwendung des unterstützten `require_admin`-Decorators korrigiert.
-- Die Read-only-Registry-Collections aktueller Home-Assistant-Versionen und das Geräte-Modell mit genau einem Besitzer werden ohne veraltete Zugriffe unterstützt.
-- Das Panel erhält bei Scanfehlern eine aussagekräftige `scan_failed`-Meldung; der initiale Hintergrundscan wird nachverfolgt, sodass Fehler gezielt statt als unbehandelte Tasks protokolliert werden.
-
-## 0.1.0-alpha.1 — 2026-10-07
+---
 
 ### English
 
-- Created the first installable read-only explorer skeleton.
-- Added the initial inventory, detail drawer, dependency view, translations, tests, and MIT license.
+First release. Housekeeper is strictly read-only and does not modify any Home
+Assistant objects. Tested locally against Home Assistant 2026.2.3.
 
-### Deutsch
+#### New
 
-- Erstes installierbares Gerüst des schreibgeschützten Explorers erstellt.
-- Erstes Inventar, Detailansicht, Abhängigkeitsansicht, Übersetzungen, Tests und MIT-Lizenz hinzugefügt.
+- **Housekeeper panel** in the sidebar, administrators only, in German and
+  English.
+- **Inventory** of entities, devices, integrations, areas, floors, labels, and
+  automations with search, filters, sorting, and a detail view.
+- **Diagnostics** with a reason: active, unavailable, unknown, disabled (entity,
+  device, or integration), and orphaned (device, config entry, or state
+  missing).
+- **Observed since**: Housekeeper stores since when a classification has
+  existed. The time counts from Housekeeper's first observation, not from the
+  actual failure date.
+- **Automation analysis** with triggers, conditions, actions, and blueprints.
+  Missing entity, device, and area references are detected, including their
+  location in the configuration where available.
+- **Dependency view** between integration, device, entity, area, and
+  automation, with a confidence level per relationship.
+- **Findings table** linking diagnoses to the affected entities and
+  automations.
+- **Scan status**; if a scan fails, the panel shows an understandable error
+  message.
+
+#### Fixed
+
+- The administrator check of the WebSocket commands works on current Home
+  Assistant releases.
+- Registries of current Home Assistant releases are read without deprecated
+  accessors.
+
+## 0.1.0-alpha.1 - 2026-10-07
+
+### Neu
+
+- Erstes installierbares Gerüst des Explorers mit Inventar, Detailansicht und
+  Abhängigkeitsansicht.
+
+---
+
+### English
+
+#### New
+
+- First installable skeleton of the explorer with inventory, detail view, and
+  dependency view.
