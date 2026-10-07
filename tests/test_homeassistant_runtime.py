@@ -447,3 +447,111 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
     scanner.set_finding_ignored(finding["key"], True)
     await hass.async_block_till_done()
     assert hass.states.get("sensor.ha_housekeeper_findings").state == "0"
+
+
+async def _ws_setup(hass: HomeAssistant, hass_ws_client):
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.ha_housekeeper import async_setup
+
+    assert await async_setup(hass, {})
+    scanner = InventoryScanner(hass)
+    hass.data[DOMAIN]["scanner"] = scanner
+    await scanner.async_initialize()
+    assert await async_setup_component(hass, "websocket_api", {})
+    return scanner, await hass_ws_client(hass)
+
+
+async def test_cleanup_plan_is_a_dry_run_recorded_in_the_journal(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """A plan judges candidates, is journaled, and changes nothing in Home Assistant."""
+    registry = er.async_get(hass)
+    orphan = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="p-1", suggested_object_id="old_sensor"
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/plan_create",
+            "actions": [{"kind": "remove_entity", "object_id": orphan.entity_id}],
+        }
+    )
+    plan = (await client.receive_json())["result"]
+    assert plan["executed"] is False and plan["status"] == "dry_run"
+    assert plan["actions"][0]["verdict"] == "ok"
+    assert registry.async_get(orphan.entity_id) is not None  # nothing was removed
+
+    await client.send_json_auto_id({"type": "ha_housekeeper/plan_list"})
+    assert (await client.receive_json())["result"]["plans"][0]["plan_id"] == plan["plan_id"]
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/plan_delete", "plan_id": plan["plan_id"]}
+    )
+    assert (await client.receive_json())["result"] == {"removed": True}
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/plan_delete", "plan_id": plan["plan_id"]}
+    )
+    assert (await client.receive_json())["success"] is False
+
+
+async def test_options_can_be_changed_from_the_panel(hass: HomeAssistant, hass_ws_client) -> None:
+    """The panel command validates ranges and stores the options on the entry."""
+    from unittest.mock import patch
+
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain=DOMAIN, data={}, options={"min_unavailable_days": 7})
+    entry.add_to_hass(hass)
+    _, client = await _ws_setup(hass, hass_ws_client)
+    with patch.object(hass.config_entries, "async_schedule_reload"):
+        await client.send_json_auto_id(
+            {"type": "ha_housekeeper/set_options", "scan_interval_hours": 6}
+        )
+        result = await client.receive_json()
+    assert result["success"] and result["result"]["options"]["scan_interval_hours"] == 6
+    assert entry.options["scan_interval_hours"] == 6 and entry.options["min_unavailable_days"] == 7
+
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/set_options", "low_battery_percent": 500}
+    )
+    assert (await client.receive_json())["success"] is False
+    await client.send_json_auto_id({"type": "ha_housekeeper/set_options"})
+    assert (await client.receive_json())["success"] is False
+
+
+async def test_energy_dashboard_counts_as_a_user_of_its_entities(hass: HomeAssistant) -> None:
+    """Entities used by the Energy dashboard show up as used and are never cleanup-safe."""
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock, patch
+
+    hass.config.components.add("energy")
+    hass.states.async_set("sensor.grid", "5")
+    prefs = {
+        "energy_sources": [{"type": "grid", "flow_from": [{"stat_energy_from": "sensor.grid"}]}],
+        "device_consumption": [{"stat_consumption": "sensor.gone"}],
+    }
+    manager = SimpleNamespace(data=prefs)
+    with patch(
+        "homeassistant.components.energy.data.async_get_manager", AsyncMock(return_value=manager)
+    ):
+        snapshot = await InventoryScanner(hass).async_scan()
+
+    energy = next(o for o in snapshot["objects"] if o["object_id"] == "energy")
+    assert energy["object_type"] == "dashboard" and energy["entity_count"] == 2
+    assert {"source": "dashboard:energy", "target": "entity:sensor.grid"}.items() <= next(
+        e for e in snapshot["edges"] if e["target"] == "entity:sensor.grid"
+    ).items()
+
+
+async def test_statistics_flag_is_false_without_a_recorder(hass: HomeAssistant) -> None:
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="s-1", suggested_object_id="plain"
+    )
+    snapshot = await InventoryScanner(hass).async_scan()
+    assert snapshot["meta"]["recorder_available"] is False
+    assert all(
+        o["has_statistics"] is False for o in snapshot["objects"] if o["object_type"] == "entity"
+    )

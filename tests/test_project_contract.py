@@ -67,10 +67,18 @@ def test_websocket_api_is_read_only() -> None:
     assert "async_update_entity" not in source
 
 
+def test_cleanup_plans_never_change_home_assistant() -> None:
+    """Dry run and journal only: no registry or config mutation anywhere in the planner."""
+    source = (COMPONENT / "cleanup.py").read_text(encoding="utf-8")
+    for forbidden in ("async_remove", "async_update_entity", "async_update_device", "services"):
+        assert forbidden not in source
+    assert "executed" in source
+
+
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
-    assert source.count("@websocket_api.websocket_command") == 6
-    assert source.count("@websocket_api.require_admin") == 6
+    assert source.count("@websocket_api.websocket_command") == 10
+    assert source.count("@websocket_api.require_admin") == 10
     assert "connection.require_admin" not in source
 
 

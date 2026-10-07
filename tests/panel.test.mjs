@@ -567,7 +567,7 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
   const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope" }) }) }).el;
-  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", pageSize: 20, startView: "overview" }));
+  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" }));
 });
 
 test("automatic mode follows the Home Assistant theme for the extra schemes", () => {
@@ -608,4 +608,96 @@ test("schemes also set the status colors", () => {
 test("the former Zeitarchiv scheme name is migrated to Housekeeper", () => {
   const { el } = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ scheme: "zeitarchiv" }) }) });
   assert.equal(el.prefs.scheme, "housekeeper");
+});
+
+test("compact density and reduced motion change the generated CSS", () => {
+  const { el } = panel("en");
+  assert.ok(!el.themeCss().includes(".row{padding-top:6px") && el.themeCss().includes("@media(prefers-reduced-motion:reduce)"));
+  el.setPref("density", "compact");
+  el.setPref("motion", "reduced");
+  const css = el.themeCss();
+  assert.ok(css.includes(".row{padding-top:6px") && css.includes("animation:none!important") && !css.includes("@media(prefers-reduced-motion"));
+  el.setPref("density", "wide");
+  assert.equal(el.sanitizePrefs({ density: "wide", motion: "off" }).density, "normal");
+});
+
+test("preferences sync with the Home Assistant user profile", async () => {
+  const calls = [];
+  const stored = { size: "large", mode: "dark", scheme: "modern", density: "compact", motion: "reduced", pageSize: 50, startView: "batteries" };
+  const { el } = panel("en", { localStorage: fakeStorage() });
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "frontend/get_user_data" ? { value: stored } : null; } };
+  await el.loadUserPrefs();
+  assert.equal(el.prefs.size, "large");
+  assert.equal(el.prefs.scheme, "modern");
+  assert.equal(el.pageSize, 50);
+  el.setPref("density", "normal");
+  const write = calls.find(c => c.type === "frontend/set_user_data");
+  assert.equal(write.key, "ha_housekeeper");
+  assert.equal(write.value.density, "normal");
+  // a failing or empty profile leaves the local preferences alone
+  const { el: other } = panel("en", { localStorage: fakeStorage() });
+  other._hass = { language: "en", callWS: async () => { throw new Error("nope"); } };
+  await other.loadUserPrefs();
+  assert.equal(other.prefs.size, "normal");
+});
+
+test("scan settings are validated and sent to the options command", async () => {
+  const { el, shadow } = panel("en");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return { options: {} }; } };
+  el.data = { ...DATA, meta: { ...DATA.meta, min_unavailable_days: 7, unused_automation_days: 90, scan_interval_hours: 24, low_battery_percent: 20 } };
+  el.view = "settings";
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-opt="scan_interval_hours"') && shadow.innerHTML.includes('value="24"'));
+  const input = (key, value) => ({ dataset: { opt: key }, value });
+  el.shadowRoot.querySelectorAll = selector => (selector === "[data-opt]" ? [input("scan_interval_hours", "6"), input("low_battery_percent", "500")] : []);
+  await el.saveOptions();
+  assert.equal(sent.length, 0);
+  assert.ok(el.optionsMessage.includes("allowed range"));
+  el.shadowRoot.querySelectorAll = selector => (selector === "[data-opt]" ? [input("scan_interval_hours", "6"), input("low_battery_percent", "15")] : []);
+  await el.saveOptions();
+  assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/set_options", scan_interval_hours: 6, low_battery_percent: 15 }));
+  assert.ok(el.optionsMessage.includes("Saved"));
+});
+
+test("cleanup view lists candidates, creates a dry-run plan and shows the verdicts", async () => {
+  const { el, shadow } = panel("en");
+  const ent = (id, status) => ({ object_type: "entity", object_id: id, name: id, status, platform: "x" });
+  el.data = { ...DATA, objects: [ent("sensor.old", "orphaned"), ent("sensor.used", "orphaned"), ent("light.fine", "active")], edges: [],
+    findings: [
+      { rule_id: "entity.state_missing", object_id: "sensor.old", classification: "orphaned", confidence: 0.9, ignored: false },
+      { rule_id: "entity.state_missing", object_id: "sensor.used", classification: "orphaned", confidence: 0.9, ignored: false },
+      { rule_id: "automation.missing_entity", object_id: "automation.a", classification: "broken_reference", confidence: 0.9, ignored: false },
+    ] };
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => {
+    calls.push(msg);
+    if (msg.type === "ha_housekeeper/plan_list") return { plans: [] };
+    return { plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 0, blocked: 1, uses: 1, statistics: 0 },
+      actions: [{ kind: "remove_entity", object_id: "sensor.old", name: "Old", verdict: "ok", reasons: [], used_by: [] },
+        { kind: "remove_entity", object_id: "sensor.used", name: "Used", verdict: "blocked", reasons: ["used_certain"], used_by: [{ source: "automation:automation.a", relation: "TARGETS", confidence: "certain" }] }] };
+  } };
+  assert.equal(el.cleanupCandidates().length, 2); // broken references are not entity candidates
+  el.view = "cleanup";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Candidates (2)") && shadow.innerHTML.includes("changes nothing") && shadow.innerHTML.includes("disabled"));
+  el.cleanupSel = new Set(["sensor.old", "sensor.used"]);
+  await el.createPlan();
+  const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
+  assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "remove_entity", object_id: "sensor.old" }, { kind: "remove_entity", object_id: "sensor.used" }]));
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("2 checked: 1 with no known use, 0 to review, 1 blocked.") && html.includes("Blocked") && html.includes("Definitely in use"));
+  assert.ok(html.includes('data-plan-open="p1"')); // journaled
+  await el.deletePlan("p1");
+  assert.equal(el.plan, null);
+});
+
+test("entities with long-term statistics get a note and a fact", () => {
+  const { el, shadow } = panel("en");
+  const item = { object_type: "entity", object_id: "sensor.energy", name: "Energy", status: "orphaned", has_statistics: true };
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [item], edges: [], findings: [] };
+  el.openObject(item);
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Long-term statistics") && shadow.innerHTML.includes("long-term statistics in the recorder"));
 });

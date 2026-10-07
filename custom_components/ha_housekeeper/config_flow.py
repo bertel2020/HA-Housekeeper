@@ -19,6 +19,7 @@ from .const import (
     DEFAULT_UNUSED_AUTOMATION_DAYS,
     DOMAIN,
     NAME,
+    OPTION_LIMITS,
 )
 
 
@@ -31,7 +32,8 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
             return self.async_create_entry(data=user_input)
         options = self.config_entry.options
 
-        def field(key: str, default: int, maximum: int, minimum: int = 0) -> tuple[Any, Any]:
+        def field(key: str, default: int) -> tuple[Any, Any]:
+            minimum, maximum = OPTION_LIMITS[key]
             return (
                 vol.Required(key, default=options.get(key, default)),
                 vol.All(vol.Coerce(int), vol.Range(min=minimum, max=maximum)),
@@ -40,10 +42,10 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
         schema = vol.Schema(
             dict(
                 [
-                    field(CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS, 365),
-                    field(CONF_UNUSED_AUTOMATION_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS, 3650),
-                    field(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS, 720),
-                    field(CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT, 100, 1),
+                    field(CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS),
+                    field(CONF_UNUSED_AUTOMATION_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS),
+                    field(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS),
+                    field(CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT),
                 ]
             )
         )

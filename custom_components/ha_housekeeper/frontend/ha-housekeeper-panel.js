@@ -49,7 +49,7 @@ const TEXT = {
     impactCertain: "Nicht sicher entfernbar", impactCertainText: "{count} Automation(en), Skript(e), Szene(n) oder Dashboard(s) verweisen sicher auf dieses Objekt und würden ins Leere laufen.",
     impactProbable: "Vorher prüfen", impactProbableText: "{count} Automation(en), Skript(e), Szene(n) oder Dashboard(s) verweisen wahrscheinlich darauf (z. B. über Templates).",
     impactScope: "Betrachtet werden das Objekt und {count} zugehörige Entities.", impactScopeOne: "Betrachtet wird nur dieses Objekt.",
-    impactLimits: "Nicht geprüft: Gruppen, Helfer-Konfigurationen, automatisch erzeugte Dashboards und die Recorder-Historie.",
+    impactLimits: "Nicht geprüft: automatisch erzeugte Dashboards, die Zustandshistorie im Recorder und externe Systeme.",
     changes: "Änderungen", changesSubtitle: "Was sich seit einem früheren Scan verändert hat.", compareWith: "Vergleichen mit", previousScan: "Letzter Scan davor",
     noBaseline: "Noch kein früherer Scan vorhanden. Nach dem nächsten Scan erscheint hier der Vergleich.", noChanges: "Keine Änderungen seit diesem Scan.",
     statusChanges: "Statuswechsel", newFindings: "Neue Befunde", resolvedFindings: "Behobene Befunde", newObjects: "Neue Objekte", removedObjects: "Entfernte Objekte",
@@ -74,10 +74,27 @@ const TEXT = {
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
-    prefsNote: "Diese Einstellungen gelten nur für diesen Browser.", hiddenFindings: "Ausgeblendete Befunde", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
+    hiddenFindings: "Ausgeblendete Befunde", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
     sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
     sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
+    density: "Dichte", densityNormal: "Normal", densityCompact: "Kompakt", motion: "Animationen", motionAuto: "Wie System", motionReduced: "Reduziert",
+    motionHint: "Wie System folgt der Einstellung „Bewegung reduzieren“ deines Geräts.", prefsNote: "Die Darstellung wird in deinem Home-Assistant-Benutzerprofil gespeichert (und zusätzlich in diesem Browser).",
+    scanSettings: "Scan und Schwellenwerte", scanSettingsHint: "Ändert die Optionen der Integration. Housekeeper lädt danach neu.", optMinUnavailable: "Nicht verfügbar gilt als Befund nach (Tage, 0 = sofort)",
+    optUnusedAutomation: "Ungenutzte Automationen nach (Tage, 0 = aus)", optScanInterval: "Automatischer Scan alle (Stunden, 0 = aus)", optLowBattery: "Schwache Batterie ab (Prozent)",
+    saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
+    cleanupSubtitle: "Vorschau für das Aufräumen: Housekeeper prüft Kandidaten und protokolliert das Ergebnis. Es wird nichts geändert.",
+    cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts in Home Assistant. Pläne können derzeit nicht ausgeführt werden.",
+    cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entities.", cleanupNone: "Keine Kandidaten gefunden.",
+    selectPage: "Seite auswählen", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
+    planResult: "Ergebnis der Vorschau", planClose: "Schließen", planCreating: "Erstelle Vorschau …", planError: "Vorschau fehlgeschlagen",
+    planSummary: "{total} geprüft: {ok} ohne bekannte Verwendung, {review} zu prüfen, {blocked} blockiert.", planUses: "{count} Verwendungen betroffen", planStats: "{count} mit Langzeitstatistik",
+    verdict_ok: "Keine bekannte Verwendung", verdict_review: "Prüfen", verdict_blocked: "Blockiert", journal: "Journal", journalHint: "Frühere Vorschauen (die letzten 50).", journalEmpty: "Noch keine Vorschau erstellt.",
+    openPlan: "Öffnen", deletePlan: "Löschen", dryRun: "Dry Run", usedBy: "Verwendet von",
+    reason_entity_working: "Die Entity funktioniert noch und ist kein Kandidat.", reason_used_certain: "Wird sicher verwendet – Entfernen würde Verweise brechen.", reason_used_probable: "Wird vermutlich verwendet (Template oder Dashboard).",
+    reason_has_statistics: "Hat Langzeitstatistiken im Recorder; sie blieben ohne Entity zurück.", reason_ignored_by_label: "Trägt das Label housekeeper_ignore.", reason_not_found: "Im letzten Scan nicht gefunden.", reason_unsupported_action: "Diese Aktion wird nicht unterstützt.",
+    longTermStats: "Langzeitstatistik", yes: "Ja", no: "Nein", statsNote: "Für diese Entity gibt es Langzeitstatistiken im Recorder. Sie blieben nach einem Entfernen bestehen, gehörten dann aber zu keiner Entity mehr.",
+    energyDashboard: "Energie-Dashboard",
     perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
     unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
     unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entities können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entities sind ausgeblendet.",
@@ -166,7 +183,7 @@ const TEXT = {
     impactCertain: "Not safe to remove", impactCertainText: "{count} automation(s), script(s), scene(s) or dashboard(s) reference this object for certain and would run into nothing.",
     impactProbable: "Check first", impactProbableText: "{count} automation(s), script(s), scene(s) or dashboard(s) probably reference it (for example through templates).",
     impactScope: "Covers this object and {count} related entities.", impactScopeOne: "Covers only this object.",
-    impactLimits: "Not checked: groups, helper configurations, auto-generated dashboards and the recorder history.",
+    impactLimits: "Not checked: auto-generated dashboards, the state history in the recorder, and external systems.",
     changes: "Changes", changesSubtitle: "What changed since an earlier scan.", compareWith: "Compare with", previousScan: "Previous scan",
     noBaseline: "No earlier scan yet. The comparison appears after the next scan.", noChanges: "No changes since this scan.",
     statusChanges: "Status changes", newFindings: "New findings", resolvedFindings: "Resolved findings", newObjects: "New objects", removedObjects: "Removed objects",
@@ -191,10 +208,27 @@ const TEXT = {
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
     colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
-    prefsNote: "These settings apply to this browser only.", hiddenFindings: "Hidden findings", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
+    hiddenFindings: "Hidden findings", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
     sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule",
     sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
     sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
+    density: "Density", densityNormal: "Normal", densityCompact: "Compact", motion: "Animation", motionAuto: "Like system", motionReduced: "Reduced",
+    motionHint: "Like system follows your device's “reduce motion” setting.", prefsNote: "Appearance is stored in your Home Assistant user profile (and in this browser as well).",
+    scanSettings: "Scan and thresholds", scanSettingsHint: "Changes the integration options. Housekeeper reloads afterwards.", optMinUnavailable: "Unavailable becomes a finding after (days, 0 = immediately)",
+    optUnusedAutomation: "Unused automations after (days, 0 = off)", optScanInterval: "Automatic scan every (hours, 0 = off)", optLowBattery: "Low battery at (percent)",
+    saveOptions: "Save", optionsSaved: "Saved. Housekeeper is reloading …", optionsInvalid: "Please enter values within the allowed range.",
+    cleanupSubtitle: "Preview for tidying up: Housekeeper checks candidates and records the result. Nothing is changed.",
+    cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing in Home Assistant. Plans cannot be executed at the moment.",
+    cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
+    selectPage: "Select page", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
+    planResult: "Preview result", planClose: "Close", planCreating: "Creating preview …", planError: "Preview failed",
+    planSummary: "{total} checked: {ok} with no known use, {review} to review, {blocked} blocked.", planUses: "{count} uses affected", planStats: "{count} with long-term statistics",
+    verdict_ok: "No known use", verdict_review: "Review", verdict_blocked: "Blocked", journal: "Journal", journalHint: "Earlier previews (the last 50).", journalEmpty: "No preview created yet.",
+    openPlan: "Open", deletePlan: "Delete", dryRun: "Dry run", usedBy: "Used by",
+    reason_entity_working: "The entity still works and is not a candidate.", reason_used_certain: "Definitely in use – removing it would break references.", reason_used_probable: "Probably in use (template or dashboard).",
+    reason_has_statistics: "Has long-term statistics in the recorder; they would be left without an entity.", reason_ignored_by_label: "Carries the label housekeeper_ignore.", reason_not_found: "Not found in the latest scan.", reason_unsupported_action: "This action is not supported.",
+    longTermStats: "Long-term statistics", yes: "Yes", no: "No", statsNote: "This entity has long-term statistics in the recorder. They would remain after a removal but belong to no entity any more.",
+    energyDashboard: "Energy dashboard",
     perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
     unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
     unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
@@ -242,7 +276,9 @@ const ICONS = {
 };
 
 const PREFS_KEY = "ha_housekeeper.prefs";
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", pageSize: 20, startView: "overview" };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" };
+const USER_DATA_KEY = "ha_housekeeper";
+const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
@@ -275,6 +311,7 @@ const NAV = [
   ["changes", "mdi:compare-horizontal"],
   ["batteries", "mdi:battery-alert-variant-outline"],
   ["unreferenced", "mdi:link-variant-off"],
+  ["cleanup", "mdi:broom"],
   ["settings", "mdi:cog-outline"],
   ["graph", "mdi:source-fork"],
 ];
@@ -311,6 +348,9 @@ class HAHousekeeperPanel extends HTMLElement {
     this.graphQuery = "";
     this.pages = {};
     this.lv = {};
+    this.cleanupSel = new Set();
+    this.plan = null;
+    this.journal = null;
     this.prefs = this.loadPrefs();
     this.pageSize = this.prefs.pageSize;
     this.sortDir = "asc";
@@ -323,27 +363,46 @@ class HAHousekeeperPanel extends HTMLElement {
   set hass(value) {
     const first = !this._hass, wasDark = this._hass?.themes?.darkMode;
     this._hass = value;
-    if (first) this.load(false);
+    if (first) { this.load(false); this.loadUserPrefs(); }
     else if (this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) this.render();
   }
 
   // Display preferences live in this browser only; storage may be unavailable.
   loadPrefs() {
-    try {
-      const saved = JSON.parse(globalThis.localStorage?.getItem(PREFS_KEY) || "{}");
-      const prefs = { ...DEFAULT_PREFS };
-      if (SIZES[saved.size]) prefs.size = saved.size;
-      if (["auto", "light", "dark"].includes(saved.mode)) prefs.mode = saved.mode;
-      const scheme = SCHEME_ALIASES[saved.scheme] || saved.scheme;
-      if (SCHEMES[scheme]) prefs.scheme = scheme;
-      if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
-      if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
-      return prefs;
-    } catch (_) { return { ...DEFAULT_PREFS }; }
+    try { return this.sanitizePrefs(JSON.parse(globalThis.localStorage?.getItem(PREFS_KEY) || "{}")); } catch (_) { return { ...DEFAULT_PREFS }; }
   }
 
-  savePrefs() {
+  // Keep only known, valid values; anything else falls back to the default.
+  sanitizePrefs(saved) {
+    const prefs = { ...DEFAULT_PREFS };
+    if (!saved || typeof saved !== "object") return prefs;
+    if (SIZES[saved.size]) prefs.size = saved.size;
+    if (["auto", "light", "dark"].includes(saved.mode)) prefs.mode = saved.mode;
+    const scheme = SCHEME_ALIASES[saved.scheme] || saved.scheme;
+    if (SCHEMES[scheme]) prefs.scheme = scheme;
+    if (["normal", "compact"].includes(saved.density)) prefs.density = saved.density;
+    if (["auto", "reduced"].includes(saved.motion)) prefs.motion = saved.motion;
+    if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
+    if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
+    return prefs;
+  }
+
+  // The Home Assistant user profile keeps the preferences across devices; this browser is the fallback.
+  async loadUserPrefs() {
+    try {
+      const result = await this._hass?.callWS?.({ type: "frontend/get_user_data", key: USER_DATA_KEY });
+      if (!result?.value) return;
+      const prefs = this.sanitizePrefs(result.value);
+      if (JSON.stringify(prefs) === JSON.stringify(this.prefs)) return;
+      this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {};
+      this.savePrefs(false);
+      this.render();
+    } catch (_) { /* no user data available; local preferences stay */ }
+  }
+
+  savePrefs(sync = true) {
     try { globalThis.localStorage?.setItem(PREFS_KEY, JSON.stringify(this.prefs)); } catch (_) { /* ignore */ }
+    if (sync) Promise.resolve(this._hass?.callWS?.({ type: "frontend/set_user_data", key: USER_DATA_KEY, value: this.prefs })).catch(() => {});
   }
 
   isDark() {
@@ -360,7 +419,10 @@ class HAHousekeeperPanel extends HTMLElement {
       const dark = this.isDark(), p = (SCHEMES[scheme] || SCHEMES.standard)[dark ? "dark" : "light"];
       vars += `;--hk-blue:${p.accent};--hk-bg:${p.bg};--hk-surface:${p.surface};--hk-soft:${p.soft};--hk-text:${p.text};--hk-muted:${p.muted};--hk-border:${p.border};--hk-on:${p.on || "#ffffff"};--hk-green:${p.positive};--hk-amber:${p.warning};--hk-red:${p.danger};color-scheme:${dark ? "dark" : "light"}`;
     }
-    return `:host{${vars}}`;
+    const compact = this.prefs.density === "compact" ? `.row{padding-top:6px;padding-bottom:6px}.card{padding:10px 12px}.panelhead{min-height:44px;padding-top:8px;padding-bottom:8px}td{padding:6px 14px}th{padding:7px 14px}.nav{min-height:32px;padding-top:4px;padding-bottom:4px}.tile{width:30px;height:30px}.setrow{padding-top:9px;padding-bottom:9px}.chips{padding-top:8px;padding-bottom:8px}.listbar{padding-top:8px;padding-bottom:8px}.summary,.stack,.grid2{gap:10px}.heading{margin-bottom:14px}` : "";
+    const calm = "*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}";
+    const motion = this.prefs.motion === "reduced" ? calm : `@media(prefers-reduced-motion:reduce){${calm}}`;
+    return `:host{${vars}}${compact}${motion}`;
   }
   get hass() { return this._hass; }
 
@@ -544,6 +606,7 @@ class HAHousekeeperPanel extends HTMLElement {
       .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:1 1 220px}.listbar select{flex:0 1 180px}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
       .setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.setrow .btn{justify-self:start}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
       @media(max-width:700px){.setrow{grid-template-columns:1fr}}
+      .row,.btn,.card,.chip,.nav,.dirbtn{transition:background-color .15s ease,border-color .15s ease,color .15s ease}.bar i{transition:width .4s ease}@keyframes hk-spin{to{transform:rotate(360deg)}}.loading ha-icon,.btn[disabled] ha-icon{animation:hk-spin 1s linear infinite}
       .tablewrap{overflow:auto}table{border-collapse:collapse;width:100%}th{text-align:left;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;background:var(--hk-soft);cursor:pointer;white-space:nowrap}td{padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}tbody tr{cursor:pointer}tbody tr:hover{background:var(--hk-soft)}
       .object{display:flex;align-items:center;gap:11px;min-width:260px}.object .tile{width:34px;height:34px}.object strong{display:block;font-weight:600}.id{display:block;color:var(--hk-muted);font-family:ui-monospace,SFMono-Regular,monospace;font-size:calc(11px*var(--hk-fs,1));margin-top:2px;max-width:390px;overflow:hidden;text-overflow:ellipsis}
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
@@ -630,6 +693,7 @@ class HAHousekeeperPanel extends HTMLElement {
       unreferenced: [this.t("objects"), this.t("unreferenced"), this.t("unreferencedSubtitle")],
       graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
       settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
+      cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
@@ -646,6 +710,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "changes") return this.changesView();
     if (this.view === "batteries") return this.batteriesView();
     if (this.view === "unreferenced") return this.unreferencedView();
+    if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -844,11 +909,20 @@ class HAHousekeeperPanel extends HTMLElement {
     const appearance = `<section class="panel"><div class="panelhead"><h2>${this.t("appearance")}</h2></div>
       ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
       ${row(this.t("colorMode"), this.t("modeHint"), this.segment("mode", [["auto", this.t("modeAuto")], ["light", this.t("modeLight")], ["dark", this.t("modeDark")]]))}
+      ${row(this.t("density"), "", this.segment("density", [["normal", this.t("densityNormal")], ["compact", this.t("densityCompact")]]))}
+      ${row(this.t("motion"), this.t("motionHint"), this.segment("motion", [["auto", this.t("motionAuto")], ["reduced", this.t("motionReduced")]]))}
       ${row(this.t("colorScheme"), "", this.segment("scheme", [["standard", this.t("schemeStandard"), "#0789cf"], ["housekeeper", this.t("schemeHousekeeper"), SCHEMES.housekeeper.light.accent], ["modern", this.t("schemeModern"), SCHEMES.modern.light.accent]]))}</section>`;
     const behavior = `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
       ${row(this.t("startView"), "", select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
       ${row(this.t("pageSizeSetting"), "", select("pageSize", [20, 50, 100].map(n => [n, n])))}
       <div class="setrow"><small style="margin:0">${this.t("prefsNote")}</small><button class="btn" data-pref-reset>${this.t("resetPrefs")}</button></div></section>`;
+    const optionRow = (key, label) => {
+      const [min, max] = OPTION_LIMITS[key];
+      return row(label, "", `<input type="number" data-opt="${key}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}" style="max-width:160px">`);
+    };
+    const optionsCard = this.data ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>
+      ${optionRow("min_unavailable_days", this.t("optMinUnavailable"))}${optionRow("unused_automation_days", this.t("optUnusedAutomation"))}${optionRow("scan_interval_hours", this.t("optScanInterval"))}${optionRow("low_battery_percent", this.t("optLowBattery"))}
+      <div class="setrow"><small style="margin:0">${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-opts-save>${this.t("saveOptions")}</button></div></section>` : "";
     const hidden = (this.data?.findings || []).filter(f => f.ignored);
     const pg = this.paginate("hidden", hidden);
     const hiddenRow = f => {
@@ -857,7 +931,23 @@ class HAHousekeeperPanel extends HTMLElement {
       return `<div class="row"><span class="tile mute"><ha-icon icon="mdi:eye-off-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || f.object_id)}</strong><small>${this.esc(f.object_id)} · ${this.t(f.rule_id)}</small></span>${action}</div>`;
     };
     const hiddenCard = `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${hidden.length ? pg.rows.map(hiddenRow).join("") : `<div class="emptymsg"><ha-icon icon="mdi:eye-check-outline"></ha-icon>${this.t("hiddenNone")}</div>`}${pg.footer}</section>`;
-    return `<div class="grid2"><div class="stack">${appearance}${behavior}${hiddenCard}</div><div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div>${links}</section></div></div>`;
+    return `<div class="grid2"><div class="stack">${appearance}${behavior}${optionsCard}${hiddenCard}</div><div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div>${links}</section></div></div>`;
+  }
+
+  async saveOptions() {
+    const changes = {};
+    for (const input of this.shadowRoot.querySelectorAll("[data-opt]")) {
+      const [min, max] = OPTION_LIMITS[input.dataset.opt], value = Number(input.value);
+      if (input.value === "" || !Number.isInteger(value) || value < min || value > max) { this.optionsMessage = this.t("optionsInvalid"); this.render(); return; }
+      changes[input.dataset.opt] = value;
+    }
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/set_options", ...changes });
+      this.optionsMessage = this.t("optionsSaved");
+      this.data = null; // the integration reloads; fetch again once it is back
+      this.render();
+      setTimeout(() => { this.optionsMessage = ""; this.busy = false; this.load(false); }, 4000);
+    } catch (err) { this.optionsMessage = err?.message || String(err); this.render(); }
   }
 
   setPref(key, raw) {
@@ -866,6 +956,93 @@ class HAHousekeeperPanel extends HTMLElement {
     if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
     this.savePrefs();
     this.render();
+  }
+
+  cleanupCandidates() {
+    const seen = new Set(), rows = [];
+    for (const f of this.data.findings) {
+      if (f.ignored || !f.rule_id.startsWith("entity.") || !["orphaned", "unavailable"].includes(f.classification) || seen.has(f.object_id)) continue;
+      const item = this.findObject(`entity:${f.object_id}`);
+      if (!item) continue;
+      seen.add(f.object_id);
+      rows.push({ item, finding: f });
+    }
+    return rows;
+  }
+
+  async loadJournal() {
+    try { this.journal = (await this._hass.callWS({ type: "ha_housekeeper/plan_list" })).plans || []; } catch (_) { this.journal = []; }
+    this.render();
+  }
+
+  async createPlan() {
+    if (!this.cleanupSel.size) return;
+    this.cleanupBusy = true; this.cleanupError = ""; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [...this.cleanupSel].map(object_id => ({ kind: "remove_entity", object_id })) });
+      this.plan = plan;
+      this.journal = [plan, ...(this.journal || [])];
+    } catch (err) { this.cleanupError = err?.message || String(err); }
+    this.cleanupBusy = false; this.render();
+  }
+
+  async deletePlan(id) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: id }); } catch (_) { /* already gone */ }
+    this.journal = (this.journal || []).filter(p => p.plan_id !== id);
+    if (this.plan?.plan_id === id) this.plan = null;
+    this.render();
+  }
+
+  planCard(plan) {
+    const sm = plan.summary || {};
+    const rows = plan.actions.map(a => {
+      const tone = { ok: "ok", review: "warn", blocked: "red" }[a.verdict] || "mute";
+      const uses = (a.used_by || []).slice(0, 4).map(u => {
+        const obj = this.findObject(u.source);
+        return `<button class="chip" data-object="${this.esc(u.source)}">${this.esc(obj?.name || u.source.split(":").slice(1).join(":"))}</button>`;
+      }).join("");
+      const more = (a.used_by || []).length > 4 ? `<small>+${a.used_by.length - 4}</small>` : "";
+      const reasons = (a.reasons || []).map(r => this.t(`reason_${r}`)).join(" ");
+      const obj = this.findObject(`entity:${a.object_id}`);
+      return `<div class="row ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
+        <span class="row-text"><strong>${obj ? `<button class="link" data-object="entity:${this.esc(a.object_id)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(a.object_id)}${reasons ? ` · ${this.esc(reasons)}` : ""}</small>${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</span>
+        <span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></div>`;
+    }).join("");
+    const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · ${this.t("dryRun")}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
+      <p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}</section>`;
+  }
+
+  cleanupView() {
+    if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
+    this.lvState("cleanup", "name", "asc");
+    const all = this.cleanupCandidates();
+    const sorts = [
+      { key: "name", label: "sortName", dir: "asc", get: r => r.item.name },
+      { key: "id", label: "sortId", dir: "asc", get: r => r.item.object_id },
+      { key: "since", label: "sortSince", dir: "desc", get: r => r.finding.first_detected_at },
+      { key: "certainty", label: "sortCertainty", dir: "desc", get: r => r.finding.confidence },
+    ];
+    const classes = [...new Set(all.map(r => r.finding.classification))];
+    const bar = this.listBar("cleanup", { sorts, filters: [{ name: "classification", all: this.t("all"), options: classes.map(c => [c, this.t(c)]) }] });
+    const list = this.refine("cleanup", all, {
+      text: r => [r.item.name, r.item.object_id, r.item.platform].join(" "),
+      filters: { classification: (r, v) => r.finding.classification === v }, sorts, tie: r => r.item.object_id,
+    });
+    const pg = this.paginate("cleanup", list);
+    this._cleanupVisible = pg.rows.map(r => r.item.object_id);
+    const row = ({ item, finding }) => `<div class="row"><input type="checkbox" data-sel="${this.esc(item.object_id)}" ${this.cleanupSel.has(item.object_id) ? "checked" : ""} aria-label="${this.esc(item.name)}">
+      <button class="row-text link" style="text-align:left" data-object="entity:${this.esc(item.object_id)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.object_id)}</small></button>${this.pill(finding.classification)}</div>`;
+    const n = this.cleanupSel.size;
+    const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${this.t("cleanupCandidatesHint")}</p></div>
+      <div class="actions" style="display:flex;gap:8px;align-items:center"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn" data-sel-page>${this.t("selectPage")}</button><button class="btn" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
+      <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div></div>
+      ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
+    const journal = (this.journal || []).map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}</small></span>
+      <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button><button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button></span></div>`).join("");
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}</div>`;
+    return `<div class="stack"><div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
+      ${this.plan ? this.planCard(this.plan) : ""}${candidates}${journalCard}</div>`;
   }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
@@ -1110,6 +1287,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const more = m.hits.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: m.hits.length - LIMIT })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("impactTitle")}</h2><p>${this.t("impactSubtitle")}</p></div></div>
       <div class="diagcard"><div class="cause ${m.tone}"><ha-icon icon="${icon}"></ha-icon><div><strong>${this.t(title)}</strong><p>${this.esc(text)}</p></div></div></div>${rows}${more}
+      ${item.object_type === "entity" && item.has_statistics ? `<p class="factnote">${this.t("statsNote")}</p>` : ""}
       <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
   }
 
@@ -1227,6 +1405,7 @@ class HAHousekeeperPanel extends HTMLElement {
       facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
     }
     if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
+    if (item.object_type === "entity" && this.data.meta.recorder_available) facts.push([this.t("longTermStats"), this.t(item.has_statistics ? "yes" : "no")]);
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
   }
@@ -1328,6 +1507,14 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
+    root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
+    root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
+    root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
+    root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
+    root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
+    root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => { this.plan = (this.journal || []).find(p => p.plan_id === el.dataset.planOpen) || null; this.render(); });
+    root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => this.deletePlan(el.dataset.planDelete));
+    root.querySelector("[data-opts-save]")?.addEventListener("click", () => this.saveOptions());
     root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
     root.querySelector("[data-copy-info]")?.addEventListener("click", async () => {
       try { await globalThis.navigator?.clipboard?.writeText(this.infoText()); this.copied = true; } catch (_) { this.copied = false; }

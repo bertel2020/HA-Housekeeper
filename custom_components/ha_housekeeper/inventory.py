@@ -22,6 +22,7 @@ from .automation_analysis import (
     summarize_automation_config,
     summarize_script_config,
 )
+from .cleanup import JournalStore
 from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
@@ -34,6 +35,7 @@ from .const import (
 from .dashboard_analysis import (
     HELPER_DOMAINS,
     extract_dashboard_references,
+    extract_entity_references,
     extract_helper_references,
 )
 from .history import ScanHistory
@@ -47,6 +49,21 @@ from .hygiene import (
 from .ignored import IgnoreStore
 from .issues import async_sync_issues
 from .observations import ObservationStore
+
+# Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
+ENERGY_KEYS = frozenset(
+    {
+        "stat_energy_from",
+        "stat_energy_to",
+        "stat_cost",
+        "stat_compensation",
+        "stat_consumption",
+        "stat_rate",
+        "included_in_stat",
+        "entity_energy_price",
+        "entity_energy_price_export",
+    }
+)
 
 
 def _iso(value: Any) -> str | None:
@@ -348,6 +365,8 @@ class InventoryScanner:
         self.observations = ObservationStore(hass)
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
+        self.journal = JournalStore(hass)
+        self._recorder_available = False
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None
         self._details: dict[str, dict[str, Any]] = {}
@@ -372,6 +391,7 @@ class InventoryScanner:
         await self.observations.async_load()
         await self.history.async_load()
         await self.ignored.async_load()
+        await self.journal.async_load()
 
     async def async_scan(self) -> dict[str, Any]:
         """Scan registries and states. Concurrent callers share serialized work."""
@@ -453,6 +473,9 @@ class InventoryScanner:
             self._existing_objects()
         )
         existing_objects = self._existing_objects()
+        energy, energy_edges = await self._energy_inventory(existing_objects)
+        dashboards.extend(energy)
+        dashboard_edges.extend(energy_edges)
         helper_edges, helper_findings = self._helper_inventory(existing_objects)
         group_edges, group_findings = self._group_inventory(existing_objects)
         known_automation_ids = {item["object_id"] for item in automations}
@@ -473,6 +496,9 @@ class InventoryScanner:
             item["status_since"] = self.observations.since(
                 f"{kind}:{item['object_id']}", item["status"]
             )
+        statistic_ids = await self._statistic_ids()
+        for item in entities:
+            item["has_statistics"] = item["object_id"] in statistic_ids
         mark_duplicates(entities)
 
         edges = (
@@ -514,6 +540,7 @@ class InventoryScanner:
                 "unused_automation_days": self.unused_automation_days,
                 "ignore_label": IGNORE_LABEL,
                 "version": self.version,
+                "recorder_available": self._recorder_available,
                 "ha_version": HA_VERSION,
                 "scan_interval_hours": self.scan_interval_hours,
                 "low_battery_percent": self.low_battery_percent,
@@ -765,6 +792,62 @@ class InventoryScanner:
                     }
                 )
         return edges, findings
+
+    async def _statistic_ids(self) -> set[str]:
+        """IDs that have long-term statistics in the recorder; empty without a recorder."""
+        self._recorder_available = False
+        if "recorder" not in self.hass.config.components:
+            return set()
+        try:
+            from homeassistant.components.recorder.statistics import async_list_statistic_ids
+
+            statistics = await async_list_statistic_ids(self.hass)
+        except Exception:  # The recorder may be unavailable or still starting.
+            return set()
+        self._recorder_available = True
+        return {item["statistic_id"] for item in statistics}
+
+    async def _energy_inventory(
+        self, existing: dict[str, set[str]]
+    ) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+        """Describe the Energy dashboard through the entities its preferences use."""
+        if "energy" not in self.hass.config.components:
+            return [], []
+        try:
+            from homeassistant.components.energy.data import async_get_manager
+
+            manager = await async_get_manager(self.hass)
+            preferences = manager.data
+        except Exception:  # Energy is optional and may not be configured.
+            return [], []
+        references = extract_entity_references(
+            preferences, existing["entity"], ENERGY_KEYS, "SHOWS"
+        )
+        if not references:
+            return [], []
+        edges = [
+            {
+                "source": "dashboard:energy",
+                "target": f"entity:{reference['object_id']}",
+                "relation": "SHOWS",
+                "confidence": reference["confidence"],
+                "location": reference["location"],
+            }
+            for reference in references
+        ]
+        dashboard = {
+            "object_type": "dashboard",
+            "object_id": "energy",
+            "name": "Energy",
+            "url_path": "energy",
+            "mode": "energy",
+            "view_count": 0,
+            "entity_count": len({reference["object_id"] for reference in references}),
+            "missing_reference_count": 0,
+            "status": "active",
+            "references": references,
+        }
+        return [dashboard], edges
 
     async def _dashboard_inventory(
         self, existing: dict[str, set[str]]

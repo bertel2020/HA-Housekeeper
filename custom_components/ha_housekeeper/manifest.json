@@ -2,7 +2,9 @@
   "domain": "ha_housekeeper",
   "name": "HA Housekeeper",
   "after_dependencies": [
-    "lovelace"
+    "lovelace",
+    "recorder",
+    "energy"
   ],
   "codeowners": [
     "@bertel2020"
