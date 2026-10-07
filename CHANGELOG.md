@@ -23,6 +23,7 @@ Lokal gegen Home Assistant 2026.2.3 validiert.
 - Add scan status reporting while keeping all backend endpoints strictly read-only.
 - Add local contract tests, Home Assistant runtime tests, Ruff checks, HACS validation, and Hassfest validation.
 - Add a visible findings table that links diagnoses to affected entity and automation details.
+- Replace the short project note with complete English and German README documentation and reciprocal language links.
 
 ### Deutsch
 
@@ -37,6 +38,7 @@ Lokal gegen Home Assistant 2026.2.3 validiert.
 - Scanstatus-Abfrage ergänzt; alle Backend-Endpunkte bleiben strikt schreibgeschützt.
 - Lokale Vertragstests, Home-Assistant-Laufzeittests, Ruff-Prüfung, HACS-Validierung und Hassfest-Validierung ergänzt.
 - Sichtbare Befundtabelle ergänzt, die Diagnosen mit den betroffenen Entity- und Automationsdetails verknüpft.
+- Die kurze Projektbeschreibung durch vollständige englische und deutsche README-Dokumentation mit gegenseitigen Sprachverweisen ersetzt.
 
 ## 0.1.0-alpha.1 — 2026-10-07
 
