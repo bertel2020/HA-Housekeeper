@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 
 from .cleanup import ACTION_KINDS, MAX_ACTIONS, build_plan, registry_fingerprint
-from .cleanup_exec import CleanupError
+from .cleanup_exec import CleanupError, entity_restorable
 from .const import DOMAIN, OPTION_LIMITS
 from .inventory import InventoryScanner
 
@@ -221,7 +221,10 @@ async def websocket_plan_create(
         entry = registry.async_get(object_id)
         return registry_fingerprint(entry) if entry else None
 
-    plan = build_plan(snapshot, msg["actions"], datetime.now(UTC), fingerprint)
+    def restorable(object_id: str) -> bool | None:
+        return entity_restorable(hass, registry.async_get(object_id))
+
+    plan = build_plan(snapshot, msg["actions"], datetime.now(UTC), fingerprint, restorable)
     scanner.journal.add(plan)
     connection.send_result(msg["id"], plan)
 

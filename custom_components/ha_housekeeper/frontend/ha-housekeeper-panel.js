@@ -98,8 +98,8 @@ const TEXT = {
     orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt. Housekeeper löscht nichts. Entfernen lässt sich so etwas in Home Assistant unter Entwicklerwerkzeuge → Statistiken.",
     kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
-    kindDisable: "Deaktivieren (Quarantäne, umkehrbar)", kindRemove: "Entfernen (nur Vorschau)", actionKind: "Aktion",
-    cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts, bis du einen Plan ausdrücklich bestätigst. Ausführbar ist nur das Deaktivieren; Historie und Statistiken bleiben unverändert.",
+    kindDisable: "Deaktivieren (Quarantäne, umkehrbar)", kindRemove: "Entfernen (nach Quarantäne, mit Backup)", actionKind: "Aktion",
+    cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts, bis du einen Plan ausdrücklich bestätigst. Deaktivieren ist umkehrbar und lässt Historie und Statistiken unberührt; Entfernen geht erst nach der Quarantäne und mit Backup.",
     reason_already_disabled: "Die Entity ist bereits deaktiviert.",
     skippedUnacknowledged: "{count} zu prüfende Einträge ohne ausdrückliche Bestätigung werden übersprungen.",
     confirmPlan: "Bestätigen …", confirmPlanTitle: "Plan bestätigen", acknowledgeReview: "Zu prüfen – ausdrücklich bestätigen:", confirmedSummary: "{count} Entities werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange die Entity unverändert bleibt.",
@@ -111,8 +111,13 @@ const TEXT = {
     undo_undone: "wieder aktiviert", undo_conflict_changed: "nicht rückgängig gemacht: zwischenzeitlich geändert", undo_conflict_gone: "nicht rückgängig gemacht: Entity existiert nicht mehr",
     verification: "Prüfung nach dem Lauf", check_disabled: "Entity ist deaktiviert", check_no_new_broken_references: "Keine neuen fehlenden Referenzen",
     err_bad_token: "Bestätigung ungültig oder abgelaufen.", err_busy: "Es läuft bereits ein Plan.", err_plan_not_open: "Dieser Plan wurde bereits bestätigt oder ausgeführt.", err_plan_too_old: "Der Plan ist älter als 24 Stunden. Bitte neu erstellen.", err_nothing_to_do: "Nichts auszuführen: blockierte Einträge laufen nie, „Zu prüfen“ braucht eine ausdrückliche Bestätigung.", err_not_found: "Plan nicht gefunden.",
-    quarantine: "Quarantäne", quarantineHint: "Entities, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen vorgesehen (noch nicht ausführbar). Rückgängig machst du es über das Journal.",
+    quarantine: "Quarantäne", quarantineHint: "Entities, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich (Aktion „Entfernen“). Das Deaktivieren machst du über das Journal rückgängig.",
     quarantineSince: "seit {date} · {days} Tagen", quarantineWait: "Noch {days} Tage", quarantineReady: "Frühestens entfernbar", quarantineFact: "seit {date} ({days} Tage)",
+    confirmWordRemove: "ENTFERNEN", confirmedSummaryRemove: "{count} Entities werden entfernt. Vorher legt Housekeeper ein Home-Assistant-Backup an (das kann dauern) und startet nur, wenn es erfolgreich ist. Wiederherstellen geht, solange die Entity-ID frei ist und die Integration noch existiert.",
+    reason_not_quarantined: "Nicht in Quarantäne: erst deaktivieren, nach der Quarantänezeit entfernen.", reason_quarantine_too_short: "Die Quarantäne ist noch zu kurz.", reason_not_restorable: "Nicht wiederherstellbar: Die Integration existiert nicht mehr, das Entfernen wäre endgültig.",
+    abort_backup_failed: "Das Backup ist fehlgeschlagen – es wurde nichts geändert.", abort_backup_unavailable: "Die Backup-Komponente ist nicht verfügbar – es wurde nichts geändert.", abort_no_backup_agent: "Es ist kein Backup-Ziel eingerichtet (Einstellungen → System → Backups) – es wurde nichts geändert.",
+    result_removed: "Entfernt", undo_restored: "wiederhergestellt (wieder in Quarantäne)", undo_conflict_taken: "nicht wiederhergestellt: Entity-ID inzwischen belegt", undo_conflict_unrestorable: "nicht wiederhergestellt: Integration existiert nicht mehr",
+    check_removed: "Entity ist entfernt", plan_status_backup: "Backup läuft", backupRunning: "Backup läuft … das kann etwas dauern.", daysLeftShort: "noch {days} Tage", removalCandidatesHint: "Entities in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", removalReady: "Bereit", waitingShort: "Wartet",
     perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
     unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entities, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
     unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entities können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entities sind ausgeblendet.",
@@ -250,8 +255,8 @@ const TEXT = {
     orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity. Housekeeper deletes nothing. In Home Assistant such statistics can be removed under Developer tools → Statistics.",
     kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
-    kindDisable: "Disable (quarantine, reversible)", kindRemove: "Remove (preview only)", actionKind: "Action",
-    cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing until you explicitly confirm a plan. Only disabling can be executed; history and statistics stay untouched.",
+    kindDisable: "Disable (quarantine, reversible)", kindRemove: "Remove (after quarantine, with backup)", actionKind: "Action",
+    cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing until you explicitly confirm a plan. Disabling is reversible and leaves history and statistics untouched; removal only works after the quarantine and with a backup.",
     reason_already_disabled: "The entity is already disabled.",
     skippedUnacknowledged: "{count} entries to review without explicit confirmation will be skipped.",
     confirmPlan: "Confirm …", confirmPlanTitle: "Confirm plan", acknowledgeReview: "To review – confirm explicitly:", confirmedSummary: "{count} entities will be disabled (quarantine). This is reversible at any time while the entity stays unchanged.",
@@ -263,8 +268,13 @@ const TEXT = {
     undo_undone: "enabled again", undo_conflict_changed: "not undone: changed in the meantime", undo_conflict_gone: "not undone: the entity no longer exists",
     verification: "Check after the run", check_disabled: "Entity is disabled", check_no_new_broken_references: "No new missing references",
     err_bad_token: "Confirmation invalid or expired.", err_busy: "A plan is already running.", err_plan_not_open: "This plan was already confirmed or executed.", err_plan_too_old: "The plan is older than 24 hours. Please create it again.", err_nothing_to_do: "Nothing to execute: blocked entries never run, “to review” needs an explicit confirmation.", err_not_found: "Plan not found.",
-    quarantine: "Quarantine", quarantineHint: "Entities Housekeeper has disabled. Removal is planned no earlier than after {days} days (not executable yet). You can undo it from the journal.",
+    quarantine: "Quarantine", quarantineHint: "Entities Housekeeper has disabled. Removal is possible no earlier than after {days} days (action “Remove”). You can undo the disabling from the journal.",
     quarantineSince: "since {date} · {days} days", quarantineWait: "{days} days to go", quarantineReady: "Removable at the earliest", quarantineFact: "since {date} ({days} days)",
+    confirmWordRemove: "REMOVE", confirmedSummaryRemove: "{count} entities will be removed. Housekeeper creates a Home Assistant backup first (this can take a while) and only continues if it succeeds. Restoring works while the entity ID is free and the integration still exists.",
+    reason_not_quarantined: "Not in quarantine: disable first, remove after the quarantine period.", reason_quarantine_too_short: "The quarantine is still too short.", reason_not_restorable: "Not restorable: the integration no longer exists, so the removal would be final.",
+    abort_backup_failed: "The backup failed – nothing was changed.", abort_backup_unavailable: "The backup component is not available – nothing was changed.", abort_no_backup_agent: "No backup location is set up (Settings → System → Backups) – nothing was changed.",
+    result_removed: "Removed", undo_restored: "restored (back in quarantine)", undo_conflict_taken: "not restored: entity ID is taken now", undo_conflict_unrestorable: "not restored: the integration no longer exists",
+    check_removed: "Entity is removed", plan_status_backup: "Backup running", backupRunning: "Backup running … this can take a while.", daysLeftShort: "{days} days to go", removalCandidatesHint: "Entities in quarantine. Removal is possible only after {days} days.", removalReady: "Ready", waitingShort: "Waiting",
     perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
     unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
     unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
@@ -1065,6 +1075,9 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   cleanupCandidates() {
+    if (this.cleanupKind === "remove_entity") {
+      return (this.data.quarantine || []).map(q => ({ item: this.findObject(`entity:${q.object_id}`), finding: null, quarantine: q })).filter(r => r.item);
+    }
     const seen = new Set(), rows = [];
     for (const f of this.data.findings) {
       if (f.ignored || !f.rule_id.startsWith("entity.") || !["orphaned", "unavailable"].includes(f.classification) || seen.has(f.object_id)) continue;
@@ -1141,7 +1154,8 @@ class HAHousekeeperPanel extends HTMLElement {
   async undoPlan(objectIds) {
     try {
       const res = await this._hass.callWS({ type: "ha_housekeeper/plan_undo", plan_id: this.plan.plan_id, ...(objectIds ? { object_ids: objectIds } : {}) });
-      this.undoMessage = res.results.map(r => `${r.object_id}: ${this.t(`undo_${r.outcome}`)}`).join(" · ");
+      const kindOf = id => this.plan?.actions.find(a => a.object_id === id)?.kind;
+      this.undoMessage = res.results.map(r => `${r.object_id}: ${this.t(r.outcome === "undone" && kindOf(r.object_id) === "remove_entity" ? "undo_restored" : `undo_${r.outcome}`)}`).join(" · ");
       const status = await this._hass.callWS({ type: "ha_housekeeper/plan_status", plan_id: this.plan.plan_id });
       this.adoptPlan(status.plan);
       if (this.data) this.load(false);
@@ -1166,10 +1180,10 @@ class HAHousekeeperPanel extends HTMLElement {
         return `<button class="chip" data-object="${this.esc(u.source)}">${this.esc(obj?.name || u.source.split(":").slice(1).join(":"))}</button>`;
       }).join("");
       const more = (a.used_by || []).length > 4 ? `<small>+${a.used_by.length - 4}</small>` : "";
-      const reasons = (a.reasons || []).map(r => this.t(`reason_${r}`)).join(" ");
+      const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const obj = this.findObject(`entity:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(`result_${result.state}`)}</span>` : "";
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && a.kind === "remove_entity" ? "result_removed" : `result_${result.state}`)}</span>` : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "";
       const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
       const undo = result?.state === "done" ? `<button class="btn" data-undo-one="${this.esc(a.object_id)}">${this.t("undoOne")}</button>` : "";
@@ -1179,13 +1193,14 @@ class HAHousekeeperPanel extends HTMLElement {
     }).join("");
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
-    const word = this.t("confirmWord"), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
+    const removal = plan.actions.some(a => a.kind === "remove_entity" && a.executable);
+    const word = this.t(removal ? "confirmWordRemove" : "confirmWord"), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
     let control = "";
-    if (open && !executable) control = `<p class="factnote">${this.t(plan.actions.some(a => a.kind !== "disable_entity") ? "notExecutableYet" : "nothingExecutable")}</p>`;
+    if (open && !executable) control = `<p class="factnote">${this.t("nothingExecutable")}</p>`;
     else if (open && !conf) control = `<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
-    else if (open && conf) control = `<div class="setrow"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.t("confirmedSummary", { count: conf.execute.length })}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
+    else if (open && conf) control = `<div class="setrow"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.t(removal ? "confirmedSummaryRemove" : "confirmedSummary", { count: conf.execute.length })}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn primary" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
-    else if (plan.status === "running") control = `<div class="setrow"><small style="margin:0">${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
+    else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
     else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<p class="factnote"><b>${this.t("verification")}:</b> ${plan.verification.checks.map(c => `${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}`).join(" · ")}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
@@ -1199,21 +1214,29 @@ class HAHousekeeperPanel extends HTMLElement {
     const sorts = [
       { key: "name", label: "sortName", dir: "asc", get: r => r.item.name },
       { key: "id", label: "sortId", dir: "asc", get: r => r.item.object_id },
-      { key: "since", label: "sortSince", dir: "desc", get: r => r.finding.first_detected_at },
-      { key: "certainty", label: "sortCertainty", dir: "desc", get: r => r.finding.confidence },
+      { key: "since", label: "sortSince", dir: "desc", get: r => (r.quarantine ? r.quarantine.since : r.finding.first_detected_at) },
+      { key: "certainty", label: "sortCertainty", dir: "desc", get: r => (r.finding ? r.finding.confidence : null) },
     ];
-    const classes = [...new Set(all.map(r => r.finding.classification))];
-    const bar = this.listBar("cleanup", { sorts, filters: [{ name: "classification", all: this.t("all"), options: classes.map(c => [c, this.t(c)]) }] });
+    const limit = this.data.meta.quarantine_days ?? 14;
+    const ready = r => !r.quarantine || this.daysSince(r.quarantine.since) >= limit;
+    const classes = [...new Set(all.filter(r => r.finding).map(r => r.finding.classification))];
+    const removal = this.cleanupKind === "remove_entity";
+    const filterOptions = removal ? [["ready", this.t("removalReady")], ["waiting", this.t("waitingShort")]] : classes.map(c => [c, this.t(c)]);
+    const bar = this.listBar("cleanup", { sorts, filters: [{ name: removal ? "readiness" : "classification", all: this.t("all"), options: filterOptions }] });
     const list = this.refine("cleanup", all, {
       text: r => [r.item.name, r.item.object_id, r.item.platform].join(" "),
-      filters: { classification: (r, v) => r.finding.classification === v }, sorts, tie: r => r.item.object_id,
+      filters: { classification: (r, v) => r.finding && r.finding.classification === v, readiness: (r, v) => (v === "ready") === ready(r) }, sorts, tie: r => r.item.object_id,
     });
     const pg = this.paginate("cleanup", list);
-    this._cleanupVisible = pg.rows.map(r => r.item.object_id);
-    const row = ({ item, finding }) => `<div class="row"><input type="checkbox" data-sel="${this.esc(item.object_id)}" ${this.cleanupSel.has(item.object_id) ? "checked" : ""} aria-label="${this.esc(item.name)}">
-      <button class="row-text link" style="text-align:left" data-object="entity:${this.esc(item.object_id)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.object_id)}</small></button>${this.pill(finding.classification)}</div>`;
+    this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
+    const row = r => {
+      const { item, finding, quarantine } = r, left = quarantine ? limit - this.daysSince(quarantine.since) : 0;
+      const badge = finding ? this.pill(finding.classification) : `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>`;
+      return `<div class="row"><input type="checkbox" data-sel="${this.esc(item.object_id)}" ${this.cleanupSel.has(item.object_id) ? "checked" : ""} ${left > 0 ? "disabled" : ""} aria-label="${this.esc(item.name)}">
+      <button class="row-text link" style="text-align:left" data-object="entity:${this.esc(item.object_id)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.object_id)}</small></button>${badge}</div>`;
+    };
     const n = this.cleanupSel.size;
-    const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${this.t("cleanupCandidatesHint")}</p></div>
+    const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div>
       <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select data-cleanup-kind aria-label="${this.t("actionKind")}"><option value="disable_entity" ${this.cleanupKind === "disable_entity" ? "selected" : ""}>${this.t("kindDisable")}</option><option value="remove_entity" ${this.cleanupKind === "remove_entity" ? "selected" : ""}>${this.t("kindRemove")}</option></select><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn" data-sel-page>${this.t("selectPage")}</button><button class="btn" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
@@ -1721,14 +1744,15 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
-    const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.render(); };
+    const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
     root.querySelectorAll("[data-ack]").forEach(el => el.onchange = () => { el.checked ? this.ack.add(el.dataset.ack) : this.ack.delete(el.dataset.ack); this.render(); });
     root.querySelector("[data-plan-confirm]")?.addEventListener("click", () => this.confirmPlan());
     const word = root.querySelector("[data-confirm-word]");
     if (word) word.oninput = () => {
       this.confirmWord = word.value;
       const run = this.shadowRoot.querySelector("[data-plan-execute]");
-      if (run) run.disabled = word.value.trim().toUpperCase() !== this.t("confirmWord");
+      const removalPlan = (this.plan?.actions || []).some(a => a.kind === "remove_entity" && a.executable);
+      if (run) run.disabled = word.value.trim().toUpperCase() !== this.t(removalPlan ? "confirmWordRemove" : "confirmWord");
     };
     root.querySelector("[data-plan-execute]")?.addEventListener("click", () => this.executePlan());
     root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());

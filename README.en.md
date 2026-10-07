@@ -28,7 +28,7 @@ HA Housekeeper is a maintenance and analysis integration for Home Assistant. It 
 
 The goal is not aggressive automatic cleanup. Housekeeper helps you understand what exists, why something is considered problematic, and what would be affected before any future cleanup operation is introduced.
 
-> Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan, and so far only as a reversible quarantine (disabling an entity). It never deletes, renames, or replaces Home Assistant objects. It also stores only its own data (observation times, scan history, hidden findings, journal).
+> Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan: disabling entities (quarantine) and, after at least 14 days of quarantine and a successful backup, removing them. Both can be undone while the entity is unchanged. Devices, automations, dashboards, and integrations are never modified. It also stores only its own data (observation times, scan history, hidden findings, journal).
 
 ## What Housekeeper does
 
@@ -42,7 +42,7 @@ The goal is not aggressive automatic cleanup. Housekeeper helps you understand w
 | **Cleanup hints** | Possible duplicates, unused automations, low batteries |
 | **Sensors and hints** | Counters as sensors, aggregated repair hints, export as CSV/JSON |
 | **Dependencies** | Relationships between integration, device, entity, area, and automation with a confidence level |
-| **Safety** | Administrators only; reads and analyzes, changes only after explicit confirmation (reversible quarantine) |
+| **Safety** | Administrators only; reads and analyzes, changes only after explicit confirmation (quarantine, then removal with a backup) |
 
 ## Why HA Housekeeper?
 
@@ -99,7 +99,7 @@ The **Changes** view compares the current state with the previous scan or with t
 - **Not used**: a view of active entities that appear in no automation, script, scene, group, helper, or readable dashboard (without diagnostic and configuration entities, filterable by domain). A hint only, not a finding: voice assistants, apps, auto-generated dashboards, and external systems are invisible to Housekeeper.
 - **Integrations with problems** appear on the overview, next to a **Tidy up** card with quick access to batteries, duplicates, unused automations, and unused entities.
 - **Settings** (cog at the bottom of the sidebar): version and key facts about Housekeeper, font size (small/normal/large), mode (automatic/light/dark), color scheme (Standard, Housekeeper, Modern), density (normal/compact), animation (like system/reduced), start view, entries per page, and management of hidden findings. Appearance is stored in your Home Assistant user profile (and in the browser as well). Scan interval and thresholds can be changed here too; Housekeeper reloads afterwards.
-- **Cleanup**: the **Tidy up** view checks selected orphaned or long-unavailable entities in a dry run: no known use, to review, or blocked (certain use, working entity), including references and a note on long-term statistics. Housekeeper changes nothing at that point. A plan can be explicitly confirmed (type a word) and executed; so far only **disabling** as quarantine is executable (registry entry; history and statistics stay untouched). Blocked entries never run, “to review” only with an individual confirmation. Every step is re-checked first; if an entity changed since the preview, the run aborts. Afterwards Housekeeper verifies the result, and every step can be undone while the entity is unchanged. A quarantine card shows since when an entity has been in quarantine and when a later removal would earliest be possible (14 days). Every plan is in the journal (executed plans stay as the audit trail). Removal is still a preview only.
+- **Cleanup**: the **Tidy up** view checks selected orphaned or long-unavailable entities in a dry run: no known use, to review, or blocked (certain use, working entity), including references and a note on long-term statistics. Housekeeper changes nothing at that point. A plan can be explicitly confirmed (type a word) and executed; so far only **disabling** as quarantine is executable (registry entry; history and statistics stay untouched). Blocked entries never run, “to review” only with an individual confirmation. Every step is re-checked first; if an entity changed since the preview, the run aborts. Afterwards Housekeeper verifies the result, and every step can be undone while the entity is unchanged. A quarantine card shows since when an entity has been in quarantine and when a later removal would earliest be possible (14 days). Every plan is in the journal (executed plans stay as the audit trail). **Removal** (deleting the registry entry) is possible only for entities that have been in quarantine for at least 14 days: Housekeeper first creates a Home Assistant backup with your backup settings, waits for it to complete successfully, and starts nothing otherwise. The registry entry is kept in the journal so a removed entity can be restored while its ID is free and the integration still exists; it is back in quarantine afterwards.
 - **Recorder and Energy dashboard** are part of the impact analysis: entities of the Energy dashboard count as used, and entities with long-term statistics are marked. In the **Not used** view the **Orphaned statistics** tab lists long-term statistics that no longer have an entity (a hint only, Housekeeper deletes nothing; statistics used by the Energy dashboard are flagged).
 - **Outdated scan**: if the last scan is clearly older than the scan interval, the overview says so. **Changes** and long lists of integration problems can be searched and filtered.
 - **Long lists** are paged (default 20 per page, selectable 20/50/100) and can be searched, filtered, and sorted (findings, batteries, not used, inventory). The export contains exactly the findings shown.
@@ -136,13 +136,13 @@ The panel and configuration flow are available in German and English. The active
 
 - The panel is available to Home Assistant administrators only.
 - All Housekeeper WebSocket endpoints require administrator privileges.
-- Housekeeper offers read and scan operations. It writes to its own storage (hidden findings, journal), to the integration options (at your request from the panel), and, for confirmed plans, to the entity registry (disabling only).
+- Housekeeper offers read and scan operations. It writes to its own storage (hidden findings, journal), to the integration options (at your request from the panel), and, for confirmed plans, to the entity registry (disabling, and removal after quarantine and backup).
 - `unavailable` is never treated as automatically orphaned.
 - Disabled devices and integrations are distinguished from missing objects.
 - No `.storage` file is edited directly.
 - No cleanup action runs automatically.
 
-Removing entities, backups before removal, and device cleanup are intentionally reserved for later versions.
+Device cleanup and replacing entities are intentionally reserved for later versions.
 
 ## Installation
 

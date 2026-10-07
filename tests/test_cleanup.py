@@ -40,9 +40,9 @@ def use(source: str, target: str, confidence: str = "certain", relation: str = "
     }
 
 
-def verdict(objects, edges, object_id, kind="remove_entity"):
+def verdict(objects, edges, object_id, kind="disable_entity", **extra):
     index = {o["object_id"]: o for o in objects}
-    return judge_action(kind, object_id, index, list(edges))
+    return judge_action(kind, object_id, index, list(edges), **extra)
 
 
 def test_unused_orphan_is_ok() -> None:
@@ -80,8 +80,8 @@ def test_plan_summary_dedupes_and_never_executes() -> None:
     objects = [entity("sensor.a"), entity("sensor.b", "active")]
     plan = build_plan(
         snapshot(objects),
-        [{"kind": "remove_entity", "object_id": "sensor.a"}] * 2
-        + [{"kind": "remove_entity", "object_id": "sensor.b"}],
+        [{"kind": "disable_entity", "object_id": "sensor.a"}] * 2
+        + [{"kind": "disable_entity", "object_id": "sensor.b"}],
         NOW,
     )
     assert plan["status"] == "dry_run" and plan["executed"] is False
@@ -149,3 +149,13 @@ def test_quarantine_lists_only_entities_still_disabled_by_the_user() -> None:
         "plan_id": "p2",
         "since": "2026-09-10T00:00:00+00:00",
     }
+
+
+def test_not_restorable_removals_need_review() -> None:
+    objects = [entity("sensor.old", "disabled")]
+    quarantine = {"sensor.old": "2020-01-01T00:00:00+00:00"}
+    index = {o["object_id"]: o for o in objects}
+    fine = judge_action("remove_entity", "sensor.old", index, [], quarantine, True, NOW)
+    risky = judge_action("remove_entity", "sensor.old", index, [], quarantine, False, NOW)
+    assert fine["verdict"] == "ok"
+    assert risky["verdict"] == "review" and "not_restorable" in risky["reasons"]

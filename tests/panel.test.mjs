@@ -821,15 +821,45 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
   assert.equal(el.plan.status, "undone");
 });
 
-test("removal previews cannot be confirmed", () => {
+test("a blocked removal cannot be confirmed; a ready one asks for the removal word and mentions the backup", async () => {
   const { el, shadow } = panel("en");
-  el.data = { ...DATA, objects: [], edges: [], findings: [] };
-  el.plan = { plan_id: "p2", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 1, review: 0, blocked: 0 },
-    actions: [{ kind: "remove_entity", object_id: "sensor.a", name: "A", verdict: "ok", executable: false, reasons: [], used_by: [] }] };
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  const plan = (executable, reasons) => ({ plan_id: "p2", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: executable ? 1 : 0, review: 0, blocked: executable ? 0 : 1 },
+    actions: [{ kind: "remove_entity", object_id: "sensor.a", name: "A", verdict: executable ? "ok" : "blocked", executable, reasons, quarantine_days_left: 6, used_by: [] }] });
   el.view = "cleanup";
   el.journal = [];
+  el.plan = plan(false, ["quarantine_too_short"]);
   el.render();
-  assert.ok(shadow.innerHTML.includes("cannot be executed yet") && !shadow.innerHTML.includes("data-plan-confirm"));
+  assert.ok(!shadow.innerHTML.includes("data-plan-confirm") && shadow.innerHTML.includes("No executable actions") && shadow.innerHTML.includes("quarantine is still too short. (6 days to go)"));
+  el.plan = plan(true, []);
+  el._hass = { language: "en", callWS: async () => ({ plan_id: "p2", token: "t", expires_at: "x", execute: ["sensor.a"], removals: ["sensor.a"], needs_acknowledgement: [], skipped: [] }) };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("data-plan-confirm"));
+  await el.confirmPlan();
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Type “REMOVE”") && shadow.innerHTML.includes("creates a Home Assistant backup first"));
+  el.confirmWord = "remove";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("disabled>Run now"));
+});
+
+test("removal candidates are the quarantined entities and wait for the quarantine period", () => {
+  const { el, shadow } = panel("en");
+  const ago = n => new Date(Date.now() - n * 864e5 - 3600e3).toISOString();
+  const item = id => ({ object_type: "entity", object_id: id, name: id, status: "disabled" });
+  el.data = { ...DATA, meta: { ...DATA.meta, quarantine_days: 14 }, objects: [item("sensor.old"), item("sensor.new")], edges: [], findings: [],
+    quarantine: [{ object_id: "sensor.old", plan_id: "p", since: ago(20) }, { object_id: "sensor.new", plan_id: "p", since: ago(2) }] };
+  el.journal = [];
+  el.view = "cleanup";
+  el.cleanupKind = "remove_entity";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Candidates (2)") && html.includes("Ready") && html.includes("12 days to go") && html.includes("Removal is possible only after 14 days"));
+  assert.ok(/data-sel="sensor.new"[^>]*disabled/.test(html) && !/data-sel="sensor.old"[^>]*disabled/.test(html));
+  assert.equal(JSON.stringify(el._cleanupVisible), JSON.stringify(["sensor.old"]));
+  el.lv.cleanup.f.readiness = "waiting";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("sensor.new") && !shadow.innerHTML.includes('data-sel="sensor.old"'));
 });
 
 test("the safety badge sits in the header, the sidebar is fixed, and tiles are equal width", () => {

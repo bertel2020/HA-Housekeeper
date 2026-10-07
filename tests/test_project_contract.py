@@ -76,14 +76,16 @@ def test_cleanup_plans_never_change_home_assistant() -> None:
 
 
 def test_only_the_cleanup_runner_changes_the_registry() -> None:
-    """Writes live in cleanup_exec.py and are limited to reversible entity updates."""
+    """Registry writes live in cleanup_exec.py: disabling and, after quarantine and backup, removing."""
     runner = (COMPONENT / "cleanup_exec.py").read_text(encoding="utf-8")
-    assert "async_update_entity" in runner
-    assert "async_remove" not in runner  # removing entities is not implemented yet
+    assert "async_update_entity" in runner and "registry.async_remove(" in runner
+    assert "async_remove_device" not in runner  # devices are not cleaned up
     for path in COMPONENT.glob("*.py"):
         if path.name == "cleanup_exec.py":
             continue
-        assert "async_update_entity" not in path.read_text(encoding="utf-8"), path.name
+        source = path.read_text(encoding="utf-8")
+        assert "async_update_entity" not in source, path.name
+        assert "registry.async_remove(" not in source, path.name
 
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:

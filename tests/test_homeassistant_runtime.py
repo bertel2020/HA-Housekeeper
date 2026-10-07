@@ -476,13 +476,13 @@ async def test_cleanup_plan_is_a_dry_run_recorded_in_the_journal(
     await client.send_json_auto_id(
         {
             "type": "ha_housekeeper/plan_create",
-            "actions": [{"kind": "remove_entity", "object_id": orphan.entity_id}],
+            "actions": [{"kind": "disable_entity", "object_id": orphan.entity_id}],
         }
     )
     plan = (await client.receive_json())["result"]
     assert plan["executed"] is False and plan["status"] == "dry_run"
     assert plan["actions"][0]["verdict"] == "ok"
-    assert registry.async_get(orphan.entity_id) is not None  # nothing was removed
+    assert registry.async_get(orphan.entity_id).disabled_by is None  # nothing was changed
 
     await client.send_json_auto_id({"type": "ha_housekeeper/plan_list"})
     assert (await client.receive_json())["result"]["plans"][0]["plan_id"] == plan["plan_id"]

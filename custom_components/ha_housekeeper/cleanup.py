@@ -10,20 +10,20 @@ import hashlib
 import json
 import secrets
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import IGNORE_LABEL, JOURNAL_STORAGE_KEY, STORAGE_VERSION
+from .const import IGNORE_LABEL, JOURNAL_STORAGE_KEY, QUARANTINE_DAYS, STORAGE_VERSION
 
 USAGE_RELATIONS = frozenset(
     {"TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"}
 )
 ACTION_KINDS = frozenset({"disable_entity", "remove_entity"})
-# Only quarantine (disabling) can be executed; removing stays a preview for now.
-EXECUTABLE_KINDS = frozenset({"disable_entity"})
+# Disabling is the quarantine; removing is only allowed after a full quarantine period.
+EXECUTABLE_KINDS = frozenset({"disable_entity", "remove_entity"})
 REMOVABLE_STATUSES = frozenset({"orphaned", "unavailable", "unknown", "disabled"})
 DISABLEABLE_STATUSES = frozenset({"orphaned", "unavailable", "unknown"})
 PLAN_MAX_AGE_HOURS = 24
@@ -101,9 +101,20 @@ def _used_by(edges: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
 
 
 def judge_action(
-    kind: str, object_id: str, objects: dict[str, dict[str, Any]], edges: list[dict[str, Any]]
+    kind: str,
+    object_id: str,
+    objects: dict[str, dict[str, Any]],
+    edges: list[dict[str, Any]],
+    quarantine: dict[str, str] | None = None,
+    restorable: bool | None = None,
+    now: datetime | None = None,
 ) -> dict[str, Any]:
-    """Judge one candidate. Verdicts: ``ok`` (no known use), ``review``, ``blocked``."""
+    """Judge one candidate. Verdicts: ``ok`` (no known use), ``review``, ``blocked``.
+
+    ``quarantine`` maps entity IDs to when Housekeeper disabled them; removal is only
+    allowed after ``QUARANTINE_DAYS``. ``restorable`` tells whether a removed entity could be
+    brought back (its config entry still exists).
+    """
     action: dict[str, Any] = {
         "kind": kind,
         "object_id": object_id,
@@ -140,8 +151,27 @@ def judge_action(
         reasons.append("has_statistics")
     if item.get("labels") and IGNORE_LABEL in item["labels"]:
         reasons.append("ignored_by_label")
+    if kind == "remove_entity":
+        since = (quarantine or {}).get(object_id)
+        if since is None:
+            reasons.append("not_quarantined")
+        else:
+            age = (now or datetime.now(UTC)) - datetime.fromisoformat(since)
+            action["quarantine_since"] = since
+            if age < timedelta(days=QUARANTINE_DAYS):
+                reasons.append("quarantine_too_short")
+                action["quarantine_days_left"] = QUARANTINE_DAYS - age.days
+        action["restorable"] = restorable
+        if restorable is False:
+            reasons.append("not_restorable")
 
-    if {"entity_working", "used_certain", "already_disabled"} & set(reasons):
+    if {
+        "entity_working",
+        "used_certain",
+        "already_disabled",
+        "not_quarantined",
+        "quarantine_too_short",
+    } & set(reasons):
         action["verdict"] = "blocked"
     elif reasons:
         action["verdict"] = "review"
@@ -155,12 +185,14 @@ def build_plan(
     requested: list[dict[str, str]],
     now: datetime,
     fingerprint: Callable[[str], str | None] | None = None,
+    restorable: Callable[[str], bool | None] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
     ``fingerprint`` returns the registry fingerprint of an entity so that execution can
-    detect changes made after the preview.
+    detect changes made after the preview; ``restorable`` tells whether a removal could be undone.
     """
+    quarantine = {q["object_id"]: q["since"] for q in snapshot.get("quarantine", [])}
     objects = {
         item["object_id"]: item for item in snapshot["objects"] if item["object_type"] == "entity"
     }
@@ -171,7 +203,14 @@ def build_plan(
         if identity in seen:
             continue
         seen.add(identity)
-        action = judge_action(*identity, objects, snapshot["edges"])
+        action = judge_action(
+            *identity,
+            objects,
+            snapshot["edges"],
+            quarantine,
+            restorable(identity[1]) if restorable else None,
+            now,
+        )
         action["fingerprint"] = fingerprint(identity[1]) if fingerprint else None
         action["executable"] = identity[0] in EXECUTABLE_KINDS and action["verdict"] != "blocked"
         actions.append(action)
