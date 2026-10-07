@@ -444,6 +444,32 @@ Object.assign(TEXT.en, {
   cause_entry_problem_error: "The integration is not loaded ({state}). Message: {error}",
 });
 
+// Texts for the property cards on entity and device pages; merged into TEXT.
+Object.assign(TEXT.de, {
+  propAssignment: "Zuordnung", propProperties: "Eigenschaften", propTechnical: "Technische Angaben", propTimes: "Zeiten", propDevice: "Gerät", propEntities: "Entities des Geräts",
+  propIntegration: "Integration", propDeviceOf: "Gerät", propArea: "Bereich", propAreaInherited: "{area} (vom Gerät)", propLabels: "Labels", propNone: "–",
+  propDomain: "Typ", propDeviceClass: "Geräteklasse", propStateClass: "Zustandsklasse", propUnit: "Einheit", propCategory: "Kategorie", propOriginalName: "Originalname", propAliases: "Aliase", propIcon: "Symbol",
+  propDisabledBy: "Deaktiviert durch", propHiddenBy: "Ausgeblendet durch", propEntityId: "Entity-ID", propUniqueId: "Eindeutige ID", propPlatform: "Plattform",
+  propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung",
+  propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
+  propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
+  propMoreEntities: "… und {count} weitere (siehe Beziehungen)", propNoEntities: "Dieses Gerät hat keine Entities.",
+  by_user: "Benutzer", by_integration: "Integration", by_config_entry: "Integrationseintrag (deaktiviert)", by_device: "Gerät (deaktiviert)", by_hass: "Home Assistant",
+  cat_config: "Konfiguration", cat_diagnostic: "Diagnose", type_service: "Dienst (kein physisches Gerät)",
+});
+Object.assign(TEXT.en, {
+  propAssignment: "Assignment", propProperties: "Properties", propTechnical: "Technical details", propTimes: "Times", propDevice: "Device", propEntities: "Entities of the device",
+  propIntegration: "Integration", propDeviceOf: "Device", propArea: "Area", propAreaInherited: "{area} (from the device)", propLabels: "Labels", propNone: "–",
+  propDomain: "Type", propDeviceClass: "Device class", propStateClass: "State class", propUnit: "Unit", propCategory: "Category", propOriginalName: "Original name", propAliases: "Aliases", propIcon: "Icon",
+  propDisabledBy: "Disabled by", propHiddenBy: "Hidden by", propEntityId: "Entity ID", propUniqueId: "Unique ID", propPlatform: "Platform",
+  propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update",
+  propManufacturer: "Manufacturer", propModel: "Model", propSerial: "Serial number", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Kind", propUserName: "Custom name", propOriginalDeviceName: "Name from the integration",
+  propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
+  propMoreEntities: "… and {count} more (see relations)", propNoEntities: "This device has no entities.",
+  by_user: "User", by_integration: "Integration", by_config_entry: "Integration entry (disabled)", by_device: "Device (disabled)", by_hass: "Home Assistant",
+  cat_config: "Configuration", cat_diagnostic: "Diagnostic", type_service: "Service (not a physical device)",
+});
+
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
 class ThemeMixin {
   // Display preferences live in this browser only; storage may be unavailable.
@@ -600,6 +626,7 @@ class StylesMixin {
       h1{font-size:calc(28px*var(--hk-fs,1));letter-spacing:-.015em}.eyebrow{font-weight:700}
       .nav.active{box-shadow:inset 3px 0 0 var(--hk-blue)}.nav{border-radius:10px}.nav em{font-weight:600}.nav.active em{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
       .panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
+      .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
@@ -1678,15 +1705,123 @@ class DiagnosisMixin {
       ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
     const attrs = item.attributes && Object.keys(item.attributes).length
       ? `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>` : "";
+    const cards = this.propertyCards(item);
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
     const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
       <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
-      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.integrationCard(item)}${this.impactCard(item, key)}
-        <section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>
+      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}
+        ${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}
         ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
       <div class="stack">${this.factsCard(item, key)}${this.findingsCard(key)}${this.relationsCard(key)}</div></div>`;
+  }
+}
+
+// PropertiesMixin: property cards for entity and device pages (assignment, properties, technical data, times).
+class PropertiesMixin {
+  propLink(key, text, sub = "") {
+    const obj = this.findObject(key);
+    if (!obj) return this.esc(text);
+    return `<button class="link" data-object="${this.esc(key)}">${this.esc(text)}</button>${sub ? ` <small>${this.esc(sub)}</small>` : ""}`;
+  }
+
+  propChips(names) { return names.length ? `<span class="chips" style="padding:0;border:0">${names.map(n => `<span class="chip">${this.esc(n)}</span>`).join("")}</span>` : ""; }
+
+  propTime(value) { return value ? `${this.esc(this.formatDate(value))} <small>${this.esc(this.relTime(value))}</small>` : ""; }
+
+  propCard(title, icon, rows) {
+    const shown = rows.filter(r => r && r[1] !== "" && r[1] !== null && r[1] !== undefined);
+    if (!shown.length) return "";
+    return `<section class="panel"><div class="panelhead"><h2><ha-icon icon="${icon}" style="--mdc-icon-size:18px;vertical-align:-3px;margin-right:6px;color:var(--hk-muted)"></ha-icon>${this.esc(title)}</h2></div><div class="pad"><dl class="kv">${shown.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${v}</dd>`).join("")}</dl></div></section>`;
+  }
+
+  propCode(value) { return value ? `<code>${this.esc(value)}</code>` : ""; }
+
+  propArea(areaId, deviceAreaId) {
+    const name = id => this.findObject(`area:${id}`)?.name || id;
+    if (areaId) return this.propLink(`area:${areaId}`, name(areaId));
+    return deviceAreaId ? this.t("propAreaInherited", { area: this.esc(name(deviceAreaId)) }) : "";
+  }
+
+  propLabels(ids) { return this.propChips((ids || []).map(id => this.findObject(`label:${id}`)?.name || id)); }
+
+  propBy(value) { return value ? this.t(`by_${value}`) : ""; }
+
+  entityCards(item) {
+    const t = k => this.t(k), device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+    const entry = item.config_entry_id ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
+    const integration = entry ? this.propLink(`config_entry:${entry.object_id}`, entry.integration_name || entry.name, entry.integration_name ? `(${entry.domain})` : "") : this.esc(item.platform || "");
+    const deviceSub = device ? [device.manufacturer, device.model].filter(Boolean).join(" ") : "";
+    const assignment = this.propCard(t("propAssignment"), "mdi:link-variant", [
+      [t("propIntegration"), integration],
+      [t("propDeviceOf"), device ? this.propLink(`device:${device.object_id}`, device.name, deviceSub) : ""],
+      [t("propArea"), this.propArea(item.area_id, device?.area_id)],
+      [t("propLabels"), this.propLabels(item.labels)],
+    ]);
+    const properties = this.propCard(t("propProperties"), "mdi:tune-variant", [
+      [t("propDomain"), this.esc(item.object_id.split(".")[0])],
+      [t("propDeviceClass"), this.esc(item.device_class || "")],
+      [t("propStateClass"), this.esc(item.state_class || item.attributes?.state_class || "")],
+      [t("propUnit"), this.esc(item.unit || "")],
+      [t("propCategory"), item.entity_category ? this.esc(this.t(`cat_${item.entity_category}`)) : ""],
+      [t("propOriginalName"), item.original_name && item.original_name !== item.name ? this.esc(item.original_name) : ""],
+      [t("propAliases"), this.propChips(item.aliases || [])],
+      [t("propIcon"), item.icon ? this.propCode(item.icon) : ""],
+      [t("propDisabledBy"), this.esc(this.propBy(item.disabled_by))],
+      [t("propHiddenBy"), this.esc(this.propBy(item.hidden_by))],
+    ]);
+    const technical = this.propCard(t("propTechnical"), "mdi:identifier", [
+      [t("propEntityId"), this.propCode(item.object_id)], [t("propUniqueId"), this.propCode(item.unique_id)], [t("propPlatform"), this.propCode(item.platform)],
+    ]);
+    const times = this.propCard(t("propTimes"), "mdi:clock-outline", [
+      [t("propCreated"), this.propTime(item.created_at)], [t("propModified"), this.propTime(item.modified_at)],
+      [t("propLastChanged"), this.propTime(item.last_changed)], [t("propLastUpdated"), this.propTime(item.last_updated)],
+    ]);
+    return assignment + properties + technical + times;
+  }
+
+  deviceCards(item) {
+    const t = k => this.t(k);
+    const via = item.via_device_id ? this.findObject(`device:${item.via_device_id}`) : null;
+    const children = this.data.objects.filter(o => o.object_type === "device" && o.via_device_id === item.object_id);
+    const entries = (item.config_entry_ids || []).map(id => this.findObject(`config_entry:${id}`)).filter(Boolean);
+    const info = this.propCard(t("propDevice"), "mdi:devices", [
+      [t("propManufacturer"), this.esc(item.manufacturer || "")],
+      [t("propModel"), this.esc([item.model, item.model_id && item.model_id !== item.model ? `(${item.model_id})` : ""].filter(Boolean).join(" "))],
+      [t("propSerial"), this.propCode(item.serial_number)],
+      [t("propFirmware"), this.esc(item.sw_version || "")],
+      [t("propHardware"), this.esc(item.hw_version || "")],
+      [t("propEntryType"), item.entry_type ? this.esc(this.t(`type_${item.entry_type}`) === `type_${item.entry_type}` ? item.entry_type : this.t(`type_${item.entry_type}`)) : ""],
+      [t("propUserName"), item.original_name ? this.esc(item.name) : ""],
+      [t("propOriginalDeviceName"), this.esc(item.original_name || "")],
+    ]);
+    const assignment = this.propCard(t("propAssignment"), "mdi:link-variant", [
+      [t("propIntegration"), entries.map(e => this.propLink(`config_entry:${e.object_id}`, e.integration_name || e.name, e.integration_name ? `(${e.domain})` : "")).join("<br>")],
+      [t("propArea"), this.propArea(item.area_id, null)],
+      [t("propVia"), via ? this.propLink(`device:${via.object_id}`, via.name) : ""],
+      [t("propChildren"), children.length ? this.t("propChildrenCount", { count: children.length }) : ""],
+      [t("propLabels"), this.propLabels(item.labels)],
+      [t("propConfigUrl"), /^https?:\/\//i.test(item.configuration_url || "") ? `<a href="${this.esc(item.configuration_url)}" target="_blank" rel="noopener noreferrer">${this.esc(item.configuration_url)}</a>` : this.esc(item.configuration_url || "")],
+    ]);
+    const members = this.data.objects.filter(o => o.object_type === "entity" && o.device_id === item.object_id).sort((a, b) => a.name.localeCompare(b.name));
+    const LIMIT = 25;
+    const memberRows = members.slice(0, LIMIT).map(m => `<button class="row rel" data-object="entity:${this.esc(m.object_id)}">${this.tile("entity", this.tone(m.status) === "ok" ? "" : this.tone(m.status))}<span class="row-text"><strong>${this.esc(m.name)}</strong><small>${this.esc(m.object_id)}${m.state !== null && m.state !== undefined ? ` · ${this.esc(m.state)}${m.unit ? ` ${this.esc(m.unit)}` : ""}` : ""}</small></span>${this.pill(m.status)}</button>`).join("");
+    const entities = `<section class="panel wide"><div class="panelhead"><h2><ha-icon icon="mdi:shape-outline" style="--mdc-icon-size:18px;vertical-align:-3px;margin-right:6px;color:var(--hk-muted)"></ha-icon>${t("propEntities")} (${members.length})</h2></div>${memberRows || `<div class="emptymsg">${t("propNoEntities")}</div>`}${members.length > LIMIT ? `<p class="factnote">${this.t("propMoreEntities", { count: members.length - LIMIT })}</p>` : ""}</section>`;
+    const technical = this.propCard(t("propTechnical"), "mdi:identifier", [
+      [t("propDeviceId"), this.propCode(item.object_id)],
+      [t("propIdentifiers"), (item.identifiers || []).map(v => this.propCode(v)).join("<br>")],
+      [t("propConnections"), (item.connections || []).map(v => this.propCode(v)).join("<br>")],
+    ]);
+    const times = this.propCard(t("propTimes"), "mdi:clock-outline", [[t("propCreated"), this.propTime(item.created_at)], [t("propModified"), this.propTime(item.modified_at)]]);
+    return info + assignment + entities + technical + times;
+  }
+
+  propertyCards(item) {
+    if (item.object_type === "entity") return this.entityCards(item);
+    if (item.object_type === "device") return this.deviceCards(item);
+    if (item.object_type === "config_entry") return this.integrationCard(item);
+    return "";
   }
 }
 
@@ -2040,7 +2175,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, UnusedMixin, DiagnosisMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

@@ -1025,3 +1025,36 @@ test("an ignored discovery is explained and not shown as a problem", () => {
   el.selected = null; el.view = "overview"; el.render();
   assert.ok(!shadow.innerHTML.includes("FBH Diele"));
 });
+
+const propertyData = () => {
+  const entry = { object_type: "config_entry", object_id: "ce1", name: "Hue Bridge", domain: "hue", integration_name: "Philips Hue", status: "active", state: "loaded" };
+  const device = { object_type: "device", object_id: "dev1", name: "Küchenlampe", original_name: "Hue color lamp", manufacturer: "Signify", model: "LCT015", model_id: "9290", serial_number: "SN1", sw_version: "1.88", hw_version: "2", entry_type: null,
+    configuration_url: "https://hue.local", area_id: "kitchen", via_device_id: "hub", config_entry_ids: ["ce1"], labels: ["lbl"], identifiers: ["hue:abc"], connections: ["mac:aa:bb"], status: "active", entity_count: 1, created_at: "2026-09-01T10:00:00+00:00" };
+  const hub = { object_type: "device", object_id: "hub", name: "Hue Hub", status: "active", config_entry_ids: ["ce1"], labels: [] };
+  const entity = { object_type: "entity", object_id: "light.kitchen", name: "Küche", original_name: "Color lamp", unique_id: "u-1", platform: "hue", device_id: "dev1", config_entry_id: "ce1", area_id: null, labels: ["lbl"], aliases: ["Deckenlicht"],
+    entity_category: "diagnostic", disabled_by: "user", hidden_by: "integration", icon: "mdi:lamp", status: "active", state: "on", unit: "W", state_class: "measurement", device_class: "light", created_at: "2026-09-01T10:00:00+00:00", last_changed: "2026-10-07T09:00:00+00:00" };
+  return { ...DATA, objects: [entry, device, hub, entity, { object_type: "area", object_id: "kitchen", name: "Küche (Raum)", status: "active" }, { object_type: "label", object_id: "lbl", name: "Wichtig", status: "active" }], edges: [], findings: [] };
+};
+
+test("an entity page shows its integration, device, area, labels and technical data", () => {
+  const { el, shadow } = panel("de");
+  el.data = propertyData();
+  el.selected = el.data.objects.find(o => o.object_id === "light.kitchen"); el.view = "detail"; el.details = new Map();
+  el.render();
+  const html = shadow.innerHTML;
+  for (const text of ["Zuordnung", "Philips Hue", "(hue)", 'data-object="config_entry:ce1"', "Küchenlampe", "Signify LCT015", 'data-object="device:dev1"', "(vom Gerät)",
+    "Wichtig", "Eigenschaften", "Diagnose", "Zustandsklasse", "measurement", "Color lamp", "Deckenlicht", "mdi:lamp", "Benutzer", "Integration", "Technische Angaben", "u-1", "Zeiten", "Letzter Zustandswechsel"]) assert.ok(html.includes(text), text);
+  assert.ok(!html.includes("<dt>reason</dt>"));
+});
+
+test("a device page lists manufacturer, firmware, links and its entities", () => {
+  const { el, shadow } = panel("de");
+  el.data = propertyData();
+  el.selected = el.data.objects.find(o => o.object_id === "dev1"); el.view = "detail"; el.details = new Map();
+  el.render();
+  const html = shadow.innerHTML;
+  for (const text of ["Signify", "LCT015 (9290)", "SN1", "1.88", "Name laut Integration", "Hue color lamp", "Philips Hue", 'data-object="area:kitchen"', "Hue Hub", 'data-object="device:hub"', "Wichtig",
+    'href="https://hue.local"', "Entities des Geräts (1)", 'data-object="entity:light.kitchen"', "hue:abc", "mac:aa:bb", "Technische Angaben"]) assert.ok(html.includes(text), text);
+  el.selected = el.data.objects.find(o => o.object_id === "hub"); el.render();
+  assert.ok(shadow.innerHTML.includes("1 Geräte") && shadow.innerHTML.includes("hat keine Entities"));
+});
