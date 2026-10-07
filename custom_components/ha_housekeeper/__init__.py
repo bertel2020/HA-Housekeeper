@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from homeassistant.components import frontend, panel_custom
@@ -13,6 +14,16 @@ from homeassistant.helpers.typing import ConfigType
 from .const import DOMAIN, FRONTEND_URL, PANEL_ELEMENT, PANEL_URL
 from .inventory import InventoryScanner
 from .websocket_api import async_register as async_register_websocket
+
+_LOGGER = logging.getLogger(__name__)
+
+
+async def _async_initial_scan(scanner: InventoryScanner) -> None:
+    """Run the initial scan without leaking a background-task exception."""
+    try:
+        await scanner.async_scan()
+    except Exception:  # Scanner status retains the user-facing error.
+        _LOGGER.exception("Initial HA Housekeeper inventory scan failed")
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -45,7 +56,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config={"entry_id": entry.entry_id},
         config_panel_domain=DOMAIN,
     )
-    hass.async_create_task(scanner.async_scan())
+    entry.async_create_background_task(
+        hass,
+        _async_initial_scan(scanner),
+        "HA Housekeeper initial inventory scan",
+    )
     return True
 
 

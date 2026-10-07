@@ -13,7 +13,11 @@ from homeassistant.data_entry_flow import FlowResultType  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
 
 from custom_components.ha_housekeeper.const import DOMAIN  # noqa: E402
-from custom_components.ha_housekeeper.inventory import InventoryScanner  # noqa: E402
+from custom_components.ha_housekeeper.inventory import (  # noqa: E402
+    InventoryScanner,
+    _device_config_entry_ids,
+    _registry_entries,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -57,3 +61,21 @@ async def test_scanner_reads_entity_registry_and_state(hass: HomeAssistant) -> N
     assert item["status"] == "active"
     assert item["reason"] == "state_available"
     assert snapshot["meta"]["read_only"] is True
+
+
+async def test_registry_helpers_accept_old_and_new_home_assistant_shapes() -> None:
+    """Registry adapters support mappings and HA 2026.10 read-only collections."""
+
+    class Entry:
+        def __init__(self, entry_id: str) -> None:
+            self.id = entry_id
+
+    old_entry = Entry("old")
+    new_entry = Entry("new")
+    assert _registry_entries({"old": old_entry}) == [old_entry]
+    assert _registry_entries((new_entry,)) == [new_entry]
+
+    legacy_device = type("LegacyDevice", (), {"config_entries": {"legacy"}})()
+    modern_device = type("ModernDevice", (), {"config_entry_id": "modern"})()
+    assert _device_config_entry_ids(legacy_device) == ["legacy"]
+    assert _device_config_entry_ids(modern_device) == ["modern"]

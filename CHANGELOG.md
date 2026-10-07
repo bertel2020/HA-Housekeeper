@@ -24,6 +24,9 @@ Lokal gegen Home Assistant 2026.2.3 validiert.
 - Add local contract tests, Home Assistant runtime tests, Ruff checks, HACS validation, and Hassfest validation.
 - Add a visible findings table that links diagnoses to affected entity and automation details.
 - Replace the short project note with complete English and German README documentation and reciprocal language links.
+- Fix WebSocket authorization on current Home Assistant releases by using the supported `require_admin` command decorator.
+- Support the read-only registry collection API introduced by current Home Assistant releases and the single-owner device model without deprecated accessors.
+- Return an actionable `scan_failed` message to the panel and track the initial background scan so failures are logged deliberately instead of as unhandled tasks.
 
 ### Deutsch
 
@@ -39,15 +42,18 @@ Lokal gegen Home Assistant 2026.2.3 validiert.
 - Lokale Vertragstests, Home-Assistant-Laufzeittests, Ruff-Prüfung, HACS-Validierung und Hassfest-Validierung ergänzt.
 - Sichtbare Befundtabelle ergänzt, die Diagnosen mit den betroffenen Entity- und Automationsdetails verknüpft.
 - Die kurze Projektbeschreibung durch vollständige englische und deutsche README-Dokumentation mit gegenseitigen Sprachverweisen ersetzt.
+- WebSocket-Autorisierung auf aktuellen Home-Assistant-Versionen durch Verwendung des unterstützten `require_admin`-Decorators korrigiert.
+- Die Read-only-Registry-Collections aktueller Home-Assistant-Versionen und das Geräte-Modell mit genau einem Besitzer werden ohne veraltete Zugriffe unterstützt.
+- Das Panel erhält bei Scanfehlern eine aussagekräftige `scan_failed`-Meldung; der initiale Hintergrundscan wird nachverfolgt, sodass Fehler gezielt statt als unbehandelte Tasks protokolliert werden.
 
 ## 0.1.0-alpha.1 — 2026-10-07
 
 ### English
 
 - Created the first installable read-only explorer skeleton.
-- Added the initial inventory, detail drawer, dependency view, translations, tests, project plan, logo concept, and MIT license.
+- Added the initial inventory, detail drawer, dependency view, translations, tests, and MIT license.
 
 ### Deutsch
 
 - Erstes installierbares Gerüst des schreibgeschützten Explorers erstellt.
-- Erstes Inventar, Detailansicht, Abhängigkeitsansicht, Übersetzungen, Tests, Projektplan, Logokonzept und MIT-Lizenz hinzugefügt.
+- Erstes Inventar, Detailansicht, Abhängigkeitsansicht, Übersetzungen, Tests und MIT-Lizenz hinzugefügt.

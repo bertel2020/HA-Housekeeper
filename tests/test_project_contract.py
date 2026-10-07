@@ -47,3 +47,21 @@ def test_websocket_api_is_read_only() -> None:
     assert "ha_housekeeper/inventory" not in source  # assembled from DOMAIN
     assert "async_remove" not in source
     assert "async_update_entity" not in source
+
+
+def test_every_websocket_command_uses_current_admin_decorator() -> None:
+    source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    assert source.count("@websocket_api.websocket_command") == 3
+    assert source.count("@websocket_api.require_admin") == 3
+    assert "connection.require_admin" not in source
+
+
+def test_websocket_scan_errors_are_actionable() -> None:
+    source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    assert 'connection.send_error(msg["id"], "scan_failed"' in source
+
+
+def test_initial_scan_uses_a_tracked_background_task() -> None:
+    source = (COMPONENT / "__init__.py").read_text(encoding="utf-8")
+    assert "entry.async_create_background_task" in source
+    assert "hass.async_create_task(scanner.async_scan())" not in source

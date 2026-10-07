@@ -43,6 +43,18 @@ def _enum(value: Any) -> str | None:
     return str(getattr(value, "value", value))
 
 
+def _registry_entries(collection: Any) -> list[Any]:
+    """Return entries from legacy mappings and modern read-only collections."""
+    return [collection[value] if isinstance(value, str) else value for value in collection]
+
+
+def _device_config_entry_ids(device: Any) -> list[str]:
+    """Return owning config entries without using HA's deprecated compatibility API."""
+    if config_entry_id := getattr(device, "config_entry_id", None):
+        return [config_entry_id]
+    return sorted(getattr(device, "config_entries", ()))
+
+
 def _entity_status(
     entry: Any,
     state: Any,
@@ -119,14 +131,19 @@ class InventoryScanner:
         label_registry = lr.async_get(self.hass)
         config_entries = self.hass.config_entries.async_entries()
         config_entries_by_id = {entry.entry_id: entry for entry in config_entries}
-        devices_by_id = dict(device_registry.devices)
+        entity_entries = _registry_entries(entity_registry.entities)
+        device_entries = _registry_entries(device_registry.devices)
+        area_entries = _registry_entries(area_registry.areas)
+        floor_entries = _registry_entries(floor_registry.floors)
+        label_entries = _registry_entries(label_registry.labels)
+        devices_by_id = {device.id: device for device in device_entries}
         observed_at = datetime.now(UTC)
 
         entities: list[dict[str, Any]] = []
         classifications: dict[str, str] = {}
         edges: list[dict[str, str]] = []
 
-        for entry in entity_registry.entities.values():
+        for entry in entity_entries:
             state = self.hass.states.get(entry.entity_id)
             status, reason = _entity_status(entry, state, config_entries_by_id, devices_by_id)
             classifications[f"entity:{entry.entity_id}"] = status
@@ -184,8 +201,9 @@ class InventoryScanner:
             )
 
         devices: list[dict[str, Any]] = []
-        for device in device_registry.devices.values():
+        for device in device_entries:
             device_entities = [e for e in entities if e["device_id"] == device.id]
+            device_config_entry_ids = _device_config_entry_ids(device)
             status = (
                 "disabled"
                 if device.disabled_by is not None
@@ -201,7 +219,7 @@ class InventoryScanner:
                     "model_id": getattr(device, "model_id", None),
                     "serial_number": getattr(device, "serial_number", None),
                     "area_id": device.area_id,
-                    "config_entry_ids": sorted(device.config_entries),
+                    "config_entry_ids": device_config_entry_ids,
                     "via_device_id": device.via_device_id,
                     "labels": sorted(device.labels),
                     "disabled_by": _enum(device.disabled_by),
@@ -211,7 +229,7 @@ class InventoryScanner:
                     "modified_at": _iso(getattr(device, "modified_at", None)),
                 }
             )
-            for config_entry_id in device.config_entries:
+            for config_entry_id in device_config_entry_ids:
                 edges.append(
                     {
                         "source": f"config_entry:{config_entry_id}",
@@ -240,7 +258,7 @@ class InventoryScanner:
                 "aliases": sorted(area.aliases),
                 "status": "active",
             }
-            for area in area_registry.areas.values()
+            for area in area_entries
         ]
 
         floors = [
@@ -252,7 +270,7 @@ class InventoryScanner:
                 "aliases": sorted(floor.aliases),
                 "status": "active",
             }
-            for floor in floor_registry.floors.values()
+            for floor in floor_entries
         ]
 
         labels = [
@@ -264,7 +282,7 @@ class InventoryScanner:
                 "color": label.color,
                 "status": "active",
             }
-            for label in label_registry.labels.values()
+            for label in label_entries
         ]
 
         for area in areas:
@@ -407,12 +425,12 @@ class InventoryScanner:
             return [], [], []
 
         existing = {
-            "entity": set(entity_registry.entities)
+            "entity": {entry.entity_id for entry in _registry_entries(entity_registry.entities)}
             | {state.entity_id for state in self.hass.states.async_all()},
-            "device": set(device_registry.devices),
-            "area": set(area_registry.areas),
-            "floor": set(floor_registry.floors),
-            "label": set(label_registry.labels),
+            "device": {entry.id for entry in _registry_entries(device_registry.devices)},
+            "area": {entry.id for entry in _registry_entries(area_registry.areas)},
+            "floor": {entry.floor_id for entry in _registry_entries(floor_registry.floors)},
+            "label": {entry.label_id for entry in _registry_entries(label_registry.labels)},
         }
         automations: list[dict[str, Any]] = []
         edges: list[dict[str, str]] = []

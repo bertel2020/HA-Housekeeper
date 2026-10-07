@@ -17,6 +17,24 @@ def _scanner(hass: HomeAssistant) -> InventoryScanner:
     return hass.data[DOMAIN]["scanner"]
 
 
+async def _send_inventory_result(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    *,
+    refresh: bool,
+) -> None:
+    """Send inventory data or a useful, admin-only scanner error."""
+    scanner = _scanner(hass)
+    try:
+        result = await (scanner.async_scan() if refresh else scanner.async_get_snapshot())
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], result)
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/inventory"})
 @websocket_api.async_response
 async def websocket_inventory(
@@ -25,10 +43,10 @@ async def websocket_inventory(
     msg: dict[str, Any],
 ) -> None:
     """Return the last inventory, scanning on first use."""
-    connection.require_admin()
-    connection.send_result(msg["id"], await _scanner(hass).async_get_snapshot())
+    await _send_inventory_result(hass, connection, msg, refresh=False)
 
 
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/scan"})
 @websocket_api.async_response
 async def websocket_scan(
@@ -37,10 +55,10 @@ async def websocket_scan(
     msg: dict[str, Any],
 ) -> None:
     """Run and return a fresh inventory scan."""
-    connection.require_admin()
-    connection.send_result(msg["id"], await _scanner(hass).async_scan())
+    await _send_inventory_result(hass, connection, msg, refresh=True)
 
 
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/status"})
 @callback
 def websocket_status(
@@ -49,7 +67,6 @@ def websocket_status(
     msg: dict[str, Any],
 ) -> None:
     """Return scan progress without triggering work."""
-    connection.require_admin()
     connection.send_result(msg["id"], _scanner(hass).status)
 
 
