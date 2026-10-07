@@ -1,0 +1,103 @@
+"""Sensors that expose the Housekeeper counts for dashboards and automations."""
+
+from __future__ import annotations
+
+from collections import Counter
+from datetime import datetime
+from typing import Any
+
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+from .const import DOMAIN, NAME, SIGNAL_SCAN_COMPLETE
+
+COUNT_KEYS = (
+    ("findings", "mdi:alert-outline"),
+    ("orphaned_entities", "mdi:ghost-outline"),
+    ("unavailable_entities", "mdi:lan-disconnect"),
+    ("broken_references", "mdi:link-off"),
+    ("possible_duplicates", "mdi:content-duplicate"),
+    ("unused_automations", "mdi:robot-off-outline"),
+    ("low_batteries", "mdi:battery-alert-variant-outline"),
+)
+
+
+def compute_values(snapshot: dict[str, Any] | None) -> dict[str, Any]:
+    """Derive the sensor values from a snapshot; hidden findings never count."""
+    if snapshot is None:
+        return {}
+    active = [f for f in snapshot["findings"] if not f.get("ignored")]
+    by_class = Counter(f["classification"] for f in active)
+    return {
+        "findings": len(active),
+        "orphaned_entities": by_class["orphaned"],
+        "unavailable_entities": by_class["unavailable"],
+        "broken_references": by_class["broken_reference"],
+        "possible_duplicates": by_class["possible_duplicate"],
+        "unused_automations": by_class["unused"],
+        "low_batteries": snapshot["meta"].get("low_batteries", 0),
+        "last_scan": datetime.fromisoformat(snapshot["meta"]["scanned_at"]),
+    }
+
+
+DESCRIPTIONS = (
+    *(
+        SensorEntityDescription(
+            key=key,
+            translation_key=key,
+            icon=icon,
+            state_class=SensorStateClass.MEASUREMENT,
+        )
+        for key, icon in COUNT_KEYS
+    ),
+    SensorEntityDescription(
+        key="last_scan", translation_key="last_scan", device_class=SensorDeviceClass.TIMESTAMP
+    ),
+)
+
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+) -> None:
+    """Create the Housekeeper sensors."""
+    async_add_entities(HousekeeperSensor(entry, description) for description in DESCRIPTIONS)
+
+
+class HousekeeperSensor(SensorEntity):
+    """One count or timestamp of the latest scan."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+
+    def __init__(self, entry: ConfigEntry, description: SensorEntityDescription) -> None:
+        self.entity_description = description
+        self._attr_unique_id = f"{entry.entry_id}_{description.key}"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)}, name=NAME, entry_type=DeviceEntryType.SERVICE
+        )
+
+    async def async_added_to_hass(self) -> None:
+        """Refresh whenever a scan finishes or findings are hidden."""
+        self._update()
+        self.async_on_remove(
+            async_dispatcher_connect(self.hass, SIGNAL_SCAN_COMPLETE, self._handle_update)
+        )
+
+    @callback
+    def _handle_update(self) -> None:
+        self._update()
+        self.async_write_ha_state()
+
+    def _update(self) -> None:
+        scanner = self.hass.data.get(DOMAIN, {}).get("scanner")
+        values = compute_values(scanner.snapshot if scanner else None)
+        self._attr_native_value = values.get(self.entity_description.key)

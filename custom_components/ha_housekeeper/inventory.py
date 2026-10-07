@@ -13,16 +13,34 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import floor_registry as fr
 from homeassistant.helpers import label_registry as lr
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .automation_analysis import (
     missing_references,
     summarize_automation_config,
     summarize_script_config,
 )
-from .const import DEFAULT_MIN_UNAVAILABLE_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS
-from .dashboard_analysis import extract_dashboard_references
+from .const import (
+    DEFAULT_MIN_UNAVAILABLE_DAYS,
+    DEFAULT_UNUSED_AUTOMATION_DAYS,
+    IGNORE_LABEL,
+    LOW_BATTERY_PERCENT,
+    SIGNAL_SCAN_COMPLETE,
+)
+from .dashboard_analysis import (
+    HELPER_DOMAINS,
+    extract_dashboard_references,
+    extract_helper_references,
+)
 from .history import ScanHistory
-from .hygiene import automation_hygiene_findings, duplicate_findings, mark_duplicates
+from .hygiene import (
+    automation_hygiene_findings,
+    duplicate_findings,
+    finding_key,
+    low_battery_ids,
+    mark_duplicates,
+)
+from .ignored import IgnoreStore
 from .issues import async_sync_issues
 from .observations import ObservationStore
 
@@ -93,6 +111,10 @@ def _entity_item(
         "name": entry.name or entry.original_name or (state.name if state else entry.entity_id),
         "unique_id": entry.unique_id,
         "platform": entry.platform,
+        "device_class": (state.attributes.get("device_class") if state else None)
+        or getattr(entry, "device_class", None)
+        or getattr(entry, "original_device_class", None),
+        "unit": state.attributes.get("unit_of_measurement") if state else None,
         "config_entry_id": entry.config_entry_id,
         "device_id": entry.device_id,
         "area_id": entry.area_id,
@@ -320,6 +342,7 @@ class InventoryScanner:
         self.hass = hass
         self.observations = ObservationStore(hass)
         self.history = ScanHistory(hass)
+        self.ignored = IgnoreStore(hass)
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None
         self._details: dict[str, dict[str, Any]] = {}
@@ -336,6 +359,7 @@ class InventoryScanner:
         """Load persisted observations."""
         await self.observations.async_load()
         await self.history.async_load()
+        await self.ignored.async_load()
 
     async def async_scan(self) -> dict[str, Any]:
         """Scan registries and states. Concurrent callers share serialized work."""
@@ -347,6 +371,7 @@ class InventoryScanner:
                 self._snapshot = snapshot
                 async_sync_issues(self.hass, snapshot["findings"])
                 self.history.record(snapshot)
+                async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
             except Exception as err:
@@ -415,6 +440,9 @@ class InventoryScanner:
         dashboards, dashboard_edges, dashboard_findings = await self._dashboard_inventory(
             self._existing_objects()
         )
+        existing_objects = self._existing_objects()
+        helper_edges, helper_findings = self._helper_inventory(existing_objects)
+        group_edges, group_findings = self._group_inventory(existing_objects)
         known_automation_ids = {item["object_id"] for item in automations}
         automations.extend(
             _fallback_automation_item(state)
@@ -435,7 +463,13 @@ class InventoryScanner:
             )
         mark_duplicates(entities)
 
-        edges = _structure_edges(entities, devices, areas) + automation_edges + dashboard_edges
+        edges = (
+            _structure_edges(entities, devices, areas)
+            + automation_edges
+            + dashboard_edges
+            + helper_edges
+            + group_edges
+        )
         objects = (
             entities + devices + integrations + areas + floors + labels + automations + dashboards
         )
@@ -448,7 +482,15 @@ class InventoryScanner:
             + automation_hygiene_findings(automations, observed_at, self.unused_automation_days)
             + automation_findings
             + dashboard_findings
+            + helper_findings
+            + group_findings
         )
+
+        entity_registry_entries = er.async_get(self.hass)
+        for finding in findings:
+            finding["key"] = finding_key(finding)
+            finding["ignored_by"] = self._ignored_by(finding, entity_registry_entries)
+            finding["ignored"] = finding["ignored_by"] is not None
 
         self.status.update(phase="finalizing", progress=90)
 
@@ -458,6 +500,9 @@ class InventoryScanner:
                 "read_only": True,
                 "min_unavailable_days": self.min_unavailable_days,
                 "unused_automation_days": self.unused_automation_days,
+                "ignore_label": IGNORE_LABEL,
+                "low_battery_percent": LOW_BATTERY_PERCENT,
+                "low_batteries": len(low_battery_ids(entities, LOW_BATTERY_PERCENT)),
                 "object_count": len(objects),
                 "status_counts": dict(Counter(item["status"] for item in objects)),
                 "type_counts": dict(Counter(item["object_type"] for item in objects)),
@@ -466,6 +511,29 @@ class InventoryScanner:
             "edges": edges,
             "findings": findings,
         }
+
+    def _ignored_by(self, finding: dict[str, Any], registry: Any) -> str | None:
+        """Return why a finding is hidden: by the user, or by the ignore label."""
+        if self.ignored.is_ignored(finding["key"]):
+            return "user"
+        entry = registry.async_get(finding["object_id"])
+        if entry is not None and IGNORE_LABEL in entry.labels:
+            return "label"
+        return None
+
+    def set_finding_ignored(self, key: str, ignored: bool) -> bool:
+        """Hide or show one finding in the stored state and the cached snapshot."""
+        finding = next(
+            (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
+        )
+        if finding is None:
+            return False
+        self.ignored.set_ignored(key, ignored, datetime.now(UTC))
+        finding["ignored_by"] = self._ignored_by(finding, er.async_get(self.hass))
+        finding["ignored"] = finding["ignored_by"] is not None
+        async_sync_issues(self.hass, self._snapshot["findings"])
+        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+        return True
 
     def _existing_objects(self) -> dict[str, set[str]]:
         """Collect the IDs a reference may legitimately point to."""
@@ -601,6 +669,87 @@ class InventoryScanner:
             edges + script_edges + scene_edges,
             findings + script_findings + scene_findings,
         )
+
+    def _helper_inventory(
+        self, existing: dict[str, set[str]]
+    ) -> tuple[list[dict[str, str]], list[dict[str, Any]]]:
+        """Link helper config entries (template, derivative, ...) to the entities they use."""
+        edges: list[dict[str, str]] = []
+        findings: list[dict[str, Any]] = []
+        for entry in self.hass.config_entries.async_entries():
+            if entry.domain not in HELPER_DOMAINS:
+                continue
+            references = extract_helper_references(dict(entry.options), existing["entity"])
+            edges.extend(
+                {
+                    "source": f"config_entry:{entry.entry_id}",
+                    "target": f"entity:{reference['object_id']}",
+                    "relation": reference["relation"],
+                    "confidence": reference["confidence"],
+                    "location": reference["location"],
+                }
+                for reference in references
+            )
+            findings.extend(
+                _missing_findings(
+                    "config_entry", entry.entry_id, missing_references(references, existing)
+                )
+            )
+        return edges, findings
+
+    def _group_inventory(
+        self, existing: dict[str, set[str]]
+    ) -> tuple[list[dict[str, str]], list[dict[str, Any]]]:
+        """Link groups (any entity listing members in ``entity_id``) to their members."""
+        edges: list[dict[str, str]] = []
+        findings: list[dict[str, Any]] = []
+        for state in self.hass.states.async_all():
+            if state.domain in {"automation", "script", "scene"}:
+                continue
+            members = state.attributes.get("entity_id")
+            if not isinstance(members, (list, tuple)) or not all(
+                isinstance(member, str) for member in members
+            ):
+                continue
+            references = [
+                {
+                    "kind": "entity",
+                    "object_id": member,
+                    "relation": "INCLUDES",
+                    "location": "entity_id",
+                    "confidence": "certain",
+                }
+                for member in members
+            ]
+            edges.extend(
+                {
+                    "source": f"entity:{state.entity_id}",
+                    "target": f"entity:{reference['object_id']}",
+                    "relation": reference["relation"],
+                    "confidence": reference["confidence"],
+                    "location": reference["location"],
+                }
+                for reference in references
+            )
+            for reference in missing_references(references, existing):
+                findings.append(
+                    {
+                        "rule_id": "entity.missing_member",
+                        "object_id": state.entity_id,
+                        "classification": "broken_reference",
+                        "confidence": 0.9,
+                        "first_detected_at": None,
+                        "affected_object": reference["object_id"],
+                        "evidence": [
+                            {
+                                "kind": "missing_reference",
+                                "source": "group_members",
+                                "location": "entity_id",
+                            }
+                        ],
+                    }
+                )
+        return edges, findings
 
     async def _dashboard_inventory(
         self, existing: dict[str, set[str]]

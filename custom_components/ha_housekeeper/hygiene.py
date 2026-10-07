@@ -10,6 +10,11 @@ SUFFIXED_NAME = re.compile(r"^(?P<base>.+?)_(?P<number>\d+)$")
 LEFTOVER_STATUSES = frozenset({"unavailable", "orphaned", "unknown"})
 
 
+def finding_key(finding: dict[str, Any]) -> str:
+    """Stable identity of a finding across scans."""
+    return f"{finding['rule_id']}|{finding['object_id']}|{finding.get('affected_object') or ''}"
+
+
 def mark_duplicates(entities: list[dict[str, Any]]) -> None:
     """Set ``duplicate_of`` on entities that look like leftovers of an active twin.
 
@@ -95,3 +100,31 @@ def automation_hygiene_findings(
                 if age is not None and age >= limit:
                     add(item, "never_triggered", age, 0.6)
     return findings
+
+
+def battery_level(item: dict[str, Any]) -> tuple[float | None, bool]:
+    """Return (percent, is_low_flag) for a working battery entity, else (None, False).
+
+    Battery sensors report a percentage; battery binary sensors report ``on`` when low.
+    """
+    if item.get("device_class") != "battery" or item.get("status") != "active":
+        return None, False
+    domain = item["object_id"].partition(".")[0]
+    if domain == "binary_sensor":
+        return None, item.get("state") == "on"
+    if domain == "sensor":
+        try:
+            return float(item["state"]), False
+        except (TypeError, ValueError):
+            return None, False
+    return None, False
+
+
+def low_battery_ids(entities: list[dict[str, Any]], threshold: int) -> list[str]:
+    """Return IDs of working batteries at or below ``threshold`` percent or flagged low."""
+    low = []
+    for item in entities:
+        level, flagged = battery_level(item)
+        if flagged or (level is not None and level <= threshold):
+            low.append(item["object_id"])
+    return low

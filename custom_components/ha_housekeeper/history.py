@@ -8,14 +8,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
 from .const import HISTORY_STORAGE_KEY, STORAGE_VERSION
+from .hygiene import finding_key as _finding_key
 
 SAVE_DELAY = 10
 MAX_DAILY = 7  # last scan of each of the previous days
 LIST_LIMIT = 500  # entries per section sent to the panel; totals stay exact
-
-
-def _finding_key(finding: dict[str, Any]) -> str:
-    return f"{finding['rule_id']}|{finding['object_id']}|{finding.get('affected_object') or ''}"
 
 
 def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:

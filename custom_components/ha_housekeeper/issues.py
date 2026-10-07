@@ -13,7 +13,7 @@ ISSUE_IDS = ("orphaned_entities", "unavailable_entities", "broken_automations")
 
 
 def _category(finding: dict[str, Any]) -> str:
-    if finding["rule_id"].startswith(("automation.", "script.", "scene.", "dashboard.")):
+    if finding["classification"] == "broken_reference":
         return "broken_automations"
     if finding["classification"] == "orphaned":
         return "orphaned_entities"
@@ -25,7 +25,10 @@ def async_sync_issues(hass: HomeAssistant, findings: list[dict[str, Any]]) -> No
     counts = dict.fromkeys(ISSUE_IDS, 0)
     for finding in findings:
         # Duplicate suspects and unused automations are hints for the panel, not repairs.
-        if finding["classification"] not in {"possible_duplicate", "unused"}:
+        if not finding.get("ignored") and finding["classification"] not in {
+            "possible_duplicate",
+            "unused",
+        }:
             counts[_category(finding)] += 1
 
     for issue_id, count in counts.items():

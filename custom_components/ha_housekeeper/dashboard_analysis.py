@@ -15,7 +15,17 @@ ENTITY_KEYS = frozenset({"entity", "entities", "entity_id", "camera_image", "bad
 def extract_dashboard_references(
     config: Mapping[str, Any] | None, known_entities: set[str]
 ) -> list[dict[str, str]]:
-    """Return entity references of a dashboard with their location.
+    """Return entity references of a dashboard with their location."""
+    return extract_entity_references(config, known_entities, ENTITY_KEYS, "SHOWS")
+
+
+def extract_entity_references(
+    config: Mapping[str, Any] | None,
+    known_entities: set[str],
+    keys: frozenset[str],
+    relation: str,
+) -> list[dict[str, str]]:
+    """Return entity references found under ``keys`` with their location.
 
     Explicit entity keys are ``certain``. Entity IDs inside templates are only
     reported as ``probable`` and only when the entity exists, so free text can
@@ -33,7 +43,7 @@ def extract_dashboard_references(
                 {
                     "kind": "entity",
                     "object_id": object_id,
-                    "relation": "SHOWS",
+                    "relation": relation,
                     "location": path,
                     "confidence": confidence,
                 }
@@ -47,7 +57,7 @@ def extract_dashboard_references(
             for index, child in enumerate(value):
                 walk(child, f"{path}/{index}", key)
         elif isinstance(value, str):
-            if key in ENTITY_KEYS and ENTITY_ID.match(value):
+            if key in keys and ENTITY_ID.match(value):
                 add(value, path, "certain")
             elif "{{" in value or "[[[" in value or "states" in value:
                 for match in ENTITY_IN_TEXT.findall(value):
@@ -56,3 +66,32 @@ def extract_dashboard_references(
 
     walk(config, "", None)
     return found
+
+
+# Config-entry helpers keep the entities they build on in their options.
+HELPER_DOMAINS = frozenset(
+    {
+        "template", "derivative", "integration", "min_max", "threshold", "utility_meter",
+        "statistics", "trend", "filter", "history_stats", "switch_as_x", "compensation",
+        "generic_hygrostat", "generic_thermostat",
+    }
+)  # fmt: skip
+HELPER_KEYS = frozenset(
+    {
+        "entity_id",
+        "entity_ids",
+        "entities",
+        "source",
+        "target_sensor",
+        "heater",
+        "cooler",
+        "humidifier",
+    }
+)
+
+
+def extract_helper_references(
+    options: Mapping[str, Any] | None, known_entities: set[str]
+) -> list[dict[str, str]]:
+    """Return the entities a helper config entry is built on."""
+    return extract_entity_references(options, known_entities, HELPER_KEYS, "REFERENCES")

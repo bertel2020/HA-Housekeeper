@@ -63,6 +63,9 @@ const TEXT = {
     cause_duplicate: "Es gibt eine funktionierende Entity mit fast gleicher ID von derselben Integration ({twin}). Diese hier ist sehr wahrscheinlich ein Überbleibsel, etwa nach dem erneuten Hinzufügen des Geräts.",
     hint_duplicate: "Die funktionierende Entity öffnen und vergleichen. Erst wenn nichts mehr auf diese Entity verweist, ist sie ein Kandidat zum Entfernen.",
     duplicateTwin: "Funktionierende Entity",
+    INCLUDES: "hat als Mitglied", missing_member: "Gruppenmitglied",
+    cause_group_broken: "Die Gruppe enthält {count} Mitglied(er), die nicht mehr existieren.", hint_group_broken: "Die Gruppe bearbeiten und die fehlenden Mitglieder entfernen.",
+    cause_helper_broken: "Dieser Helfer baut auf {count} Entity/Entities auf, die nicht mehr existieren.", hint_helper_broken: "Den Helfer bearbeiten und die fehlenden Quellen ersetzen.",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
     available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: nicht verfügbare Entities werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
@@ -159,6 +162,9 @@ const TEXT = {
     cause_duplicate: "A working entity with an almost identical ID from the same integration exists ({twin}). This one is very likely a leftover, for example after re-adding the device.",
     hint_duplicate: "Open the working entity and compare. Only when nothing references this entity any more is it a candidate for removal.",
     duplicateTwin: "Working entity",
+    INCLUDES: "has as member", missing_member: "Group member",
+    cause_group_broken: "The group contains {count} member(s) that no longer exist.", hint_group_broken: "Edit the group and remove the missing members.",
+    cause_helper_broken: "This helper builds on {count} entity/entities that no longer exist.", hint_helper_broken: "Edit the helper and replace the missing sources.",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
     available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
@@ -199,7 +205,7 @@ const ICONS = {
   label: "mdi:label-outline", script: "mdi:script-text-outline", scene: "mdi:palette-outline", dashboard: "mdi:view-dashboard-outline",
 };
 
-const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS"];
+const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"];
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
@@ -702,6 +708,8 @@ class HAHousekeeperPanel extends HTMLElement {
         case "state_unknown": cause = t("cause_state_unknown"); break;
         default: cause = item.reason ? t(item.reason) : "";
       }
+      const brokenMembers = this.data.findings.filter(f => f.rule_id === "entity.missing_member" && f.object_id === item.object_id);
+      brokenMembers.forEach(f => rows.push(this.check(t("missing_member"), "red", f.affected_object, t("missing"))));
       if (item.duplicate_of) {
         rows.push(this.check(t("duplicateTwin"), "violet", item.duplicate_of, t("possible_duplicate")));
         cause = `${t("cause_duplicate", { twin: item.duplicate_of })} ${cause}`;
@@ -711,6 +719,11 @@ class HAHousekeeperPanel extends HTMLElement {
       else if (item.reason === "state_missing" && broken) hint = t("hint_integration");
       else if (["state_missing", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
       if (item.duplicate_of) hint = t("hint_duplicate");
+      if (brokenMembers.length) {
+        cause = `${t("cause_group_broken", { count: brokenMembers.length })} ${cause}`;
+        hint = t("hint_group_broken");
+        tone = "red";
+      }
     } else if (item.object_type === "device") {
       const ids = item.config_entry_ids || [];
       ids.forEach(id => rows.push(this.integrationCheck(id).row));
@@ -721,6 +734,9 @@ class HAHousekeeperPanel extends HTMLElement {
       if (item.disabled_by) { rows.push(this.check(t("status"), "mute", item.name, t("disabled"))); cause = t("cause_entry_off"); }
       else if (state === "loaded") { rows.push(this.check(t("status"), "ok", item.name, t("cs_loaded"))); cause = t("cause_entry_ok"); }
       else { rows.push(this.check(t("status"), tone, item.name, t(`cs_${state}`))); cause = t("cause_entry_problem", { state: t(`cs_${state}`) }); hint = t("hint_integration"); }
+      const helperBroken = this.data.findings.filter(f => f.rule_id === "config_entry.missing_entity" && f.object_id === item.object_id);
+      helperBroken.forEach(f => rows.push(this.check(t("missing_entity"), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
+      if (helperBroken.length) { cause = t("cause_helper_broken", { count: helperBroken.length }); hint = t("hint_helper_broken"); tone = "red"; }
     } else if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) {
       const key = this.objectKey(item);
       const broken = this.data.findings.filter(f => this.findingKey(f) === key && f.rule_id.includes(".missing_"));
@@ -762,7 +778,7 @@ class HAHousekeeperPanel extends HTMLElement {
     }
     const byAutomation = new Map();
     for (const e of this.data.edges) {
-      if (!USAGE.includes(e.relation) || !scope.has(e.target) || !/^(automation|script|scene|dashboard):/.test(e.source)) continue;
+      if (!USAGE.includes(e.relation) || !scope.has(e.target) || scope.has(e.source) || !(/^(automation|script|scene|dashboard|config_entry):/.test(e.source) || e.relation === "INCLUDES")) continue;
       const hit = byAutomation.get(e.source) || { key: e.source, certain: false, places: [] };
       if (e.confidence === "certain") hit.certain = true;
       if (e.location && e.location !== "runtime_extraction") hit.places.push(e.location);

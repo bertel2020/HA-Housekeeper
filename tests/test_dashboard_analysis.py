@@ -54,3 +54,22 @@ def test_free_text_values_are_not_references() -> None:
 
     assert not any(ref["location"].endswith("/name") for ref in refs)
     assert extract_dashboard_references(None, KNOWN) == []
+
+
+def test_helper_options_reference_their_source_entities() -> None:
+    from custom_components.ha_housekeeper.dashboard_analysis import extract_helper_references
+
+    options = {
+        "name": "Energy",
+        "source": "sensor.temp",
+        "entity_ids": ["light.kitchen", "sensor.gone"],
+        "state": "{{ states('sun.sun') }} {{ states('sensor.unknown_thing') }}",
+    }
+    refs = {(r["object_id"], r["confidence"]) for r in extract_helper_references(options, KNOWN)}
+
+    assert refs == {
+        ("sensor.temp", "certain"),
+        ("light.kitchen", "certain"),
+        ("sensor.gone", "certain"),
+        ("sun.sun", "probable"),
+    }

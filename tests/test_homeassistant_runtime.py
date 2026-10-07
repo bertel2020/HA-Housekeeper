@@ -332,3 +332,92 @@ async def test_scan_flags_duplicates_and_keeps_hints_out_of_repairs(hass: HomeAs
     )
     assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is None
     assert snapshot["meta"]["unused_automation_days"] == 90
+
+
+async def test_groups_and_helpers_link_their_members(hass: HomeAssistant) -> None:
+    """Group members and helper sources become edges; vanished ones become findings."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    hass.states.async_set("light.present", "on")
+    hass.states.async_set("light.group", "on", {"entity_id": ["light.present", "light.vanished"]})
+    MockConfigEntry(
+        domain="derivative", title="Rate", options={"source": "sensor.gone_source"}
+    ).add_to_hass(hass)
+
+    snapshot = await InventoryScanner(hass).async_scan()
+
+    edges = {(e["source"], e["target"], e["relation"]) for e in snapshot["edges"]}
+    assert ("entity:light.group", "entity:light.present", "INCLUDES") in edges
+    rules = {(f["rule_id"], f["object_id"], f["affected_object"]) for f in snapshot["findings"]}
+    assert ("entity.missing_member", "light.group", "light.vanished") in rules
+    helper = next(f for f in snapshot["findings"] if f["rule_id"] == "config_entry.missing_entity")
+    assert helper["affected_object"] == "sensor.gone_source"
+    assert any(
+        s.startswith("config_entry:") and t == "entity:sensor.gone_source" for s, t, _ in edges
+    )
+
+
+async def test_findings_can_be_hidden_by_the_user_or_by_label(hass: HomeAssistant) -> None:
+    """Hidden findings stay in the snapshot but no longer produce Repairs hints."""
+    from homeassistant.helpers import issue_registry as ir
+    from homeassistant.helpers import label_registry as lr
+
+    registry = er.async_get(hass)
+    plain = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="p", suggested_object_id="plain"
+    )
+    labelled = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="l", suggested_object_id="labelled"
+    )
+    label = lr.async_get(hass).async_create("housekeeper_ignore")
+    registry.async_update_entity(labelled.entity_id, labels={label.label_id})
+
+    scanner = InventoryScanner(hass)
+    snapshot = await scanner.async_scan()
+    by_object = {f["object_id"]: f for f in snapshot["findings"]}
+
+    assert by_object[labelled.entity_id]["ignored_by"] == "label"
+    assert by_object[plain.entity_id]["ignored"] is False
+    issues = ir.async_get(hass)
+    assert issues.async_get_issue(DOMAIN, "orphaned_entities").translation_placeholders == {
+        "count": "1"
+    }
+
+    key = by_object[plain.entity_id]["key"]
+    assert scanner.set_finding_ignored(key, True) is True
+    assert by_object[plain.entity_id]["ignored_by"] == "user"
+    assert issues.async_get_issue(DOMAIN, "orphaned_entities") is None
+
+    assert scanner.set_finding_ignored(key, False) is True
+    assert by_object[plain.entity_id]["ignored"] is False
+    assert issues.async_get_issue(DOMAIN, "orphaned_entities") is not None
+    assert scanner.set_finding_ignored("does|not|exist", True) is False
+
+
+async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> None:
+    """The set-up entry provides count sensors that ignore hidden findings."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="s1", suggested_object_id="ghost"
+    )
+    scanner = hass.data[DOMAIN]["scanner"]
+    await scanner.async_scan()
+    await hass.async_block_till_done()
+
+    assert hass.states.get("sensor.ha_housekeeper_orphaned_entities").state == "1"
+    assert hass.states.get("sensor.ha_housekeeper_findings").state == "1"
+    assert hass.states.get("sensor.ha_housekeeper_last_scan").state not in {
+        "unknown",
+        "unavailable",
+    }
+
+    finding = scanner.snapshot["findings"][0]
+    scanner.set_finding_ignored(finding["key"], True)
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.ha_housekeeper_findings").state == "0"

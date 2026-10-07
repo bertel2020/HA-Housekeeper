@@ -126,6 +126,31 @@ async def websocket_compare(
     connection.send_result(msg["id"], scanner.history.compare(snapshot, msg["baseline"]))
 
 
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/ignore",
+        vol.Required("finding_key"): str,
+        vol.Required("ignored"): bool,
+    }
+)
+@callback
+def websocket_ignore(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Hide or show one finding. Only Housekeeper's own list changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    if not scanner.set_finding_ignored(msg["finding_key"], msg["ignored"]):
+        connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
+        return
+    connection.send_result(msg["id"], {"ignored": msg["ignored"]})
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register Housekeeper WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_inventory)
@@ -133,3 +158,4 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_status)
     websocket_api.async_register_command(hass, websocket_detail)
     websocket_api.async_register_command(hass, websocket_compare)
+    websocket_api.async_register_command(hass, websocket_ignore)

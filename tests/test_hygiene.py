@@ -88,3 +88,28 @@ def test_automation_hygiene_rules() -> None:
 
 def test_automation_without_any_age_information_is_never_reported() -> None:
     assert automation_hygiene_findings([_automation("automation.a", "active")], NOW, 90) == []
+
+
+def _battery(
+    object_id: str, state: str, status: str = "active", device_class: str = "battery"
+) -> dict:
+    return {"object_id": object_id, "state": state, "status": status, "device_class": device_class}
+
+
+def test_battery_levels_and_low_flags() -> None:
+    from custom_components.ha_housekeeper.hygiene import battery_level, low_battery_ids
+
+    entities = [
+        _battery("sensor.low", "12"),
+        _battery("sensor.edge", "20"),
+        _battery("sensor.ok", "85.5"),
+        _battery("sensor.broken", "unknown"),
+        _battery("sensor.off", "5", status="unavailable"),
+        _battery("sensor.temp", "3", device_class="temperature"),
+        _battery("binary_sensor.low_flag", "on"),
+        _battery("binary_sensor.fine_flag", "off"),
+    ]
+
+    assert battery_level(entities[2]) == (85.5, False)
+    assert battery_level(entities[3]) == (None, False)
+    assert low_battery_ids(entities, 20) == ["sensor.low", "sensor.edge", "binary_sensor.low_flag"]

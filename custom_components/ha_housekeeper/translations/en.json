@@ -34,8 +34,36 @@
       "description": "Housekeeper found {count} entities that have been unavailable longer than the configured threshold. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
     },
     "broken_automations": {
-      "title": "{count} automations, scripts, scenes or dashboards reference missing objects",
-      "description": "Housekeeper found {count} findings in automations, scripts, scenes or dashboards that reference missing entities, devices or areas. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+      "title": "{count} findings with missing references",
+      "description": "Housekeeper found {count} references to entities, devices or areas that no longer exist, in automations, scripts, scenes, dashboards, groups or helpers. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "findings": {
+        "name": "Findings"
+      },
+      "orphaned_entities": {
+        "name": "Orphaned entities"
+      },
+      "unavailable_entities": {
+        "name": "Unavailable entities"
+      },
+      "broken_references": {
+        "name": "Broken references"
+      },
+      "possible_duplicates": {
+        "name": "Possible duplicates"
+      },
+      "unused_automations": {
+        "name": "Unused automations"
+      },
+      "low_batteries": {
+        "name": "Low batteries"
+      },
+      "last_scan": {
+        "name": "Last scan"
+      }
     }
   }
 }
