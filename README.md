@@ -84,6 +84,10 @@ Für jede durchgehend beobachtete Klassifikation speichert Housekeeper, wann sie
 - genaue Fundstelle für explizite Referenzen, soweit verfügbar
 - Skripte, Szenen und Dashboards werden ebenso auf Referenzen und fehlende Ziele geprüft; die Detailseite zeigt unter **Auswirkung einer Entfernung**, was eine Entfernung betreffen würde (nur Analyse, ohne Änderung)
 
+### Änderungen seit dem letzten Scan
+
+Die Ansicht **Änderungen** vergleicht den aktuellen Stand mit dem Scan davor oder mit dem letzten Scan der vergangenen sieben Tage: Statuswechsel (verschlechtert zuerst), neue und behobene Befunde sowie neue und entfernte Objekte. Der Verlauf wird kompakt in Home Assistant gespeichert und enthält nur Status und IDs.
+
 ### Abhängigkeitsansicht
 
 Die Abhängigkeitsansicht stellt direkte Beziehungen dar, zum Beispiel:

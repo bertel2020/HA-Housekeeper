@@ -21,6 +21,7 @@ from .automation_analysis import (
 )
 from .const import DEFAULT_MIN_UNAVAILABLE_DAYS
 from .dashboard_analysis import extract_dashboard_references
+from .history import ScanHistory
 from .issues import async_sync_issues
 from .observations import ObservationStore
 
@@ -317,6 +318,7 @@ class InventoryScanner:
     def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
         self.observations = ObservationStore(hass)
+        self.history = ScanHistory(hass)
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None
         self._details: dict[str, dict[str, Any]] = {}
@@ -331,6 +333,7 @@ class InventoryScanner:
     async def async_initialize(self) -> None:
         """Load persisted observations."""
         await self.observations.async_load()
+        await self.history.async_load()
 
     async def async_scan(self) -> dict[str, Any]:
         """Scan registries and states. Concurrent callers share serialized work."""
@@ -341,6 +344,7 @@ class InventoryScanner:
                 self._details = _split_details(snapshot["objects"])
                 self._snapshot = snapshot
                 async_sync_issues(self.hass, snapshot["findings"])
+                self.history.record(snapshot)
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
             except Exception as err:

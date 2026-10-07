@@ -244,3 +244,54 @@ test("dashboards get paths, diagnosis and count as usage in impact", () => {
   assert.equal(el.impact({ object_type: "dashboard", object_id: "x" }, "dashboard:x"), null);
   assert.ok(el.t("SHOWS") !== "SHOWS");
 });
+
+const COMPARE = {
+  available: true, baseline: "previous", baselines: [{ id: "previous", at: "2026-10-06T10:00:00+00:00" }, { id: "2026-10-05T20:00:00+00:00", at: "2026-10-05T20:00:00+00:00" }],
+  baseline_at: "2026-10-06T10:00:00+00:00", scanned_at: "2026-10-07T10:00:00+00:00",
+  status_changes: { total: 2, items: [
+    { object_type: "entity", object_id: "sensor.b", name: "B", from: "unavailable", to: "active" },
+    { object_type: "entity", object_id: "sensor.a", name: "<b>A</b>", from: "active", to: "unavailable" },
+  ] },
+  new_findings: { total: 1, items: [DATA.findings[0]] },
+  resolved_findings: { total: 1, items: [{ rule_id: "entity.state_missing", object_id: "sensor.gone", affected_object: null }] },
+  new_objects: { total: 0, items: [] },
+  removed_objects: { total: 1, items: [{ object_type: "entity", object_id: "sensor.gone" }] },
+};
+
+test("changes view lists worsened changes first and escapes names", () => {
+  const { el, shadow } = panel("de");
+  el.view = "changes";
+  el.compare = COMPARE;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("&lt;b&gt;A&lt;/b&gt;") && !html.includes("<b>A</b>"));
+  assert.ok(html.indexOf("&lt;b&gt;A") < html.indexOf(">B<"), "worsened change must come first");
+  assert.ok(html.includes('id="baseline"'));
+  assert.ok(html.includes("Neue Befunde") && html.includes("Entfernte Objekte"));
+});
+
+test("changes view handles missing baseline, empty diff and loading", () => {
+  const { el, shadow } = panel("en");
+  el.view = "changes";
+  el.compare = { available: false, baselines: [] };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("No earlier scan yet"));
+  const empty = { ...COMPARE };
+  for (const k of ["status_changes", "new_findings", "resolved_findings", "new_objects", "removed_objects"]) empty[k] = { total: 0, items: [] };
+  el.compare = empty;
+  el.render();
+  assert.ok(shadow.innerHTML.includes("No changes since this scan"));
+  el.compare = null;
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Loading"));
+});
+
+test("loadCompare asks the backend with the selected baseline", async () => {
+  const { el } = panel();
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg); return COMPARE; };
+  el.compareBaseline = "2026-10-05T20:00:00+00:00";
+  await el.loadCompare();
+  assert.equal(JSON.stringify(calls), JSON.stringify([{ type: "ha_housekeeper/compare", baseline: "2026-10-05T20:00:00+00:00" }]));
+  assert.equal(el.compare, COMPARE);
+});

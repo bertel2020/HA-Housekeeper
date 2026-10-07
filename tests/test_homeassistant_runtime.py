@@ -281,3 +281,25 @@ async def test_dashboards_are_inventoried_with_missing_entities(hass: HomeAssist
     finding = next(f for f in snapshot["findings"] if f["rule_id"] == "dashboard.missing_entity")
     assert finding["affected_object"] == "light.gone"
     assert finding["evidence"][0]["location"] == "views/1/cards/0/entity"
+
+
+async def test_second_scan_can_be_compared_with_the_first(hass: HomeAssistant) -> None:
+    """The scanner records history so a later scan shows what changed."""
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="cmp-1", suggested_object_id="cmp_test"
+    )
+    hass.states.async_set(entry.entity_id, "1")
+    scanner = InventoryScanner(hass)
+    await scanner.async_scan()
+    assert scanner.history.compare(scanner.snapshot)["available"] is False
+
+    hass.states.async_set(entry.entity_id, "unavailable")
+    await scanner.async_scan()
+
+    result = scanner.history.compare(scanner.snapshot)
+    assert result["available"] is True
+    changes = result["status_changes"]["items"]
+    assert [(c["object_id"], c["from"], c["to"]) for c in changes] == [
+        (entry.entity_id, "active", "unavailable")
+    ]

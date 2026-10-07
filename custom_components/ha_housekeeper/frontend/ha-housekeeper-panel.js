@@ -50,6 +50,10 @@ const TEXT = {
     impactProbable: "Vorher prüfen", impactProbableText: "{count} Automation(en), Skript(e), Szene(n) oder Dashboard(s) verweisen wahrscheinlich darauf (z. B. über Templates).",
     impactScope: "Betrachtet werden das Objekt und {count} zugehörige Entities.", impactScopeOne: "Betrachtet wird nur dieses Objekt.",
     impactLimits: "Nicht geprüft: Gruppen, Helfer-Konfigurationen, automatisch erzeugte Dashboards und die Recorder-Historie.",
+    changes: "Änderungen", changesSubtitle: "Was sich seit einem früheren Scan verändert hat.", compareWith: "Vergleichen mit", previousScan: "Letzter Scan davor",
+    noBaseline: "Noch kein früherer Scan vorhanden. Nach dem nächsten Scan erscheint hier der Vergleich.", noChanges: "Keine Änderungen seit diesem Scan.",
+    statusChanges: "Statuswechsel", newFindings: "Neue Befunde", resolvedFindings: "Behobene Befunde", newObjects: "Neue Objekte", removedObjects: "Entfernte Objekte",
+    worsened: "Verschlechtert", changedLabel: "Geändert", improved: "Verbessert", gone: "Nicht mehr vorhanden", comparedWith: "Vergleich mit dem Scan vom",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
     available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: nicht verfügbare Entities werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
@@ -133,6 +137,10 @@ const TEXT = {
     impactProbable: "Check first", impactProbableText: "{count} automation(s), script(s), scene(s) or dashboard(s) probably reference it (for example through templates).",
     impactScope: "Covers this object and {count} related entities.", impactScopeOne: "Covers only this object.",
     impactLimits: "Not checked: groups, helper configurations, auto-generated dashboards and the recorder history.",
+    changes: "Changes", changesSubtitle: "What changed since an earlier scan.", compareWith: "Compare with", previousScan: "Previous scan",
+    noBaseline: "No earlier scan yet. The comparison appears after the next scan.", noChanges: "No changes since this scan.",
+    statusChanges: "Status changes", newFindings: "New findings", resolvedFindings: "Resolved findings", newObjects: "New objects", removedObjects: "Removed objects",
+    worsened: "Worse", changedLabel: "Changed", improved: "Better", gone: "No longer present", comparedWith: "Compared with the scan from",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
     available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
@@ -179,6 +187,7 @@ const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
   ["inventory", "mdi:database-outline"],
   ["findingsNav", "mdi:alert-outline"],
+  ["changes", "mdi:compare-horizontal"],
   ["graph", "mdi:source-fork"],
 ];
 
@@ -201,6 +210,9 @@ class HAHousekeeperPanel extends HTMLElement {
     this.sort = "name";
     this.selected = null;
     this.trail = [];
+    this.compare = null;
+    this.compareBaseline = "previous";
+    this.compareLoading = false;
     this.graphSelected = null;
     this.details = new Map();
     this.detailLoading = false;
@@ -244,6 +256,7 @@ class HAHousekeeperPanel extends HTMLElement {
     try {
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
       this.details = new Map();
+      this.compare = null;
     } catch (err) {
       this.error = err?.message || String(err);
     } finally {
@@ -251,6 +264,17 @@ class HAHousekeeperPanel extends HTMLElement {
       this.scanStatus = null;
       this.busy = false; this.render();
     }
+    if (this.view === "changes" && this.data) this.loadCompare();
+  }
+
+  async loadCompare() {
+    this.compareLoading = true; this.render();
+    try {
+      this.compare = await this._hass.callWS({ type: "ha_housekeeper/compare", baseline: this.compareBaseline });
+    } catch (err) {
+      this.compare = null; this.error = err?.message || String(err);
+    }
+    this.compareLoading = false; this.render();
   }
 
   async updateScanStatus() {
@@ -401,6 +425,7 @@ class HAHousekeeperPanel extends HTMLElement {
       .cause,.hintbox{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft)}.cause strong,.hintbox strong{display:block;margin-bottom:4px;color:var(--hk-muted);font-size:11px;letter-spacing:.07em;text-transform:uppercase}.cause p,.hintbox p{font-size:13px;line-height:1.55}
       .cause.ok{background:color-mix(in srgb,var(--hk-green) 9%,transparent);border-color:color-mix(in srgb,var(--hk-green) 35%,transparent)}.cause.warn{background:color-mix(in srgb,var(--hk-amber) 10%,transparent);border-color:color-mix(in srgb,var(--hk-amber) 35%,transparent)}.cause.red{background:color-mix(in srgb,var(--hk-red) 9%,transparent);border-color:color-mix(in srgb,var(--hk-red) 35%,transparent)}.cause.violet{background:color-mix(in srgb,var(--hk-violet) 9%,transparent);border-color:color-mix(in srgb,var(--hk-violet) 35%,transparent)}
       .cause ha-icon{color:var(--hk-muted)}.hintbox ha-icon{color:var(--hk-amber)}.row.rel{grid-template-columns:auto minmax(0,1fr) auto}
+      .changesum{grid-template-columns:repeat(5,1fr)}
       .kv{display:grid;grid-template-columns:155px 1fr;gap:8px 14px;font-size:13px}.kv dt{color:var(--hk-muted)}.kv dd{margin:0;overflow-wrap:anywhere}
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:11px/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:12px;margin:12px 0 6px;color:var(--hk-muted)}
@@ -428,6 +453,7 @@ class HAHousekeeperPanel extends HTMLElement {
       overview: [this.t("systemState"), this.t("health"), this.data ? `${this.t("lastScan")}: <b>${this.formatDate(this.data.meta.scanned_at)}</b>` : this.t("subtitle")],
       inventory: [this.t("objects"), this.t("inventory"), this.t("inventorySubtitle")],
       findingsNav: [this.t("diagnosis"), this.t("findings"), this.t("findingsSubtitle")],
+      changes: [this.t("diagnosis"), this.t("changes"), this.t("changesSubtitle")],
       graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
@@ -441,6 +467,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
     if (this.view === "inventory") return this.inventory();
     if (this.view === "findingsNav") return this.findingsView();
+    if (this.view === "changes") return this.changesView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -509,6 +536,42 @@ class HAHousekeeperPanel extends HTMLElement {
     a.href = url; a.download = `ha-housekeeper-findings.${format}`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  changeRank(status) { return { active: 0, disabled: 1, empty: 1, unknown: 2, problem: 3, orphaned: 3, unavailable: 3 }[status] ?? 1; }
+
+  changesView() {
+    const c = this.compare;
+    if (!c) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
+    const options = (c.baselines || []).map(b => `<option value="${this.esc(b.id)}" ${b.id === this.compareBaseline ? "selected" : ""}>${b.id === "previous" ? `${this.t("previousScan")} · ` : ""}${this.esc(this.formatDate(b.at))}</option>`).join("");
+    const picker = options ? `<div class="panel" style="margin-bottom:14px"><div class="filters" style="grid-template-columns:auto minmax(220px,360px)"><label style="align-self:center;color:var(--hk-muted);font-size:12px">${this.t("compareWith")}</label><select id="baseline">${options}</select></div></div>` : "";
+    if (!c.available) return `${picker}<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:history"></ha-icon>${this.t("noBaseline")}</div></div>`;
+    const sections = [
+      ["statusChanges", "mdi:swap-horizontal", c.status_changes], ["newFindings", "mdi:alert-outline", c.new_findings],
+      ["resolvedFindings", "mdi:check-circle-outline", c.resolved_findings], ["newObjects", "mdi:plus-circle-outline", c.new_objects],
+      ["removedObjects", "mdi:minus-circle-outline", c.removed_objects],
+    ];
+    const total = sections.reduce((n, [, , part]) => n + part.total, 0);
+    const cards = sections.map(([label, icon, part]) => `<div class="card"><span class="tile ${part.total ? (label === "resolvedFindings" ? "ok" : label === "newFindings" ? "warn" : "") : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><div class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(part.total)}</strong></div></div>`).join("");
+    const more = part => part.total > part.items.length ? `<p class="factnote">${this.t("moreItems", { count: part.total - part.items.length })}</p>` : "";
+    const objectRow = (o, note, pillHtml) => {
+      const key = `${o.object_type}:${o.object_id}`, obj = this.findObject(key);
+      const inner = `${this.tile(o.object_type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "mute")}<span class="row-text"><strong>${this.esc(o.name || obj?.name || o.object_id)}</strong><small>${this.esc(note)}</small></span>${pillHtml}`;
+      return obj ? `<button class="row rel" data-object="${this.esc(key)}">${inner}</button>` : `<div class="row rel">${inner}</div>`;
+    };
+    const changes = [...c.status_changes.items].sort((a, b) => (this.changeRank(b.to) - this.changeRank(b.from)) - (this.changeRank(a.to) - this.changeRank(a.from)));
+    const body = {
+      statusChanges: changes.map(ch => objectRow(ch, `${this.t(ch.from)} → ${this.t(ch.to)} · ${this.t(ch.object_type)}`, `<span class="pill ${this.changeRank(ch.to) > this.changeRank(ch.from) ? "red" : this.changeRank(ch.to) < this.changeRank(ch.from) ? "ok" : "mute"}">${this.t(this.changeRank(ch.to) > this.changeRank(ch.from) ? "worsened" : this.changeRank(ch.to) < this.changeRank(ch.from) ? "improved" : "changed")}</span>`)).join(""),
+      newFindings: c.new_findings.items.map(f => this.findingRow(f)).join(""),
+      resolvedFindings: c.resolved_findings.items.map(f => {
+        const type = f.rule_id.split(".")[0];
+        return objectRow({ object_type: type, object_id: f.object_id }, `${f.affected_object ? `${f.affected_object} · ` : ""}${f.rule_id}`, `<span class="pill ok">${this.t("improved")}</span>`);
+      }).join(""),
+      newObjects: c.new_objects.items.map(o => objectRow(o, `${this.t(o.object_type)} · ${o.object_id}`, this.pill(o.status))).join(""),
+      removedObjects: c.removed_objects.items.map(o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")).join(""),
+    };
+    const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
+    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p><div class="summary changesum">${cards}</div>${total ? panels : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
   }
 
   findingsView() {
@@ -757,7 +820,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.selected = null; this.trail = []; this.render(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelector("[data-action='scan']")?.addEventListener("click", () => this.load(true));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
@@ -785,6 +848,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     focusKeep("#query", v => { this.query = v; this.page = 1; });
     focusKeep("#graphQuery", v => { this.graphQuery = v; });
+    const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.loadCompare(); };
     const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.page = 1; this.render(); };
     const sf = root.querySelector("#statusFilter"); if (sf) sf.onchange = () => { this.statusFilter = sf.value; this.page = 1; this.render(); };
     root.querySelectorAll("th[data-sort]").forEach(el => el.onclick = () => { this.sort = el.dataset.sort; this.render(); });

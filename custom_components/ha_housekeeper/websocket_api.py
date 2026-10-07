@@ -103,9 +103,33 @@ def websocket_detail(
     connection.send_result(msg["id"], details)
 
 
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/compare", vol.Optional("baseline", default="previous"): str}
+)
+@websocket_api.async_response
+async def websocket_compare(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Compare the latest scan with an earlier one."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], scanner.history.compare(snapshot, msg["baseline"]))
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register Housekeeper WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_inventory)
     websocket_api.async_register_command(hass, websocket_scan)
     websocket_api.async_register_command(hass, websocket_status)
     websocket_api.async_register_command(hass, websocket_detail)
+    websocket_api.async_register_command(hass, websocket_compare)

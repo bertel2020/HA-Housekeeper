@@ -11,6 +11,7 @@ FRONTEND_URL: Final = "/ha_housekeeper/ha-housekeeper-panel.js"
 LOGO_URL: Final = "/ha_housekeeper/logo.png"
 
 STORAGE_KEY: Final = f"{DOMAIN}.observations"
+HISTORY_STORAGE_KEY: Final = f"{DOMAIN}.history"
 STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = "min_unavailable_days"

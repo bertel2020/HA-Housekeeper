@@ -84,6 +84,10 @@ For every continuously observed classification, Housekeeper stores when it first
 - Retains the precise configuration location for explicit references when available
 - Scripts, scenes and dashboards are checked for references and missing targets in the same way; the detail page shows under **Impact of removal** what a removal would affect (analysis only, no changes)
 
+### Changes since the last scan
+
+The **Changes** view compares the current state with the previous scan or with the last scan of each of the past seven days: status changes (worsened first), new and resolved findings, and new and removed objects. The history is stored compactly in Home Assistant and contains only statuses and IDs.
+
 ### Dependency explorer
 
 The dependency view visualizes direct relationships such as:
