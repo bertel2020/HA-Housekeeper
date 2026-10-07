@@ -28,7 +28,7 @@ HA Housekeeper is a maintenance and analysis integration for Home Assistant. It 
 
 The goal is not aggressive automatic cleanup. Housekeeper helps you understand what exists, why something is considered problematic, and what would be affected before any future cleanup operation is introduced.
 
-> Housekeeper is strictly read-only. It does not delete, disable, rename, or otherwise modify Home Assistant objects. It stores only its own data (observation times, scan history, hidden findings).
+> Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan, and so far only as a reversible quarantine (disabling an entity). It never deletes, renames, or replaces Home Assistant objects. It also stores only its own data (observation times, scan history, hidden findings, journal).
 
 ## What Housekeeper does
 
@@ -42,7 +42,7 @@ The goal is not aggressive automatic cleanup. Housekeeper helps you understand w
 | **Cleanup hints** | Possible duplicates, unused automations, low batteries |
 | **Sensors and hints** | Counters as sensors, aggregated repair hints, export as CSV/JSON |
 | **Dependencies** | Relationships between integration, device, entity, area, and automation with a confidence level |
-| **Safety** | Administrators only, strictly read-only |
+| **Safety** | Administrators only; reads and analyzes, changes only after explicit confirmation (reversible quarantine) |
 
 ## Why HA Housekeeper?
 
@@ -136,13 +136,13 @@ The panel and configuration flow are available in German and English. The active
 
 - The panel is available to Home Assistant administrators only.
 - All Housekeeper WebSocket endpoints require administrator privileges.
-- Housekeeper offers read and scan operations. The only write operation is hiding findings in Housekeeper's own storage.
+- Housekeeper offers read and scan operations. It writes to its own storage (hidden findings, journal), to the integration options (at your request from the panel), and, for confirmed plans, to the entity registry (disabling only).
 - `unavailable` is never treated as automatically orphaned.
 - Disabled devices and integrations are distinguished from missing objects.
 - No `.storage` file is edited directly.
 - No cleanup action runs automatically.
 
-Cleanup plans, backups, verification, and rollback are intentionally reserved for later versions.
+Removing entities, backups before removal, and device cleanup are intentionally reserved for later versions.
 
 ## Installation
 

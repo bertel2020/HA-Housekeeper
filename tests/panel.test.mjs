@@ -831,3 +831,13 @@ test("removal previews cannot be confirmed", () => {
   el.render();
   assert.ok(shadow.innerHTML.includes("cannot be executed yet") && !shadow.innerHTML.includes("data-plan-confirm"));
 });
+
+test("the safety badge sits in the header, the sidebar is fixed, and tiles are equal width", () => {
+  const { el, shadow } = panel("en");
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('class="safe-badge"') && html.includes("Changes only on confirmation"));
+  assert.ok(!html.includes("Read only") && !html.includes('class="lock"'));
+  assert.ok(html.includes(".side{position:sticky;top:0") && html.includes("repeat(auto-fit,minmax(210px,1fr))"));
+  assert.ok(html.indexOf('class="safe-badge"') > html.indexOf('class="heading"'));
+});

@@ -28,7 +28,7 @@ HA Housekeeper ist eine Wartungs- und Analyseintegration für Home Assistant. Si
 
 Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunächst zu verstehen, welche Objekte existieren, weshalb etwas als problematisch gilt und welche anderen Bestandteile von einer späteren Änderung betroffen wären.
 
-> Housekeeper arbeitet ausschließlich lesend. Die Integration löscht, deaktiviert oder benennt keine Home-Assistant-Objekte um und nimmt auch sonst keine Änderungen daran vor. Gespeichert werden nur eigene Daten (Beobachtungszeitpunkte, Scanverlauf, ausgeblendete Befunde).
+> Housekeeper liest und analysiert zunächst nur. Änderungen gibt es ausschließlich nach ausdrücklicher Bestätigung eines Plans, und bisher nur als umkehrbare Quarantäne (Entity deaktivieren). Löschen, Umbenennen oder Ersetzen von Home-Assistant-Objekten gibt es nicht. Gespeichert werden außerdem nur eigene Daten (Beobachtungszeitpunkte, Scanverlauf, ausgeblendete Befunde, Journal).
 
 ## Was Housekeeper übernimmt
 
@@ -42,7 +42,7 @@ Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunäc
 | **Aufräumhinweise** | Mögliche Duplikate, ungenutzte Automationen, schwache Batterien |
 | **Sensoren und Hinweise** | Zähler als Sensoren, zusammengefasste Reparaturhinweise, Export als CSV/JSON |
 | **Abhängigkeiten** | Beziehungen zwischen Integration, Gerät, Entity, Bereich und Automation mit Vertrauensstufe |
-| **Sicherheit** | Nur für Administratoren, strikt schreibgeschützt |
+| **Sicherheit** | Nur für Administratoren; liest und analysiert, ändert nur nach ausdrücklicher Bestätigung (umkehrbare Quarantäne) |
 
 ## Warum HA Housekeeper?
 
@@ -136,13 +136,13 @@ Panel und Einrichtungsdialog stehen auf Deutsch und Englisch zur Verfügung. Die
 
 - Das Panel ist ausschließlich für Home-Assistant-Administratoren verfügbar.
 - Alle Housekeeper-WebSocket-Endpunkte erfordern Administratorrechte.
-- Housekeeper bietet Lese- und Scanoperationen an. Die einzige Schreiboperation betrifft das Ausblenden von Befunden in Housekeepers eigenem Speicher.
+- Housekeeper bietet Lese- und Scanoperationen an. Geschrieben wird in Housekeepers eigenen Speicher (Ausblenden von Befunden, Journal), in die Optionen der Integration (auf deinen Wunsch im Panel) und für bestätigte Pläne in die Entity-Registry (nur Deaktivieren).
 - `unavailable` wird niemals automatisch mit „verwaist“ gleichgesetzt.
 - Deaktivierte Geräte und Integrationen werden von fehlenden Objekten unterschieden.
 - `.storage`-Dateien werden nicht direkt bearbeitet.
 - Es wird keine Bereinigung automatisch ausgeführt.
 
-Bereinigungspläne, Backups, Verifikation und Rollback sind bewusst späteren Versionen vorbehalten.
+Das Entfernen von Entities, Backups vor dem Entfernen und die Bereinigung von Geräten sind bewusst späteren Versionen vorbehalten.
 
 ## Installation
 

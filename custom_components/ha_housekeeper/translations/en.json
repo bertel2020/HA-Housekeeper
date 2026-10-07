@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Set up HA Housekeeper",
-        "description": "Adds the read-only Housekeeper panel for administrators. No cleanup action is executed automatically."
+        "description": "Adds the Housekeeper panel for administrators. It analyzes first; changes happen only after your explicit confirmation."
       }
     },
     "abort": {

@@ -9,7 +9,7 @@ const TEXT = {
     findings: "Befunde", active: "Aktiv", orphaned: "Verwaist",
     unavailable: "Nicht verfügbar", disabled: "Deaktiviert", unknown: "Unbekannt",
     empty: "Leer", problem: "Problem", details: "Details", close: "Schließen",
-    noResults: "Keine passenden Objekte gefunden.", readOnly: "Schreibgeschützt",
+    noResults: "Keine passenden Objekte gefunden.", safeBadge: "Ändert nur nach Bestätigung", safeBadgeHint: "Housekeeper liest und analysiert. Änderungen (Deaktivieren) passieren ausschließlich nach deiner ausdrücklichen Bestätigung und lassen sich rückgängig machen.",
     lastScan: "Letzter Scan", evidence: "Nachweis", registry: "Registry",
     state: "Zustand & Attribute", incoming: "Eingehend", outgoing: "Ausgehend",
     graphHint: "Wähle ein Objekt aus, um seine direkten Beziehungen zu untersuchen.",
@@ -70,7 +70,7 @@ const TEXT = {
     ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
     batteries: "Batterien", batteriesSubtitle: "Batterie-Entities, die niedrigsten Werte zuerst.", batteryLow: "Niedrig", batteryAll: "Alle",
     settings: "Einstellungen", settingsSubtitle: "Infos zu Housekeeper und Anpassung der Darstellung.", about: "Über Housekeeper", version: "Version", haVersion: "Home Assistant",
-    mode: "Betriebsart", readOnlyValue: "Nur lesend – ändert nichts in Home Assistant", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
+    mode: "Betriebsart", readOnlyValue: "Liest und analysiert; ändert nur nach ausdrücklicher Bestätigung", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
@@ -159,7 +159,7 @@ const TEXT = {
     findings: "Findings", active: "Active", orphaned: "Orphaned",
     unavailable: "Unavailable", disabled: "Disabled", unknown: "Unknown",
     empty: "Empty", problem: "Problem", details: "Details", close: "Close",
-    noResults: "No matching objects found.", readOnly: "Read only",
+    noResults: "No matching objects found.", safeBadge: "Changes only on confirmation", safeBadgeHint: "Housekeeper reads and analyzes. Changes (disabling) happen only after your explicit confirmation and can be undone.",
     lastScan: "Last scan", evidence: "Evidence", registry: "Registry",
     state: "State & attributes", incoming: "Incoming", outgoing: "Outgoing",
     graphHint: "Select an object to inspect its direct relationships.",
@@ -220,7 +220,7 @@ const TEXT = {
     ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
     batteries: "Batteries", batteriesSubtitle: "Battery entities, lowest values first.", batteryLow: "Low", batteryAll: "All",
     settings: "Settings", settingsSubtitle: "About Housekeeper and appearance options.", about: "About Housekeeper", version: "Version", haVersion: "Home Assistant",
-    mode: "Mode", readOnlyValue: "Read-only – changes nothing in Home Assistant", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
+    mode: "Mode", readOnlyValue: "Reads and analyzes; changes only after explicit confirmation", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
     colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
@@ -675,6 +675,26 @@ class HAHousekeeperPanel extends HTMLElement {
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
       @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:calc(15px*var(--hk-fs,1))}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.lock{display:none}.side-foot{margin:0;padding:0;display:flex}.side nav{display:flex}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5){display:none}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       @media(max-width:520px){.summary{grid-template-columns:1fr}}
+      /* Fixed sidebar: it stays in view while long content scrolls; Settings sits at the visible bottom edge. */
+      .shell{align-items:start}
+      .side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+      /* Equal-width tiles on the overview and the changes view. */
+      .summary{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.summary>.card:has(.ring){grid-template-columns:auto minmax(0,1fr)}.summary .ring{width:52px;height:52px}.summary>.card:has(.ring) .card-text strong{font-size:calc(19px*var(--hk-fs,1));line-height:1.25}
+      .summary>.card{min-height:92px;border-top:3px solid var(--hk-border)}
+      .summary>.card:has(.ring){border-top-color:var(--hk-green)}.summary>.card:has(.ring.warn){border-top-color:var(--hk-amber)}.summary>.card:has(.ring.red){border-top-color:var(--hk-red)}
+      .summary>.card:has(.tile.ok){border-top-color:var(--hk-green)}.summary>.card:has(.tile.warn){border-top-color:var(--hk-amber)}.summary>.card:has(.tile.red){border-top-color:var(--hk-red)}.summary>.card:has(.tile.violet){border-top-color:var(--hk-violet)}
+      /* Polish */
+      .panel,.card{box-shadow:0 1px 2px color-mix(in srgb,var(--hk-text) 7%,transparent)}
+      .card{border-radius:14px}.card .tile{width:46px;height:46px;border-radius:13px}.card-text strong{font-size:calc(26px*var(--hk-fs,1));letter-spacing:-.01em}
+      button.card{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}button.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px color-mix(in srgb,var(--hk-text) 12%,transparent)}
+      h1{font-size:calc(28px*var(--hk-fs,1));letter-spacing:-.015em}.eyebrow{font-weight:700}
+      .nav.active{box-shadow:inset 3px 0 0 var(--hk-blue)}.nav{border-radius:10px}.nav em{font-weight:600}.nav.active em{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
+      .panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
+      .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
+      .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}
+      .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+      .safe-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1px solid color-mix(in srgb,var(--hk-green) 32%,transparent);color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 11%,transparent);font-size:calc(12px*var(--hk-fs,1));font-weight:600;white-space:nowrap}.safe-badge ha-icon{--mdc-icon-size:16px}
+      @media(max-width:860px){.side{position:sticky;top:0;z-index:20;height:auto}.heading{flex-direction:column;align-items:stretch}.head-actions{justify-content:flex-start}}
       ${this.themeCss()}
     </style>`;
   }
@@ -717,7 +737,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
     return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
       <nav>${NAV.filter(([view]) => view !== "settings").map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
-      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings"><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button><span class="lock"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("readOnly")}</span></div></aside>`;
+      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings"><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
   }
 
   heading() {
@@ -735,7 +755,8 @@ class HAHousekeeperPanel extends HTMLElement {
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div>`;
+      <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
+      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>`;
   }
 
   content() {
