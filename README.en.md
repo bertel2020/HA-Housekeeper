@@ -28,7 +28,7 @@ HA Housekeeper is a maintenance and analysis integration for Home Assistant. It 
 
 The goal is not aggressive automatic cleanup. Housekeeper helps you understand what exists, why something is considered problematic, and what would be affected before any future cleanup operation is introduced.
 
-> Version 0.1 is strictly read-only. It does not delete, disable, rename, or otherwise modify Home Assistant objects.
+> Housekeeper is strictly read-only. It does not delete, disable, rename, or otherwise modify Home Assistant objects. It stores only its own data (observation times, scan history, hidden findings).
 
 ## What Housekeeper does
 
@@ -37,7 +37,10 @@ The goal is not aggressive automatic cleanup. Housekeeper helps you understand w
 | **Inventory** | Entities, devices, integrations, areas, floors, labels, and automations with search, filters, and sorting |
 | **Diagnostics** | Distinguishes active, unavailable, unknown, disabled, and orphaned objects, each with a reason |
 | **Observation time** | Stores since when Housekeeper has observed a classification |
-| **Automation analysis** | Triggers, conditions, actions, blueprints, and missing references |
+| **Automation analysis** | Triggers, conditions, actions, blueprints, and missing references; likewise for scripts, scenes, dashboards, groups, and helpers |
+| **Scan comparison** | New and resolved findings, status changes, new and removed objects since the last scan |
+| **Cleanup hints** | Possible duplicates, unused automations, low batteries |
+| **Sensors and hints** | Counters as sensors, aggregated repair hints, export as CSV/JSON |
 | **Dependencies** | Relationships between integration, device, entity, area, and automation with a confidence level |
 | **Safety** | Administrators only, strictly read-only |
 
@@ -47,7 +50,7 @@ Mature Home Assistant installations often accumulate registry entries, unavailab
 
 Housekeeper combines registry data and the live Home Assistant runtime to provide that context in one administrator-only panel.
 
-## Features in version 0.1
+## Features
 
 ### Installation overview
 
@@ -127,7 +130,7 @@ The panel and configuration flow are available in German and English. The active
 
 - The panel is available to Home Assistant administrators only.
 - All Housekeeper WebSocket endpoints require administrator privileges.
-- Version 0.1 exposes read and scan operations only.
+- Housekeeper offers read and scan operations. The only write operation is hiding findings in Housekeeper's own storage.
 - `unavailable` is never treated as automatically orphaned.
 - Disabled devices and integrations are distinguished from missing objects.
 - No `.storage` file is edited directly.
@@ -177,27 +180,30 @@ Open **Housekeeper** from the Home Assistant sidebar. The overview shows object 
 - Select a category card to open a filtered inventory.
 - Select an object to inspect registry information, state data, diagnosis, and direct dependencies.
 - Open **Dependencies** and select an object to explore incoming and outgoing relationships.
-- Use **Scan now** to refresh the snapshot after configuration or device changes.
+- Use **Scan now** to refresh the snapshot after configuration or device changes. Without intervention Housekeeper scans automatically every 24 hours.
+- Under **Settings → Devices & services → HA Housekeeper → Configure** you can set three values: days until an unavailable entity becomes a finding (default 7), days until an automation counts as unused (default 90, `0` = off), and the scan interval in hours (default 24, `0` = off).
+- The **Findings**, **Changes**, and **Batteries** views are available from the panel navigation.
 
 The first scan establishes the initial observation timestamps. Later scans preserve the start of an unchanged classification and reset it when the classification changes.
 
 ## Current limitations
 
-- Version 0.1 does not perform cleanup or history/statistics migration.
+- Housekeeper does not perform cleanup or history/statistics migration.
 - Automation analysis covers automations currently loaded by Home Assistant. The amount of available detail can vary for invalid or externally managed automations.
 - Dynamic templates cannot always be resolved to one definite target. Such relationships are never presented as certain without supporting runtime information.
-- The dependency view currently focuses on direct registry and automation relationships.
-- HACS and Hassfest workflows are configured, but require a published GitHub repository to run remotely.
+- The dependency view focuses on direct relationships. The recorder (history, statistics) and unreadable or auto-generated dashboards are not part of the impact analysis; it is a hint, not a guarantee.
+- Possible duplicates and unused automations are based on heuristics and are hints, not certainty.
+- The low-battery threshold (20 %) is fixed.
 
 ## Development and validation
 
-Version 0.1 has been tested locally against Home Assistant 2026.2.3. The test suite covers:
+Housekeeper is tested automatically against Home Assistant 2026.2.3 (locally and in the GitHub workflow, plus the latest release) and has been tried in a running instance on Home Assistant 2026.9.4. The test suite covers:
 
 - manifest and package contracts
 - German/English backend translation parity
 - automation reference extraction and missing-target detection
 - Config Flow creation and complete Config Entry setup
-- registry and state inventory scanning
+- registry and state inventory scanning, sources (scripts, scenes, dashboards, groups, helpers), scan comparison, hiding findings, and sensors
 - Python linting and formatting
 - panel logic (views, filters, export, escaping) with Node.js
 - Python and frontend syntax

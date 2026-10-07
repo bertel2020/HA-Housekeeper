@@ -28,7 +28,7 @@ HA Housekeeper ist eine Wartungs- und Analyseintegration für Home Assistant. Si
 
 Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunächst zu verstehen, welche Objekte existieren, weshalb etwas als problematisch gilt und welche anderen Bestandteile von einer späteren Änderung betroffen wären.
 
-> Version 0.1 arbeitet ausschließlich lesend. Sie löscht, deaktiviert oder benennt keine Home-Assistant-Objekte um und nimmt auch sonst keine Änderungen daran vor.
+> Housekeeper arbeitet ausschließlich lesend. Die Integration löscht, deaktiviert oder benennt keine Home-Assistant-Objekte um und nimmt auch sonst keine Änderungen daran vor. Gespeichert werden nur eigene Daten (Beobachtungszeitpunkte, Scanverlauf, ausgeblendete Befunde).
 
 ## Was Housekeeper übernimmt
 
@@ -37,7 +37,10 @@ Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunäc
 | **Inventar** | Entities, Geräte, Integrationen, Bereiche, Etagen, Labels und Automationen mit Suche, Filter und Sortierung |
 | **Diagnose** | Unterscheidet aktiv, nicht verfügbar, unbekannt, deaktiviert und verwaist — jeweils mit Begründung |
 | **Beobachtungszeitpunkt** | Speichert, seit wann Housekeeper eine Klassifikation beobachtet |
-| **Automationsanalyse** | Trigger, Bedingungen, Aktionen, Blueprints und fehlende Referenzen |
+| **Automationsanalyse** | Trigger, Bedingungen, Aktionen, Blueprints und fehlende Referenzen; ebenso für Skripte, Szenen, Dashboards, Gruppen und Helfer |
+| **Scanvergleich** | Neue und behobene Befunde, Statuswechsel, neue und entfernte Objekte seit dem letzten Scan |
+| **Aufräumhinweise** | Mögliche Duplikate, ungenutzte Automationen, schwache Batterien |
+| **Sensoren und Hinweise** | Zähler als Sensoren, zusammengefasste Reparaturhinweise, Export als CSV/JSON |
 | **Abhängigkeiten** | Beziehungen zwischen Integration, Gerät, Entity, Bereich und Automation mit Vertrauensstufe |
 | **Sicherheit** | Nur für Administratoren, strikt schreibgeschützt |
 
@@ -47,7 +50,7 @@ In gewachsenen Home-Assistant-Installationen sammeln sich häufig Registry-Eintr
 
 Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz und stellt diesen Zusammenhang in einem gemeinsamen, nur für Administratoren erreichbaren Panel dar.
 
-## Funktionen in Version 0.1
+## Funktionen
 
 ### Installationsübersicht
 
@@ -127,7 +130,7 @@ Panel und Einrichtungsdialog stehen auf Deutsch und Englisch zur Verfügung. Die
 
 - Das Panel ist ausschließlich für Home-Assistant-Administratoren verfügbar.
 - Alle Housekeeper-WebSocket-Endpunkte erfordern Administratorrechte.
-- Version 0.1 bietet ausschließlich Lese- und Scanoperationen an.
+- Housekeeper bietet Lese- und Scanoperationen an. Die einzige Schreiboperation betrifft das Ausblenden von Befunden in Housekeepers eigenem Speicher.
 - `unavailable` wird niemals automatisch mit „verwaist“ gleichgesetzt.
 - Deaktivierte Geräte und Integrationen werden von fehlenden Objekten unterschieden.
 - `.storage`-Dateien werden nicht direkt bearbeitet.
@@ -177,27 +180,30 @@ config/
 - Eine Kategoriekarte auswählen, um das entsprechend gefilterte Inventar zu öffnen.
 - Ein Objekt auswählen, um Registry-Informationen, Zustandsdaten, Diagnose und direkte Abhängigkeiten anzuzeigen.
 - Unter **Abhängigkeiten** ein Objekt auswählen, um eingehende und ausgehende Beziehungen zu untersuchen.
-- Mit **Neu scannen** den Datenbestand nach Konfigurations- oder Geräteänderungen aktualisieren.
+- Mit **Neu scannen** den Datenbestand nach Konfigurations- oder Geräteänderungen aktualisieren. Ohne Eingriff scannt Housekeeper automatisch alle 24 Stunden.
+- Unter **Einstellungen → Geräte & Dienste → HA Housekeeper → Konfigurieren** lassen sich drei Werte einstellen: Tage bis eine nicht verfügbare Entity als Befund gilt (Standard 7), Tage bis eine Automation als ungenutzt gilt (Standard 90, `0` = aus) und das Scanintervall in Stunden (Standard 24, `0` = aus).
+- Die Ansichten **Befunde**, **Änderungen** und **Batterien** erreichst du über die Navigation im Panel.
 
 Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende Scans behalten den Beginn einer unveränderten Klassifikation bei und setzen ihn zurück, sobald sich die Klassifikation ändert.
 
 ## Aktuelle Einschränkungen
 
-- Version 0.1 führt keine Bereinigung und keine Historien- oder Statistikmigration durch.
+- Housekeeper führt keine Bereinigung und keine Historien- oder Statistikmigration durch.
 - Die Automationsanalyse umfasst die aktuell von Home Assistant geladenen Automationen. Bei ungültigen oder extern verwalteten Automationen können weniger Details verfügbar sein.
 - Dynamische Templates lassen sich nicht immer eindeutig einem Ziel zuordnen. Solche Beziehungen werden ohne Laufzeitbeleg niemals als sicher dargestellt.
-- Die Abhängigkeitsansicht konzentriert sich derzeit auf direkte Registry- und Automationsbeziehungen.
-- Die HACS- und Hassfest-Workflows sind konfiguriert, können aber erst in einem veröffentlichten GitHub-Repository ausgeführt werden.
+- Die Abhängigkeitsansicht konzentriert sich auf direkte Beziehungen. Der Recorder (Verlauf, Statistiken) und nicht lesbare oder automatisch erzeugte Dashboards fließen nicht in die Auswirkungsanalyse ein; sie ist ein Hinweis, keine Garantie.
+- Mögliche Duplikate und ungenutzte Automationen beruhen auf Heuristiken und sind Hinweise, keine Gewissheit.
+- Die Schwelle für schwache Batterien (20 %) ist fest.
 
 ## Entwicklung und Validierung
 
-Version 0.1 wurde lokal gegen Home Assistant 2026.2.3 getestet. Die Tests decken Folgendes ab:
+Housekeeper wurde mit Home Assistant 2026.2.3 automatisiert getestet (lokal und im GitHub-Workflow, zusätzlich gegen die jeweils neueste Version) und in einer laufenden Instanz mit Home Assistant 2026.9.4 ausprobiert. Die Tests decken Folgendes ab:
 
 - Manifest- und Paketverträge
 - Parität der deutschen und englischen Backend-Übersetzungen
 - Ermittlung von Automationsreferenzen und Erkennung fehlender Ziele
 - Config Flow und vollständige Einrichtung des Config Entry
-- Inventarisierung von Registry-Einträgen und Zuständen
+- Inventarisierung von Registry-Einträgen und Zuständen, Quellen (Skripte, Szenen, Dashboards, Gruppen, Helfer), Scanvergleich, Ausblenden von Befunden und Sensoren
 - Python-Linting und -Formatierung
 - Panel-Logik (Ansichten, Filter, Export, Escaping) mit Node.js
 - Python- und Frontend-Syntax
