@@ -104,6 +104,9 @@ Jede Beziehung besitzt eine Vertrauensstufe. Explizite Registry- und Konfigurati
 
 - Befundliste mit Begründung und Sicherheit der Diagnose; Export als **CSV** oder **JSON** (berücksichtigt den gewählten Filter)
 - Schwellwert für nicht verfügbare Entities: Unter **Konfigurieren** lässt sich einstellen, nach wie vielen Tagen (Standard 7, `0` = sofort) eine nicht verfügbare Entity als Befund gilt. Kurze Ausfälle, etwa nach einem Neustart, bleiben so unberücksichtigt. Verwaiste Entities werden immer sofort gemeldet.
+- **Mögliche Duplikate**: Eine nicht funktionierende Entity mit Zahlensuffix (`…_2`), zu der es eine funktionierende Entity derselben Integration mit gleicher Basis-ID gibt, wird als Überbleibsel markiert
+- **Ungenutzte Automationen**: lange ausgeschaltet, seit langem nicht ausgelöst oder nie ausgelöst (mit Alter der Automation)
+- Automatischer Scan alle 24 Stunden (einstellbar), damit Verlauf und Hinweise aktuell bleiben
 - Hinweise unter **Einstellungen → Reparaturen**: höchstens drei zusammengefasste Einträge (verwaiste Entities, lange nicht verfügbare Entities, Automationen mit fehlenden Referenzen) mit Link ins Panel. Sie sind rein informativ und bieten keine Reparatur an.
 - **Diagnosedaten** für Fehlerberichte (Integration → Diagnosedaten herunterladen) enthalten nur Zählwerte, keine Namen oder IDs.
 

@@ -15,9 +15,11 @@
     "step": {
       "init": {
         "title": "HA-Housekeeper-Optionen",
-        "description": "Entities, die nur kurz nicht verfügbar sind (z. B. nach einem Neustart), werden nicht gemeldet. 0 meldet jede nicht verfügbare Entity.",
+        "description": "Kurze Ausfälle, etwa nach einem Neustart, werden nicht gemeldet (0 meldet jede nicht verfügbare Entity). Automationen, die ausgeschaltet sind oder die angegebene Zahl an Tagen nie laufen, werden als ungenutzt gemeldet. Regelmäßige Scans halten Verlauf und Reparaturhinweise aktuell.",
         "data": {
-          "min_unavailable_days": "Nicht verfügbare Entities melden nach (Tage)"
+          "min_unavailable_days": "Nicht verfügbare Entities melden nach (Tage)",
+          "unused_automation_days": "Ungenutzte Automationen melden nach (Tage, 0 = aus)",
+          "scan_interval_hours": "Automatisch scannen alle (Stunden, 0 = aus)"
         }
       }
     }

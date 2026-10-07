@@ -54,6 +54,15 @@ const TEXT = {
     noBaseline: "Noch kein früherer Scan vorhanden. Nach dem nächsten Scan erscheint hier der Vergleich.", noChanges: "Keine Änderungen seit diesem Scan.",
     statusChanges: "Statuswechsel", newFindings: "Neue Befunde", resolvedFindings: "Behobene Befunde", newObjects: "Neue Objekte", removedObjects: "Entfernte Objekte",
     worsened: "Verschlechtert", changedLabel: "Geändert", improved: "Verbessert", gone: "Nicht mehr vorhanden", comparedWith: "Vergleich mit dem Scan vom",
+    possible_duplicate: "Mögliches Duplikat", unused: "Ungenutzt", duplicateOf: "Mögliches Duplikat von", lastTriggered: "Zuletzt ausgelöst", never: "Nie",
+    "automation.never_triggered": "Wurde nie ausgelöst", "automation.stale": "Lange nicht ausgelöst", "automation.disabled_long": "Lange ausgeschaltet",
+    cause_never_triggered: "Die Automation ist eingeschaltet, wurde aber seit mindestens {days} Tagen nie ausgelöst. Vielleicht passt ein Trigger nicht mehr oder sie wird nicht mehr gebraucht.",
+    cause_stale: "Die Automation wurde seit {days} Tagen nicht mehr ausgelöst. Vielleicht passt ein Trigger nicht mehr oder sie wird nicht mehr gebraucht.",
+    cause_disabled_long: "Die Automation ist seit {days} Tagen ausgeschaltet. Wenn sie nicht mehr gebraucht wird, kann sie später entfernt werden.",
+    hint_unused: "Prüfen, ob die Automation noch gebraucht wird. Housekeeper ändert nichts.",
+    cause_duplicate: "Es gibt eine funktionierende Entity mit fast gleicher ID von derselben Integration ({twin}). Diese hier ist sehr wahrscheinlich ein Überbleibsel, etwa nach dem erneuten Hinzufügen des Geräts.",
+    hint_duplicate: "Die funktionierende Entity öffnen und vergleichen. Erst wenn nichts mehr auf diese Entity verweist, ist sie ein Kandidat zum Entfernen.",
+    duplicateTwin: "Funktionierende Entity",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
     available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: nicht verfügbare Entities werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
@@ -141,6 +150,15 @@ const TEXT = {
     noBaseline: "No earlier scan yet. The comparison appears after the next scan.", noChanges: "No changes since this scan.",
     statusChanges: "Status changes", newFindings: "New findings", resolvedFindings: "Resolved findings", newObjects: "New objects", removedObjects: "Removed objects",
     worsened: "Worse", changedLabel: "Changed", improved: "Better", gone: "No longer present", comparedWith: "Compared with the scan from",
+    possible_duplicate: "Possible duplicate", unused: "Unused", duplicateOf: "Possible duplicate of", lastTriggered: "Last triggered", never: "Never",
+    "automation.never_triggered": "Never triggered", "automation.stale": "Not triggered for a long time", "automation.disabled_long": "Switched off for a long time",
+    cause_never_triggered: "The automation is switched on but has never run in at least {days} days. A trigger may no longer match, or it may not be needed any more.",
+    cause_stale: "The automation has not run for {days} days. A trigger may no longer match, or it may not be needed any more.",
+    cause_disabled_long: "The automation has been switched off for {days} days. If it is not needed any more, it can be removed later.",
+    hint_unused: "Check whether the automation is still needed. Housekeeper changes nothing.",
+    cause_duplicate: "A working entity with an almost identical ID from the same integration exists ({twin}). This one is very likely a leftover, for example after re-adding the device.",
+    hint_duplicate: "Open the working entity and compare. Only when nothing references this entity any more is it a candidate for removal.",
+    duplicateTwin: "Working entity",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
     available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
@@ -193,7 +211,7 @@ const NAV = [
 
 const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
-  disabled: "mute", empty: "mute", unknown: "violet",
+  disabled: "mute", empty: "mute", unknown: "violet", possible_duplicate: "violet", unused: "mute",
 };
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -479,9 +497,11 @@ class HAHousekeeperPanel extends HTMLElement {
   findingRow(finding) {
     const key = this.findingKey(finding), object = this.findObject(key);
     const title = object?.name || finding.object_id;
-    const subtitle = finding.affected_object
-      ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
-      : this.esc(object?.reason ? this.t(object.reason) : finding.rule_id);
+    const subtitle = finding.rule_id === "entity.possible_duplicate"
+      ? `${this.t("duplicateOf")} ${this.esc(finding.affected_object)}`
+      : finding.affected_object
+        ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
+        : this.esc(object?.reason ? this.t(object.reason) : this.t(finding.rule_id));
     return `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
   }
 
@@ -682,10 +702,15 @@ class HAHousekeeperPanel extends HTMLElement {
         case "state_unknown": cause = t("cause_state_unknown"); break;
         default: cause = item.reason ? t(item.reason) : "";
       }
+      if (item.duplicate_of) {
+        rows.push(this.check(t("duplicateTwin"), "violet", item.duplicate_of, t("possible_duplicate")));
+        cause = `${t("cause_duplicate", { twin: item.duplicate_of })} ${cause}`;
+      }
       if (item.reason === "state_unavailable") hint = broken ? t("hint_integration") : t("hint_state_unavailable");
       else if (item.reason === "state_unknown") hint = t("hint_state_unknown");
       else if (item.reason === "state_missing" && broken) hint = t("hint_integration");
       else if (["state_missing", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
+      if (item.duplicate_of) hint = t("hint_duplicate");
     } else if (item.object_type === "device") {
       const ids = item.config_entry_ids || [];
       ids.forEach(id => rows.push(this.integrationCheck(id).row));
@@ -702,7 +727,12 @@ class HAHousekeeperPanel extends HTMLElement {
       broken.forEach(f => rows.push(this.check(t(f.rule_id.split(".")[1]), "red", `${f.affected_object}${f.evidence?.[0]?.location ? ` · ${f.evidence[0].location}` : ""}`, t("missing"))));
       if (item.object_type === "automation" && item.status === "disabled") rows.push(this.check(t("status"), "mute", t("automationOff"), t("disabled")));
       if (!broken.length) rows.push(this.check(t("dependencies"), "ok", t("refsResolved"), t("present")));
-      cause = broken.length ? t("cause_automation_broken", { count: broken.length }) : t("cause_automation_ok");
+      const unused = item.object_type === "automation" ? this.data.findings.find(f => this.findingKey(f) === key && f.classification === "unused") : null;
+      if (item.object_type === "automation") {
+        rows.push(this.check(t("lastTriggered"), unused ? "warn" : "ok", item.last_triggered ? this.formatDate(item.last_triggered) : t("never"), unused ? t("unused") : t("available")));
+      }
+      cause = broken.length ? t("cause_automation_broken", { count: broken.length }) : unused ? t(`cause_${unused.rule_id.split(".")[1]}`, { days: unused.evidence?.[0]?.days ?? "" }) : t("cause_automation_ok");
+      if (unused && !broken.length) { hint = t("hint_unused"); tone = "warn"; }
       if (broken.length) { hint = t("hint_automation_broken"); tone = "red"; }
     } else return null;
     return { rows, cause, hint, tone };

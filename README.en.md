@@ -104,6 +104,9 @@ Each relationship includes a confidence level. Explicit registry and configurati
 
 - Findings list with reasons and diagnosis confidence; export as **CSV** or **JSON** (respects the selected filter)
 - Threshold for unavailable entities: under **Configure** you choose after how many days (default 7, `0` = immediately) an unavailable entity becomes a finding. Short outages, for example after a restart, are ignored. Orphaned entities are always reported immediately.
+- **Possible duplicates**: a non-working entity with a number suffix (`…_2`) for which a working entity of the same integration with the same base ID exists is marked as a leftover
+- **Unused automations**: switched off for a long time, not triggered for a long time, or never triggered (using the automation's age); threshold under **Configure** (default 90 days, `0` = off)
+- **Automatic scan** every 24 hours (adjustable) keeps the history and repair hints current
 - Hints under **Settings → Repairs**: at most three aggregated entries (orphaned entities, long-unavailable entities, automations with missing references) linking to the panel. They are informational only and offer no repair.
 - **Diagnostics download** for bug reports (integration → Download diagnostics) contains counts only, no names or IDs.
 

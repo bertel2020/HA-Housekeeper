@@ -171,6 +171,8 @@ async def test_options_flow_stores_threshold(hass: HomeAssistant) -> None:
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert entry.options["min_unavailable_days"] == 7
+    assert entry.options["scan_interval_hours"] == 24
+    assert entry.options["unused_automation_days"] == 90
 
 
 async def test_scan_creates_and_clears_repairs_hints(hass: HomeAssistant) -> None:
@@ -303,3 +305,30 @@ async def test_second_scan_can_be_compared_with_the_first(hass: HomeAssistant) -
     assert [(c["object_id"], c["from"], c["to"]) for c in changes] == [
         (entry.entity_id, "active", "unavailable")
     ]
+
+
+async def test_scan_flags_duplicates_and_keeps_hints_out_of_repairs(hass: HomeAssistant) -> None:
+    """A suffixed leftover becomes a finding, but never a Repairs card."""
+    from homeassistant.helpers import issue_registry as ir
+
+    registry = er.async_get(hass)
+    base = registry.async_get_or_create(
+        domain="media_player", platform="cast", unique_id="a", suggested_object_id="tv"
+    )
+    twin = registry.async_get_or_create(
+        domain="media_player", platform="cast", unique_id="b", suggested_object_id="tv_2"
+    )
+    hass.states.async_set(base.entity_id, "on")
+    hass.states.async_set(twin.entity_id, "unavailable")
+
+    scanner = InventoryScanner(hass)
+    scanner.min_unavailable_days = 0
+    snapshot = await scanner.async_scan()
+
+    duplicate = next(f for f in snapshot["findings"] if f["rule_id"] == "entity.possible_duplicate")
+    assert (duplicate["object_id"], duplicate["affected_object"]) == (
+        twin.entity_id,
+        base.entity_id,
+    )
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is None
+    assert snapshot["meta"]["unused_automation_days"] == 90

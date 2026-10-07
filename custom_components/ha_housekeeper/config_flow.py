@@ -8,7 +8,16 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult, OptionsFlow
 
-from .const import CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS, DOMAIN, NAME
+from .const import (
+    CONF_MIN_UNAVAILABLE_DAYS,
+    CONF_SCAN_INTERVAL_HOURS,
+    CONF_UNUSED_AUTOMATION_DAYS,
+    DEFAULT_MIN_UNAVAILABLE_DAYS,
+    DEFAULT_SCAN_INTERVAL_HOURS,
+    DEFAULT_UNUSED_AUTOMATION_DAYS,
+    DOMAIN,
+    NAME,
+)
 
 
 class HAHousekeeperOptionsFlow(OptionsFlow):
@@ -18,15 +27,22 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
         """Edit thresholds."""
         if user_input is not None:
             return self.async_create_entry(data=user_input)
-        current = self.config_entry.options.get(
-            CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS
-        )
+        options = self.config_entry.options
+
+        def field(key: str, default: int, maximum: int) -> tuple[Any, Any]:
+            return (
+                vol.Required(key, default=options.get(key, default)),
+                vol.All(vol.Coerce(int), vol.Range(min=0, max=maximum)),
+            )
+
         schema = vol.Schema(
-            {
-                vol.Required(CONF_MIN_UNAVAILABLE_DAYS, default=current): vol.All(
-                    vol.Coerce(int), vol.Range(min=0, max=365)
-                )
-            }
+            dict(
+                [
+                    field(CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS, 365),
+                    field(CONF_UNUSED_AUTOMATION_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS, 3650),
+                    field(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS, 720),
+                ]
+            )
         )
         return self.async_show_form(step_id="init", data_schema=schema)
 

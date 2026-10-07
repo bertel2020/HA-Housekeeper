@@ -19,9 +19,10 @@ from .automation_analysis import (
     summarize_automation_config,
     summarize_script_config,
 )
-from .const import DEFAULT_MIN_UNAVAILABLE_DAYS
+from .const import DEFAULT_MIN_UNAVAILABLE_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS
 from .dashboard_analysis import extract_dashboard_references
 from .history import ScanHistory
+from .hygiene import automation_hygiene_findings, duplicate_findings, mark_duplicates
 from .issues import async_sync_issues
 from .observations import ObservationStore
 
@@ -323,6 +324,7 @@ class InventoryScanner:
         self._snapshot: dict[str, Any] | None = None
         self._details: dict[str, dict[str, Any]] = {}
         self.min_unavailable_days = DEFAULT_MIN_UNAVAILABLE_DAYS
+        self.unused_automation_days = DEFAULT_UNUSED_AUTOMATION_DAYS
         self.status: dict[str, Any] = {
             "running": False,
             "phase": "idle",
@@ -400,14 +402,6 @@ class InventoryScanner:
         self.status.update(phase="devices", progress=30)
         await asyncio.sleep(0)
 
-        await self.observations.async_update(
-            {f"entity:{item['object_id']}": item["status"] for item in entities}, observed_at
-        )
-        for item in entities:
-            item["status_since"] = self.observations.since(
-                f"entity:{item['object_id']}", item["status"]
-            )
-
         entity_counts = Counter(item["device_id"] for item in entities if item["device_id"])
         devices = [_device_item(device, entity_counts[device.id]) for device in device_entries]
         areas = [_area_item(area) for area in _registry_entries(area_registry.areas)]
@@ -428,12 +422,30 @@ class InventoryScanner:
             if state.entity_id not in known_automation_ids
         )
 
+        # One update for everything: anything missing from it would be forgotten.
+        tracked = [("entity", item) for item in entities] + [
+            ("automation", item) for item in automations
+        ]
+        await self.observations.async_update(
+            {f"{kind}:{item['object_id']}": item["status"] for kind, item in tracked}, observed_at
+        )
+        for kind, item in tracked:
+            item["status_since"] = self.observations.since(
+                f"{kind}:{item['object_id']}", item["status"]
+            )
+        mark_duplicates(entities)
+
         edges = _structure_edges(entities, devices, areas) + automation_edges + dashboard_edges
         objects = (
             entities + devices + integrations + areas + floors + labels + automations + dashboards
         )
         findings = (
             _entity_findings(entities, observed_at, self.min_unavailable_days)
+            + duplicate_findings(
+                entities,
+                lambda item: _long_enough(item, observed_at, self.min_unavailable_days),
+            )
+            + automation_hygiene_findings(automations, observed_at, self.unused_automation_days)
             + automation_findings
             + dashboard_findings
         )
@@ -445,6 +457,7 @@ class InventoryScanner:
                 "scanned_at": observed_at.isoformat(),
                 "read_only": True,
                 "min_unavailable_days": self.min_unavailable_days,
+                "unused_automation_days": self.unused_automation_days,
                 "object_count": len(objects),
                 "status_counts": dict(Counter(item["status"] for item in objects)),
                 "type_counts": dict(Counter(item["object_type"] for item in objects)),
@@ -555,8 +568,10 @@ class InventoryScanner:
                 **summary,
             }
             if domain == "automation":
+                registry_entry = er.async_get(self.hass).async_get(entity_id)
                 item.update(
                     {
+                        "created_at": _iso(getattr(registry_entry, "created_at", None)),
                         "automation_id": getattr(entity, "unique_id", None),
                         "mode": attrs.get("mode"),
                         "current": attrs.get("current", 0),

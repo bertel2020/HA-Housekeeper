@@ -16,3 +16,7 @@ STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = "min_unavailable_days"
 DEFAULT_MIN_UNAVAILABLE_DAYS: Final = 7
+CONF_SCAN_INTERVAL_HOURS: Final = "scan_interval_hours"
+DEFAULT_SCAN_INTERVAL_HOURS: Final = 24
+CONF_UNUSED_AUTOMATION_DAYS: Final = "unused_automation_days"
+DEFAULT_UNUSED_AUTOMATION_DAYS: Final = 90

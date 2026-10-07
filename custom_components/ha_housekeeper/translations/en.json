@@ -15,9 +15,11 @@
     "step": {
       "init": {
         "title": "HA Housekeeper options",
-        "description": "Entities that are unavailable only briefly (for example after a restart) are not reported. 0 reports every unavailable entity.",
+        "description": "Short outages, for example after a restart, are not reported (0 reports every unavailable entity). Automations that are switched off or never run for the given number of days are reported as unused. Regular scans keep the history and repair hints current.",
         "data": {
-          "min_unavailable_days": "Report unavailable entities after (days)"
+          "min_unavailable_days": "Report unavailable entities after (days)",
+          "unused_automation_days": "Report unused automations after (days, 0 = off)",
+          "scan_interval_hours": "Scan automatically every (hours, 0 = off)"
         }
       }
     }

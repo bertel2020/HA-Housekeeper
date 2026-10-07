@@ -295,3 +295,27 @@ test("loadCompare asks the backend with the selected baseline", async () => {
   assert.equal(JSON.stringify(calls), JSON.stringify([{ type: "ha_housekeeper/compare", baseline: "2026-10-05T20:00:00+00:00" }]));
   assert.equal(el.compare, COMPARE);
 });
+
+test("duplicate entities and unused automations are explained", () => {
+  const { el } = panel("de");
+  const dup = diagnoseWith([ENTRY, DEVICE], { object_id: "media_player.tv_2", duplicate_of: "media_player.tv" });
+  assert.ok(dup.rows.some(r => r.value === "media_player.tv" && r.tone === "violet"));
+  assert.ok(dup.cause.includes("media_player.tv"));
+  assert.ok(dup.hint.includes("working entity"));
+
+  const automation = { object_type: "automation", object_id: "automation.old", name: "Old", status: "active", last_triggered: null };
+  el.data = { ...DATA, objects: [...DATA.objects, automation], findings: [
+    { rule_id: "automation.never_triggered", object_id: "automation.old", classification: "unused", confidence: 0.6, evidence: [{ days: 120 }] },
+  ] };
+  const d = el.diagnose(automation);
+  assert.equal(d.tone, "warn");
+  assert.ok(d.cause.includes("120"));
+  assert.equal(d.rows.find(r => r.value === "Nie").tone, "warn");
+
+  el.selected = automation;
+  el.view = "findingsNav";
+  el.selected = null;
+  el.render();
+  assert.ok(el.findingRow(el.data.findings[0]).includes("Wurde nie ausgelöst"));
+  assert.ok(el.findingRow({ rule_id: "entity.possible_duplicate", object_id: "media_player.tv_2", classification: "possible_duplicate", confidence: 0.7, affected_object: "media_player.tv" }).includes("Mögliches Duplikat von media_player.tv"));
+});
