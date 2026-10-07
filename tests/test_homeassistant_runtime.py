@@ -213,7 +213,10 @@ async def test_scan_creates_and_clears_repairs_hints(hass: HomeAssistant) -> Non
     assert issue is not None
     assert issue.is_fixable is False
     assert issue.learn_more_url == "/ha-housekeeper?view=findingsNav&filter=orphaned"
-    assert issue.translation_placeholders == {"count": "1"}
+    assert issue.translation_placeholders == {
+        "count": "1",
+        "link": "/ha-housekeeper?view=findingsNav&filter=orphaned",
+    }
 
     hass.states.async_set(entry.entity_id, "1")
     await scanner.async_scan()
@@ -402,9 +405,9 @@ async def test_findings_can_be_hidden_by_the_user_or_by_label(hass: HomeAssistan
     assert by_object[labelled.entity_id]["ignored_by"] == "label"
     assert by_object[plain.entity_id]["ignored"] is False
     issues = ir.async_get(hass)
-    assert issues.async_get_issue(DOMAIN, "orphaned_entities").translation_placeholders == {
-        "count": "1"
-    }
+    assert (
+        issues.async_get_issue(DOMAIN, "orphaned_entities").translation_placeholders["count"] == "1"
+    )
 
     key = by_object[plain.entity_id]["key"]
     assert scanner.set_finding_ignored(key, True) is True

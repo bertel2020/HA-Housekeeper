@@ -28,15 +28,15 @@
   "issues": {
     "orphaned_entities": {
       "title": "{count} orphaned entities",
-      "description": "Housekeeper found {count} entities whose device, integration or state no longer exists. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+      "description": "Housekeeper found {count} entities whose device, integration or state no longer exists. [Show in Housekeeper]({link}). Nothing is changed automatically."
     },
     "unavailable_entities": {
       "title": "{count} entities unavailable for a long time",
-      "description": "Housekeeper found {count} entities that have been unavailable longer than the configured threshold. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+      "description": "Housekeeper found {count} entities that have been unavailable longer than the configured threshold. [Show in Housekeeper]({link}). Nothing is changed automatically."
     },
     "broken_automations": {
       "title": "{count} findings with missing references",
-      "description": "Housekeeper found {count} references to entities, devices or areas that no longer exist, in automations, scripts, scenes, dashboards, groups or helpers. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+      "description": "Housekeeper found {count} references to entities, devices or areas that no longer exist, in automations, scripts, scenes, dashboards, groups or helpers. [Show in Housekeeper]({link}). Nothing is changed automatically."
     }
   },
   "entity": {

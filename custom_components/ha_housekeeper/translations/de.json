@@ -28,15 +28,15 @@
   "issues": {
     "orphaned_entities": {
       "title": "{count} verwaiste Entities",
-      "description": "Housekeeper hat {count} Entities gefunden, deren Gerät, Integration oder Zustand nicht mehr existiert. Housekeeper in der Seitenleiste öffnen, um sie zu prüfen. Es wird nichts automatisch geändert."
+      "description": "Housekeeper hat {count} Entities gefunden, deren Gerät, Integration oder Zustand nicht mehr existiert. [In Housekeeper anzeigen]({link}). Es wird nichts automatisch geändert."
     },
     "unavailable_entities": {
       "title": "{count} Entities lange nicht verfügbar",
-      "description": "Housekeeper hat {count} Entities gefunden, die länger als der eingestellte Schwellwert nicht verfügbar sind. Housekeeper in der Seitenleiste öffnen, um sie zu prüfen. Es wird nichts automatisch geändert."
+      "description": "Housekeeper hat {count} Entities gefunden, die länger als der eingestellte Schwellwert nicht verfügbar sind. [In Housekeeper anzeigen]({link}). Es wird nichts automatisch geändert."
     },
     "broken_automations": {
       "title": "{count} Befunde mit fehlenden Referenzen",
-      "description": "Housekeeper hat {count} Verweise auf Entities, Geräte oder Bereiche gefunden, die nicht mehr existieren, in Automationen, Skripten, Szenen, Dashboards, Gruppen oder Helfern. Housekeeper in der Seitenleiste öffnen, um sie zu prüfen. Es wird nichts automatisch geändert."
+      "description": "Housekeeper hat {count} Verweise auf Entities, Geräte oder Bereiche gefunden, die nicht mehr existieren, in Automationen, Skripten, Szenen, Dashboards, Gruppen oder Helfern. [In Housekeeper anzeigen]({link}). Es wird nichts automatisch geändert."
     }
   },
   "entity": {

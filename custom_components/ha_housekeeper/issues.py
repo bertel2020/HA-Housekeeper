@@ -39,15 +39,16 @@ def async_sync_issues(hass: HomeAssistant, findings: list[dict[str, Any]]) -> No
 
     for issue_id, count in counts.items():
         if count:
+            link = f"/{PANEL_URL}?view=findingsNav&filter={ISSUE_FILTERS[issue_id]}"
             ir.async_create_issue(
                 hass,
                 DOMAIN,
                 issue_id,
                 is_fixable=False,
-                learn_more_url=f"/{PANEL_URL}?view=findingsNav&filter={ISSUE_FILTERS[issue_id]}",
+                learn_more_url=link,
                 severity=ir.IssueSeverity.WARNING,
                 translation_key=issue_id,
-                translation_placeholders={"count": str(count)},
+                translation_placeholders={"count": str(count), "link": link},
             )
         else:
             ir.async_delete_issue(hass, DOMAIN, issue_id)
