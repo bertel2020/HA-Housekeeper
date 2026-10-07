@@ -21,7 +21,7 @@ jobs:
       contents: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check tag against manifest version
         run: |
           manifest_version=$(python3 -c "import json; print(json.load(open('custom_components/ha_housekeeper/manifest.json'))['version'])")
