@@ -21,6 +21,7 @@ from .const import (
     PANEL_URL,
 )
 from .inventory import InventoryScanner
+from .issues import async_clear_issues
 from .websocket_api import async_register as async_register_websocket
 
 _LOGGER = logging.getLogger(__name__)
@@ -92,4 +93,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload the integration."""
     frontend.async_remove_panel(hass, PANEL_URL)
     hass.data[DOMAIN].pop("scanner", None)
+    async_clear_issues(hass)
     return True

@@ -21,5 +21,19 @@
         }
       }
     }
+  },
+  "issues": {
+    "orphaned_entities": {
+      "title": "{count} orphaned entities",
+      "description": "Housekeeper found {count} entities whose device, integration or state no longer exists. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+    },
+    "unavailable_entities": {
+      "title": "{count} entities unavailable for a long time",
+      "description": "Housekeeper found {count} entities that have been unavailable longer than the configured threshold. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+    },
+    "broken_automations": {
+      "title": "{count} automations reference missing objects",
+      "description": "Housekeeper found {count} findings in automations that reference missing entities, devices or areas. Open Housekeeper in the sidebar to review them. Nothing is changed automatically."
+    }
   }
 }

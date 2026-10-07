@@ -171,3 +171,24 @@ async def test_options_flow_stores_threshold(hass: HomeAssistant) -> None:
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert entry.options["min_unavailable_days"] == 7
+
+
+async def test_scan_creates_and_clears_repairs_hints(hass: HomeAssistant) -> None:
+    """Findings become aggregated, non-fixable issues that disappear once resolved."""
+    from homeassistant.helpers import issue_registry as ir
+
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="issue-1", suggested_object_id="issue_test"
+    )
+    scanner = InventoryScanner(hass)
+    await scanner.async_scan()
+
+    issue = ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities")
+    assert issue is not None
+    assert issue.is_fixable is False
+    assert issue.translation_placeholders == {"count": "1"}
+
+    hass.states.async_set(entry.entity_id, "1")
+    await scanner.async_scan()
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is None

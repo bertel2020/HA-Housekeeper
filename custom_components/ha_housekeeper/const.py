@@ -13,4 +13,4 @@ STORAGE_KEY: Final = f"{DOMAIN}.observations"
 STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = "min_unavailable_days"
-DEFAULT_MIN_UNAVAILABLE_DAYS: Final = 0
+DEFAULT_MIN_UNAVAILABLE_DAYS: Final = 7

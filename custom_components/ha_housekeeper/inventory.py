@@ -18,6 +18,8 @@ from .automation_analysis import (
     missing_references,
     summarize_automation_config,
 )
+from .const import DEFAULT_MIN_UNAVAILABLE_DAYS
+from .issues import async_sync_issues
 from .observations import ObservationStore
 
 
@@ -292,7 +294,7 @@ class InventoryScanner:
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None
         self._details: dict[str, dict[str, Any]] = {}
-        self.min_unavailable_days = 0
+        self.min_unavailable_days = DEFAULT_MIN_UNAVAILABLE_DAYS
         self.status: dict[str, Any] = {
             "running": False,
             "phase": "idle",
@@ -312,6 +314,7 @@ class InventoryScanner:
                 snapshot = await self._async_build_snapshot()
                 self._details = _split_details(snapshot["objects"])
                 self._snapshot = snapshot
+                async_sync_issues(self.hass, snapshot["findings"])
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
             except Exception as err:
