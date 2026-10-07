@@ -1,5 +1,70 @@
 # Changelog
 
+## 0.7.0 - 2026-10-07
+
+Zählerwechsel und eine neue Wartungsansicht. Der Zählerwechsel schreibt in die
+Langzeitstatistik des Recorders und benennt Entities um; das geschieht wie alle
+Änderungen nur nach ausdrücklicher Bestätigung und mit einem
+Home-Assistant-Backup, das vorher gelingen muss. Automatisiert gegen Home
+Assistant 2026.2.3 getestet.
+
+### Neu
+
+- **Zählerwechsel**: Die Historie eines ersetzten Zählers wird mit dem neuen
+  zusammengeführt. Die stündliche Langzeitstatistik des alten Zählers wird vor
+  die des neuen kopiert, und dessen Summe wird um den alten Endstand verschoben;
+  die Rohwerte des neuen Zählers bleiben unverändert. Alternativ oder
+  zusätzlich übernimmt der neue Zähler die ID des alten (der alte zieht auf eine
+  freie `_alt`-ID um), sodass Automationen und Dashboards ohne Umschreiben
+  weiterlaufen. Die Vorschau zeigt Umschaltpunkt, Lücken, Überlappungen und den
+  Übergang der Summe. Vorhandene Werte werden nie überschrieben. Das Schreiben
+  der Statistik ist experimentell und lässt sich nur mit dem Backup
+  zurücksetzen; die ID-Übernahme lässt sich über das Journal zurückgeben.
+- **Wartung**: Die neue Ansicht zeigt die **Recorder-Kosten** (welche Entities
+  die Datenbank füllen, mit einem Vorschlag für einen Recorder-Ausschluss zum
+  Kopieren; Housekeeper ändert die Recorder-Konfiguration nicht) und den
+  **Update-Preflight** (Backup, Reparaturen, ausgefallene Integrationen,
+  fehlende Referenzen, anstehende Updates). Speichert man vor einem Update den
+  Ausgangszustand, zeigt Housekeeper danach, was neu ist.
+
+### Behoben
+
+- Geräte mit Kennungen oder Verbindungen aus mehr als zwei Teilen ließen den
+  Scan mit „too many values to unpack“ scheitern.
+
+---
+
+### English
+
+Meter change and a new maintenance view. The meter change writes to the
+recorder's long-term statistics and renames entities; like every change it
+happens only after explicit confirmation and with a Home Assistant backup that
+has to succeed first. Tested automatically against Home Assistant 2026.2.3.
+
+#### New
+
+- **Meter change**: joins the history of a replaced meter with the new one. The
+  old meter's hourly long-term statistics are copied in front of the new
+  meter's, and the new total is shifted by the old final reading; the raw
+  readings of the new meter stay as they are. Alternatively or additionally the
+  new meter takes over the old one's ID (the old one moves to a free `_alt` ID),
+  so automations and dashboards keep working without rewriting. The preview
+  shows the switch point, gaps, overlaps and the transition of the total.
+  Existing values are never overwritten. Writing the statistics is
+  experimental and can only be reset with the backup; the ID takeover can be
+  given back through the journal.
+- **Maintenance**: the new view shows the **recorder costs** (which entities
+  fill the database, with a suggested recorder exclusion to copy; Housekeeper
+  does not change the recorder configuration) and the **update preflight**
+  (backup, repairs, failed integrations, missing references, pending updates).
+  If you save the starting state before an update, Housekeeper shows what is
+  new afterwards.
+
+#### Fixed
+
+- Devices with identifiers or connections of more than two parts made the scan
+  fail with “too many values to unpack”.
+
 ## 0.6.0 - 2026-10-07
 
 Bereinigung in drei Schritten (Deaktivieren, Entfernen, Geräte und Verweise),
