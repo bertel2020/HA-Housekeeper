@@ -125,8 +125,8 @@ class ReliabilityMixin {
     const tiles = this.sumTiles([
       { label: this.t("relSumAvail"), value: overall === null ? "–" : `${this.formatNumber(Math.round(overall * 10) / 10)} %`, sub: this.t(r.window_days === 1 ? "relWindow1" : "relWindow7"), tone: toneOf(overall), tab: "reliability|integrations" },
       { label: this.t("relSumOutages"), value: this.formatNumber(outages), sub: this.t("relSumOf", { n: this.formatNumber(r.entries.length) }), tone: outages ? "warn" : "ok", tab: "reliability|integrations" },
-      { label: this.t("relSumUnstable"), value: this.formatNumber(u.total || 0), sub: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "", tone: flapping ? "red" : u.total ? "warn" : "ok", tab: "reliability|unstable" },
       { label: this.t("relSumAttention"), value: this.formatNumber(attention), sub: this.t("relSumAttentionHint"), tone: attention ? "red" : "ok", tab: "reliability|integrations" },
+      { label: this.t("relSumUnstable"), value: this.formatNumber(u.total || 0), sub: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "", tone: flapping ? "red" : u.total ? "warn" : "ok", tab: "reliability|unstable" },
     ]);
     const tabs = [
       { id: "integrations", label: this.t("relTabIntegrations"), count: r.entries.length, tone: outages || attention ? "warn" : "ok" },
