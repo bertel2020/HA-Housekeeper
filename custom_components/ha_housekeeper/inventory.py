@@ -23,6 +23,7 @@ from .automation_analysis import (
     summarize_automation_config,
     summarize_script_config,
 )
+from .backup_health import AttestStore
 from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
 from .const import (
@@ -456,6 +457,7 @@ class InventoryScanner:
         self.ignored = IgnoreStore(hass)
         self.journal = JournalStore(hass)
         self.preflight = PreflightStore(hass)
+        self.attest = AttestStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
         self._booting = False
@@ -487,6 +489,7 @@ class InventoryScanner:
         await self.ignored.async_load()
         await self.journal.async_load()
         await self.preflight.async_load()
+        await self.attest.async_load()
 
     def begin_boot(self) -> None:
         """Home Assistant is still booting: scans are preliminary until the warm-up is over."""

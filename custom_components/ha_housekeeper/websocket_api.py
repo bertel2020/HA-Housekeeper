@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+import asyncio
+from datetime import UTC, date, datetime
 from typing import Any
 
 import voluptuous as vol
@@ -11,6 +12,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
+from .backup_health import ATTEST_KINDS, backup_health
 from .cleanup import (
     ACTION_KINDS,
     MAX_ACTIONS,
@@ -30,6 +32,8 @@ from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
 from .references import preview_replacement
+
+BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
 
 
 def _scanner(hass: HomeAssistant) -> InventoryScanner | None:
@@ -556,6 +560,71 @@ async def websocket_preflight_save(
     connection.send_result(msg["id"], result)
 
 
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/backup_health"})
+@websocket_api.async_response
+async def websocket_backup_health(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Judge the backup strategy; reads the backup manager only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
+            result = await backup_health(hass, scanner.attest, scanner.journal.plans)
+    except Exception as err:
+        connection.send_error(msg["id"], "backup_health_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/backup_attest",
+        vol.Required("kind"): vol.In(ATTEST_KINDS),
+        vol.Optional("date"): vol.Match(r"^\d{4}-\d{2}-\d{2}$"),
+        vol.Optional("clear", default=False): bool,
+    }
+)
+@websocket_api.async_response
+async def websocket_backup_attest(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Record, or clear, a fact only the person can confirm (emergency kit stored, restore tried)."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    if msg["clear"]:
+        scanner.attest.clear(msg["kind"])
+    else:
+        day = None
+        if "date" in msg:
+            try:
+                day = date.fromisoformat(msg["date"])
+            except ValueError:
+                connection.send_error(msg["id"], "invalid_date", "The date does not exist")
+                return
+            if day > datetime.now(UTC).date():
+                connection.send_error(msg["id"], "invalid_date", "The date lies in the future")
+                return
+        scanner.attest.set(msg["kind"], day)
+    try:
+        async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
+            result = await backup_health(hass, scanner.attest, scanner.journal.plans)
+    except Exception as err:
+        connection.send_error(msg["id"], "backup_health_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register Housekeeper WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_inventory)
@@ -577,3 +646,5 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_recorder_costs)
     websocket_api.async_register_command(hass, websocket_preflight)
     websocket_api.async_register_command(hass, websocket_preflight_save)
+    websocket_api.async_register_command(hass, websocket_backup_health)
+    websocket_api.async_register_command(hass, websocket_backup_attest)

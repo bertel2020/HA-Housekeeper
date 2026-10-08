@@ -827,7 +827,77 @@ async def test_replies_carry_the_api_schema_version(hass: HomeAssistant, hass_ws
             {"type": "ha_housekeeper/plan_status", "plan_id": plan["plan_id"]}
         ),
         "recorder_costs": await reply({"type": "ha_housekeeper/recorder_costs"}),
+        "backup_health": await reply({"type": "ha_housekeeper/backup_health"}),
     }
     for name, result in results.items():
         assert result["schema"] == API_SCHEMA, name
     assert "schema" not in scanner.snapshot
+
+
+async def test_backup_health_and_attestations_over_the_websocket(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from unittest.mock import patch
+
+    from test_backup_health import backup, fake_manager
+
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+
+    async def ask(message: dict) -> dict:
+        await client.send_json_auto_id(message)
+        return await client.receive_json()
+
+    manager = fake_manager(backups=[backup()])
+    with patch("homeassistant.components.backup.async_get_manager", return_value=manager):
+        reply = await ask({"type": "ha_housekeeper/backup_health"})
+        assert reply["success"] and reply["result"]["schema"] == API_SCHEMA
+        assert reply["result"]["available"] is True
+        levels = {item["id"]: item["level"] for item in reply["result"]["checks"]}
+        assert levels["emergency_kit"] == "note" and levels["restore_test"] == "note"
+
+        attested = await ask(
+            {"type": "ha_housekeeper/backup_attest", "kind": "restore_test", "date": "2026-09-01"}
+        )
+        assert (
+            attested["success"]
+            and attested["result"]["attest"]["restore_test"] == "2026-09-01T00:00:00+00:00"
+        )
+        assert scanner.attest.record["restore_test"] == "2026-09-01T00:00:00+00:00"
+        today = await ask({"type": "ha_housekeeper/backup_attest", "kind": "emergency_kit"})
+        assert today["result"]["attest"]["emergency_kit"] is not None
+        cleared = await ask(
+            {"type": "ha_housekeeper/backup_attest", "kind": "emergency_kit", "clear": True}
+        )
+        assert cleared["result"]["attest"]["emergency_kit"] is None
+
+        for bad in (
+            {"kind": "restore_test", "date": "2999-01-01"},
+            {"kind": "restore_test", "date": "2026-02-30"},
+            {"kind": "restore_test", "date": "yesterday"},
+            {"kind": "backup_ok"},
+        ):
+            refused = await ask({"type": "ha_housekeeper/backup_attest", **bad})
+            assert refused["success"] is False, bad
+        assert (
+            scanner.attest.record["restore_test"] == "2026-09-01T00:00:00+00:00"
+        )  # refused calls change nothing
+
+    with patch("homeassistant.components.backup.async_get_manager", side_effect=KeyError("backup")):
+        missing = await ask({"type": "ha_housekeeper/backup_health"})
+    assert missing["success"] and missing["result"]["available"] is False
+
+
+async def test_backup_commands_are_refused_for_non_admins(
+    hass: HomeAssistant, hass_ws_client, hass_admin_user
+) -> None:
+    scanner, _ = await _ws_setup(hass, hass_ws_client)
+    hass_admin_user.groups = []
+    client = await hass_ws_client(hass)
+    for message in (
+        {"type": "ha_housekeeper/backup_health"},
+        {"type": "ha_housekeeper/backup_attest", "kind": "restore_test"},
+    ):
+        await client.send_json_auto_id(message)
+        reply = await client.receive_json()
+        assert reply["success"] is False and reply["error"]["code"] == "unauthorized", message
+    assert scanner.attest.record["restore_test"] is None

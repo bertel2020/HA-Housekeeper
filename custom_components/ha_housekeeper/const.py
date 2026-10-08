@@ -14,6 +14,7 @@ STORAGE_KEY: Final = f"{DOMAIN}.observations"
 IGNORED_STORAGE_KEY: Final = f"{DOMAIN}.ignored"
 HISTORY_STORAGE_KEY: Final = f"{DOMAIN}.history"
 PREFLIGHT_STORAGE_KEY: Final = f"{DOMAIN}.preflight"
+ATTEST_STORAGE_KEY: Final = f"{DOMAIN}.attest"
 STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = "min_unavailable_days"
