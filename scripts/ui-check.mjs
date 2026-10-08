@@ -28,7 +28,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
