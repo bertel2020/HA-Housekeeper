@@ -329,6 +329,8 @@ async def test_child_devices_are_inventoried_and_never_cleaned_up(
     scanner = await make_scanner(hass)
     config_entry, parent, _ = await make_device(hass, "bridge", entities=0)
     registry = dr.async_get(hass)
+    if not hasattr(registry, "async_get_or_create_child"):
+        pytest.skip("child devices exist from Home Assistant 2026.9")
     child = registry.async_get_or_create_child(
         config_entry_id=config_entry.entry_id,
         identifiers={("fakeint", "sensor-1")},
