@@ -1,5 +1,103 @@
 # Changelog
 
+## 0.11.0 - 2026-10-08
+
+Betrieb sichtbar machen: Automationsläufe, Last im Recorder, Datenbankzustand
+und Freigaben für Sprachassistenten, dazu eine überarbeitete Einstellungsseite.
+Automatisiert gegen Home Assistant 2026.8.3, 2026.9.4 und 2026.10.0b4 getestet
+(303 Python- und 149 Panel-Tests). Alles Neue liest nur; es wird nichts
+geändert oder gelöscht.
+
+### Neu
+
+- **Automationsläufe (Menü Betrieb):** Housekeeper zählt alle 15 Minuten die
+  Läufe aus den Traces von Home Assistant und behält nur Tageszahlen. Die
+  Ansicht nennt Automationen und Skripte, die häufig fehlschlagen, nie laufen,
+  ungewöhnlich oft laufen oder kaum noch laufen, jeweils mit den Zahlen dahinter.
+  Auf der Detailseite zeigt ein Reiter „Läufe“ den Verlauf.
+- **Last (Menü Betrieb):** Welche Entities, Integrationen und Ereignistypen den
+  Recorder am meisten beschreiben, für 24 Stunden oder 7 Tage: Stürme,
+  Attribut-Fluten, Entities ohne neuen Zustand, Anteil je Integration und
+  Ereignisfluten, mit „Daran hängen“ (Automationen, Skripte, Template-Sensoren).
+- **Datenbank (Karte in der Wartung):** Größe von Datenbank und WAL-Datei (nur
+  SQLite), Wachstum, doppelte Statistikzeitpunkte, fehlende Stunden,
+  Statistiken, die nicht zur Entity passen, und Lücken im Recorder, getrennt
+  nach Neustart und echter Lücke. Probleme erscheinen auch in den Aufgaben der
+  Übersicht.
+- **Freigaben (Pflegen):** Welche Entities Assist, Alexa, Google Assistant und
+  HomeKit erreichen können, mit Hinweisen zu Diagnose- und sensiblen Entities,
+  Freigaben für deaktivierte oder verwaiste Entities, doppelten Sprachnamen und
+  Webhooks von Integrationen, die es nicht mehr gibt. Passwörter, Tokens, Ports
+  und Webhook-IDs werden weder gelesen noch angezeigt.
+- **Verlauf von Versionen und Neustarts:** Housekeeper führt ein eigenes
+  Protokoll von Versionswechseln und Neustarts; es erklärt Lücken und
+  Auffälligkeiten.
+- **Verwaiste Statistiken:** erklären die zwei Wege hinaus und nennen
+  wahrscheinliche Nachfolger.
+- **Änderungen:** Fehlt der Vergleich, erklärt die Ansicht warum und bietet an,
+  einen Vergleichspunkt zu setzen. Objekte in Quarantäne lassen sich aus der
+  Liste und von der Detailseite zurückholen.
+
+### Geändert
+
+- **Einstellungen neu gestaltet:** Kopfband mit Version und Eckdaten, vier
+  Reiter (Darstellung, Scan und Schwellen, Ausgeblendet, Info), Kacheln für
+  Schema und Modus, Schwellen als Karten mit Einheit und Standardwert; „Speichern“
+  wird erst nach einer Änderung aktiv.
+- **Ruhigere Oberfläche:** Die Überschrift nennt die Menügruppe und den
+  Zeitpunkt des letzten Scans; die Detailseite zeigt Zustand und Ursache nur
+  einmal; Befunde nennen die Regel in Worten; die Aufräum-Leiste ist
+  gruppiert; Listenleisten geben der Suche mehr Platz; Zählhinweise klappen
+  weg; Änderungen sagen, wenn ein Filter einen Abschnitt leert; Listen der
+  Zuverlässigkeit und der Läufe sind in Seiten geteilt.
+
+### English
+
+Making operation visible: automation runs, recorder load, database health and
+exposure to voice assistants, plus a reworked settings page. Tested
+automatically against Home Assistant 2026.8.3, 2026.9.4 and 2026.10.0b4 (303
+Python and 149 panel tests). Everything new only reads; nothing is changed or
+deleted.
+
+#### New
+
+- **Automation runs (Operation menu):** Housekeeper counts runs from Home
+  Assistant's traces every 15 minutes and keeps daily numbers only. The view
+  names automations and scripts that often fail, never run, run unusually often
+  or hardly run any more, each with the numbers behind it. A “Runs” tab on the
+  detail page shows the history.
+- **Load (Operation menu):** Which entities, integrations and event types write
+  the most to the recorder, for 24 hours or 7 days: storms, attribute floods,
+  entities without a new state, share per integration and event floods, with
+  “Depends on it” (automations, scripts, template sensors).
+- **Database (card in Maintenance):** size of the database and WAL file
+  (SQLite only), growth, duplicate statistics timestamps, missing hours,
+  statistics that do not fit their entity, and recorder gaps, told apart as
+  restart and real gap. Problems also appear in the overview tasks.
+- **Exposure (Maintain):** Which entities Assist, Alexa, Google Assistant and
+  HomeKit can reach, with hints on diagnostic and sensitive entities, exposure
+  of disabled or orphaned entities, duplicate voice names and webhooks of
+  integrations that no longer exist. Passwords, tokens, ports and webhook ids
+  are neither read nor shown.
+- **Version and restart history:** Housekeeper keeps its own log of version
+  changes and restarts; it explains gaps and anomalies.
+- **Orphaned statistics:** explain the two ways out and name likely successors.
+- **Changes:** If no comparison exists, the view says why and offers to set a
+  comparison point. Quarantined objects can be taken out of quarantine from the
+  list and the detail page.
+
+#### Changed
+
+- **Settings redesigned:** header band with version and key facts, four tabs
+  (Look, Scan and thresholds, Hidden, Info), tiles for scheme and mode,
+  thresholds as cards with unit and default; “Save” becomes active only after a
+  change.
+- **Calmer interface:** the heading names the menu group and the time of the
+  last scan; the detail page shows state and cause only once; findings name
+  their rule in words; the cleanup toolbar is grouped; list bars give the
+  search more room; counting notes fold away; Changes says when a filter empties
+  a section; the reliability and runs lists are split into pages.
+
 ## 0.10.0 - 2026-10-08
 
 Backup-Schutz, Integrations-Zuverlässigkeit und eine neue Oberfläche: das Menü
