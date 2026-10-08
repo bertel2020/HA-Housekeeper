@@ -64,6 +64,7 @@ from .cleanup import (
     judge_action,
     registry_fingerprint,
 )
+from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 from .meter import analyse, prepare_meter, read_series, recorder_ready
 from .references import (
     ENERGY_PARTS,
@@ -184,10 +185,6 @@ def _parameter_names(function: Any) -> set[str]:
     if code is None:
         return set(inspect.signature(function).parameters)
     return set(code.co_varnames[: code.co_argcount + code.co_kwonlyargcount])
-
-
-MAX_FILE_BACKUP = 512 * 1024  # larger files are not kept whole in the journal
-MAX_PLAN_SNAPSHOTS = 2 * 1024 * 1024  # whole-file copies per plan; further sources undo per item
 
 
 def _bytes_hash(data: bytes) -> str:

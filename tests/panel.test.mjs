@@ -1328,3 +1328,15 @@ test("inventory rows and sortable headers can be used with the keyboard", () => 
   assert.ok(!key("a").prevented && row.clicked === 2, "other keys do nothing");
   assert.ok(!key("Enter", {}).prevented && row.clicked === 2, "keys pressed inside a control are left alone");
 });
+
+test("the replacement preview warns about sources that undo only item by item", () => {
+  const { el } = panel("en");
+  const action = { sources: [
+    { name: "Small", type: "automation", writable: true, change_count: 1, changes: [], manual: [], undo_per_item: false },
+    { name: "Huge", type: "automation", writable: true, change_count: 1, changes: [], manual: [], undo_per_item: true },
+  ] };
+  const html = el.sourceList(action);
+  assert.equal(html.split(el.t("sourceUndoPerItem")).length - 1, 1, "only the large source is flagged");
+  assert.ok(html.indexOf("Huge") < html.indexOf(el.t("sourceUndoPerItem")));
+  assert.ok(el.t("sourceUndoPerItem") !== "sourceUndoPerItem" && panel("de").el.t("sourceUndoPerItem").includes("Eintrag"));
+});

@@ -796,3 +796,21 @@ async def test_undo_after_the_journal_gave_up_the_file_copy_puts_the_item_back(
     assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
     assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD
     assert plan["actions"][0]["result"]["sources"][0]["restored_as"] == "item"
+
+
+async def test_the_preview_says_when_undo_will_work_per_item(hass: HomeAssistant) -> None:
+    """A file the journal cannot keep whole is flagged before anything is written."""
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED)
+    with state, backup:
+        plan = await make_reference_plan(scanner, hass)
+        source = plan["actions"][0]["sources"][0]
+        assert source["undo_per_item"] is False and source["file_bytes"] == len(FORMATTED.encode())
+
+    big = FORMATTED + "# " + "x" * (600 * 1024) + "\n"
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, big)
+    with state, backup:
+        plan = await make_reference_plan(scanner, hass)
+        source = plan["actions"][0]["sources"][0]
+        assert source["undo_per_item"] is True
+        await run(scanner, plan, [OLD])
+        assert "file_before" not in plan["actions"][0]["result"]["sources"][0]  # as announced

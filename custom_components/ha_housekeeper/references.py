@@ -20,6 +20,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util.yaml import dump, load_yaml
 
 from .cleanup import USAGE_RELATIONS, registry_fingerprint
+from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 
 MAX_LISTED = 50  # changes and mentions kept per source in a plan; totals stay exact
 YAML_FILES = {"automation": "automations.yaml", "script": "scripts.yaml", "scene": "scenes.yaml"}
@@ -152,7 +153,7 @@ async def load_source(
             raise SourceError("not_in_yaml")
         path = hass.config.path(YAML_FILES[kind])
         try:
-            data, _ = await hass.async_add_executor_job(load_file, path)
+            data, text = await hass.async_add_executor_job(load_file, path)
         except SourceError:
             raise
         except Exception as err:  # missing file, unreadable or invalid YAML
@@ -167,6 +168,7 @@ async def load_source(
             "ref": str(ref),
             "item": item,
             "hash": yaml_hash(item),
+            "file_bytes": len(text.encode("utf-8")),
         }
     if kind == "dashboard" and ident == "energy":
         try:
@@ -213,6 +215,25 @@ def source_keys(snapshot: dict[str, Any], entity_id: str) -> list[str]:
     )
 
 
+def _mark_item_level_undo(sources: list[dict[str, Any]]) -> None:
+    """Flag the YAML sources whose whole file the journal will not keep.
+
+    Mirrors the executor: files over ``MAX_FILE_BACKUP`` never are, and further files stop once a
+    plan holds ``MAX_PLAN_SNAPSHOTS``. Undo then restores such a source item by item, so comments
+    and formatting of that file do not come back. Only a hint for the preview.
+    """
+    kept = 0
+    for source in sources:
+        size = source.get("file_bytes")
+        if not source["writable"] or not source.get("change_count") or size is None:
+            source["undo_per_item"] = False
+            continue
+        whole = size <= MAX_FILE_BACKUP and kept + size <= MAX_PLAN_SNAPSHOTS
+        if whole:
+            kept += size
+        source["undo_per_item"] = not whole
+
+
 async def collect_sources(
     hass: HomeAssistant, snapshot: dict[str, Any], old: str, new: str
 ) -> tuple[str, list[dict[str, Any]]]:
@@ -256,8 +277,10 @@ async def collect_sources(
                 "changes": changes[:MAX_LISTED],
                 "change_count": len(changes),
                 "manual": manual[:MAX_LISTED],
+                "file_bytes": loaded.get("file_bytes"),
             }
         )
+    _mark_item_level_undo(sources)
     fingerprint = text_hash(
         json.dumps([[s["source"], s["hash"], s["change_count"]] for s in sources])
     )

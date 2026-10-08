@@ -73,7 +73,7 @@ class CleanupMixin {
       const state = src.writable ? this.t("replaceChanges", { count: src.change_count }) : this.t(`source_${src.reason}`);
       const manual = src.manual?.length ? ` · ${this.t("replaceManual", { count: src.manual.length })}` : "";
       const diff = (src.changes || []).slice(0, 5).map(c => `<small style="display:block;opacity:.8">${this.esc(c.location)}: ${this.esc(c.from)} → ${this.esc(c.to)}</small>`).join("");
-      return `<span style="display:block;padding:4px 0"><small><ha-icon icon="${src.writable ? "mdi:file-edit-outline" : "mdi:file-lock-outline"}" style="--mdc-icon-size:14px"></ha-icon> <b>${this.esc(src.name)}</b> (${this.esc(this.t(src.type))}) · ${this.esc(state)}${this.esc(manual)}</small>${diff}</span>`;
+      return `<span style="display:block;padding:4px 0"><small><ha-icon icon="${src.writable ? "mdi:file-edit-outline" : "mdi:file-lock-outline"}" style="--mdc-icon-size:14px"></ha-icon> <b>${this.esc(src.name)}</b> (${this.esc(this.t(src.type))}) · ${this.esc(state)}${this.esc(manual)}</small>${src.undo_per_item ? `<small style="display:block;color:var(--hk-amber)"><ha-icon icon="mdi:alert-outline" style="--mdc-icon-size:14px"></ha-icon> ${this.esc(this.t("sourceUndoPerItem"))}</small>` : ""}${diff}</span>`;
     }).join("");
     return `<span style="display:block;padding:6px 0 0"><small>${this.t("replaceSources")}:</small>${rows}</span>`;
   }

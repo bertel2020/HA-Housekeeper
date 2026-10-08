@@ -44,3 +44,8 @@ WARMUP_SECONDS: Final = 300
 # Version of the WebSocket reply contract; raise it when a field is renamed or removed.
 API_SCHEMA: Final = 1
 SIGNAL_SCAN_COMPLETE: Final = f"{DOMAIN}_scan_complete"
+
+# Undo data kept in the journal for a rewritten YAML file: files up to MAX_FILE_BACKUP are kept
+# whole (byte-exact undo); one plan keeps at most MAX_PLAN_SNAPSHOTS of such copies.
+MAX_FILE_BACKUP: Final = 512 * 1024
+MAX_PLAN_SNAPSHOTS: Final = 2 * 1024 * 1024
