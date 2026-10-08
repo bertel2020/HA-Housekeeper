@@ -17,6 +17,10 @@ const TEXT = {
     noResults: "Keine passenden Objekte gefunden.", safeBadge: "Ändert nur nach Bestätigung", safeBadgeHint: "Änderungen erfolgen nur nach Vorschau und ausdrücklicher Bestätigung. Riskante Aktionen erstellen vorher ein Backup. Einige Änderungen, insbesondere Statistikmigrationen, lassen sich nur durch Wiederherstellen dieses Backups zurücknehmen.",
     lastScan: "Letzter Scan", evidence: "Nachweis", registry: "Registry",
     state: "Zustand & Attribute", incoming: "Eingehend", outgoing: "Ausgehend",
+    graphMode: "Darstellung", graphList: "Liste", graphGraph: "Graph", graphDepth: "Ebenen", graphRelation: "Beziehungstyp", graphAllRelations: "Alle Beziehungen", graphConfidence: "Sicherheit", graphAllConf: "Alle Sicherheiten", graphCertainOnly: "Nur sichere",
+    graphImpact: "Was bricht beim Entfernen?", graphBreaks: "bricht", graphLabel: "Abhängigkeitsgraph von {name}", graphNodes: "{n} Objekte", graphMore: "Mehr anzeigen",
+    graphLegend: "Durchgezogen: sicher · Gestrichelt: wahrscheinlich · Rot gepunktet: Zyklus · Roter Rahmen: bricht beim Entfernen · Gestrichelter Rahmen: Objekt fehlt.",
+    graphMissing: "{n} fehlende Ziele", graphProbable: "{n} wahrscheinliche Beziehungen", graphCycles: "{n} Zyklen", graphHidden: "{n} weitere ausgeblendet", graphHitsOutside: "{n} betroffene Objekte liegen außerhalb des Graphen (mehr Ebenen wählen)",
     graphHint: "Wähle ein Objekt aus, um seine direkten Beziehungen zu untersuchen.",
     select: "Objekt auswählen", firstObservation: "Erster durch Housekeeper bestätigter Zeitpunkt",
     entity: "Entity", device: "Gerät", config_entry: "Integration", area: "Bereich",
@@ -192,6 +196,10 @@ const TEXT = {
     noResults: "No matching objects found.", safeBadge: "Changes only on confirmation", safeBadgeHint: "Changes happen only after a preview and your explicit confirmation. Risky actions create a backup first. Some changes, in particular statistics migrations, can only be taken back by restoring that backup.",
     lastScan: "Last scan", evidence: "Evidence", registry: "Registry",
     state: "State & attributes", incoming: "Incoming", outgoing: "Outgoing",
+    graphMode: "View", graphList: "List", graphGraph: "Graph", graphDepth: "Levels", graphRelation: "Relation type", graphAllRelations: "All relations", graphConfidence: "Certainty", graphAllConf: "All certainties", graphCertainOnly: "Certain only",
+    graphImpact: "What breaks when removed?", graphBreaks: "breaks", graphLabel: "Dependency graph of {name}", graphNodes: "{n} objects", graphMore: "Show more",
+    graphLegend: "Solid: certain · Dashed: probable · Red dotted: cycle · Red outline: breaks when removed · Dashed outline: object is missing.",
+    graphMissing: "{n} missing targets", graphProbable: "{n} probable relations", graphCycles: "{n} cycles", graphHidden: "{n} more hidden", graphHitsOutside: "{n} affected objects are outside the graph (choose more levels)",
     graphHint: "Select an object to inspect its direct relationships.",
     select: "Select object", firstObservation: "First confirmed observation by Housekeeper",
     entity: "Entity", device: "Device", config_entry: "Integration", area: "Area",
@@ -366,11 +374,13 @@ const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 
 const PREFS_KEY = "ha_housekeeper.prefs";
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], history_days: [1, 365] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
+// The dependency graph shows this many nodes per side at first; "more" adds another step.
+const GRAPH_NODE_STEP = 40;
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
 const REPO_URL = "https://github.com/bertel2020/HA-Housekeeping";
 // Palettes for explicit light/dark; taken from the Zeitarchiv app's design system (app.css).
@@ -624,6 +634,7 @@ class ThemeMixin {
     if (["auto", "reduced"].includes(saved.motion)) prefs.motion = saved.motion;
     if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
+    if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     return prefs;
   }
 
@@ -723,6 +734,10 @@ class StylesMixin {
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
       .chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
       .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:18px;border-radius:12px;background:color-mix(in srgb,var(--hk-red) 12%,transparent);color:var(--hk-red)}
+      .graphbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:10px 14px;margin-bottom:14px}.graphctl{display:flex;align-items:center;gap:8px}.graphctl small{color:var(--hk-muted)}.graphwrap{overflow:auto;padding:14px}.graphsvg{display:block;max-width:none}
+      .gedge{fill:none;stroke:var(--hk-muted);stroke-width:1.5}.gedge.prob{stroke-dasharray:7 4}.gedge.cycle{stroke:var(--hk-red);stroke-dasharray:2 3}.gedge.hit{stroke:var(--hk-red);stroke-width:2.5}.garrow{fill:var(--hk-muted)}.gdim{opacity:.3}
+      .gnode{cursor:pointer}.gnode.center{cursor:default}.gnode rect{fill:var(--hk-surface);stroke:var(--hk-border);stroke-width:1.5}.gnode.center rect{stroke:var(--hk-blue);stroke-width:2.5}.gnode.missing rect{stroke:var(--hk-red);stroke-dasharray:4 3}.gnode.hit rect{stroke:var(--hk-red);stroke-width:2.5}.gnode rect.bar{stroke:none;fill:var(--hk-blue)}.gnode rect.bar.ok{fill:var(--hk-green)}.gnode rect.bar.warn{fill:var(--hk-amber)}.gnode rect.bar.red{fill:var(--hk-red)}.gnode rect.bar.mute{fill:var(--hk-gray)}.gnode rect.bar.violet{fill:var(--hk-violet)}
+      .gnode text{fill:var(--hk-text);font-size:calc(12px*var(--hk-fs,1));font-weight:600}.gnode text.t1{fill:var(--hk-muted);font-size:calc(10px*var(--hk-fs,1));font-weight:400}.gnode:focus-visible{outline:none}.gnode:focus-visible rect:first-of-type{stroke:var(--hk-blue);stroke-width:3.5}.gnode:hover rect:first-of-type{stroke:var(--hk-blue)}
       .pathcard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:16px;margin-bottom:14px}.pathcard h2{font-size:calc(17px*var(--hk-fs,1));font-weight:600}
       .path{padding:16px;display:grid;gap:0}.node{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:inherit;text-align:left;width:100%}button.node:hover{border-color:var(--hk-blue)}
       .node.current{border:2px solid var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 8%,var(--hk-surface))}.node .tile{width:34px;height:34px}.node small{display:block;color:var(--hk-blue);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}.node strong{display:block;font-size:calc(13px*var(--hk-fs,1));font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.node span.meta{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
@@ -1664,6 +1679,8 @@ class InventoryMixin {
       return `${search}<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:graph-outline"></ha-icon>${this.t("graphHint")}</div></div>`;
     }
     const item = this.graphSelected, key = this.objectKey(item);
+    const head = `<div class="panel pathcard">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div><h2>${this.esc(item.name)} ${this.pill(item.status)}</h2><span class="id">${this.esc(item.object_id)}</span></div><button class="btn" data-object="${this.esc(key)}">${this.t("details")}</button></div>`;
+    if (this.useGraph()) return `${search}${head}${this.graphBar(item, key)}${this.graphPanel(item, key)}`;
     const USAGE = USAGE_RELATIONS;
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     const originEdges = incoming.filter(e => !USAGE.includes(e.relation));
@@ -1676,9 +1693,153 @@ class InventoryMixin {
     const usage = usageEntries.length
       ? `<div class="branch">${usageEntries.map(u => `<div><div class="link-label" style="margin:0;border:0;padding:0 0 4px">${u.label}</div>${this.nodeButton(u.key, edgeNote(u.edge))}</div>`).join("")}</div>`
       : `<p style="padding:6px 16px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))">${this.t("noRelations")}</p>`;
-    return `${search}<div class="panel pathcard">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div><h2>${this.esc(item.name)} ${this.pill(item.status)}</h2><span class="id">${this.esc(item.object_id)}</span></div><button class="btn" data-object="${this.esc(key)}">${this.t("details")}</button></div>
+    return `${search}${head}${this.graphBar(item, key)}
       <div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("origin")} ${originEdges.length} · ${this.t("usage")} ${usageEntries.length}</span></div>
       <div class="path">${origin}<div class="node current">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><small>${this.t(item.object_type)}</small><strong>${this.esc(item.name)}</strong><span class="meta">${this.esc(item.object_id)}</span></span>${this.pill(item.status)}</div>${usage}</div></div>`;
+  }
+}
+
+// GraphMixin: methods of the panel element, mixed into the class in 99-register.js.
+// The graph is a second view of the dependency list: origin on the left, the object in the middle,
+// what uses it on the right, up to three levels deep. The list stays the default and the fallback.
+class GraphMixin {
+  // The graph needs room; on a narrow screen only the list is offered.
+  canGraph() {
+    try { return globalThis.matchMedia ? globalThis.matchMedia("(min-width:600px)").matches : true; } catch (_) { return true; }
+  }
+
+  useGraph() { return this.prefs.graphMode === "graph" && this.canGraph(); }
+
+  // Walks the edges level by level from the object. Left: what the object comes from (non-usage
+  // edges pointing at it). Right: what uses it (usage edges pointing at it) and what it uses
+  // (edges leaving it). Returns nodes per level, the edges between included nodes and the notes.
+  graphModel(item, key, { depth = 1, relation = "", certainOnly = false, limit = GRAPH_NODE_STEP } = {}) {
+    const keep = e => (!relation || e.relation === relation) && (!certainOnly || e.confidence === "certain");
+    const sides = {
+      left: { levels: [], seen: new Map(), next: node => this.edgesTo(node).filter(e => !USAGE_RELATIONS.includes(e.relation) && keep(e)).map(e => [e.source, e]) },
+      right: { levels: [], seen: new Map(), next: (node, via) => (via === "out"
+        ? this.edgesFrom(node).filter(keep).map(e => [e.target, e])
+        : this.edgesTo(node).filter(e => USAGE_RELATIONS.includes(e.relation) && keep(e)).map(e => [e.source, e])) },
+    };
+    const edges = [], cycles = new Set();
+    let hidden = 0;
+    const record = (from, to, edge, cycle) => {
+      edges.push({ from, to, edge, cycle });
+      if (cycle) cycles.add(edge);
+    };
+    for (const [name, side] of Object.entries(sides)) {
+      let frontier = [{ key, via: null }];
+      for (let level = 1; level <= depth && frontier.length; level++) {
+        const found = [];
+        for (const parent of frontier) {
+          const candidates = name === "right" && parent.key === key
+            ? [...sides.right.next(key, "in").map(([k, e]) => [k, e, "in"]), ...sides.right.next(key, "out").map(([k, e]) => [k, e, "out"])]
+            : side.next(parent.key, parent.via).map(([k, e]) => [k, e, parent.via]);
+          for (const [other, edge, via] of candidates) {
+            const known = side.seen.get(other);
+            const opposite = (name === "left" ? sides.right : sides.left).seen.has(other);
+            // Back to the object, to an earlier level or to the other side closes a loop.
+            if (other === key || opposite || (known && known.level <= level - 1)) { record(other, parent.key, edge, true); continue; }
+            if (known) { record(other, parent.key, edge, false); continue; } // a second way to a node of this level
+            if (side.seen.size >= limit) { hidden++; continue; }
+            const node = { key: other, level, via, parent: parent.key };
+            side.seen.set(other, node);
+            found.push(node);
+            record(other, parent.key, edge, false);
+          }
+        }
+        if (found.length) side.levels.push(found);
+        frontier = found;
+      }
+    }
+    const nodes = new Set([key, ...sides.left.seen.keys(), ...sides.right.seen.keys()]);
+    const shown = edges.filter(e => nodes.has(e.from) && nodes.has(e.to));
+    const all = [...sides.left.seen.values(), ...sides.right.seen.values()];
+    return {
+      key, left: sides.left.levels, right: sides.right.levels, edges: shown,
+      hidden, cycles: [...cycles].filter(e => shown.some(s => s.edge === e)).length,
+      missing: all.filter(n => !this.findObject(n.key)).length,
+      probable: shown.filter(e => e.edge.confidence !== "certain").length,
+      count: all.length,
+    };
+  }
+
+  // Columns from the outermost left level to the outermost right level, the object in the middle.
+  graphLayout(model) {
+    const W = 176, H = 48, GAPX = 72, GAPY = 14;
+    const columns = [...[...model.left].reverse(), [{ key: model.key, center: true }], ...model.right];
+    const tallest = Math.max(...columns.map(c => c.length));
+    const height = tallest * H + (tallest - 1) * GAPY;
+    const at = new Map();
+    columns.forEach((column, i) => {
+      const top = (height - (column.length * H + (column.length - 1) * GAPY)) / 2;
+      column.forEach((node, j) => at.set(node.key, { x: i * (W + GAPX), y: top + j * (H + GAPY), node }));
+    });
+    // Room on the right for the arcs between nodes of one column.
+    return { W, H, width: columns.length * W + (columns.length - 1) * GAPX + 48, height, at };
+  }
+
+  graphClip(text, max) { const s = String(text ?? ""); return s.length > max ? `${s.slice(0, max - 1)}…` : s; }
+
+  graphSvg(model, item, hitKeys) {
+    const layout = this.graphLayout(model), { W, H, at } = layout;
+    const edgeSvg = model.edges.map(({ from, to, edge, cycle }) => {
+      const a = at.get(from), b = at.get(to);
+      if (!a || !b) return "";
+      const sameColumn = a.x === b.x;
+      // Two nodes of one column are joined by an arc on their right side.
+      const [l, r] = sameColumn ? (a.y < b.y ? [a, b] : [b, a]) : a.x < b.x ? [a, b] : [b, a];
+      const x1 = l.x + W, y1 = l.y + H / 2, x2 = sameColumn ? r.x + W : r.x, y2 = r.y + H / 2, dx = sameColumn ? 44 : (x2 - x1) / 2;
+      const forward = edge.source === (l === a ? from : to); // the data direction runs from the first to the second end
+      const hit = hitKeys && (hitKeys.has(edge.source) && (hitKeys.has(edge.target) || edge.target === model.key));
+      const cls = ["gedge", edge.confidence === "certain" ? "" : "prob", cycle ? "cycle" : "", hit ? "hit" : "", hitKeys && !hit ? "gdim" : ""].filter(Boolean).join(" ");
+      const mark = forward ? 'marker-end="url(#hk-arrow)"' : 'marker-start="url(#hk-arrow)"';
+      return `<path class="${cls}" d="M${x1},${y1} C${x1 + dx},${y1} ${sameColumn ? x2 + dx : x2 - dx},${y2} ${x2},${y2}" ${mark}><title>${this.esc(`${edge.source} → ${edge.target}: ${this.t(edge.relation)} (${this.t(edge.confidence)})`)}</title></path>`;
+    }).join("");
+    const nodeSvg = [...at.entries()].map(([key, { x, y, node }]) => {
+      const obj = this.findObject(key), [type, ...rest] = key.split(":"), id = rest.join(":");
+      const name = obj?.name || id, status = obj ? this.statusLabel(obj.status) : this.t("missing");
+      const hit = hitKeys?.has(key), tone = obj ? this.tone(obj.status) : "red";
+      const cls = ["gnode", node.center ? "center" : "", obj ? "" : "missing", hit ? "hit" : "", hitKeys && !hit && !node.center ? "gdim" : ""].filter(Boolean).join(" ");
+      const label = `${this.t(type)}: ${name}, ${status}${hit ? `, ${this.t("graphBreaks")}` : ""}`;
+      return `<g class="${cls}" ${node.center ? "" : `data-graph="${this.esc(key)}" tabindex="0" role="button"`} aria-label="${this.esc(label)}" transform="translate(${x},${y})"><title>${this.esc(`${label} (${id})`)}</title>
+        <rect width="${W}" height="${H}" rx="8"></rect><rect class="bar ${tone}" width="5" height="${H}" rx="2"></rect>
+        <text class="t1" x="14" y="18">${this.esc(this.graphClip(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""}`, 30))}</text>
+        <text x="14" y="36">${this.esc(this.graphClip(name, 24))}</text></g>`;
+    }).join("");
+    return `<div class="graphwrap"><svg class="graphsvg" role="group" aria-label="${this.esc(this.t("graphLabel", { name: item.name }))}" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}">
+      <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${edgeSvg}${nodeSvg}</svg></div>`;
+  }
+
+  // The switch between list and graph, and for the graph the depth, filters and the removal highlight.
+  graphBar(item, key) {
+    const canGraph = this.canGraph(), graph = this.useGraph();
+    const toggle = canGraph ? `<div class="seg" role="group" aria-label="${this.esc(this.t("graphMode"))}">${[["list", "graphList"], ["graph", "graphGraph"]].map(([mode, label]) => `<button class="btn ${(graph ? "graph" : "list") === mode ? "primary" : ""}" data-pref="graphMode|${mode}" aria-pressed="${(graph ? "graph" : "list") === mode}">${this.t(label)}</button>`).join("")}</div>` : "";
+    if (!graph) return toggle ? `<div class="panel graphbar">${toggle}</div>` : "";
+    const depth = [1, 2, 3].map(n => `<button class="btn ${this.graphDepth === n ? "primary" : ""}" data-graph-depth="${n}" aria-pressed="${this.graphDepth === n}">${n}</button>`).join("");
+    const relations = [...new Set(this.graphModel(item, key, { depth: this.graphDepth, limit: 400 }).edges.map(e => e.edge.relation))].sort();
+    const relSelect = `<select id="graphRel" aria-label="${this.esc(this.t("graphRelation"))}"><option value="">${this.t("graphAllRelations")}</option>${relations.map(r => `<option value="${r}" ${this.graphRel === r ? "selected" : ""}>${this.t(r)}</option>`).join("")}</select>`;
+    const confSelect = `<select id="graphConf" aria-label="${this.esc(this.t("graphConfidence"))}"><option value="all" ${this.graphConf === "all" ? "selected" : ""}>${this.t("graphAllConf")}</option><option value="certain" ${this.graphConf === "certain" ? "selected" : ""}>${this.t("graphCertainOnly")}</option></select>`;
+    const impact = this.impact(item, key);
+    const impactBtn = impact ? `<button class="btn ${this.graphImpact ? "primary" : ""}" data-graph-impact aria-pressed="${this.graphImpact}">${this.t("graphImpact")}</button>` : "";
+    return `<div class="panel graphbar">${toggle}<span class="graphctl"><small>${this.t("graphDepth")}</small><span class="seg" role="group" aria-label="${this.esc(this.t("graphDepth"))}">${depth}</span></span>${relSelect}${confSelect}${impactBtn}</div>`;
+  }
+
+  graphPanel(item, key) {
+    const model = this.graphModel(item, key, { depth: this.graphDepth, relation: this.graphRel, certainOnly: this.graphConf === "certain", limit: this.graphLimit });
+    const impact = this.graphImpact ? this.impact(item, key) : null;
+    const hitKeys = impact ? new Set([...impact.hits.map(h => h.key)]) : null;
+    const nothing = !model.count;
+    const shownHits = hitKeys ? [...hitKeys].filter(k => model.left.concat(model.right).some(level => level.some(n => n.key === k))).length : 0;
+    const notes = [
+      hitKeys && hitKeys.size > shownHits ? this.t("graphHitsOutside", { n: hitKeys.size - shownHits }) : "",
+      model.missing ? this.t("graphMissing", { n: model.missing }) : "", model.probable ? this.t("graphProbable", { n: model.probable }) : "",
+      model.cycles ? this.t("graphCycles", { n: model.cycles }) : "", model.hidden ? this.t("graphHidden", { n: model.hidden }) : "",
+    ].filter(Boolean).join(" · ");
+    const more = model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "";
+    return `<div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("graphNodes", { n: model.count })}</span></div>
+      ${nothing ? `<p style="padding:6px 16px;color:var(--hk-muted)">${this.t("noRelations")}</p>` : this.graphSvg(model, item, hitKeys)}
+      <p class="factnote">${this.t("graphLegend")}${notes ? ` ${this.esc(notes)}` : ""} ${more}</p></div>`;
   }
 }
 
@@ -2335,6 +2496,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
+    this.graphDepth = 1; this.graphRel = ""; this.graphConf = "all"; this.graphImpact = false; this.graphLimit = GRAPH_NODE_STEP;
     this.pages = {};
     this.lv = {};
     this.unrefTab = "entities";
@@ -2717,7 +2879,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
       const obj = this.findObject(el.dataset.graphOpen);
-      if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
+      if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
     });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.view = el.dataset.jump; this.pages = {};
@@ -2757,13 +2919,18 @@ class HAHousekeeperPanel extends HTMLElement {
       this.pages = {}; this.render();
     });
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
-    // Table rows are not native buttons: Enter and Space open them like a click.
-    root.querySelectorAll("tr[data-object]").forEach(el => el.onkeydown = ev => {
+    // Table rows and graph nodes are not native buttons: Enter and Space open them like a click.
+    root.querySelectorAll("tr[data-object], g[data-graph]").forEach(el => el.onkeydown = ev => {
       if (ev.target !== el || (ev.key !== "Enter" && ev.key !== " ")) return;
       ev.preventDefault();
-      el.click();
+      if (el.click) el.click(); else el.onclick?.();
     });
-    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.render(); } });
+    root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
+    root.querySelector("[data-graph-impact]")?.addEventListener("click", () => { this.graphImpact = !this.graphImpact; this.render(); });
+    root.querySelector("[data-graph-more]")?.addEventListener("click", () => { this.graphLimit += GRAPH_NODE_STEP; this.render(); });
+    const gr = root.querySelector("#graphRel"); if (gr) gr.onchange = () => { this.graphRel = gr.value; this.render(); };
+    const gc = root.querySelector("#graphConf"); if (gc) gc.onchange = () => { this.graphConf = gc.value; this.render(); };
+    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
@@ -2823,7 +2990,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

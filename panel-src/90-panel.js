@@ -24,6 +24,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
+    this.graphDepth = 1; this.graphRel = ""; this.graphConf = "all"; this.graphImpact = false; this.graphLimit = GRAPH_NODE_STEP;
     this.pages = {};
     this.lv = {};
     this.unrefTab = "entities";
@@ -406,7 +407,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
       const obj = this.findObject(el.dataset.graphOpen);
-      if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
+      if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
     });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.view = el.dataset.jump; this.pages = {};
@@ -446,13 +447,18 @@ class HAHousekeeperPanel extends HTMLElement {
       this.pages = {}; this.render();
     });
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
-    // Table rows are not native buttons: Enter and Space open them like a click.
-    root.querySelectorAll("tr[data-object]").forEach(el => el.onkeydown = ev => {
+    // Table rows and graph nodes are not native buttons: Enter and Space open them like a click.
+    root.querySelectorAll("tr[data-object], g[data-graph]").forEach(el => el.onkeydown = ev => {
       if (ev.target !== el || (ev.key !== "Enter" && ev.key !== " ")) return;
       ev.preventDefault();
-      el.click();
+      if (el.click) el.click(); else el.onclick?.();
     });
-    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.render(); } });
+    root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
+    root.querySelector("[data-graph-impact]")?.addEventListener("click", () => { this.graphImpact = !this.graphImpact; this.render(); });
+    root.querySelector("[data-graph-more]")?.addEventListener("click", () => { this.graphLimit += GRAPH_NODE_STEP; this.render(); });
+    const gr = root.querySelector("#graphRel"); if (gr) gr.onchange = () => { this.graphRel = gr.value; this.render(); };
+    const gc = root.querySelector("#graphConf"); if (gc) gc.onchange = () => { this.graphConf = gc.value; this.render(); };
+    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));

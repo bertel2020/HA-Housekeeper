@@ -17,6 +17,7 @@ class ThemeMixin {
     if (["auto", "reduced"].includes(saved.motion)) prefs.motion = saved.motion;
     if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
+    if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     return prefs;
   }
 

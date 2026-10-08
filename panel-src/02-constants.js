@@ -11,11 +11,13 @@ const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 
 const PREFS_KEY = "ha_housekeeper.prefs";
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], history_days: [1, 365] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
+// The dependency graph shows this many nodes per side at first; "more" adds another step.
+const GRAPH_NODE_STEP = 40;
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
 const REPO_URL = "https://github.com/bertel2020/HA-Housekeeping";
 // Palettes for explicit light/dark; taken from the Zeitarchiv app's design system (app.css).

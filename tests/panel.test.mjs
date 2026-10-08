@@ -601,8 +601,8 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   assert.equal(saved.pageSize, 50);
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
-  const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope" }) }) }).el;
-  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview" }));
+  const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope", graphMode: "cube" }) }) }).el;
+  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list" }));
 });
 
 test("automatic mode follows the Home Assistant theme for the extra schemes", () => {
@@ -1321,7 +1321,7 @@ test("inventory rows and sortable headers can be used with the keyboard", () => 
   el.view = "inventory";
   const row = { dataset: { object: "entity:sensor.b" }, click() { this.clicked = (this.clicked || 0) + 1; } };
   row.target = row;
-  el.shadowRoot.querySelectorAll = selector => (selector === "tr[data-object]" ? [row] : []);
+  el.shadowRoot.querySelectorAll = selector => (selector === "tr[data-object], g[data-graph]" ? [row] : []);
   el.render();
   const html = shadow.innerHTML;
   assert.ok(/<tr data-object="[^"]+" tabindex="0" role="button" aria-label="[^"]+">/.test(html), "rows are focusable");
@@ -1733,4 +1733,164 @@ test("the plan card shows the steps with text, marks undo kinds and folds the de
     const text = panel(lang).el.t.bind(panel(lang).el);
     for (const key of ["stepsLabel", "stepSelect", "stepAnalysis", "stepConfirm", "stepBackup", "stepRun", "stepVerify", "stepDone", "stepCurrent", "stepTodo", "stepSkipped", "stepFailed", "undoHousekeeper", "undoBackupOnly", "backupRestoreHint", "planDetails"]) assert.notEqual(text(key), key, `${lang} ${key}`);
   }
+});
+
+const graphData = () => {
+  const obj = (object_type, object_id, name, status = "active", extra = {}) => ({ object_type, object_id, name, status, ...extra });
+  const edge = (source, target, relation, confidence = "certain") => ({ source, target, relation, confidence });
+  return { ...DATA, findings: [],
+    objects: [obj("config_entry", "C", "Hub Eintrag"), obj("device", "D", "Gerät D"), obj("entity", "sensor.e", "Sensor E", "orphaned", { device_id: "D" }),
+      obj("automation", "automation.a", "Automation A"), obj("script", "script.s", "Skript S"), obj("automation", "automation.b", "Automation B")],
+    edges: [
+      edge("config_entry:C", "device:D", "OWNS"), edge("device:D", "entity:sensor.e", "PROVIDES"),
+      edge("automation:automation.a", "entity:sensor.e", "TRIGGERS_ON"), edge("script:script.s", "entity:sensor.e", "REFERENCES", "probable"),
+      edge("automation:automation.b", "script:script.s", "TARGETS"), edge("script:script.s", "automation:automation.a", "TARGETS"),
+      edge("entity:sensor.e", "entity:sensor.gone", "REFERENCES"),
+    ] };
+};
+const graphPanel = (lang = "en", pref = "graph") => {
+  const env = panel(lang);
+  env.el.data = graphData();
+  env.el.prefs = { ...env.el.prefs, graphMode: pref };
+  env.el.graphSelected = env.el.findObject("entity:sensor.e");
+  env.el.view = "graph";
+  return env;
+};
+const keysOf = levels => levels.map(level => level.map(n => n.key).sort().join(","));
+
+test("the graph model walks origin to the left and users to the right, level by level", () => {
+  const { el } = graphPanel();
+  const item = el.graphSelected, key = "entity:sensor.e";
+  const one = el.graphModel(item, key, { depth: 1 });
+  assert.equal(JSON.stringify(keysOf(one.left)), JSON.stringify(["device:D"]));
+  assert.equal(JSON.stringify(keysOf(one.right)), JSON.stringify(["automation:automation.a,entity:sensor.gone,script:script.s"]));
+  assert.equal(one.missing, 1, "the target without an object is counted");
+  assert.equal(one.probable, 1);
+  const three = el.graphModel(item, key, { depth: 3 });
+  assert.equal(JSON.stringify(keysOf(three.left)), JSON.stringify(["device:D", "config_entry:C"]));
+  assert.equal(JSON.stringify(keysOf(three.right)), JSON.stringify(["automation:automation.a,entity:sensor.gone,script:script.s", "automation:automation.b"]));
+  assert.equal(three.cycles, 1, "script S targets automation A, which already stands one level closer");
+  assert.equal(three.count, 6);
+  assert.equal(three.hidden, 0);
+  assert.equal(three.right[1][0].via, "in");
+});
+
+test("graph filters by relation and certainty, and limits the nodes", () => {
+  const { el } = graphPanel();
+  const item = el.graphSelected, key = "entity:sensor.e";
+  const trig = el.graphModel(item, key, { depth: 3, relation: "TRIGGERS_ON" });
+  assert.equal(JSON.stringify(keysOf(trig.right)), JSON.stringify(["automation:automation.a"]));
+  assert.equal(trig.left.length, 0, "the origin edge is filtered too");
+  const sure = el.graphModel(item, key, { depth: 3, certainOnly: true });
+  // The probable edge from script S is gone; S is still reached, one level later, over its certain edge to automation A.
+  assert.equal(JSON.stringify(keysOf(sure.right)), JSON.stringify(["automation:automation.a,entity:sensor.gone", "script:script.s", "automation:automation.b"]));
+  assert.equal(sure.probable, 0);
+  const small = el.graphModel(item, key, { depth: 3, limit: 1 });
+  assert.equal(small.right.flat().length, 1);
+  assert.ok(small.hidden >= 2, "what does not fit is counted");
+  assert.ok(small.edges.every(e => [...small.left.flat(), ...small.right.flat()].some(n => n.key === e.from) || e.from === key));
+});
+
+test("the layout puts levels in columns without overlapping nodes", () => {
+  const { el } = graphPanel();
+  const model = el.graphModel(el.graphSelected, "entity:sensor.e", { depth: 3 });
+  const layout = el.graphLayout(model), x = key => layout.at.get(key).x;
+  assert.ok(x("config_entry:C") < x("device:D") && x("device:D") < x("entity:sensor.e") && x("entity:sensor.e") < x("script:script.s") && x("script:script.s") < x("automation:automation.b"));
+  const boxes = [...layout.at.values()];
+  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+    const a = boxes[i], b = boxes[j];
+    assert.ok(a.x + layout.W <= b.x || b.x + layout.W <= a.x || a.y + layout.H <= b.y || b.y + layout.H <= a.y, "no two nodes overlap");
+  }
+  assert.ok(boxes.every(b => b.y >= 0 && b.y + layout.H <= layout.height + 0.001));
+});
+
+test("the graph is an SVG with focusable nodes, edge directions and text for what colour shows", () => {
+  const { el, shadow } = graphPanel();
+  el.graphDepth = 3;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('<svg class="graphsvg" role="group" aria-label="Dependency graph of'));
+  assert.equal((html.match(/<g class="gnode[^"]*" data-graph="[^"]+" tabindex="0" role="button"/g) || []).length, 6, "every node but the centre can be opened with the keyboard");
+  assert.equal((html.match(/class="gnode center"/g) || []).length, 1);
+  assert.ok(html.includes("Orphaned") || html.includes("Verwaist") || /Entity · \w+/.test(html), "status stands in the node as text");
+  assert.ok(html.includes("missing") && html.includes('class="gnode missing"'), "a missing target is marked and says so");
+  assert.ok(/class="gedge prob"/.test(html) && /class="gedge cycle"/.test(html));
+  // device D provides E (left to right): the arrow is at the right end; automation A triggers on E (right to left): at the left end
+  const device = /<path class="gedge" d="[^"]+" marker-end="url\(#hk-arrow\)"><title>device:D → entity:sensor.e/.test(html);
+  const automation = /<path class="gedge" d="[^"]+" marker-start="url\(#hk-arrow\)"><title>automation:automation.a → entity:sensor.e/.test(html);
+  assert.ok(device && automation, "arrows follow the direction of the data");
+  assert.ok(html.includes("1 missing targets") && html.includes("1 probable relations") && html.includes("1 cycles"));
+  assert.ok(html.includes("Solid: certain"));
+});
+
+test("the graph bar switches between list and graph, sets depth and filters", () => {
+  const { el, shadow } = graphPanel("en", "list");
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes('data-pref="graphMode|graph"') && html.includes('aria-pressed="false"'));
+  assert.ok(!html.includes('<svg class="graphsvg"') && html.includes('<div class="path">'), "the list is the default");
+  el.prefs = { ...el.prefs, graphMode: "graph" };
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes('<svg class="graphsvg"') && !html.includes('<div class="path">'));
+  for (const text of ["Levels", "All relations", "Certain only", "What breaks when removed?"]) assert.ok(html.includes(text), text);
+  assert.ok(html.includes('<option value="TRIGGERS_ON"'), "the relation filter lists the relations that exist");
+
+  const depthButtons = [1, 2, 3].map(n => ({ dataset: { graphDepth: String(n) } }));
+  const select = id => ({ value: "" });
+  const relation = select(), conf = select(), more = {}, impact = {};
+  shadow.querySelectorAll = selector => (selector === "[data-graph-depth]" ? depthButtons : []);
+  shadow.querySelector = selector => ({ "#graphRel": relation, "#graphConf": conf, "[data-graph-impact]": { addEventListener: (_, fn) => { impact.fn = fn; } }, "[data-graph-more]": { addEventListener: (_, fn) => { more.fn = fn; } } }[selector] || null);
+  el.render();
+  depthButtons[2].onclick();
+  assert.equal(el.graphDepth, 3);
+  relation.value = "TRIGGERS_ON"; relation.onchange();
+  assert.equal(el.graphRel, "TRIGGERS_ON");
+  conf.value = "certain"; conf.onchange();
+  assert.equal(el.graphConf, "certain");
+  impact.fn();
+  assert.equal(el.graphImpact, true);
+  more.fn();
+  assert.equal(el.graphLimit, 80);
+});
+
+test("on a narrow screen only the list is offered", () => {
+  const { el, shadow } = graphPanel("en", "graph");
+  const narrow = { matchMedia: () => ({ matches: false }) };
+  const env = panel("en", narrow);
+  env.el.data = graphData(); env.el.prefs = { ...env.el.prefs, graphMode: "graph" }; env.el.graphSelected = env.el.findObject("entity:sensor.e"); env.el.view = "graph";
+  assert.equal(env.el.canGraph(), false);
+  env.el.render();
+  assert.ok(!env.shadow.innerHTML.includes('<svg class="graphsvg"') && env.shadow.innerHTML.includes('<div class="path">'));
+  assert.ok(!env.shadow.innerHTML.includes("graphMode|"), "no switch without room for the graph");
+  assert.equal(el.canGraph(), true);
+  assert.ok(shadow !== undefined);
+});
+
+test("what breaks when the object is removed is highlighted, others fade", () => {
+  const { el, shadow } = graphPanel();
+  el.graphDepth = 2; el.graphImpact = true;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(/<g class="gnode hit" data-graph="automation:automation.a"/.test(html) && /aria-label="Automation: Automation A, [^"]*breaks"/.test(html));
+  assert.ok(/<g class="gnode gdim" data-graph="device:D"/.test(html));
+  assert.ok(/class="gedge hit"/.test(html));
+  const auto = graphPanel();
+  auto.el.graphSelected = auto.el.findObject("automation:automation.a");
+  auto.el.render();
+  assert.ok(!auto.shadow.innerHTML.includes("data-graph-impact"), "nothing breaks when an automation goes: no button");
+});
+
+test("graph nodes open with Enter and Space and recentre the graph", () => {
+  const { el, shadow } = graphPanel();
+  const node = { dataset: { graph: "automation:automation.a" } };
+  node.target = node;
+  shadow.querySelectorAll = selector => (selector === "tr[data-object], g[data-graph]" ? [node] : selector === "[data-graph]" ? [node] : []);
+  el.render();
+  assert.equal(typeof node.onclick, "function");
+  const ev = { key: "Enter", target: node, preventDefault() { this.prevented = true; } };
+  node.onkeydown(ev);
+  assert.ok(ev.prevented);
+  assert.equal(el.graphSelected.object_id, "automation.a", "SVG nodes have no click(), so the handler is called directly");
+  assert.equal(el.graphLimit, 40);
 });
