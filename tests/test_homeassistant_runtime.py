@@ -37,8 +37,10 @@ async def test_config_flow_creates_single_entry(hass: HomeAssistant) -> None:
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "HA Housekeeper"
     assert result["data"] == {}
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
     assert "scanner" in hass.data[DOMAIN]
+    # The initial scan ran on the event loop and finished (a plain function would run in a thread).
+    assert hass.data[DOMAIN]["scanner"].snapshot is not None
 
 
 async def test_scanner_reads_entity_registry_and_state(hass: HomeAssistant) -> None:
@@ -64,7 +66,7 @@ async def test_scanner_reads_entity_registry_and_state(hass: HomeAssistant) -> N
 
 
 async def test_registry_helpers_accept_old_and_new_home_assistant_shapes() -> None:
-    """Registry adapters support mappings and HA 2026.10 read-only collections."""
+    """Registry adapters support mappings and read-only collections; a device has one config entry."""
 
     class Entry:
         def __init__(self, entry_id: str) -> None:
@@ -75,9 +77,7 @@ async def test_registry_helpers_accept_old_and_new_home_assistant_shapes() -> No
     assert _registry_entries({"old": old_entry}) == [old_entry]
     assert _registry_entries((new_entry,)) == [new_entry]
 
-    legacy_device = type("LegacyDevice", (), {"config_entries": {"legacy"}})()
     modern_device = type("ModernDevice", (), {"config_entry_id": "modern"})()
-    assert _device_config_entry_ids(legacy_device) == ["legacy"]
     assert _device_config_entry_ids(modern_device) == ["modern"]
 
 
@@ -427,7 +427,7 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     await hass.config_entries.flow.async_configure(result["flow_id"], {})
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
 
     registry = er.async_get(hass)
     registry.async_get_or_create(
@@ -435,7 +435,7 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
     )
     scanner = hass.data[DOMAIN]["scanner"]
     await scanner.async_scan()
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
 
     assert hass.states.get("sensor.ha_housekeeper_orphaned_entities").state == "1"
     assert hass.states.get("sensor.ha_housekeeper_findings").state == "1"
@@ -446,7 +446,7 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
 
     finding = scanner.snapshot["findings"][0]
     scanner.set_finding_ignored(finding["key"], True)
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
     assert hass.states.get("sensor.ha_housekeeper_findings").state == "0"
 
 
@@ -586,7 +586,7 @@ async def test_a_refused_unload_keeps_the_runtime_objects(hass: HomeAssistant) -
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     await hass.config_entries.flow.async_configure(result["flow_id"], {})
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
     entry = hass.config_entries.async_entries(DOMAIN)[0]
 
     with patch.object(hass.config_entries, "async_unload_platforms", return_value=False):

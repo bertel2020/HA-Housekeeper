@@ -22,7 +22,7 @@ from .automation_analysis import (
     summarize_automation_config,
     summarize_script_config,
 )
-from .cleanup import JournalStore, quarantine_entries, recurring_devices
+from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
 from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
@@ -87,16 +87,31 @@ def _enum(value: Any) -> str | None:
     return str(getattr(value, "value", value))
 
 
+class _DeviceIds(set):
+    """The IDs of all devices; an ID Home Assistant still resolves (composite) counts as well."""
+
+    def __init__(self, registry: Any) -> None:
+        super().__init__(
+            entry.id
+            for collection in (registry.devices, getattr(registry, "child_devices", ()))
+            for entry in _registry_entries(collection)
+        )
+        self._registry = registry
+
+    def __contains__(self, device_id: object) -> bool:
+        return super().__contains__(device_id) or (
+            isinstance(device_id, str) and self._registry.async_get(device_id) is not None
+        )
+
+
 def _registry_entries(collection: Any) -> list[Any]:
     """Return entries from legacy mappings and modern read-only collections."""
     return [collection[value] if isinstance(value, str) else value for value in collection]
 
 
 def _device_config_entry_ids(device: Any) -> list[str]:
-    """Return owning config entries without using HA's deprecated compatibility API."""
-    if config_entry_id := getattr(device, "config_entry_id", None):
-        return [config_entry_id]
-    return sorted(getattr(device, "config_entries", ()))
+    """The config entry that owns a device (a device belongs to exactly one)."""
+    return [device.config_entry_id] if getattr(device, "config_entry_id", None) else []
 
 
 def _entity_status(
@@ -167,6 +182,36 @@ def _entity_item(
 def _device_item(device: Any, entity_count: int) -> dict[str, Any]:
     """Normalize one device registry entry."""
     status = "disabled" if device.disabled_by is not None else "active" if entity_count else "empty"
+    if is_child_device(device):
+        # A child device has no manufacturer, connections or via device; reading them from
+        # Home Assistant's entry would only report a deprecated access.
+        return {
+            "object_type": "device",
+            "object_id": device.id,
+            "name": device.name_by_user or device.name or device.id,
+            "manufacturer": None,
+            "model": None,
+            "model_id": None,
+            "serial_number": None,
+            "original_name": device.name if device.name_by_user else None,
+            "sw_version": None,
+            "hw_version": None,
+            "entry_type": None,
+            "configuration_url": None,
+            "identifiers": sorted(":".join(map(str, key)) for key in device.identifiers),
+            "connections": [],
+            "area_id": device.area_id,
+            "config_entry_ids": _device_config_entry_ids(device),
+            "device_kind": "child",
+            "parent_device_id": device.parent_device_id,
+            "via_device_id": None,
+            "labels": sorted(device.labels),
+            "disabled_by": _enum(device.disabled_by),
+            "status": status,
+            "entity_count": entity_count,
+            "created_at": _iso(getattr(device, "created_at", None)),
+            "modified_at": _iso(getattr(device, "modified_at", None)),
+        }
     return {
         "object_type": "device",
         "object_id": device.id,
@@ -184,6 +229,8 @@ def _device_item(device: Any, entity_count: int) -> dict[str, Any]:
         "connections": sorted(":".join(map(str, key)) for key in device.connections),
         "area_id": device.area_id,
         "config_entry_ids": _device_config_entry_ids(device),
+        "device_kind": "device",
+        "parent_device_id": None,
         "via_device_id": device.via_device_id,
         "labels": sorted(device.labels),
         "disabled_by": _enum(device.disabled_by),
@@ -490,8 +537,19 @@ class InventoryScanner:
         label_registry = lr.async_get(self.hass)
         config_entries = self.hass.config_entries.async_entries()
         config_entries_by_id = {entry.entry_id: entry for entry in config_entries}
-        device_entries = _registry_entries(device_registry.devices)
+        main_devices = _registry_entries(device_registry.devices)
+        child_devices = _registry_entries(getattr(device_registry, "child_devices", ()))
+        device_entries = [*main_devices, *child_devices]
         devices_by_id = {device.id: device for device in device_entries}
+        # Entities may still name a pre-migration composite device ID that the registry resolves
+        # on demand; such a device exists and must not make its entities look orphaned.
+        for entry in _registry_entries(entity_registry.entities):
+            if (
+                entry.device_id
+                and entry.device_id not in devices_by_id
+                and (resolved := device_registry.async_get(entry.device_id)) is not None
+            ):
+                devices_by_id[entry.device_id] = resolved
         observed_at = datetime.now(UTC)
 
         entities = [
@@ -595,7 +653,7 @@ class InventoryScanner:
                     device.name_by_user or device.name or device.id,
                     {*map(tuple, device.identifiers), *map(tuple, device.connections)},
                 )
-                for device in device_entries
+                for device in main_devices
             ],
         )
         orphaned_statistics = orphan_statistics(
@@ -678,7 +736,7 @@ class InventoryScanner:
                 entry.entity_id for entry in _registry_entries(er.async_get(self.hass).entities)
             }
             | {state.entity_id for state in self.hass.states.async_all()},
-            "device": {entry.id for entry in _registry_entries(registries["devices"].devices)},
+            "device": _DeviceIds(registries["devices"]),
             "area": {entry.id for entry in _registry_entries(registries["areas"].areas)},
             "floor": {entry.floor_id for entry in _registry_entries(registries["floors"].floors)},
             "label": {entry.label_id for entry in _registry_entries(registries["labels"].labels)},

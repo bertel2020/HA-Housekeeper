@@ -66,34 +66,62 @@ def registry_fingerprint(entry: Any) -> str:
     return hashlib.sha256(json.dumps(fields, default=str).encode()).hexdigest()[:16]
 
 
+def is_child_device(entry: Any) -> bool:
+    """Whether a device registry entry is a child device (it has no ``connections`` and so on)."""
+    return getattr(entry, "parent_device_id", None) is not None
+
+
+def get_main_device(registry: Any, device_id: str) -> Any | None:
+    """The regular device with this ID; child devices and pre-migration composite IDs are None."""
+    try:
+        return registry.async_get(
+            device_id, include_child_devices=False, include_composite_devices=False
+        )
+    except TypeError:  # a Home Assistant without these options
+        entry = registry.async_get(device_id)
+        return None if entry is None or is_child_device(entry) else entry
+
+
 def device_fingerprint(entry: Any) -> str:
     """Short hash of the device registry fields a cleanup action must find unchanged."""
-    fields = [
-        entry.id,
-        sorted(map(list, entry.identifiers)),
-        sorted(map(list, entry.connections)),
-        sorted(entry.config_entries),
-        entry.area_id,
-        entry.name,
-        entry.name_by_user,
-        sorted(entry.labels),
-        _enum_value(entry.disabled_by),
-        entry.via_device_id,
-        entry.manufacturer,
-        entry.model,
-    ]
+    if is_child_device(entry):
+        fields: list[Any] = [
+            entry.id,
+            sorted(map(list, entry.identifiers)),
+            [entry.config_entry_id],
+            entry.parent_device_id,
+            entry.area_id,
+            entry.name,
+            entry.name_by_user,
+            sorted(entry.labels),
+            _enum_value(entry.disabled_by),
+        ]
+    else:
+        fields = [
+            entry.id,
+            sorted(map(list, entry.identifiers)),
+            sorted(map(list, entry.connections)),
+            [entry.config_entry_id],  # as the sorted list of one that earlier versions hashed
+            entry.area_id,
+            entry.name,
+            entry.name_by_user,
+            sorted(entry.labels),
+            _enum_value(entry.disabled_by),
+            entry.via_device_id,
+            entry.manufacturer,
+            entry.model,
+        ]
     return hashlib.sha256(json.dumps(fields, default=str).encode()).hexdigest()[:16]
 
 
 def device_support(hass: HomeAssistant, entry: Any) -> dict[str, Any]:
-    """Whether the integrations behind a device offer regular removal, and could restore it."""
-    config_entries = [hass.config_entries.async_get_entry(i) for i in entry.config_entries]
-    known = [config_entry for config_entry in config_entries if config_entry is not None]
+    """Whether the integration behind a device offers regular removal, and could restore it."""
+    if is_child_device(entry):
+        return {"removal_supported": False, "restorable": False}
+    config_entry = hass.config_entries.async_get_entry(entry.config_entry_id)
     return {
-        "removal_supported": bool(known)
-        and len(known) == len(config_entries)
-        and all(config_entry.supports_remove_device for config_entry in known),
-        "restorable": bool(known),
+        "removal_supported": config_entry is not None and config_entry.supports_remove_device,
+        "restorable": config_entry is not None,
     }
 
 
@@ -227,6 +255,7 @@ BLOCKING_REASONS = frozenset(
         "quarantine_too_short",
         "device_has_working_entities",
         "has_children",
+        "child_device",
         "integration_no_support",
         "regular_removal_available",
         "unsupported_action",
@@ -307,7 +336,12 @@ def judge_device_action(
     reasons = action["reasons"]
     if any(item["status"] not in DISABLEABLE_STATUSES | {"disabled"} for item in members):
         reasons.append("device_has_working_entities")
-    if any(other.get("via_device_id") == device_id for other in devices.values()):
+    if device.get("device_kind") == "child":
+        reasons.append("child_device")  # removing and restoring child devices is not supported yet
+    if any(
+        device_id in (other.get("via_device_id"), other.get("parent_device_id"))
+        for other in devices.values()
+    ):
         reasons.append("has_children")
     if kind == "disable_device" and device["status"] == "disabled":
         reasons.append("already_disabled")

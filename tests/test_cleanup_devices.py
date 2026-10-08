@@ -58,13 +58,14 @@ async def make_device(
     config_entry.add_to_hass(hass)
     config_entry.supports_remove_device = bool(supports_removal)
     registry = dr.async_get(hass)
+    via_id = registry.async_get_devices(identifiers={(domain, via)})[0].id if via else None
     device = registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         identifiers={(domain, name)},
         name=name,
         manufacturer="Acme",
         model="X1",
-        **({"via_device": (domain, via)} if via else {}),
+        **({"via_device_id": via_id} if via else {}),
     )
     entity_registry = er.async_get(hass)
     members = [
@@ -296,34 +297,72 @@ async def test_a_device_changed_after_the_preview_is_not_touched(hass: HomeAssis
     assert dr.async_get(hass).async_get(device.id).disabled_by is None
 
 
-async def test_a_device_of_two_integrations_that_is_refused_midway_stays_restorable(
+async def test_a_journal_from_before_single_config_entries_is_still_restored(
     hass: HomeAssistant,
 ) -> None:
+    from custom_components.ha_housekeeper.cleanup_exec import CleanupRunner
+
     scanner = await make_scanner(hass)
-    first, device, members, _ = await quarantined_device(
-        hass, scanner, "bridge", supports_removal=True
+    config_entry, device, _, _ = await quarantined_device(
+        hass, scanner, "old", supports_removal=True
+    )
+    registry = dr.async_get(hass)
+    restore = scanner.cleanup._device_restore(registry.async_get(device.id))
+    registry.async_remove_device(device.id)
+    for key in ("config_entry_id", "config_subentry_id"):
+        restore.pop(key)  # as version 0.7.0 journalled it
+    assert restore["config_entries"] == [config_entry.entry_id]
+
+    runner: CleanupRunner = scanner.cleanup
+    assert runner._restore_device(dict(restore)) == "undone"
+    assert registry.async_get(device.id) is not None
+    registry.async_remove_device(device.id)
+    # a device of several integrations cannot exist any more, so it cannot be recreated either
+    assert runner._restore_device({**restore, "config_entries": ["a", "b"]}) == (
+        "conflict_unrestorable"
     )
 
-    # the same device also belongs to a second integration that refuses
-    async def refuse(hass, config_entry, device_entry) -> bool:
-        return False
 
-    mock_integration(hass, MockModule("second", async_remove_config_entry_device=refuse))
-    second = MockConfigEntry(domain="second")
-    second.add_to_hass(hass)
-    second.supports_remove_device = True
+async def test_child_devices_are_inventoried_and_never_cleaned_up(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    scanner = await make_scanner(hass)
+    config_entry, parent, _ = await make_device(hass, "bridge", entities=0)
     registry = dr.async_get(hass)
-    registry.async_update_device(device.id, add_config_entry_id=second.entry_id)
-    await scanner.async_scan()
-    manager, _ = fake_backup()
-    with patch("homeassistant.components.backup.async_get_manager", return_value=manager):
-        plan = await make_device_plan(scanner, hass, "remove_device", device.id)
-        await run(scanner, plan, [device.id])
-    result = plan["actions"][0]["result"]
-    assert result["state"] == "done" and result["stopped"] == "rejected_by_integration"
-    assert plan["status"] == "partial"
-    remaining = registry.async_get(device.id)
-    assert remaining is None or first.entry_id not in remaining.config_entries
-    outcome = await scanner.cleanup.undo(plan["plan_id"], None)
-    assert outcome["results"][0]["outcome"] == "undone"
-    assert first.entry_id in registry.async_get(device.id).config_entries
+    child = registry.async_get_or_create_child(
+        config_entry_id=config_entry.entry_id,
+        identifiers={("fakeint", "sensor-1")},
+        name="Probe",
+        parent_device_id=parent.id,
+    )
+    entity = er.async_get(hass).async_get_or_create(
+        "sensor",
+        "fakeint",
+        "probe-1",
+        suggested_object_id="probe",
+        config_entry=config_entry,
+        device_id=child.id,
+    )
+
+    snapshot = await scanner.async_scan()
+    objects = {(o["object_type"], o["object_id"]): o for o in snapshot["objects"]}
+    found = objects[("device", child.id)]
+    assert found["device_kind"] == "child" and found["parent_device_id"] == parent.id
+    assert found["entity_count"] == 1 and found["config_entry_ids"] == [config_entry.entry_id]
+    assert objects[("device", parent.id)]["device_kind"] == "device"
+    # an entity of a child device has a device: it is not orphaned for want of one
+    assert objects[("entity", entity.entity_id)]["reason"] != "device_missing"
+    assert "ChildDeviceEntry" not in caplog.text  # no deprecated attribute was read
+
+    # nothing is done to a child, and a parent with children is not touched either
+    for kind in ("disable_device", "remove_device", "forget_device"):
+        plan = await make_device_plan(scanner, hass, kind, child.id)
+        assert "child_device" in plan["actions"][0]["reasons"]
+        assert plan["actions"][0]["verdict"] == "blocked"
+    plan = await make_device_plan(scanner, hass, "disable_device", parent.id)
+    assert "has_children" in plan["actions"][0]["reasons"]
+
+    # even if such a plan reached the runner, the precheck refuses it
+    action = {"kind": "disable_device", "object_id": child.id, "fingerprint": None}
+    reason = await scanner.cleanup._precheck(action, {"snapshot": snapshot, "devices": {}})
+    assert reason == "device_unsupported"

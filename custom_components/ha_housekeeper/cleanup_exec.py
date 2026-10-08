@@ -60,6 +60,7 @@ from .cleanup import (
     REMOVAL_KINDS,
     device_fingerprint,
     device_support,
+    get_main_device,
     judge_action,
     registry_fingerprint,
 )
@@ -167,11 +168,22 @@ def _device_restore_data(entry: Any) -> dict[str, Any]:
     data.update(
         identifiers=sorted(map(list, entry.identifiers)),
         connections=sorted(map(list, entry.connections)),
-        config_entries=sorted(entry.config_entries),
+        config_entry_id=entry.config_entry_id,
+        config_subentry_id=entry.config_subentry_id,
+        config_entries=[entry.config_entry_id],  # as earlier versions journalled it
         labels=sorted(entry.labels),
         disabled_by=_value(entry.disabled_by),
     )
     return data
+
+
+def _parameter_names(function: Any) -> set[str]:
+    """The names a function takes, read from its code: ``inspect.signature`` evaluates the
+    annotations on Python 3.14 and fails on names that Home Assistant imports only for typing."""
+    code = getattr(getattr(function, "__func__", function), "__code__", None)
+    if code is None:
+        return set(inspect.signature(function).parameters)
+    return set(code.co_varnames[: code.co_argcount + code.co_kwonlyargcount])
 
 
 MAX_FILE_BACKUP = 512 * 1024  # larger files are not kept whole in the journal
@@ -461,7 +473,7 @@ class CleanupRunner:
             }, "disabled"
         if kind == "disable_device":
             registry = dr.async_get(self.hass)
-            entry = registry.async_get(object_id)
+            entry = get_main_device(registry, object_id)
             updated = registry.async_update_device(
                 object_id, disabled_by=dr.DeviceEntryDisabler.USER
             )
@@ -490,41 +502,31 @@ class CleanupRunner:
         return data
 
     async def _remove_device(self, action: dict[str, Any]) -> dict[str, Any]:
-        """Regular removal: every integration behind the device is asked and may refuse."""
+        """Regular removal: the integration behind the device is asked and may refuse."""
         registry = dr.async_get(self.hass)
-        entry = registry.async_get(action["object_id"])
+        entry = get_main_device(registry, action["object_id"])
         restore = self._device_restore(entry)
-        removed = False
-        for config_entry_id in sorted(entry.config_entries):
-            config_entry = self.hass.config_entries.async_get_entry(config_entry_id)
-            reason = None
-            if config_entry is None or not config_entry.supports_remove_device:
-                reason = "integration_no_support"
-            else:
-                try:
-                    integration = await loader.async_get_integration(self.hass, config_entry.domain)
-                    component = await integration.async_get_component()
-                    if not await component.async_remove_config_entry_device(
-                        self.hass, config_entry, entry
-                    ):
-                        reason = "rejected_by_integration"
-                except Exception:
-                    reason = "integration_no_support"
-            if reason:
-                if not removed:
-                    raise StepAbort(reason)
-                # A device of several integrations is already partly removed: keep the record
-                # so that it can be restored, and stop the run here.
-                return {"before": device_fingerprint(entry), "restore": restore, "stopped": reason}
-            if registry.async_get(entry.id):
-                registry.async_update_device(entry.id, remove_config_entry_id=config_entry_id)
-            removed = True
+        config_entry = self.hass.config_entries.async_get_entry(entry.config_entry_id)
+        if config_entry is None or not config_entry.supports_remove_device:
+            raise StepAbort("integration_no_support")
+        try:
+            integration = await loader.async_get_integration(self.hass, config_entry.domain)
+            component = await integration.async_get_component()
+            allowed = await component.async_remove_config_entry_device(
+                self.hass, config_entry, entry
+            )
+        except Exception as err:
+            raise StepAbort("integration_no_support") from err
+        if not allowed:
+            raise StepAbort("rejected_by_integration")
+        if registry.async_get(entry.id):
+            registry.async_remove_device(entry.id)
         return {"before": device_fingerprint(entry), "restore": restore}
 
     async def _forget_device(self, action: dict[str, Any]) -> dict[str, Any]:
         """Force Forget: drop the registry entry, then let the integrations load again."""
         registry = dr.async_get(self.hass)
-        entry = registry.async_get(action["object_id"])
+        entry = get_main_device(registry, action["object_id"])
         restore = self._device_restore(entry)
         registry.async_remove_device(entry.id)
         reloaded = []
@@ -547,30 +549,33 @@ class CleanupRunner:
         the journal.
         """
         registry = dr.async_get(self.hass)
-        config_entries = [
-            self.hass.config_entries.async_get_entry(i) for i in data["config_entries"]
-        ]
-        config_entries = [c for c in config_entries if c is not None]
-        if not config_entries:
+        config_entry_id = data.get("config_entry_id")
+        if config_entry_id is None:
+            # Journalled before a device belonged to a single config entry.
+            legacy = data.get("config_entries") or []
+            if len(legacy) != 1:
+                return "conflict_unrestorable"
+            config_entry_id = legacy[0]
+        if self.hass.config_entries.async_get_entry(config_entry_id) is None:
             return "conflict_unrestorable"
-        existing = registry.async_get(data["id"])
-        if existing is not None and not (
-            set(data["config_entries"]) - set(existing.config_entries)
-        ):
+        if registry.async_get(data["id"]) is not None:
             return "conflict_taken"
         try:
             device = registry.async_get_or_create(
-                config_entry_id=config_entries[0].entry_id,
+                config_entry_id=config_entry_id,
                 identifiers={tuple(i) for i in data["identifiers"]},
                 connections={tuple(c) for c in data["connections"]},
+                **(
+                    {"config_subentry_id": data["config_subentry_id"]}
+                    if data.get("config_subentry_id")
+                    else {}
+                ),
                 **{
                     key: data[key]
                     for key in ("manufacturer", "model", "name")
                     if data.get(key) is not None
                 },
             )
-            for config_entry in config_entries[1:]:
-                registry.async_update_device(device.id, add_config_entry_id=config_entry.entry_id)
             registry.async_update_device(
                 device.id,
                 area_id=data["area_id"],
@@ -935,9 +940,11 @@ class CleanupRunner:
         verdict_args: dict[str, Any] = {}
         restorable = None
         if kind in DEVICE_KINDS:
-            entry = dr.async_get(self.hass).async_get(object_id)
+            registry = dr.async_get(self.hass)
+            entry = get_main_device(registry, object_id)
             if entry is None:
-                return "device_gone"
+                # A child device (or a composite ID) is still there but not ours to change.
+                return "device_unsupported" if registry.async_get(object_id) else "device_gone"
             if (
                 action.get("fingerprint") is None
                 or device_fingerprint(entry) != action["fingerprint"]
@@ -1254,7 +1261,7 @@ class CleanupRunner:
             if data.get("entity_category")
             else None,
         }
-        accepted = inspect.signature(registry.async_get_or_create).parameters
+        accepted = _parameter_names(registry.async_get_or_create)
         return {
             key: value for key, value in wanted.items() if key in accepted and value is not None
         }

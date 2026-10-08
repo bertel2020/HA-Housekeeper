@@ -149,9 +149,10 @@ async def test_preflight_saves_a_record_and_compares_after_an_update(hass: HomeA
     broken.add_to_hass(hass)
     er.async_get(hass).async_get_or_create("sensor", "test", "after", suggested_object_id="after")
     snapshot = await scanner.async_scan()
-    with patch.object(maintenance, "HA_VERSION", "2026.3.0"):
+    installed = maintenance.HA_VERSION
+    with patch.object(maintenance, "HA_VERSION", "2099.1.0"):
         after = (await maintenance.preflight_report(hass, snapshot, scanner.preflight))["after"]
-    assert after["from_version"] == "2026.2.3" and after["to_version"] == "2026.3.0"
+    assert after["from_version"] == installed and after["to_version"] == "2099.1.0"
     assert [r["issue_id"] for r in after["new_repairs"]] == ["new_issue"]
     assert [e["title"] for e in after["new_failed_entries"]] == ["Hub"]
     new_ids = {o["object_id"] for o in after["inventory"]["new_objects"]["items"]}
