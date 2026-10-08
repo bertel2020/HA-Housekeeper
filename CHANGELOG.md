@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.11.1 - 2026-10-08
+
+Drei Korrekturen zu 0.11.0.
+
+### Behoben
+
+- **Freigaben:** Webhooks von Integrationen, die es nicht mehr gibt, wurden nie
+  gefunden, weil Housekeeper die Registrierungen falsch gelesen hat. Jetzt
+  erscheint der Fund „Webhooks ohne Integration“ wie vorgesehen; IDs und URLs
+  bleiben weiterhin verborgen.
+- **Menü:** Der aktive Eintrag im aufgeklappten Menü und im Handy-Menü zeigt den
+  blauen Balken gerade statt als Bogen.
+- **Hintergrundmessungen:** Das Zählen der Automationsläufe und das Notieren der
+  Datenbankgröße laufen unabhängig voneinander; ein Fehler bei den Läufen
+  stoppt die Größenmessung nicht mehr.
+
+### English
+
+Three fixes for 0.11.0.
+
+#### Fixed
+
+- **Exposure:** Webhooks of integrations that no longer exist were never found
+  because Housekeeper read the registrations the wrong way. The finding
+  “Webhooks without integration” now appears as intended; ids and urls stay
+  hidden.
+- **Menu:** The active entry in the open menu and in the phone menu shows the
+  blue bar straight instead of curved.
+- **Background measurements:** Counting automation runs and noting the database
+  size run independently; a failure in the runs no longer stops the size
+  measurement.
+
 ## 0.11.0 - 2026-10-08
 
 Betrieb sichtbar machen: Automationsläufe, Last im Recorder, Datenbankzustand
