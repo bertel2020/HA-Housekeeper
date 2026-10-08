@@ -9,6 +9,10 @@ Object.assign(TEXT.de, {
   relShared: "{n} gemeinsame Ausfälle, längster {longest}", relSharedOne: "1 gemeinsamer Ausfall, {longest}", relLayerCloud: "wahrscheinlich Cloud oder API (Vermutung)", relLayerLocal: "wahrscheinlich Gerät, Netz oder Integration (Vermutung)",
   relReauth: "Neu anmelden offen", relLastShared: "Letzter gemeinsamer Ausfall bis {date} ({duration})", relLastSingle: "Letzte Störung bis {date} ({duration})", relNoDisruption: "Keine Störung",
   relMinutes: "{n} Min.", relHours: "{n} Std.", relDays: "{n} Tage",
+  relUnstableTitle: "Instabile Entities", relUnstableHint: "Fallen immer wieder aus und kommen zurück. Entities mit Folgeobjekten stehen weiter oben.", relUnstableNone: "Keine Entity fällt auffällig oft aus.",
+  relUnstable: "instabil", relFlapping: "flatternd", relEpisodes: "{n} Ausfälle in {days} Tagen ({rate} pro Tag) · zusammen {total}, im Mittel {mean}",
+  relPattern: "wiederkehrend, meist zwischen {from} und {to} Uhr", relFollowers: "wird von {n} Automationen, Skripten oder Szenen verwendet", relUnstableMore: "{shown} von {total} Entities gezeigt.",
+  relUnstableFootnote: "Instabil: mindestens 3 Ausfälle und 0,5 pro Tag, flatternd ab 1,5 pro Tag. Ausfälle während eines gemeinsamen Ausfalls der Integration zählen für die Integration, nicht für die Entity. Dauerhaft ausgefallene, deaktivierte und ignorierte Entities fehlen.",
   relFootnote: "Verfügbarkeit: Anteil der Zeit ohne „nicht verfügbar“ in den letzten {days} Tagen, gerechnet ab der ersten Meldung im Zeitraum. Ein gemeinsamer Ausfall heißt: mindestens 80 % der Entities des Eintrags, mindestens drei, mindestens 5 Minuten zugleich nicht verfügbar. Ein Ausfall, der vor dem Zeitraum begann, zählt erst ab der ersten Meldung darin.",
 });
 Object.assign(TEXT.en, {
@@ -21,5 +25,9 @@ Object.assign(TEXT.en, {
   relShared: "{n} shared outages, longest {longest}", relSharedOne: "1 shared outage, {longest}", relLayerCloud: "probably the cloud or its API (a guess)", relLayerLocal: "probably the device, the network or the integration (a guess)",
   relReauth: "Re-authentication open", relLastShared: "Last shared outage until {date} ({duration})", relLastSingle: "Last disruption until {date} ({duration})", relNoDisruption: "No disruption",
   relMinutes: "{n} min", relHours: "{n} h", relDays: "{n} days",
+  relUnstableTitle: "Unstable entities", relUnstableHint: "They keep failing and coming back. Entities with dependants come first.", relUnstableNone: "No entity fails unusually often.",
+  relUnstable: "unstable", relFlapping: "flapping", relEpisodes: "{n} failures in {days} days ({rate} a day) · {total} in all, {mean} on average",
+  relPattern: "recurring, mostly between {from} and {to} o'clock", relFollowers: "used by {n} automations, scripts or scenes", relUnstableMore: "{shown} of {total} entities shown.",
+  relUnstableFootnote: "Unstable: at least 3 failures and 0.5 a day, flapping from 1.5 a day. Failures during a shared outage of the integration count for the integration, not the entity. Entities that are down all the time, disabled or ignored are left out.",
   relFootnote: "Availability: the share of time without “unavailable” in the last {days} days, counted from the first report in the period. A shared outage means at least 80 % of the entry's entities, at least three, were unavailable together for at least 5 minutes. An outage that began before the period counts from the first report in it.",
 });

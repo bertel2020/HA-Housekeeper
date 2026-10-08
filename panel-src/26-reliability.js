@@ -16,7 +16,7 @@ class ReliabilityMixin {
 
   relDuration(seconds) {
     if (seconds >= 86400) return this.t("relDays", { n: Math.round(seconds / 86400) });
-    if (seconds >= 3600) return this.t("relHours", { n: Math.round(seconds / 3600) });
+    if (seconds >= 7200) return this.t("relHours", { n: Math.round(seconds / 3600) });
     return this.t("relMinutes", { n: Math.max(1, Math.round(seconds / 60)) });
   }
 
@@ -49,6 +49,24 @@ class ReliabilityMixin {
     if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
-    return `<div class="panel">${head}${loading}${r.entries.map(item => this.relRow(item)).join("")}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>`;
+    return `<div class="stack"><div class="panel">${head}${loading}${r.entries.map(item => this.relRow(item)).join("")}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>${this.unstableCard(r)}</div>`;
+  }
+
+  unstableRow(item, days) {
+    const tone = item.level === "flapping" ? "red" : "warn";
+    const lines = [`${this.esc(item.entity_id)}${item.entry_title ? ` · ${this.esc(item.entry_title)}` : ""}`,
+      this.t("relEpisodes", { n: item.episodes, days, rate: this.formatNumber(item.per_day), total: this.relDuration(item.total_seconds), mean: this.relDuration(item.mean_seconds) })];
+    if (item.pattern_hour !== null && item.pattern_hour !== undefined) lines.push(this.t("relPattern", { from: String(item.pattern_hour).padStart(2, "0"), to: String((item.pattern_hour + 2) % 24).padStart(2, "0") }));
+    if (item.used) lines.push(this.t("relFollowers", { n: item.used }));
+    return `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:swap-vertical"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}</span><span class="pill ${tone}">${this.t(item.level === "flapping" ? "relFlapping" : "relUnstable")}</span></button>`;
+  }
+
+  unstableCard(r) {
+    const u = r.unstable;
+    if (!u) return "";
+    const head = `<div class="panelhead"><div><h2>${this.t("relUnstableTitle")}</h2><p>${this.t("relUnstableHint")}</p></div></div>`;
+    if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
+    const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
+    return `<div class="panel">${head}${u.items.map(item => this.unstableRow(item, r.window_days)).join("")}${more}<p class="factnote">${this.t("relUnstableFootnote")}</p></div>`;
   }
 }

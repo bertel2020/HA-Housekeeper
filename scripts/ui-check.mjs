@@ -96,7 +96,9 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
       if (t.endsWith("/compare")) return trend;
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };
       if (t.endsWith("/backup_health")) return BACKUP;
-      if (t.endsWith("/reliability")) return { available: true, busy: false, cached: false, took_ms: 2800, window_days: 7, schema: 1, entries: [
+      if (t.endsWith("/reliability")) return { available: true, busy: false, cached: false, took_ms: 2800, window_days: 7, schema: 1, unstable: { total: 31, items: [
+        { entity_id: "sensor.tuer_batterie", name: "Türsensor Batterie", entry_id: "e2", entry_title: "Zigbee", episodes: 12, per_day: 1.7, total_seconds: 4800, mean_seconds: 400, level: "flapping", pattern_hour: 3, used: 2 },
+        { entity_id: "sensor.garten_feuchte", name: "Gartenfeuchte", entry_id: "e2", entry_title: "Zigbee", episodes: 4, per_day: 0.6, total_seconds: 120, mean_seconds: 30, level: "unstable", pattern_hour: null, used: 0 }] }, entries: [
         { entry_id: "e1", title: "Cloud-Hub", domain: "hue", state: "setup_retry", reauth: true, entities: 12, permanent: 2, availability: 93.4, shared_outages: 3, longest_outage: 7200, layer: "cloud", last_disruption: { end: 1791470000, seconds: 3600, shared: true } },
         { entry_id: "e2", title: "Zigbee", domain: "zha", state: "loaded", reauth: false, entities: 40, permanent: 0, availability: 98.2, shared_outages: 1, longest_outage: 900, layer: "local", last_disruption: { end: 1791400000, seconds: 900, shared: true } },
         { entry_id: "e3", title: "Wetterstation", domain: "ecowitt", state: "loaded", reauth: false, entities: 8, permanent: 0, availability: 100, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null }] };

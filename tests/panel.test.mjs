@@ -2155,3 +2155,34 @@ test("the reliability view says so when the recorder is missing, busy or has not
   await el.loadReliability();
   assert.ok(shadow.innerHTML.includes("boom &lt;i&gt;"));
 });
+
+const UNSTABLE = {
+  total: 31, items: [
+    { entity_id: "sensor.<b>x</b>", name: "Flatter <i>1</i>", entry_id: "e1", entry_title: "Zigbee", episodes: 12, per_day: 1.7, total_seconds: 4800, mean_seconds: 400, level: "flapping", pattern_hour: 23, used: 2 },
+    { entity_id: "sensor.y", name: "Wackler", entry_id: "e1", entry_title: null, episodes: 4, per_day: 0.6, total_seconds: 120, mean_seconds: 30, level: "unstable", pattern_hour: null, used: 0 },
+  ],
+};
+
+test("the unstable card names level in words, pattern and followers, escapes names and opens the entity", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "reliability";
+  el._hass = { language: "en", callWS: async () => ({ ...RELIABILITY, unstable: UNSTABLE }) };
+  await el.loadReliability();
+  const html = shadow.innerHTML;
+  for (const text of ["Unstable entities", "flapping", "12 failures in 7 days (1.7 a day)", "80 min in all, 7 min on average",
+    "used by 2 automations, scripts or scenes", "2 of 31 entities shown", "Flatter &lt;i&gt;1&lt;/i&gt;", "Zigbee"]) assert.ok(html.includes(text), text);
+  assert.ok(/recurring, mostly between 23 and 01 o(&#39;|')clock/.test(html));
+  assert.ok(html.includes('data-object="entity:sensor.&lt;b&gt;x&lt;/b&gt;"') && !html.includes("<i>1</i>"));
+  assert.equal((html.match(/recurring/g) || []).length, 1, "no pattern line without a pattern");
+});
+
+test("without any unstable entity the card says so, and an old backend without the field shows no card", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "reliability";
+  el._hass = { language: "en", callWS: async () => ({ ...RELIABILITY, unstable: { items: [], total: 0 } }) };
+  await el.loadReliability();
+  assert.ok(shadow.innerHTML.includes("No entity fails unusually often"));
+  el._hass = { language: "en", callWS: async () => RELIABILITY };
+  await el.loadReliability();
+  assert.ok(!shadow.innerHTML.includes("Unstable entities"));
+});
