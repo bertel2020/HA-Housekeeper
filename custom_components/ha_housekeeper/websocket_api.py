@@ -47,6 +47,11 @@ async def _send_inventory_result(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
+    # A scan in the middle of a plan would record intermediate states in the history, the
+    # observations and the repairs hints. The runner scans for its own verification directly.
+    if (refresh or scanner.snapshot is None) and scanner.cleanup.running:
+        connection.send_error(msg["id"], "cleanup_busy", "A cleanup plan is running")
+        return
     try:
         result = await (scanner.async_scan() if refresh else scanner.async_get_snapshot())
     except Exception as err:
@@ -500,6 +505,9 @@ async def websocket_preflight_save(
         if msg["clear"]:
             scanner.preflight.clear()
         else:
+            if scanner.cleanup.running:
+                connection.send_error(msg["id"], "cleanup_busy", "A cleanup plan is running")
+                return
             snapshot = await scanner.async_scan()
             report = await preflight_report(hass, snapshot, scanner.preflight)
             scanner.preflight.save(report["state"], snapshot)

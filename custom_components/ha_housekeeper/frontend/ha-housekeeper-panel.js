@@ -115,7 +115,7 @@ const TEXT = {
     abort_entity_changed: "Die Entity wurde nach der Vorschau geändert.", abort_entity_gone: "Die Entity existiert nicht mehr.", abort_now_blocked: "Die Entity wird inzwischen verwendet.", abort_needs_acknowledgement: "Ohne ausdrückliche Bestätigung.", abort_cancelled: "Auf Wunsch abgebrochen.", abort_aborted: "Wegen eines vorherigen Abbruchs.",
     undo_undone: "wieder aktiviert", undo_conflict_changed: "nicht rückgängig gemacht: zwischenzeitlich geändert", undo_conflict_gone: "nicht rückgängig gemacht: Entity existiert nicht mehr",
     verification: "Prüfung nach dem Lauf", check_disabled: "Entity ist deaktiviert", check_no_new_broken_references: "Keine neuen fehlenden Referenzen",
-    err_bad_token: "Bestätigung ungültig oder abgelaufen.", err_busy: "Es läuft bereits ein Plan.", err_plan_not_open: "Dieser Plan wurde bereits bestätigt oder ausgeführt.", err_plan_too_old: "Der Plan ist älter als 24 Stunden. Bitte neu erstellen.", err_nothing_to_do: "Nichts auszuführen: blockierte Einträge laufen nie, „Zu prüfen“ braucht eine ausdrückliche Bestätigung.", err_not_found: "Plan nicht gefunden.",
+    err_bad_token: "Bestätigung ungültig oder abgelaufen.", err_busy: "Es läuft bereits ein Plan.", err_cleanup_busy: "Es läuft gerade ein Plan. Scans sind bis zu seinem Ende gesperrt.", err_plan_not_open: "Dieser Plan wurde bereits bestätigt oder ausgeführt.", err_plan_too_old: "Der Plan ist älter als 24 Stunden. Bitte neu erstellen.", err_nothing_to_do: "Nichts auszuführen: blockierte Einträge laufen nie, „Zu prüfen“ braucht eine ausdrückliche Bestätigung.", err_not_found: "Plan nicht gefunden.",
     quarantine: "Quarantäne", quarantineHint: "Entities, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich (Aktion „Entfernen“). Das Deaktivieren machst du über das Journal rückgängig.",
     quarantineSince: "seit {date} · {days} Tagen", quarantineWait: "Noch {days} Tage", quarantineReady: "Frühestens entfernbar", quarantineFact: "seit {date} ({days} Tage)",
     confirmWordRemove: "ENTFERNEN", confirmedSummaryRemove: "{count} Entities werden entfernt. Vorher legt Housekeeper ein Home-Assistant-Backup an (das kann dauern) und startet nur, wenn es erfolgreich ist. Wiederherstellen geht, solange die Entity-ID frei ist und die Integration noch existiert.",
@@ -275,7 +275,7 @@ const TEXT = {
     abort_entity_changed: "The entity was changed after the preview.", abort_entity_gone: "The entity no longer exists.", abort_now_blocked: "The entity is in use now.", abort_needs_acknowledgement: "Not explicitly confirmed.", abort_cancelled: "Cancelled on request.", abort_aborted: "Because of an earlier abort.",
     undo_undone: "enabled again", undo_conflict_changed: "not undone: changed in the meantime", undo_conflict_gone: "not undone: the entity no longer exists",
     verification: "Check after the run", check_disabled: "Entity is disabled", check_no_new_broken_references: "No new missing references",
-    err_bad_token: "Confirmation invalid or expired.", err_busy: "A plan is already running.", err_plan_not_open: "This plan was already confirmed or executed.", err_plan_too_old: "The plan is older than 24 hours. Please create it again.", err_nothing_to_do: "Nothing to execute: blocked entries never run, “to review” needs an explicit confirmation.", err_not_found: "Plan not found.",
+    err_bad_token: "Confirmation invalid or expired.", err_busy: "A plan is already running.", err_cleanup_busy: "A plan is running right now. Scans are locked until it ends.", err_plan_not_open: "This plan was already confirmed or executed.", err_plan_too_old: "The plan is older than 24 hours. Please create it again.", err_nothing_to_do: "Nothing to execute: blocked entries never run, “to review” needs an explicit confirmation.", err_not_found: "Plan not found.",
     quarantine: "Quarantine", quarantineHint: "Entities Housekeeper has disabled. Removal is possible no earlier than after {days} days (action “Remove”). You can undo the disabling from the journal.",
     quarantineSince: "since {date} · {days} days", quarantineWait: "{days} days to go", quarantineReady: "Removable at the earliest", quarantineFact: "since {date} ({days} days)",
     confirmWordRemove: "REMOVE", confirmedSummaryRemove: "{count} entities will be removed. Housekeeper creates a Home Assistant backup first (this can take a while) and only continues if it succeeds. Restoring works while the entity ID is free and the integration still exists.",
@@ -1271,6 +1271,9 @@ class CleanupMixin {
     if (this.data) this.load(false);
     this.render();
   }
+
+  // True while a plan is executed: the backend refuses scans then, so the button is disabled.
+  cleanupRunning() { return ["backup", "running"].includes(this.plan?.status); }
 
   adoptPlan(plan) {
     if (this.plan?.plan_id === plan.plan_id) this.plan = plan;
@@ -2296,7 +2299,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>${this.warmupBanner()}`;
+      <button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {

@@ -158,6 +158,9 @@ class CleanupMixin {
     this.render();
   }
 
+  // True while a plan is executed: the backend refuses scans then, so the button is disabled.
+  cleanupRunning() { return ["backup", "running"].includes(this.plan?.status); }
+
   adoptPlan(plan) {
     if (this.plan?.plan_id === plan.plan_id) this.plan = plan;
     this.journal = (this.journal || []).map(p => (p.plan_id === plan.plan_id ? plan : p));

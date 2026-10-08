@@ -790,6 +790,18 @@ test("an overdue scan shows a banner on the overview", () => {
   assert.ok(el.staleBanner().includes("9 days old"));
 });
 
+test("the scan button is disabled while a plan runs", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const disabled = () => /data-action="scan"\s+disabled/.test(el.heading());
+  el.plan = null;
+  assert.equal(disabled(), false);
+  for (const status of ["backup", "running"]) { el.plan = { status }; assert.equal(disabled(), true, status); }
+  el.plan = { status: "verified" };
+  assert.equal(disabled(), false);
+  assert.ok(el.t("err_cleanup_busy").includes("plan is running"));
+});
+
 test("the safety badge names the backup and the changes that only a backup can undo", () => {
   for (const [lang, backup, only] of [["de", "Backup", "nur durch Wiederherstellen"], ["en", "backup", "only be taken back by restoring"]]) {
     const { el } = panel(lang);

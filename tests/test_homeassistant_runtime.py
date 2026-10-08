@@ -748,3 +748,29 @@ async def test_a_set_up_after_the_start_has_no_warmup(hass: HomeAssistant) -> No
     scanner = hass.data[DOMAIN]["scanner"]
     assert not scanner.warming_up
     assert scanner.snapshot["meta"]["preliminary"] is False
+
+
+async def test_manual_scans_are_refused_while_a_plan_runs(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """A scan during a plan would record intermediate states; the runner scans for itself."""
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+
+    scanner.cleanup.status["running"] = True
+    for message in (
+        {"type": "ha_housekeeper/scan"},
+        {"type": "ha_housekeeper/preflight_save", "clear": False},
+    ):
+        await client.send_json_auto_id(message)
+        reply = await client.receive_json()
+        assert reply["success"] is False and reply["error"]["code"] == "cleanup_busy", message
+
+    # Reading the last result stays possible, and the runner's own scan is not affected.
+    await client.send_json_auto_id({"type": "ha_housekeeper/inventory"})
+    assert (await client.receive_json())["success"] is True
+    assert (await scanner.async_scan())["meta"]["preliminary"] is False
+
+    scanner.cleanup.status["running"] = False
+    await client.send_json_auto_id({"type": "ha_housekeeper/scan"})
+    assert (await client.receive_json())["success"] is True
