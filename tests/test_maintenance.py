@@ -157,3 +157,25 @@ async def test_preflight_saves_a_record_and_compares_after_an_update(hass: HomeA
     assert [e["title"] for e in after["new_failed_entries"]] == ["Hub"]
     new_ids = {o["object_id"] for o in after["inventory"]["new_objects"]["items"]}
     assert "sensor.after" in new_ids and "sensor.before" not in new_ids
+
+
+async def test_preflight_ignores_persisted_issues_that_are_not_active(hass: HomeAssistant) -> None:
+    """The registry keeps issues no integration raises right now; they are not open repairs."""
+    import dataclasses
+
+    from custom_components.ha_housekeeper import maintenance
+
+    for issue_id in ("active_issue", "stale_issue"):
+        ir.async_create_issue(
+            hass,
+            "demo",
+            issue_id,
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="x",
+        )
+    registry = ir.async_get(hass)
+    stale = registry.issues[("demo", "stale_issue")]
+    registry.issues[("demo", "stale_issue")] = dataclasses.replace(stale, active=False)
+
+    assert [r["issue_id"] for r in maintenance._repairs(hass)] == ["active_issue"]

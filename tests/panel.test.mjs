@@ -1138,7 +1138,7 @@ test("the maintenance view loads the preflight and offers the recorder analysis 
   await el.loadPreflight();
   let html = shadow.innerHTML;
   assert.deepEqual(sent, ["ha_housekeeper/preflight"]);
-  assert.ok(html.includes("Last backup 5 hours ago") && html.includes("Open repairs") && html.includes("1 · old"));
+  assert.ok(html.includes("Last backup 5 h ago") && html.includes("Open repairs") && html.includes("1 · old"));
   assert.ok(html.includes("Core 2026.2.3 → 2026.3.0") && html.includes("No starting state saved yet."));
   await el.loadCosts();
   html = shadow.innerHTML;

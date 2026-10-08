@@ -185,7 +185,8 @@ def _repairs(hass: HomeAssistant) -> list[dict[str, Any]]:
                 "severity": str(getattr(issue.severity, "value", issue.severity)),
             }
             for issue in registry.issues.values()
-            if not issue.dismissed_version and issue.domain != "ha_housekeeper"
+            # The registry also holds persisted issues that no integration raises right now.
+            if issue.active and not issue.dismissed_version and issue.domain != "ha_housekeeper"
         ),
         key=lambda i: (i["domain"], i["issue_id"]),
     )
