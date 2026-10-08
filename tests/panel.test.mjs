@@ -1286,20 +1286,24 @@ const COSTS = {
   statistics: [{ statistic_id: "sensor.energy", rows: 250, known: true }],
 };
 
-test("the maintenance view loads the preflight and offers the recorder analysis on request", async () => {
-  const { el, shadow } = panel("en");
+test("the maintenance view loads the preflight; the recorder view offers the cost analysis on request", async () => {
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
   const sent = [];
   const state = { ha_version: "2026.2.3", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [{ issue_id: "old", domain: "demo" }], failed_entries: [], broken: [], pending_updates: [{ entity_id: "update.core", name: "Core", installed: "2026.2.3", latest: "2026.3.0" }] };
   const report = { state, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "warn", count: 1 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
   el._hass = { language: "en", callWS: async msg => { sent.push(msg.type); return msg.type.endsWith("recorder_costs") ? COSTS : report; } };
   el.view = "maintenance";
   el.render();
-  assert.ok(shadow.innerHTML.includes("Update preflight") && shadow.innerHTML.includes("Start analysis") && shadow.innerHTML.includes("Checking"));
+  assert.ok(shadow.innerHTML.includes("Update preflight") && shadow.innerHTML.includes("Checking"));
+  assert.ok(!shadow.innerHTML.includes("Start analysis") && !shadow.innerHTML.includes("Recorder costs"), "the recorder topics moved to the Recorder view");
   await el.loadPreflight();
   let html = shadow.innerHTML;
   assert.deepEqual(sent, ["ha_housekeeper/preflight"]);
   assert.ok(html.includes("Last backup 5 h ago") && html.includes("Open repairs") && html.includes("1 · old"));
   assert.ok(html.includes("Core 2026.2.3 → 2026.3.0") && html.includes("No starting state saved yet."));
+  el.view = "recorder";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Start analysis"));
   await el.loadCosts();
   html = shadow.innerHTML;
   assert.ok(html.includes("12,000 stored states") && html.includes("5 MB") && html.includes("kept 10 days"));
@@ -1310,14 +1314,14 @@ test("the maintenance view loads the preflight and offers the recorder analysis 
 });
 
 test("the recorder costs rank by the current rate, switch to the total and ask for a refresh", async () => {
-  const { el, shadow } = panel("en");
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
   const costs = { ...COSTS, took_ms: 1234, cached: false, entities: [
     { entity_id: "sensor.history", name: "History", states: 9000, per_day: 300, per_day_avg: 300, states_24h: 2, states_7d: 6, share: 75, used: 0, has_statistics: false, known: true, excluded: false, suggest_exclude: false },
     { entity_id: "sensor.loud", name: "Loud", states: 600, per_day: 600, per_day_avg: 600, states_24h: 500, states_7d: 3000, share: 5, used: 0, has_statistics: false, known: true, excluded: false, suggest_exclude: true },
   ] };
   const sent = [];
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return costs; } };
-  el.view = "maintenance";
+  el.view = "recorder";
   await el.loadCosts();
   assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/recorder_costs" }));
   let html = shadow.innerHTML;
@@ -2492,7 +2496,9 @@ test("the load view says so when the recorder is missing, busy, quiet or the cal
 
 test("the load entry sits in the operation menu and has texts in both languages", () => {
   const { NAV_GROUPS, TEXT } = loadPanel();
-  assert.ok(NAV_GROUPS.find(([label]) => label === "navGroupOperation")[1].includes("storms"));
+  assert.ok(NAV_GROUPS.find(([label]) => label === "navGroupOperation")[1].includes("recorder"));
+  assert.ok(!NAV_GROUPS.find(([label]) => label === "navGroupMaintain")[1].includes("recorder"));
+  for (const key of ["recorder", "recorderSubtitle"]) assert.ok(TEXT.de[key] && TEXT.en[key], key);
   for (const key of Object.keys(TEXT.de).filter(k => /^storm/.test(k))) assert.ok(TEXT.en[key], key);
 });
 
@@ -2551,7 +2557,7 @@ test("only database problems reach the overview to-do list, and only once they w
   assert.ok(!el.todoItems().some(i => i.key === "db"), "hints stay out");
   el.dbHealth = DBH;
   const item = el.todoItems().find(i => i.key === "db");
-  assert.ok(item && item.view === "maintenance" && item.hintText.includes("Duplicate statistics timestamps"));
+  assert.ok(item && item.view === "recorder" && item.hintText.includes("Duplicate statistics timestamps"));
 });
 
 const EXPO = {
@@ -2755,4 +2761,27 @@ test("saved views from a broken browser store are ignored and a failing write do
   const st = el.lvState("inv", "name", "asc"); st.q = "z";
   el.saveView("inv");
   assert.equal(views.inv.length, 2);
+});
+
+test("the Recorder view holds the load, the costs and the database, and starts the database check after the load", async () => {
+  const queue = [];
+  const { el, shadow } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  el.data = { ...DATA }; el.view = "recorder";
+  el._hass = { language: "en", callWS: async msg => (msg.type.endsWith("/storms") ? STORMS : msg.type.endsWith("/db_health") ? DBH : COSTS) };
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Recorder load") && html.includes("Recorder costs") && html.includes("Database"));
+  assert.equal(queue.length, 1, "only the load query is started at first");
+  assert.ok(!el._dbRequested);
+  await el.loadStorms();
+  assert.equal(el._dbRequested, true, "the database check follows once the load is there");
+  assert.ok(el.maintenanceView && !el.maintenanceView().includes("Recorder costs"));
+});
+
+test("the old load link opens the Recorder view", () => {
+  const window = { location: { search: "?view=storms", pathname: "/ha-housekeeper" }, history: { replaceState() {} } };
+  const { el } = panel("en", { window });
+  el.data = { ...DATA };
+  el.applyUrl();
+  assert.equal(el.view, "recorder");
 });

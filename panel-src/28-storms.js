@@ -52,6 +52,14 @@ class StormsMixin {
     return `<div class="row"><span class="tile mute"><ha-icon icon="mdi:lan"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong><small>${this.esc(item.domain || "")} · ${this.t("stormShareLine", { entities: this.formatNumber(item.entities), rows: this.formatNumber(item.per_day), rowShare: this.formatNumber(item.row_share) })}</small><span class="sharebar" aria-hidden="true"><i style="width:${share}%"></i></span></span><span class="pill mute">${this.formatNumber(item.load_share)} %</span></div>`;
   }
 
+  // Operation > Recorder: what writes the most, what fills the database, and how healthy it is.
+  // The two recorder queries run one after the other: the second starts when the first is done.
+  recorderView() {
+    const stormsDone = this.storms || this.stormsError;
+    if (stormsDone) this.ensureDbHealth();
+    return `<div class="stack">${this.stormsView()}${this.recorderCard()}${this.dbCard()}</div>`;
+  }
+
   stormsView() {
     this.ensureStorms();
     const r = this.storms;

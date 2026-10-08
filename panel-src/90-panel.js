@@ -309,7 +309,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._urlApplied || typeof window === "undefined" || !this.data) return;
     this._urlApplied = true;
     const params = new URLSearchParams(window.location.search);
-    const view = params.get("view");
+    const view = params.get("view") === "storms" ? "recorder" : params.get("view"); // the load view moved into "Recorder"
     if (view && NAV.some(([name]) => name === view)) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
@@ -389,7 +389,7 @@ class HAHousekeeperPanel extends HTMLElement {
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
-      storms: [this.t("stormTitle"), this.t("stormsSubtitle")],
+      recorder: [this.t("recorder"), this.t("recorderSubtitle")],
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
@@ -411,7 +411,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
-    if (this.view === "storms") return this.stormsView();
+    if (this.view === "recorder") return this.recorderView();
     if (this.view === "exposure") return this.exposureView();
     if (this.view === "runs") return this.runsView();
     if (this.view === "graph") return this.graph();

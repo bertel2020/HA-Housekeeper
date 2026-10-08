@@ -1,6 +1,6 @@
 // Texts for the recorder load view; merged into TEXT.
 Object.assign(TEXT.de, {
-  storms: "Last", stormsSubtitle: "Welche Entities, Integrationen und Ereignisse den Recorder am meisten beschreiben. Liest nur den Recorder.",
+  recorder: "Recorder", recorderSubtitle: "Was den Recorder am meisten beschreibt, was die Datenbank füllt und wie gesund sie ist. Liest nur den Recorder.",
   stormTitle: "Last im Recorder", stormHint: "Gezählt werden geschriebene Zeilen, nicht Aufrufe", stormLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   stormNone: "Nichts schreibt auffällig viel.", stormSummary: "Im Zeitraum: {rows} Zeilen ({perDay} pro Tag) von {entities} Entities und {events} Ereignisse.",
   stormKind_storm: "Sturm", stormKind_attribute_flood: "Attribute", stormKind_no_new_state: "ohne neuen Zustand", stormKind_integration_share: "Anteil", stormKind_event_burst: "Ereignisse",
@@ -15,7 +15,7 @@ Object.assign(TEXT.de, {
   stormFootnote: "Eine Zeile entsteht, wenn sich Zustand oder Attribute einer Entity ändern. Identische Updates schreibt Home Assistant gar nicht; „ohne neuen Zustand“ heißt: der Wert blieb gleich, nur Attribute änderten sich. Die Attributgröße gilt für die letzten 24 Stunden. Housekeeper ändert die Recorder-Einstellungen nicht: ausschließen kannst du Entities in der Konfiguration unter recorder, oder das Aktualisierungsintervall der Quelle erhöhen.",
 });
 Object.assign(TEXT.en, {
-  storms: "Load", stormsSubtitle: "Which entities, integrations and events write the most to the recorder. Only reads the recorder.",
+  recorder: "Recorder", recorderSubtitle: "What writes the most to the recorder, what fills the database and how healthy it is. Only reads the recorder.",
   stormTitle: "Recorder load", stormHint: "Rows written are counted, not calls", stormLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   stormNone: "Nothing writes unusually much.", stormSummary: "In the period: {rows} rows ({perDay} a day) from {entities} entities and {events} events.",
   stormKind_storm: "Storm", stormKind_attribute_flood: "Attributes", stormKind_no_new_state: "no new state", stormKind_integration_share: "Share", stormKind_event_burst: "Events",

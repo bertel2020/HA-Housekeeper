@@ -426,7 +426,7 @@ const NAV = [
   ["exposure", "mdi:shield-search"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["runs", "mdi:robot-outline"],
-  ["storms", "mdi:chart-bell-curve"],
+  ["recorder", "mdi:database-clock-outline"],
   ["batteries", "mdi:battery-alert-variant-outline"],
   ["unreferenced", "mdi:link-variant-off"],
   ["settings", "mdi:cog-outline"],
@@ -435,7 +435,7 @@ const NAV = [
 // The sidebar groups every view but "settings", which stands alone at the foot.
 const NAV_GROUPS = [
   ["navGroupOverview", ["overview", "findingsNav", "changes"]],
-  ["navGroupOperation", ["reliability", "runs", "storms"]],
+  ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph"]],
   ["navGroupMaintain", ["cleanup", "maintenance", "exposure"]],
   ["navGroupSpecial", ["batteries", "unreferenced"]],
@@ -586,7 +586,7 @@ Object.assign(TEXT.de, {
   abort_meter_changed: "Entities oder Statistik wurden nach der Vorschau geändert.", abort_statistics_changed: "Die Statistik wurde nach der Vorschau geändert.", abort_statistics_failed: "Die Statistik konnte nicht bestätigt werden; der Lauf wurde angehalten.",
   abort_no_recorder: "Der Recorder läuft nicht.", abort_alt_id_taken: "Die Ausweich-ID ist inzwischen belegt.", abort_id_not_freed: "Home Assistant hat die alte ID nicht rechtzeitig freigegeben; alles wurde zurückgesetzt.", abort_id_takeover_failed: "Das Umbenennen ist fehlgeschlagen; alles wurde zurückgesetzt.",
   // maintenance
-  maintenance: "Wartung", maintenanceSubtitle: "Backup-Schutz, Recorder-Kosten und Update-Preflight. Alles liest nur; gespeichert wird allein Housekeepers eigener Ausgangszustand und was du als erledigt bestätigst.",
+  maintenance: "Wartung", maintenanceSubtitle: "Backup-Schutz und Update-Preflight. Beides liest nur; gespeichert wird allein Housekeepers eigener Ausgangszustand und was du als erledigt bestätigst.",
   recorderTitle: "Recorder-Kosten", recorderHint: "Welche Entities die Datenbank füllen. Ausschließen verkleinert die Datenbank, löscht aber nichts rückwirkend; Housekeeper ändert die Recorder-Konfiguration nicht.",
   recorderLoad: "Analyse starten", recorderReload: "Neu berechnen", recorderLoading: "Datenbank wird ausgewertet …", recorderUnavailable: "Der Recorder läuft nicht, daher gibt es nichts auszuwerten.",
   recorderSummary: "{states} gespeicherte Zustände · {size} · Aufbewahrung {days} Tage · {stats} Statistikwerte", recorderSizeUnknown: "Größe unbekannt", recorderPerDay: "{count} pro Tag", recorderWindows: "24 h: {day} · 7 Tage: {week} · Ø {avg} pro Tag", recorderSortRecent: "Aktuell (24 h)", recorderSortTotal: "Gesamt", recorderTook: "berechnet in {ms} ms", recorderCached: "Ergebnis von vor wenigen Minuten ({ms} ms)", recorderShare: "{share} % aller Zustände",
@@ -624,7 +624,7 @@ Object.assign(TEXT.en, {
   result_migrated: "Migrated", check_meter_statistics: "Statistics continued", check_meter_id_taken: "New entity carries the stable ID", undo_conflict_statistics: "not undone: statistics can only be reset with the backup",
   abort_meter_changed: "Entities or statistics were changed after the preview.", abort_statistics_changed: "The statistics were changed after the preview.", abort_statistics_failed: "The statistics could not be confirmed; the run stopped.",
   abort_no_recorder: "The recorder is not running.", abort_alt_id_taken: "The fallback ID is taken now.", abort_id_not_freed: "Home Assistant did not free the old ID in time; everything was put back.", abort_id_takeover_failed: "Renaming failed; everything was put back.",
-  maintenance: "Maintenance", maintenanceSubtitle: "Backup protection, recorder costs and update preflight. All of it only reads; the only things stored are Housekeeper's own starting state and what you confirm as done.",
+  maintenance: "Maintenance", maintenanceSubtitle: "Backup protection and update preflight. Both only read; the only things stored are Housekeeper's own starting state and what you confirm as done.",
   recorderTitle: "Recorder costs", recorderHint: "Which entities fill the database. Excluding shrinks the database going forward but does not delete anything retroactively; Housekeeper does not change the recorder configuration.",
   recorderLoad: "Start analysis", recorderReload: "Recalculate", recorderLoading: "Evaluating the database …", recorderUnavailable: "The recorder is not running, so there is nothing to evaluate.",
   recorderSummary: "{states} stored states · {size} · kept {days} days · {stats} statistics values", recorderSizeUnknown: "size unknown", recorderPerDay: "{count} per day", recorderWindows: "24 h: {day} · 7 days: {week} · avg {avg} per day", recorderSortRecent: "Current (24 h)", recorderSortTotal: "Total", recorderTook: "calculated in {ms} ms", recorderCached: "result from a few minutes ago ({ms} ms)", recorderShare: "{share} % of all states",
@@ -814,7 +814,7 @@ Object.assign(TEXT.en, {
 
 // Texts for the recorder load view; merged into TEXT.
 Object.assign(TEXT.de, {
-  storms: "Last", stormsSubtitle: "Welche Entities, Integrationen und Ereignisse den Recorder am meisten beschreiben. Liest nur den Recorder.",
+  recorder: "Recorder", recorderSubtitle: "Was den Recorder am meisten beschreibt, was die Datenbank füllt und wie gesund sie ist. Liest nur den Recorder.",
   stormTitle: "Last im Recorder", stormHint: "Gezählt werden geschriebene Zeilen, nicht Aufrufe", stormLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   stormNone: "Nichts schreibt auffällig viel.", stormSummary: "Im Zeitraum: {rows} Zeilen ({perDay} pro Tag) von {entities} Entities und {events} Ereignisse.",
   stormKind_storm: "Sturm", stormKind_attribute_flood: "Attribute", stormKind_no_new_state: "ohne neuen Zustand", stormKind_integration_share: "Anteil", stormKind_event_burst: "Ereignisse",
@@ -829,7 +829,7 @@ Object.assign(TEXT.de, {
   stormFootnote: "Eine Zeile entsteht, wenn sich Zustand oder Attribute einer Entity ändern. Identische Updates schreibt Home Assistant gar nicht; „ohne neuen Zustand“ heißt: der Wert blieb gleich, nur Attribute änderten sich. Die Attributgröße gilt für die letzten 24 Stunden. Housekeeper ändert die Recorder-Einstellungen nicht: ausschließen kannst du Entities in der Konfiguration unter recorder, oder das Aktualisierungsintervall der Quelle erhöhen.",
 });
 Object.assign(TEXT.en, {
-  storms: "Load", stormsSubtitle: "Which entities, integrations and events write the most to the recorder. Only reads the recorder.",
+  recorder: "Recorder", recorderSubtitle: "What writes the most to the recorder, what fills the database and how healthy it is. Only reads the recorder.",
   stormTitle: "Recorder load", stormHint: "Rows written are counted, not calls", stormLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   stormNone: "Nothing writes unusually much.", stormSummary: "In the period: {rows} rows ({perDay} a day) from {entities} entities and {events} events.",
   stormKind_storm: "Storm", stormKind_attribute_flood: "Attributes", stormKind_no_new_state: "no new state", stormKind_integration_share: "Share", stormKind_event_burst: "Events",
@@ -1282,7 +1282,7 @@ class OverviewMixin {
     // Only real problems are listed; notes such as "emergency kit not confirmed" stay on the Maintenance card.
     const problems = this.backup?.available && this.backup.overall === "problem" ? this.backup.checks.filter(c => c.level === "problem") : [];
     const dbProblems = this.dbHealth?.available ? this.dbHealth.findings.filter(f => f.level === "problem") : [];
-    if (dbProblems.length) items.push({ key: "db", tone: "red", icon: "mdi:database-alert-outline", label: "todoDbProblem", hintText: dbProblems.map(f => this.t(`dbKind_${f.kind}`)).join(", "), view: "maintenance" });
+    if (dbProblems.length) items.push({ key: "db", tone: "red", icon: "mdi:database-alert-outline", label: "todoDbProblem", hintText: dbProblems.map(f => this.t(`dbKind_${f.kind}`)).join(", "), view: "recorder" });
     if (problems.length) items.push({ key: "backup", tone: "red", icon: "mdi:backup-restore", label: "todoBackupProblem", hintText: problems.map(c => this.t(`bh_${c.id}`)).join(", "), view: "maintenance" });
     const limit = m.quarantine_days ?? 14;
     const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
@@ -2968,8 +2968,7 @@ class MaintenanceMixin {
   maintenanceView() {
     if (!this.preflight && !this.preflightLoading && !this._pfRequested) { this._pfRequested = true; setTimeout(() => this.loadPreflight(), 0); }
     this.ensureBackup();
-    this.ensureDbHealth();
-    return `<div class="stack">${this.backupCard()}${this.preflightCard()}${this.recorderCard()}${this.dbCard()}</div>`;
+    return `<div class="stack">${this.backupCard()}${this.preflightCard()}</div>`;
   }
 }
 
@@ -3302,6 +3301,14 @@ class StormsMixin {
   stormShareRow(item) {
     const share = Math.max(0, Math.min(100, item.load_share));
     return `<div class="row"><span class="tile mute"><ha-icon icon="mdi:lan"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong><small>${this.esc(item.domain || "")} · ${this.t("stormShareLine", { entities: this.formatNumber(item.entities), rows: this.formatNumber(item.per_day), rowShare: this.formatNumber(item.row_share) })}</small><span class="sharebar" aria-hidden="true"><i style="width:${share}%"></i></span></span><span class="pill mute">${this.formatNumber(item.load_share)} %</span></div>`;
+  }
+
+  // Operation > Recorder: what writes the most, what fills the database, and how healthy it is.
+  // The two recorder queries run one after the other: the second starts when the first is done.
+  recorderView() {
+    const stormsDone = this.storms || this.stormsError;
+    if (stormsDone) this.ensureDbHealth();
+    return `<div class="stack">${this.stormsView()}${this.recorderCard()}${this.dbCard()}</div>`;
   }
 
   stormsView() {
@@ -3823,7 +3830,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._urlApplied || typeof window === "undefined" || !this.data) return;
     this._urlApplied = true;
     const params = new URLSearchParams(window.location.search);
-    const view = params.get("view");
+    const view = params.get("view") === "storms" ? "recorder" : params.get("view"); // the load view moved into "Recorder"
     if (view && NAV.some(([name]) => name === view)) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
@@ -3903,7 +3910,7 @@ class HAHousekeeperPanel extends HTMLElement {
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
-      storms: [this.t("stormTitle"), this.t("stormsSubtitle")],
+      recorder: [this.t("recorder"), this.t("recorderSubtitle")],
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
@@ -3925,7 +3932,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
-    if (this.view === "storms") return this.stormsView();
+    if (this.view === "recorder") return this.recorderView();
     if (this.view === "exposure") return this.exposureView();
     if (this.view === "runs") return this.runsView();
     if (this.view === "graph") return this.graph();
