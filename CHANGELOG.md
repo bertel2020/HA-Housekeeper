@@ -1,5 +1,159 @@
 # Changelog
 
+## 0.9.0 - 2026-10-08
+
+Großes Sammelrelease: Härtung nach dem zweiten Code-Review (Journal,
+Datenübertragung, Zählerwechsel, ehrliche Kennzahlen) und eine überarbeitete
+Oberfläche mit gruppierter Navigation, handlungsorientierter Übersicht,
+Detail-Tabs, Abhängigkeitsgraph und Aufräumen als Schrittfolge. Automatisiert
+gegen Home Assistant 2026.8.3 und die jeweils neueste vom Testpaket
+unterstützte Version getestet; die Oberfläche zusätzlich mit
+Browser-Screenshots und einer axe-Prüfung auf Zugänglichkeit.
+
+### Neu
+
+- **Die Navigation ist gruppiert:** Überblick, Erkunden, Pflegen und
+  Spezialansichten; die aktive Seite bleibt in der Seitenleiste sichtbar.
+- **Die Übersicht beginnt mit „Was muss ich jetzt tun?“.** Die Liste nennt nach
+  Dringlichkeit Integrationen mit Problem, neue kritische Befunde, einen
+  überfälligen Scan, Backup-Probleme und abgelaufene Quarantäne. Die Karte „Seit
+  dem letzten Scan“ zeigt neue und behobene Befunde, Statuswechsel und neue
+  Objekte.
+- **Objektseiten haben einen Kopf und Tabs:** Zustand, Ursache, Integration,
+  Gerät, Bereich und das Risiko beim Entfernen stehen oben; darunter die Tabs
+  Übersicht, Abhängigkeiten, Technische Daten und Attribute (Pfeiltasten, Link
+  mit `tab=`).
+- **Abhängigkeitsgraph:** In der Ansicht Abhängigkeiten lässt sich zwischen Liste
+  und Graph umschalten. Der Graph zeigt Herkunft und Verwendung eines Objekts
+  über bis zu drei Ebenen, Filter nach Beziehungstyp und „nur sichere“ sowie
+  „Was bricht beim Entfernen?“. Knoten sind per Tastatur bedienbar; auf kleinen
+  Bildschirmen bleibt die Liste.
+- **Aufräumen zeigt die Schritte:** Auswahl, Auswirkungsanalyse, Bestätigung,
+  Backup, Ausführung und Verifikation mit dem aktuellen Stand. Je Aktion steht,
+  ob Housekeeper sie zurücknehmen kann oder ob nur das Backup hilft; Details wie
+  Quellen und Treffer sind eingeklappt.
+- **Vorschau-Warnung bei großen Dateien:** Kann eine Ersetzung in einer großen
+  Datei nur Eintrag für Eintrag rückgängig gemacht werden, sagt die Vorschau es
+  vorher.
+- **Recorder-Kosten zeigen die aktuelle Rate.** Je Entity stehen die Zustände der
+  letzten 24 Stunden und 7 Tage neben dem Durchschnitt pro Tag; die Liste ist
+  nach der aktuellen Rate sortiert und lässt sich auf „Gesamt“ umschalten. Ein
+  Ausschluss wird nur bei hoher **aktueller** Rate vorgeschlagen.
+- **API-Version:** Antworten des Panels tragen das Feld `schema`.
+
+### Geändert
+
+- **Der Housekeeping-Status zählt betroffene Objekte statt Befunde;** ein Tooltip
+  erklärt die Berechnung.
+- **Schneller bei großen Installationen:** Sortieren und Filtern nutzen
+  zwischengespeicherte Schlüssel, die Suche wartet kurz, Stylesheet und Fokus
+  bleiben beim Neuzeichnen erhalten, ein Scan baut die Menge der vorhandenen
+  Objekte nur noch einmal. Das Inventar einer Installation mit 8.000 Objekten
+  zeichnet sich im Mittel in unter 2 ms statt 26 ms.
+- **Die Planliste überträgt keine Wiederherstellungsdaten mehr.** `plan_list`
+  liefert kurze Einträge, der neue Befehl `plan_detail` und `plan_status`
+  liefern den Plan ohne die intern gespeicherten Dateikopien.
+
+### Behoben
+
+- **Das Journal verdrängt keine ausgeführten Pläne mehr.** Nur noch nie
+  gestartete Vorschauen werden nach Anzahl begrenzt (20). Wird das Journal größer
+  als 8 MB, geben die ältesten Pläne ihre Dateikopien ab (Rückgängig stellt dann
+  einzelne Einträge statt der ganzen Datei wieder her, im Journal vermerkt); ein
+  Plan hält höchstens 2 MB Dateikopien. Gelöscht wird nichts.
+- **Zählerwechsel:** Der Fingerabdruck deckt alle zu importierenden Zeilen der
+  alten Reihe mit allen Werten ab, dazu die erste Zeile der neuen Reihe und die
+  Kompatibilität. Ein geänderter Wert zwischen Vorschau und Ausführung stoppt den
+  Lauf; eine in der Zwischenzeit berechnete Stunde der laufenden Reihe ändert ihn
+  nicht mehr.
+- **Scans während einer Bereinigung:** Ein manueller Scan wird abgelehnt, solange
+  ein Plan läuft; das Panel sperrt die Schaltfläche.
+- **Sicherheitshinweis im Panel und in der README:** Sie nennen Vorschau,
+  Bestätigung und Backup und sagen, dass sich manche Änderungen, besonders
+  Statistikmigrationen, nur durch Wiederherstellen des Backups zurücknehmen
+  lassen. Der Satz, jeder Schritt lasse sich rückgängig machen, ist korrigiert.
+- **Mobile Ansicht:** Das Inventar zeigt Begründung und „beobachtet seit“ als
+  Karten statt sie unter 860 Pixeln auszublenden; lange Begründungen werden
+  umgebrochen.
+- **Zugänglichkeit:** Aktive Navigation (`aria-current`), vorgelesener
+  Fortschritt, sichtbarer Fokusrahmen, Tastaturbedienung der Inventarzeilen und
+  Tabellenköpfe, benannte Auswahlfelder und ausreichender Kontrast für Statuspillen,
+  Akzenttext und Schaltflächen (geprüft mit axe in hellem und dunklem Schema).
+
+---
+
+### English
+
+Large collected release: hardening after the second code review (journal, data
+transfer, meter change, honest figures) and a reworked interface with grouped
+navigation, an action-oriented overview, detail tabs, a dependency graph and
+cleanup as a sequence of steps. Tested automatically against Home Assistant
+2026.8.3 and the latest version the test package supports; the interface was
+also checked with browser screenshots and an axe accessibility scan.
+
+#### New
+
+- **The navigation is grouped:** overview, explore, maintain and special views;
+  the active page stays visible in the side bar.
+- **The overview starts with “What do I need to do now?”.** The list names, by
+  urgency, integrations with a problem, new critical findings, an overdue scan,
+  backup problems and an expired quarantine. The “Since the last scan” card shows
+  new and fixed findings, status changes and new objects.
+- **Object pages have a header and tabs:** status, cause, integration, device,
+  area and the risk of removing it are on top; below are the tabs Overview,
+  Dependencies, Technical data and Attributes (arrow keys, link with `tab=`).
+- **Dependency graph:** the dependencies view switches between list and graph.
+  The graph shows the origin and users of an object across up to three levels,
+  filters by relation type and “certain only”, and “What breaks on removal?”.
+  Nodes work with the keyboard; small screens keep the list.
+- **Cleanup shows its steps:** selection, impact analysis, confirmation, backup,
+  execution and verification with the current state. Each action says whether
+  Housekeeper can take it back or only the backup helps; details such as sources
+  and hits are folded.
+- **Preview warning for large files:** if a replacement in a large file can only
+  be undone item by item, the preview says so beforehand.
+- **The recorder costs show the current rate.** Each entity lists the states of
+  the last 24 hours and 7 days next to the average per day; the list is sorted by
+  the current rate and can be switched to “Total”. An exclusion is suggested only
+  when the **current** rate is high.
+- **API version:** panel replies carry the field `schema`.
+
+#### Changed
+
+- **The housekeeping status counts affected objects instead of findings;** a
+  tooltip explains the calculation.
+- **Faster on large installations:** sorting and filtering use cached keys,
+  search waits briefly, the style sheet and focus survive a redraw, and a scan
+  builds the set of existing objects only once. The inventory of an installation
+  with 8,000 objects draws in under 2 ms on average instead of 26 ms.
+- **The plan list no longer transfers restore data.** `plan_list` returns short
+  entries, the new `plan_detail` command and `plan_status` return the plan
+  without the internally stored file copies.
+
+#### Fixed
+
+- **The journal no longer pushes out plans that ran.** Only previews that were
+  never started are limited by number (20). If the journal grows beyond 8 MB, the
+  oldest plans give up their file copies (undo then restores single items instead
+  of the whole file, noted in the journal); a plan keeps at most 2 MB of file
+  copies. Nothing is deleted.
+- **Meter change:** the fingerprint covers every importable row of the old series
+  with all values, plus the first row of the new series and the compatibility. A
+  value changed between the preview and the run stops the run; an hour compiled
+  meanwhile in the live series no longer changes it.
+- **Scans during a cleanup:** a manual scan is refused while a plan runs; the
+  panel disables the button.
+- **Safety notice in the panel and the README:** they name the preview, the
+  confirmation and the backup and say that some changes, especially statistics
+  migrations, can only be taken back by restoring the backup. The sentence that
+  every step can be undone is corrected.
+- **Mobile view:** the inventory shows the reason and “observed since” as cards
+  instead of hiding them below 860 pixels; long reasons wrap.
+- **Accessibility:** active navigation (`aria-current`), announced progress,
+  visible focus outline, keyboard operation of inventory rows and table headers,
+  named select fields and sufficient contrast for status pills, accent text and
+  buttons (checked with axe in the light and dark scheme).
+
 ## 0.8.2 - 2026-10-08
 
 Korrektur zur vorläufigen Aufwärmphase aus 0.8.1. Automatisiert gegen Home

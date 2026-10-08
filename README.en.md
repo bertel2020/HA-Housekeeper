@@ -185,11 +185,11 @@ config/
 
 ## Usage
 
-Open **Housekeeper** from the Home Assistant sidebar. The overview shows object totals, findings, and the time of the last scan.
+Open **Housekeeper** from the Home Assistant sidebar. The overview starts with “What do I need to do now?” and shows what changed since the last scan, plus object totals, findings, and the time of the last scan.
 
 - Select a category card to open a filtered inventory.
-- Select an object to inspect registry information, state data, diagnosis, and direct dependencies.
-- Open **Dependencies** and select an object to explore incoming and outgoing relationships.
+- Select an object: status, cause, device, area, and the risk of removing it are on top, with the tabs Overview, Dependencies, Technical data, and Attributes below.
+- Open **Dependencies** and select an object to explore incoming and outgoing relationships. A switch toggles between list and graph (origin and users across up to three levels, with “What breaks on removal?”); small screens show only the list.
 - Use **Scan now** to refresh the snapshot after configuration or device changes. Without intervention Housekeeper scans automatically every 24 hours.
 - Under **Settings → Devices & services → HA Housekeeper → Configure** you can set four values: days until an unavailable entity becomes a finding (default 7), days until an automation counts as unused (default 90, `0` = off), the scan interval in hours (default 24, `0` = off), and the low-battery threshold in percent (default 20).
 - The **Findings**, **Changes**, **Batteries**, and **Not used** views are available from the panel navigation.

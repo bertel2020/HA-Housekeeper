@@ -185,11 +185,11 @@ config/
 
 ## Verwendung
 
-**Housekeeper** über die Home-Assistant-Seitenleiste öffnen. Die Übersicht zeigt Objektzahlen, Befunde und den Zeitpunkt des letzten Scans.
+**Housekeeper** über die Home-Assistant-Seitenleiste öffnen. Die Übersicht beginnt mit „Was muss ich jetzt tun?“ und zeigt, was sich seit dem letzten Scan geändert hat, dazu Objektzahlen, Befunde und den Zeitpunkt des letzten Scans.
 
 - Eine Kategoriekarte auswählen, um das entsprechend gefilterte Inventar zu öffnen.
-- Ein Objekt auswählen, um Registry-Informationen, Zustandsdaten, Diagnose und direkte Abhängigkeiten anzuzeigen.
-- Unter **Abhängigkeiten** ein Objekt auswählen, um eingehende und ausgehende Beziehungen zu untersuchen.
+- Ein Objekt auswählen: Oben stehen Zustand, Ursache, Gerät, Bereich und das Risiko beim Entfernen, darunter die Tabs Übersicht, Abhängigkeiten, Technische Daten und Attribute.
+- Unter **Abhängigkeiten** ein Objekt auswählen, um eingehende und ausgehende Beziehungen zu untersuchen. Ein Umschalter wechselt zwischen Liste und Graph (Herkunft und Verwendung über bis zu drei Ebenen, mit „Was bricht beim Entfernen?“); auf kleinen Bildschirmen steht nur die Liste.
 - Mit **Neu scannen** den Datenbestand nach Konfigurations- oder Geräteänderungen aktualisieren. Ohne Eingriff scannt Housekeeper automatisch alle 24 Stunden.
 - Unter **Einstellungen → Geräte & Dienste → HA Housekeeper → Konfigurieren** lassen sich vier Werte einstellen: Tage bis eine nicht verfügbare Entity als Befund gilt (Standard 7), Tage bis eine Automation als ungenutzt gilt (Standard 90, `0` = aus) das Scanintervall in Stunden (Standard 24, `0` = aus) und die Schwelle für schwache Batterien in Prozent (Standard 20).
 - Die Ansichten **Befunde**, **Änderungen**, **Batterien** und **Nicht verwendet** erreichst du über die Navigation im Panel.
