@@ -17,6 +17,7 @@ from homeassistant.helpers.storage import Store
 from .const import EVENTS_STORAGE_KEY, STORAGE_VERSION
 
 SAVE_DELAY = 300  # seconds; coalesces writes, Home Assistant flushes the store when it stops
+SIZE_DAYS = 120  # daily database sizes kept for the growth hint
 MAX_EVENTS = 5000
 EVENT_KINDS = ("ha_version", "entry_version", "start", "plan")
 LIST_LIMIT = 200  # events sent to the panel
@@ -68,6 +69,7 @@ class EventLog:
         self.events: list[dict[str, Any]] = []
         self.versions: dict[str, Any] = {}
         self.heartbeat: str | None = None
+        self.sizes: dict[str, int] = {}
 
     async def async_load(self) -> None:
         data = await self._store.async_load()
@@ -85,6 +87,14 @@ class EventLog:
             self.versions = versions
         if _parse(data.get("heartbeat")):
             self.heartbeat = data["heartbeat"]
+        sizes = data.get("sizes")
+        if isinstance(sizes, dict):
+            self.sizes = {
+                str(day): int(size)
+                for day, size in sizes.items()
+                if isinstance(size, int) and not isinstance(size, bool) and size >= 0
+            }
+            self._trim_sizes()
 
     def _save(self) -> None:
         self._store.async_delay_save(self._data, SAVE_DELAY)
@@ -94,7 +104,20 @@ class EventLog:
             "events": self.events,
             "versions": self.versions,
             "heartbeat": self.heartbeat,
+            "sizes": self.sizes,
         }
+
+    def _trim_sizes(self) -> None:
+        for day in sorted(self.sizes)[:-SIZE_DAYS]:
+            del self.sizes[day]
+
+    def record_size(self, day: str, size: int) -> None:
+        """The database size of one day (the last sample of the day wins); a number, nothing else."""
+        if self.sizes.get(day) == size:
+            return
+        self.sizes[day] = int(size)
+        self._trim_sizes()
+        self._save()
 
     def record(self, kind: str, now: datetime, **fields: Any) -> None:
         """Append one event; the oldest fall out beyond the cap."""

@@ -28,6 +28,7 @@ from .cleanup import (
 )
 from .cleanup_exec import CleanupError, entity_restorable
 from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
+from .db_health import db_health
 from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
@@ -601,6 +602,34 @@ async def websocket_reliability(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/db_health",
+        vol.Optional("refresh", default=False): bool,
+    }
+)
+@websocket_api.async_response
+async def websocket_db_health(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Database size, statistics and recorder gaps. Read-only; kept for ten minutes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            result = await db_health(hass, snapshot, scanner.events, refresh=msg["refresh"])
+    except Exception as err:
+        connection.send_error(msg["id"], "db_health_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/storms",
         vol.Optional("window_days", default=1): vol.In(STORMS_WINDOWS),
         vol.Optional("refresh", default=False): bool,
@@ -759,6 +788,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_backup_health)
     websocket_api.async_register_command(hass, websocket_reliability)
     websocket_api.async_register_command(hass, websocket_storms)
+    websocket_api.async_register_command(hass, websocket_db_health)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_automation_runs)

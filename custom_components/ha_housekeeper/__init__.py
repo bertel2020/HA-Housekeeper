@@ -36,6 +36,7 @@ from .const import (
     PANEL_URL,
     WARMUP_SECONDS,
 )
+from .db_health import sample_size
 from .inventory import InventoryScanner
 from .issues import async_clear_issues
 from .websocket_api import async_register as async_register_websocket
@@ -148,6 +149,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def _collect_runs(_: Any) -> None:
         try:
             await scanner.runs.async_collect()
+            await sample_size(hass, scanner.events)
         except Exception:  # A failing collector must never disturb Home Assistant.
             _LOGGER.exception("Collecting automation runs failed")
 
