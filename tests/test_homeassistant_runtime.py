@@ -837,6 +837,7 @@ async def test_replies_carry_the_api_schema_version(hass: HomeAssistant, hass_ws
         "db_health": await reply({"type": "ha_housekeeper/db_health"}),
         "exposure": await reply({"type": "ha_housekeeper/exposure"}),
         "statistics_last": await reply({"type": "ha_housekeeper/statistics_last"}),
+        "policies": await reply({"type": "ha_housekeeper/policies"}),
     }
     for name, result in results.items():
         assert result["schema"] == API_SCHEMA, name
@@ -945,6 +946,12 @@ async def test_the_scan_reports_the_size_of_housekeepers_own_files(
 
 # What the panel reads from each reply: renaming or removing one of these fields needs a new API schema.
 CONTRACT = {
+    "ha_housekeeper/policies": {
+        "available": bool,
+        "rules": list,
+        "violations": int,
+        "enabled": int,
+    },
     "ha_housekeeper/statistics_last": {"available": bool, "busy": bool, "last": dict},
     "ha_housekeeper/exposure": {
         "available": bool,
@@ -978,3 +985,52 @@ async def test_replies_keep_the_fields_the_panel_reads(hass: HomeAssistant, hass
         for field, kind in fields.items():
             assert field in reply["result"], (command, field)
             assert isinstance(reply["result"][field], kind), (command, field)
+
+
+async def test_policies_over_the_websocket(hass: HomeAssistant, hass_ws_client) -> None:
+    """Switch a rule on, see the violation, hide it, and the findings stay untouched."""
+    from homeassistant.helpers import device_registry as dr
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="test")
+    entry.add_to_hass(hass)
+    device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id, identifiers={("test", "d1")}, name="Bare device"
+    )
+    er.async_get(hass).async_get_or_create(
+        domain="sensor",
+        platform="test",
+        unique_id="p-1",
+        suggested_object_id="bare",
+        config_entry=entry,
+        device_id=device.id,
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+
+    async def send(message: dict) -> dict:
+        await client.send_json_auto_id(message)
+        return await client.receive_json()
+
+    result = (await send({"type": "ha_housekeeper/policies"}))["result"]
+    assert result["enabled"] == 0 and result["violations"] == 0
+
+    assert (
+        await send({"type": "ha_housekeeper/set_policy", "rule": "device_area", "enabled": True})
+    )["success"]
+    assert not (await send({"type": "ha_housekeeper/set_policy", "rule": "nope", "enabled": True}))[
+        "success"
+    ]
+    findings_before = len((await scanner.async_get_snapshot())["findings"])
+    result = (await send({"type": "ha_housekeeper/policies"}))["result"]
+    rule = next(r for r in result["rules"] if r["id"] == "device_area")
+    assert result["violations"] == 1 and rule["items"][0]["object_id"] == device.id
+
+    hidden = await send(
+        {"type": "ha_housekeeper/ignore", "finding_key": rule["items"][0]["key"], "ignored": True}
+    )
+    assert hidden["success"]
+    result = (await send({"type": "ha_housekeeper/policies"}))["result"]
+    rule = next(r for r in result["rules"] if r["id"] == "device_area")
+    assert result["violations"] == 0 and rule["ignored"] == 1
+    assert len((await scanner.async_get_snapshot())["findings"]) == findings_before

@@ -139,3 +139,27 @@ class StatisticsLastResult(TypedDict):
     available: bool
     busy: bool
     last: dict[str, float | None]  # statistic_id -> start of the newest hourly row (epoch seconds)
+
+
+class PolicyItem(TypedDict):
+    object_type: str
+    object_id: str
+    name: str
+    key: str  # the key for the ignore list
+    ignored: bool
+    by: str | None  # "label", "user" or None
+
+
+class PolicyRule(TypedDict):
+    id: str
+    enabled: bool
+    count: int  # violations that are not hidden
+    ignored: int
+    items: list[PolicyItem]
+
+
+class PoliciesResult(TypedDict):
+    available: bool
+    rules: list[PolicyRule]
+    violations: int
+    enabled: int

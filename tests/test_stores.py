@@ -20,6 +20,7 @@ from custom_components.ha_housekeeper.history import ScanHistory  # noqa: E402
 from custom_components.ha_housekeeper.ignored import IgnoreStore  # noqa: E402
 from custom_components.ha_housekeeper.maintenance import PreflightStore  # noqa: E402
 from custom_components.ha_housekeeper.observations import ObservationStore  # noqa: E402
+from custom_components.ha_housekeeper.policies import PolicyStore  # noqa: E402
 from custom_components.ha_housekeeper.runs import RunStore  # noqa: E402
 
 STORES = [
@@ -31,6 +32,7 @@ STORES = [
     (AttestStore, const.ATTEST_STORAGE_KEY),
     (EventLog, const.EVENTS_STORAGE_KEY),
     (RunStore, const.RUNS_STORAGE_KEY),
+    (PolicyStore, const.POLICIES_STORAGE_KEY),
 ]
 GARBAGE = [
     "text",
@@ -40,6 +42,8 @@ GARBAGE = [
     {"items": "no", "events": "no", "plans": "no", "record": "no", "days": "no", "sizes": "no"},
     {"items": {"x": 1}, "events": [1, None, {"kind": "start"}], "plans": [1, "a"], "record": [1]},
     {"latest": "x", "previous": 5, "daily": "d"},
+    {"enabled": "no"},
+    {"enabled": {"entity_area": "yes", "unknown_rule": True, "device_area": 1}},
     {"since": 3, "items": {"automation.a": {"days": "no", "seen": 5}}},
     {"sizes": {"2026-10-08": "big", "x": -4}, "heartbeat": 5, "versions": "v"},
 ]

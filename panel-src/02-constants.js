@@ -61,6 +61,7 @@ const NAV = [
   ["cleanup", "mdi:broom"],
   ["maintenance", "mdi:wrench-clock"],
   ["exposure", "mdi:shield-search"],
+  ["policies", "mdi:clipboard-check-outline"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
@@ -74,7 +75,7 @@ const NAV_GROUPS = [
   ["navGroupOverview", ["overview", "findingsNav", "changes"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph"]],
-  ["navGroupMaintain", ["cleanup", "maintenance", "exposure"]],
+  ["navGroupMaintain", ["cleanup", "maintenance", "exposure", "policies"]],
   ["navGroupSpecial", ["batteries", "unreferenced"]],
 ];
 const NAV_ICONS = Object.fromEntries(NAV);

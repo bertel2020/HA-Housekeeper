@@ -43,7 +43,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -123,6 +123,11 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
           { kind: "duplicates", level: "problem", groups: 7, capped: false, series: [{ statistic_id: "sensor.a", name: "Energie Haus", groups: 5 }] },
           { kind: "recorder_gap", level: "problem", gaps: 2, longest_seconds: 7200, latest: [{ start: 1790000000, end: 1790007200, seconds: 7200, cause: "recorder" }] },
           { kind: "wal_large", level: "hint", wal_bytes: 3221225472, db_bytes: 11811160064 }] };
+      if (t.endsWith("/policies")) return { available: true, schema: 1, enabled: 2, violations: 3, rules: [
+        { id: "entity_area", enabled: true, count: 2, ignored: 1, items: [{ object_type: "entity", object_id: "light.flur", name: "Flurlicht", key: "policy.entity_area|light.flur|", ignored: false, by: null }, { object_type: "entity", object_id: "sensor.keller", name: "Keller Temperatur", key: "policy.entity_area|sensor.keller|", ignored: false, by: null }, { object_type: "entity", object_id: "switch.alt", name: "Alter Schalter", key: "policy.entity_area|switch.alt|", ignored: true, by: "user" }] },
+        { id: "device_area", enabled: false, count: 0, ignored: 0, items: [] },
+        { id: "automation_description", enabled: true, count: 1, ignored: 0, items: [{ object_type: "automation", object_id: "automation.a1", name: "Automation 1", key: "policy.automation_description|automation.a1|", ignored: false, by: null }] },
+        { id: "battery_device", enabled: false, count: 0, ignored: 0, items: [] }] };
       if (t.endsWith("/exposure")) return { available: true, schema: 1, checked: 320, webhooks: 4, assistants: [{ id: "conversation", status: "ok", exposed: 41 }, { id: "cloud.alexa", status: "inactive", exposed: 0 }, { id: "cloud.google_assistant", status: "inactive", exposed: 0 }], bridges: [{ kind: "homekit", title: "HASS Bridge", exposed: 18 }], findings: [{ kind: "sensitive_exposed", level: "hint", count: 2, items: [{ entity_id: "lock.haustuer", name: "Haustür", assistants: ["conversation"] }] }, { kind: "alias_duplicate", level: "warn", assistant: "conversation", alias: "Küche", count: 2, items: [{ entity_id: "light.kueche", name: "Küche" }, { entity_id: "light.kueche_decke", name: "Küche Decke" }] }] };
       if (t.endsWith("/storms")) return { available: true, busy: false, cached: false, took_ms: 4100, window_days: 1, schema: 1, total_rows: 412000, per_day: 412000, entity_count: 380, event_total: 150000, state_changed_events: 140000,
         findings: [

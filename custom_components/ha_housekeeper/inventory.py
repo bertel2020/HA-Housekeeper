@@ -59,6 +59,8 @@ from .ignored import IgnoreStore
 from .issues import async_sync_issues
 from .maintenance import PreflightStore
 from .observations import ObservationStore
+from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
+from .policies import PolicyStore
 from .runs import RunStore
 
 # Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
@@ -475,6 +477,7 @@ class InventoryScanner:
         self.observations = ObservationStore(hass)
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
+        self.policies = PolicyStore(hass)
         self.journal = JournalStore(hass)
         self.preflight = PreflightStore(hass)
         self.attest = AttestStore(hass)
@@ -509,6 +512,7 @@ class InventoryScanner:
         await self.observations.async_load()
         await self.history.async_load()
         await self.ignored.async_load()
+        await self.policies.async_load()
         await self.journal.async_load()
         await self.preflight.async_load()
         await self.attest.async_load()
@@ -792,7 +796,13 @@ class InventoryScanner:
         return None
 
     def set_finding_ignored(self, key: str, ignored: bool) -> bool:
-        """Hide or show one finding in the stored state and the cached snapshot."""
+        """Hide or show one finding in the stored state and the cached snapshot.
+
+        A policy violation (key ``policy.<rule>|...``) is no finding: only the ignore list changes.
+        """
+        if key.startswith(POLICY_KEY_PREFIX):
+            self.ignored.set_ignored(key, ignored, datetime.now(UTC))
+            return True
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
         )

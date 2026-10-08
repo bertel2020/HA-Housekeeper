@@ -33,6 +33,8 @@ from .exposure import exposure
 from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
+from .policies import RULES as POLICY_RULES
+from .policies import policies
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
@@ -666,6 +668,51 @@ async def websocket_statistics_last(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/policies"})
+@websocket_api.async_response
+async def websocket_policies(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Which quality rules are on and which objects break them. Read-only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        result = policies(hass, snapshot, scanner.policies, scanner.ignored)
+    except Exception as err:
+        connection.send_error(msg["id"], "policies_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/set_policy",
+        vol.Required("rule"): vol.In(POLICY_RULES),
+        vol.Required("enabled"): bool,
+    }
+)
+@callback
+def websocket_set_policy(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Switch one quality rule on or off. Only Housekeeper's own setting changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    scanner.policies.set_enabled(msg["rule"], msg["enabled"])
+    connection.send_result(msg["id"], {"enabled": sorted(scanner.policies.enabled)})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/exposure"})
 @websocket_api.async_response
 async def websocket_exposure(
@@ -851,6 +898,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_storms)
     websocket_api.async_register_command(hass, websocket_db_health)
     websocket_api.async_register_command(hass, websocket_statistics_last)
+    websocket_api.async_register_command(hass, websocket_policies)
+    websocket_api.async_register_command(hass, websocket_set_policy)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)

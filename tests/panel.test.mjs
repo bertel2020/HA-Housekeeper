@@ -884,6 +884,33 @@ test("entity key facts show the last change and report, and the last statistics 
   assert.ok(el.factsCard(stateless, "entity:sensor.u").includes("No state available"));
 });
 
+test("policies: rules switch, violations list with hide buttons, hidden ones are folded away", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  const item = (id, ignored = false, by = null) => ({ object_type: "entity", object_id: id, name: id, key: `policy.entity_area|${id}|`, ignored, by });
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { available: true, enabled: 1, violations: 2, rules: [
+    { id: "entity_area", enabled: true, count: 2, ignored: 2, items: [item("light.a"), item("light.b"), item("light.c", true, "user"), item("light.d", true, "label")] },
+    { id: "device_area", enabled: false, count: 0, ignored: 0, items: [] }] }; } };
+  el.view = "policies";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Checking policies"));
+  await el.loadPolicies();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Entity without an area") && html.includes("2 violations") && html.includes("Device without an area") && html.includes(">off<"));
+  assert.ok(html.includes("light.a") && html.includes("light.b") && !html.includes("light.c"), "hidden ones are folded away");
+  assert.ok(html.includes("2 hidden") && html.includes("Show hidden"));
+  assert.equal((html.match(/data-policy-toggle=/g) || []).length, 2);
+  assert.ok(/data-policy-toggle="entity_area"[^>]*checked/.test(html) && !/data-policy-toggle="device_area"[^>]*checked/.test(html));
+  el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
+  assert.ok(html.includes("light.c") && html.includes("hidden by label") && html.includes(">Show<"));
+  assert.equal((html.match(/data-policy-ignore=/g) || []).length, 3, "no button for what the label hides");
+  await el.changePolicy({ type: "ha_housekeeper/set_policy", rule: "device_area", enabled: true });
+  assert.equal(JSON.stringify(calls.map(c => c.type)), JSON.stringify(["ha_housekeeper/policies", "ha_housekeeper/set_policy", "ha_housekeeper/policies"]));
+  el.policies = { available: true, enabled: 0, violations: 0, rules: [{ id: "entity_area", enabled: false, count: 0, ignored: 0, items: [] }] };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Switch on a rule above"));
+});
+
 test("an overdue scan is an item in the to-do list of the overview", () => {
   const { el } = panel("en");
   const meta = scanned => ({ ...DATA.meta, scanned_at: scanned, scan_interval_hours: 24 });

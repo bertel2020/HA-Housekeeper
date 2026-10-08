@@ -424,6 +424,7 @@ const NAV = [
   ["cleanup", "mdi:broom"],
   ["maintenance", "mdi:wrench-clock"],
   ["exposure", "mdi:shield-search"],
+  ["policies", "mdi:clipboard-check-outline"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
@@ -437,7 +438,7 @@ const NAV_GROUPS = [
   ["navGroupOverview", ["overview", "findingsNav", "changes"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph"]],
-  ["navGroupMaintain", ["cleanup", "maintenance", "exposure"]],
+  ["navGroupMaintain", ["cleanup", "maintenance", "exposure", "policies"]],
   ["navGroupSpecial", ["batteries", "unreferenced"]],
 ];
 const NAV_ICONS = Object.fromEntries(NAV);
@@ -1049,7 +1050,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.policyswitch{width:20px;height:20px;accent-color:var(--hk-blue);flex:none;cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -1133,6 +1134,32 @@ class StylesMixin {
     </style>`;
   }
 }
+
+// Texts for the policies view; merged into TEXT.
+Object.assign(TEXT.de, {
+  policies: "Richtlinien", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant. Hinweise, keine Defekte; liest nur.",
+  polTitle: "Qualitätsrichtlinien", polHint: "Schalte ein, was in deiner Installation gelten soll. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
+  polOff: "aus", polCount: "{n} Verstöße", polCountOne: "1 Verstoß", polNone: "Keine Verstöße", polNoneOn: "Schalte oben eine Regel ein, um Verstöße zu sehen.",
+  polRule_entity_area: "Entity ohne Bereich", polDesc_entity_area: "Entities von physischen Geräten brauchen einen Bereich, eigenen oder den des Geräts. Diagnose-, Konfigurations- und deaktivierte Entities und Dienst-Geräte zählen nicht.",
+  polRule_device_area: "Gerät ohne Bereich", polDesc_device_area: "Aktive Geräte brauchen einen Bereich. Dienst-Geräte, Untergeräte, deaktivierte und leere Geräte zählen nicht.",
+  polRule_automation_description: "Automation ohne Beschreibung", polDesc_automation_description: "Automationen aus der Konfiguration brauchen eine Beschreibung.",
+  polRule_battery_device: "Batterie-Entity ohne Gerät", polDesc_battery_device: "Entities mit der Geräteklasse Batterie sollen zu einem Gerät gehören.",
+  polHide: "Ausblenden", polShow: "Einblenden", polHiddenLabel: "ausgeblendet", polByLabel: "per Label ausgeblendet",
+  polHiddenN: "{n} ausgeblendet", polShowHidden: "Ausgeblendete zeigen", polHideHidden: "Ausgeblendete verbergen", polMore: "und {n} weitere",
+  polFootnote: "Richtlinien sind Hinweise zur Ordnung und keine Defekte: Sie zählen nicht in Gesundheit, Befunde, Reparaturhinweise oder Sensoren. Housekeeper vergleicht nur die vorhandenen Daten des letzten Scans. Mit dem Label housekeeper_ignore an einer Entity, einem Gerät oder einer Automation oder über Ausblenden nimmst du ein Objekt aus. Die Schalter liegen nur in Housekeeper.",
+});
+Object.assign(TEXT.en, {
+  policies: "Policies", policiesSubtitle: "Your own rules for tidiness in Home Assistant. Hints, not defects; only reads.",
+  polTitle: "Quality policies", polHint: "Switch on what should apply to your installation. All rules start off.", polLoading: "Checking policies",
+  polOff: "off", polCount: "{n} violations", polCountOne: "1 violation", polNone: "No violations", polNoneOn: "Switch on a rule above to see violations.",
+  polRule_entity_area: "Entity without an area", polDesc_entity_area: "Entities of physical devices need an area, their own or the device's. Diagnostic, configuration and disabled entities and service devices do not count.",
+  polRule_device_area: "Device without an area", polDesc_device_area: "Active devices need an area. Service devices, sub-devices, disabled and empty devices do not count.",
+  polRule_automation_description: "Automation without a description", polDesc_automation_description: "Automations from the configuration need a description.",
+  polRule_battery_device: "Battery entity without a device", polDesc_battery_device: "Entities with the battery device class should belong to a device.",
+  polHide: "Hide", polShow: "Show", polHiddenLabel: "hidden", polByLabel: "hidden by label",
+  polHiddenN: "{n} hidden", polShowHidden: "Show hidden", polHideHidden: "Hide hidden", polMore: "and {n} more",
+  polFootnote: "Policies are hints about tidiness and not defects: they do not count in health, findings, repair hints or sensors. Housekeeper only compares the data of the last scan. The label housekeeper_ignore on an entity, device or automation, or Hide, takes an object out. The switches live only in Housekeeper.",
+});
 
 // ListsMixin: methods of the panel element, mixed into the class in 99-register.js.
 const VIEWS_KEY = "ha_housekeeper.views";
@@ -3609,6 +3636,60 @@ class SearchMixin {
   }
 }
 
+// PoliciesMixin: quality rules you switch on and the objects that break them; mixed into the panel in 99-register.js.
+class PoliciesMixin {
+  async loadPolicies() {
+    this.policiesLoading = true; this.policiesError = ""; this.render();
+    try { this.policies = await this._hass.callWS({ type: "ha_housekeeper/policies" }); }
+    catch (err) { this.policiesError = err?.message || String(err); }
+    this.policiesLoading = false; this.render();
+  }
+
+  // Loads on the first visit; the answer is computed from the last scan and needs no recorder.
+  ensurePolicies() {
+    if (this.policiesLoading || this._policiesRequested) return;
+    this._policiesRequested = true;
+    setTimeout(() => this.loadPolicies(), 0);
+  }
+
+  async changePolicy(call) {
+    try { await this._hass.callWS(call); }
+    catch (err) { this.policiesError = err?.message || String(err); }
+    await this.loadPolicies();
+  }
+
+  polItemRow(item) {
+    const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : "polHiddenLabel")}</span>` : "";
+    const button = item.by === "label" ? "" : `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "polShow" : "polHide")}</button>`;
+    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}</small></span>${pill}${button}</div>`;
+  }
+
+  polRuleBlock(rule) {
+    const state = !rule.enabled ? this.t("polOff") : rule.count === 1 ? this.t("polCountOne") : rule.count ? this.t("polCount", { n: this.formatNumber(rule.count) }) : this.t("polNone");
+    const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
+    const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
+    const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
+    if (!rule.enabled) return head;
+    const visible = rule.items.filter(i => this.policyShowHidden || !i.ignored);
+    const shown = visible.slice(0, 10);
+    const more = visible.length > shown.length ? `<p class="factnote">${this.t("polMore", { n: this.formatNumber(visible.length - shown.length) })}</p>` : "";
+    const hidden = rule.ignored ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(rule.ignored) })}</p>` : "";
+    return head + shown.map(i => this.polItemRow(i)).join("") + more + hidden;
+  }
+
+  policiesView() {
+    this.ensurePolicies();
+    const r = this.policies;
+    const anyHidden = r?.rules?.some(rule => rule.ignored);
+    const actions = `${anyHidden ? `<button class="btn" data-policy-hidden>${this.t(this.policyShowHidden ? "polHideHidden" : "polShowHidden")}</button>` : ""}<button class="btn" data-policy-refresh ${this.policiesLoading ? "disabled" : ""}>${this.t("relRefresh")}</button>`;
+    const head = `<div class="panelhead"><div><h2>${this.t("polTitle")}</h2><p>${this.t("polHint")}</p></div><div class="actions">${actions}</div></div>`;
+    if (this.policiesError) return `<div class="panel">${head}<div class="error">${this.esc(this.policiesError)}</div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("polLoading")}</div>`;
+    const none = r.enabled ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`;
+    return `<div class="panel">${head}${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${none}${this.howCounted("polFootnote")}</div>`;
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -3644,7 +3725,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.orphanLast = null; this.orphanLastLoading = false; this._orphanLastRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.policies = null; this.policiesLoading = false; this.policiesError = ""; this._policiesRequested = false; this.policyShowHidden = false; this.orphanLast = null; this.orphanLastLoading = false; this._orphanLastRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -4011,6 +4092,7 @@ class HAHousekeeperPanel extends HTMLElement {
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
       recorder: [this.t("recorder"), this.t("recorderSubtitle")],
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
+      policies: [this.t("policies"), this.t("policiesSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
     const scanned = this.data?.meta?.scanned_at;
@@ -4033,6 +4115,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "reliability") return this.reliabilityView();
     if (this.view === "recorder") return this.recorderView();
     if (this.view === "exposure") return this.exposureView();
+    if (this.view === "policies") return this.policiesView();
     if (this.view === "runs") return this.runsView();
     if (this.view === "graph") return this.graph();
     return this.overview();
@@ -4174,6 +4257,10 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-storm-refresh]")?.addEventListener("click", () => this.loadStorms(true));
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
+    root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
+    root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
+    root.querySelectorAll("[data-policy-toggle]").forEach(el => el.onchange = () => this.changePolicy({ type: "ha_housekeeper/set_policy", rule: el.dataset.policyToggle, enabled: el.checked }));
+    root.querySelectorAll("[data-policy-ignore]").forEach(el => el.onclick = () => this.changePolicy({ type: "ha_housekeeper/ignore", finding_key: el.dataset.policyIgnore, ignored: el.dataset.policyValue === "1" }));
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {
@@ -4233,7 +4320,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, SearchMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }
