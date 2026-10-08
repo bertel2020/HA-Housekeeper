@@ -440,6 +440,7 @@ const NAV_GROUPS = [
   ["navGroupExplore", ["inventory", "graph"]],
   ["navGroupMaintain", ["cleanup", "unreferenced", "batteries", "policies", "exposure", "maintenance"]],
 ];
+const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = Object.fromEntries(NAV);
 
 // IBM Plex, shipped with the integration. A shadow root cannot declare fonts, so the rules go into the document once.
@@ -709,7 +710,7 @@ Object.assign(TEXT.de, {
   relWindow1: "24 Stunden", relWindow7: "7 Tage", relRefresh: "Neu berechnen", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   relTab: "Zuverlässigkeit", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entities mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entity dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
   relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
-  relBusy: "Eine andere Berechnung läuft noch. Bitte gleich mit „Neu berechnen“ erneut abrufen.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
+  relBusy: "Eine andere Berechnung läuft noch. Housekeeper fragt automatisch erneut an.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
   relEntities: "{n} Entities", relPermanent: "{n} dauerhaft ausgefallen, nicht eingerechnet",
   relShared: "{n} gemeinsame Ausfälle, längster {longest}", relSharedOne: "1 gemeinsamer Ausfall, {longest}", relLayerCloud: "wahrscheinlich Cloud oder API (Vermutung)", relLayerLocal: "wahrscheinlich Gerät, Netz oder Integration (Vermutung)",
   relReauth: "Neu anmelden offen", relLastShared: "Letzter gemeinsamer Ausfall bis {date} ({duration})", relLastSingle: "Letzte Störung bis {date} ({duration})", relNoDisruption: "Keine Störung",
@@ -728,7 +729,7 @@ Object.assign(TEXT.en, {
   relWindow1: "24 hours", relWindow7: "7 days", relRefresh: "Recalculate", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   relTab: "Reliability", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
   relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
-  relBusy: "Another calculation is still running. Fetch it again in a moment with “Recalculate”.", relEmpty: "There are no integration states in this period.",
+  relBusy: "Another calculation is still running. Housekeeper asks again by itself.", relEmpty: "There are no integration states in this period.",
   relEntities: "{n} entities", relPermanent: "{n} down all the time, not counted",
   relShared: "{n} shared outages, longest {longest}", relSharedOne: "1 shared outage, {longest}", relLayerCloud: "probably the cloud or its API (a guess)", relLayerLocal: "probably the device, the network or the integration (a guess)",
   relReauth: "Re-authentication open", relLastShared: "Last shared outage until {date} ({duration})", relLastSingle: "Last disruption until {date} ({duration})", relNoDisruption: "No disruption",
@@ -2244,7 +2245,7 @@ class InventoryMixin {
       return `${search}<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:graph-outline"></ha-icon>${this.t("graphHint")}</div></div>`;
     }
     const item = this.graphSelected, key = this.objectKey(item);
-    const head = `<div class="panel pathcard">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div><h2>${this.esc(item.name)} ${this.pill(item.status)}</h2><span class="id">${this.esc(item.object_id)}</span></div><button class="btn" data-object="${this.esc(key)}">${this.t("details")}</button></div>`;
+    const head = `${this.graphBackLabel() ? `<div class="crumbs"><button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button></div>` : ""}<div class="panel pathcard">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div><h2>${this.esc(item.name)} ${this.pill(item.status)}</h2><span class="id">${this.esc(item.object_id)}</span></div><button class="btn" data-object="${this.esc(key)}">${this.t("details")}</button></div>`;
     if (this.useGraph()) return `${search}${head}${this.graphBar(item, key)}${this.graphPanel(item, key)}`;
     const USAGE = USAGE_RELATIONS;
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
@@ -3276,13 +3277,31 @@ class BackupMixin {
 
 // ReliabilityMixin: the reliability view; mixed into the panel in 99-register.js.
 class ReliabilityMixin {
+  // Slow recorder views: an old reply is shown at once and renewed once; when another calculation holds the
+  // query lock, the panel asks again by itself a few times instead of asking the user to click.
+  followUp(name, view, result, reload, refresh) {
+    if (!result) return;
+    if (!refresh && result.stale) { reload(true); return; }
+    this._busyTries = this._busyTries || {};
+    if (!result.busy) { this._busyTries[name] = 0; return; }
+    this._busyTries[name] = (this._busyTries[name] || 0) + 1;
+    if (this._busyTries[name] <= BUSY_RETRIES) setTimeout(() => { if (this.view === view) reload(refresh); }, BUSY_WAIT_MS);
+  }
+
+  // " · calculated in 2.8 s", or the age of an old reply.
+  tookNote(r) {
+    if (!r || !r.available) return "";
+    if (r.computed_at && (r.stale || r.age_seconds >= 60)) return ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}`;
+    if (r.took_ms === null || r.took_ms === undefined) return "";
+    return ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}`;
+  }
+
   async loadReliability(refresh = false) {
     this.relLoading = true; this.relError = ""; this.render();
     try { this.reliability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, refresh, ...(this.relCompare ? { compare: true } : {}) }); }
     catch (err) { this.relError = err?.message || String(err); }
     this.relLoading = false; this.render();
-    // An old reply is shown at once; the new numbers follow in the background (once, so it cannot loop).
-    if (!refresh && this.reliability?.stale) this.loadReliability(true);
+    this.followUp("reliability", "reliability", this.reliability, r => this.loadReliability(r), refresh);
   }
 
   // The first visit and every change of the window load once; the backend keeps the result for a few minutes.
@@ -3345,14 +3364,12 @@ class ReliabilityMixin {
     this.ensureReliability();
     const r = this.reliability;
     const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
-    const old = r && r.available && r.computed_at && (r.stale || r.age_seconds >= 60);
-    const took = old ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}`
-      : r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const took = this.tookNote(r);
     const head = `<div class="panelhead"><div><h2>${this.t("relTitle")}</h2><p>${this.t("relHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-rel-refresh ${this.relLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.relError) return `<div class="panel">${head}<div class="error">${this.esc(this.relError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("relLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
-    if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
+    if (r.busy) return `<div class="panel">${head}${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
     const th = r.thresholds || {};
@@ -3490,6 +3507,7 @@ class StormsMixin {
     try { this.storms = await this._hass.callWS({ type: "ha_housekeeper/storms", window_days: this.stormsWindow, refresh }); }
     catch (err) { this.stormsError = err?.message || String(err); }
     this.stormsLoading = false; this.render();
+    this.followUp("storms", "recorder", this.storms, r => this.loadStorms(r), refresh);
   }
 
   // The first visit and every change of the window load once; the backend keeps the result for ten minutes.
@@ -3549,12 +3567,12 @@ class StormsMixin {
     this.ensureStorms();
     const r = this.storms;
     const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.stormsWindow === days ? "active" : ""}" data-storm-window="${days}" aria-pressed="${this.stormsWindow === days}">${this.t(key)}</button>`).join("");
-    const took = r && r.available && r.took_ms !== null && r.took_ms !== undefined ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const took = this.tookNote(r);
     const head = `<div class="panelhead"><div><h2>${this.t("stormTitle")}</h2><p>${this.t("stormHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-storm-refresh ${this.stormsLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.stormsError) return `<div class="panel">${head}<div class="error">${this.esc(this.stormsError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("stormLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
-    if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
+    if (r.busy) return `<div class="panel">${head}${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div>`;
     const loading = this.stormsLoading ? `<p class="factnote">${this.t("stormLoading")}</p>` : "";
     const findingPage = this.paginate("stormfind", r.findings);
     const attention = r.findings.length ? findingPage.rows.map(f => this.stormFindingRow(f)).join("") + findingPage.footer : `<div class="emptymsg">${this.t("stormNone")}</div>`;
@@ -3575,6 +3593,7 @@ class DbHealthMixin {
     try { this.dbHealth = await this._hass.callWS({ type: "ha_housekeeper/db_health", refresh }); }
     catch (err) { this.dbError = err?.message || String(err); }
     this.dbLoading = false; this.render();
+    this.followUp("db", "recorder", this.dbHealth, r => this.loadDbHealth(r), refresh);
   }
 
   // Loads on the first visit of Maintenance only: the query reads the recorder, so the overview never starts it.
@@ -3605,12 +3624,12 @@ class DbHealthMixin {
 
   dbCard() {
     const r = this.dbHealth;
-    const took = r?.available && r.took_ms !== null && r.took_ms !== undefined ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const took = this.tookNote(r);
     const head = `<div class="panelhead"><div><h2>${this.t("dbTitle")}</h2><p>${this.t("dbHint2")}${took}</p></div><div class="actions"><button class="btn" data-db-refresh ${this.dbLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.dbError) return `<div class="panel">${head}<div class="error">${this.esc(this.dbError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("dbLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
-    if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
+    if (r.busy) return `<div class="panel">${head}${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div>`;
     const th = r.thresholds || {};
     const facts = [];
     if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));
@@ -3857,6 +3876,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.compareBaseline = "previous";
     this.compareLoading = false;
     this.graphSelected = null;
+    this.graphTrail = []; this.graphOrigin = null; this.viewTrail = []; this._tabOf = new Map();
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
@@ -3961,8 +3981,26 @@ class HAHousekeeperPanel extends HTMLElement {
     } catch (_) { /* The main scan request reports actionable errors. */ }
   }
 
+  // The scrolling element: HA's page scrolls the document or one of the panel's ancestors.
+  scroller() {
+    for (let node = this; node; node = node.parentNode || node.host) {
+      if (node.scrollTop > 0) return node;
+    }
+    return globalThis.document?.scrollingElement || null;
+  }
+
+  // Where the page was scrolled when it is left, so "back" can land at the same spot.
+  rememberScroll() { return this.scroller?.()?.scrollTop || 0; }
+
+  restoreScroll(top) {
+    if (!top) return;
+    const run = () => { const el = this.scroller?.() || globalThis.document?.scrollingElement; if (el) el.scrollTop = top; };
+    if (globalThis.requestAnimationFrame) globalThis.requestAnimationFrame(run); else run();
+  }
+
   async openObject(obj) {
-    if (this.selected && this.selected !== obj) this.trail.push(this.selected);
+    if (this.selected && this.selected !== obj) { this.trail.push(this.selected); this._tabOf.set(this.objectKey(this.selected), this.detailTab); }
+    else if (!this.selected) this._listScroll = this.rememberScroll();
     if (this.selected !== obj) { this.detailTab = this._pendingTab || "overview"; this._pendingTab = null; }
     this.selected = obj;
     const key = this.objectKey(obj);
@@ -3979,7 +4017,63 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.selected === obj) this.render();
   }
 
-  goBack() { this.selected = this.trail.pop() || null; this.detailTab = "overview"; this.render(); }
+  goBack() {
+    this.selected = this.trail.pop() || null;
+    this.detailTab = (this.selected && this._tabOf.get(this.objectKey(this.selected))) || "overview";
+    this.render();
+    if (!this.selected) this.restoreScroll(this._listScroll);
+  }
+
+  // The graph opened from a detail page or a list: it remembers where, so "back" returns there.
+  openGraph(obj) {
+    if (!obj) return;
+    if (this.selected) this._tabOf.set(this.objectKey(this.selected), this.detailTab);
+    this.graphOrigin = { view: this.view, selected: this.selected, trail: this.trail, tab: this.detailTab, scroll: this.rememberScroll() };
+    this.graphTrail = [];
+    this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP;
+    this.view = "graph"; this.selected = null; this.trail = [];
+    this.render();
+  }
+
+  // Going to another node of the graph keeps the one left behind for "back".
+  noteGraphStep(obj) {
+    if (this.graphSelected && this.graphSelected !== obj) this.graphTrail.push(this.graphSelected);
+  }
+
+  // Leaving a page through a link (not the menu) keeps it for "back".
+  noteJump(view) {
+    if (view !== this.view) this.viewTrail.push({ view: this.view, scroll: this.rememberScroll() });
+  }
+
+  // Back from the graph: one node at a time, then to where the graph was opened from.
+  graphBack() {
+    const previous = this.graphTrail.pop();
+    if (previous) { this.graphSelected = previous; this.graphLimit = GRAPH_NODE_STEP; this.render(); return; }
+    const from = this.graphOrigin;
+    this.graphOrigin = null;
+    if (!from) return;
+    this.view = from.view; this.selected = from.selected; this.trail = from.trail;
+    this.detailTab = from.tab || "overview";
+    this.render();
+    this.restoreScroll(from.scroll);
+  }
+
+  // What the graph's back button names: the node before, or the page the graph was opened from.
+  graphBackLabel() {
+    const node = this.graphTrail[this.graphTrail.length - 1];
+    if (node) return node.name;
+    const from = this.graphOrigin;
+    return from ? (from.selected ? from.selected.name : this.t(from.view)) : "";
+  }
+
+  // Back after a jump from one page to another (overview card to a list and the like).
+  viewBack() {
+    const from = this.viewTrail.pop();
+    if (!from) return;
+    this.view = from.view; this.pages = {};
+    this.render();
+    this.restoreScroll(from.scroll);
+  }
 
   statusLabel(status) { return this.t(status); }
 
@@ -4240,7 +4334,9 @@ class HAHousekeeperPanel extends HTMLElement {
     const [title, sub] = titles[this.view] || titles.overview;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
-    return `<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
+    const from = this.viewTrail[this.viewTrail.length - 1];
+    const back = from ? `<div class="crumbs"><button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button></div>` : "";
+    return `${back}<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
@@ -4276,7 +4372,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -4296,6 +4392,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-scan-point]").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
+    root.querySelector("[data-action='graph-back']")?.addEventListener("click", () => this.graphBack());
+    root.querySelector("[data-action='view-back']")?.addEventListener("click", () => this.viewBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {
       el.onclick = () => { this.detailTab = el.dataset.detailTab; this.render(); };
       el.onkeydown = ev => {
@@ -4308,17 +4406,15 @@ class HAHousekeeperPanel extends HTMLElement {
         this.shadowRoot.querySelector(`[data-detail-tab="${next}"]`)?.focus();
       };
     });
-    root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
-      const obj = this.findObject(el.dataset.graphOpen);
-      if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
-    });
+    root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
+      this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
       if (el.dataset.filter !== undefined) this.findingFilter = el.dataset.filter;
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
-    root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
+    root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.pages = {}; this.render(); });
@@ -4361,7 +4457,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-graph-more]")?.addEventListener("click", () => { this.graphLimit += GRAPH_NODE_STEP; this.render(); });
     const gr = root.querySelector("#graphRel"); if (gr) gr.onchange = () => { this.graphRel = gr.value; this.render(); };
     const gc = root.querySelector("#graphConf"); if (gc) gc.onchange = () => { this.graphConf = gc.value; this.render(); };
-    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
+    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.noteGraphStep(obj); this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));

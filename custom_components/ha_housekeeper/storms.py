@@ -21,7 +21,7 @@ from .cleanup import USAGE_RELATIONS
 from .const import IGNORE_LABEL
 from .meter import recorder_ready
 from .payloads import StormsResult
-from .queries import cached_query
+from .queries import ReplyStore, cached_query, kept_reply
 from .reliability import entry_info
 
 DAY = 86400
@@ -318,19 +318,27 @@ async def storms(
     *,
     window_days: int = 1,
     refresh: bool = False,
+    store: ReplyStore | None = None,
 ) -> StormsResult:
     """Recorder load per entity, integration and event type for the last day or week."""
     if not recorder_ready(hass):
         return {"available": False, "findings": []}
     now = time.time()
+    key = f"storms:{window_days}"
+    kept = None if refresh else kept_reply(store, key, now, CACHE_SECONDS)
+    if kept is not None:
+        return kept  # type: ignore[return-value]
     found = await cached_query(
         hass,
-        f"storms:{window_days}",
+        key,
         CACHE_SECONDS,
         lambda: query_storms(hass, now - window_days * DAY, now),
         refresh=refresh,
     )
     if found.busy:
+        held = kept_reply(store, key, now, CACHE_SECONDS, stale=True)
+        if held is not None:
+            return held  # type: ignore[return-value]
         return {"available": True, "busy": True, "findings": [], "window_days": window_days}
     info = {
         item["object_id"]: {
@@ -349,10 +357,16 @@ async def storms(
     result = evaluate_storms(
         found.raw, info, await entry_info(hass), snapshot.get("edges", []), ignored, window_days
     )
-    return {
+    reply = {
         "available": True,
         "busy": False,
         "cached": found.cached,
+        "stale": False,
+        "age_seconds": 0,
+        "computed_at": now,
         "thresholds": THRESHOLDS,
         **result,
     }
+    if store is not None:
+        store.keep(key, reply)
+    return reply  # type: ignore[return-value]

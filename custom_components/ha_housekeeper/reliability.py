@@ -8,26 +8,22 @@ new calculation runs. A regular background run keeps that reply from getting old
 
 from __future__ import annotations
 
-import re
 import time
 from datetime import UTC, datetime, tzinfo
 from typing import Any
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
-from .const import IGNORE_LABEL, RELIABILITY_STORAGE_KEY, STORAGE_VERSION
+from .const import IGNORE_LABEL
 from .meter import recorder_ready
 from .payloads import ReliabilityResult
-from .queries import cached_query
+from .queries import ReplyStore, cached_query, kept_reply
 
 DAY = 86400
 WINDOWS = (1, 7)  # days
 CACHE_SECONDS = 300
-SAVE_DELAY = 30  # seconds
 MEMBER_LIMIT = 15  # entities with downtime listed per config entry
-REPLY_KEY = re.compile(r"^\d{1,2}:[01]$")
 CHUNK = 500  # entities per second-pass query
 SHARED_SHARE = 80  # percent of an entry's entities that must be down together
 SHARED_MIN_ENTITIES = 3
@@ -396,36 +392,8 @@ async def entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:
     return info
 
 
-class ReliabilityStore:
-    """The last finished reply per window and comparison, so the view never starts empty."""
-
-    def __init__(self, hass: HomeAssistant) -> None:
-        self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, RELIABILITY_STORAGE_KEY)
-        self.replies: dict[str, dict[str, Any]] = {}
-
-    async def async_load(self) -> None:
-        """Load the replies; anything that is not a reply of the known shape is dropped."""
-        data = await self._store.async_load()
-        if not isinstance(data, dict) or not isinstance(data.get("replies"), dict):
-            return
-        self.replies = {
-            key: reply
-            for key, reply in data["replies"].items()
-            if isinstance(key, str)
-            and REPLY_KEY.match(key)
-            and isinstance(reply, dict)
-            and isinstance(reply.get("entries"), list)
-            and isinstance(reply.get("computed_at"), int | float)
-            and not isinstance(reply.get("computed_at"), bool)
-        }
-
-    def keep(self, key: str, reply: dict[str, Any]) -> None:
-        self.replies[key] = reply
-        self._store.async_delay_save(lambda: {"replies": self.replies}, SAVE_DELAY)
-
-
 def reply_key(window_days: int, compare: bool) -> str:
-    return f"{window_days}:{int(compare)}"
+    return f"reliability:{window_days}:{int(compare)}"
 
 
 async def reliability(
@@ -435,7 +403,7 @@ async def reliability(
     window_days: int = 7,
     refresh: bool = False,
     compare: bool = False,
-    store: ReliabilityStore | None = None,
+    store: ReplyStore | None = None,
 ) -> ReliabilityResult | dict[str, Any]:
     """Availability and shared outages per config entry for the last day or week.
 
@@ -446,11 +414,10 @@ async def reliability(
         return {"available": False, "entries": []}
     now = time.time()
     key = reply_key(window_days, compare)
-    kept = store.replies.get(key) if store is not None else None
-    if kept is not None and not refresh:
-        age = max(0, round(now - kept["computed_at"]))
+    kept = None if refresh else kept_reply(store, key, now, CACHE_SECONDS)
+    if kept is not None:
         # An old reply is handed out at once; the caller asks again with ``refresh`` for new numbers.
-        return {**kept, "cached": True, "stale": age >= CACHE_SECONDS, "age_seconds": age}
+        return kept
     found = await cached_query(
         hass,
         f"reliability:{window_days}",
@@ -459,9 +426,9 @@ async def reliability(
         refresh=refresh,
     )
     if found.busy:
-        if kept is not None:
-            age = max(0, round(now - kept["computed_at"]))
-            return {**kept, "cached": True, "stale": True, "age_seconds": age}
+        held = kept_reply(store, key, now, CACHE_SECONDS, stale=True)
+        if held is not None:
+            return held
         return {"available": True, "busy": True, "entries": [], "window_days": window_days}
     entities = [
         {

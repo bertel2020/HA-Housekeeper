@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 
 from .meter import recorder_ready
 from .payloads import DbHealthResult
-from .queries import cached_query
+from .queries import ReplyStore, cached_query, kept_reply
 
 DAY = 86400
 CACHE_SECONDS = 600
@@ -360,15 +360,22 @@ async def db_health(
     events: Any,
     *,
     refresh: bool = False,
+    store: ReplyStore | None = None,
 ) -> DbHealthResult:
     """Database health: size and growth, statistics duplicates, gaps and issues, recorder gaps."""
     if not recorder_ready(hass):
         return {"available": False, "findings": []}
     now = time.time()
+    kept = None if refresh else kept_reply(store, "db_health", now, CACHE_SECONDS)
+    if kept is not None:
+        return kept  # type: ignore[return-value]
     found = await cached_query(
         hass, "db_health", CACHE_SECONDS, lambda: query_db(hass, now), refresh=refresh
     )
     if found.busy:
+        held = kept_reply(store, "db_health", now, CACHE_SECONDS, stale=True)
+        if held is not None:
+            return held  # type: ignore[return-value]
         return {"available": True, "busy": True, "findings": []}
     names = {
         item["object_id"]: item.get("name") or item["object_id"]
@@ -382,10 +389,16 @@ async def db_health(
             int(raw["db_bytes"]) + int(raw.get("wal_bytes") or 0),
         )
     result = evaluate(raw, names, events.sizes, events.events, datetime.now(UTC).date())
-    return {
+    reply = {
         "available": True,
         "busy": False,
         "cached": found.cached,
+        "stale": False,
+        "age_seconds": 0,
+        "computed_at": now,
         "thresholds": THRESHOLDS,
         **result,
     }
+    if store is not None:
+        store.keep("db_health", reply)
+    return reply  # type: ignore[return-value]

@@ -21,7 +21,7 @@ from custom_components.ha_housekeeper.ignored import IgnoreStore  # noqa: E402
 from custom_components.ha_housekeeper.maintenance import PreflightStore  # noqa: E402
 from custom_components.ha_housekeeper.observations import ObservationStore  # noqa: E402
 from custom_components.ha_housekeeper.policies import PolicyStore  # noqa: E402
-from custom_components.ha_housekeeper.reliability import ReliabilityStore  # noqa: E402
+from custom_components.ha_housekeeper.queries import ReplyStore  # noqa: E402
 from custom_components.ha_housekeeper.runs import RunStore  # noqa: E402
 
 STORES = [
@@ -34,7 +34,7 @@ STORES = [
     (EventLog, const.EVENTS_STORAGE_KEY),
     (RunStore, const.RUNS_STORAGE_KEY),
     (PolicyStore, const.POLICIES_STORAGE_KEY),
-    (ReliabilityStore, const.RELIABILITY_STORAGE_KEY),
+    (ReplyStore, const.REPLIES_STORAGE_KEY),
 ]
 GARBAGE = [
     "text",
@@ -46,8 +46,8 @@ GARBAGE = [
     {"latest": "x", "previous": 5, "daily": "d"},
     {"enabled": "no"},
     {"replies": "no"},
-    {"replies": {"7:0": 5, "x": {"entries": []}, "1:1": {"entries": "no", "computed_at": 1}}},
-    {"replies": {"7:0": {"entries": [], "computed_at": True}}},
+    {"replies": {"storms:1": 5, "BAD key": {"computed_at": 1}, "storms:7": {"computed_at": "x"}}},
+    {"replies": {"db_health": {"computed_at": True}}},
     {"prefixes": "no"},
     {"prefixes": {"sensor": 5, "BAD domain": "x", "light": "UPPER", "switch": "ok_"}},
     {"enabled": {"entity_area": "yes", "unknown_rule": True, "device_area": 1}},

@@ -325,3 +325,27 @@ async def test_the_overview_summary_names_size_and_growth(
     summary = await database_summary(hass, Events())
     assert summary is not None and summary["per_day"] == 100 and summary["samples"] == 2
     assert set(summary) == {"dialect", "db_bytes", "wal_bytes", "per_day", "samples"}
+
+
+async def test_the_last_database_reply_is_kept_and_handed_out_while_the_recorder_is_busy(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    import asyncio
+
+    from custom_components.ha_housekeeper.const import DOMAIN
+    from custom_components.ha_housekeeper.queries import ReplyStore
+
+    store = ReplyStore(hass)
+    events = FakeEvents()
+    first = await db_health(hass, {"objects": []}, events, store=store, refresh=True)
+    assert first["stale"] is False and "db_health" in store.replies
+    quick = await db_health(hass, {"objects": []}, events, store=store)
+    assert quick["cached"] is True and quick["stale"] is False
+    lock = hass.data.setdefault(DOMAIN, {}).setdefault("reliability_lock", asyncio.Lock())
+    hass.data[DOMAIN].pop("query_cache", None)  # only the file is left, as after a restart
+    await lock.acquire()
+    try:
+        held = await db_health(hass, {"objects": []}, events, store=store, refresh=True)
+    finally:
+        lock.release()
+    assert held["stale"] is True and held["busy"] is False

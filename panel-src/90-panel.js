@@ -22,6 +22,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.compareBaseline = "previous";
     this.compareLoading = false;
     this.graphSelected = null;
+    this.graphTrail = []; this.graphOrigin = null; this.viewTrail = []; this._tabOf = new Map();
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
@@ -126,8 +127,26 @@ class HAHousekeeperPanel extends HTMLElement {
     } catch (_) { /* The main scan request reports actionable errors. */ }
   }
 
+  // The scrolling element: HA's page scrolls the document or one of the panel's ancestors.
+  scroller() {
+    for (let node = this; node; node = node.parentNode || node.host) {
+      if (node.scrollTop > 0) return node;
+    }
+    return globalThis.document?.scrollingElement || null;
+  }
+
+  // Where the page was scrolled when it is left, so "back" can land at the same spot.
+  rememberScroll() { return this.scroller?.()?.scrollTop || 0; }
+
+  restoreScroll(top) {
+    if (!top) return;
+    const run = () => { const el = this.scroller?.() || globalThis.document?.scrollingElement; if (el) el.scrollTop = top; };
+    if (globalThis.requestAnimationFrame) globalThis.requestAnimationFrame(run); else run();
+  }
+
   async openObject(obj) {
-    if (this.selected && this.selected !== obj) this.trail.push(this.selected);
+    if (this.selected && this.selected !== obj) { this.trail.push(this.selected); this._tabOf.set(this.objectKey(this.selected), this.detailTab); }
+    else if (!this.selected) this._listScroll = this.rememberScroll();
     if (this.selected !== obj) { this.detailTab = this._pendingTab || "overview"; this._pendingTab = null; }
     this.selected = obj;
     const key = this.objectKey(obj);
@@ -144,7 +163,63 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.selected === obj) this.render();
   }
 
-  goBack() { this.selected = this.trail.pop() || null; this.detailTab = "overview"; this.render(); }
+  goBack() {
+    this.selected = this.trail.pop() || null;
+    this.detailTab = (this.selected && this._tabOf.get(this.objectKey(this.selected))) || "overview";
+    this.render();
+    if (!this.selected) this.restoreScroll(this._listScroll);
+  }
+
+  // The graph opened from a detail page or a list: it remembers where, so "back" returns there.
+  openGraph(obj) {
+    if (!obj) return;
+    if (this.selected) this._tabOf.set(this.objectKey(this.selected), this.detailTab);
+    this.graphOrigin = { view: this.view, selected: this.selected, trail: this.trail, tab: this.detailTab, scroll: this.rememberScroll() };
+    this.graphTrail = [];
+    this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP;
+    this.view = "graph"; this.selected = null; this.trail = [];
+    this.render();
+  }
+
+  // Going to another node of the graph keeps the one left behind for "back".
+  noteGraphStep(obj) {
+    if (this.graphSelected && this.graphSelected !== obj) this.graphTrail.push(this.graphSelected);
+  }
+
+  // Leaving a page through a link (not the menu) keeps it for "back".
+  noteJump(view) {
+    if (view !== this.view) this.viewTrail.push({ view: this.view, scroll: this.rememberScroll() });
+  }
+
+  // Back from the graph: one node at a time, then to where the graph was opened from.
+  graphBack() {
+    const previous = this.graphTrail.pop();
+    if (previous) { this.graphSelected = previous; this.graphLimit = GRAPH_NODE_STEP; this.render(); return; }
+    const from = this.graphOrigin;
+    this.graphOrigin = null;
+    if (!from) return;
+    this.view = from.view; this.selected = from.selected; this.trail = from.trail;
+    this.detailTab = from.tab || "overview";
+    this.render();
+    this.restoreScroll(from.scroll);
+  }
+
+  // What the graph's back button names: the node before, or the page the graph was opened from.
+  graphBackLabel() {
+    const node = this.graphTrail[this.graphTrail.length - 1];
+    if (node) return node.name;
+    const from = this.graphOrigin;
+    return from ? (from.selected ? from.selected.name : this.t(from.view)) : "";
+  }
+
+  // Back after a jump from one page to another (overview card to a list and the like).
+  viewBack() {
+    const from = this.viewTrail.pop();
+    if (!from) return;
+    this.view = from.view; this.pages = {};
+    this.render();
+    this.restoreScroll(from.scroll);
+  }
 
   statusLabel(status) { return this.t(status); }
 
@@ -405,7 +480,9 @@ class HAHousekeeperPanel extends HTMLElement {
     const [title, sub] = titles[this.view] || titles.overview;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
-    return `<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
+    const from = this.viewTrail[this.viewTrail.length - 1];
+    const back = from ? `<div class="crumbs"><button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button></div>` : "";
+    return `${back}<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
@@ -441,7 +518,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -461,6 +538,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-scan-point]").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
+    root.querySelector("[data-action='graph-back']")?.addEventListener("click", () => this.graphBack());
+    root.querySelector("[data-action='view-back']")?.addEventListener("click", () => this.viewBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {
       el.onclick = () => { this.detailTab = el.dataset.detailTab; this.render(); };
       el.onkeydown = ev => {
@@ -473,17 +552,15 @@ class HAHousekeeperPanel extends HTMLElement {
         this.shadowRoot.querySelector(`[data-detail-tab="${next}"]`)?.focus();
       };
     });
-    root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
-      const obj = this.findObject(el.dataset.graphOpen);
-      if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }
-    });
+    root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
+      this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
       if (el.dataset.filter !== undefined) this.findingFilter = el.dataset.filter;
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
-    root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
+    root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.pages = {}; this.render(); });
@@ -526,7 +603,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-graph-more]")?.addEventListener("click", () => { this.graphLimit += GRAPH_NODE_STEP; this.render(); });
     const gr = root.querySelector("#graphRel"); if (gr) gr.onchange = () => { this.graphRel = gr.value; this.render(); };
     const gc = root.querySelector("#graphConf"); if (gc) gc.onchange = () => { this.graphConf = gc.value; this.render(); };
-    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
+    root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.noteGraphStep(obj); this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));

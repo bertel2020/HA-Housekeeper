@@ -2516,6 +2516,80 @@ test("the key facts of an automation show its counted runs, or say that none wer
   assert.ok(!el.factsCard(flur, "automation:automation.flur").includes("Errors:"), "nothing while the runs are loading");
 });
 
+test("the graph goes back one node at a time, then to the page it was opened from", () => {
+  const { el, shadow } = panel("en");
+  const a = { object_type: "entity", object_id: "sensor.a", name: "Alpha", status: "active" };
+  const b = { object_type: "entity", object_id: "sensor.b", name: "Beta", status: "active" };
+  const c = { object_type: "entity", object_id: "sensor.c", name: "Gamma", status: "active" };
+  el.data = { ...DATA, objects: [...DATA.objects, a, b, c] };
+  el.selected = a; el.view = "detail"; el.detailTab = "technical";
+  el.openGraph(a);
+  assert.equal(el.view, "graph"); assert.equal(el.selected, null);
+  assert.equal(el.graphBackLabel(), "Alpha", "the first back goes to the detail page");
+  el.noteGraphStep(b); el.graphSelected = b;
+  el.noteGraphStep(c); el.graphSelected = c;
+  assert.equal(el.graphBackLabel(), "Beta");
+  assert.ok(shadow.innerHTML.includes('data-action="graph-back"') || el.graph().includes('data-action="graph-back"'));
+  el.graphBack();
+  assert.equal(el.graphSelected, b);
+  el.graphBack();
+  assert.equal(el.graphSelected, a);
+  el.graphBack();
+  assert.equal(el.selected, a, "back on the detail page");
+  assert.equal(el.detailTab, "technical", "with the tab it was left on");
+  assert.equal(el.graphOrigin, null);
+  assert.equal(el.graphBackLabel(), "");
+});
+
+test("leaving a page through a link keeps it for back, the menu clears the trail", () => {
+  const { el } = panel("en");
+  el.data = DATA; el.view = "overview";
+  el.noteJump("findingsNav"); el.view = "findingsNav";
+  el.noteJump("findingsNav");
+  assert.equal(el.viewTrail.length, 1, "no step for the page we are on");
+  assert.ok(el.heading().includes('data-action="view-back"') && el.heading().includes("Back to"));
+  el.viewBack();
+  assert.equal(el.view, "overview");
+  assert.equal(el.viewTrail.length, 0);
+  assert.ok(!el.heading().includes('data-action="view-back"'));
+});
+
+test("going back from a detail page restores the tab the previous one was left on", async () => {
+  const { el } = panel("en");
+  const a = { object_type: "entity", object_id: "sensor.a", name: "Alpha", status: "active" };
+  const b = { object_type: "entity", object_id: "sensor.b", name: "Beta", status: "active" };
+  el.data = { ...DATA, objects: [...DATA.objects, a, b] };
+  el._hass = { language: "en", callWS: async () => ({}) };
+  await el.openObject(a);
+  el.detailTab = "relations";
+  await el.openObject(b);
+  assert.equal(el.detailTab, "overview");
+  el.goBack();
+  assert.equal(el.selected, a); assert.equal(el.detailTab, "relations");
+  el.goBack();
+  assert.equal(el.selected, null);
+});
+
+test("slow recorder views ask again by themselves while another calculation holds the lock, and renew an old reply once", async () => {
+  const timers = [];
+  const { el } = panel("en", { setTimeout: (fn, ms) => { timers.push([fn, ms]); return 0; } });
+  el.data = DATA; el.view = "recorder";
+  const calls = [];
+  let answer = { available: true, busy: true, findings: [], window_days: 1 };
+  el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/storms")) { calls.push(msg.refresh); return answer; } return { available: true, busy: false, findings: [] }; } };
+  await el.loadStorms();
+  assert.equal(timers.filter(([, ms]) => ms === 8000).length, 1, "one retry is scheduled");
+  assert.ok(el.stormsView().includes("asks again by itself"));
+  answer = { ...RELIABILITY, available: true, busy: false, stale: true, age_seconds: 3600, computed_at: 1791470000, findings: [], entities: [], integrations: [], events: [], total_rows: 0, per_day: 0, entity_count: 0, event_total: 0 };
+  const [retry] = timers.find(([, ms]) => ms === 8000);
+  retry();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(JSON.stringify(calls), "[false,false,true]", "the stale reply is renewed once with refresh");
+  el._busyTries = {};
+  for (let i = 0; i < 15; i++) el.followUp("x", "recorder", { busy: true }, () => {}, false);
+  assert.equal(timers.filter(([, ms]) => ms === 8000).length <= 13, true, "the retries are limited");
+});
+
 test("the runtime state shows its unit, but not for special states or entities without one", () => {
   const { el } = panel("en");
   const html = state => {

@@ -256,3 +256,27 @@ def test_the_result_counts_the_entities_it_left_out() -> None:
     result = evaluate_storms(raw(counts_), info, {}, [], {"sensor.b", "sensor.gone"}, 1)
     assert result["excluded"] == {"ignored": 1}  # only what the recorder actually counted
     assert [r["entity_id"] for r in result["entities"]] == ["sensor.a"]
+
+
+async def test_the_last_load_reply_is_kept_and_handed_out_while_the_recorder_is_busy(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    import asyncio
+
+    from custom_components.ha_housekeeper.const import DOMAIN
+    from custom_components.ha_housekeeper.queries import ReplyStore
+
+    store = ReplyStore(hass)
+    await async_wait_recording_done(hass)
+    first = await storms(hass, snapshot_for(), store=store, refresh=True)
+    assert first["stale"] is False and "storms:1" in store.replies
+    quick = await storms(hass, snapshot_for(), store=store)
+    assert quick["cached"] is True and quick["stale"] is False
+    lock = hass.data.setdefault(DOMAIN, {}).setdefault("reliability_lock", asyncio.Lock())
+    hass.data[DOMAIN].pop("query_cache", None)  # only the file is left, as after a restart
+    await lock.acquire()
+    try:
+        held = await storms(hass, snapshot_for(), store=store, refresh=True)
+    finally:
+        lock.release()
+    assert held["stale"] is True and held["busy"] is False

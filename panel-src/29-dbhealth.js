@@ -5,6 +5,7 @@ class DbHealthMixin {
     try { this.dbHealth = await this._hass.callWS({ type: "ha_housekeeper/db_health", refresh }); }
     catch (err) { this.dbError = err?.message || String(err); }
     this.dbLoading = false; this.render();
+    this.followUp("db", "recorder", this.dbHealth, r => this.loadDbHealth(r), refresh);
   }
 
   // Loads on the first visit of Maintenance only: the query reads the recorder, so the overview never starts it.
@@ -35,12 +36,12 @@ class DbHealthMixin {
 
   dbCard() {
     const r = this.dbHealth;
-    const took = r?.available && r.took_ms !== null && r.took_ms !== undefined ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const took = this.tookNote(r);
     const head = `<div class="panelhead"><div><h2>${this.t("dbTitle")}</h2><p>${this.t("dbHint2")}${took}</p></div><div class="actions"><button class="btn" data-db-refresh ${this.dbLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.dbError) return `<div class="panel">${head}<div class="error">${this.esc(this.dbError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("dbLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
-    if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
+    if (r.busy) return `<div class="panel">${head}${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div>`;
     const th = r.thresholds || {};
     const facts = [];
     if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));

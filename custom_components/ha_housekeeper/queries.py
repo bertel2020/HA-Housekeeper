@@ -9,13 +9,18 @@ recorder at the same time either.
 from __future__ import annotations
 
 import asyncio
+import re
 import time
 from collections.abc import Callable
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 
-from .const import DOMAIN
+from .const import DOMAIN, REPLIES_STORAGE_KEY, STORAGE_VERSION
+
+REPLY_KEY = re.compile(r"^[a-z_]{1,20}(:\d{1,2}){0,2}$")
+REPLY_SAVE_DELAY = 30  # seconds
 
 
 class QueryResult:
@@ -84,3 +89,50 @@ async def cached_query(
         inflight[name] = task
         task.add_done_callback(finished)
     return QueryResult(await asyncio.shield(task), cached=False, busy=False)
+
+
+class ReplyStore:
+    """The last finished reply of each slow view, so a view never opens empty.
+
+    The key names the view and its window, for example ``reliability:7:0`` or ``storms:1``. A reply
+    carries ``computed_at``; how old it may be before it counts as stale is up to the view.
+    """
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, REPLIES_STORAGE_KEY)
+        self.replies: dict[str, dict[str, Any]] = {}
+
+    async def async_load(self) -> None:
+        """Load the replies; anything that is not a reply of the known shape is dropped."""
+        data = await self._store.async_load()
+        if not isinstance(data, dict) or not isinstance(data.get("replies"), dict):
+            return
+        self.replies = {
+            key: reply
+            for key, reply in data["replies"].items()
+            if isinstance(key, str)
+            and REPLY_KEY.match(key)
+            and isinstance(reply, dict)
+            and isinstance(reply.get("computed_at"), int | float)
+            and not isinstance(reply.get("computed_at"), bool)
+        }
+
+    def keep(self, key: str, reply: dict[str, Any]) -> None:
+        self.replies[key] = reply
+        self._store.async_delay_save(lambda: {"replies": self.replies}, REPLY_SAVE_DELAY)
+
+
+def kept_reply(
+    store: ReplyStore | None, key: str, now: float, ttl: float, *, stale: bool | None = None
+) -> dict[str, Any] | None:
+    """The kept reply with its age; ``stale`` once it is older than ``ttl`` (or as forced)."""
+    kept = store.replies.get(key) if store is not None else None
+    if kept is None:
+        return None
+    age = max(0, round(now - kept["computed_at"]))
+    return {
+        **kept,
+        "cached": True,
+        "stale": age >= ttl if stale is None else stale,
+        "age_seconds": age,
+    }

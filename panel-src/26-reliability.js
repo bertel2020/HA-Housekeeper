@@ -1,12 +1,30 @@
 // ReliabilityMixin: the reliability view; mixed into the panel in 99-register.js.
 class ReliabilityMixin {
+  // Slow recorder views: an old reply is shown at once and renewed once; when another calculation holds the
+  // query lock, the panel asks again by itself a few times instead of asking the user to click.
+  followUp(name, view, result, reload, refresh) {
+    if (!result) return;
+    if (!refresh && result.stale) { reload(true); return; }
+    this._busyTries = this._busyTries || {};
+    if (!result.busy) { this._busyTries[name] = 0; return; }
+    this._busyTries[name] = (this._busyTries[name] || 0) + 1;
+    if (this._busyTries[name] <= BUSY_RETRIES) setTimeout(() => { if (this.view === view) reload(refresh); }, BUSY_WAIT_MS);
+  }
+
+  // " · calculated in 2.8 s", or the age of an old reply.
+  tookNote(r) {
+    if (!r || !r.available) return "";
+    if (r.computed_at && (r.stale || r.age_seconds >= 60)) return ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}`;
+    if (r.took_ms === null || r.took_ms === undefined) return "";
+    return ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}`;
+  }
+
   async loadReliability(refresh = false) {
     this.relLoading = true; this.relError = ""; this.render();
     try { this.reliability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, refresh, ...(this.relCompare ? { compare: true } : {}) }); }
     catch (err) { this.relError = err?.message || String(err); }
     this.relLoading = false; this.render();
-    // An old reply is shown at once; the new numbers follow in the background (once, so it cannot loop).
-    if (!refresh && this.reliability?.stale) this.loadReliability(true);
+    this.followUp("reliability", "reliability", this.reliability, r => this.loadReliability(r), refresh);
   }
 
   // The first visit and every change of the window load once; the backend keeps the result for a few minutes.
@@ -69,14 +87,12 @@ class ReliabilityMixin {
     this.ensureReliability();
     const r = this.reliability;
     const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
-    const old = r && r.available && r.computed_at && (r.stale || r.age_seconds >= 60);
-    const took = old ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}`
-      : r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const took = this.tookNote(r);
     const head = `<div class="panelhead"><div><h2>${this.t("relTitle")}</h2><p>${this.t("relHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-rel-refresh ${this.relLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.relError) return `<div class="panel">${head}<div class="error">${this.esc(this.relError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("relLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
-    if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
+    if (r.busy) return `<div class="panel">${head}${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
     const th = r.thresholds || {};

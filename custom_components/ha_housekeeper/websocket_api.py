@@ -603,7 +603,7 @@ async def websocket_reliability(
                 window_days=msg["window_days"],
                 refresh=msg["refresh"],
                 compare=msg["compare"],
-                store=scanner.reliability,
+                store=scanner.replies,
             )
     except Exception as err:
         connection.send_error(msg["id"], "reliability_failed", f"{type(err).__name__}: {err}")
@@ -632,7 +632,9 @@ async def websocket_db_health(
     try:
         snapshot = await scanner.async_get_snapshot()
         async with asyncio.timeout(RELIABILITY_TIMEOUT):
-            result = await db_health(hass, snapshot, scanner.events, refresh=msg["refresh"])
+            result = await db_health(
+                hass, snapshot, scanner.events, refresh=msg["refresh"], store=scanner.replies
+            )
     except Exception as err:
         connection.send_error(msg["id"], "db_health_failed", f"{type(err).__name__}: {err}")
         return
@@ -786,7 +788,11 @@ async def websocket_storms(
         snapshot = await scanner.async_get_snapshot()
         async with asyncio.timeout(RELIABILITY_TIMEOUT):
             result = await storms(
-                hass, snapshot, window_days=msg["window_days"], refresh=msg["refresh"]
+                hass,
+                snapshot,
+                window_days=msg["window_days"],
+                refresh=msg["refresh"],
+                store=scanner.replies,
             )
     except Exception as err:
         connection.send_error(msg["id"], "storms_failed", f"{type(err).__name__}: {err}")

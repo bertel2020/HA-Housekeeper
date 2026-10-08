@@ -14,8 +14,8 @@ from pytest_homeassistant_custom_component.components.recorder.common import (  
     async_wait_recording_done,
 )
 
+from custom_components.ha_housekeeper.queries import ReplyStore  # noqa: E402
 from custom_components.ha_housekeeper.reliability import (  # noqa: E402
-    ReliabilityStore,
     compute,
     reliability,
     shared_outages,
@@ -457,15 +457,15 @@ async def test_the_last_reply_is_kept_and_an_old_one_is_marked_stale(
     await async_wait_recording_done(hass)
     snapshot = snapshot_for("light.a", entry=entry.entry_id)
 
-    store = ReliabilityStore(hass)
+    store = ReplyStore(hass)
     fresh = await reliability(hass, snapshot, store=store)
-    assert fresh["stale"] is False and "7:0" in store.replies
+    assert fresh["stale"] is False and "reliability:7:0" in store.replies
     await store._store.async_save({"replies": store.replies})
     await hass.async_block_till_done()
 
-    again = ReliabilityStore(hass)
+    again = ReplyStore(hass)
     await again.async_load()
-    assert again.replies["7:0"]["entries"][0]["entry_id"] == entry.entry_id
+    assert again.replies["reliability:7:0"]["entries"][0]["entry_id"] == entry.entry_id
     quick = await reliability(hass, snapshot, store=again)
     assert quick["cached"] is True and quick["stale"] is False
 

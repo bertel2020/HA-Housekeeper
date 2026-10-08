@@ -119,6 +119,9 @@ class RunsResult(TypedDict, total=False):
 
 
 class StormsResult(Reply, total=False):
+    stale: bool
+    age_seconds: int
+    computed_at: float
     window_days: int
     total_rows: int
     per_day: int
@@ -132,6 +135,9 @@ class StormsResult(Reply, total=False):
 
 
 class DbHealthResult(Reply, total=False):
+    stale: bool
+    age_seconds: int
+    computed_at: float
     supported: bool
     dialect: str
     db_bytes: int | None

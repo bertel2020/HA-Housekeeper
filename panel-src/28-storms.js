@@ -5,6 +5,7 @@ class StormsMixin {
     try { this.storms = await this._hass.callWS({ type: "ha_housekeeper/storms", window_days: this.stormsWindow, refresh }); }
     catch (err) { this.stormsError = err?.message || String(err); }
     this.stormsLoading = false; this.render();
+    this.followUp("storms", "recorder", this.storms, r => this.loadStorms(r), refresh);
   }
 
   // The first visit and every change of the window load once; the backend keeps the result for ten minutes.
@@ -64,12 +65,12 @@ class StormsMixin {
     this.ensureStorms();
     const r = this.storms;
     const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.stormsWindow === days ? "active" : ""}" data-storm-window="${days}" aria-pressed="${this.stormsWindow === days}">${this.t(key)}</button>`).join("");
-    const took = r && r.available && r.took_ms !== null && r.took_ms !== undefined ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const took = this.tookNote(r);
     const head = `<div class="panelhead"><div><h2>${this.t("stormTitle")}</h2><p>${this.t("stormHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-storm-refresh ${this.stormsLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.stormsError) return `<div class="panel">${head}<div class="error">${this.esc(this.stormsError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("stormLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
-    if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
+    if (r.busy) return `<div class="panel">${head}${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div>`;
     const loading = this.stormsLoading ? `<p class="factnote">${this.t("stormLoading")}</p>` : "";
     const findingPage = this.paginate("stormfind", r.findings);
     const attention = r.findings.length ? findingPage.rows.map(f => this.stormFindingRow(f)).join("") + findingPage.footer : `<div class="emptymsg">${this.t("stormNone")}</div>`;

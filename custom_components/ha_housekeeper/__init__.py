@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -17,7 +18,9 @@ from homeassistant.helpers.event import async_call_later, async_track_time_inter
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
+from . import db_health as db_health_module
 from . import reliability as reliability_module
+from . import storms as storms_module
 from .const import (
     CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
@@ -47,6 +50,7 @@ _LOGGER = logging.getLogger(__name__)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 PLATFORMS = [Platform.SENSOR]
+REPLY_PAUSE = 20  # seconds between two prepared views
 
 
 async def _async_initial_scan(scanner: InventoryScanner) -> None:
@@ -160,31 +164,44 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(async_track_time_interval(hass, _collect_runs, timedelta(minutes=15)))
 
-    async def _prepare_reliability(_: Any) -> None:
-        # The view opens with the last numbers; this keeps them from getting old, but only for
-        # windows that were opened once. A busy recorder makes the run a no-op (the shared query
-        # lock), a failure only costs a log line.
-        if scanner.paused or not scanner.reliability.replies:
+    async def _prepare_replies(_: Any) -> None:
+        # The slow recorder views open with the last numbers; this keeps them from getting old, but
+        # only for views and windows that were opened once. One after the other with a pause, so
+        # the shared query lock is never held for long at a stretch. A busy recorder makes a run
+        # a no-op (the shared query lock), a failure only costs a log line.
+        if scanner.paused or not scanner.replies.replies:
             return
         try:
             snapshot = await scanner.async_get_snapshot()
-            for key in sorted(scanner.reliability.replies):
-                days, compare = key.split(":")
-                await reliability_module.reliability(
-                    hass,
-                    snapshot,
-                    window_days=int(days),
-                    refresh=True,
-                    compare=compare == "1",
-                    store=scanner.reliability,
-                )
+            for key in sorted(scanner.replies.replies):
+                kind, *rest = key.split(":")
+                if kind == "reliability":
+                    await reliability_module.reliability(
+                        hass,
+                        snapshot,
+                        window_days=int(rest[0]),
+                        refresh=True,
+                        compare=rest[1] == "1",
+                        store=scanner.replies,
+                    )
+                elif kind == "storms":
+                    await storms_module.storms(
+                        hass,
+                        snapshot,
+                        window_days=int(rest[0]),
+                        refresh=True,
+                        store=scanner.replies,
+                    )
+                elif kind == "db_health":
+                    await db_health_module.db_health(
+                        hass, snapshot, scanner.events, refresh=True, store=scanner.replies
+                    )
+                await asyncio.sleep(REPLY_PAUSE)
         except Exception:
-            _LOGGER.exception("Preparing the reliability numbers failed")
+            _LOGGER.exception("Preparing the recorder views failed")
 
-    entry.async_on_unload(
-        async_track_time_interval(hass, _prepare_reliability, timedelta(minutes=30))
-    )
-    entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 120, _prepare_reliability))
+    entry.async_on_unload(async_track_time_interval(hass, _prepare_replies, timedelta(minutes=30)))
+    entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 120, _prepare_replies))
 
     # Regular scans keep the comparison history, findings and hints current.
     interval_hours = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
