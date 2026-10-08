@@ -201,6 +201,15 @@ class DiagnosisMixin {
       const lastLine = item.has_statistics && last ? `<small>${this.t("statLastEntry")}: ${this.esc(this.formatDate(new Date(last * 1000).toISOString()))} · ${this.esc(this.relTime(new Date(last * 1000).toISOString()))}</small>` : "";
       facts.push([this.t("longTermStats"), `${this.t(item.has_statistics ? "yes" : "no")}${lastLine}`]);
     }
+    if (["automation", "script"].includes(item.object_type) && this.runs) {
+      const row = this.runsRow(item);
+      if (!row) facts.push([this.t("runsTab"), this.t("runsFactNone")]);
+      else {
+        facts.push([this.t("runsColRuns"), `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}<small>${this.t("runsColErrors")}: ${this.formatNumber(row.errors)} · ${this.t("runsColConditions")}: ${this.formatNumber(row.conditions)}</small>`]);
+        facts.push([this.t("runsColDuration"), `${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}`]);
+        facts.push([this.t("runsColTrend"), this.runsTrend(row)]);
+      }
+    }
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
   }

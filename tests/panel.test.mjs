@@ -2468,6 +2468,19 @@ test("an automation's detail page gets a Runs tab only when runs were counted fo
   assert.ok(shadow.innerHTML.includes('aria-selected="true"'), "falls back to an existing tab");
 });
 
+test("the key facts of an automation show its counted runs, or say that none were counted", () => {
+  const { el } = panel("en");
+  const mk = id => ({ object_type: "automation", object_id: id, name: id, status: "active", actions: [], triggers: [], conditions: [] });
+  const flur = mk("automation.flur"), other = mk("automation.other");
+  el.data = { ...DATA, objects: [...DATA.objects, flur, other] };
+  el.runs = RUNS;
+  const facts = el.factsCard(flur, "automation:automation.flur");
+  for (const text of ["Runs", "48", "Errors: 18", "Duration", "1.2 s / 2 min", "Runs per day, oldest first"]) assert.ok(facts.includes(text), text);
+  assert.ok(el.factsCard(other, "automation:automation.other").includes("No runs counted yet"));
+  el.runs = null;
+  assert.ok(!el.factsCard(flur, "automation:automation.flur").includes("Errors:"), "nothing while the runs are loading");
+});
+
 test("the runtime state shows its unit, but not for special states or entities without one", () => {
   const { el } = panel("en");
   const html = state => {
