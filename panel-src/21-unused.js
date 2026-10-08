@@ -54,7 +54,7 @@ class UnusedMixin {
   // When the statistic last received a value: read on the first visit of the list, never during a scan.
   async loadOrphanLast(refresh = false) {
     this.orphanLastLoading = true; this.render();
-    try { this.orphanLast = await this._hass.callWS({ type: "ha_housekeeper/orphan_last", refresh }); }
+    try { this.orphanLast = await this._hass.callWS({ type: "ha_housekeeper/statistics_last", refresh }); }
     catch (_) { this.orphanLast = null; }
     this.orphanLastLoading = false; this.render();
   }

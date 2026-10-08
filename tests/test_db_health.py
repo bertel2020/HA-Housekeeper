@@ -296,3 +296,32 @@ def test_the_event_log_keeps_daily_sizes_bounded_and_clean() -> None:
     assert (
         len(log.sizes) == SIZE_DAYS and day(0) in log.sizes and day(SIZE_DAYS + 9) not in log.sizes
     )
+
+
+async def test_the_overview_summary_needs_no_table_query(hass: HomeAssistant) -> None:
+    from custom_components.ha_housekeeper.db_health import database_summary
+
+    class Events:
+        sizes: dict = {}
+
+    assert await database_summary(hass, Events()) is None  # no recorder, no summary
+
+
+async def test_the_overview_summary_names_size_and_growth(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.ha_housekeeper.db_health import database_summary
+
+    today = datetime.now(UTC).date()
+
+    class Events:
+        sizes = {
+            today.isoformat(): 1700,
+            (today - timedelta(days=7)).isoformat(): 1000,
+        }
+
+    summary = await database_summary(hass, Events())
+    assert summary is not None and summary["per_day"] == 100 and summary["samples"] == 2
+    assert set(summary) == {"dialect", "db_bytes", "wal_bytes", "per_day", "samples"}

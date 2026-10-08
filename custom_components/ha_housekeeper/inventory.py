@@ -44,6 +44,7 @@ from .dashboard_analysis import (
     extract_entity_references,
     extract_helper_references,
 )
+from .db_health import database_summary
 from .events import EventLog
 from .history import ScanHistory
 from .hygiene import (
@@ -180,6 +181,7 @@ def _entity_item(
         "attributes": dict(state.attributes) if state else {},
         "last_changed": _iso(state.last_changed) if state else None,
         "last_updated": _iso(state.last_updated) if state else None,
+        "last_reported": _iso(getattr(state, "last_reported", None)) if state else None,
         "created_at": _iso(getattr(entry, "created_at", None)),
         "modified_at": _iso(getattr(entry, "modified_at", None)),
     }
@@ -741,10 +743,15 @@ class InventoryScanner:
         self.status.update(phase="finalizing", progress=90)
 
         storage = await self.hass.async_add_executor_job(storage_sizes, self.hass)
+        try:
+            database = await database_summary(self.hass, self.events)
+        except Exception:  # noqa: BLE001 - the overview works without the size of the database
+            database = None
 
         return {
             "meta": {
                 "storage": storage,
+                "database": database,
                 "scanned_at": observed_at.isoformat(),
                 "read_only": True,
                 "preliminary": preliminary,

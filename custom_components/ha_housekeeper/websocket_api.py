@@ -33,17 +33,18 @@ from .exposure import exposure
 from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
-from .orphan_stats import orphan_last
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
 from .run_health import report as runs_report
+from .statistics_last import statistics_last
 from .storms import WINDOWS as STORMS_WINDOWS
 from .storms import storms
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
 RUNS_TIMEOUT = 20
 EXPOSURE_TIMEOUT = 20  # seconds
+STATISTICS_LAST_IDS = 50
 RELIABILITY_TIMEOUT = 120  # seconds; the recorder query is slow on a large database
 
 
@@ -637,15 +638,19 @@ async def websocket_db_health(
 
 @websocket_api.require_admin
 @websocket_api.websocket_command(
-    {vol.Required("type"): f"{DOMAIN}/orphan_last", vol.Optional("refresh", default=False): bool}
+    {
+        vol.Required("type"): f"{DOMAIN}/statistics_last",
+        vol.Optional("ids"): vol.All([str], vol.Length(max=STATISTICS_LAST_IDS)),
+        vol.Optional("refresh", default=False): bool,
+    }
 )
 @websocket_api.async_response
-async def websocket_orphan_last(
+async def websocket_statistics_last(
     hass: HomeAssistant,
     connection: websocket_api.ActiveConnection,
     msg: dict[str, Any],
 ) -> None:
-    """When each orphaned statistic last received a value. Read-only; kept for ten minutes."""
+    """When statistics last received a value (the orphaned ones by default). Read-only; kept for ten minutes."""
     scanner = _scanner(hass)
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
@@ -653,9 +658,9 @@ async def websocket_orphan_last(
     try:
         snapshot = await scanner.async_get_snapshot()
         async with asyncio.timeout(RELIABILITY_TIMEOUT):
-            result = await orphan_last(hass, snapshot, refresh=msg["refresh"])
+            result = await statistics_last(hass, snapshot, msg.get("ids"), refresh=msg["refresh"])
     except Exception as err:
-        connection.send_error(msg["id"], "orphan_last_failed", f"{type(err).__name__}: {err}")
+        connection.send_error(msg["id"], "statistics_last_failed", f"{type(err).__name__}: {err}")
         return
     connection.send_result(msg["id"], _versioned(result))
 
@@ -845,7 +850,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_reliability)
     websocket_api.async_register_command(hass, websocket_storms)
     websocket_api.async_register_command(hass, websocket_db_health)
-    websocket_api.async_register_command(hass, websocket_orphan_last)
+    websocket_api.async_register_command(hass, websocket_statistics_last)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)

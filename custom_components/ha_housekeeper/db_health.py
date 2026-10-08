@@ -334,6 +334,26 @@ async def sample_size(hass: HomeAssistant, events: Any) -> None:
         )
 
 
+async def database_summary(hass: HomeAssistant, events: Any) -> dict[str, Any] | None:
+    """Size, WAL and growth per day for the overview: two file stats and the stored daily sizes.
+
+    Never touches the recorder tables, so a scan can ask for it. ``None`` without a recorder.
+    """
+    if not recorder_ready(hass):
+        return None
+    from homeassistant.components.recorder import get_instance
+
+    files = await get_instance(hass).async_add_executor_job(database_files, hass)
+    grown = growth(events.sizes, datetime.now(UTC).date())
+    return {
+        "dialect": files.get("dialect") or None,
+        "db_bytes": files.get("db_bytes"),
+        "wal_bytes": files.get("wal_bytes"),
+        "per_day": grown.get("per_day") if grown.get("known") else None,
+        "samples": grown.get("samples", 0),
+    }
+
+
 async def db_health(
     hass: HomeAssistant,
     snapshot: dict[str, Any],

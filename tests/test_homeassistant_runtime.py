@@ -836,7 +836,7 @@ async def test_replies_carry_the_api_schema_version(hass: HomeAssistant, hass_ws
         "storms": await reply({"type": "ha_housekeeper/storms"}),
         "db_health": await reply({"type": "ha_housekeeper/db_health"}),
         "exposure": await reply({"type": "ha_housekeeper/exposure"}),
-        "orphan_last": await reply({"type": "ha_housekeeper/orphan_last"}),
+        "statistics_last": await reply({"type": "ha_housekeeper/statistics_last"}),
     }
     for name, result in results.items():
         assert result["schema"] == API_SCHEMA, name
@@ -945,7 +945,7 @@ async def test_the_scan_reports_the_size_of_housekeepers_own_files(
 
 # What the panel reads from each reply: renaming or removing one of these fields needs a new API schema.
 CONTRACT = {
-    "ha_housekeeper/orphan_last": {"available": bool, "busy": bool, "last": dict},
+    "ha_housekeeper/statistics_last": {"available": bool, "busy": bool, "last": dict},
     "ha_housekeeper/exposure": {
         "available": bool,
         "assistants": list,

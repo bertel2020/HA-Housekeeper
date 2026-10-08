@@ -19,7 +19,7 @@ from pytest_homeassistant_custom_component.components.recorder.common import (  
     async_wait_recording_done,
 )
 
-from custom_components.ha_housekeeper.orphan_stats import orphan_last  # noqa: E402
+from custom_components.ha_housekeeper.statistics_last import statistics_last  # noqa: E402
 
 
 def seed(hass: HomeAssistant, statistic_id: str, hours: list[datetime], source: str = "recorder"):
@@ -44,7 +44,7 @@ def snapshot(*ids: str) -> dict:
 
 
 async def test_without_a_recorder_nothing_is_available(hass: HomeAssistant) -> None:
-    result = await orphan_last(hass, snapshot("sensor.a"))
+    result = await statistics_last(hass, snapshot("sensor.a"))
     assert result == {"available": False, "busy": False, "last": {}}
 
 
@@ -57,7 +57,7 @@ async def test_the_newest_hourly_row_per_orphan(recorder_mock, hass: HomeAssista
     seed(hass, "hue:external", [top], source="hue")  # external statistics are ignored
     await async_wait_recording_done(hass)
 
-    result = await orphan_last(
+    result = await statistics_last(
         hass, snapshot("sensor.gone", "sensor.renamed", "sensor.empty"), refresh=True
     )
     assert result["available"] is True and result["busy"] is False
@@ -76,7 +76,19 @@ async def test_a_busy_recorder_reports_busy(recorder_mock, hass: HomeAssistant) 
     lock = hass.data.setdefault(DOMAIN, {}).setdefault("reliability_lock", asyncio.Lock())
     await lock.acquire()
     try:
-        result = await orphan_last(hass, snapshot("sensor.a"), refresh=True)
+        result = await statistics_last(hass, snapshot("sensor.a"), refresh=True)
     finally:
         lock.release()
     assert result["busy"] is True and result["last"] == {}
+
+
+async def test_given_ids_are_answered_instead_of_the_orphans(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    top = datetime.now(UTC).replace(minute=0, second=0, microsecond=0)
+    seed(hass, "sensor.live", [top - timedelta(hours=1), top])
+    await async_wait_recording_done(hass)
+    result = await statistics_last(
+        hass, snapshot("sensor.gone"), ["sensor.live", "sensor.none"], refresh=True
+    )
+    assert result["last"] == {"sensor.live": top.timestamp(), "sensor.none": None}

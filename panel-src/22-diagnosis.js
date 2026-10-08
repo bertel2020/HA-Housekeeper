@@ -161,19 +161,46 @@ class DiagnosisMixin {
       <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
   }
 
+  // The newest long-term row of an entity, asked once per entity when its details open.
+  ensureStatLast(id) {
+    const asked = (this._statLastAsked ||= new Set());
+    if (asked.has(id)) return;
+    asked.add(id);
+    setTimeout(async () => {
+      try {
+        const r = await this._hass.callWS({ type: "ha_housekeeper/statistics_last", ids: [id] });
+        if (r?.busy) { asked.delete(id); return; }
+        (this.statLast ||= {})[id] = r?.last?.[id] ?? 0;
+      } catch (_) { return; }
+      if (this.selected?.object_id === id) this.render();
+    }, 0);
+  }
+
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
     const usage = this.edgesTo(key).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
     const min = this.data.meta.min_unavailable_days || 0;
     const facts = [];
     if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
+    if (item.object_type === "entity") {
+      const when = value => `${this.esc(this.formatDate(value))}<small>${this.esc(this.relTime(value))}</small>`;
+      if (item.last_changed) {
+        facts.push([this.t("propLastChanged"), when(item.last_changed)]);
+        facts.push([this.t("propLastReported"), when(item.last_reported || item.last_updated)]);
+      } else facts.push([this.t("propLastChanged"), this.t("noState")]);
+    }
     if (["entity", "automation", "script", "scene", "dashboard"].includes(item.object_type)) {
       facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
     }
     if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
     const quarantined = ["entity", "device"].includes(item.object_type) ? this.quarantineOf(item.object_id) : null;
     if (quarantined) facts.push([this.t("quarantine"), `${this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })}<span class="factaction">${this.releaseControl(quarantined)}</span>`]);
-    if (item.object_type === "entity" && this.data.meta.recorder_available) facts.push([this.t("longTermStats"), this.t(item.has_statistics ? "yes" : "no")]);
+    if (item.object_type === "entity" && this.data.meta.recorder_available) {
+      if (item.has_statistics) this.ensureStatLast(item.object_id);
+      const last = this.statLast?.[item.object_id];
+      const lastLine = item.has_statistics && last ? `<small>${this.t("statLastEntry")}: ${this.esc(this.formatDate(new Date(last * 1000).toISOString()))} · ${this.esc(this.relTime(new Date(last * 1000).toISOString()))}</small>` : "";
+      facts.push([this.t("longTermStats"), `${this.t(item.has_statistics ? "yes" : "no")}${lastLine}`]);
+    }
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
   }

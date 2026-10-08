@@ -135,7 +135,7 @@ class DbHealthResult(Reply, total=False):
     restart_gaps: int
 
 
-class OrphanLastResult(TypedDict):
+class StatisticsLastResult(TypedDict):
     available: bool
     busy: bool
     last: dict[str, float | None]  # statistic_id -> start of the newest hourly row (epoch seconds)

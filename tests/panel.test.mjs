@@ -793,7 +793,7 @@ test("orphaned statistics show their last entry and sort by it, oldest or newest
   const loading = el.loadOrphanLast();
   assert.ok(shadow.innerHTML.includes("Reading the last entry"));
   await loading;
-  assert.deepEqual(calls, ["ha_housekeeper/orphan_last"]);
+  assert.deepEqual(calls, ["ha_housekeeper/statistics_last"]);
   const order = () => [...shadow.innerHTML.matchAll(/<strong>(sensor\.[abc])<\/strong>/g)].map(m => m[1]);
   el.lv.orphanstats.sort = "last"; el.lv.orphanstats.dir = "desc";
   el.render();
@@ -842,6 +842,46 @@ test("many integration problems get a search; few do not", () => {
   el.lv.integrations.q = "integration 7";
   const html = el.integrationProblems();
   assert.ok(html.includes("Integration 7") && !html.includes("Integration 2"));
+});
+
+test("the overview groups the inventory status in three lines with shares and shows the database", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, object_count: 1000, status_counts: { active: 900, unknown: 20, disabled: 30, unavailable: 40, orphaned: 10 },
+    database: { dialect: "sqlite", db_bytes: 3 * 1024 ** 3, wal_bytes: 5 * 1024 ** 2, per_day: 20 * 1024 ** 2, samples: 20 } } };
+  el.view = "overview";
+  el.render();
+  const html = shadow.innerHTML;
+  const card = html.slice(html.indexOf("Unremarkable") - 200, html.indexOf("Unremarkable") + 1200);
+  assert.ok(card.includes("900") && card.includes("90.0 %") && card.includes("5.0 %") && card.includes("Check") && card.includes("Problematic"));
+  assert.ok(html.indexOf("Inventory status") < html.indexOf("Needs attention") || html.indexOf("Unremarkable") < html.indexOf("data-finding"), "status before the findings");
+  assert.ok(html.includes("Database") && html.includes("3 GB") || html.includes("3.0 GB") || html.includes("GB"), "size shown");
+  assert.ok(html.includes("data-jump=\"recorder\""));
+  el.data = { ...el.data, meta: { ...el.data.meta, database: { dialect: "postgresql", db_bytes: null, wal_bytes: null, per_day: null } } };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("not measurable (postgresql)"));
+  el.data = { ...el.data, meta: { ...el.data.meta, database: null } };
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("Size of the recorder"));
+});
+
+test("entity key facts show the last change and report, and the last statistics entry", async () => {
+  const { el, shadow } = panel("en", { setTimeout: fn => { fn(); return 0; } });
+  const now = Date.now(), iso = ms => new Date(now - ms).toISOString();
+  const asked = [];
+  el._hass = { language: "en", callWS: async msg => { asked.push(msg); return { available: true, busy: false, last: { "sensor.t": (now - 5 * 86400000) / 1000 } }; } };
+  const entity = { object_type: "entity", object_id: "sensor.t", name: "T", status: "active", has_statistics: true, state: "1", last_changed: iso(3600000), last_updated: iso(1800000), last_reported: iso(60000) };
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [entity], findings: [] };
+  const html = () => el.factsCard(entity, "entity:sensor.t");
+  let facts = html();
+  assert.ok(facts.includes("Last state change") && facts.includes("Last report") && facts.includes("hour ago") && facts.includes("minute"));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(JSON.stringify(asked.map(m => [m.type, m.ids])), JSON.stringify([["ha_housekeeper/statistics_last", ["sensor.t"]]]));
+  facts = html();
+  assert.ok(facts.includes("Last statistics entry") && facts.includes("days ago"));
+  html(); // asking happens once per entity
+  assert.equal(asked.length, 1);
+  const stateless = { ...entity, object_id: "sensor.u", state: null, last_changed: null, has_statistics: false };
+  assert.ok(el.factsCard(stateless, "entity:sensor.u").includes("No state available"));
 });
 
 test("an overdue scan is an item in the to-do list of the overview", () => {
