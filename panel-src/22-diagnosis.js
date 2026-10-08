@@ -251,7 +251,12 @@ class DiagnosisMixin {
       const text = `${this.tile(obj?.object_type || type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "red")}<span class="row-text"><strong>${this.esc(obj?.name || rest.join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}`;
       return obj ? `<button class="row rel" data-object="${this.esc(other)}">${text}</button>` : `<div class="row rel">${text}</div>`;
     };
-    const body = groups.map(([title, list]) => `<div class="sectionlabel">${title} (${list.length})</div>${list.slice(0, LIMIT).map(row).join("")}${list.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: list.length - LIMIT })}</p>` : ""}`).join("");
+    // From 26 entries on a group gets a search box; a search lists up to 100 hits instead of the first 25.
+    const body = groups.map(([title, list], i) => {
+      const found = this.searchList(`rel-${i}`, list, x => `${this.findObject(x.other)?.name || ""} ${x.other} ${x.label}`, LIMIT + 1);
+      const cap = found.rows.length !== list.length ? 100 : LIMIT;
+      return `<div class="sectionlabel">${title} (${list.length})</div>${found.bar}${found.none}${found.rows.slice(0, cap).map(row).join("")}${found.rows.length > cap ? `<p class="factnote">${this.t("moreItems", { count: found.rows.length - cap })}</p>` : ""}`;
+    }).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${body || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
   }
 

@@ -92,13 +92,29 @@ class GraphMixin {
 
   graphSvg(model, item, hitKeys) {
     const layout = this.graphLayout(model), { W, H, at } = layout;
-    const edgeSvg = model.edges.map(({ from, to, edge, cycle }) => {
+    // Every edge ends at a port on a node's right or left side. Several edges on one side get their own height
+    // (ordered by where the other end stands), so they leave the node side by side instead of on top of each other.
+    const geo = model.edges.map(({ from, to, edge, cycle }) => {
       const a = at.get(from), b = at.get(to);
-      if (!a || !b) return "";
+      if (!a || !b) return null;
       const sameColumn = a.x === b.x;
-      // Two nodes of one column are joined by an arc on their right side.
       const [l, r] = sameColumn ? (a.y < b.y ? [a, b] : [b, a]) : a.x < b.x ? [a, b] : [b, a];
-      const x1 = l.x + W, y1 = l.y + H / 2, x2 = sameColumn ? r.x + W : r.x, y2 = r.y + H / 2, dx = sameColumn ? 44 : (x2 - x1) / 2;
+      return { from, to, edge, cycle, a, l, r, sameColumn, lp: `${l === a ? from : to}|R`, rp: `${r === a ? from : to}|${sameColumn ? "R" : "L"}` };
+    }).filter(Boolean);
+    const ports = new Map();
+    for (const g of geo) {
+      ports.set(g.lp, [...(ports.get(g.lp) || []), { g, end: "l", other: g.r.y }]);
+      ports.set(g.rp, [...(ports.get(g.rp) || []), { g, end: "r", other: g.l.y }]);
+    }
+    for (const list of ports.values()) {
+      list.sort((p, q) => p.other - q.other);
+      list.forEach((entry, i) => { entry.g[`${entry.end}y`] = (list.length === 1 ? 0.5 : i / (list.length - 1)) * (H - 16) + 8; });
+    }
+    const edgeSvg = geo.map(({ edge, cycle, a, from, to, l, r, sameColumn, ly, ry }) => {
+      const x1 = l.x + W, y1 = l.y + ly, x2 = sameColumn ? r.x + W : r.x, y2 = r.y + ry;
+      // Arcs between nodes of one column bulge out further the more rows they span, so nested arcs do not coincide.
+      const rows = Math.round(Math.abs(y2 - y1) / (H + 14));
+      const dx = sameColumn ? Math.min(14 + 10 * rows, 44) : (x2 - x1) / 2;
       const forward = edge.source === (l === a ? from : to); // the data direction runs from the first to the second end
       const hit = hitKeys && (hitKeys.has(edge.source) && (hitKeys.has(edge.target) || edge.target === model.key));
       const cls = ["gedge", edge.confidence === "certain" ? "" : "prob", cycle ? "cycle" : "", hit ? "hit" : "", hitKeys && !hit ? "gdim" : ""].filter(Boolean).join(" ");

@@ -2358,11 +2358,12 @@ class CleanupMixin {
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
     const assistant = this.cleanupKind === "replace_references" ? this.replaceCard() : this.cleanupKind === "migrate_meter" ? this.meterCard() : candidates;
-    const journalPage = this.paginate("journal", this.journal || []);
+    const journalFound = this.searchList("journal", this.journal || [], plan => `${this.formatDate(plan.created_at)} ${this.t(`plan_status_${plan.status || "dry_run"}`)}`);
+    const journalPage = this.paginate("journal", journalFound.rows);
     const journal = journalPage.rows.map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
     const tiles = this.sumTiles([
       { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
       removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
@@ -2556,13 +2557,29 @@ class GraphMixin {
 
   graphSvg(model, item, hitKeys) {
     const layout = this.graphLayout(model), { W, H, at } = layout;
-    const edgeSvg = model.edges.map(({ from, to, edge, cycle }) => {
+    // Every edge ends at a port on a node's right or left side. Several edges on one side get their own height
+    // (ordered by where the other end stands), so they leave the node side by side instead of on top of each other.
+    const geo = model.edges.map(({ from, to, edge, cycle }) => {
       const a = at.get(from), b = at.get(to);
-      if (!a || !b) return "";
+      if (!a || !b) return null;
       const sameColumn = a.x === b.x;
-      // Two nodes of one column are joined by an arc on their right side.
       const [l, r] = sameColumn ? (a.y < b.y ? [a, b] : [b, a]) : a.x < b.x ? [a, b] : [b, a];
-      const x1 = l.x + W, y1 = l.y + H / 2, x2 = sameColumn ? r.x + W : r.x, y2 = r.y + H / 2, dx = sameColumn ? 44 : (x2 - x1) / 2;
+      return { from, to, edge, cycle, a, l, r, sameColumn, lp: `${l === a ? from : to}|R`, rp: `${r === a ? from : to}|${sameColumn ? "R" : "L"}` };
+    }).filter(Boolean);
+    const ports = new Map();
+    for (const g of geo) {
+      ports.set(g.lp, [...(ports.get(g.lp) || []), { g, end: "l", other: g.r.y }]);
+      ports.set(g.rp, [...(ports.get(g.rp) || []), { g, end: "r", other: g.l.y }]);
+    }
+    for (const list of ports.values()) {
+      list.sort((p, q) => p.other - q.other);
+      list.forEach((entry, i) => { entry.g[`${entry.end}y`] = (list.length === 1 ? 0.5 : i / (list.length - 1)) * (H - 16) + 8; });
+    }
+    const edgeSvg = geo.map(({ edge, cycle, a, from, to, l, r, sameColumn, ly, ry }) => {
+      const x1 = l.x + W, y1 = l.y + ly, x2 = sameColumn ? r.x + W : r.x, y2 = r.y + ry;
+      // Arcs between nodes of one column bulge out further the more rows they span, so nested arcs do not coincide.
+      const rows = Math.round(Math.abs(y2 - y1) / (H + 14));
+      const dx = sameColumn ? Math.min(14 + 10 * rows, 44) : (x2 - x1) / 2;
       const forward = edge.source === (l === a ? from : to); // the data direction runs from the first to the second end
       const hit = hitKeys && (hitKeys.has(edge.source) && (hitKeys.has(edge.target) || edge.target === model.key));
       const cls = ["gedge", edge.confidence === "certain" ? "" : "prob", cycle ? "cycle" : "", hit ? "hit" : "", hitKeys && !hit ? "gdim" : ""].filter(Boolean).join(" ");
@@ -3091,7 +3108,12 @@ class DiagnosisMixin {
       const text = `${this.tile(obj?.object_type || type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "red")}<span class="row-text"><strong>${this.esc(obj?.name || rest.join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}`;
       return obj ? `<button class="row rel" data-object="${this.esc(other)}">${text}</button>` : `<div class="row rel">${text}</div>`;
     };
-    const body = groups.map(([title, list]) => `<div class="sectionlabel">${title} (${list.length})</div>${list.slice(0, LIMIT).map(row).join("")}${list.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: list.length - LIMIT })}</p>` : ""}`).join("");
+    // From 26 entries on a group gets a search box; a search lists up to 100 hits instead of the first 25.
+    const body = groups.map(([title, list], i) => {
+      const found = this.searchList(`rel-${i}`, list, x => `${this.findObject(x.other)?.name || ""} ${x.other} ${x.label}`, LIMIT + 1);
+      const cap = found.rows.length !== list.length ? 100 : LIMIT;
+      return `<div class="sectionlabel">${title} (${list.length})</div>${found.bar}${found.none}${found.rows.slice(0, cap).map(row).join("")}${found.rows.length > cap ? `<p class="factnote">${this.t("moreItems", { count: found.rows.length - cap })}</p>` : ""}`;
+    }).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${body || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
   }
 

@@ -2111,6 +2111,29 @@ test("the layout puts levels in columns without overlapping nodes", () => {
   assert.ok(boxes.every(b => b.y >= 0 && b.y + layout.H <= layout.height + 0.001));
 });
 
+test("edges that share a side of a node leave it at different heights", () => {
+  const { el, shadow } = graphPanel();
+  el.graphDepth = 3;
+  el.render();
+  const starts = [...shadow.innerHTML.matchAll(/<path class="gedge[^"]*" d="M([\d.]+),([\d.]+) /g)].map(m => `${m[1]},${m[2]}`);
+  assert.ok(starts.length > 1);
+  const ends = [...shadow.innerHTML.matchAll(/ ([\d.]+),([\d.]+)" (?:marker-end|marker-start)/g)].map(m => `${m[1]},${m[2]}`);
+  const both = [...starts, ...ends], rep = both.filter((x, i) => both.indexOf(x) !== i);
+  assert.equal(rep.length, 0, "no two edge ends coincide");
+});
+
+test("a long journal and long relation groups get a search box", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  el.view = "cleanup";
+  el.journal = Array.from({ length: 8 }, (_, i) => ({ plan_id: `p${i}`, created_at: `2026-10-0${i + 1}T10:00:00+00:00`, status: "verified", summary: { total: 1, ok: 1, review: 0, blocked: 0 } }));
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-lq="journal"'));
+  el.lv.journal.q = "zzz";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("data-plan-open="));
+});
+
 test("the graph is an SVG with focusable nodes, edge directions and text for what colour shows", () => {
   const { el, shadow } = graphPanel();
   el.graphDepth = 3;
