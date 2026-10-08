@@ -61,6 +61,7 @@ from .maintenance import PreflightStore
 from .observations import ObservationStore
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
 from .policies import PolicyStore
+from .reliability import ReliabilityStore
 from .runs import RunStore
 
 # Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
@@ -454,7 +455,7 @@ def _split_details(objects: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     return details
 
 
-STORED = ("observations", "history", "journal", "events", "runs")
+STORED = ("observations", "history", "journal", "events", "runs", "reliability")
 
 
 def storage_sizes(hass: HomeAssistant) -> dict[str, int]:
@@ -478,6 +479,7 @@ class InventoryScanner:
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
         self.policies = PolicyStore(hass)
+        self.reliability = ReliabilityStore(hass)
         self.journal = JournalStore(hass)
         self.preflight = PreflightStore(hass)
         self.attest = AttestStore(hass)
@@ -513,6 +515,7 @@ class InventoryScanner:
         await self.history.async_load()
         await self.ignored.async_load()
         await self.policies.async_load()
+        await self.reliability.async_load()
         await self.journal.async_load()
         await self.preflight.async_load()
         await self.attest.async_load()

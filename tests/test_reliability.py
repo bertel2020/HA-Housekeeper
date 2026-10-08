@@ -15,6 +15,7 @@ from pytest_homeassistant_custom_component.components.recorder.common import (  
 )
 
 from custom_components.ha_housekeeper.reliability import (  # noqa: E402
+    ReliabilityStore,
     compute,
     reliability,
     shared_outages,
@@ -414,3 +415,62 @@ def test_the_unstable_list_counts_what_it_left_out_and_why() -> None:
     result = flapping(runs_data, items, {}, {}, {"ign"})
     assert [i["entity_id"] for i in result["items"]] == ["ok"]
     assert result["excluded"] == {"ignored": 1, "disabled": 1, "permanent": 1}
+
+
+def test_each_entry_lists_its_entities_with_downtime_worst_first() -> None:
+    result = compute(
+        runs(
+            {"a": START, "b": START, "c": START},
+            {"a": [(10 * HOUR, 20 * HOUR)], "b": [(10 * HOUR, 11 * HOUR)]},
+        ),
+        entities("a", "b", "c"),
+        ENTRIES,
+    )
+    row = result["entries"][0]
+    assert row["affected_total"] == 2
+    assert [m["entity_id"] for m in row["affected"]] == ["a", "b"]
+    assert row["affected"][0]["availability"] == 90.0
+
+
+def test_the_list_of_affected_entities_is_capped() -> None:
+    names = [f"e{n:02d}" for n in range(40)]
+    seen = {n: START for n in names}
+    down = {n: [(10 * HOUR, 11 * HOUR)] for n in names}
+    row = compute(runs(seen, down), entities(*names), ENTRIES)["entries"][0]
+    assert row["affected_total"] == 40 and len(row["affected"]) == 15
+
+
+async def test_the_last_reply_is_kept_and_an_old_one_is_marked_stale(
+    recorder_mock, hass: HomeAssistant, hass_storage, freezer
+) -> None:
+    from datetime import UTC, datetime
+
+    from homeassistant.util import dt as dt_util
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="hue", title="Hue")
+    entry.add_to_hass(hass)
+    now = dt_util.utcnow()
+    freezer.move_to(now - timedelta(days=1))
+    hass.states.async_set("light.a", "1")
+    freezer.move_to(now)
+    await async_wait_recording_done(hass)
+    snapshot = snapshot_for("light.a", entry=entry.entry_id)
+
+    store = ReliabilityStore(hass)
+    fresh = await reliability(hass, snapshot, store=store)
+    assert fresh["stale"] is False and "7:0" in store.replies
+    await store._store.async_save({"replies": store.replies})
+    await hass.async_block_till_done()
+
+    again = ReliabilityStore(hass)
+    await again.async_load()
+    assert again.replies["7:0"]["entries"][0]["entry_id"] == entry.entry_id
+    quick = await reliability(hass, snapshot, store=again)
+    assert quick["cached"] is True and quick["stale"] is False
+
+    freezer.move_to(datetime.fromtimestamp(now.timestamp() + 3600, UTC))
+    old = await reliability(hass, snapshot, store=again)
+    assert old["stale"] is True and old["age_seconds"] >= 3600
+    renewed = await reliability(hass, snapshot, store=again, refresh=True)
+    assert renewed["stale"] is False and renewed["cached"] is False

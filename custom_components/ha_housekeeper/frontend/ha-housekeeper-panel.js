@@ -707,6 +707,7 @@ Object.assign(TEXT.de, {
   reliability: "Zuverlässigkeit", reliabilitySubtitle: "Wie verfügbar die Entities jeder Integration waren und wann sie gemeinsam ausfielen. Liest nur den Recorder.",
   relTitle: "Integrationen nach Verfügbarkeit", relHint: "Schlechteste zuerst. Gerechnet aus den Zuständen im Recorder",
   relWindow1: "24 Stunden", relWindow7: "7 Tage", relRefresh: "Neu berechnen", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
+  relTab: "Zuverlässigkeit", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entities mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entity dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
   relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
   relBusy: "Eine andere Berechnung läuft noch. Bitte gleich mit „Neu berechnen“ erneut abrufen.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
   relEntities: "{n} Entities", relPermanent: "{n} dauerhaft ausgefallen, nicht eingerechnet",
@@ -725,6 +726,7 @@ Object.assign(TEXT.en, {
   reliability: "Reliability", reliabilitySubtitle: "How available each integration's entities were and when they failed together. Only reads the recorder.",
   relTitle: "Integrations by availability", relHint: "Worst first. Calculated from the states in the recorder",
   relWindow1: "24 hours", relWindow7: "7 days", relRefresh: "Recalculate", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
+  relTab: "Reliability", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
   relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
   relBusy: "Another calculation is still running. Fetch it again in a moment with “Recalculate”.", relEmpty: "There are no integration states in this period.",
   relEntities: "{n} entities", relPermanent: "{n} down all the time, not counted",
@@ -2815,6 +2817,10 @@ class DiagnosisMixin {
         facts.push([this.t("runsColTrend"), this.runsTrend(row)]);
       }
     }
+    if (item.object_type === "config_entry" && this.reliability?.available) {
+      const row = this.reliabilityRow(item);
+      if (row && row.availability !== null && row.availability !== undefined) facts.push([this.t("relFactAvail", { days: this.reliability.window_days }), `${this.formatNumber(row.availability)} %<small>${this.t("relEntities", { n: row.entities })}${row.shared_outages ? ` · ${this.t(row.shared_outages === 1 ? "relSharedOne" : "relShared", { n: row.shared_outages, longest: this.relDuration(row.longest_outage) })}` : ""}</small>`]);
+    }
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
   }
@@ -2892,6 +2898,7 @@ class DiagnosisMixin {
     const tabs = [["overview", "tabOverview"], ["relations", "tabRelations", this.edgesTo(key).length + this.edgesFrom(key).length], ["technical", "tabTechnical"]];
     if (item.attributes && Object.keys(item.attributes).length) tabs.push(["attributes", "tabAttributes"]);
     if (this.runsRow(item)) tabs.push(["runs", "runsTab"]);
+    if (this.reliabilityRow(item)) tabs.push(["reliability", "relTab"]);
     return tabs;
   }
 
@@ -2900,6 +2907,7 @@ class DiagnosisMixin {
     const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
     const key = this.objectKey(item);
     if (["automation", "script"].includes(item.object_type)) this.ensureRuns();
+    if (item.object_type === "config_entry") this.ensureReliability();
     const tabs = this.detailTabs(item, key);
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
@@ -2918,6 +2926,7 @@ class DiagnosisMixin {
   detailPanel(tab, item, key) {
     if (tab === "relations") return `<div class="stack">${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
     if (tab === "runs") return this.runsDetailCard(this.runsRow(item));
+    if (tab === "reliability") return this.reliabilityDetailCard(this.reliabilityRow(item));
     if (tab === "attributes") {
       return `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>`;
     }
@@ -3272,6 +3281,8 @@ class ReliabilityMixin {
     try { this.reliability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, refresh, ...(this.relCompare ? { compare: true } : {}) }); }
     catch (err) { this.relError = err?.message || String(err); }
     this.relLoading = false; this.render();
+    // An old reply is shown at once; the new numbers follow in the background (once, so it cannot loop).
+    if (!refresh && this.reliability?.stale) this.loadReliability(true);
   }
 
   // The first visit and every change of the window load once; the backend keeps the result for a few minutes.
@@ -3287,7 +3298,7 @@ class ReliabilityMixin {
     return this.t("relMinutes", { n: Math.max(1, Math.round(seconds / 60)) });
   }
 
-  relRow(item) {
+  relRowBody(item) {
     const percent = item.availability;
     const tone = percent === null ? "mute" : percent >= 99.5 ? "ok" : percent >= 95 ? "warn" : "red";
     const lines = [`${this.esc(item.domain || "")} · ${this.t("relEntities", { n: item.entities })}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
@@ -3303,14 +3314,40 @@ class ReliabilityMixin {
       : this.t("relNoDisruption"));
     if (item.delta !== null && item.delta !== undefined) lines.push(this.t("relDelta", { delta: `${item.delta > 0 ? "+" : item.delta < 0 ? "−" : "±"}${this.formatNumber(Math.abs(item.delta))}`, before: this.formatNumber(item.previous_availability) }));
     else if (this.reliability?.comparison?.available) lines.push(this.t("relDeltaNone"));
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${percent === null ? "—" : `${this.formatNumber(percent)} %`}</span></div>`;
+    return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
+  }
+
+  relRow(item) {
+    const key = `config_entry:${item.entry_id}`;
+    const open = this.findObject(key) ? ` data-object="${this.esc(key)}"` : "";
+    return `<${open ? "button" : "div"} class="row${open ? " rel" : ""}"${open}>${this.relRowBody(item)}</${open ? "button" : "div"}>`;
+  }
+
+  // The row of one config entry in the loaded numbers, for its detail page.
+  reliabilityRow(item) {
+    if (item.object_type !== "config_entry") return null;
+    return (this.reliability?.entries || []).find(row => row.entry_id === item.object_id) || null;
+  }
+
+  reliabilityDetailCard(row) {
+    const r = this.reliability;
+    const items = row.affected || [];
+    const list = items.map(m => {
+      const tone = m.availability >= 99.5 ? "ok" : m.availability >= 95 ? "warn" : "red";
+      return `<button class="row rel" data-object="entity:${this.esc(m.entity_id)}">${this.tile("entity", tone)}<span class="row-text"><strong>${this.esc(m.name)}</strong><small>${this.esc(m.entity_id)}</small></span><span class="pill ${tone}">${this.formatNumber(m.availability)} %</span></button>`;
+    }).join("");
+    const more = row.affected_total > items.length ? `<p class="factnote">${this.t("relAffectedMore", { shown: items.length, total: row.affected_total })}</p>` : "";
+    const summary = `<div class="row">${this.relRowBody(row)}</div>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("relTab")}</h2><p>${this.t(r.window_days === 1 ? "relWindow1" : "relWindow7")}${r.stale || r.age_seconds ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}` : ""}</p></div></div>${summary}<div class="sectionlabel">${this.t("relAffected", { n: this.formatNumber(row.affected_total || 0) })}</div>${list || `<p class="factnote">${this.t("relNoAffected")}</p>`}${more}</section>`;
   }
 
   reliabilityView() {
     this.ensureReliability();
     const r = this.reliability;
     const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
-    const took = r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const old = r && r.available && r.computed_at && (r.stale || r.age_seconds >= 60);
+    const took = old ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}`
+      : r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
     const head = `<div class="panelhead"><div><h2>${this.t("relTitle")}</h2><p>${this.t("relHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-rel-refresh ${this.relLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.relError) return `<div class="panel">${head}<div class="error">${this.esc(this.relError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("relLoading")}</div>`;

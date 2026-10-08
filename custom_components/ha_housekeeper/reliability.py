@@ -1,20 +1,23 @@
 """Integration reliability: how available each config entry's entities were, and shared outages.
 
 Everything here only reads Home Assistant (the recorder, the registries, the config entries).
-Nothing is stored. The recorder query is the expensive part, so it runs in the background, is
-kept for a few minutes and never runs twice at the same time.
+The recorder query is the expensive part: it never runs twice at the same time, and the last
+finished reply is kept (also on disk), so the view opens at once with the last numbers while a
+new calculation runs. A regular background run keeps that reply from getting old.
 """
 
 from __future__ import annotations
 
+import re
 import time
 from datetime import UTC, datetime, tzinfo
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
-from .const import IGNORE_LABEL
+from .const import IGNORE_LABEL, RELIABILITY_STORAGE_KEY, STORAGE_VERSION
 from .meter import recorder_ready
 from .payloads import ReliabilityResult
 from .queries import cached_query
@@ -22,6 +25,9 @@ from .queries import cached_query
 DAY = 86400
 WINDOWS = (1, 7)  # days
 CACHE_SECONDS = 300
+SAVE_DELAY = 30  # seconds
+MEMBER_LIMIT = 15  # entities with downtime listed per config entry
+REPLY_KEY = re.compile(r"^\d{1,2}:[01]$")
 CHUNK = 500  # entities per second-pass query
 SHARED_SHARE = 80  # percent of an entry's entities that must be down together
 SHARED_MIN_ENTITIES = 3
@@ -183,6 +189,7 @@ def compute(
         observed_total = down_total = 0.0
         permanent = 0
         last_single: tuple[float, float] | None = None
+        affected: list[dict[str, Any]] = []
         for item in members:
             entity_id = item["entity_id"]
             first = runs["seen"].get(entity_id)
@@ -210,6 +217,14 @@ def compute(
             with_data += 1
             observed_sum += min(observed, window)
             down_total += down
+            if down > 0:
+                affected.append(
+                    {
+                        "entity_id": entity_id,
+                        "name": item.get("name") or entity_id,
+                        "availability": round(100 * (1 - down / observed), 2),
+                    }
+                )
             if merged and (last_single is None or merged[-1][1] > last_single[1]):
                 last_single = merged[-1]
         if not counted and not permanent:
@@ -235,6 +250,10 @@ def compute(
                 "shared_outages": len(outages),
                 "longest_outage": round(max((b - a for a, b in outages), default=0)),
                 "layer": layer,
+                "affected_total": len(affected),
+                "affected": sorted(affected, key=lambda m: (m["availability"], m["entity_id"]))[
+                    :MEMBER_LIMIT
+                ],
                 "last_disruption": (
                     {"end": last[1], "seconds": round(last[1] - last[0]), "shared": bool(outages)}
                     if last
@@ -377,6 +396,38 @@ async def entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:
     return info
 
 
+class ReliabilityStore:
+    """The last finished reply per window and comparison, so the view never starts empty."""
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, RELIABILITY_STORAGE_KEY)
+        self.replies: dict[str, dict[str, Any]] = {}
+
+    async def async_load(self) -> None:
+        """Load the replies; anything that is not a reply of the known shape is dropped."""
+        data = await self._store.async_load()
+        if not isinstance(data, dict) or not isinstance(data.get("replies"), dict):
+            return
+        self.replies = {
+            key: reply
+            for key, reply in data["replies"].items()
+            if isinstance(key, str)
+            and REPLY_KEY.match(key)
+            and isinstance(reply, dict)
+            and isinstance(reply.get("entries"), list)
+            and isinstance(reply.get("computed_at"), int | float)
+            and not isinstance(reply.get("computed_at"), bool)
+        }
+
+    def keep(self, key: str, reply: dict[str, Any]) -> None:
+        self.replies[key] = reply
+        self._store.async_delay_save(lambda: {"replies": self.replies}, SAVE_DELAY)
+
+
+def reply_key(window_days: int, compare: bool) -> str:
+    return f"{window_days}:{int(compare)}"
+
+
 async def reliability(
     hass: HomeAssistant,
     snapshot: dict[str, Any],
@@ -384,6 +435,7 @@ async def reliability(
     window_days: int = 7,
     refresh: bool = False,
     compare: bool = False,
+    store: ReliabilityStore | None = None,
 ) -> ReliabilityResult | dict[str, Any]:
     """Availability and shared outages per config entry for the last day or week.
 
@@ -393,6 +445,12 @@ async def reliability(
     if not recorder_ready(hass):
         return {"available": False, "entries": []}
     now = time.time()
+    key = reply_key(window_days, compare)
+    kept = store.replies.get(key) if store is not None else None
+    if kept is not None and not refresh:
+        age = max(0, round(now - kept["computed_at"]))
+        # An old reply is handed out at once; the caller asks again with ``refresh`` for new numbers.
+        return {**kept, "cached": True, "stale": age >= CACHE_SECONDS, "age_seconds": age}
     found = await cached_query(
         hass,
         f"reliability:{window_days}",
@@ -401,6 +459,9 @@ async def reliability(
         refresh=refresh,
     )
     if found.busy:
+        if kept is not None:
+            age = max(0, round(now - kept["computed_at"]))
+            return {**kept, "cached": True, "stale": True, "age_seconds": age}
         return {"available": True, "busy": True, "entries": [], "window_days": window_days}
     entities = [
         {
@@ -453,12 +514,18 @@ async def reliability(
                     else None
                 )
             comparison["available"] = True
-    return {
+    reply = {
         "available": True,
         "busy": False,
         "cached": found.cached,
+        "stale": False,
+        "age_seconds": 0,
+        "computed_at": now,
         "unstable": unstable,
         "thresholds": THRESHOLDS,
         "comparison": comparison,
         **result,
     }
+    if store is not None:
+        store.keep(key, reply)
+    return reply

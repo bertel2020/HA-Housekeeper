@@ -76,6 +76,8 @@ class ReliabilityRow(TypedDict):
     longest_outage: int
     layer: str | None
     last_disruption: dict[str, Any] | None
+    affected_total: int
+    affected: list[dict[str, Any]]
     previous_availability: NotRequired[float | None]
     delta: NotRequired[float | None]
 
@@ -86,6 +88,9 @@ class ReliabilityResult(Reply):
     window_days: int
     coverage: ReliabilityCoverage
     comparison: dict[str, bool]
+    stale: bool
+    age_seconds: int
+    computed_at: float
 
 
 class RunsRow(TypedDict, total=False):

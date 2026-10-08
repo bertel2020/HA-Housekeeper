@@ -603,6 +603,7 @@ async def websocket_reliability(
                 window_days=msg["window_days"],
                 refresh=msg["refresh"],
                 compare=msg["compare"],
+                store=scanner.reliability,
             )
     except Exception as err:
         connection.send_error(msg["id"], "reliability_failed", f"{type(err).__name__}: {err}")

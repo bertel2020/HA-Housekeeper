@@ -2325,6 +2325,41 @@ test("the reliability view lists the worst integration first with numbers, words
   assert.ok(!html.includes("<b>Hub</b>"));
 });
 
+test("reliability rows open the integration, and its detail page shows the numbers with the affected entities", async () => {
+  const { el, shadow } = panel("en");
+  const entry = { object_type: "config_entry", object_id: "e1", name: "Hue", status: "active", state: "loaded", domain: "hue" };
+  el.data = { ...DATA, objects: [...DATA.objects.filter(o => o.object_type !== "config_entry"), entry] };
+  el.view = "reliability";
+  const withEntities = { ...RELIABILITY, computed_at: 1791470000, entries: [{ ...RELIABILITY.entries[0], affected_total: 20, affected: [{ entity_id: "light.a", name: "Lamp <i>A</i>", availability: 91.2 }] }, RELIABILITY.entries[1]] };
+  el._hass = { language: "en", callWS: async () => withEntities };
+  await el.loadReliability();
+  const list = shadow.innerHTML;
+  assert.ok(list.includes('<button class="row rel" data-object="config_entry:e1">'), "known entries open");
+  assert.ok(!list.includes('data-object="config_entry:e2"'), "unknown entries stay plain rows");
+  el.selected = entry; el.view = "detail"; el.detailTab = "reliability";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('data-detail-tab="reliability"'));
+  for (const text of ["Entities with downtime (20)", "Lamp &lt;i&gt;A&lt;/i&gt;", "91.2 %", 'data-object="entity:light.a"', "Showing the 1 with the lowest availability of 20"]) assert.ok(html.includes(text), text);
+  const facts = el.factsCard(entry, "config_entry:e1");
+  assert.ok(facts.includes("Availability (7 days)") && facts.includes("93.4 %"));
+  el.selected = { ...entry, object_id: "e3" }; el.detailTab = "reliability"; el.render();
+  assert.ok(!shadow.innerHTML.includes('data-detail-tab="reliability"'), "no tab without numbers");
+});
+
+test("an old reliability reply is shown at once and renewed once in the background", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "reliability";
+  el._hass = { language: "en", callWS: async msg => { calls.push({ ...msg }); return msg.refresh ? { ...RELIABILITY, stale: false } : { ...RELIABILITY, stale: true, age_seconds: 3600, computed_at: 1791470000 }; } };
+  await el.loadReliability();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(JSON.stringify(calls.map(c => c.refresh)), "[false,true]", "one renewal, no loop");
+  assert.ok(!el.reliability.stale);
+  el.reliability = { ...RELIABILITY, stale: true, age_seconds: 3600, computed_at: 1791470000 };
+  assert.ok(el.reliabilityView().includes("As of "), "the age is named");
+});
+
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
   const queue = [];
   const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });

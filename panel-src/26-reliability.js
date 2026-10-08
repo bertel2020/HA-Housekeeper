@@ -5,6 +5,8 @@ class ReliabilityMixin {
     try { this.reliability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, refresh, ...(this.relCompare ? { compare: true } : {}) }); }
     catch (err) { this.relError = err?.message || String(err); }
     this.relLoading = false; this.render();
+    // An old reply is shown at once; the new numbers follow in the background (once, so it cannot loop).
+    if (!refresh && this.reliability?.stale) this.loadReliability(true);
   }
 
   // The first visit and every change of the window load once; the backend keeps the result for a few minutes.
@@ -20,7 +22,7 @@ class ReliabilityMixin {
     return this.t("relMinutes", { n: Math.max(1, Math.round(seconds / 60)) });
   }
 
-  relRow(item) {
+  relRowBody(item) {
     const percent = item.availability;
     const tone = percent === null ? "mute" : percent >= 99.5 ? "ok" : percent >= 95 ? "warn" : "red";
     const lines = [`${this.esc(item.domain || "")} · ${this.t("relEntities", { n: item.entities })}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
@@ -36,14 +38,40 @@ class ReliabilityMixin {
       : this.t("relNoDisruption"));
     if (item.delta !== null && item.delta !== undefined) lines.push(this.t("relDelta", { delta: `${item.delta > 0 ? "+" : item.delta < 0 ? "−" : "±"}${this.formatNumber(Math.abs(item.delta))}`, before: this.formatNumber(item.previous_availability) }));
     else if (this.reliability?.comparison?.available) lines.push(this.t("relDeltaNone"));
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${percent === null ? "—" : `${this.formatNumber(percent)} %`}</span></div>`;
+    return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
+  }
+
+  relRow(item) {
+    const key = `config_entry:${item.entry_id}`;
+    const open = this.findObject(key) ? ` data-object="${this.esc(key)}"` : "";
+    return `<${open ? "button" : "div"} class="row${open ? " rel" : ""}"${open}>${this.relRowBody(item)}</${open ? "button" : "div"}>`;
+  }
+
+  // The row of one config entry in the loaded numbers, for its detail page.
+  reliabilityRow(item) {
+    if (item.object_type !== "config_entry") return null;
+    return (this.reliability?.entries || []).find(row => row.entry_id === item.object_id) || null;
+  }
+
+  reliabilityDetailCard(row) {
+    const r = this.reliability;
+    const items = row.affected || [];
+    const list = items.map(m => {
+      const tone = m.availability >= 99.5 ? "ok" : m.availability >= 95 ? "warn" : "red";
+      return `<button class="row rel" data-object="entity:${this.esc(m.entity_id)}">${this.tile("entity", tone)}<span class="row-text"><strong>${this.esc(m.name)}</strong><small>${this.esc(m.entity_id)}</small></span><span class="pill ${tone}">${this.formatNumber(m.availability)} %</span></button>`;
+    }).join("");
+    const more = row.affected_total > items.length ? `<p class="factnote">${this.t("relAffectedMore", { shown: items.length, total: row.affected_total })}</p>` : "";
+    const summary = `<div class="row">${this.relRowBody(row)}</div>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("relTab")}</h2><p>${this.t(r.window_days === 1 ? "relWindow1" : "relWindow7")}${r.stale || r.age_seconds ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}` : ""}</p></div></div>${summary}<div class="sectionlabel">${this.t("relAffected", { n: this.formatNumber(row.affected_total || 0) })}</div>${list || `<p class="factnote">${this.t("relNoAffected")}</p>`}${more}</section>`;
   }
 
   reliabilityView() {
     this.ensureReliability();
     const r = this.reliability;
     const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
-    const took = r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const old = r && r.available && r.computed_at && (r.stale || r.age_seconds >= 60);
+    const took = old ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}`
+      : r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
     const head = `<div class="panelhead"><div><h2>${this.t("relTitle")}</h2><p>${this.t("relHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-rel-refresh ${this.relLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.relError) return `<div class="panel">${head}<div class="error">${this.esc(this.relError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("relLoading")}</div>`;

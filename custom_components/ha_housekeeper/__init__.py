@@ -17,6 +17,7 @@ from homeassistant.helpers.event import async_call_later, async_track_time_inter
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
+from . import reliability as reliability_module
 from .const import (
     CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
@@ -158,6 +159,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.exception("Noting the database size failed")
 
     entry.async_on_unload(async_track_time_interval(hass, _collect_runs, timedelta(minutes=15)))
+
+    async def _prepare_reliability(_: Any) -> None:
+        # The view opens with the last numbers; this keeps them from getting old, but only for
+        # windows that were opened once. A busy recorder makes the run a no-op (the shared query
+        # lock), a failure only costs a log line.
+        if scanner.paused or not scanner.reliability.replies:
+            return
+        try:
+            snapshot = await scanner.async_get_snapshot()
+            for key in sorted(scanner.reliability.replies):
+                days, compare = key.split(":")
+                await reliability_module.reliability(
+                    hass,
+                    snapshot,
+                    window_days=int(days),
+                    refresh=True,
+                    compare=compare == "1",
+                    store=scanner.reliability,
+                )
+        except Exception:
+            _LOGGER.exception("Preparing the reliability numbers failed")
+
+    entry.async_on_unload(
+        async_track_time_interval(hass, _prepare_reliability, timedelta(minutes=30))
+    )
+    entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 120, _prepare_reliability))
 
     # Regular scans keep the comparison history, findings and hints current.
     interval_hours = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
