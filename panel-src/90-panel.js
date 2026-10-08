@@ -33,7 +33,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.runs = null; this.runsLoading = false; this.runsError = ""; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -380,6 +380,7 @@ class HAHousekeeperPanel extends HTMLElement {
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
       storms: [this.t("stormTitle"), this.t("stormsSubtitle")],
+      exposure: [this.t("exposure"), this.t("exposureSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
     const scanned = this.data?.meta?.scanned_at;
@@ -401,6 +402,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
     if (this.view === "storms") return this.stormsView();
+    if (this.view === "exposure") return this.exposureView();
     if (this.view === "runs") return this.runsView();
     if (this.view === "graph") return this.graph();
     return this.overview();
@@ -539,6 +541,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-storm-window]").forEach(el => el.onclick = () => { this.stormsWindow = Number(el.dataset.stormWindow); this.storms = null; this.pages.stormfind = 1; this.pages.stormentities = 1; this.loadStorms(); });
     root.querySelector("[data-storm-refresh]")?.addEventListener("click", () => this.loadStorms(true));
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
+    root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {

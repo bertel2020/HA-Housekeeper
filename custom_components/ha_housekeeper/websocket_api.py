@@ -29,6 +29,7 @@ from .cleanup import (
 from .cleanup_exec import CleanupError, entity_restorable
 from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
 from .db_health import db_health
+from .exposure import exposure
 from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
@@ -41,6 +42,7 @@ from .storms import storms
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
 RUNS_TIMEOUT = 20
+EXPOSURE_TIMEOUT = 20  # seconds
 RELIABILITY_TIMEOUT = 120  # seconds; the recorder query is slow on a large database
 
 
@@ -628,6 +630,29 @@ async def websocket_db_health(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/exposure"})
+@websocket_api.async_response
+async def websocket_exposure(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Which entities assistants and bridges can reach. Read-only; only metadata, no secrets."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        async with asyncio.timeout(EXPOSURE_TIMEOUT):
+            result = exposure(hass, snapshot)
+    except Exception as err:
+        connection.send_error(msg["id"], "exposure_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/storms",
@@ -789,6 +814,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_reliability)
     websocket_api.async_register_command(hass, websocket_storms)
     websocket_api.async_register_command(hass, websocket_db_health)
+    websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_automation_runs)

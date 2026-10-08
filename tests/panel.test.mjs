@@ -2553,3 +2553,58 @@ test("only database problems reach the overview to-do list, and only once they w
   const item = el.todoItems().find(i => i.key === "db");
   assert.ok(item && item.view === "maintenance" && item.hintText.includes("Duplicate statistics timestamps"));
 });
+
+const EXPO = {
+  available: true, checked: 12, webhooks: 3,
+  assistants: [
+    { id: "conversation", status: "ok", exposed: 9 },
+    { id: "cloud.alexa", status: "inactive", exposed: 0 },
+    { id: "cloud.google_assistant", status: "unavailable", exposed: 0 },
+  ],
+  bridges: [{ kind: "homekit", title: "Bridge <b>", exposed: 4 }],
+  findings: [
+    { kind: "sensitive_exposed", level: "hint", count: 12, items: [{ entity_id: "lock.door", name: "Door <i>", assistants: ["conversation", "homekit"] }] },
+    { kind: "alias_duplicate", level: "warn", assistant: "conversation", alias: "Küche", count: 2, items: [{ entity_id: "light.a", name: "A" }, { entity_id: "light.b", name: "B" }] },
+    { kind: "webhook_orphan", level: "warn", domain: "gone", count: 2 },
+  ],
+};
+
+test("the exposure view lists each source with its state and names every finding in words", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el._exposureRequested = true;
+  el.exposure = EXPO;
+  const html = el.exposureView();
+  assert.ok(html.includes("Assist") && html.includes("9 entities exposed"));
+  assert.ok(html.includes("not set up") && html.includes("cannot be checked"));
+  assert.ok(html.includes("HomeKit: Bridge &lt;b&gt;") && html.includes("4 entities through the filter"));
+  assert.ok(html.includes("Sensitive entities exposed") && html.includes("and 11 more"));
+  assert.ok(html.includes("Door &lt;i&gt;") && html.includes("Assist, HomeKit"));
+  assert.ok(html.includes("&quot;Küche&quot; names 2 entities for Assist"));
+  assert.ok(html.includes("2 webhooks belong to &quot;gone&quot;"));
+  assert.ok(html.includes("data-object=\"entity:lock.door\""));
+  assert.ok(!html.includes("<b>") && !html.includes("<i>"));
+});
+
+test("the exposure view loads once, asks the backend and handles errors and an empty result", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/exposure")) calls.push(msg); return EXPO; } };
+  el.data = { ...DATA };
+  el.exposureView(); el.ensureExposure();
+  await el.loadExposure();
+  assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/exposure" }));
+  el.exposure = { ...EXPO, findings: [] };
+  assert.ok(el.exposureView().includes("Nothing unusual in the exposure."));
+  el.exposure = null; el.exposureError = "boom";
+  assert.ok(el.exposureView().includes("boom"));
+});
+
+test("the exposure entry sits in the Maintain menu and has texts in both languages", () => {
+  const { NAV_GROUPS, TEXT } = loadPanel();
+  assert.ok(NAV_GROUPS.find(([name]) => name === "navGroupMaintain")[1].includes("exposure"));
+  for (const lang of ["de", "en"]) {
+    for (const key of ["exposure", "exposureSubtitle", "expoTitle", "expoNone", "expoFootnote", "expoKind_webhook_orphan", "expoText_alias_duplicate", "expoAdvice_sensitive_exposed"]) {
+      assert.ok(TEXT[lang][key], `${lang}.${key}`);
+    }
+  }
+});

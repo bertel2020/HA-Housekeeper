@@ -423,6 +423,7 @@ const NAV = [
   ["graph", "mdi:source-fork"],
   ["cleanup", "mdi:broom"],
   ["maintenance", "mdi:wrench-clock"],
+  ["exposure", "mdi:shield-search"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["runs", "mdi:robot-outline"],
   ["storms", "mdi:chart-bell-curve"],
@@ -436,7 +437,7 @@ const NAV_GROUPS = [
   ["navGroupOverview", ["overview", "findingsNav", "changes"]],
   ["navGroupOperation", ["reliability", "runs", "storms"]],
   ["navGroupExplore", ["inventory", "graph"]],
-  ["navGroupMaintain", ["cleanup", "maintenance"]],
+  ["navGroupMaintain", ["cleanup", "maintenance", "exposure"]],
   ["navGroupSpecial", ["batteries", "unreferenced"]],
 ];
 const NAV_ICONS = Object.fromEntries(NAV);
@@ -940,6 +941,50 @@ class ThemeMixin {
     this.render();
   }
 }
+
+// Texts for the exposure view; merged into TEXT.
+Object.assign(TEXT.de, {
+  exposure: "Freigaben", exposureSubtitle: "Welche Entities Sprachassistenten und Bridges erreichen können. Liest nur; es wird nichts geändert und nichts gespeichert.",
+  expoTitle: "Freigaben", expoHint: "Assist, Alexa, Google Assistant und HomeKit", expoLoading: "Die Freigaben werden gelesen …",
+  expoNone: "Nichts Auffälliges bei den Freigaben.", expoHint2: "Hinweis", expoWarn: "Prüfen",
+  expoAssistants: "Assistenten und Bridges", expoFindings: "Auffälligkeiten",
+  expoName_conversation: "Assist", expoName_cloud_alexa: "Alexa", expoName_cloud_google_assistant: "Google Assistant", expoName_homekit: "HomeKit",
+  expoOk: "{n} Entities freigegeben", expoInactive: "nicht eingerichtet", expoUnavailable: "nicht prüfbar", expoBridge: "{n} Entities durch den Filter",
+  expoKind_diagnostic_exposed: "Diagnose-Entities freigegeben", expoKind_sensitive_exposed: "Sensible Entities freigegeben", expoKind_stale_exposed: "Freigabe für deaktivierte oder verwaiste Entities", expoKind_alias_duplicate: "Doppelter Sprachname", expoKind_webhook_orphan: "Webhooks ohne Integration",
+  expoText_diagnostic_exposed: "{n} Entities aus der Kategorie Diagnose oder Konfiguration sind freigegeben. Sie helfen beim Sprechen selten.",
+  expoText_sensitive_exposed: "{n} Schlösser, Alarmanlagen, Personen, Tracker oder Garagentore sind freigegeben. Das kann gewollt sein; prüfe, ob der Assistent sie steuern oder verraten darf.",
+  expoText_stale_exposed: "{n} Entities sind freigegeben, obwohl sie deaktiviert oder verwaist sind.",
+  expoText_alias_duplicate: "„{alias}“ heißt bei {assistant} {n} Entities. Der Assistent kann sie nicht auseinanderhalten.",
+  expoText_webhook_orphan: "{n} Webhooks gehören zu „{domain}“, einer Integration, die nicht mehr eingerichtet ist. Die IDs zeigt Housekeeper bewusst nicht an.",
+  expoAdvice_diagnostic_exposed: "Freigabe unter Einstellungen → Sprachassistenten → Entities zurücknehmen.",
+  expoAdvice_sensitive_exposed: "Nur zur Kenntnis. Housekeeper ändert nichts.",
+  expoAdvice_stale_exposed: "Entity aufräumen oder die Freigabe zurücknehmen.",
+  expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
+  expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
+  expoMore: "und {n} weitere",
+  expoFootnote: "Housekeeper liest je Assistent, welche Entities Home Assistant freigibt, bei HomeKit nur den gespeicherten Entity-Filter der Bridge. Passwörter, Tokens, Ports und Webhook-IDs werden nie gelesen oder angezeigt. Wenn eine Quelle nicht antwortet, steht „nicht prüfbar“, nie „nicht freigegeben“. Sprachnamen gelten als gleich, wenn sie sich nur in Groß- und Kleinschreibung, Leerzeichen oder Umlauten unterscheiden.",
+});
+Object.assign(TEXT.en, {
+  exposure: "Exposure", exposureSubtitle: "Which entities voice assistants and bridges can reach. Only reads; nothing is changed and nothing is stored.",
+  expoTitle: "Exposure", expoHint: "Assist, Alexa, Google Assistant and HomeKit", expoLoading: "Reading the exposure …",
+  expoNone: "Nothing unusual in the exposure.", expoHint2: "Note", expoWarn: "Check",
+  expoAssistants: "Assistants and bridges", expoFindings: "Findings",
+  expoName_conversation: "Assist", expoName_cloud_alexa: "Alexa", expoName_cloud_google_assistant: "Google Assistant", expoName_homekit: "HomeKit",
+  expoOk: "{n} entities exposed", expoInactive: "not set up", expoUnavailable: "cannot be checked", expoBridge: "{n} entities through the filter",
+  expoKind_diagnostic_exposed: "Diagnostic entities exposed", expoKind_sensitive_exposed: "Sensitive entities exposed", expoKind_stale_exposed: "Exposed but disabled or orphaned", expoKind_alias_duplicate: "Duplicate voice name", expoKind_webhook_orphan: "Webhooks without integration",
+  expoText_diagnostic_exposed: "{n} entities in the diagnostic or configuration category are exposed. They rarely help when speaking.",
+  expoText_sensitive_exposed: "{n} locks, alarm panels, persons, trackers or garage doors are exposed. That can be intended; check whether the assistant may control or reveal them.",
+  expoText_stale_exposed: "{n} entities are exposed although they are disabled or orphaned.",
+  expoText_alias_duplicate: "\"{alias}\" names {n} entities for {assistant}. The assistant cannot tell them apart.",
+  expoText_webhook_orphan: "{n} webhooks belong to \"{domain}\", an integration that is no longer set up. Housekeeper deliberately does not show their ids.",
+  expoAdvice_diagnostic_exposed: "Take the exposure back under Settings → Voice assistants → Entities.",
+  expoAdvice_sensitive_exposed: "For your information only. Housekeeper changes nothing.",
+  expoAdvice_stale_exposed: "Clean up the entity or take the exposure back.",
+  expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
+  expoAdvice_webhook_orphan: "Set the integration up again or remove the leftovers if they are no longer needed.",
+  expoMore: "and {n} more",
+  expoFootnote: "Housekeeper reads, per assistant, which entities Home Assistant exposes; for HomeKit only the stored entity filter of the bridge. Passwords, tokens, ports and webhook ids are never read or shown. If a source does not answer, it says \"cannot be checked\", never \"not exposed\". Voice names count as equal when they differ only in case, spaces or umlauts.",
+});
 
 // StylesMixin: methods of the panel element, mixed into the class in 99-register.js.
 class StylesMixin {
@@ -3260,6 +3305,66 @@ class DbHealthMixin {
   }
 }
 
+// ExposureMixin: which entities assistants and bridges can reach; mixed into the panel in 99-register.js.
+class ExposureMixin {
+  async loadExposure() {
+    this.exposureLoading = true; this.exposureError = ""; this.render();
+    try { this.exposure = await this._hass.callWS({ type: "ha_housekeeper/exposure" }); }
+    catch (err) { this.exposureError = err?.message || String(err); }
+    this.exposureLoading = false; this.render();
+  }
+
+  // Loads on the first visit; a refresh button reloads. The query is cheap and only reads registries.
+  ensureExposure() {
+    if (this.exposureLoading || this._exposureRequested) return;
+    this._exposureRequested = true;
+    setTimeout(() => this.loadExposure(), 0);
+  }
+
+  expoAssistantName(id) {
+    return this.t(`expoName_${id.replace(/\./g, "_")}`);
+  }
+
+  expoAssistantList(ids) {
+    return (ids || []).map(id => this.expoAssistantName(id)).join(", ");
+  }
+
+  expoAssistantRow(a) {
+    const state = a.status === "ok" ? this.t("expoOk", { n: this.formatNumber(a.exposed) }) : this.t(a.status === "inactive" ? "expoInactive" : "expoUnavailable");
+    const tone = a.status === "ok" ? "ok" : a.status === "inactive" ? "mute" : "warn";
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:microphone-message"></ha-icon></span><span class="row-text"><strong>${this.expoAssistantName(a.id)}</strong><small>${this.esc(state)}</small></span></div>`;
+  }
+
+  expoBridgeRow(b) {
+    return `<div class="row"><span class="tile ok"><ha-icon icon="mdi:home-automation"></ha-icon></span><span class="row-text"><strong>${this.expoAssistantName(b.kind)}: ${this.esc(b.title)}</strong><small>${this.esc(this.t("expoBridge", { n: this.formatNumber(b.exposed) }))}</small></span></div>`;
+  }
+
+  expoFindingText(f) {
+    return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "" });
+  }
+
+  expoFindingRows(f) {
+    const tone = f.level === "warn" ? "warn" : "mute";
+    const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
+    const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:shield-search"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small><small>${this.t(`expoAdvice_${f.kind}`)}</small></span>${pill}</div>`;
+    const shown = (f.items || []).slice(0, 10);
+    const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
+    const more = f.count > shown.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - shown.length) })}</p>` : "";
+    return head + rows + more;
+  }
+
+  exposureView() {
+    this.ensureExposure();
+    const r = this.exposure;
+    const head = `<div class="panelhead"><div><h2>${this.t("expoTitle")}</h2><p>${this.t("expoHint")}</p></div><div class="actions"><button class="btn" data-expo-refresh ${this.exposureLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
+    if (this.exposureError) return `<div class="panel">${head}<div class="error">${this.esc(this.exposureError)}</div></div>`;
+    if (!r) return `<div class="panel">${head}<div class="loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("expoLoading")}</p></div></div>`;
+    const sources = r.assistants.map(a => this.expoAssistantRow(a)).join("") + r.bridges.map(b => this.expoBridgeRow(b)).join("");
+    const findings = r.findings.length ? r.findings.map(f => this.expoFindingRows(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
+    return `<div class="panel">${head}${sources}${findings}${this.howCounted("expoFootnote")}</div>`;
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -3295,7 +3400,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.runs = null; this.runsLoading = false; this.runsError = ""; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -3642,6 +3747,7 @@ class HAHousekeeperPanel extends HTMLElement {
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
       storms: [this.t("stormTitle"), this.t("stormsSubtitle")],
+      exposure: [this.t("exposure"), this.t("exposureSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
     const scanned = this.data?.meta?.scanned_at;
@@ -3663,6 +3769,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
     if (this.view === "storms") return this.stormsView();
+    if (this.view === "exposure") return this.exposureView();
     if (this.view === "runs") return this.runsView();
     if (this.view === "graph") return this.graph();
     return this.overview();
@@ -3801,6 +3908,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-storm-window]").forEach(el => el.onclick = () => { this.stormsWindow = Number(el.dataset.stormWindow); this.storms = null; this.pages.stormfind = 1; this.pages.stormentities = 1; this.loadStorms(); });
     root.querySelector("[data-storm-refresh]")?.addEventListener("click", () => this.loadStorms(true));
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
+    root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {
@@ -3857,7 +3965,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

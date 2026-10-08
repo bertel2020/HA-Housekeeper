@@ -100,8 +100,8 @@ def test_only_the_cleanup_runner_changes_the_registry() -> None:
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
-    assert source.count("@websocket_api.websocket_command") == 26
-    assert source.count("@websocket_api.require_admin") == 26
+    assert source.count("@websocket_api.websocket_command") == 27
+    assert source.count("@websocket_api.require_admin") == 27
     assert "connection.require_admin" not in source
 
 
@@ -146,5 +146,7 @@ def test_every_optional_component_that_is_imported_is_an_after_dependency() -> N
         used |= set(
             re.findall(r"homeassistant\.components\.(\w+)", path.read_text(encoding="utf-8"))
         )
-    # sensor is an entity platform and http/websocket_api/frontend are core; Hassfest accepts them
-    assert used - {"websocket_api", "frontend", "http", "sensor"} <= declared, used - declared
+    # homeassistant is the core component, sensor is an entity platform and http/websocket_api/frontend are core; Hassfest accepts them
+    assert used - {"websocket_api", "frontend", "http", "sensor", "homeassistant"} <= declared, (
+        used - declared
+    )
