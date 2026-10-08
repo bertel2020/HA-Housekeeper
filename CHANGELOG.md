@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.13.1 - 2026-10-08
+
+Behebt einen Fehler in der Ansicht Freigaben. Automatisiert gegen Home Assistant
+2026.8.3, 2026.9.4 und 2026.10.0b4 getestet (517 Python- und 177 Panel-Tests).
+
+### Behoben
+
+- **Freigaben:** Die Ansicht zeigte statt der Liste die Meldung `AttributeError:
+  'ComputedNameType' object has no attribute 'casefold'`. Neuere Home-Assistant-
+  Versionen können bei einer Entity „berechneten Namen als Alias verwenden“
+  vermerken; das ist kein Text. Housekeeper behandelt den Marker jetzt als den
+  Anzeigenamen der Entity.
+- **Aufräumen:** Dieselbe Ursache konnte den Plan zum Deaktivieren oder
+  Entfernen einer solchen Entity abbrechen. Das Journal merkt sich den Marker
+  jetzt getrennt und stellt ihn beim Rückgängigmachen wieder her.
+
+### English
+
+Fixes an error in the Exposure view. Automatically tested against Home
+Assistant 2026.8.3, 2026.9.4 and 2026.10.0b4 (517 Python and 177 panel tests).
+
+#### Fixed
+
+- **Exposure:** the view showed the message `AttributeError: 'ComputedNameType'
+  object has no attribute 'casefold'` instead of the list. Newer Home Assistant
+  versions can mark “use the computed name as an alias” on an entity; that is
+  not text. Housekeeper now treats the marker as the entity's display name.
+- **Clean up:** the same cause could abort the plan to disable or remove such an
+  entity. The journal now keeps the marker separately and restores it on undo.
+
 ## 0.13.0 - 2026-10-08
 
 Richtlinien für die Pflege, Tabellen für Nicht verwendet, schnellere
