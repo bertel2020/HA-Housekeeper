@@ -43,6 +43,7 @@ class MaintenanceMixin {
     if (this.costsLoading) return `<div class="panel">${head()}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("recorderLoading")}</p></div></div>`;
     if (this.costsError) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<div class="error">${this.esc(this.costsError)}</div></div>`;
     if (!c) return `<div class="panel">${head(`<button class="btn primary" data-costs-load>${this.t("recorderLoad")}</button>`)}</div>`;
+    if (c.busy) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!c.available) return `<div class="panel">${head()}<div class="emptymsg"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t("recorderUnavailable")}</div></div>`;
     const took = c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
     const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) }) + took;

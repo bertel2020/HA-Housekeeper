@@ -2608,3 +2608,16 @@ test("the exposure entry sits in the Maintain menu and has texts in both languag
     }
   }
 });
+
+test("every number cell of the runs table carries its label, and only the inventory hides the third", () => {
+  const { el } = panel("en");
+  el.data = DATA;
+  const html = el.runsTable(RUNS.items);
+  const cells = [...html.split("<tbody>")[1].split("</tr>")[0].matchAll(/<td([^>]*)>/g)].map(m => m[1]);
+  assert.equal(cells.length, 6);
+  for (const attrs of cells.slice(1)) assert.ok(/data-label="[^"]+"/.test(attrs), attrs);
+  assert.ok(html.includes('data-label="Errors"'));
+  assert.ok(!html.includes("tablewrap inv"));
+  const css = loadPanel().TEXT && el.styles ? el.styles() : "";
+  assert.ok(!css.includes(".tablewrap td:nth-child(3)::before"), "no position based label hiding for every table");
+});
