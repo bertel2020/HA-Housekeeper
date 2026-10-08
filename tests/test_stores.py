@@ -43,6 +43,8 @@ GARBAGE = [
     {"items": {"x": 1}, "events": [1, None, {"kind": "start"}], "plans": [1, "a"], "record": [1]},
     {"latest": "x", "previous": 5, "daily": "d"},
     {"enabled": "no"},
+    {"prefixes": "no"},
+    {"prefixes": {"sensor": 5, "BAD domain": "x", "light": "UPPER", "switch": "ok_"}},
     {"enabled": {"entity_area": "yes", "unknown_rule": True, "device_area": 1}},
     {"since": 3, "items": {"automation.a": {"days": "no", "seen": 5}}},
     {"sizes": {"2026-10-08": "big", "x": -4}, "heartbeat": 5, "versions": "v"},

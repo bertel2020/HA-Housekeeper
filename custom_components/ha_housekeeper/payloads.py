@@ -148,6 +148,8 @@ class PolicyItem(TypedDict):
     key: str  # the key for the ignore list
     ignored: bool
     by: str | None  # "label", "user" or None
+    also: NotRequired[list[str]]  # duplicate_name: the other entities with the same name
+    expected: NotRequired[str]  # naming_scheme: the prefix the id should start with
 
 
 class PolicyRule(TypedDict):
@@ -163,3 +165,4 @@ class PoliciesResult(TypedDict):
     rules: list[PolicyRule]
     violations: int
     enabled: int
+    prefixes: dict[str, str]  # naming scheme: domain -> prefix

@@ -964,6 +964,27 @@ test("policies: rules switch, violations list with hide buttons, hidden ones are
   assert.ok(shadow.innerHTML.includes("Switch on a rule above"));
 });
 
+test("policies, second stage: duplicate names, labels and the naming scheme with its prefix editor", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  const it = (id, extra = {}) => ({ object_type: "entity", object_id: id, name: id, key: `k|${id}`, ignored: false, by: null, ...extra });
+  let answer;
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type.endsWith("/policies") ? answer : {}; } };
+  el.policies = answer = { available: true, enabled: 3, violations: 4, prefixes: { sensor: "wz_" }, rules: [
+    { id: "duplicate_name", enabled: true, count: 2, ignored: 0, items: [it("light.k1", { also: ["light.k2"] }), it("light.k2", { also: ["light.k1"] })] },
+    { id: "automation_label", enabled: true, count: 1, ignored: 0, items: [it("automation.a")] },
+    { id: "naming_scheme", enabled: true, count: 1, ignored: 0, items: [it("sensor.temp", { expected: "wz_" })] }] };
+  el._policiesRequested = true; el.view = "policies"; el.render();
+  const html = shadow.innerHTML;
+  for (const text of ["Duplicate display name", "Automation without a label", "Naming scheme", "Same name as: light.k2", "Expects the prefix wz_", "Prefix: wz_"]) assert.ok(html.includes(text), text);
+  assert.equal((html.match(/id="polDomain"/g) || []).length, 1, "the prefix editor belongs to the naming scheme only");
+  assert.ok(html.includes("data-policy-prefix-add") && html.includes('data-policy-prefix-remove="sensor"'));
+  await el.addPolicyPrefix("  light ", " wz_ ");
+  await el.addPolicyPrefix("", "x_"); // incomplete input sends nothing
+  await el.removePolicyPrefix("sensor");
+  assert.equal(JSON.stringify(calls.filter(c => c.type.endsWith("set_policy_prefix")).map(c => [c.domain, c.prefix])), JSON.stringify([["light", "wz_"], ["sensor", ""]]));
+});
+
 test("an overdue scan is an item in the to-do list of the overview", () => {
   const { el } = panel("en");
   const meta = scanned => ({ ...DATA.meta, scanned_at: scanned, scan_interval_hours: 24 });

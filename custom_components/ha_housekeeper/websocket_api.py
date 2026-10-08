@@ -713,6 +713,33 @@ def websocket_set_policy(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/set_policy_prefix",
+        vol.Required("domain"): str,
+        vol.Required("prefix"): str,
+    }
+)
+@callback
+def websocket_set_policy_prefix(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Set or remove the naming prefix of one domain (an empty prefix removes it)."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        scanner.policies.set_prefix(msg["domain"].strip().lower(), msg["prefix"].strip().lower())
+    except ValueError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    connection.send_result(msg["id"], {"prefixes": dict(scanner.policies.prefixes)})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/exposure"})
 @websocket_api.async_response
 async def websocket_exposure(
@@ -900,6 +927,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_statistics_last)
     websocket_api.async_register_command(hass, websocket_policies)
     websocket_api.async_register_command(hass, websocket_set_policy)
+    websocket_api.async_register_command(hass, websocket_set_policy_prefix)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)

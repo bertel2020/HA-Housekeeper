@@ -1058,7 +1058,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.lt .muted{color:var(--hk-muted)}.policyswitch{width:20px;height:20px;accent-color:var(--hk-blue);flex:none;cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{width:20px;height:20px;accent-color:var(--hk-blue);flex:none;cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -1152,6 +1152,10 @@ Object.assign(TEXT.de, {
   polRule_device_area: "Gerät ohne Bereich", polDesc_device_area: "Aktive Geräte brauchen einen Bereich. Dienst-Geräte, Untergeräte, deaktivierte und leere Geräte zählen nicht.",
   polRule_automation_description: "Automation ohne Beschreibung", polDesc_automation_description: "Automationen aus der Konfiguration brauchen eine Beschreibung.",
   polRule_battery_device: "Batterie-Entity ohne Gerät", polDesc_battery_device: "Entities mit der Geräteklasse Batterie sollen zu einem Gerät gehören.",
+  polRule_duplicate_name: "Doppelter Anzeigename", polDesc_duplicate_name: "Aktive Entities derselben Domain sollen nicht gleich heißen (Groß-/Kleinschreibung und Leerzeichen zählen nicht). Über Domains hinweg ist derselbe Name in Ordnung.",
+  polRule_automation_label: "Automation ohne Label", polDesc_automation_label: "Automationen sollen mindestens ein Label tragen. Geprüft werden nur Automationen mit Eintrag in der Entity-Registry; nur sie können ein Label haben.",
+  polRule_naming_scheme: "Namensschema", polDesc_naming_scheme: "Die Entity-ID einer Domain beginnt mit einem Präfix, das du unten festlegst, zum Beispiel wz_ für sensor. Ohne Präfix wird nichts geprüft.",
+  polAlso: "Gleicher Name wie: {ids}", polExpected: "Erwartet das Präfix {prefix}", polPrefixIs: "Präfix: {prefix}", polPrefixRemove: "Entfernen", polPrefixAdd: "Hinzufügen", polPrefixDomain: "Domain (z. B. sensor)", polPrefixValue: "Präfix (z. B. wz_)", polPrefixNone: "Noch kein Präfix festgelegt. Erlaubt sind Kleinbuchstaben, Ziffern und Unterstrich; höchstens 10 Domains.",
   polHide: "Ausblenden", polShow: "Einblenden", polHiddenLabel: "ausgeblendet", polByLabel: "per Label ausgeblendet",
   polHiddenN: "{n} ausgeblendet", polShowHidden: "Ausgeblendete zeigen", polHideHidden: "Ausgeblendete verbergen", polMore: "und {n} weitere",
   polFootnote: "Richtlinien sind Hinweise zur Ordnung und keine Defekte: Sie zählen nicht in Gesundheit, Befunde, Reparaturhinweise oder Sensoren. Housekeeper vergleicht nur die vorhandenen Daten des letzten Scans. Mit dem Label housekeeper_ignore an einer Entity, einem Gerät oder einer Automation oder über Ausblenden nimmst du ein Objekt aus. Die Schalter liegen nur in Housekeeper.",
@@ -1164,6 +1168,10 @@ Object.assign(TEXT.en, {
   polRule_device_area: "Device without an area", polDesc_device_area: "Active devices need an area. Service devices, sub-devices, disabled and empty devices do not count.",
   polRule_automation_description: "Automation without a description", polDesc_automation_description: "Automations from the configuration need a description.",
   polRule_battery_device: "Battery entity without a device", polDesc_battery_device: "Entities with the battery device class should belong to a device.",
+  polRule_duplicate_name: "Duplicate display name", polDesc_duplicate_name: "Active entities of the same domain should not share a name (case and spaces do not count). The same name across domains is fine.",
+  polRule_automation_label: "Automation without a label", polDesc_automation_label: "Automations should carry at least one label. Only automations with an entity registry entry are checked; only they can have a label.",
+  polRule_naming_scheme: "Naming scheme", polDesc_naming_scheme: "The entity id of a domain starts with a prefix you set below, for example wz_ for sensor. Without a prefix nothing is checked.",
+  polAlso: "Same name as: {ids}", polExpected: "Expects the prefix {prefix}", polPrefixIs: "Prefix: {prefix}", polPrefixRemove: "Remove", polPrefixAdd: "Add", polPrefixDomain: "Domain (e.g. sensor)", polPrefixValue: "Prefix (e.g. wz_)", polPrefixNone: "No prefix set yet. Lowercase letters, digits and underscore are allowed; at most 10 domains.",
   polHide: "Hide", polShow: "Show", polHiddenLabel: "hidden", polByLabel: "hidden by label",
   polHiddenN: "{n} hidden", polShowHidden: "Show hidden", polHideHidden: "Hide hidden", polMore: "and {n} more",
   polFootnote: "Policies are hints about tidiness and not defects: they do not count in health, findings, repair hints or sensors. Housekeeper only compares the data of the last scan. The label housekeeper_ignore on an entity, device or automation, or Hide, takes an object out. The switches live only in Housekeeper.",
@@ -3723,10 +3731,34 @@ class PoliciesMixin {
     await this.loadPolicies();
   }
 
+  addPolicyPrefix(domain, prefix) {
+    domain = (domain || "").trim(); prefix = (prefix || "").trim();
+    if (!domain || !prefix) return Promise.resolve();
+    return this.changePolicy({ type: "ha_housekeeper/set_policy_prefix", domain, prefix });
+  }
+
+  removePolicyPrefix(domain) {
+    return this.changePolicy({ type: "ha_housekeeper/set_policy_prefix", domain, prefix: "" });
+  }
+
+  polItemNote(item) {
+    if (item.also?.length) return `<small>${this.esc(this.t("polAlso", { ids: item.also.join(", ") }))}</small>`;
+    if (item.expected) return `<small>${this.esc(this.t("polExpected", { prefix: item.expected }))}</small>`;
+    return "";
+  }
+
+  // The prefix of each domain for the naming scheme: a row per prefix with a remove button, and a small form to add one.
+  polPrefixEditor() {
+    const entries = Object.entries(this.policies?.prefixes || {});
+    const rows = entries.map(([domain, prefix]) => `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:format-letter-starts-with"></ha-icon></span><span class="row-text"><strong>${this.esc(domain)}</strong><small>${this.esc(this.t("polPrefixIs", { prefix }))}</small></span><button class="btn" data-policy-prefix-remove="${this.esc(domain)}">${this.t("polPrefixRemove")}</button></div>`).join("");
+    const form = `<div class="row politem polform"><label class="sr-only" for="polDomain">${this.t("polPrefixDomain")}</label><input id="polDomain" type="text" placeholder="${this.esc(this.t("polPrefixDomain"))}" autocomplete="off" maxlength="40"><label class="sr-only" for="polPrefix">${this.t("polPrefixValue")}</label><input id="polPrefix" type="text" placeholder="${this.esc(this.t("polPrefixValue"))}" autocomplete="off" maxlength="30"><button class="btn" data-policy-prefix-add>${this.t("polPrefixAdd")}</button></div>`;
+    return `${rows}${form}${entries.length ? "" : `<p class="factnote">${this.t("polPrefixNone")}</p>`}`;
+  }
+
   polItemRow(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : "polHiddenLabel")}</span>` : "";
     const button = item.by === "label" ? "" : `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "polShow" : "polHide")}</button>`;
-    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}</small></span>${pill}${button}</div>`;
+    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
   }
 
   polRuleBlock(rule) {
@@ -3735,11 +3767,12 @@ class PoliciesMixin {
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
     if (!rule.enabled) return head;
+    const editor = rule.id === "naming_scheme" ? this.polPrefixEditor() : "";
     const visible = rule.items.filter(i => this.policyShowHidden || !i.ignored);
     const shown = visible.slice(0, 10);
     const more = visible.length > shown.length ? `<p class="factnote">${this.t("polMore", { n: this.formatNumber(visible.length - shown.length) })}</p>` : "";
     const hidden = rule.ignored ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(rule.ignored) })}</p>` : "";
-    return head + shown.map(i => this.polItemRow(i)).join("") + more + hidden;
+    return head + editor + shown.map(i => this.polItemRow(i)).join("") + more + hidden;
   }
 
   policiesView() {
@@ -4325,6 +4358,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
     root.querySelectorAll("[data-policy-toggle]").forEach(el => el.onchange = () => this.changePolicy({ type: "ha_housekeeper/set_policy", rule: el.dataset.policyToggle, enabled: el.checked }));
+    root.querySelector("[data-policy-prefix-add]")?.addEventListener("click", () => this.addPolicyPrefix(root.querySelector("#polDomain")?.value, root.querySelector("#polPrefix")?.value));
+    root.querySelectorAll("[data-policy-prefix-remove]").forEach(el => el.onclick = () => this.removePolicyPrefix(el.dataset.policyPrefixRemove));
     root.querySelectorAll("[data-policy-ignore]").forEach(el => el.onclick = () => this.changePolicy({ type: "ha_housekeeper/ignore", finding_key: el.dataset.policyIgnore, ignored: el.dataset.policyValue === "1" }));
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());

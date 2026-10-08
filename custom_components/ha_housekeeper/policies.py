@@ -8,6 +8,7 @@ list of Housekeeper (the key is ``policy.<rule>|<object id>|``).
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -19,7 +20,19 @@ from .payloads import PoliciesResult
 
 SAVE_DELAY = 10
 ITEM_LIMIT = 200
-RULES = ("entity_area", "device_area", "automation_description", "battery_device")
+RULES = (
+    "entity_area",
+    "device_area",
+    "automation_description",
+    "battery_device",
+    "duplicate_name",
+    "automation_label",
+    "naming_scheme",
+)
+PREFIX_LIMIT = 10
+DOMAIN_SHAPE = re.compile(r"^[a-z0-9_]{1,40}$")
+PREFIX_SHAPE = re.compile(r"^[a-z0-9_]{1,30}$")
+ALSO_LIMIT = 3
 KEY_PREFIX = "policy."
 
 
@@ -34,15 +47,27 @@ class PolicyStore:
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, POLICIES_STORAGE_KEY)
         self.enabled: set[str] = set()
+        self.prefixes: dict[str, str] = {}  # domain -> the prefix its entity ids must start with
 
     async def async_load(self) -> None:
         """Load the switches; anything that is not a known rule set to ``true`` is dropped."""
         data = await self._store.async_load()
-        if not isinstance(data, dict) or not isinstance(data.get("enabled"), dict):
+        if not isinstance(data, dict):
             return
-        self.enabled = {
-            rule for rule, on in data["enabled"].items() if rule in RULES and on is True
-        }
+        if isinstance(data.get("enabled"), dict):
+            self.enabled = {
+                rule for rule, on in data["enabled"].items() if rule in RULES and on is True
+            }
+        if isinstance(data.get("prefixes"), dict):
+            self.prefixes = {
+                domain: prefix
+                for domain, prefix in data["prefixes"].items()
+                if isinstance(domain, str)
+                and isinstance(prefix, str)
+                and DOMAIN_SHAPE.match(domain)
+                and PREFIX_SHAPE.match(prefix)
+            }
+            self.prefixes = dict(sorted(self.prefixes.items())[:PREFIX_LIMIT])
 
     def set_enabled(self, rule: str, on: bool) -> None:
         """Switch one rule and persist the change."""
@@ -53,8 +78,27 @@ class PolicyStore:
         (self.enabled.add if on else self.enabled.discard)(rule)
         self._store.async_delay_save(self._data, SAVE_DELAY)
 
+    def set_prefix(self, domain: str, prefix: str) -> None:
+        """Set the prefix for a domain; an empty prefix removes it. Raises ``ValueError`` on bad input."""
+        if not DOMAIN_SHAPE.match(domain):
+            raise ValueError(domain)
+        if not prefix:
+            if self.prefixes.pop(domain, None) is not None:
+                self._store.async_delay_save(self._data, SAVE_DELAY)
+            return
+        if not PREFIX_SHAPE.match(prefix):
+            raise ValueError(prefix)
+        if domain not in self.prefixes and len(self.prefixes) >= PREFIX_LIMIT:
+            raise ValueError("too many prefixes")
+        if self.prefixes.get(domain) != prefix:
+            self.prefixes[domain] = prefix
+            self._store.async_delay_save(self._data, SAVE_DELAY)
+
     def _data(self) -> dict[str, Any]:
-        return {"enabled": {rule: True for rule in sorted(self.enabled)}}
+        return {
+            "enabled": {rule: True for rule in sorted(self.enabled)},
+            "prefixes": dict(sorted(self.prefixes.items())),
+        }
 
 
 def _entity_area(objects: dict[str, dict[str, Any]], devices: dict[str, dict[str, Any]]):
@@ -106,13 +150,50 @@ def _battery_device(entities: dict[str, dict[str, Any]]):
             yield item
 
 
+def _duplicate_name(entities: dict[str, dict[str, Any]]):
+    """Active entities that share a display name with another active entity of the same domain."""
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for item in entities.values():
+        name = str(item.get("name") or "").strip().casefold()
+        if not name or name == item["object_id"] or item.get("disabled_by"):
+            continue
+        groups.setdefault((item["object_id"].split(".", 1)[0], name), []).append(item)
+    for group in groups.values():
+        if len(group) > 1:
+            for item in group:
+                others = sorted(i["object_id"] for i in group if i is not item)
+                yield {**item, "also": others[:ALSO_LIMIT]}
+
+
+def _automation_label(automations: list[dict[str, Any]], with_labels: dict[str, bool]):
+    """Automations that can carry a label (they are in the entity registry) and carry none."""
+    for item in automations:
+        if with_labels.get(item["object_id"]) is False:
+            yield item
+
+
+def _naming_scheme(entities: dict[str, dict[str, Any]], prefixes: dict[str, str]):
+    """Entities whose id does not start with the prefix chosen for their domain."""
+    for item in entities.values():
+        domain, _, name = item["object_id"].partition(".")
+        prefix = prefixes.get(domain)
+        if prefix and not name.startswith(prefix) and not item.get("disabled_by"):
+            yield {**item, "expected": prefix}
+
+
 def evaluate(
     snapshot: dict[str, Any],
     enabled: set[str] | frozenset[str],
     ignored_keys: set[str],
     labelled: set[str],
+    automation_labels: dict[str, bool] | None = None,
+    prefixes: dict[str, str] | None = None,
 ) -> PoliciesResult:
-    """Violations per rule. ``labelled`` holds the object ids that carry the ignore label."""
+    """Violations per rule. ``labelled`` holds the object ids that carry the ignore label.
+
+    ``automation_labels`` maps an automation to whether it carries any label (only automations in
+    the entity registry can carry one); ``prefixes`` is the naming scheme per domain.
+    """
     by_type: dict[str, list[dict[str, Any]]] = {}
     for item in snapshot["objects"]:
         by_type.setdefault(item["object_type"], []).append(item)
@@ -123,6 +204,11 @@ def evaluate(
         "device_area": lambda: _device_area(devices),
         "automation_description": lambda: _automation_description(by_type.get("automation", [])),
         "battery_device": lambda: _battery_device(entities),
+        "duplicate_name": lambda: _duplicate_name(entities),
+        "automation_label": lambda: _automation_label(
+            by_type.get("automation", []), automation_labels or {}
+        ),
+        "naming_scheme": lambda: _naming_scheme(entities, prefixes or {}),
     }
     rules = []
     for rule in RULES:
@@ -142,6 +228,7 @@ def evaluate(
                     "key": key,
                     "ignored": bool(hidden),
                     "by": "label" if item["object_id"] in labelled else "user" if hidden else None,
+                    **{k: item[k] for k in ("also", "expected") if k in item},
                 }
             )
         items.sort(key=lambda i: (i["ignored"], i["name"].casefold(), i["object_id"]))
@@ -159,6 +246,7 @@ def evaluate(
         "rules": rules,  # type: ignore[typeddict-item]
         "violations": sum(r["count"] for r in rules),
         "enabled": len(enabled),
+        "prefixes": dict(prefixes or {}),
     }
 
 
@@ -180,10 +268,16 @@ def policies(
             entry = registry.async_get(item["object_id"])
             if entry is not None and IGNORE_LABEL in entry.labels:
                 labelled.add(item["object_id"])
+    with_labels = {}
+    for item in snapshot["objects"]:
+        if item["object_type"] == "automation":
+            entry = registry.async_get(item["object_id"])
+            if entry is not None:
+                with_labels[item["object_id"]] = bool(entry.labels)
     keys = {
         policy_key(rule, item["object_id"])
         for rule in RULES
         for item in snapshot["objects"]
         if ignored.is_ignored(policy_key(rule, item["object_id"]))
     }
-    return evaluate(snapshot, store.enabled, keys, labelled)
+    return evaluate(snapshot, store.enabled, keys, labelled, with_labels, store.prefixes)

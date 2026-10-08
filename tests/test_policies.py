@@ -194,3 +194,82 @@ async def test_only_known_rules_set_to_true_load(hass: HomeAssistant, hass_stora
     store = PolicyStore(hass)
     await store.async_load()
     assert store.enabled == {"entity_area"}
+
+
+# --- second stage ---------------------------------------------------------------------------
+
+
+def test_duplicate_name_within_a_domain_only() -> None:
+    objects = [
+        entity("light.k1", name="Küche"),
+        entity("light.k2", name=" küche "),  # case and spaces do not count
+        entity("sensor.k", name="Küche"),  # another domain: fine
+        entity("light.solo", name="Flur"),
+        entity("light.off", name="Küche", disabled_by="user"),  # disabled: not counted
+        entity("light.noname", name="light.noname"),  # no friendly name: its id is unique anyway
+    ]
+    rule = run(objects, "duplicate_name")
+    assert sorted(ids(rule)) == ["light.k1", "light.k2"]
+    by = {i["object_id"]: i["also"] for i in rule["items"]}
+    assert by == {"light.k1": ["light.k2"], "light.k2": ["light.k1"]}
+
+
+def test_automation_label_needs_a_registry_entry_to_be_judged() -> None:
+    objects = [
+        automation("automation.bare"),
+        automation("automation.tagged"),
+        automation("automation.yaml_without_id"),  # not in the registry: cannot carry a label
+        automation("automation.fallback", source="state_fallback"),
+    ]
+    labels = {"automation.bare": False, "automation.tagged": True, "automation.fallback": False}
+    result = evaluate({"objects": objects}, {"automation_label"}, set(), set(), labels)
+    rule = next(r for r in result["rules"] if r["id"] == "automation_label")
+    assert sorted(ids(rule)) == ["automation.bare", "automation.fallback"]
+
+
+def test_naming_scheme_per_domain() -> None:
+    objects = [
+        entity("sensor.wz_temp"),
+        entity("sensor.temp"),
+        entity("sensor.off", disabled_by="user"),
+        entity("light.anything"),  # no prefix chosen for lights
+    ]
+    result = evaluate(
+        {"objects": objects}, {"naming_scheme"}, set(), set(), None, {"sensor": "wz_"}
+    )
+    rule = next(r for r in result["rules"] if r["id"] == "naming_scheme")
+    assert ids(rule) == ["sensor.temp"] and rule["items"][0]["expected"] == "wz_"
+    assert result["prefixes"] == {"sensor": "wz_"}
+    # Switched on without any prefix there is nothing to check.
+    none = evaluate({"objects": objects}, {"naming_scheme"}, set(), set(), None, {})
+    assert next(r for r in none["rules"] if r["id"] == "naming_scheme")["count"] == 0
+
+
+async def test_prefixes_are_validated_limited_and_persisted(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = PolicyStore(hass)
+    await store.async_load()
+    store.set_prefix("sensor", "wz_")
+    for domain, prefix in (
+        ("Sensor", "x"),
+        ("sen sor", "x"),
+        ("light", "Bad"),
+        ("light", "a" * 31),
+    ):
+        with pytest.raises(ValueError):
+            store.set_prefix(domain, prefix)
+    for index in range(9):
+        store.set_prefix(f"d{index}", "p_")
+    with pytest.raises(ValueError):
+        store.set_prefix("d9", "p_")  # the eleventh is refused
+    store.set_prefix("sensor", "kg_")  # changing an existing one is fine at the limit
+    store.set_prefix("d0", "")  # an empty prefix removes
+    await store._store.async_save(store._data())
+    again = PolicyStore(hass)
+    await again.async_load()
+    assert (
+        again.prefixes["sensor"] == "kg_"
+        and "d0" not in again.prefixes
+        and len(again.prefixes) == 9
+    )

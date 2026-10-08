@@ -951,6 +951,7 @@ CONTRACT = {
         "rules": list,
         "violations": int,
         "enabled": int,
+        "prefixes": dict,
     },
     "ha_housekeeper/statistics_last": {"available": bool, "busy": bool, "last": dict},
     "ha_housekeeper/exposure": {
@@ -1034,3 +1035,28 @@ async def test_policies_over_the_websocket(hass: HomeAssistant, hass_ws_client) 
     rule = next(r for r in result["rules"] if r["id"] == "device_area")
     assert result["violations"] == 0 and rule["ignored"] == 1
     assert len((await scanner.async_get_snapshot())["findings"]) == findings_before
+
+
+async def test_policy_prefixes_over_the_websocket(hass: HomeAssistant, hass_ws_client) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+
+    async def send(message: dict) -> dict:
+        await client.send_json_auto_id(message)
+        return await client.receive_json()
+
+    ok = await send(
+        {"type": "ha_housekeeper/set_policy_prefix", "domain": " Sensor ", "prefix": "WZ_"}
+    )
+    assert ok["success"] and ok["result"]["prefixes"] == {"sensor": "wz_"}
+    bad = await send(
+        {"type": "ha_housekeeper/set_policy_prefix", "domain": "sensor", "prefix": "no good"}
+    )
+    assert not bad["success"] and bad["error"]["code"] == "invalid_format"
+    assert (await send({"type": "ha_housekeeper/policies"}))["result"]["prefixes"] == {
+        "sensor": "wz_"
+    }
+    gone = await send(
+        {"type": "ha_housekeeper/set_policy_prefix", "domain": "sensor", "prefix": ""}
+    )
+    assert gone["result"]["prefixes"] == {}
