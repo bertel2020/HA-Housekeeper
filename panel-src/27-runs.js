@@ -80,8 +80,9 @@ class RunsMixin {
     return true;
   }
 
-  runsBar() {
-    return this.listBar("runs", { sorts: this.runsSorts(), filters: [
+  runsBar(rows = []) {
+    this.setExporter("runs", "runs", [this.t("runsColName"), "ID", this.t("runsColRuns"), this.t("runsColErrors"), this.t("runsColConditions"), `${this.t("runsColDuration")} (ms, mean)`, `${this.t("runsColDuration")} (ms, max)`], () => rows.map(r => [r.name, r.entity_id, r.runs, r.errors, r.conditions, r.mean_ms ?? "", r.max_ms ?? ""]));
+    return this.listBar("runs", { columns: [{ key: "runs", label: "runsColRuns" }, { key: "errors", label: "runsColErrors" }, { key: "conditions", label: "runsColConditions" }, { key: "duration", label: "runsColDuration" }, { key: "trend", label: "runsColTrend" }], sorts: this.runsSorts(), filters: [
       { name: "type", all: this.t("allTypes"), options: [["automation", this.t("automation")], ["script", this.t("script")]] },
       { name: "outcome", all: this.t("runsAllOutcomes"), options: [["errors", this.t("runsOnlyErrors")], ["flagged", this.t("runsOnlyFlagged")]] },
     ] });
@@ -129,7 +130,7 @@ class RunsMixin {
     const flagged = r.items.filter(row => row.findings.length && this.runsMatch(row));
     const everyCounted = r.items.filter(row => row.runs);
     const counted = this.refine("runs", everyCounted.filter(row => this.runsMatch(row)), { text: row => [row.name, row.entity_id].join(" "), sorts: this.runsSorts(), tie: row => row.entity_id });
-    const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar() : "";
+    const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar(counted) : "";
     const flaggedPage = this.paginate("runsflag", flagged);
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(this.lv.runs.q || this.lv.runs.f.type || this.lv.runs.f.outcome ? "noMatches" : everyCounted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";

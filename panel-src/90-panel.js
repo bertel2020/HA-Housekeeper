@@ -577,7 +577,18 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
-    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip(); const row = el.closest?.("tr"); if (row) { row.onfocus = () => this.showTip(el); row.onblur = () => this.hideTip(); } });
+    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip();
+      const holder = el.closest?.("tr") || (el.hasAttribute?.("tabindex") ? el : null);
+      if (holder) { holder.onfocus = () => this.showTip(el); holder.onblur = () => this.hideTip(); }
+      // Touch: a long press shows the tooltip for a few seconds and does not open the object.
+      el.ontouchstart = () => { globalThis.clearTimeout?.(this._tipTimer); this._tipTimer = globalThis.setTimeout?.(() => { this._tipShownAt = Date.now(); this.showTip(el); globalThis.clearTimeout?.(this._tipHide); this._tipHide = globalThis.setTimeout?.(() => this.hideTip(), 4000); }, 500); };
+      el.ontouchend = el.ontouchmove = el.ontouchcancel = () => globalThis.clearTimeout?.(this._tipTimer);
+      el.oncontextmenu = ev => { if (Date.now() - (this._tipShownAt || 0) < 1500) ev.preventDefault(); };
+      el.addEventListener?.("click", ev => { if (Date.now() - (this._tipShownAt || 0) < 800) { ev.stopImmediatePropagation(); ev.preventDefault(); } });
+    });
+    root.querySelectorAll("[data-col-open]").forEach(el => el.onclick = () => { this._colOpen = this._colOpen === el.dataset.colOpen ? "" : el.dataset.colOpen; this.render(); });
+    root.querySelectorAll("[data-col]").forEach(el => el.onchange = () => { const [id, key] = el.dataset.col.split("|"); this.toggleCol(id, key); });
+    root.querySelectorAll("[data-export-list]").forEach(el => el.onclick = () => this.exportList(el.dataset.exportList));
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));

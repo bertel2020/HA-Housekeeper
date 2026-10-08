@@ -3222,3 +3222,15 @@ test("what a view left out is named, so a short list is not taken for a clean bi
   el.runs = { ...RUNS, window_days: 7, excluded: { ignored: 4 } };
   assert.ok(el.runsView().includes("Not counted: 4 hidden."));
 });
+
+test("a list can hide columns and offers its rows as CSV", () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "inventory"; el.render();
+  assert.ok(shadow.innerHTML.includes('data-export-list="inventory"') && shadow.innerHTML.includes('data-col-open="inventory"'));
+  assert.ok(shadow.innerHTML.includes(">Type<"));
+  el.toggleCol("inventory", "type");
+  assert.ok(!shadow.innerHTML.includes('<th scope="col"') && !shadow.innerHTML.includes('data-sort="type"'));
+  assert.ok(el.colHidden("inventory", "type") && !el.colHidden("inventory", "status"));
+  const ex = el._exporters.inventory;
+  assert.equal(ex.rows().length, el.filtered().length);
+});

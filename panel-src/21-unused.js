@@ -101,7 +101,8 @@ class UnusedMixin {
     const kinds = [...new Set(all.map(kind))];
     const units = [...new Set(all.map(o => o.unit).filter(Boolean))].sort();
     const AGES = [30, 365, 730];
-    const bar = this.listBar("orphanstats", { sorts, filters: [
+    this.setExporter("orphanstats", "orphaned-statistics", ["ID", this.t("utKind"), this.t("utUnit"), this.t("utLast"), this.t("inEnergy")], () => rows.map(o => [o.statistic_id, this.t(kind(o)), o.unit || "", lastOf(o) ? new Date(lastOf(o) * 1000).toISOString() : "", o.in_energy ? "yes" : "no"]));
+    const bar = this.listBar("orphanstats", { columns: [{ key: "kind", label: "utKind" }, { key: "unit", label: "utUnit" }, { key: "last", label: "utLast" }, { key: "energy", label: "utEnergy" }], sorts, filters: [
       { name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) },
       { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
       { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
@@ -152,7 +153,9 @@ class UnusedMixin {
     const domains = [...new Set(all.map(domainOf))].sort();
     const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
     const platforms = [...new Set(all.map(o => o.platform).filter(Boolean))].sort();
-    const bar = this.listBar("unreferenced", { sorts, filters: [
+    const pickCols = ["domain", "device", "area", "platform", "changed", "reported", "since", "stats"].map(k => ({ key: k, label: { domain: "utDomain", device: "utDevice", area: "utArea", platform: "utIntegration", changed: "utChanged", reported: "utReported", since: "utSince", stats: "utStats" }[k] }));
+    this.setExporter("unreferenced", "unused-entities", [this.t("utName"), "ID", this.t("utDomain"), this.t("utDevice"), this.t("utArea"), this.t("utIntegration"), this.t("utChanged"), this.t("utReported"), this.t("utSince"), this.t("utStats")], () => rows.map(o => [o.name, o.object_id, domainOf(o), deviceName(o), this.areaName(o), o.platform || "", o.last_changed || "", o.last_reported || o.last_updated || "", o.status_since || "", this.data.meta.recorder_available ? (o.has_statistics ? "yes" : "no") : ""]));
+    const bar = this.listBar("unreferenced", { columns: pickCols, sorts, filters: [
       { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => domainOf(o) === d).length})`]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
       { name: "platform", all: this.t("allIntegrations"), options: platforms.map(p => [p, p]) },

@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", cleanupSumSelected: "Ausgewählt", batterySumLimit: "unter {n} %", batterySumLowest: "Niedrigster Stand", recSumCosts: "Größter Platzbedarf", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
+    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", cleanupSumSelected: "Ausgewählt", colsLabel: "Spalten ein- und ausblenden", exportListTitle: "Liste als CSV exportieren (alle Zeilen der Suche)", batterySumLimit: "unter {n} %", batterySumLowest: "Niedrigster Stand", recSumCosts: "Größter Platzbedarf", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -183,7 +183,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", cleanupSumSelected: "Selected", batterySumLimit: "below {n} %", batterySumLowest: "Lowest level", recSumCosts: "Largest footprint", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
+    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", cleanupSumSelected: "Selected", colsLabel: "Show or hide columns", exportListTitle: "Export the list as CSV (all rows of the search)", batterySumLimit: "below {n} %", batterySumLowest: "Lowest level", recSumCosts: "Largest footprint", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -1076,7 +1076,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){.tablewrap.lt,.tablewrap.inv{max-height:calc(100vh - 140px)}.tablewrap.lt thead th,.tablewrap.inv thead th{position:sticky;top:0;z-index:2}}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.listtools{display:flex;gap:8px;justify-content:flex-end;padding:0 14px 10px}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;gap:6px;min-width:180px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:8px;align-items:center;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){.tablewrap.lt,.tablewrap.inv{max-height:calc(100vh - 140px)}.tablewrap.lt thead th,.tablewrap.inv thead th{position:sticky;top:0;z-index:2}}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -1243,14 +1243,60 @@ class ListsMixin {
     return { rows, bar: items.length >= min || st.q ? this.listBar(id, { sorts: [] }) : "", none: q && !rows.length ? `<div class="emptymsg">${this.t("noMatches")}</div>` : "" };
   }
 
-  listBar(id, { sorts, filters = [] }) {
+  listBar(id, { sorts, filters = [], columns = [] }) {
     const st = this.lv[id];
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
-    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}${this.denseButton()}</div>`;
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}${this.denseButton()}${this.listTools(id, columns)}</div>`;
   }
+
+  // Column picker and CSV export of a list; both are optional. `columns` are the switchable columns: { key, label }.
+  listTools(id, columns = []) {
+    const open = this._colOpen === id;
+    const picker = columns.length ? `<span class="colwrap"><button type="button" class="dirbtn ${open ? "on" : ""}" data-col-open="${id}" aria-expanded="${open}" title="${this.esc(this.t("colsLabel"))}" aria-label="${this.esc(this.t("colsLabel"))}"><ha-icon icon="mdi:table-column"></ha-icon></button>${open ? `<span class="colpop" role="group" aria-label="${this.esc(this.t("colsLabel"))}">${columns.map(c => `<label><input type="checkbox" data-col="${id}|${c.key}" ${this.colHidden(id, c.key) ? "" : "checked"}> ${this.t(c.label)}</label>`).join("")}</span>` : ""}</span>` : "";
+    const download = this._exporters?.[id] ? `<button type="button" class="dirbtn" data-export-list="${id}" title="${this.esc(this.t("exportListTitle"))}" aria-label="${this.esc(this.t("exportListTitle"))}"><ha-icon icon="mdi:download"></ha-icon></button>` : "";
+    return picker + download;
+  }
+
+  // Hidden columns per list, kept in this browser only.
+  colState() {
+    if (this._cols) return this._cols;
+    let stored = {};
+    try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.cols") || "{}"); } catch (_) { stored = {}; }
+    const clean = {};
+    if (stored && typeof stored === "object") for (const [id, keys] of Object.entries(stored)) if (Array.isArray(keys)) clean[id] = keys.filter(k => typeof k === "string").slice(0, 20);
+    return (this._cols = clean);
+  }
+
+  colHidden(id, key) { return (this.colState()[id] || []).includes(key); }
+
+  toggleCol(id, key) {
+    const state = this.colState(), list = state[id] || [];
+    state[id] = list.includes(key) ? list.filter(k => k !== key) : [...list, key];
+    try { globalThis.localStorage?.setItem("ha_housekeeper.cols", JSON.stringify(state)); } catch (_) { /* kept until the page closes */ }
+    this.render();
+  }
+
+  // A list as CSV: every row of the current search and filters, all columns. Same formula guard as the findings export.
+  downloadRows(name, header, rows) {
+    const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+    const body = "\ufeff" + [header, ...rows].map(r => r.map(cell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([body], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `ha-housekeeper-${name}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // The view registers what its export holds before it draws the list bar: { name, header, rows() }.
+  exportList(id) {
+    const ex = this._exporters?.[id];
+    if (ex) this.downloadRows(ex.name, ex.header, ex.rows());
+  }
+
+  setExporter(id, name, header, rows) { (this._exporters ||= {})[id] = { name, header, rows }; }
 
   // Compact lists show the first line of every row; one switch for all lists, kept in this browser.
   denseButton() {
@@ -1263,6 +1309,7 @@ class ListsMixin {
   // columns: [{ key, label, cell(item) -> html, sortable, dir }]; rowAttrs(item) adds attributes to the row.
   listTable(id, columns, rows, { rowAttrs = () => "", cls = "" } = {}) {
     const st = this.lv[id];
+    columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
       const on = st.sort === c.key;
       const inner = c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
@@ -2288,9 +2335,12 @@ class InventoryMixin {
       typeTile("entity"), typeTile("device"), typeTile("automation"), typeTile("config_entry"),
       statusTile("unavailable", "red"), statusTile("orphaned", "warn"),
     ]);
+    const hid = key => this.colHidden("inventory", key);
+    this.setExporter("inventory", "inventory", [this.t("name"), "ID", this.t("type"), this.t("status"), this.t("reason"), this.t("since")], () => rows.map(i => [i.name, i.object_id, this.t(i.object_type), this.statusLabel(i.status), i.reason ? this.t(i.reason) : i.missing_reference_count ? `${i.missing_reference_count} ${this.t("missingReferences")}` : "", i.status_since || ""]));
+    const tools = `<div class="listtools">${this.listTools("inventory", ["type", "status", "reason", "since"].map(k => ({ key: k, label: k })))}</div>`;
     return `<div class="stack">${tiles}<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter" aria-label="${this.t("type")}"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter" aria-label="${this.t("status")}"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select>
-        <div class="mobsort"><select id="sortKey" aria-label="${this.t("sortBy")}">${[["name", "sortName"], ["type", "sortType"], ["status", "sortStatus"], ["since", "sortSince"]].map(([key, label]) => `<option value="${key}" ${this.sort === key ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select><button class="btn" id="sortDir" aria-label="${this.t("sortBy")}">${this.sortDir === "desc" ? "▼" : "▲"}</button></div></div>
-      <div class="tablewrap inv"><table><thead><tr>${this.th("name", "name")}${this.th("type", "type")}${this.th("status", "status")}<th>${this.t("reason")}</th>${this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}${this.nameCell(item.name, item.object_id, "span")}</span></td><td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td><td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td><td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
+        <div class="mobsort"><select id="sortKey" aria-label="${this.t("sortBy")}">${[["name", "sortName"], ["type", "sortType"], ["status", "sortStatus"], ["since", "sortSince"]].map(([key, label]) => `<option value="${key}" ${this.sort === key ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select><button class="btn" id="sortDir" aria-label="${this.t("sortBy")}">${this.sortDir === "desc" ? "▼" : "▲"}</button></div></div>${tools}
+      <div class="tablewrap inv"><table><thead><tr>${this.th("name", "name")}${hid("type") ? "" : this.th("type", "type")}${hid("status") ? "" : this.th("status", "status")}${hid("reason") ? "" : `<th>${this.t("reason")}</th>`}${hid("since") ? "" : this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}${this.nameCell(item.name, item.object_id, "span")}</span></td>${hid("type") ? "" : `<td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td>`}${hid("status") ? "" : `<td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td>`}${hid("reason") ? "" : `<td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td>`}${hid("since") ? "" : `<td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td>`}</tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
       ${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(this.data.objects.length)} ${this.t("shown")}</span></div>`}</div>`;
   }
 
@@ -2396,8 +2446,18 @@ class GraphMixin {
 
   // Columns from the outermost left level to the outermost right level, the object in the middle.
   graphLayout(model) {
-    const W = 196, H = 48, GAPX = 72, GAPY = 14;
-    const columns = [...[...model.left].reverse(), [{ key: model.key, center: true }], ...model.right];
+    const W = 232, H = 48, GAPX = 72, GAPY = 14;
+    // Children stand in the order of their parents (and then by type and name), so edges run side by side instead of crossing.
+    const sortKey = n => { const obj = this.findObject(n.key), [type, ...rest] = n.key.split(":"); return `${type}\u0000${obj?.name || rest.join(":")}`.toLowerCase(); };
+    const order = levels => {
+      let before = new Map([[model.key, 0]]);
+      return levels.map(level => {
+        const sorted = [...level].sort((a, b) => (before.get(a.parent) ?? 0) - (before.get(b.parent) ?? 0) || sortKey(a).localeCompare(sortKey(b)));
+        before = new Map(sorted.map((n, i) => [n.key, i]));
+        return sorted;
+      });
+    };
+    const columns = [...order(model.left).reverse(), [{ key: model.key, center: true }], ...order(model.right)];
     const tallest = Math.max(...columns.map(c => c.length));
     const height = tallest * H + (tallest - 1) * GAPY;
     const at = new Map();
@@ -2432,10 +2492,10 @@ class GraphMixin {
       const hit = hitKeys?.has(key), tone = obj ? this.tone(obj.status) : "red";
       const cls = ["gnode", node.center ? "center" : "", obj ? "" : "missing", hit ? "hit" : "", hitKeys && !hit && !node.center ? "gdim" : ""].filter(Boolean).join(" ");
       const label = `${this.t(type)}: ${name}, ${status}${hit ? `, ${this.t("graphBreaks")}` : ""}`;
-      return `<g class="${cls}" ${node.center ? "" : `data-graph="${this.esc(key)}" tabindex="0" role="button"`} aria-label="${this.esc(label)}" transform="translate(${x},${y})"><title>${this.esc(`${label} (${id})`)}</title>
+      return `<g class="${cls}" ${node.center ? "" : `data-graph="${this.esc(key)}" tabindex="0" role="button"`} aria-label="${this.esc(label)}" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""} · ${id}`)}" transform="translate(${x},${y})">
         <rect width="${W}" height="${H}" rx="8"></rect><rect class="bar ${tone}" width="5" height="${H}" rx="2"></rect>
-        <text class="t1" x="14" y="18">${this.esc(this.graphClip(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""}`, 32))}</text>
-        <text x="14" y="36">${this.esc(this.graphClip(name, 21))}</text></g>`;
+        <text class="t1" x="14" y="18">${this.esc(this.graphClip(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""}`, 38))}</text>
+        <text x="14" y="36">${this.esc(this.graphClip(name, 27))}</text></g>`;
     }).join("");
     return `<div class="graphwrap"><svg class="graphsvg" role="group" aria-label="${this.esc(this.t("graphLabel", { name: item.name }))}" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}">
       <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${edgeSvg}${nodeSvg}</svg></div>`;
@@ -2576,7 +2636,8 @@ class UnusedMixin {
     const kinds = [...new Set(all.map(kind))];
     const units = [...new Set(all.map(o => o.unit).filter(Boolean))].sort();
     const AGES = [30, 365, 730];
-    const bar = this.listBar("orphanstats", { sorts, filters: [
+    this.setExporter("orphanstats", "orphaned-statistics", ["ID", this.t("utKind"), this.t("utUnit"), this.t("utLast"), this.t("inEnergy")], () => rows.map(o => [o.statistic_id, this.t(kind(o)), o.unit || "", lastOf(o) ? new Date(lastOf(o) * 1000).toISOString() : "", o.in_energy ? "yes" : "no"]));
+    const bar = this.listBar("orphanstats", { columns: [{ key: "kind", label: "utKind" }, { key: "unit", label: "utUnit" }, { key: "last", label: "utLast" }, { key: "energy", label: "utEnergy" }], sorts, filters: [
       { name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) },
       { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
       { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
@@ -2627,7 +2688,9 @@ class UnusedMixin {
     const domains = [...new Set(all.map(domainOf))].sort();
     const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
     const platforms = [...new Set(all.map(o => o.platform).filter(Boolean))].sort();
-    const bar = this.listBar("unreferenced", { sorts, filters: [
+    const pickCols = ["domain", "device", "area", "platform", "changed", "reported", "since", "stats"].map(k => ({ key: k, label: { domain: "utDomain", device: "utDevice", area: "utArea", platform: "utIntegration", changed: "utChanged", reported: "utReported", since: "utSince", stats: "utStats" }[k] }));
+    this.setExporter("unreferenced", "unused-entities", [this.t("utName"), "ID", this.t("utDomain"), this.t("utDevice"), this.t("utArea"), this.t("utIntegration"), this.t("utChanged"), this.t("utReported"), this.t("utSince"), this.t("utStats")], () => rows.map(o => [o.name, o.object_id, domainOf(o), deviceName(o), this.areaName(o), o.platform || "", o.last_changed || "", o.last_reported || o.last_updated || "", o.status_since || "", this.data.meta.recorder_available ? (o.has_statistics ? "yes" : "no") : ""]));
+    const bar = this.listBar("unreferenced", { columns: pickCols, sorts, filters: [
       { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => domainOf(o) === d).length})`]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
       { name: "platform", all: this.t("allIntegrations"), options: platforms.map(p => [p, p]) },
@@ -3686,8 +3749,9 @@ class RunsMixin {
     return true;
   }
 
-  runsBar() {
-    return this.listBar("runs", { sorts: this.runsSorts(), filters: [
+  runsBar(rows = []) {
+    this.setExporter("runs", "runs", [this.t("runsColName"), "ID", this.t("runsColRuns"), this.t("runsColErrors"), this.t("runsColConditions"), `${this.t("runsColDuration")} (ms, mean)`, `${this.t("runsColDuration")} (ms, max)`], () => rows.map(r => [r.name, r.entity_id, r.runs, r.errors, r.conditions, r.mean_ms ?? "", r.max_ms ?? ""]));
+    return this.listBar("runs", { columns: [{ key: "runs", label: "runsColRuns" }, { key: "errors", label: "runsColErrors" }, { key: "conditions", label: "runsColConditions" }, { key: "duration", label: "runsColDuration" }, { key: "trend", label: "runsColTrend" }], sorts: this.runsSorts(), filters: [
       { name: "type", all: this.t("allTypes"), options: [["automation", this.t("automation")], ["script", this.t("script")]] },
       { name: "outcome", all: this.t("runsAllOutcomes"), options: [["errors", this.t("runsOnlyErrors")], ["flagged", this.t("runsOnlyFlagged")]] },
     ] });
@@ -3735,7 +3799,7 @@ class RunsMixin {
     const flagged = r.items.filter(row => row.findings.length && this.runsMatch(row));
     const everyCounted = r.items.filter(row => row.runs);
     const counted = this.refine("runs", everyCounted.filter(row => this.runsMatch(row)), { text: row => [row.name, row.entity_id].join(" "), sorts: this.runsSorts(), tie: row => row.entity_id });
-    const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar() : "";
+    const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar(counted) : "";
     const flaggedPage = this.paginate("runsflag", flagged);
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(this.lv.runs.q || this.lv.runs.f.type || this.lv.runs.f.outcome ? "noMatches" : everyCounted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
@@ -4824,7 +4888,18 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
-    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip(); const row = el.closest?.("tr"); if (row) { row.onfocus = () => this.showTip(el); row.onblur = () => this.hideTip(); } });
+    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip();
+      const holder = el.closest?.("tr") || (el.hasAttribute?.("tabindex") ? el : null);
+      if (holder) { holder.onfocus = () => this.showTip(el); holder.onblur = () => this.hideTip(); }
+      // Touch: a long press shows the tooltip for a few seconds and does not open the object.
+      el.ontouchstart = () => { globalThis.clearTimeout?.(this._tipTimer); this._tipTimer = globalThis.setTimeout?.(() => { this._tipShownAt = Date.now(); this.showTip(el); globalThis.clearTimeout?.(this._tipHide); this._tipHide = globalThis.setTimeout?.(() => this.hideTip(), 4000); }, 500); };
+      el.ontouchend = el.ontouchmove = el.ontouchcancel = () => globalThis.clearTimeout?.(this._tipTimer);
+      el.oncontextmenu = ev => { if (Date.now() - (this._tipShownAt || 0) < 1500) ev.preventDefault(); };
+      el.addEventListener?.("click", ev => { if (Date.now() - (this._tipShownAt || 0) < 800) { ev.stopImmediatePropagation(); ev.preventDefault(); } });
+    });
+    root.querySelectorAll("[data-col-open]").forEach(el => el.onclick = () => { this._colOpen = this._colOpen === el.dataset.colOpen ? "" : el.dataset.colOpen; this.render(); });
+    root.querySelectorAll("[data-col]").forEach(el => el.onchange = () => { const [id, key] = el.dataset.col.split("|"); this.toggleCol(id, key); });
+    root.querySelectorAll("[data-export-list]").forEach(el => el.onclick = () => this.exportList(el.dataset.exportList));
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));

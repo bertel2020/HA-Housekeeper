@@ -42,14 +42,60 @@ class ListsMixin {
     return { rows, bar: items.length >= min || st.q ? this.listBar(id, { sorts: [] }) : "", none: q && !rows.length ? `<div class="emptymsg">${this.t("noMatches")}</div>` : "" };
   }
 
-  listBar(id, { sorts, filters = [] }) {
+  listBar(id, { sorts, filters = [], columns = [] }) {
     const st = this.lv[id];
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
-    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}${this.denseButton()}</div>`;
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}${this.denseButton()}${this.listTools(id, columns)}</div>`;
   }
+
+  // Column picker and CSV export of a list; both are optional. `columns` are the switchable columns: { key, label }.
+  listTools(id, columns = []) {
+    const open = this._colOpen === id;
+    const picker = columns.length ? `<span class="colwrap"><button type="button" class="dirbtn ${open ? "on" : ""}" data-col-open="${id}" aria-expanded="${open}" title="${this.esc(this.t("colsLabel"))}" aria-label="${this.esc(this.t("colsLabel"))}"><ha-icon icon="mdi:table-column"></ha-icon></button>${open ? `<span class="colpop" role="group" aria-label="${this.esc(this.t("colsLabel"))}">${columns.map(c => `<label><input type="checkbox" data-col="${id}|${c.key}" ${this.colHidden(id, c.key) ? "" : "checked"}> ${this.t(c.label)}</label>`).join("")}</span>` : ""}</span>` : "";
+    const download = this._exporters?.[id] ? `<button type="button" class="dirbtn" data-export-list="${id}" title="${this.esc(this.t("exportListTitle"))}" aria-label="${this.esc(this.t("exportListTitle"))}"><ha-icon icon="mdi:download"></ha-icon></button>` : "";
+    return picker + download;
+  }
+
+  // Hidden columns per list, kept in this browser only.
+  colState() {
+    if (this._cols) return this._cols;
+    let stored = {};
+    try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.cols") || "{}"); } catch (_) { stored = {}; }
+    const clean = {};
+    if (stored && typeof stored === "object") for (const [id, keys] of Object.entries(stored)) if (Array.isArray(keys)) clean[id] = keys.filter(k => typeof k === "string").slice(0, 20);
+    return (this._cols = clean);
+  }
+
+  colHidden(id, key) { return (this.colState()[id] || []).includes(key); }
+
+  toggleCol(id, key) {
+    const state = this.colState(), list = state[id] || [];
+    state[id] = list.includes(key) ? list.filter(k => k !== key) : [...list, key];
+    try { globalThis.localStorage?.setItem("ha_housekeeper.cols", JSON.stringify(state)); } catch (_) { /* kept until the page closes */ }
+    this.render();
+  }
+
+  // A list as CSV: every row of the current search and filters, all columns. Same formula guard as the findings export.
+  downloadRows(name, header, rows) {
+    const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+    const body = "\ufeff" + [header, ...rows].map(r => r.map(cell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([body], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `ha-housekeeper-${name}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // The view registers what its export holds before it draws the list bar: { name, header, rows() }.
+  exportList(id) {
+    const ex = this._exporters?.[id];
+    if (ex) this.downloadRows(ex.name, ex.header, ex.rows());
+  }
+
+  setExporter(id, name, header, rows) { (this._exporters ||= {})[id] = { name, header, rows }; }
 
   // Compact lists show the first line of every row; one switch for all lists, kept in this browser.
   denseButton() {
@@ -62,6 +108,7 @@ class ListsMixin {
   // columns: [{ key, label, cell(item) -> html, sortable, dir }]; rowAttrs(item) adds attributes to the row.
   listTable(id, columns, rows, { rowAttrs = () => "", cls = "" } = {}) {
     const st = this.lv[id];
+    columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
       const on = st.sort === c.key;
       const inner = c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
