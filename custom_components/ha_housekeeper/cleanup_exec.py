@@ -86,9 +86,11 @@ class CleanupError(Exception):
 class StepAbort(Exception):
     """One step must not run; ``reason`` is the user-facing code recorded in the journal."""
 
-    def __init__(self, reason: str) -> None:
+    def __init__(self, reason: str, result: dict[str, Any] | None = None) -> None:
         super().__init__(reason)
         self.reason = reason
+        # What was already changed and could not be put back; journalled so it is never lost.
+        self.result = result
 
 
 def _now() -> datetime:
@@ -380,7 +382,19 @@ class CleanupRunner:
             try:
                 result, event = await self._perform(plan, action)
             except StepAbort as stop:
-                self._abort(plan, stop.reason, object_ids[index:], object_id)
+                if stop.result is None:
+                    self._abort(plan, stop.reason, object_ids[index:], object_id)
+                    return
+                # Something stayed changed: keep it as a done step so an undo can retry it.
+                action["result"] = {
+                    "state": "done",
+                    "at": _now().isoformat(),
+                    "stopped": stop.reason,
+                    **stop.result,
+                }
+                _event(plan, "rollback_incomplete", object_id=object_id, reason=stop.reason)
+                plan["executed"] = True
+                self._abort(plan, stop.reason, object_ids[index + 1 :], object_id)
                 return
             action["result"] = {"state": "done", "at": _now().isoformat(), **result}
             _event(plan, event, object_id=object_id)
@@ -720,29 +734,49 @@ class CleanupRunner:
                 if not changes:
                     raise StepAbort("source_changed")
                 before = await self._write_source(loaded, item, planned["hash"])
-                # What Home Assistant now holds is the reference for a later undo: it may
-                # normalise what was written (the Energy dashboard adds fields).
-                after = await load_source(self.hass, snapshot, planned["source"])
+                # Registered at once: from here on the source is changed, so every failure path
+                # must be able to put it back, even if reading it again fails.
                 source = {
                     "source": loaded["source"],
                     "type": planned["type"],
                     "format": loaded["format"],
                     "before": before,
-                    "after_hash": after["hash"],
+                    "after_hash": None,
                     "change_count": len(changes),
-                    "state": "done",
+                    "state": "written",
                 }
                 written.append(source)
+                # What Home Assistant now holds is the reference for a later undo: it may
+                # normalise what was written (the Energy dashboard adds fields).
+                after = await load_source(self.hass, snapshot, planned["source"])
+                source["after_hash"] = after["hash"]
+                source["state"] = "done"
                 await self._reload(loaded)
         except (StepAbort, SourceError) as err:
-            for source in reversed(written):
-                await self._revert_source(source)
-            raise StepAbort(err.reason if isinstance(err, StepAbort) else str(err)) from err
+            reason = err.reason if isinstance(err, StepAbort) else str(err)
+            await self._roll_back(written, reason, action)
+            raise StepAbort(reason) from err
         except Exception as err:
-            for source in reversed(written):
-                await self._revert_source(source)
+            await self._roll_back(written, "source_write_failed", action)
             raise StepAbort("source_write_failed") from err
         return {"before": action["fingerprint"], "sources": written}
+
+    async def _roll_back(
+        self, written: list[dict[str, Any]], reason: str, action: dict[str, Any]
+    ) -> None:
+        """Put back what was written, newest first; if a source stays changed, say so.
+
+        A source that cannot be put back is not hidden behind a plain abort: the step is
+        journalled with it, so the person sees it and a later undo can try again.
+        """
+        outcomes = [await self._revert_source(source) for source in reversed(written)]
+        if any(outcome != "undone" for outcome in outcomes):
+            for source, outcome in zip(reversed(written), outcomes, strict=True):
+                source["rollback"] = outcome
+            raise StepAbort(
+                "rollback_incomplete",
+                {"before": action["fingerprint"], "sources": written, "cause": reason},
+            )
 
     async def _write_source(self, loaded: dict[str, Any], item: Any, expected_hash: str) -> Any:
         """Write one rewritten configuration and return the text/value it replaces."""
@@ -776,11 +810,14 @@ class CleanupRunner:
             loaded = await load_source(self.hass, self.scanner.snapshot, source["source"])
         except SourceError:
             return "conflict_gone"
-        if loaded["hash"] != source["after_hash"]:
+        # Without a verified hash (reading it after the write failed) the file as it is now
+        # is the only reference there is.
+        expected = source["after_hash"] or loaded["hash"]
+        if loaded["hash"] != expected:
             return "conflict_changed"
         original = parse_yaml(source["before"]) if source["format"] == "yaml" else source["before"]
         try:
-            await self._write_source(loaded, original, source["after_hash"])
+            await self._write_source(loaded, original, expected)
             await self._reload(loaded)
         except Exception:
             return "conflict_unrestorable"
@@ -910,7 +947,9 @@ class CleanupRunner:
             elif kind in METER_KINDS:
                 checks.extend(await self._verify_meter(action))
             else:
-                done = {s["source"] for s in action["result"]["sources"]}
+                done = {
+                    s["source"] for s in action["result"]["sources"] if s.get("state") != "undone"
+                }
                 still = [
                     e
                     for e in snapshot["edges"]

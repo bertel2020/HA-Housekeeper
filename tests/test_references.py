@@ -545,3 +545,71 @@ async def test_a_failed_reload_puts_the_file_back(hass: HomeAssistant) -> None:
     assert plan["status"] == "aborted" and plan["executed"] is False
     assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD  # as before
     assert calls == ["automation", "automation"]  # and Home Assistant read it again
+
+
+def _load_source_failing_after_the_first_call(*, times: int):
+    """A ``load_source`` that reads once, then fails ``times`` times, then works again."""
+    from custom_components.ha_housekeeper import cleanup_exec
+    from custom_components.ha_housekeeper.references import SourceError
+
+    real = cleanup_exec.load_source
+    calls = {"n": 0}
+
+    async def flaky(hass, snapshot, source_key):
+        calls["n"] += 1
+        if 1 < calls["n"] <= 1 + times:
+            raise SourceError("source_gone")
+        return await real(hass, snapshot, source_key)
+
+    return patch.object(cleanup_exec, "load_source", flaky)
+
+
+async def test_a_failed_read_after_the_write_still_puts_the_file_back(
+    hass: HomeAssistant,
+) -> None:
+    make_entities(hass)
+    path = write_config(hass, "automations.yaml", AUTOMATIONS)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        plan = await make_reference_plan(scanner, hass)
+        # Reads: 1 before the write, 2 after it (fails), 3 while putting it back (works).
+        with _load_source_failing_after_the_first_call(times=1):
+            await run(scanner, plan, [OLD])
+    assert plan["actions"][0]["result"]["reason"] == "source_gone"
+    assert plan["status"] == "aborted" and plan["executed"] is False
+    assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD
+
+
+async def test_a_rollback_that_fails_is_journalled_and_can_be_undone(
+    hass: HomeAssistant,
+) -> None:
+    make_entities(hass)
+    path = write_config(hass, "automations.yaml", AUTOMATIONS)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        plan = await make_reference_plan(scanner, hass)
+        # The read after the write and the read for the rollback both fail.
+        with _load_source_failing_after_the_first_call(times=2):
+            await run(scanner, plan, [OLD])
+
+        result = plan["actions"][0]["result"]
+        assert result["state"] == "done" and result["stopped"] == "rollback_incomplete"
+        assert result["cause"] == "source_gone"
+        assert result["sources"][0]["rollback"] == "conflict_gone"
+        assert plan["status"] == "partial" and plan["executed"] is True
+        assert "rollback_incomplete" in [e["type"] for e in plan["events"]]
+        assert load_yaml(path)[0]["trigger"][0]["entity_id"] == NEW  # still changed
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+        assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD
