@@ -518,7 +518,7 @@ Object.assign(TEXT.de, {
   propDisabledBy: "Deaktiviert durch", propHiddenBy: "Ausgeblendet durch", propEntityId: "Entity-ID", propUniqueId: "Eindeutige ID", propPlatform: "Plattform",
   propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung",
   propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
-  propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
+  propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Aufräumen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
   propMoreEntities: "… und {count} weitere (siehe Beziehungen)", propNoEntities: "Dieses Gerät hat keine Entities.",
   by_user: "Benutzer", by_integration: "Integration", by_config_entry: "Integrationseintrag (deaktiviert)", by_device: "Gerät (deaktiviert)", by_hass: "Home Assistant",
   cat_config: "Konfiguration", cat_diagnostic: "Diagnose", type_service: "Dienst (kein physisches Gerät)",
@@ -530,7 +530,7 @@ Object.assign(TEXT.en, {
   propDisabledBy: "Disabled by", propHiddenBy: "Hidden by", propEntityId: "Entity ID", propUniqueId: "Unique ID", propPlatform: "Platform",
   propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update",
   propManufacturer: "Manufacturer", propModel: "Model", propSerial: "Serial number", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Kind", propUserName: "Custom name", propOriginalDeviceName: "Name from the integration",
-  propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
+  propKind: "Kind", propKindChild: "Child device", propParent: "Parent device", propCleanupBlock: "Cleanup blocked", propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
   propMoreEntities: "… and {count} more (see relations)", propNoEntities: "This device has no entities.",
   by_user: "User", by_integration: "Integration", by_config_entry: "Integration entry (disabled)", by_device: "Device (disabled)", by_hass: "Home Assistant",
   cat_config: "Configuration", cat_diagnostic: "Diagnostic", type_service: "Service (not a physical device)",
@@ -2310,7 +2310,11 @@ class PropertiesMixin {
   deviceCards(item) {
     const t = k => this.t(k);
     const via = item.via_device_id ? this.findObject(`device:${item.via_device_id}`) : null;
-    const children = this.data.objects.filter(o => o.object_type === "device" && o.via_device_id === item.object_id);
+    const parent = item.parent_device_id ? this.findObject(`device:${item.parent_device_id}`) : null;
+    const children = this.data.objects.filter(o => o.object_type === "device" && (o.via_device_id === item.object_id || o.parent_device_id === item.object_id));
+    const isChild = item.device_kind === "child";
+    // The same two structural reasons that block a cleanup plan (see cleanup.py), so the page explains the block before a plan is made.
+    const blocks = [isChild ? "reason_child_device" : "", children.length ? "reason_has_children" : ""].filter(Boolean).map(k => this.esc(this.t(k))).join("<br>");
     const entries = (item.config_entry_ids || []).map(id => this.findObject(`config_entry:${id}`)).filter(Boolean);
     const info = this.propCard(t("propDevice"), "mdi:devices", [
       [t("propManufacturer"), this.esc(item.manufacturer || "")],
@@ -2325,8 +2329,11 @@ class PropertiesMixin {
     const assignment = this.propCard(t("propAssignment"), "mdi:link-variant", [
       [t("propIntegration"), entries.map(e => this.propLink(`config_entry:${e.object_id}`, e.integration_name || e.name, e.integration_name ? `(${e.domain})` : "")).join("<br>")],
       [t("propArea"), this.propArea(item.area_id, null)],
+      [t("propKind"), isChild ? t("propKindChild") : ""],
+      [t("propParent"), parent ? this.propLink(`device:${parent.object_id}`, parent.name) : ""],
       [t("propVia"), via ? this.propLink(`device:${via.object_id}`, via.name) : ""],
       [t("propChildren"), children.length ? this.t("propChildrenCount", { count: children.length }) : ""],
+      [t("propCleanupBlock"), blocks],
       [t("propLabels"), this.propLabels(item.labels)],
       [t("propConfigUrl"), /^https?:\/\//i.test(item.configuration_url || "") ? `<a href="${this.esc(item.configuration_url)}" target="_blank" rel="noopener noreferrer">${this.esc(item.configuration_url)}</a>` : this.esc(item.configuration_url || "")],
     ]);

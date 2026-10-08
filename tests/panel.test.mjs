@@ -1189,6 +1189,23 @@ test("a device page lists manufacturer, firmware, links and its entities", () =>
   assert.ok(shadow.innerHTML.includes("1 Geräte") && shadow.innerHTML.includes("hat keine Entities"));
 });
 
+test("a child device page names its kind and parent, and a hub explains why cleanup is blocked", () => {
+  const { el, shadow } = panel("de");
+  const data = propertyData();
+  const child = { object_type: "device", object_id: "kid", name: "Zigbee-Kind", device_kind: "child", parent_device_id: "hub", via_device_id: null, config_entry_ids: ["ce1"], labels: [], status: "active" };
+  data.objects.push(child);
+  el.data = data;
+  el.selected = child; el.view = "detail"; el.details = new Map(); el.detailTab = "technical"; el.render();
+  let html = shadow.innerHTML;
+  for (const text of ["Untergerät", "Übergeordnetes Gerät", 'data-object="device:hub"', "Aufräumen gesperrt", "Untergeräte lassen sich noch nicht entfernen"]) assert.ok(html.includes(text), text);
+  el.selected = data.objects.find(o => o.object_id === "hub"); el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("Aufräumen gesperrt") && html.includes("Andere Geräte hängen an diesem Gerät") && html.includes("2 Geräte"));
+  assert.ok(!html.includes("<dt>Art</dt>"));
+  el.selected = data.objects.find(o => o.object_id === "dev1"); el.render();
+  assert.ok(!shadow.innerHTML.includes("Aufräumen gesperrt") && !shadow.innerHTML.includes("Übergeordnetes Gerät"));
+});
+
 const METER_PLAN = {
   plan_id: "m1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
   actions: [{ kind: "migrate_meter", object_type: "entity", object_id: "sensor.meter_old", target: "sensor.meter_new", mode: "both", alt_id: "sensor.meter_old_alt", name: "Old meter", verdict: "review", executable: true,

@@ -64,7 +64,11 @@ class PropertiesMixin {
   deviceCards(item) {
     const t = k => this.t(k);
     const via = item.via_device_id ? this.findObject(`device:${item.via_device_id}`) : null;
-    const children = this.data.objects.filter(o => o.object_type === "device" && o.via_device_id === item.object_id);
+    const parent = item.parent_device_id ? this.findObject(`device:${item.parent_device_id}`) : null;
+    const children = this.data.objects.filter(o => o.object_type === "device" && (o.via_device_id === item.object_id || o.parent_device_id === item.object_id));
+    const isChild = item.device_kind === "child";
+    // The same two structural reasons that block a cleanup plan (see cleanup.py), so the page explains the block before a plan is made.
+    const blocks = [isChild ? "reason_child_device" : "", children.length ? "reason_has_children" : ""].filter(Boolean).map(k => this.esc(this.t(k))).join("<br>");
     const entries = (item.config_entry_ids || []).map(id => this.findObject(`config_entry:${id}`)).filter(Boolean);
     const info = this.propCard(t("propDevice"), "mdi:devices", [
       [t("propManufacturer"), this.esc(item.manufacturer || "")],
@@ -79,8 +83,11 @@ class PropertiesMixin {
     const assignment = this.propCard(t("propAssignment"), "mdi:link-variant", [
       [t("propIntegration"), entries.map(e => this.propLink(`config_entry:${e.object_id}`, e.integration_name || e.name, e.integration_name ? `(${e.domain})` : "")).join("<br>")],
       [t("propArea"), this.propArea(item.area_id, null)],
+      [t("propKind"), isChild ? t("propKindChild") : ""],
+      [t("propParent"), parent ? this.propLink(`device:${parent.object_id}`, parent.name) : ""],
       [t("propVia"), via ? this.propLink(`device:${via.object_id}`, via.name) : ""],
       [t("propChildren"), children.length ? this.t("propChildrenCount", { count: children.length }) : ""],
+      [t("propCleanupBlock"), blocks],
       [t("propLabels"), this.propLabels(item.labels)],
       [t("propConfigUrl"), /^https?:\/\//i.test(item.configuration_url || "") ? `<a href="${this.esc(item.configuration_url)}" target="_blank" rel="noopener noreferrer">${this.esc(item.configuration_url)}</a>` : this.esc(item.configuration_url || "")],
     ]);
