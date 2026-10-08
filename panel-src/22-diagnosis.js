@@ -229,26 +229,64 @@ class DiagnosisMixin {
     return `<section class="panel"><div class="panelhead"><h2>${this.t("integrationCard")}</h2></div><div class="pad"><dl class="kv">${rows.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${v}</dd>`).join("")}</dl></div></section>`;
   }
 
+  // The always-visible summary under the title: status, cause, since when, integration, device, area, risk.
+  detailSummary(item, key) {
+    const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+    const areaId = item.area_id || device?.area_id, area = areaId ? this.findObject(`area:${areaId}`) : null;
+    const integration = item.object_type === "entity" ? item.platform : item.object_type === "config_entry" ? (item.integration_name || item.domain) : null;
+    const impact = this.impact(item, key);
+    const risk = impact ? { tone: impact.tone, text: impact.hits.length ? this.t("riskHits", { n: impact.hits.length, c: impact.certain }) : this.t("riskNone") } : null;
+    return [
+      [this.t("status"), this.pill(item.status)],
+      item.reason ? [this.t("sumCause"), this.esc(this.t(item.reason))] : null,
+      item.status_since ? [this.t("since"), this.esc(this.formatDate(item.status_since))] : null,
+      integration ? [this.t("sumIntegration"), this.esc(integration)] : null,
+      device ? [this.t("sumDevice"), this.esc(device.name)] : null,
+      area ? [this.t("sumArea"), this.esc(area.name)] : null,
+      risk ? [this.t("sumRisk"), `<span class="pill ${risk.tone}">${this.esc(risk.text)}</span>`] : null,
+    ].filter(Boolean);
+  }
+
+  // Tabs offered for one object; "attributes" only when it has some, so an empty tab never shows.
+  detailTabs(item, key) {
+    const tabs = [["overview", "tabOverview"], ["relations", "tabRelations", this.edgesTo(key).length + this.edgesFrom(key).length], ["technical", "tabTechnical"]];
+    if (item.attributes && Object.keys(item.attributes).length) tabs.push(["attributes", "tabAttributes"]);
+    return tabs;
+  }
+
   detail() {
     const base = this.selected;
     const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
     const key = this.objectKey(item);
-    const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
-    if (item.object_type === "config_entry") ["domain", "integration_name", "custom", "integration_dir", "integration_version", "documentation", "source", "error", "unique_id", "entity_count", "device_count", "created_at", "modified_at", "disabled_by"].forEach(k => skip.add(k));
-    const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
-    const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
-      ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
-    const attrs = item.attributes && Object.keys(item.attributes).length
-      ? `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>` : "";
-    const cards = this.propertyCards(item);
+    const tabs = this.detailTabs(item, key);
+    const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
     const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
+    const summary = this.detailSummary(item, key).map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`).join("");
+    const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
       <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
-      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}
-        ${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}
-        ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
-      <div class="stack">${this.factsCard(item, key)}${this.findingsCard(key)}${this.relationsCard(key)}</div></div>`;
+      <div class="panel sumline">${summary}</div>
+      <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>
+      <div role="tabpanel" id="hk-tabpanel" aria-labelledby="hk-tab-${tab}" tabindex="0">${this.detailPanel(tab, item, key)}</div>`;
+  }
+
+  // Only the open tab is built, so large attributes and relations cost nothing until they are asked for.
+  detailPanel(tab, item, key) {
+    if (tab === "relations") return `<div class="stack">${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
+    if (tab === "attributes") {
+      return `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>`;
+    }
+    if (tab === "technical") {
+      const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
+      if (item.object_type === "config_entry") ["domain", "integration_name", "custom", "integration_dir", "integration_version", "documentation", "source", "error", "unique_id", "entity_count", "device_count", "created_at", "modified_at", "disabled_by"].forEach(k => skip.add(k));
+      const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
+      const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
+        ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
+      const cards = this.propertyCards(item);
+      return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
+    }
+    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}</div></div>`;
   }
 }

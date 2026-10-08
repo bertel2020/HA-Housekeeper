@@ -15,6 +15,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._urlApplied = false;
     this.sort = "name";
     this.selected = null;
+    this.detailTab = "overview";
     this.trail = [];
     this.compare = null;
     this.compareBaseline = "previous";
@@ -116,6 +117,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   async openObject(obj) {
     if (this.selected && this.selected !== obj) this.trail.push(this.selected);
+    if (this.selected !== obj) { this.detailTab = this._pendingTab || "overview"; this._pendingTab = null; }
     this.selected = obj;
     const key = this.objectKey(obj);
     if (this.details.has(key)) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
@@ -131,7 +133,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.selected === obj) this.render();
   }
 
-  goBack() { this.selected = this.trail.pop() || null; this.render(); }
+  goBack() { this.selected = this.trail.pop() || null; this.detailTab = "overview"; this.render(); }
 
   statusLabel(status) { return this.t(status); }
 
@@ -312,6 +314,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (view && NAV.some(([name]) => name === view)) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
+    this._pendingTab = params.get("tab");
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -321,7 +324,10 @@ class HAHousekeeperPanel extends HTMLElement {
     if (typeof window === "undefined" || !this.isConnected || !window.history?.replaceState) return;
     if (window.location.pathname !== this._basePath) return; // HA already navigated elsewhere
     const params = new URLSearchParams();
-    if (this.selected) params.set("object", this.objectKey(this.selected));
+    if (this.selected) {
+      params.set("object", this.objectKey(this.selected));
+      if (this.detailTab !== "overview") params.set("tab", this.detailTab);
+    }
     else {
       if (this.view !== "overview") params.set("view", this.view);
       if (this.view === "findingsNav" && this.findingFilter) params.set("filter", this.findingFilter);
@@ -386,6 +392,18 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
+    root.querySelectorAll("[data-detail-tab]").forEach(el => {
+      el.onclick = () => { this.detailTab = el.dataset.detailTab; this.render(); };
+      el.onkeydown = ev => {
+        const ids = [...root.querySelectorAll("[data-detail-tab]")].map(b => b.dataset.detailTab), at = ids.indexOf(el.dataset.detailTab);
+        const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];
+        if (!next) return;
+        ev.preventDefault();
+        this.detailTab = next;
+        this.render();
+        this.shadowRoot.querySelector(`[data-detail-tab="${next}"]`)?.focus();
+      };
+    });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
       const obj = this.findObject(el.dataset.graphOpen);
       if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }

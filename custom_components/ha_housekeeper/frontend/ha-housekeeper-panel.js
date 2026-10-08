@@ -8,6 +8,8 @@ const TEXT = {
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
+    tabsLabel: "Abschnitte des Objekts", tabOverview: "Übersicht", tabRelations: "Abhängigkeiten", tabTechnical: "Technische Daten", tabAttributes: "Attribute",
+    sumCause: "Ursache", sumIntegration: "Integration", sumDevice: "Gerät", sumArea: "Bereich", sumRisk: "Risiko beim Entfernen", riskNone: "keine Verwendung gefunden", riskHits: "{n} Verwendungen, davon sicher: {c}",
     since: "Beobachtet seit", dependencies: "Beziehungen", objects: "Objekte",
     findings: "Befunde", active: "Aktiv", orphaned: "Verwaist",
     unavailable: "Nicht verfügbar", disabled: "Deaktiviert", unknown: "Unbekannt",
@@ -175,6 +177,8 @@ const TEXT = {
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
+    tabsLabel: "Sections of the object", tabOverview: "Overview", tabRelations: "Dependencies", tabTechnical: "Technical data", tabAttributes: "Attributes",
+    sumCause: "Cause", sumIntegration: "Integration", sumDevice: "Device", sumArea: "Area", sumRisk: "Risk when removed", riskNone: "no use found", riskHits: "{n} uses, certain: {c}",
     since: "Observed since", dependencies: "Relations", objects: "Objects",
     findings: "Findings", active: "Active", orphaned: "Orphaned",
     unavailable: "Unavailable", disabled: "Disabled", unknown: "Unknown",
@@ -713,6 +717,8 @@ class StylesMixin {
       .search{padding:14px;border-bottom:1px solid var(--hk-border)}.search input{width:100%}.hits{display:grid;max-height:280px;overflow:auto}.hit{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;padding:9px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left}.hit:hover{background:var(--hk-soft)}.hit .tile{width:30px;height:30px}
       .crumbs{display:flex;align-items:center;gap:12px;margin-bottom:14px}.crumbs .trail{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));text-transform:uppercase;letter-spacing:.07em}
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
+      .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
+      .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue);border-bottom-color:var(--hk-blue);font-weight:600}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
       .factnote{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}
@@ -1955,27 +1961,65 @@ class DiagnosisMixin {
     return `<section class="panel"><div class="panelhead"><h2>${this.t("integrationCard")}</h2></div><div class="pad"><dl class="kv">${rows.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${v}</dd>`).join("")}</dl></div></section>`;
   }
 
+  // The always-visible summary under the title: status, cause, since when, integration, device, area, risk.
+  detailSummary(item, key) {
+    const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
+    const areaId = item.area_id || device?.area_id, area = areaId ? this.findObject(`area:${areaId}`) : null;
+    const integration = item.object_type === "entity" ? item.platform : item.object_type === "config_entry" ? (item.integration_name || item.domain) : null;
+    const impact = this.impact(item, key);
+    const risk = impact ? { tone: impact.tone, text: impact.hits.length ? this.t("riskHits", { n: impact.hits.length, c: impact.certain }) : this.t("riskNone") } : null;
+    return [
+      [this.t("status"), this.pill(item.status)],
+      item.reason ? [this.t("sumCause"), this.esc(this.t(item.reason))] : null,
+      item.status_since ? [this.t("since"), this.esc(this.formatDate(item.status_since))] : null,
+      integration ? [this.t("sumIntegration"), this.esc(integration)] : null,
+      device ? [this.t("sumDevice"), this.esc(device.name)] : null,
+      area ? [this.t("sumArea"), this.esc(area.name)] : null,
+      risk ? [this.t("sumRisk"), `<span class="pill ${risk.tone}">${this.esc(risk.text)}</span>`] : null,
+    ].filter(Boolean);
+  }
+
+  // Tabs offered for one object; "attributes" only when it has some, so an empty tab never shows.
+  detailTabs(item, key) {
+    const tabs = [["overview", "tabOverview"], ["relations", "tabRelations", this.edgesTo(key).length + this.edgesFrom(key).length], ["technical", "tabTechnical"]];
+    if (item.attributes && Object.keys(item.attributes).length) tabs.push(["attributes", "tabAttributes"]);
+    return tabs;
+  }
+
   detail() {
     const base = this.selected;
     const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
     const key = this.objectKey(item);
-    const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
-    if (item.object_type === "config_entry") ["domain", "integration_name", "custom", "integration_dir", "integration_version", "documentation", "source", "error", "unique_id", "entity_count", "device_count", "created_at", "modified_at", "disabled_by"].forEach(k => skip.add(k));
-    const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
-    const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
-      ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
-    const attrs = item.attributes && Object.keys(item.attributes).length
-      ? `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>` : "";
-    const cards = this.propertyCards(item);
+    const tabs = this.detailTabs(item, key);
+    const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
     const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
+    const summary = this.detailSummary(item, key).map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`).join("");
+    const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
       <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
-      <div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}
-        ${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}
-        ${automation}${attrs}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>
-      <div class="stack">${this.factsCard(item, key)}${this.findingsCard(key)}${this.relationsCard(key)}</div></div>`;
+      <div class="panel sumline">${summary}</div>
+      <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>
+      <div role="tabpanel" id="hk-tabpanel" aria-labelledby="hk-tab-${tab}" tabindex="0">${this.detailPanel(tab, item, key)}</div>`;
+  }
+
+  // Only the open tab is built, so large attributes and relations cost nothing until they are asked for.
+  detailPanel(tab, item, key) {
+    if (tab === "relations") return `<div class="stack">${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
+    if (tab === "attributes") {
+      return `<section class="panel"><div class="panelhead"><h2>${this.t("state")}</h2></div><div class="pad"><div class="code">${this.esc(JSON.stringify(item.attributes, null, 2))}</div></div></section>`;
+    }
+    if (tab === "technical") {
+      const skip = new Set(["attributes", "references", "name", "object_id", "object_type", "status", "reason", "state", "status_since", "status_since_source", "triggers", "conditions", "actions"]);
+      if (item.object_type === "config_entry") ["domain", "integration_name", "custom", "integration_dir", "integration_version", "documentation", "source", "error", "unique_id", "entity_count", "device_count", "created_at", "modified_at", "disabled_by"].forEach(k => skip.add(k));
+      const fields = Object.entries(item).filter(([k, v]) => !skip.has(k) && v !== null && v !== undefined && (typeof v !== "object" || Array.isArray(v)));
+      const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
+        ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
+      const cards = this.propertyCards(item);
+      return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
+    }
+    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}</div></div>`;
   }
 }
 
@@ -2222,6 +2266,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._urlApplied = false;
     this.sort = "name";
     this.selected = null;
+    this.detailTab = "overview";
     this.trail = [];
     this.compare = null;
     this.compareBaseline = "previous";
@@ -2323,6 +2368,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   async openObject(obj) {
     if (this.selected && this.selected !== obj) this.trail.push(this.selected);
+    if (this.selected !== obj) { this.detailTab = this._pendingTab || "overview"; this._pendingTab = null; }
     this.selected = obj;
     const key = this.objectKey(obj);
     if (this.details.has(key)) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
@@ -2338,7 +2384,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.selected === obj) this.render();
   }
 
-  goBack() { this.selected = this.trail.pop() || null; this.render(); }
+  goBack() { this.selected = this.trail.pop() || null; this.detailTab = "overview"; this.render(); }
 
   statusLabel(status) { return this.t(status); }
 
@@ -2519,6 +2565,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (view && NAV.some(([name]) => name === view)) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
+    this._pendingTab = params.get("tab");
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -2528,7 +2575,10 @@ class HAHousekeeperPanel extends HTMLElement {
     if (typeof window === "undefined" || !this.isConnected || !window.history?.replaceState) return;
     if (window.location.pathname !== this._basePath) return; // HA already navigated elsewhere
     const params = new URLSearchParams();
-    if (this.selected) params.set("object", this.objectKey(this.selected));
+    if (this.selected) {
+      params.set("object", this.objectKey(this.selected));
+      if (this.detailTab !== "overview") params.set("tab", this.detailTab);
+    }
     else {
       if (this.view !== "overview") params.set("view", this.view);
       if (this.view === "findingsNav" && this.findingFilter) params.set("filter", this.findingFilter);
@@ -2593,6 +2643,18 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
+    root.querySelectorAll("[data-detail-tab]").forEach(el => {
+      el.onclick = () => { this.detailTab = el.dataset.detailTab; this.render(); };
+      el.onkeydown = ev => {
+        const ids = [...root.querySelectorAll("[data-detail-tab]")].map(b => b.dataset.detailTab), at = ids.indexOf(el.dataset.detailTab);
+        const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];
+        if (!next) return;
+        ev.preventDefault();
+        this.detailTab = next;
+        this.render();
+        this.shadowRoot.querySelector(`[data-detail-tab="${next}"]`)?.focus();
+      };
+    });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => {
       const obj = this.findObject(el.dataset.graphOpen);
       if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.view = "graph"; this.selected = null; this.trail = []; this.render(); }

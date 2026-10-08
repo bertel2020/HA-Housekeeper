@@ -1125,14 +1125,18 @@ test("removing a device asks for the removal word and says that its entities go 
   assert.equal(panel("de").el.planWord({ actions: [{ kind: "replace_references", executable: true }] }), "ERSETZEN");
 });
 
+// The detail page is split into tabs; some checks look at several of them.
+function detailTabsHtml(el, shadow, ...tabs) {
+  return tabs.map(tab => { el.detailTab = tab; el.render(); return shadow.innerHTML; }).join("\n");
+}
+
 test("an integration page says which integration it is, where it comes from and how it was set up", () => {
   const { el, shadow } = panel("de");
   const entry = { object_type: "config_entry", object_id: "01K72", name: "Bridge", domain: "hue", integration_name: "Philips Hue", custom: true, integration_dir: "custom_components/hue", integration_version: "1.2.3",
     documentation: "https://example.org/hue", source: "zeroconf", state: "setup_error", error: "Cannot connect", unique_id: "abc", entity_count: 4, device_count: 2, created_at: "2026-09-01T10:00:00+00:00", status: "problem" };
   el.data = { ...DATA, objects: [entry], edges: [], findings: [] };
   el.selected = entry; el.view = "detail"; el.details = new Map();
-  el.render();
-  const html = shadow.innerHTML;
+  const html = detailTabsHtml(el, shadow, "overview", "technical");
   for (const text of ["Philips Hue", "(hue)", "custom_components/hue · v1.2.3", "Automatisch entdeckt (zeroconf)", "Cannot connect", "01K72", "abc", "/config/integrations/integration/hue", 'href="https://example.org/hue"']) assert.ok(html.includes(text), text);
   assert.ok(html.includes("Meldung: Cannot connect"));
 });
@@ -1142,8 +1146,7 @@ test("an ignored discovery is explained and not shown as a problem", () => {
   const entry = { object_type: "config_entry", object_id: "01K73", name: "FBH Diele", domain: "battery_notes", source: "ignore", state: "not_loaded", status: "ignored", custom: false, entity_count: 0, device_count: 0 };
   el.data = { ...DATA, objects: [entry], edges: [], findings: [] };
   el.selected = entry; el.view = "detail"; el.details = new Map();
-  el.render();
-  const html = shadow.innerHTML;
+  const html = detailTabsHtml(el, shadow, "overview", "technical");
   assert.ok(html.includes("Ignorierte Entdeckung") && html.includes("kein Fehler") && html.includes("Hinzufügen"));
   assert.ok(html.includes(">Ignoriert<") && !html.includes("Fehler beim Einrichten"));
   assert.equal(el.tone("ignored"), "mute");
@@ -1165,7 +1168,7 @@ const propertyData = () => {
 test("an entity page shows its integration, device, area, labels and technical data", () => {
   const { el, shadow } = panel("de");
   el.data = propertyData();
-  el.selected = el.data.objects.find(o => o.object_id === "light.kitchen"); el.view = "detail"; el.details = new Map();
+  el.selected = el.data.objects.find(o => o.object_id === "light.kitchen"); el.view = "detail"; el.details = new Map(); el.detailTab = "technical";
   el.render();
   const html = shadow.innerHTML;
   for (const text of ["Zuordnung", "Philips Hue", "(hue)", 'data-object="config_entry:ce1"', "Küchenlampe", "Signify LCT015", 'data-object="device:dev1"', "(vom Gerät)",
@@ -1176,7 +1179,7 @@ test("an entity page shows its integration, device, area, labels and technical d
 test("a device page lists manufacturer, firmware, links and its entities", () => {
   const { el, shadow } = panel("de");
   el.data = propertyData();
-  el.selected = el.data.objects.find(o => o.object_id === "dev1"); el.view = "detail"; el.details = new Map();
+  el.selected = el.data.objects.find(o => o.object_id === "dev1"); el.view = "detail"; el.details = new Map(); el.detailTab = "technical";
   el.render();
   const html = shadow.innerHTML;
   for (const text of ["Signify", "LCT015 (9290)", "SN1", "1.88", "Name laut Integration", "Hue color lamp", "Philips Hue", 'data-object="area:kitchen"', "Hue Hub", 'data-object="device:hub"', "Wichtig",
@@ -1577,4 +1580,93 @@ test("jumping from a to-do row to the inventory sets its type and status filter"
   assert.equal(el.view, "inventory");
   assert.equal(el.typeFilter, "config_entry");
   assert.equal(el.statusFilter, "problem");
+});
+
+test("the detail page keeps a summary on top and builds only the open tab", () => {
+  const { el, shadow } = panel("en");
+  el.data = propertyData();
+  const entity = el.data.objects.find(o => o.object_id === "light.kitchen");
+  el.selected = entity; el.view = "detail"; el.details = new Map([[el.objectKey(entity), { attributes: { effect_marker: "zebra-77" } }]]);
+  el.render();
+  let html = shadow.innerHTML;
+  const summary = html.slice(html.indexOf('class="panel sumline"'), html.indexOf('class="tabs"'));
+  for (const text of ["Status", "Integration", "hue", "Device", "Küchenlampe", "Area", "Küche (Raum)", "Risk when removed"]) assert.ok(summary.includes(text), text);
+  assert.ok(html.includes('role="tablist"') && html.includes('role="tabpanel"'));
+  const tabs = [...html.matchAll(/data-detail-tab="(\w+)"/g)].map(m => m[1]);
+  assert.equal(JSON.stringify(tabs), JSON.stringify(["overview", "relations", "technical", "attributes"]));
+  assert.ok(/id="hk-tab-overview" aria-selected="true" aria-controls="hk-tabpanel" tabindex="0"/.test(html));
+  assert.ok(/id="hk-tab-relations" aria-selected="false" aria-controls="hk-tabpanel" tabindex="-1"/.test(html), "roving tabindex");
+  assert.ok(html.includes('class="panelhead"') && html.includes(el.t("facts")), "overview: diagnosis and facts");
+  assert.ok(!html.includes("zebra-77") && !html.includes("u-1"), "other tabs are not built");
+
+  html = detailTabsHtml(el, shadow, "attributes");
+  assert.ok(html.includes("zebra-77"));
+  html = detailTabsHtml(el, shadow, "relations");
+  assert.ok(html.includes(el.t("relations") === "relations" ? "Relations" : el.t("relations")) || html.includes("hk-tabpanel"));
+  assert.ok(!html.includes("zebra-77"));
+  el.details = new Map(); // no attributes: no attributes tab, and a stale choice falls back to the overview
+  el.detailTab = "attributes"; el.render();
+  html = shadow.innerHTML;
+  assert.ok(!html.includes('data-detail-tab="attributes"'));
+  assert.ok(/id="hk-tab-overview" aria-selected="true"/.test(html));
+});
+
+test("detail tabs are chosen by click and arrow keys, and reset for another object", () => {
+  const { el, shadow } = panel("en");
+  el.data = propertyData();
+  const entity = el.data.objects.find(o => o.object_id === "light.kitchen");
+  el.selected = entity; el.view = "detail"; el.details = new Map();
+  const buttons = ["overview", "relations", "technical"].map(id => ({ dataset: { detailTab: id } }));
+  const focused = [];
+  shadow.querySelectorAll = selector => (selector === "[data-detail-tab]" ? buttons : []);
+  shadow.querySelector = selector => { const m = /^\[data-detail-tab="(\w+)"\]$/.exec(selector); return m ? { focus: () => focused.push(m[1]) } : null; };
+  el.render();
+  buttons[2].onclick();
+  assert.equal(el.detailTab, "technical");
+  const press = (button, key) => { const ev = { key, prevented: false, preventDefault() { this.prevented = true; } }; button.onkeydown(ev); return ev; };
+  assert.ok(press(buttons[2], "ArrowRight").prevented);
+  assert.equal(el.detailTab, "overview", "wraps around");
+  press(buttons[0], "ArrowLeft");
+  assert.equal(el.detailTab, "technical");
+  press(buttons[2], "Home");
+  assert.equal(el.detailTab, "overview");
+  press(buttons[0], "End");
+  assert.equal(el.detailTab, "technical");
+  assert.equal(JSON.stringify(focused), JSON.stringify(["overview", "technical", "overview", "technical"]), "focus follows the arrow keys");
+  assert.equal(focused.at(-1), "technical");
+  assert.ok(!press(buttons[0], "a").prevented, "other keys are left alone");
+
+  el.detailTab = "technical";
+  const device = el.data.objects.find(o => o.object_id === "dev1");
+  el.openObject(device);
+  assert.equal(el.detailTab, "overview", "another object starts on the overview");
+  el._pendingTab = "relations";
+  el.openObject(entity);
+  assert.equal(el.detailTab, "relations", "a deep link brings its tab");
+  el.goBack();
+  assert.equal(el.detailTab, "overview");
+});
+
+test("the detail summary leaves out what is not known", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [] };
+  const item = { object_type: "automation", object_id: "automation.c", name: "C", status: "active" };
+  const labels = el.detailSummary(item, "automation:automation.c").map(([label]) => label);
+  assert.equal(JSON.stringify(labels), JSON.stringify(["Status"]), "no cause, integration, device or area; no risk for automations");
+});
+
+test("the address carries the selected detail tab and a deep link opens it", () => {
+  const urls = [];
+  const win = { location: { pathname: "/ha-housekeeper", search: "?object=entity%3Alight.kitchen&tab=technical" }, history: { state: null, replaceState: (_s, _t, url) => urls.push(url) } };
+  const { el } = panel("en", { window: win });
+  el.data = propertyData();
+  el.isConnected = true; el._basePath = "/ha-housekeeper";
+  el.applyUrl();
+  assert.equal(el.selected.object_id, "light.kitchen");
+  assert.equal(el.detailTab, "technical");
+  el.syncUrl();
+  assert.equal(urls.at(-1), "/ha-housekeeper?object=entity%3Alight.kitchen&tab=technical");
+  el.detailTab = "overview";
+  el.syncUrl();
+  assert.equal(urls.at(-1), "/ha-housekeeper?object=entity%3Alight.kitchen", "the overview tab is the default and stays out of the address");
 });
