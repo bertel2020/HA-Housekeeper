@@ -347,24 +347,43 @@ class HAHousekeeperPanel extends HTMLElement {
       <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].map(item).join("")}${menus.map(menu).join("")}<div class="navend">${item("settings")}</div></nav></header>`;
   }
 
+  // The small line above the title names the menu group the view belongs to.
+  eyebrowFor(view) {
+    if (view === "settings") return this.t("title");
+    const group = NAV_GROUPS.find(([, views]) => views.includes(view));
+    return group ? this.t(group[0]) : this.t("navGroupOverview");
+  }
+
+  // "just now", "3 min ago", "5 h ago", "2 days ago" for the scan time shown next to the scan button.
+  agoText(iso) {
+    const seconds = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (!Number.isFinite(seconds)) return "";
+    if (seconds < 90) return this.t("agoNow");
+    if (seconds < 5400) return this.t("agoMinutes", { n: Math.round(seconds / 60) });
+    if (seconds < 129600) return this.t("agoHours", { n: Math.round(seconds / 3600) });
+    return this.t("agoDays", { n: Math.round(seconds / 86400) });
+  }
+
   heading() {
     const titles = {
-      overview: [this.t("systemState"), this.t("health"), this.data ? `${this.t("lastScan")}: <b>${this.formatDate(this.data.meta.scanned_at)}</b>` : this.t("subtitle")],
-      inventory: [this.t("objects"), this.t("inventory"), this.t("inventorySubtitle")],
-      findingsNav: [this.t("diagnosis"), this.t("findings"), this.t("findingsSubtitle")],
-      changes: [this.t("diagnosis"), this.t("changes"), this.t("changesSubtitle")],
-      batteries: [this.t("objects"), this.t("batteries"), this.t("batteriesSubtitle")],
-      unreferenced: [this.t("objects"), this.t("unreferenced"), this.t("unreferencedSubtitle")],
-      graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
-      settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
-      cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
-      maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
-      reliability: [this.t("diagnosis"), this.t("reliability"), this.t("reliabilitySubtitle")],
-      runs: [this.t("diagnosis"), this.t("runsHeading"), this.t("runsSubtitle")],
+      overview: [this.t("health"), this.t("subtitle")],
+      inventory: [this.t("inventory"), this.t("inventorySubtitle")],
+      findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
+      changes: [this.t("changes"), this.t("changesSubtitle")],
+      batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
+      unreferenced: [this.t("unreferenced"), this.t("unreferencedSubtitle")],
+      graph: [this.t("pathTitle"), this.t("pathSubtitle")],
+      settings: [this.t("settings"), this.t("settingsSubtitle")],
+      cleanup: [this.t("cleanup"), this.t("cleanupSubtitle")],
+      maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
+      reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
+      runs: [this.t("runsHeading"), this.t("runsSubtitle")],
     };
-    const [eyebrow, title, sub] = titles[this.view] || titles.overview;
-    return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <div class="head-actions"><button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
+    const [title, sub] = titles[this.view] || titles.overview;
+    const scanned = this.data?.meta?.scanned_at;
+    const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
+    return `<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
+      <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {

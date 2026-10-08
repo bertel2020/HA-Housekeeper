@@ -897,6 +897,22 @@ test("the scan button is disabled while a plan runs", () => {
   assert.ok(el.t("err_cleanup_busy").includes("plan is running"));
 });
 
+test("the heading names the menu group and shows how old the last scan is", () => {
+  const { el } = panel("en");
+  const hours = n => new Date(Date.now() - n * 3600e3).toISOString();
+  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: hours(3) } };
+  const eyebrow = view => { el.view = view; return /class="eyebrow">([^<]*)</.exec(el.heading())[1]; };
+  assert.equal(eyebrow("findingsNav"), "Overview");
+  assert.equal(eyebrow("reliability"), "Operation");
+  assert.equal(eyebrow("cleanup"), "Maintain");
+  assert.equal(eyebrow("batteries"), "Special views");
+  assert.equal(eyebrow("settings"), el.t("title"));
+  assert.ok(!el.heading().includes("Root-cause"));
+  assert.ok(el.heading().includes("Last scan: 3 h ago"));
+  for (const [ago, text] of [[0.01, "just now"], [0.5, "30 min ago"], [30, "30 h ago"], [72, "3 days ago"]]) assert.equal(el.agoText(hours(ago)), text);
+  assert.equal(el.agoText("nonsense"), "");
+});
+
 test("preliminary data during the Home Assistant start shows a banner on every page", () => {
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, preliminary: false } };

@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    navMain: "Hauptnavigation", navMenu: "Menü", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
+    navMain: "Hauptnavigation", navMenu: "Menü", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -183,7 +183,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    navMain: "Main navigation", navMenu: "Menu", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
+    navMain: "Main navigation", navMenu: "Menu", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -931,6 +931,7 @@ class StylesMixin {
       .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
       .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}
+      .scanago{color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}
       .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
       @media(max-width:860px){.heading{flex-direction:column;align-items:stretch}.head-actions{justify-content:flex-start}}
       /* Look of the Zeitarchiv app: larger radius, soft shadow, calm tables, bold headings, Plex Mono for ids. */
@@ -3300,24 +3301,43 @@ class HAHousekeeperPanel extends HTMLElement {
       <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].map(item).join("")}${menus.map(menu).join("")}<div class="navend">${item("settings")}</div></nav></header>`;
   }
 
+  // The small line above the title names the menu group the view belongs to.
+  eyebrowFor(view) {
+    if (view === "settings") return this.t("title");
+    const group = NAV_GROUPS.find(([, views]) => views.includes(view));
+    return group ? this.t(group[0]) : this.t("navGroupOverview");
+  }
+
+  // "just now", "3 min ago", "5 h ago", "2 days ago" for the scan time shown next to the scan button.
+  agoText(iso) {
+    const seconds = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (!Number.isFinite(seconds)) return "";
+    if (seconds < 90) return this.t("agoNow");
+    if (seconds < 5400) return this.t("agoMinutes", { n: Math.round(seconds / 60) });
+    if (seconds < 129600) return this.t("agoHours", { n: Math.round(seconds / 3600) });
+    return this.t("agoDays", { n: Math.round(seconds / 86400) });
+  }
+
   heading() {
     const titles = {
-      overview: [this.t("systemState"), this.t("health"), this.data ? `${this.t("lastScan")}: <b>${this.formatDate(this.data.meta.scanned_at)}</b>` : this.t("subtitle")],
-      inventory: [this.t("objects"), this.t("inventory"), this.t("inventorySubtitle")],
-      findingsNav: [this.t("diagnosis"), this.t("findings"), this.t("findingsSubtitle")],
-      changes: [this.t("diagnosis"), this.t("changes"), this.t("changesSubtitle")],
-      batteries: [this.t("objects"), this.t("batteries"), this.t("batteriesSubtitle")],
-      unreferenced: [this.t("objects"), this.t("unreferenced"), this.t("unreferencedSubtitle")],
-      graph: [this.t("graph"), this.t("pathTitle"), this.t("pathSubtitle")],
-      settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
-      cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
-      maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
-      reliability: [this.t("diagnosis"), this.t("reliability"), this.t("reliabilitySubtitle")],
-      runs: [this.t("diagnosis"), this.t("runsHeading"), this.t("runsSubtitle")],
+      overview: [this.t("health"), this.t("subtitle")],
+      inventory: [this.t("inventory"), this.t("inventorySubtitle")],
+      findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
+      changes: [this.t("changes"), this.t("changesSubtitle")],
+      batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
+      unreferenced: [this.t("unreferenced"), this.t("unreferencedSubtitle")],
+      graph: [this.t("pathTitle"), this.t("pathSubtitle")],
+      settings: [this.t("settings"), this.t("settingsSubtitle")],
+      cleanup: [this.t("cleanup"), this.t("cleanupSubtitle")],
+      maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
+      reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
+      runs: [this.t("runsHeading"), this.t("runsSubtitle")],
     };
-    const [eyebrow, title, sub] = titles[this.view] || titles.overview;
-    return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <div class="head-actions"><button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
+    const [title, sub] = titles[this.view] || titles.overview;
+    const scanned = this.data?.meta?.scanned_at;
+    const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
+    return `<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
+      <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {
