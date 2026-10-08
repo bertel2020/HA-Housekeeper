@@ -2369,3 +2369,13 @@ test("an orphaned statistic names likely successors by domain, unit and name, an
   assert.equal(html.split("Possible successors:").length - 1, 1, "no suggestion without a similar name");
   assert.ok(html.includes("Meter change (continue statistics)") && html.includes("Developer tools → Statistics"));
 });
+
+test("findings and hidden findings name the rule in words, never as a raw id", () => {
+  const { el } = panel("de");
+  el.data = { ...DATA, objects: [], edges: [], findings: [] };
+  const finding = { rule_id: "entity.device_missing", object_id: "light.a", object_type: "entity", key: "k", classification: "likely", confidence: 0.8, evidence: [] };
+  const row = el.findingRow(finding);
+  assert.ok(!row.includes("entity.device_missing"), row);
+  assert.ok(row.includes(el.t("device_missing")));
+  assert.equal(el.t("enabled"), "aktiviert");
+});
