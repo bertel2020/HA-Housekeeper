@@ -1,5 +1,75 @@
 # Changelog
 
+## 0.14.0 - 2026-10-08
+
+Übersichtlichere lange Ansichten, der Stabilitätsstatus in den Details einer
+Entität und die Aufbewahrungszeit der Datenbank. Automatisiert gegen Home
+Assistant 2026.8.3, 2026.9.4 und 2026.10.0b4 getestet (520 Python- und
+183 Panel-Tests). Alles Neue liest nur.
+
+### Neu
+
+- **Kennzahlen und Reiter in den langen Ansichten:** Zuverlässigkeit, Recorder,
+  Automationen, Richtlinien und Freigaben beginnen mit einer Zeile Kennzahlen
+  (Ampelfarbe, ein Klick springt zum Abschnitt) und gliedern sich in Reiter mit
+  Zähler und farbigem Punkt bei Auffälligem. Der gewählte Reiter steht in der
+  Adresse (`?tab=`). Zuverlässigkeit: Integrationen | Instabile Entitäten.
+  Recorder: Last | Recorder-Kosten | Datenbank.
+- **Freigaben neu aufgebaut:** Je Quelle (Assist, Alexa, Google Assistant,
+  HomeKit) eine Kachel; ein Klick zeigt die erreichbaren Entitäten, durchsuchbar
+  und mit Sprung zur Entität. Die Auffälligkeiten haben einen eigenen Reiter, ein
+  einleitender Satz erklärt die Seite.
+- **Richtlinien:** Die Reiter „Verstöße“ und „Regeln“ trennen das Ergebnis vom
+  Einstellen. Die Verstöße aller eingeschalteten Regeln stehen in einer Liste mit
+  Filter je Regel und Suche.
+- **Stabilität in den Details einer Entität:** Flatternde oder instabile
+  Entitäten zeigen das in der Diagnose und in den Eckdaten, mit den Zahlen aus
+  der Zuverlässigkeit. Die Detailseite startet nie die Recorder-Abfrage; ohne
+  berechnete Zahlen steht „Noch nicht berechnet“.
+- **Aufbewahrung in der Datenbank-Karte:** Die in Home Assistant eingestellte
+  Aufbewahrungszeit steht in der Übersicht und im Recorder; ist die automatische
+  Bereinigung aus, weist ein Hinweis darauf hin.
+
+### Geändert
+
+- **Wortwahl:** Die deutsche Oberfläche und die README sagen „Entität“ und
+  „Entitäten“ statt „Entity“ und „Entities“.
+
+### English
+
+More readable long views, the stability status on an entity's details and the
+retention of the database. Automatically tested against Home Assistant 2026.8.3,
+2026.9.4 and 2026.10.0b4 (520 Python and 183 panel tests). Everything new only
+reads.
+
+#### New
+
+- **Key figures and tabs in the long views:** Reliability, Recorder,
+  Automations, Policies and Exposure start with a row of key figures
+  (traffic-light colour, a click jumps to the section) and are split into tabs
+  with a counter and a coloured dot for anything unusual. The chosen tab is kept
+  in the address (`?tab=`). Reliability: Integrations | Unstable entities.
+  Recorder: Load | Recorder costs | Database.
+- **Exposure rebuilt:** one tile per source (Assist, Alexa, Google Assistant,
+  HomeKit); a click shows the entities it reaches, searchable and with a jump to
+  the entity. The findings have their own tab and an introductory sentence
+  explains the page.
+- **Policies:** the tabs “Violations” and “Rules” separate the result from the
+  settings. The violations of all switched-on rules are in one list with a
+  filter per rule and a search.
+- **Stability on an entity's details:** flapping or unstable entities show this
+  in the diagnosis and the key facts, with the numbers from Reliability. The
+  detail page never starts the recorder query; without calculated numbers it
+  says “Not calculated yet”.
+- **Retention in the database card:** the retention set in Home Assistant is
+  shown in the overview and in Recorder; if automatic purging is off, a note
+  says so.
+
+#### Changed
+
+- **Wording:** the German interface and the README say “Entität” and
+  “Entitäten” instead of “Entity” and “Entities”.
+
 ## 0.13.2 - 2026-10-08
 
 Behebt einen Fehler in der Ansicht Freigaben und ergänzt Suchfelder in langen
