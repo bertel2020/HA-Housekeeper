@@ -50,6 +50,41 @@ In gewachsenen Home-Assistant-Installationen sammeln sich häufig Registry-Eintr
 
 Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz und stellt diesen Zusammenhang in einem gemeinsamen, nur für Administratoren erreichbaren Panel dar.
 
+## Installation
+
+### Über HACS (empfohlen)
+
+[![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
+[![HA Housekeeper zu My Home Assistant hinzufügen](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
+
+1. Über den ersten Button das Housekeeper-Repository in HACS öffnen.
+2. **HA Housekeeper** herunterladen und Home Assistant neu starten.
+3. Über den zweiten Button die Integration hinzufügen. Alternativ in Home
+   Assistant **Einstellungen → Geräte & Dienste → Integration hinzufügen →
+   HA Housekeeper** öffnen.
+4. Anschließend als Administrator **Housekeeper** in der Seitenleiste öffnen.
+
+Falls der erste Button nicht funktioniert, in HACS unter **Integrationen →
+Benutzerdefinierte Repositories** `https://github.com/bertel2020/HA-Housekeeping`
+als Kategorie **Integration** eintragen.
+
+### Manuell
+
+Das Verzeichnis `custom_components/ha_housekeeper` nach
+`/config/custom_components/ha_housekeeper` kopieren und Home Assistant neu
+starten. Danach die Integration wie oben beschrieben hinzufügen.
+
+Das Ergebnis sollte so aussehen:
+
+```text
+config/
+└── custom_components/
+    └── ha_housekeeper/
+        ├── __init__.py
+        ├── manifest.json
+        └── ...
+```
+
 ## Funktionen
 
 ### Installationsübersicht
@@ -156,41 +191,6 @@ Panel und Einrichtungsdialog stehen auf Deutsch und Englisch zur Verfügung. Die
 - Es wird keine Bereinigung automatisch ausgeführt.
 
 Bewusst nicht Teil von Housekeeper: vorhandene Statistikwerte überschreiben, Rohzustände des Recorders umschreiben und Helfer oder Gruppen als Ersetzungsquelle umschreiben.
-
-## Installation
-
-### Über HACS (empfohlen)
-
-[![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
-[![HA Housekeeper zu My Home Assistant hinzufügen](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
-
-1. Über den ersten Button das Housekeeper-Repository in HACS öffnen.
-2. **HA Housekeeper** herunterladen und Home Assistant neu starten.
-3. Über den zweiten Button die Integration hinzufügen. Alternativ in Home
-   Assistant **Einstellungen → Geräte & Dienste → Integration hinzufügen →
-   HA Housekeeper** öffnen.
-4. Anschließend als Administrator **Housekeeper** in der Seitenleiste öffnen.
-
-Falls der erste Button nicht funktioniert, in HACS unter **Integrationen →
-Benutzerdefinierte Repositories** `https://github.com/bertel2020/HA-Housekeeping`
-als Kategorie **Integration** eintragen.
-
-### Manuell
-
-Das Verzeichnis `custom_components/ha_housekeeper` nach
-`/config/custom_components/ha_housekeeper` kopieren und Home Assistant neu
-starten. Danach die Integration wie oben beschrieben hinzufügen.
-
-Das Ergebnis sollte so aussehen:
-
-```text
-config/
-└── custom_components/
-    └── ha_housekeeper/
-        ├── __init__.py
-        ├── manifest.json
-        └── ...
-```
 
 ## Verwendung
 

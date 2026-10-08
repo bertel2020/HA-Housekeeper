@@ -50,6 +50,41 @@ Mature Home Assistant installations often accumulate registry entries, unavailab
 
 Housekeeper combines registry data and the live Home Assistant runtime to provide that context in one administrator-only panel.
 
+## Installation
+
+### Via HACS (recommended)
+
+[![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
+[![Add HA Housekeeper to My Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
+
+1. Use the first button to open the Housekeeper repository in HACS.
+2. Download **HA Housekeeper** and restart Home Assistant.
+3. Use the second button to add the integration. Alternatively, open
+   **Settings → Devices & services → Add integration → HA Housekeeper** in
+   Home Assistant.
+4. Then open **Housekeeper** in the sidebar while signed in as an administrator.
+
+If the first button does not work, add
+`https://github.com/bertel2020/HA-Housekeeping` in HACS under **Integrations →
+Custom repositories** with the category **Integration**.
+
+### Manual
+
+Copy the `custom_components/ha_housekeeper` directory to
+`/config/custom_components/ha_housekeeper` and restart Home Assistant. Then add
+the integration as described above.
+
+The resulting directory should look like this:
+
+```text
+config/
+└── custom_components/
+    └── ha_housekeeper/
+        ├── __init__.py
+        ├── manifest.json
+        └── ...
+```
+
 ## Features
 
 ### Installation overview
@@ -156,41 +191,6 @@ The panel and configuration flow are available in German and English. The active
 - No cleanup action runs automatically.
 
 Intentionally not part of Housekeeper: overwriting existing statistics values, rewriting raw recorder states and rewriting helpers or groups as a replacement source.
-
-## Installation
-
-### Via HACS (recommended)
-
-[![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
-[![Add HA Housekeeper to My Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
-
-1. Use the first button to open the Housekeeper repository in HACS.
-2. Download **HA Housekeeper** and restart Home Assistant.
-3. Use the second button to add the integration. Alternatively, open
-   **Settings → Devices & services → Add integration → HA Housekeeper** in
-   Home Assistant.
-4. Then open **Housekeeper** in the sidebar while signed in as an administrator.
-
-If the first button does not work, add
-`https://github.com/bertel2020/HA-Housekeeping` in HACS under **Integrations →
-Custom repositories** with the category **Integration**.
-
-### Manual
-
-Copy the `custom_components/ha_housekeeper` directory to
-`/config/custom_components/ha_housekeeper` and restart Home Assistant. Then add
-the integration as described above.
-
-The resulting directory should look like this:
-
-```text
-config/
-└── custom_components/
-    └── ha_housekeeper/
-        ├── __init__.py
-        ├── manifest.json
-        └── ...
-```
 
 ## Usage
 
