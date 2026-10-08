@@ -50,7 +50,7 @@ class ReliabilityMixin {
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
     const pg = this.paginate("relentries", r.entries);
-    return `<div class="stack"><div class="panel">${head}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>${this.unstableCard(r)}</div>`;
+    return `<div class="stack"><div class="panel">${head}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days })}</div>${this.unstableCard(r)}</div>`;
   }
 
   unstableRow(item, days) {
@@ -69,6 +69,6 @@ class ReliabilityMixin {
     if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
     const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
     const pg = this.paginate("relunstable", u.items);
-    return `<div class="panel">${head}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}<p class="factnote">${this.t("relUnstableFootnote")}</p></div>`;
+    return `<div class="panel">${head}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}${this.howCounted("relUnstableFootnote")}</div>`;
   }
 }

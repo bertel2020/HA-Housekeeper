@@ -41,6 +41,11 @@ class ListsMixin {
     return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}</div>`;
   }
 
+  // Long explanations of how a number is counted fold away, so the lists end earlier.
+  howCounted(key, vars) {
+    return `<details class="howto"><summary>${this.t("howCounted")}</summary><p class="factnote">${this.t(key, vars)}</p></details>`;
+  }
+
   // Shared paging for long lists: returns the visible slice and the footer markup.
   paginate(id, items) {
     const count = Math.max(1, Math.ceil(items.length / this.pageSize));

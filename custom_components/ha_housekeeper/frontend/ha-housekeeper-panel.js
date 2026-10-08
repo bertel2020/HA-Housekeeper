@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    navMain: "Hauptnavigation", navMenu: "Menü", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
+    navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -183,7 +183,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    navMain: "Main navigation", navMenu: "Menu", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
+    navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -843,6 +843,7 @@ class StylesMixin {
       .heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px}.eyebrow{color:var(--hk-blue-text);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px}
       h1{font-size:calc(25px*var(--hk-fs,1));font-weight:600;line-height:1.2}.sub{display:block;margin-top:6px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
+      .howto{padding:6px 16px 10px}.howto summary{cursor:pointer;color:var(--hk-blue-text);font-weight:600;font-size:calc(12.5px*var(--hk-fs,1));padding:4px 0}.howto .factnote{margin:4px 0 0;padding:0}
       .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.toolgap{flex:1}.btn.quiet{border-color:transparent;background:none;color:var(--hk-blue-text);padding:8px 10px}.btn.quiet:hover{background:var(--hk-soft)}.btn.quiet[disabled]{color:var(--hk-muted);opacity:.7;cursor:default}
       .btn.primary{border-color:var(--hk-blue-solid);color:var(--hk-on,#fff);background:var(--hk-blue-solid)}.btn.primary:hover{background:#0a8ccf}.btn[disabled]{opacity:.6;cursor:wait}
       .summary{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:12px;margin-bottom:14px}
@@ -990,6 +991,11 @@ class ListsMixin {
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
     return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}</div>`;
+  }
+
+  // Long explanations of how a number is counted fold away, so the lists end earlier.
+  howCounted(key, vars) {
+    return `<details class="howto"><summary>${this.t("howCounted")}</summary><p class="factnote">${this.t(key, vars)}</p></details>`;
   }
 
   // Shared paging for long lists: returns the visible slice and the footer markup.
@@ -2837,7 +2843,7 @@ class ReliabilityMixin {
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
     const pg = this.paginate("relentries", r.entries);
-    return `<div class="stack"><div class="panel">${head}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>${this.unstableCard(r)}</div>`;
+    return `<div class="stack"><div class="panel">${head}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days })}</div>${this.unstableCard(r)}</div>`;
   }
 
   unstableRow(item, days) {
@@ -2856,7 +2862,7 @@ class ReliabilityMixin {
     if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
     const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
     const pg = this.paginate("relunstable", u.items);
-    return `<div class="panel">${head}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}<p class="factnote">${this.t("relUnstableFootnote")}</p></div>`;
+    return `<div class="panel">${head}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}${this.howCounted("relUnstableFootnote")}</div>`;
   }
 }
 
@@ -2939,7 +2945,7 @@ class RunsMixin {
     const facts = [["runsColRuns", `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}`], ["runsColErrors", this.formatNumber(row.errors)], ["runsColConditions", this.formatNumber(row.conditions)], ["runsColDuration", `${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}`]]
       .map(([label, value]) => `<dt>${this.t(label)}</dt><dd>${value}</dd>`).join("");
     const notes = row.findings.length ? `<div class="pad">${this.runsFindingLines(row)}</div>` : "";
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsColTrend")}</dt><dd>${this.runsTrend(row)}</dd></dl></div>${notes}<p class="factnote">${this.t("runsFootnote")}</p></section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsColTrend")}</dt><dd>${this.runsTrend(row)}</dd></dl></div>${notes}${this.howCounted("runsFootnote")}</section>`;
   }
 
   runsView() {
@@ -2954,7 +2960,7 @@ class RunsMixin {
     const flaggedPage = this.paginate("runsflag", flagged);
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
-    const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}<p class="factnote">${this.t("runsFootnote")}</p></div>` : "";
+    const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}${this.howCounted("runsFootnote")}</div>` : "";
     return `<div class="stack"><div class="panel">${head}${attention}</div>${all}</div>`;
   }
 }

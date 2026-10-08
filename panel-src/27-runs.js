@@ -77,7 +77,7 @@ class RunsMixin {
     const facts = [["runsColRuns", `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}`], ["runsColErrors", this.formatNumber(row.errors)], ["runsColConditions", this.formatNumber(row.conditions)], ["runsColDuration", `${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}`]]
       .map(([label, value]) => `<dt>${this.t(label)}</dt><dd>${value}</dd>`).join("");
     const notes = row.findings.length ? `<div class="pad">${this.runsFindingLines(row)}</div>` : "";
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsColTrend")}</dt><dd>${this.runsTrend(row)}</dd></dl></div>${notes}<p class="factnote">${this.t("runsFootnote")}</p></section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsColTrend")}</dt><dd>${this.runsTrend(row)}</dd></dl></div>${notes}${this.howCounted("runsFootnote")}</section>`;
   }
 
   runsView() {
@@ -92,7 +92,7 @@ class RunsMixin {
     const flaggedPage = this.paginate("runsflag", flagged);
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
-    const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}<p class="factnote">${this.t("runsFootnote")}</p></div>` : "";
+    const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}${this.howCounted("runsFootnote")}</div>` : "";
     return `<div class="stack"><div class="panel">${head}${attention}</div>${all}</div>`;
   }
 }

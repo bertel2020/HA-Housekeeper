@@ -17,6 +17,7 @@ class StylesMixin {
       .heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px}.eyebrow{color:var(--hk-blue-text);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px}
       h1{font-size:calc(25px*var(--hk-fs,1));font-weight:600;line-height:1.2}.sub{display:block;margin-top:6px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
+      .howto{padding:6px 16px 10px}.howto summary{cursor:pointer;color:var(--hk-blue-text);font-weight:600;font-size:calc(12.5px*var(--hk-fs,1));padding:4px 0}.howto .factnote{margin:4px 0 0;padding:0}
       .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.toolgap{flex:1}.btn.quiet{border-color:transparent;background:none;color:var(--hk-blue-text);padding:8px 10px}.btn.quiet:hover{background:var(--hk-soft)}.btn.quiet[disabled]{color:var(--hk-muted);opacity:.7;cursor:default}
       .btn.primary{border-color:var(--hk-blue-solid);color:var(--hk-on,#fff);background:var(--hk-blue-solid)}.btn.primary:hover{background:#0a8ccf}.btn[disabled]{opacity:.6;cursor:wait}
       .summary{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:12px;margin-bottom:14px}
