@@ -1,19 +1,18 @@
 // Looks at the panel in a real browser: screenshots of the main views at desktop, tablet and phone
 // size in light and dark, and optionally an accessibility scan with axe-core.
 //
-//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--axe]
+//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--axe] [--serve]
 //
 // Needs Google Chrome (CHROME=/path, the macOS default path, or google-chrome/chromium on PATH).
 // --axe also needs axe-core: `npm install --no-save axe-core@4.10.2` in the repository, or
 // AXE_PATH=/path/to/axe.min.js. It exits with 1 when axe finds a serious or critical problem.
 // The panel is built from panel-src/ on the fly; nothing here touches a Home Assistant instance.
-import { execFile, execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
 
 import { buildPanel } from "./build_panel.mjs";
 import { makeLoadFixture } from "./make_load_fixture.mjs";
@@ -21,7 +20,18 @@ import { makeLoadFixture } from "./make_load_fixture.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] : fallback; };
 // Not execFileSync: the page is served by this process, which must stay free to answer Chrome.
-const run = promisify(execFile);
+// Chrome gets no stdin: with the open pipe that execFile hands to it, it never starts in some
+// environments (no connection to the page, no screenshot, no exit).
+const run = (file, args, { timeout = 60000, maxBuffer = 1024 * 1024, encoding = "utf8" } = {}) => new Promise((resolve, reject) => {
+  const child = spawn(file, args, { stdio: ["ignore", "pipe", "pipe"] });
+  let stdout = "", stderr = "", done = false;
+  const finish = (fn, value) => { if (!done) { done = true; clearTimeout(timer); fn(value); } };
+  const timer = setTimeout(() => { child.kill("SIGKILL"); finish(reject, new Error(`timeout after ${timeout} ms: ${path.basename(file)}`)); }, timeout);
+  child.stdout.on("data", chunk => { stdout += chunk; if (stdout.length > maxBuffer) { child.kill("SIGKILL"); finish(reject, new Error("output too large")); } });
+  child.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-4000); });
+  child.on("error", err => finish(reject, err));
+  child.on("close", code => code === 0 ? finish(resolve, { stdout, stderr }) : finish(reject, new Error(`${path.basename(file)} exited with ${code}: ${stderr.slice(-300)}`)));
+});
 const flag = name => process.argv.includes(`--${name}`);
 
 const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 1700] };
@@ -46,6 +56,7 @@ function showcase(objects) {
   const data = makeLoadFixture(objects);
   data.meta.scanned_at = new Date().toISOString();
   data.meta.scan_interval_hours = 24;
+  data.meta.database = { dialect: "sqlite", db_bytes: 3 * 1024 ** 3, wal_bytes: 24 * 1024 ** 2, per_day: 18 * 1024 ** 2, samples: 30 };
   data.objects.push({ object_type: "config_entry", object_id: "ce-hue", name: "Philips Hue", domain: "hue", integration_name: "Philips Hue", status: "problem", state: "setup_error", error: "Cannot connect", source: "user", status_since: data.meta.scanned_at });
   data.meta.object_count = data.objects.length;
   data.meta.status_counts.problem = (data.meta.status_counts.problem || 0) + 1;
@@ -160,6 +171,16 @@ const FRAME = `<!doctype html><html><head><meta charset="utf-8"><title>frame</ti
   addEventListener("message", e => { if (e.data && e.data.axe) document.body.insertAdjacentHTML("beforeend", "<pre id=axe-result>" + btoa(unescape(encodeURIComponent(e.data.axe))) + "</pre>"); });
 </script></body></html>`;
 
+// The panel loads its fonts and logo from the integration's own paths; without them Chrome waits for
+// requests that never succeed and a screenshot with a virtual time budget never finishes.
+const COMPONENT = path.join(root, "custom_components/ha_housekeeper");
+function asset(pathname) {
+  const font = /^\/ha_housekeeper\/fonts\/([\w.-]+\.woff2)$/.exec(pathname);
+  const file = font ? path.join(COMPONENT, "fonts", font[1]) : pathname === "/ha_housekeeper/logo.png" ? path.join(COMPONENT, "brand/logo.png") : null;
+  if (!file || !fs.existsSync(file)) return null;
+  return [font ? "font/woff2" : "image/png", fs.readFileSync(file)];
+}
+
 function serve(data) {
   const panel = buildPanel();
   const axePath = process.env.AXE_PATH || path.join(root, "node_modules/axe-core/axe.min.js");
@@ -170,9 +191,10 @@ function serve(data) {
   };
   return new Promise(resolve => {
     const server = http.createServer((req, res) => {
-      const hit = routes[new URL(req.url, "http://x").pathname];
+      const pathname = new URL(req.url, "http://x").pathname;
+      const hit = routes[pathname] || asset(pathname);
       if (!hit) { res.writeHead(404).end(); return; }
-      res.writeHead(200, { "content-type": `${hit[0]}; charset=utf-8` }).end(hit[1]);
+      res.writeHead(200, { "content-type": Buffer.isBuffer(hit[1]) ? hit[0] : `${hit[0]}; charset=utf-8` }).end(hit[1]);
     }).listen(0, "127.0.0.1", () => resolve({ server, port: server.address().port, hasAxe: fs.existsSync(axePath) }));
   });
 }
@@ -200,6 +222,10 @@ const viewports = (arg("viewports", Object.keys(VIEWPORTS).join(","))).split(","
 fs.mkdirSync(out, { recursive: true });
 const chrome = chromePath();
 const { server, port, hasAxe } = await serve(showcase(Number(arg("objects", 400))));
+if (flag("serve")) { // for looking at the page in any browser; Ctrl-C ends it
+  console.log(`http://127.0.0.1:${port}/?${VIEWS[views[0]] || VIEWS.overview}&scheme=light`);
+  await new Promise(() => {});
+}
 const root_profile = fs.mkdtempSync(path.join(os.tmpdir(), "hk-chrome-"));
 let failed = false;
 const jobsParallel = Number(arg("jobs", 3));
