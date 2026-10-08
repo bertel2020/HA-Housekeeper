@@ -361,6 +361,9 @@ const SCHEME_ALIASES = { teal: "housekeeper", amber: "housekeeper", sage: "house
 
 const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"];
 
+// Pause after the last key stroke in a search field before the list is rebuilt.
+const SEARCH_DEBOUNCE_MS = 150;
+
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
   ["inventory", "mdi:database-outline"],
@@ -629,7 +632,7 @@ class ThemeMixin {
 // StylesMixin: methods of the panel element, mixed into the class in 99-register.js.
 class StylesMixin {
   styles() {
-    return `<style>
+    return `<style data-hk>
       :host{--hk-blue:var(--primary-color,#0789cf);--hk-surface:var(--card-background-color,#fff);--hk-bg:var(--primary-background-color,#f4f6f9);--hk-soft:var(--secondary-background-color,#f6f8fa);--hk-text:var(--primary-text-color,#17212b);--hk-muted:var(--secondary-text-color,#637281);--hk-border:var(--divider-color,#dde4ea);--hk-green:#1f9d63;--hk-amber:#d68a00;--hk-red:#d94452;--hk-violet:#7a62c9;--hk-gray:#7b8794;display:block;min-height:100%;background:var(--hk-bg);color:var(--hk-text);font-family:var(--paper-font-body1_-_font-family,Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif)}
       *{box-sizing:border-box} button,input,select{font:inherit;color:inherit} button{cursor:pointer} h1,h2,h3,h4,p{margin:0}
       ha-icon{--mdc-icon-size:20px}
@@ -733,7 +736,7 @@ class StylesMixin {
 class ListsMixin {
   th(key, label) {
     const on = this.sort === key;
-    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</button></th>`;
+    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-sortbtn="${key}">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</button></th>`;
   }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
@@ -750,14 +753,17 @@ class ListsMixin {
     const get = sorts.find(x => x.key === st.sort)?.get || sorts[0].get;
     const sign = st.dir === "desc" ? -1 : 1;
     const empty = v => v === null || v === undefined || v === "";
-    return items.filter(it => (!q || text(it).toLowerCase().includes(q))
+    const { natural, ids } = this.collators();
+    const rows = items.filter(it => (!q || text(it).toLowerCase().includes(q))
       && Object.entries(st.f).every(([name, value]) => !value || !filters[name] || filters[name](it, value)))
-      .sort((a, b) => {
-        const x = get(a), y = get(b);
-        if (empty(x) !== empty(y)) return empty(x) ? 1 : -1;
-        const order = typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
-        return order * sign || String(tie(a)).localeCompare(String(tie(b)), this.lang, { numeric: true });
-      });
+      .map(it => ({ it, key: get(it) })); // the sort key is read once per item, not per comparison
+    rows.sort((a, b) => {
+      const x = a.key, y = b.key;
+      if (empty(x) !== empty(y)) return empty(x) ? 1 : -1;
+      const order = typeof x === "number" && typeof y === "number" ? x - y : natural.compare(String(x ?? ""), String(y ?? ""));
+      return order * sign || ids.compare(String(tie(a.it)), String(tie(b.it)));
+    });
+    return rows.map(row => row.it);
   }
 
   listBar(id, { sorts, filters = [] }) {
@@ -861,8 +867,9 @@ class OverviewMixin {
 // FindingsMixin: methods of the panel element, mixed into the class in 99-register.js.
 class FindingsMixin {
   sortedFindings(includeIgnored = false) {
+    const { plain } = this.collators();
     return this.data.findings.filter(f => includeIgnored || !f.ignored).sort((a, b) => (b.confidence - a.confidence)
-      || String(a.object_id).localeCompare(String(b.object_id)));
+      || plain.compare(String(a.object_id), String(b.object_id)));
   }
 
   // The share of objects without a finding. It counts affected objects, not findings, so an object
@@ -1361,7 +1368,7 @@ class CleanupMixin {
 
   // Replace one entity by another in every configuration that names it exactly.
   replaceCard() {
-    const usage = new Set((this.data.edges || []).filter(e => USAGE_RELATIONS.includes(e.relation) && e.target.startsWith("entity:")).map(e => e.target.slice(7)));
+    const usage = new Set([...this.edgeIndex().used].filter(target => target.startsWith("entity:")).map(target => target.slice(7)));
     const entities = new Map(this.data.objects.filter(o => o.object_type === "entity").map(o => [o.object_id, o]));
     const label = id => `${entities.get(id)?.name || id}`;
     const oldOptions = [...usage].sort().map(id => `<option value="${this.esc(id)}">${this.esc(label(id))}</option>`).join("");
@@ -1437,10 +1444,11 @@ class CleanupMixin {
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
     const assistant = this.cleanupKind === "replace_references" ? this.replaceCard() : this.cleanupKind === "migrate_meter" ? this.meterCard() : candidates;
-    const journal = (this.journal || []).map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
+    const journalPage = this.paginate("journal", this.journal || []);
+    const journal = journalPage.rows.map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}</div>`;
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
     return `<div class="stack"><div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
       ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${this.recurringCard()}${assistant}${journalCard}</div>`;
   }
@@ -1451,25 +1459,36 @@ class InventoryMixin {
   filtered() {
     if (!this.data) return [];
     const q = this.query.trim().toLowerCase();
-    return this.data.objects.filter(item => {
-      const haystack = [item.name, item.object_id, item.platform, item.domain, item.unique_id].join(" ").toLowerCase();
-      return (!q || haystack.includes(q)) && (!this.typeFilter || item.object_type === this.typeFilter)
-        && (!this.statusFilter || item.status === this.statusFilter);
-    }).sort((a, b) => {
+    return this.memo("inventory", [q, this.typeFilter, this.statusFilter, this.sort, this.sortDir, this.lang], () => {
+      const { natural, ids } = this.collators(), desc = this.sortDir === "desc";
       const pick = item => this.sort === "status" ? item.status : this.sort === "type" ? item.object_type : this.sort === "since" ? item.status_since : (item.name || item.object_id);
-      const x = pick(a), y = pick(b);
-      if (!x !== !y) return x ? -1 : 1; // missing values stay last in both directions
-      const order = String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
-      return (this.sortDir === "desc" ? -order : order) || String(a.object_id).localeCompare(String(b.object_id), this.lang, { numeric: true });
+      const rows = this.data.objects.filter(item => (!q || this.haystack(item).includes(q)) && (!this.typeFilter || item.object_type === this.typeFilter)
+        && (!this.statusFilter || item.status === this.statusFilter)).map(item => ({ item, key: pick(item) }));
+      rows.sort((a, b) => {
+        if (!a.key !== !b.key) return a.key ? -1 : 1; // missing values stay last in both directions
+        const order = natural.compare(String(a.key ?? ""), String(b.key ?? ""));
+        return (desc ? -order : order) || ids.compare(String(a.item.object_id), String(b.item.object_id));
+      });
+      return rows.map(row => row.item);
     });
+  }
+
+  // The text a search looks in, built once per object.
+  haystack(item) {
+    const cache = this._haystacks ||= new WeakMap();
+    let text = cache.get(item);
+    if (text === undefined) { text = [item.name, item.object_id, item.platform, item.domain, item.unique_id].join(" ").toLowerCase(); cache.set(item, text); }
+    return text;
   }
 
   inventory() {
     const rows = this.filtered();
     const pg = this.paginate("inventory", rows);
     const visibleRows = pg.rows;
-    const types = [...new Set(this.data.objects.map(x => x.object_type))].sort();
-    const statuses = [...new Set(this.data.objects.map(x => x.status))].sort();
+    const { types, statuses } = this.memo("facets", [], () => ({
+      types: [...new Set(this.data.objects.map(x => x.object_type))].sort(),
+      statuses: [...new Set(this.data.objects.map(x => x.status))].sort(),
+    }));
     return `<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select>
         <div class="mobsort"><select id="sortKey" aria-label="${this.t("sortBy")}">${[["name", "sortName"], ["type", "sortType"], ["status", "sortStatus"], ["since", "sortSince"]].map(([key, label]) => `<option value="${key}" ${this.sort === key ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select><button class="btn" id="sortDir" aria-label="${this.t("sortBy")}">${this.sortDir === "desc" ? "▼" : "▲"}</button></div></div>
       <div class="tablewrap"><table><thead><tr>${this.th("name", "name")}${this.th("type", "type")}${this.th("status", "status")}<th>${this.t("reason")}</th>${this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><strong>${this.esc(item.name)}</strong><span class="id">${this.esc(item.object_id)}</span></span></span></td><td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td><td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td><td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
@@ -1492,7 +1511,7 @@ class InventoryMixin {
     }
     const item = this.graphSelected, key = this.objectKey(item);
     const USAGE = USAGE_RELATIONS;
-    const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
+    const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     const originEdges = incoming.filter(e => !USAGE.includes(e.relation));
     const usageEntries = [
       ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ key: e.source, edge: e, label: `${this.t("usedBy")} · ${this.t(e.relation)}` })),
@@ -1526,7 +1545,7 @@ class UnusedMixin {
 
   // Active entities no source refers to. A hint only; see unreferencedHint for the blind spots.
   unreferencedRows() {
-    const used = new Set(this.data.edges.filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => e.target));
+    const { used } = this.edgeIndex();
     const SELF = ["automation", "script", "scene"];
     return this.data.objects.filter(o => o.object_type === "entity" && o.status === "active" && !o.entity_category
       && !SELF.includes(o.object_id.split(".")[0]) && !used.has(this.objectKey(o)))
@@ -1740,14 +1759,15 @@ class DiagnosisMixin {
     if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) return null;
     const OWNED = ["PROVIDES", "OWNS"], USAGE = USAGE_RELATIONS;
     const scope = new Set([key]);
-    for (let grew = true; grew;) {
-      grew = false;
-      for (const e of this.data.edges) {
-        if (OWNED.includes(e.relation) && scope.has(e.source) && !scope.has(e.target)) { scope.add(e.target); grew = true; }
-      }
+    for (const member of scope) { // grows while iterating: what the object owns, and what that owns
+      for (const e of this.edgesFrom(member)) if (OWNED.includes(e.relation)) scope.add(e.target);
     }
+    const { order } = this.edgeIndex();
     const byAutomation = new Map();
-    for (const e of this.data.edges) {
+    const used = [];
+    for (const member of scope) used.push(...this.edgesTo(member));
+    used.sort((a, b) => order.get(a) - order.get(b)); // the order of the edges as scanned
+    for (const e of used) {
       if (!USAGE.includes(e.relation) || !scope.has(e.target) || scope.has(e.source) || !(/^(automation|script|scene|dashboard|config_entry):/.test(e.source) || e.relation === "INCLUDES")) continue;
       const hit = byAutomation.get(e.source) || { key: e.source, certain: false, places: [] };
       if (e.confidence === "certain") hit.certain = true;
@@ -1781,7 +1801,7 @@ class DiagnosisMixin {
 
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
-    const usage = this.data.edges.filter(e => e.target === key && USAGE_RELATIONS.includes(e.relation)).length;
+    const usage = this.edgesTo(key).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
     const min = this.data.meta.min_unavailable_days || 0;
     const facts = [[this.t("status"), this.pill(item.status)]];
     if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
@@ -1798,7 +1818,7 @@ class DiagnosisMixin {
 
   relationsCard(key) {
     const USAGE = USAGE_RELATIONS;
-    const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
+    const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     const groups = [
       [this.t("origin"), incoming.filter(e => !USAGE.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e }))],
       [this.t("usage"), [
@@ -2142,6 +2162,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.busy = false;
     this.scanStatus = null;
     this.error = null;
+    this._rev = 0; // bumped when data is changed in place (ignore flags), so cached lists are rebuilt
+    this._debug = this.debugEnabled();
   }
 
   set hass(value) {
@@ -2206,7 +2228,7 @@ class HAHousekeeperPanel extends HTMLElement {
   async updateScanStatus() {
     try {
       this.scanStatus = await this._hass.callWS({ type: "ha_housekeeper/status" });
-      this.render();
+      this.renderProgress();
     } catch (_) { /* The main scan request reports actionable errors. */ }
   }
 
@@ -2280,10 +2302,108 @@ class HAHousekeeperPanel extends HTMLElement {
     return "";
   }
 
+  scanButtonInner() {
+    const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
+    return `<ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}`;
+  }
+
+  // The scan status arrives every few hundred milliseconds: only the scan button and the status
+  // line for screen readers change, so the page is not rebuilt for it.
+  renderProgress() {
+    const root = this.shadowRoot, button = root?.querySelector?.("[data-action='scan']");
+    const live = root?.querySelector?.("[role='status']");
+    if (!button || !live) { this.render(); return; }
+    button.innerHTML = this.scanButtonInner();
+    button.disabled = Boolean(this.busy || this.cleanupRunning());
+    live.textContent = this.liveStatus();
+  }
+
+  // Search fields change their state at once but re-render after a short pause.
+  scheduleRender() {
+    if (this._searchTimer) globalThis.clearTimeout?.(this._searchTimer);
+    this._searchTimer = this.defer(() => { this._searchTimer = null; this.render(); }, SEARCH_DEBOUNCE_MS);
+  }
+
+  defer(fn, ms) { return setTimeout(fn, ms); }
+
+  debugEnabled() {
+    try { return globalThis.localStorage?.getItem("hk_debug") === "1"; } catch (_) { return false; }
+  }
+
+  // A re-render replaces the page, so the focused control is found again by id or data attribute.
+  captureFocus() {
+    const el = this.shadowRoot?.activeElement;
+    if (!el?.getAttribute) return null;
+    let selector = null;
+    if (el.id) selector = `#${el.id}`;
+    else {
+      for (const attr of el.attributes || []) {
+        if (attr.name.startsWith("data-")) { selector = `${el.localName}[${attr.name}="${String(attr.value).replace(/["\\]/g, "\\$&")}"]`; break; }
+      }
+    }
+    return selector ? { selector, start: el.selectionStart ?? null, end: el.selectionEnd ?? null } : null;
+  }
+
+  restoreFocus(saved) {
+    if (!saved) return;
+    let next = null;
+    try { next = this.shadowRoot.querySelector(saved.selector); } catch (_) { return; }
+    if (!next || next.disabled) return;
+    next.focus({ preventScroll: true });
+    if (saved.start !== null && next.setSelectionRange) {
+      try { next.setSelectionRange(saved.start, saved.end); } catch (_) { /* not a text field */ }
+    }
+  }
+
+  // Derived data is kept per data set; it is rebuilt when the data, a change in place or one of the
+  // given values changes.
+  memo(name, deps, build) {
+    const cache = this._memo ||= new Map(), hit = cache.get(name);
+    if (hit && hit.data === this.data && hit.rev === this._rev && hit.deps.length === deps.length && hit.deps.every((d, i) => d === deps[i])) return hit.value;
+    const value = build();
+    cache.set(name, { data: this.data, rev: this._rev, deps, value });
+    return value;
+  }
+
+  // Collators are created once per language; creating one per comparison is slow.
+  collators() {
+    if (this._collators?.lang !== this.lang) {
+      this._collators = { lang: this.lang, natural: new Intl.Collator(this.lang, { numeric: true, sensitivity: "base" }), ids: new Intl.Collator(this.lang, { numeric: true }), plain: new Intl.Collator() };
+    }
+    return this._collators;
+  }
+
+  // Edges by source and by target, plus every target that something uses (in edge order).
+  edgeIndex() {
+    return this.memo("edges", [], () => {
+      const bySource = new Map(), byTarget = new Map(), used = new Set(), order = new Map();
+      (this.data.edges || []).forEach((edge, i) => {
+        order.set(edge, i);
+        (bySource.get(edge.source) || bySource.set(edge.source, []).get(edge.source)).push(edge);
+        (byTarget.get(edge.target) || byTarget.set(edge.target, []).get(edge.target)).push(edge);
+        if (USAGE_RELATIONS.includes(edge.relation)) used.add(edge.target);
+      });
+      return { bySource, byTarget, used, order };
+    });
+  }
+
+  edgesFrom(key) { return this.edgeIndex().bySource.get(key) || []; }
+
+  edgesTo(key) { return this.edgeIndex().byTarget.get(key) || []; }
+
   render() {
     if (!this.shadowRoot) return;
-    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
+    const started = this._debug ? globalThis.performance?.now?.() : null;
+    const focus = this.captureFocus();
+    const shell = `<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
+    const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
+    if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
+    else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
+    this.restoreFocus(focus);
     this.bind();
+    if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) this.syncUrl();
   }
 
@@ -2335,10 +2455,9 @@ class HAHousekeeperPanel extends HTMLElement {
       maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
-    const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>${this.warmupBanner()}`;
+      <button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {
@@ -2390,24 +2509,17 @@ class HAHousekeeperPanel extends HTMLElement {
       try {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
-        if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; }
+        if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
       } catch (err) { this.error = err?.message || String(err); }
       this.render();
     });
     root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { this.findingFilter = el.dataset.findingFilter; this.pages = {}; this.render(); });
-    const focusKeep = (selector, setter) => {
+    const searchField = (selector, setter) => {
       const input = root.querySelector(selector);
-      if (!input) return;
-      input.oninput = () => {
-        setter(input.value);
-        const caret = input.selectionStart;
-        this.render();
-        const next = this.shadowRoot.querySelector(selector);
-        if (next) { next.focus(); next.setSelectionRange(caret, caret); }
-      };
+      if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };
     };
-    focusKeep("#query", v => { this.query = v; this.pages = {}; });
-    focusKeep("#graphQuery", v => { this.graphQuery = v; });
+    searchField("#query", v => { this.query = v; this.pages = {}; });
+    searchField("#graphQuery", v => { this.graphQuery = v; });
     root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
     const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.pages = {}; this.render(); };
@@ -2475,10 +2587,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-lq]").forEach(input => input.oninput = () => {
       this.lv[input.dataset.lq].q = input.value; this.pages = {};
-      const caret = input.selectionStart, selector = `[data-lq="${input.dataset.lq}"]`;
-      this.render();
-      const next = this.shadowRoot.querySelector(selector);
-      if (next) { next.focus(); next.setSelectionRange(caret, caret); }
+      this.scheduleRender();
     });
     root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.pages = {}; this.render(); });

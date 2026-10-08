@@ -43,6 +43,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.busy = false;
     this.scanStatus = null;
     this.error = null;
+    this._rev = 0; // bumped when data is changed in place (ignore flags), so cached lists are rebuilt
+    this._debug = this.debugEnabled();
   }
 
   set hass(value) {
@@ -107,7 +109,7 @@ class HAHousekeeperPanel extends HTMLElement {
   async updateScanStatus() {
     try {
       this.scanStatus = await this._hass.callWS({ type: "ha_housekeeper/status" });
-      this.render();
+      this.renderProgress();
     } catch (_) { /* The main scan request reports actionable errors. */ }
   }
 
@@ -181,10 +183,108 @@ class HAHousekeeperPanel extends HTMLElement {
     return "";
   }
 
+  scanButtonInner() {
+    const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
+    return `<ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}`;
+  }
+
+  // The scan status arrives every few hundred milliseconds: only the scan button and the status
+  // line for screen readers change, so the page is not rebuilt for it.
+  renderProgress() {
+    const root = this.shadowRoot, button = root?.querySelector?.("[data-action='scan']");
+    const live = root?.querySelector?.("[role='status']");
+    if (!button || !live) { this.render(); return; }
+    button.innerHTML = this.scanButtonInner();
+    button.disabled = Boolean(this.busy || this.cleanupRunning());
+    live.textContent = this.liveStatus();
+  }
+
+  // Search fields change their state at once but re-render after a short pause.
+  scheduleRender() {
+    if (this._searchTimer) globalThis.clearTimeout?.(this._searchTimer);
+    this._searchTimer = this.defer(() => { this._searchTimer = null; this.render(); }, SEARCH_DEBOUNCE_MS);
+  }
+
+  defer(fn, ms) { return setTimeout(fn, ms); }
+
+  debugEnabled() {
+    try { return globalThis.localStorage?.getItem("hk_debug") === "1"; } catch (_) { return false; }
+  }
+
+  // A re-render replaces the page, so the focused control is found again by id or data attribute.
+  captureFocus() {
+    const el = this.shadowRoot?.activeElement;
+    if (!el?.getAttribute) return null;
+    let selector = null;
+    if (el.id) selector = `#${el.id}`;
+    else {
+      for (const attr of el.attributes || []) {
+        if (attr.name.startsWith("data-")) { selector = `${el.localName}[${attr.name}="${String(attr.value).replace(/["\\]/g, "\\$&")}"]`; break; }
+      }
+    }
+    return selector ? { selector, start: el.selectionStart ?? null, end: el.selectionEnd ?? null } : null;
+  }
+
+  restoreFocus(saved) {
+    if (!saved) return;
+    let next = null;
+    try { next = this.shadowRoot.querySelector(saved.selector); } catch (_) { return; }
+    if (!next || next.disabled) return;
+    next.focus({ preventScroll: true });
+    if (saved.start !== null && next.setSelectionRange) {
+      try { next.setSelectionRange(saved.start, saved.end); } catch (_) { /* not a text field */ }
+    }
+  }
+
+  // Derived data is kept per data set; it is rebuilt when the data, a change in place or one of the
+  // given values changes.
+  memo(name, deps, build) {
+    const cache = this._memo ||= new Map(), hit = cache.get(name);
+    if (hit && hit.data === this.data && hit.rev === this._rev && hit.deps.length === deps.length && hit.deps.every((d, i) => d === deps[i])) return hit.value;
+    const value = build();
+    cache.set(name, { data: this.data, rev: this._rev, deps, value });
+    return value;
+  }
+
+  // Collators are created once per language; creating one per comparison is slow.
+  collators() {
+    if (this._collators?.lang !== this.lang) {
+      this._collators = { lang: this.lang, natural: new Intl.Collator(this.lang, { numeric: true, sensitivity: "base" }), ids: new Intl.Collator(this.lang, { numeric: true }), plain: new Intl.Collator() };
+    }
+    return this._collators;
+  }
+
+  // Edges by source and by target, plus every target that something uses (in edge order).
+  edgeIndex() {
+    return this.memo("edges", [], () => {
+      const bySource = new Map(), byTarget = new Map(), used = new Set(), order = new Map();
+      (this.data.edges || []).forEach((edge, i) => {
+        order.set(edge, i);
+        (bySource.get(edge.source) || bySource.set(edge.source, []).get(edge.source)).push(edge);
+        (byTarget.get(edge.target) || byTarget.set(edge.target, []).get(edge.target)).push(edge);
+        if (USAGE_RELATIONS.includes(edge.relation)) used.add(edge.target);
+      });
+      return { bySource, byTarget, used, order };
+    });
+  }
+
+  edgesFrom(key) { return this.edgeIndex().bySource.get(key) || []; }
+
+  edgesTo(key) { return this.edgeIndex().byTarget.get(key) || []; }
+
   render() {
     if (!this.shadowRoot) return;
-    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
+    const started = this._debug ? globalThis.performance?.now?.() : null;
+    const focus = this.captureFocus();
+    const shell = `<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
+    const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
+    if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
+    else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
+    this.restoreFocus(focus);
     this.bind();
+    if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) this.syncUrl();
   }
 
@@ -236,10 +336,9 @@ class HAHousekeeperPanel extends HTMLElement {
       maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
-    const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>${this.warmupBanner()}`;
+      <button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {
@@ -291,24 +390,17 @@ class HAHousekeeperPanel extends HTMLElement {
       try {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
-        if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; }
+        if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
       } catch (err) { this.error = err?.message || String(err); }
       this.render();
     });
     root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { this.findingFilter = el.dataset.findingFilter; this.pages = {}; this.render(); });
-    const focusKeep = (selector, setter) => {
+    const searchField = (selector, setter) => {
       const input = root.querySelector(selector);
-      if (!input) return;
-      input.oninput = () => {
-        setter(input.value);
-        const caret = input.selectionStart;
-        this.render();
-        const next = this.shadowRoot.querySelector(selector);
-        if (next) { next.focus(); next.setSelectionRange(caret, caret); }
-      };
+      if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };
     };
-    focusKeep("#query", v => { this.query = v; this.pages = {}; });
-    focusKeep("#graphQuery", v => { this.graphQuery = v; });
+    searchField("#query", v => { this.query = v; this.pages = {}; });
+    searchField("#graphQuery", v => { this.graphQuery = v; });
     root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
     const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.pages = {}; this.render(); };
@@ -376,10 +468,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-lq]").forEach(input => input.oninput = () => {
       this.lv[input.dataset.lq].q = input.value; this.pages = {};
-      const caret = input.selectionStart, selector = `[data-lq="${input.dataset.lq}"]`;
-      this.render();
-      const next = this.shadowRoot.querySelector(selector);
-      if (next) { next.focus(); next.setSelectionRange(caret, caret); }
+      this.scheduleRender();
     });
     root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.pages = {}; this.render(); });

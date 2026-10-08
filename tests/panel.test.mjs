@@ -138,7 +138,7 @@ test("haPath builds Home Assistant paths", () => {
 test("filtered applies query, type and status", () => {
   const { el } = panel();
   el.query = "sensor.b";
-  assert.deepEqual(el.filtered().map(o => o.object_id), ["sensor.b"]);
+  assert.equal(JSON.stringify(el.filtered().map(o => o.object_id)), JSON.stringify(["sensor.b"]));
   el.query = "";
   el.typeFilter = "automation";
   assert.deepEqual(el.filtered().map(o => o.object_id), ["automation.c"]);
@@ -1321,7 +1321,7 @@ test("inventory rows and sortable headers can be used with the keyboard", () => 
   el.render();
   const html = shadow.innerHTML;
   assert.ok(/<tr data-object="[^"]+" tabindex="0" role="button" aria-label="[^"]+">/.test(html), "rows are focusable");
-  assert.ok(/<th data-sort="name" aria-sort="[a-z]+"><button type="button" class="thbtn">/.test(html), "headers hold a real button");
+  assert.ok(/<th data-sort="name" aria-sort="[a-z]+"><button type="button" class="thbtn" data-sortbtn="name">/.test(html), "headers hold a real button");
   const key = (k, target = row) => { const ev = { key: k, target, prevented: false, preventDefault() { this.prevented = true; } }; row.onkeydown(ev); return ev; };
   assert.ok(key("Enter").prevented && row.clicked === 1);
   assert.ok(key(" ").prevented && row.clicked === 2);
@@ -1339,4 +1339,111 @@ test("the replacement preview warns about sources that undo only item by item", 
   assert.equal(html.split(el.t("sourceUndoPerItem")).length - 1, 1, "only the large source is flagged");
   assert.ok(html.indexOf("Huge") < html.indexOf(el.t("sourceUndoPerItem")));
   assert.ok(el.t("sourceUndoPerItem") !== "sourceUndoPerItem" && panel("de").el.t("sourceUndoPerItem").includes("Eintrag"));
+});
+
+test("typing in a search field changes the state at once and renders once after a pause", () => {
+  const cancelled = new Set();
+  const { el, shadow } = panel("en", { clearTimeout: id => cancelled.add(id) });
+  el.view = "inventory";
+  const queued = [];
+  el.defer = fn => { queued.push(fn); return queued.length; };
+  const input = { value: "" };
+  shadow.querySelector = selector => (selector === "#query" ? input : null);
+  el.render(); // binds the field
+  let renders = 0;
+  const render = el.render.bind(el);
+  el.render = () => { renders += 1; render(); };
+  for (const text of ["r", "ra", "rau"]) { input.value = text; input.oninput(); }
+  assert.equal(el.query, "rau", "the state follows every key");
+  assert.equal(renders, 0, "nothing is rebuilt while typing");
+  assert.deepEqual([...cancelled], [1, 2], "each key cancels the pending render");
+  queued[2]();
+  assert.equal(renders, 1);
+  assert.ok(shadow.innerHTML.includes('value="rau"'));
+});
+
+test("a re-render puts the focus back on the same control", () => {
+  const { el, shadow } = panel("en");
+  const field = { id: "query", getAttribute() {}, attributes: [], selectionStart: 3, selectionEnd: 5 };
+  shadow.activeElement = field;
+  assert.deepEqual({ ...el.captureFocus() }, { selector: "#query", start: 3, end: 5 });
+  const button = { localName: "button", getAttribute() {}, attributes: [{ name: "class", value: "x" }, { name: "data-sortbtn", value: 'a"b' }], selectionStart: undefined };
+  shadow.activeElement = button;
+  assert.equal(el.captureFocus().selector, 'button[data-sortbtn="a\\"b"]');
+  shadow.activeElement = { getAttribute() {}, attributes: [{ name: "class", value: "x" }] };
+  assert.equal(el.captureFocus(), null, "controls without id or data attribute are left alone");
+
+  const calls = [];
+  const next = { focus: opts => calls.push(["focus", opts.preventScroll]), setSelectionRange: (a, b) => calls.push(["range", a, b]), disabled: false };
+  shadow.querySelector = selector => (selector === "#query" ? next : null);
+  el.restoreFocus({ selector: "#query", start: 3, end: 5 });
+  assert.deepEqual(calls, [["focus", true], ["range", 3, 5]]);
+  calls.length = 0;
+  el.restoreFocus({ selector: "#gone", start: null, end: null });
+  el.restoreFocus(null);
+  assert.deepEqual(calls, []);
+});
+
+test("scan progress updates the button and the status line without rebuilding the page", () => {
+  const { el, shadow } = panel("en");
+  const button = { innerHTML: "", disabled: false };
+  const live = { textContent: "" };
+  shadow.querySelector = selector => (selector === "[data-action='scan']" ? button : selector === "[role='status']" ? live : null);
+  el.busy = true; el.scanStatus = { running: true, progress: 42 };
+  el.renderProgress();
+  assert.ok(button.innerHTML.includes("Scanning") && button.innerHTML.includes("42%") && button.disabled === true);
+  assert.ok(live.textContent.includes("42%"));
+  assert.equal(shadow.innerHTML, "", "the page was not rendered");
+  shadow.querySelector = () => null; // no heading on screen (detail view): fall back to a full render
+  el.renderProgress();
+  assert.ok(shadow.innerHTML.includes('class="shell"'));
+});
+
+test("the style sheet is kept while only the page changes", () => {
+  const { el, shadow } = panel("en");
+  el.render();
+  assert.ok(shadow.innerHTML.includes("<style data-hk>"));
+  const shell = { outerHTML: "" };
+  shadow.querySelector = selector => (selector === ".shell" ? shell : selector === "style[data-hk]" ? {} : null);
+  shadow.innerHTML = "KEEP";
+  el.render();
+  assert.equal(shadow.innerHTML, "KEEP", "the sheet and shell were not rewritten as a whole");
+  assert.ok(shell.outerHTML.startsWith('<div class="shell">'));
+  el.prefs = { ...el.prefs, mode: "dark" }; // a theme change needs the sheet again
+  el.render();
+  assert.ok(shadow.innerHTML.includes("<style data-hk>"));
+});
+
+test("derived lists follow the data: cache, search, ignore flag and edge index", () => {
+  const { el } = panel("en");
+  const first = el.filtered();
+  assert.equal(el.filtered(), first, "the same filter returns the cached list");
+  el.query = "b"; // matches B, not the two others
+  assert.equal(JSON.stringify(el.filtered().map(o => o.object_id)), JSON.stringify(["sensor.b"]));
+  el.query = "";
+  const findings = el.sortedFindings().length;
+  el.data.findings[0].ignored = true; el._rev += 1;
+  assert.equal(el.sortedFindings().length, findings - 1);
+  el.data.findings[0].ignored = false; el._rev += 1;
+
+  el.data = { ...DATA, edges: [
+    { source: "device:d", target: "entity:sensor.b", relation: "PROVIDES", confidence: "certain" },
+    { source: "automation:automation.c", target: "entity:sensor.b", relation: "TRIGGERS_ON", confidence: "certain", location: "trigger[0]" },
+  ] };
+  assert.equal(JSON.stringify(el.edgesTo("entity:sensor.b").map(e => e.source)), JSON.stringify(["device:d", "automation:automation.c"]));
+  assert.equal(JSON.stringify(el.edgesFrom("device:d").map(e => e.target)), JSON.stringify(["entity:sensor.b"]));
+  assert.ok(el.edgeIndex().used.has("entity:sensor.b") && !el.edgeIndex().used.has("device:d"));
+  // A device owns its entities, so what uses them is what breaks with the device.
+  const impact = el.impact({ object_type: "device", object_id: "d" }, "device:d");
+  assert.equal(JSON.stringify(impact.hits.map(h => h.key)), JSON.stringify(["automation:automation.c"]));
+  assert.equal(impact.related, 1);
+});
+
+test("the journal list is paged like the other long lists", () => {
+  const { el } = panel("en");
+  el.view = "cleanup";
+  el.journal = Array.from({ length: 45 }, (_, i) => ({ plan_id: `p${i}`, created_at: "2026-10-01T10:00:00+00:00", status: "dry_run", summary: {} }));
+  const html = el.cleanupView();
+  assert.equal((html.match(/data-plan-open=/g) || []).length, 20);
+  assert.ok(html.includes("data-pagesize"));
 });

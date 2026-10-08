@@ -2,7 +2,7 @@
 class ListsMixin {
   th(key, label) {
     const on = this.sort === key;
-    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</button></th>`;
+    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-sortbtn="${key}">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</button></th>`;
   }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
@@ -19,14 +19,17 @@ class ListsMixin {
     const get = sorts.find(x => x.key === st.sort)?.get || sorts[0].get;
     const sign = st.dir === "desc" ? -1 : 1;
     const empty = v => v === null || v === undefined || v === "";
-    return items.filter(it => (!q || text(it).toLowerCase().includes(q))
+    const { natural, ids } = this.collators();
+    const rows = items.filter(it => (!q || text(it).toLowerCase().includes(q))
       && Object.entries(st.f).every(([name, value]) => !value || !filters[name] || filters[name](it, value)))
-      .sort((a, b) => {
-        const x = get(a), y = get(b);
-        if (empty(x) !== empty(y)) return empty(x) ? 1 : -1;
-        const order = typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
-        return order * sign || String(tie(a)).localeCompare(String(tie(b)), this.lang, { numeric: true });
-      });
+      .map(it => ({ it, key: get(it) })); // the sort key is read once per item, not per comparison
+    rows.sort((a, b) => {
+      const x = a.key, y = b.key;
+      if (empty(x) !== empty(y)) return empty(x) ? 1 : -1;
+      const order = typeof x === "number" && typeof y === "number" ? x - y : natural.compare(String(x ?? ""), String(y ?? ""));
+      return order * sign || ids.compare(String(tie(a.it)), String(tie(b.it)));
+    });
+    return rows.map(row => row.it);
   }
 
   listBar(id, { sorts, filters = [] }) {

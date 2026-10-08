@@ -121,14 +121,15 @@ class DiagnosisMixin {
     if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) return null;
     const OWNED = ["PROVIDES", "OWNS"], USAGE = USAGE_RELATIONS;
     const scope = new Set([key]);
-    for (let grew = true; grew;) {
-      grew = false;
-      for (const e of this.data.edges) {
-        if (OWNED.includes(e.relation) && scope.has(e.source) && !scope.has(e.target)) { scope.add(e.target); grew = true; }
-      }
+    for (const member of scope) { // grows while iterating: what the object owns, and what that owns
+      for (const e of this.edgesFrom(member)) if (OWNED.includes(e.relation)) scope.add(e.target);
     }
+    const { order } = this.edgeIndex();
     const byAutomation = new Map();
-    for (const e of this.data.edges) {
+    const used = [];
+    for (const member of scope) used.push(...this.edgesTo(member));
+    used.sort((a, b) => order.get(a) - order.get(b)); // the order of the edges as scanned
+    for (const e of used) {
       if (!USAGE.includes(e.relation) || !scope.has(e.target) || scope.has(e.source) || !(/^(automation|script|scene|dashboard|config_entry):/.test(e.source) || e.relation === "INCLUDES")) continue;
       const hit = byAutomation.get(e.source) || { key: e.source, certain: false, places: [] };
       if (e.confidence === "certain") hit.certain = true;
@@ -162,7 +163,7 @@ class DiagnosisMixin {
 
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
-    const usage = this.data.edges.filter(e => e.target === key && USAGE_RELATIONS.includes(e.relation)).length;
+    const usage = this.edgesTo(key).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
     const min = this.data.meta.min_unavailable_days || 0;
     const facts = [[this.t("status"), this.pill(item.status)]];
     if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
@@ -179,7 +180,7 @@ class DiagnosisMixin {
 
   relationsCard(key) {
     const USAGE = USAGE_RELATIONS;
-    const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
+    const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     const groups = [
       [this.t("origin"), incoming.filter(e => !USAGE.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e }))],
       [this.t("usage"), [

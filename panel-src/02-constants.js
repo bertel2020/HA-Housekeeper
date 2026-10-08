@@ -36,6 +36,9 @@ const SCHEME_ALIASES = { teal: "housekeeper", amber: "housekeeper", sage: "house
 
 const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"];
 
+// Pause after the last key stroke in a search field before the list is rebuilt.
+const SEARCH_DEBOUNCE_MS = 150;
+
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
   ["inventory", "mdi:database-outline"],

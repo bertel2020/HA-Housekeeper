@@ -3,25 +3,36 @@ class InventoryMixin {
   filtered() {
     if (!this.data) return [];
     const q = this.query.trim().toLowerCase();
-    return this.data.objects.filter(item => {
-      const haystack = [item.name, item.object_id, item.platform, item.domain, item.unique_id].join(" ").toLowerCase();
-      return (!q || haystack.includes(q)) && (!this.typeFilter || item.object_type === this.typeFilter)
-        && (!this.statusFilter || item.status === this.statusFilter);
-    }).sort((a, b) => {
+    return this.memo("inventory", [q, this.typeFilter, this.statusFilter, this.sort, this.sortDir, this.lang], () => {
+      const { natural, ids } = this.collators(), desc = this.sortDir === "desc";
       const pick = item => this.sort === "status" ? item.status : this.sort === "type" ? item.object_type : this.sort === "since" ? item.status_since : (item.name || item.object_id);
-      const x = pick(a), y = pick(b);
-      if (!x !== !y) return x ? -1 : 1; // missing values stay last in both directions
-      const order = String(x ?? "").localeCompare(String(y ?? ""), this.lang, { numeric: true, sensitivity: "base" });
-      return (this.sortDir === "desc" ? -order : order) || String(a.object_id).localeCompare(String(b.object_id), this.lang, { numeric: true });
+      const rows = this.data.objects.filter(item => (!q || this.haystack(item).includes(q)) && (!this.typeFilter || item.object_type === this.typeFilter)
+        && (!this.statusFilter || item.status === this.statusFilter)).map(item => ({ item, key: pick(item) }));
+      rows.sort((a, b) => {
+        if (!a.key !== !b.key) return a.key ? -1 : 1; // missing values stay last in both directions
+        const order = natural.compare(String(a.key ?? ""), String(b.key ?? ""));
+        return (desc ? -order : order) || ids.compare(String(a.item.object_id), String(b.item.object_id));
+      });
+      return rows.map(row => row.item);
     });
+  }
+
+  // The text a search looks in, built once per object.
+  haystack(item) {
+    const cache = this._haystacks ||= new WeakMap();
+    let text = cache.get(item);
+    if (text === undefined) { text = [item.name, item.object_id, item.platform, item.domain, item.unique_id].join(" ").toLowerCase(); cache.set(item, text); }
+    return text;
   }
 
   inventory() {
     const rows = this.filtered();
     const pg = this.paginate("inventory", rows);
     const visibleRows = pg.rows;
-    const types = [...new Set(this.data.objects.map(x => x.object_type))].sort();
-    const statuses = [...new Set(this.data.objects.map(x => x.status))].sort();
+    const { types, statuses } = this.memo("facets", [], () => ({
+      types: [...new Set(this.data.objects.map(x => x.object_type))].sort(),
+      statuses: [...new Set(this.data.objects.map(x => x.status))].sort(),
+    }));
     return `<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select>
         <div class="mobsort"><select id="sortKey" aria-label="${this.t("sortBy")}">${[["name", "sortName"], ["type", "sortType"], ["status", "sortStatus"], ["since", "sortSince"]].map(([key, label]) => `<option value="${key}" ${this.sort === key ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select><button class="btn" id="sortDir" aria-label="${this.t("sortBy")}">${this.sortDir === "desc" ? "▼" : "▲"}</button></div></div>
       <div class="tablewrap"><table><thead><tr>${this.th("name", "name")}${this.th("type", "type")}${this.th("status", "status")}<th>${this.t("reason")}</th>${this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><strong>${this.esc(item.name)}</strong><span class="id">${this.esc(item.object_id)}</span></span></span></td><td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td><td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td><td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
@@ -44,7 +55,7 @@ class InventoryMixin {
     }
     const item = this.graphSelected, key = this.objectKey(item);
     const USAGE = USAGE_RELATIONS;
-    const incoming = this.data.edges.filter(e => e.target === key), outgoing = this.data.edges.filter(e => e.source === key);
+    const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     const originEdges = incoming.filter(e => !USAGE.includes(e.relation));
     const usageEntries = [
       ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ key: e.source, edge: e, label: `${this.t("usedBy")} · ${this.t(e.relation)}` })),

@@ -15,7 +15,7 @@ class UnusedMixin {
 
   // Active entities no source refers to. A hint only; see unreferencedHint for the blind spots.
   unreferencedRows() {
-    const used = new Set(this.data.edges.filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => e.target));
+    const { used } = this.edgeIndex();
     const SELF = ["automation", "script", "scene"];
     return this.data.objects.filter(o => o.object_type === "entity" && o.status === "active" && !o.entity_category
       && !SELF.includes(o.object_id.split(".")[0]) && !used.has(this.objectKey(o)))

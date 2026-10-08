@@ -1,8 +1,9 @@
 // FindingsMixin: methods of the panel element, mixed into the class in 99-register.js.
 class FindingsMixin {
   sortedFindings(includeIgnored = false) {
+    const { plain } = this.collators();
     return this.data.findings.filter(f => includeIgnored || !f.ignored).sort((a, b) => (b.confidence - a.confidence)
-      || String(a.object_id).localeCompare(String(b.object_id)));
+      || plain.compare(String(a.object_id), String(b.object_id)));
   }
 
   // The share of objects without a finding. It counts affected objects, not findings, so an object
