@@ -790,6 +790,16 @@ test("an overdue scan shows a banner on the overview", () => {
   assert.ok(el.staleBanner().includes("9 days old"));
 });
 
+test("the safety badge names the backup and the changes that only a backup can undo", () => {
+  for (const [lang, backup, only] of [["de", "Backup", "nur durch Wiederherstellen"], ["en", "backup", "only be taken back by restoring"]]) {
+    const { el } = panel(lang);
+    const hint = el.t("safeBadgeHint");
+    assert.ok(hint.includes(backup) && hint.includes(only), hint);
+    assert.ok(!/Deaktivieren|disabling/.test(hint), "must not describe disabling as the only change");
+    assert.equal(el.t("riskNotice"), "riskNotice", "the unused read-only notice is gone");
+  }
+});
+
 test("preliminary data during the Home Assistant start shows a banner on every page", () => {
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, preliminary: false } };
