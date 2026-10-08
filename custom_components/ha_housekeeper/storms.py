@@ -12,15 +12,15 @@ written at all, so "identical updates" cannot be measured; "updates without a ne
 
 from __future__ import annotations
 
-import asyncio
 import time
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 
 from .cleanup import USAGE_RELATIONS
-from .const import DOMAIN, IGNORE_LABEL
+from .const import IGNORE_LABEL
 from .meter import recorder_ready
+from .queries import cached_query
 from .reliability import entry_info
 
 DAY = 86400
@@ -308,26 +308,16 @@ async def storms(
     """Recorder load per entity, integration and event type for the last day or week."""
     if not recorder_ready(hass):
         return {"available": False, "findings": []}
-    from homeassistant.components.recorder import get_instance
-
-    store = hass.data.setdefault(DOMAIN, {})
-    cache: dict[int, tuple[float, dict[str, Any]]] = store.setdefault("storms_cache", {})
-    lock: asyncio.Lock = store.setdefault("reliability_lock", asyncio.Lock())
-    kept = cache.get(window_days)
-    fresh = bool(kept) and time.monotonic() - kept[0] < CACHE_SECONDS
-    cached = True
-    if (refresh or not fresh) and lock.locked():
-        if not kept:
-            return {"available": True, "busy": True, "findings": [], "window_days": window_days}
-    elif refresh or not fresh:
-        async with lock:
-            now = time.time()
-            raw = await get_instance(hass).async_add_executor_job(
-                query_storms, hass, now - window_days * DAY, now
-            )
-            cache[window_days] = kept = (time.monotonic(), raw)
-            cached = False
-    assert kept is not None
+    now = time.time()
+    found = await cached_query(
+        hass,
+        f"storms:{window_days}",
+        CACHE_SECONDS,
+        lambda: query_storms(hass, now - window_days * DAY, now),
+        refresh=refresh,
+    )
+    if found.busy:
+        return {"available": True, "busy": True, "findings": [], "window_days": window_days}
     info = {
         item["object_id"]: {
             "name": item.get("name"),
@@ -343,6 +333,6 @@ async def storms(
         if item["object_type"] == "entity" and IGNORE_LABEL in (item.get("labels") or [])
     }
     result = evaluate_storms(
-        kept[1], info, await entry_info(hass), snapshot.get("edges", []), ignored, window_days
+        found.raw, info, await entry_info(hass), snapshot.get("edges", []), ignored, window_days
     )
-    return {"available": True, "busy": False, "cached": cached, **result}
+    return {"available": True, "busy": False, "cached": found.cached, **result}

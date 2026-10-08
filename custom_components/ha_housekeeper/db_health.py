@@ -7,7 +7,6 @@ share the lock of the reliability query and the result is kept for a few minutes
 
 from __future__ import annotations
 
-import asyncio
 import os
 import time
 from datetime import UTC, date, datetime
@@ -15,8 +14,8 @@ from typing import Any
 
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN
 from .meter import recorder_ready
+from .queries import cached_query
 
 DAY = 86400
 CACHE_SECONDS = 600
@@ -332,32 +331,22 @@ async def db_health(
     """Database health: size and growth, statistics duplicates, gaps and issues, recorder gaps."""
     if not recorder_ready(hass):
         return {"available": False, "findings": []}
-    from homeassistant.components.recorder import get_instance
-
-    store = hass.data.setdefault(DOMAIN, {})
-    lock: asyncio.Lock = store.setdefault("reliability_lock", asyncio.Lock())
-    kept = store.get("db_health_cache")
-    fresh = bool(kept) and time.monotonic() - kept[0] < CACHE_SECONDS
-    cached = True
-    if (refresh or not fresh) and lock.locked():
-        if not kept:
-            return {"available": True, "busy": True, "findings": []}
-    elif refresh or not fresh:
-        async with lock:
-            raw = await get_instance(hass).async_add_executor_job(query_db, hass, time.time())
-            store["db_health_cache"] = kept = (time.monotonic(), raw)
-            cached = False
-    assert kept is not None
+    now = time.time()
+    found = await cached_query(
+        hass, "db_health", CACHE_SECONDS, lambda: query_db(hass, now), refresh=refresh
+    )
+    if found.busy:
+        return {"available": True, "busy": True, "findings": []}
     names = {
         item["object_id"]: item.get("name") or item["object_id"]
         for item in snapshot["objects"]
         if item["object_type"] == "entity"
     }
-    raw = kept[1]
+    raw = found.raw
     if raw.get("db_bytes") is not None:
         events.record_size(
             datetime.now(UTC).date().isoformat(),
             int(raw["db_bytes"]) + int(raw.get("wal_bytes") or 0),
         )
     result = evaluate(raw, names, events.sizes, events.events, datetime.now(UTC).date())
-    return {"available": True, "busy": False, "cached": cached, **result}
+    return {"available": True, "busy": False, "cached": found.cached, **result}

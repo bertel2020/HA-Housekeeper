@@ -7,7 +7,6 @@ kept for a few minutes and never runs twice at the same time.
 
 from __future__ import annotations
 
-import asyncio
 import time
 from datetime import UTC, datetime, tzinfo
 from typing import Any
@@ -15,8 +14,9 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, IGNORE_LABEL
+from .const import IGNORE_LABEL
 from .meter import recorder_ready
+from .queries import cached_query
 
 DAY = 86400
 WINDOWS = (1, 7)  # days
@@ -355,27 +355,16 @@ async def reliability(
     """Availability and shared outages per config entry for the last day or week."""
     if not recorder_ready(hass):
         return {"available": False, "entries": []}
-    from homeassistant.components.recorder import get_instance
-
-    store = hass.data.setdefault(DOMAIN, {})
-    cache: dict[int, tuple[float, dict[str, Any]]] = store.setdefault("reliability_cache", {})
-    lock: asyncio.Lock = store.setdefault("reliability_lock", asyncio.Lock())
-    kept = cache.get(window_days)
-    fresh = bool(kept) and time.monotonic() - kept[0] < CACHE_SECONDS
-    cached = True
-    if (refresh or not fresh) and lock.locked():
-        # Another query is running; hand out what there is instead of starting a second one.
-        if not kept:
-            return {"available": True, "busy": True, "entries": [], "window_days": window_days}
-    elif refresh or not fresh:
-        async with lock:
-            now = time.time()
-            raw = await get_instance(hass).async_add_executor_job(
-                query_runs, hass, now - window_days * DAY, now
-            )
-            cache[window_days] = kept = (time.monotonic(), raw)
-            cached = False
-    assert kept is not None
+    now = time.time()
+    found = await cached_query(
+        hass,
+        f"reliability:{window_days}",
+        CACHE_SECONDS,
+        lambda: query_runs(hass, now - window_days * DAY, now),
+        refresh=refresh,
+    )
+    if found.busy:
+        return {"available": True, "busy": True, "entries": [], "window_days": window_days}
     entities = [
         {
             "entity_id": item["object_id"],
@@ -387,7 +376,7 @@ async def reliability(
         if item["object_type"] == "entity"
     ]
     entries = await entry_info(hass)
-    result = compute(kept[1], entities, entries)
+    result = compute(found.raw, entities, entries)
     periods = result.pop("outage_periods")
     used: dict[str, int] = {}
     for edge in snapshot.get("edges", []):
@@ -399,13 +388,15 @@ async def reliability(
         for item in snapshot["objects"]
         if item["object_type"] == "entity" and IGNORE_LABEL in (item.get("labels") or [])
     }
-    unstable = flapping(kept[1], entities, periods, used, ignored, dt_util.get_default_time_zone())
+    unstable = flapping(
+        found.raw, entities, periods, used, ignored, dt_util.get_default_time_zone()
+    )
     for item in unstable["items"]:
         item["entry_title"] = (entries.get(item["entry_id"]) or {}).get("title")
     return {
         "available": True,
         "busy": False,
-        "cached": cached,
+        "cached": found.cached,
         "unstable": unstable,
         **result,
     }

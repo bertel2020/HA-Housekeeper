@@ -16,9 +16,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
-from .const import DOMAIN, PREFLIGHT_STORAGE_KEY, STORAGE_VERSION
+from .const import PREFLIGHT_STORAGE_KEY, STORAGE_VERSION
 from .history import diff_checkpoints, make_checkpoint
 from .meter import recorder_ready
+from .queries import cached_query
 
 COST_LIMIT = 40  # entities listed per ranking; totals stay exact
 SUGGEST_MIN_PER_DAY = 100  # states per day from which an unused entity is worth excluding
@@ -194,15 +195,16 @@ async def recorder_costs(
     """
     if not recorder_ready(hass):
         return {"available": False, "entities": [], "statistics": []}
-    from homeassistant.components.recorder import get_instance
-
-    cache = hass.data.setdefault(DOMAIN, {})
-    kept = cache.get("costs_cache")
-    if not refresh and kept and time.monotonic() - kept[0] < COST_CACHE_SECONDS:
-        return rank_costs({**kept[1], "cached": True}, snapshot)
-    raw = await get_instance(hass).async_add_executor_job(_query_costs, hass, COST_LIMIT)
-    cache["costs_cache"] = (time.monotonic(), raw)
-    return rank_costs(raw, snapshot)
+    found = await cached_query(
+        hass,
+        "costs",
+        COST_CACHE_SECONDS,
+        lambda: _query_costs(hass, COST_LIMIT),
+        refresh=refresh,
+    )
+    if found.busy:
+        return {"available": True, "busy": True, "entities": [], "statistics": []}
+    return rank_costs({**found.raw, "cached": True} if found.cached else found.raw, snapshot)
 
 
 async def _backup_state(hass: HomeAssistant) -> dict[str, Any]:
