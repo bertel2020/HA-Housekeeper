@@ -103,7 +103,7 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
     const out = result.violations.map(v => ({ id: v.id, impact: v.impact, help: v.help, count: v.nodes.length, sample: v.nodes.slice(0, 2).map(n => n.html.slice(0, 160)) }));
     const text = JSON.stringify(out);
     if (q.get("inner")) parent.postMessage({ axe: text }, "*");
-    else document.body.insertAdjacentHTML("beforeend", "<pre id=axe-result>" + text.replace(/</g, "\\\\u003c") + "</pre>");
+    else document.body.insertAdjacentHTML("beforeend", "<pre id=axe-result>" + btoa(unescape(encodeURIComponent(text))) + "</pre>");
   }
   document.body.dataset.ready = "1";
 })();
@@ -116,7 +116,7 @@ const FRAME = `<!doctype html><html><head><meta charset="utf-8"><title>frame</ti
   const q = new URLSearchParams(location.search), w = q.get("w"), h = q.get("h");
   q.delete("w"); q.delete("h"); q.set("inner", "1");
   const f = document.createElement("iframe"); f.width = w; f.height = h; f.src = "/?" + q.toString(); document.body.appendChild(f);
-  addEventListener("message", e => { if (e.data && e.data.axe) document.body.insertAdjacentHTML("beforeend", "<pre id=axe-result>" + e.data.axe.replace(/</g, "\\u003c") + "</pre>"); });
+  addEventListener("message", e => { if (e.data && e.data.axe) document.body.insertAdjacentHTML("beforeend", "<pre id=axe-result>" + btoa(unescape(encodeURIComponent(e.data.axe))) + "</pre>"); });
 </script></body></html>`;
 
 function serve(data) {
@@ -161,7 +161,7 @@ const chrome = chromePath();
 const { server, port, hasAxe } = await serve(showcase(Number(arg("objects", 400))));
 const root_profile = fs.mkdtempSync(path.join(os.tmpdir(), "hk-chrome-"));
 let failed = false;
-const jobsParallel = Number(arg("jobs", 4));
+const jobsParallel = Number(arg("jobs", 3));
 let counter = 0;
 const withProfile = async fn => {
   const profile = path.join(root_profile, String(counter++));
@@ -184,7 +184,7 @@ try {
       const size = VIEWPORTS[viewport], [w, h] = windowSize(size);
       const { stdout: dom } = await run(chrome, [...chromeArgs(profile, w, h), "--dump-dom", pageUrl(port, view, size, scheme, "&axe=1")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 90000 });
       const match = /<pre id="axe-result">(.*?)<\/pre>/s.exec(dom);
-      return { view, viewport, scheme, violations: match ? JSON.parse(match[1].replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")) : null };
+      return { view, viewport, scheme, violations: match ? JSON.parse(Buffer.from(match[1].trim(), "base64").toString("utf8")) : null };
     }));
     for (const { view, viewport, scheme, violations } of found) {
       if (!violations) { console.log(`axe: no result for ${view} ${viewport} ${scheme}`); failed = true; continue; }
@@ -202,6 +202,6 @@ try {
   }
 } finally {
   server.close();
-  fs.rmSync(root_profile, { recursive: true, force: true });
+  try { fs.rmSync(root_profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 300 }); } catch { /* Chrome may still be flushing its profile */ }
 }
 process.exit(failed ? 1 : 0);
