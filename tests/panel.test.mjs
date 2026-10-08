@@ -339,6 +339,23 @@ test("duplicate entities and unused automations are explained", () => {
   assert.ok(el.findingRow({ rule_id: "entity.possible_duplicate", object_id: "media_player.tv_2", classification: "possible_duplicate", confidence: 0.7, affected_object: "media_player.tv" }).includes("Mögliches Duplikat von media_player.tv"));
 });
 
+test("the status counts affected objects once, only of the base types, and not hidden findings", () => {
+  const { el } = panel("en");
+  const entity = id => ({ object_type: "entity", object_id: id, name: id, status: "orphaned" });
+  const objects = [...Array.from({ length: 8 }, (_, i) => entity(`sensor.s${i}`)), { object_type: "dashboard", object_id: "dash", name: "d", status: "active" }];
+  const finding = (rule, id, extra = {}) => ({ rule_id: rule, object_id: id, classification: "orphaned", confidence: 0.9, evidence: [], ...extra });
+  const base = { ...DATA, objects };
+  el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.duplicate", "sensor.s0"), finding("entity.unavailable", "sensor.s0")] };
+  assert.deepEqual([el.health().affected, el.health().base, el.health().percent], [1, 8, 88]); // one object, three findings
+  el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.state_missing", "sensor.s1", { ignored: true })] };
+  assert.equal(el.health().affected, 1); // hidden findings do not count
+  el.data = { ...base, findings: [finding("dashboard.missing_entity", "dash")] };
+  assert.equal(el.health().affected, 0); // other object types are listed but not part of the ring
+  el.data = { ...DATA, objects: [], findings: [finding("entity.state_missing", "sensor.s0")] };
+  assert.equal(el.health().percent, 100); // empty base
+  assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("scripts and scenes"));
+});
+
 test("hidden findings are excluded from counts, lists and export unless shown", () => {
   const { el, downloads } = panel("en");
   const findings = [{ ...DATA.findings[0], key: "k1", ignored: true, ignored_by: "user" }, { ...DATA.findings[1], key: "k2", ignored: false }];

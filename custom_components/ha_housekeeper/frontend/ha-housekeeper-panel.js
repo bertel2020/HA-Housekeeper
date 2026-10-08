@@ -33,7 +33,7 @@ const TEXT = {
     total: "Gesamt",
     recentFindings: "Aktuelle Befunde", affected: "Betroffenes Objekt",
     systemState: "Systemzustand", health: "Housekeeping-Status", healthGood: "Gut", healthCheck: "Prüfen",
-    healthBad: "Problematisch", healthHint: "Anteil unauffälliger Entities und Automationen",
+    healthBad: "Problematisch", healthHint: "Anteil der Entities, Automationen, Skripte und Szenen ohne Befund", healthTip: "Gezählt werden betroffene Objekte, nicht einzelne Befunde. Ausgeblendete Befunde und andere Objekttypen (Dashboards, Geräte, Helfer) zählen nicht. Der Wert ist gerundet. Betroffen: {affected} von {base}.",
     openFindings: "Offene Befunde", needsAttention: "Benötigt Aufmerksamkeit",
     sortedBySure: "Nach Sicherheit der Diagnose sortiert", allFindings: "Alle Befunde",
     inventoryStatus: "Inventarstatus", byType: "Nach Objekttyp", noFindings: "Keine Befunde – alles unauffällig.",
@@ -193,7 +193,7 @@ const TEXT = {
     total: "Total",
     recentFindings: "Current findings", affected: "Affected object",
     systemState: "System health", health: "Housekeeping status", healthGood: "Good", healthCheck: "Review",
-    healthBad: "Problematic", healthHint: "Share of entities and automations without findings",
+    healthBad: "Problematic", healthHint: "Share of entities, automations, scripts and scenes without findings", healthTip: "Affected objects are counted, not single findings. Hidden findings and other object types (dashboards, devices, helpers) do not count. The value is rounded. Affected: {affected} of {base}.",
     openFindings: "Open findings", needsAttention: "Needs attention",
     sortedBySure: "Sorted by diagnosis confidence", allFindings: "All findings",
     inventoryStatus: "Inventory status", byType: "By object type", noFindings: "No findings – everything looks fine.",
@@ -378,6 +378,9 @@ const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
   disabled: "mute", empty: "mute", unknown: "violet", ignored: "mute", possible_duplicate: "violet", unused: "mute",
 };
+
+// Object types the housekeeping status is calculated from.
+const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
 
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
@@ -815,7 +818,7 @@ class OverviewMixin {
     ];
     const order = ["active", "unknown", "unavailable", "orphaned", "disabled", "empty", "problem"].filter(s => counts[s]);
     const total = Math.max(1, m.object_count);
-    return `${this.staleBanner()}<div class="summary"><div class="card"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
+    return `${this.staleBanner()}<div class="summary"><div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
       <div class="grid2"><div class="stack"><div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
@@ -859,12 +862,17 @@ class FindingsMixin {
       || String(a.object_id).localeCompare(String(b.object_id)));
   }
 
+  // The share of objects without a finding. It counts affected objects, not findings, so an object
+  // with several findings is subtracted once; only the base types count, hidden findings do not.
   health() {
-    const base = this.data.objects.filter(o => ["entity", "automation", "script", "scene"].includes(o.object_type)).length;
-    const percent = base ? Math.max(0, Math.round(100 * (1 - this.data.findings.filter(f => !f.ignored).length / base))) : 100;
+    const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
+    const base = objects.length;
+    const known = new Set(objects.map(o => this.objectKey(o)));
+    const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
+    const percent = base ? Math.max(0, Math.round(100 * (1 - affected.size / base))) : 100;
     const tone = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label };
+    return { percent, tone, label, affected: affected.size, base };
   }
 
   findingRow(finding) {

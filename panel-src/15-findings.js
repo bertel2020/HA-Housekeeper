@@ -5,12 +5,17 @@ class FindingsMixin {
       || String(a.object_id).localeCompare(String(b.object_id)));
   }
 
+  // The share of objects without a finding. It counts affected objects, not findings, so an object
+  // with several findings is subtracted once; only the base types count, hidden findings do not.
   health() {
-    const base = this.data.objects.filter(o => ["entity", "automation", "script", "scene"].includes(o.object_type)).length;
-    const percent = base ? Math.max(0, Math.round(100 * (1 - this.data.findings.filter(f => !f.ignored).length / base))) : 100;
+    const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
+    const base = objects.length;
+    const known = new Set(objects.map(o => this.objectKey(o)));
+    const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
+    const percent = base ? Math.max(0, Math.round(100 * (1 - affected.size / base))) : 100;
     const tone = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label };
+    return { percent, tone, label, affected: affected.size, base };
   }
 
   findingRow(finding) {

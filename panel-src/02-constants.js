@@ -53,3 +53,6 @@ const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
   disabled: "mute", empty: "mute", unknown: "violet", ignored: "mute", possible_duplicate: "violet", unused: "mute",
 };
+
+// Object types the housekeeping status is calculated from.
+const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
