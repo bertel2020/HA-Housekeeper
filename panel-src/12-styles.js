@@ -107,7 +107,6 @@ class StylesMixin {
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
       .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}
       .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-      .safe-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1px solid color-mix(in srgb,var(--hk-green) 32%,transparent);color:color-mix(in srgb,var(--hk-green) 62%,var(--hk-text));background:color-mix(in srgb,var(--hk-green) 11%,transparent);font-size:calc(12px*var(--hk-fs,1));font-weight:600;white-space:nowrap}.safe-badge ha-icon{--mdc-icon-size:16px}
       @media(max-width:860px){.heading{flex-direction:column;align-items:stretch}.head-actions{justify-content:flex-start}}
       /* Look of the Zeitarchiv app: larger radius, soft shadow, calm tables, bold headings, Plex Mono for ids. */
       .card,.panel{border-radius:14px;box-shadow:0 1px 2px rgba(19,28,23,.06),0 1px 1px rgba(19,28,23,.04)}

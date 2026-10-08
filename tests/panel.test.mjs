@@ -897,16 +897,6 @@ test("the scan button is disabled while a plan runs", () => {
   assert.ok(el.t("err_cleanup_busy").includes("plan is running"));
 });
 
-test("the safety badge names the backup and the changes that only a backup can undo", () => {
-  for (const [lang, backup, only] of [["de", "Backup", "nur durch Wiederherstellen"], ["en", "backup", "only be taken back by restoring"]]) {
-    const { el } = panel(lang);
-    const hint = el.t("safeBadgeHint");
-    assert.ok(hint.includes(backup) && hint.includes(only), hint);
-    assert.ok(!/Deaktivieren|disabling/.test(hint), "must not describe disabling as the only change");
-    assert.equal(el.t("riskNotice"), "riskNotice", "the unused read-only notice is gone");
-  }
-});
-
 test("preliminary data during the Home Assistant start shows a banner on every page", () => {
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, preliminary: false } };
@@ -1006,14 +996,13 @@ test("removal candidates are the quarantined entities and wait for the quarantin
   assert.ok(shadow.innerHTML.includes("sensor.new") && !shadow.innerHTML.includes('data-sel="sensor.old"'));
 });
 
-test("the safety badge sits in the header, the top bar is fixed, and tiles are equal width", () => {
+test("the header has no safety badge, the top bar is fixed, and tiles are equal width", () => {
   const { el, shadow } = panel("en");
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes('class="safe-badge"') && html.includes("Changes only on confirmation"));
+  assert.ok(!html.includes("safe-badge") && !html.includes("Changes only on confirmation"));
   assert.ok(!html.includes("Read only") && !html.includes('class="lock"'));
   assert.ok(html.includes(".top{position:sticky;top:0") && html.includes("repeat(auto-fit,minmax(210px,1fr))"));
-  assert.ok(html.indexOf('class="safe-badge"') > html.indexOf('class="heading"'));
 });
 
 test("quarantined entities show how long they have been disabled and when removal is earliest", () => {

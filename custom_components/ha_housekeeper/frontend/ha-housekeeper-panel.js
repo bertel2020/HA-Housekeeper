@@ -14,7 +14,7 @@ const TEXT = {
     findings: "Befunde", active: "Aktiv", orphaned: "Verwaist",
     unavailable: "Nicht verfügbar", disabled: "Deaktiviert", unknown: "Unbekannt",
     empty: "Leer", problem: "Problem", details: "Details", close: "Schließen",
-    noResults: "Keine passenden Objekte gefunden.", safeBadge: "Ändert nur nach Bestätigung", safeBadgeHint: "Änderungen erfolgen nur nach Vorschau und ausdrücklicher Bestätigung. Riskante Aktionen erstellen vorher ein Backup. Einige Änderungen, insbesondere Statistikmigrationen, lassen sich nur durch Wiederherstellen dieses Backups zurücknehmen.",
+    noResults: "Keine passenden Objekte gefunden.",
     lastScan: "Letzter Scan", evidence: "Nachweis", registry: "Registry",
     state: "Zustand & Attribute", incoming: "Eingehend", outgoing: "Ausgehend",
     graphMode: "Darstellung", graphList: "Liste", graphGraph: "Graph", graphDepth: "Ebenen", graphRelation: "Beziehungstyp", graphAllRelations: "Alle Beziehungen", graphConfidence: "Sicherheit", graphAllConf: "Alle Sicherheiten", graphCertainOnly: "Nur sichere",
@@ -193,7 +193,7 @@ const TEXT = {
     findings: "Findings", active: "Active", orphaned: "Orphaned",
     unavailable: "Unavailable", disabled: "Disabled", unknown: "Unknown",
     empty: "Empty", problem: "Problem", details: "Details", close: "Close",
-    noResults: "No matching objects found.", safeBadge: "Changes only on confirmation", safeBadgeHint: "Changes happen only after a preview and your explicit confirmation. Risky actions create a backup first. Some changes, in particular statistics migrations, can only be taken back by restoring that backup.",
+    noResults: "No matching objects found.",
     lastScan: "Last scan", evidence: "Evidence", registry: "Registry",
     state: "State & attributes", incoming: "Incoming", outgoing: "Outgoing",
     graphMode: "View", graphList: "List", graphGraph: "Graph", graphDepth: "Levels", graphRelation: "Relation type", graphAllRelations: "All relations", graphConfidence: "Certainty", graphAllConf: "All certainties", graphCertainOnly: "Certain only",
@@ -925,7 +925,6 @@ class StylesMixin {
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
       .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}
       .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-      .safe-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1px solid color-mix(in srgb,var(--hk-green) 32%,transparent);color:color-mix(in srgb,var(--hk-green) 62%,var(--hk-text));background:color-mix(in srgb,var(--hk-green) 11%,transparent);font-size:calc(12px*var(--hk-fs,1));font-weight:600;white-space:nowrap}.safe-badge ha-icon{--mdc-icon-size:16px}
       @media(max-width:860px){.heading{flex-direction:column;align-items:stretch}.head-actions{justify-content:flex-start}}
       /* Look of the Zeitarchiv app: larger radius, soft shadow, calm tables, bold headings, Plex Mono for ids. */
       .card,.panel{border-radius:14px;box-shadow:0 1px 2px rgba(19,28,23,.06),0 1px 1px rgba(19,28,23,.04)}
@@ -3255,8 +3254,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
+      <div class="head-actions"><button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {

@@ -364,8 +364,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
+      <div class="head-actions"><button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {
