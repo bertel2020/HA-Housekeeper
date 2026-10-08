@@ -1,10 +1,10 @@
 // Texts for the integration detail page; merged into TEXT.
 Object.assign(TEXT.de, {
   ignored: "Ignoriert", integrationCard: "Integration", integrationName: "Integration", origin: "Herkunft", originBuiltIn: "In Home Assistant enthalten", originCustom: "Benutzerdefiniert · {path}{version}",
-  entrySource: "Eingerichtet über", entryError: "Fehlermeldung", entryId: "Eintrags-ID", entryUniqueId: "Eindeutige ID", entryCreated: "Angelegt", entryModified: "Geändert", entryEntities: "Entities", entryDevices: "Geräte",
+  entrySource: "Eingerichtet über", entryError: "Fehlermeldung", entryId: "Eintrags-ID", entryUniqueId: "Eindeutige ID", entryCreated: "Angelegt", entryModified: "Geändert", entryEntities: "Entitäten", entryDevices: "Geräte",
   entryDocs: "Dokumentation", entryHaPath: "Pfad in Home Assistant", noneValue: "keine",
   src_user: "Manuell hinzugefügt", src_import: "Aus der YAML-Konfiguration übernommen", src_ignore: "Ignorierte Entdeckung", src_system: "System", src_discovery: "Automatisch entdeckt ({source})", src_reauth: "Erneute Anmeldung", src_reconfigure: "Neu konfiguriert",
-  cause_entry_ignored: "Diese Integration wurde nie eingerichtet: Du hast eine automatisch entdeckte Instanz ausdrücklich ignoriert. Das ist kein Fehler, und es gibt dazu keine Entities.",
+  cause_entry_ignored: "Diese Integration wurde nie eingerichtet: Du hast eine automatisch entdeckte Instanz ausdrücklich ignoriert. Das ist kein Fehler, und es gibt dazu keine Entitäten.",
   hint_entry_ignored: "Möchtest du sie doch nutzen, öffne in Home Assistant Einstellungen → Geräte & Dienste, zeige die ignorierten Einträge an und wähle „Hinzufügen“. Sonst kannst du den Eintrag dort löschen.",
   cause_entry_problem_error: "Die Integration ist nicht geladen ({state}). Meldung: {error}",
 });

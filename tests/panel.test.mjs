@@ -1379,9 +1379,9 @@ test("a device page lists manufacturer, firmware, links and its entities", () =>
   el.render();
   const html = shadow.innerHTML;
   for (const text of ["Signify", "LCT015 (9290)", "SN1", "1.88", "Name laut Integration", "Hue color lamp", "Philips Hue", 'data-object="area:kitchen"', "Hue Hub", 'data-object="device:hub"', "Wichtig",
-    'href="https://hue.local"', "Entities des Geräts (1)", 'data-object="entity:light.kitchen"', "hue:abc", "mac:aa:bb", "Technische Angaben"]) assert.ok(html.includes(text), text);
+    'href="https://hue.local"', "Entitäten des Geräts (1)", 'data-object="entity:light.kitchen"', "hue:abc", "mac:aa:bb", "Technische Angaben"]) assert.ok(html.includes(text), text);
   el.selected = el.data.objects.find(o => o.object_id === "hub"); el.render();
-  assert.ok(shadow.innerHTML.includes("1 Geräte") && shadow.innerHTML.includes("hat keine Entities"));
+  assert.ok(shadow.innerHTML.includes("1 Geräte") && shadow.innerHTML.includes("hat keine Entitäten"));
 });
 
 test("a child device page names its kind and parent, and a hub explains why cleanup is blocked", () => {

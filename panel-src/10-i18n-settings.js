@@ -3,7 +3,7 @@ Object.assign(TEXT.de, {
   setTabLook: "Darstellung", setTabScan: "Scan und Schwellen", setTabHidden: "Ausgeblendet", setTabInfo: "Info",
   setReadability: "Lesbarkeit",
   unitDays: "Tage", unitHours: "Std.", unitPercent: "%", optDefault: "Standard: {n} {unit}",
-  optMinUnavailableTitle: "Nicht verfügbar", optMinUnavailableHint: "Ab wie vielen Tagen ohne Zustand eine Entity als Befund gilt. 0 meldet sofort.",
+  optMinUnavailableTitle: "Nicht verfügbar", optMinUnavailableHint: "Ab wie vielen Tagen ohne Zustand eine Entität als Befund gilt. 0 meldet sofort.",
   optUnusedAutomationTitle: "Ungenutzte Automationen", optUnusedAutomationHint: "Ab wie vielen Tagen ohne Auslösung eine Automation als ungenutzt gilt. 0 schaltet die Prüfung aus.",
   optScanIntervalTitle: "Automatischer Scan", optScanIntervalHint: "Wie oft Housekeeper von selbst scannt. 0 schaltet den automatischen Scan aus.",
   optLowBatteryTitle: "Schwache Batterie", optLowBatteryHint: "Unter diesem Ladestand erscheint ein Batteriegerät in der Liste der schwachen Batterien.",

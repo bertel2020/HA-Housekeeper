@@ -1,13 +1,13 @@
 // Texts for the property cards on entity and device pages; merged into TEXT.
 Object.assign(TEXT.de, {
-  propAssignment: "Zuordnung", propProperties: "Eigenschaften", propTechnical: "Technische Angaben", propTimes: "Zeiten", propDevice: "Gerät", propEntities: "Entities des Geräts",
+  propAssignment: "Zuordnung", propProperties: "Eigenschaften", propTechnical: "Technische Angaben", propTimes: "Zeiten", propDevice: "Gerät", propEntities: "Entitäten des Geräts",
   propIntegration: "Integration", propDeviceOf: "Gerät", propArea: "Bereich", propAreaInherited: "{area} (vom Gerät)", propLabels: "Labels", propNone: "–",
   propDomain: "Typ", propDeviceClass: "Geräteklasse", propStateClass: "Zustandsklasse", propUnit: "Einheit", propCategory: "Kategorie", propOriginalName: "Originalname", propAliases: "Aliase", propIcon: "Symbol",
-  propDisabledBy: "Deaktiviert durch", propHiddenBy: "Ausgeblendet durch", propEntityId: "Entity-ID", propUniqueId: "Eindeutige ID", propPlatform: "Plattform",
+  propDisabledBy: "Deaktiviert durch", propHiddenBy: "Ausgeblendet durch", propEntityId: "Entitäts-ID", propUniqueId: "Eindeutige ID", propPlatform: "Plattform",
   propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe des Recorders; gemessen ohne Abfrage der Tabellen.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
   propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
   propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Aufräumen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
-  propMoreEntities: "… und {count} weitere (siehe Beziehungen)", propNoEntities: "Dieses Gerät hat keine Entities.",
+  propMoreEntities: "… und {count} weitere (siehe Beziehungen)", propNoEntities: "Dieses Gerät hat keine Entitäten.",
   by_user: "Benutzer", by_integration: "Integration", by_config_entry: "Integrationseintrag (deaktiviert)", by_device: "Gerät (deaktiviert)", by_hass: "Home Assistant",
   cat_config: "Konfiguration", cat_diagnostic: "Diagnose", type_service: "Dienst (kein physisches Gerät)",
 });
