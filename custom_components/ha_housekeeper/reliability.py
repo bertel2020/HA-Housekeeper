@@ -16,6 +16,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import IGNORE_LABEL
 from .meter import recorder_ready
+from .payloads import ReliabilityResult
 from .queries import cached_query
 
 DAY = 86400
@@ -373,7 +374,7 @@ async def reliability(
     window_days: int = 7,
     refresh: bool = False,
     compare: bool = False,
-) -> dict[str, Any]:
+) -> ReliabilityResult | dict[str, Any]:
     """Availability and shared outages per config entry for the last day or week.
 
     With ``compare`` the period just before is read as well (a second query) and each row carries

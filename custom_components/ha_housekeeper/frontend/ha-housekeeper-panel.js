@@ -781,6 +781,7 @@ Object.assign(TEXT.de, {
   optLowBatteryTitle: "Schwache Batterie", optLowBatteryHint: "Unter diesem Ladestand erscheint ein Batteriegerät in der Liste der schwachen Batterien.",
   optHistoryDaysTitle: "Scanverlauf", optHistoryDaysHint: "Wie viele Tage der letzte Scan jedes Tages als Vergleichspunkt erhalten bleibt.",
   quickPlaceholder: "Suchen …", quickLabel: "Alles durchsuchen", quickNone: "Keine Treffer",
+  viewsLabel: "Gespeicherte Ansichten", viewsNone: "Ansichten …", viewSave: "Ansicht speichern", viewDelete: "Ansicht löschen", viewName: "Name der Ansicht (bleibt nur in diesem Browser)",
   setKeptTitle: "Was Housekeeper speichert", setKeptHint: "Alles liegt im Speicher von Home Assistant (.storage) und verlässt deine Instanz nicht.",
   setKeptObservations: "Beobachtungen", setKeptObservationsText: "Seit wann ein Objekt in seinem Zustand ist. Bleibt, solange das Objekt existiert.",
   setKeptHistory: "Scanverlauf", setKeptHistoryText: "Der letzte Scan jedes Tages als Vergleichspunkt, {days} Tage lang.",
@@ -800,6 +801,7 @@ Object.assign(TEXT.en, {
   optLowBatteryTitle: "Low battery", optLowBatteryHint: "Below this level a battery device appears in the list of low batteries.",
   optHistoryDaysTitle: "Scan history", optHistoryDaysHint: "How many days the last scan of each day is kept as a comparison point.",
   quickPlaceholder: "Search …", quickLabel: "Search everything", quickNone: "No results",
+  viewsLabel: "Saved views", viewsNone: "Views …", viewSave: "Save view", viewDelete: "Delete view", viewName: "Name of the view (stays in this browser only)",
   setKeptTitle: "What Housekeeper stores", setKeptHint: "Everything lives in Home Assistant's storage (.storage) and does not leave your instance.",
   setKeptObservations: "Observations", setKeptObservationsText: "Since when an object has been in its state. Kept as long as the object exists.",
   setKeptHistory: "Scan history", setKeptHistoryText: "The last scan of each day as a comparison point, for {days} days.",
@@ -1045,7 +1047,7 @@ class StylesMixin {
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
-      .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:3 1 260px}.listbar select{flex:0 1 150px}.sortgroup{display:flex;gap:4px;margin-left:auto;min-width:0}.sortgroup select{flex:0 1 150px;min-width:0}.dirbtn{flex:none}@media(max-width:560px){.listbar>select{flex:1 1 130px}.sortgroup{flex:1 1 100%;margin-left:0}.sortgroup select{flex:1 1 auto}}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
+      .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:3 1 260px}.listbar select{flex:0 1 150px}.sortgroup{display:flex;gap:4px;margin-left:auto;min-width:0}.sortgroup select{flex:0 1 150px;min-width:0}.dirbtn{flex:none}@media(max-width:560px){.listbar>select{flex:1 1 130px}.viewgroup{flex:1 1 100%}.sortgroup{flex:1 1 100%;margin-left:0}.sortgroup select{flex:1 1 auto}}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
       .setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.setrow .btn{justify-self:start}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
       @media(max-width:700px){.setrow{grid-template-columns:1fr}}
       .row,.btn,.card,.chip,.nav,.dirbtn{transition:background-color .15s ease,border-color .15s ease,color .15s ease}.bar i{transition:width .4s ease}@keyframes hk-spin{to{transform:rotate(360deg)}}.loading ha-icon,.btn[disabled] ha-icon{animation:hk-spin 1s linear infinite}
@@ -1053,7 +1055,7 @@ class StylesMixin {
       .object{display:flex;align-items:center;gap:11px;min-width:260px}.object .tile{width:34px;height:34px}.object strong{display:block;font-weight:600}.id{display:block;color:var(--hk-muted);font-family:ui-monospace,SFMono-Regular,monospace;font-size:calc(11px*var(--hk-fs,1));margin-top:2px;max-width:390px;overflow:hidden;text-overflow:ellipsis}
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
       .chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue-text);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
-      .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.skeleton{display:grid;gap:10px;padding:18px 16px}.skeleton i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--hk-soft),color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface)),var(--hk-soft)) 0 0/200% 100%;animation:hk-shimmer 1.4s ease-in-out infinite}.skeleton i:nth-of-type(2){width:80%}.skeleton i:nth-of-type(3){width:60%}@keyframes hk-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.skeleton i{animation:none}}.coverage{display:flex;gap:6px;align-items:flex-start}.coverage ha-icon{--mdc-icon-size:16px;flex:none;margin-top:1px}.fline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:18px;border-radius:12px;background:color-mix(in srgb,var(--hk-red) 12%,transparent);color:var(--hk-red)}
+      .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.viewgroup{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}.skeleton{display:grid;gap:10px;padding:18px 16px}.skeleton i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--hk-soft),color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface)),var(--hk-soft)) 0 0/200% 100%;animation:hk-shimmer 1.4s ease-in-out infinite}.skeleton i:nth-of-type(2){width:80%}.skeleton i:nth-of-type(3){width:60%}@keyframes hk-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.skeleton i{animation:none}}.coverage{display:flex;gap:6px;align-items:flex-start}.coverage ha-icon{--mdc-icon-size:16px;flex:none;margin-top:1px}.fline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:18px;border-radius:12px;background:color-mix(in srgb,var(--hk-red) 12%,transparent);color:var(--hk-red)}
       .bhattest{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px 12px 62px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.bhattest label{display:flex;align-items:center;gap:8px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.bhattest input{padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
       .bh .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .bhguide{padding:12px 16px;border-top:1px solid var(--hk-border)}.bhguide summary{font-size:calc(12px*var(--hk-fs,1))}.bhguide .factnote{padding:8px 0 0;border:0}
@@ -1127,6 +1129,9 @@ class StylesMixin {
 }
 
 // ListsMixin: methods of the panel element, mixed into the class in 99-register.js.
+const VIEWS_KEY = "ha_housekeeper.views";
+const VIEWS_LIMIT = 10;
+
 class ListsMixin {
   th(key, label) {
     const on = this.sort === key;
@@ -1134,7 +1139,7 @@ class ListsMixin {
   }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
-  lvState(id, sort, dir) { return (this.lv[id] ||= { q: "", sort, dir, f: {} }); }
+  lvState(id, sort, dir) { return (this.lv[id] ||= { q: "", sort, dir, f: {}, view: "" }); }
 
   areaName(item) {
     const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
@@ -1166,7 +1171,61 @@ class ListsMixin {
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
-    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}</div>`;
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}</div>`;
+  }
+
+  // Saved list views: search text, filters and sort under a name, kept in this browser only.
+  viewsStore() {
+    if (this._views) return this._views;
+    let stored = {};
+    try { stored = JSON.parse(globalThis.localStorage?.getItem(VIEWS_KEY) || "{}"); } catch (_) { stored = {}; }
+    const clean = {};
+    if (stored && typeof stored === "object") {
+      for (const [id, list] of Object.entries(stored)) {
+        if (!Array.isArray(list)) continue;
+        clean[id] = list.filter(v => v && typeof v.name === "string" && v.name && typeof v.q === "string" && v.f && typeof v.f === "object" && typeof v.sort === "string" && (v.dir === "asc" || v.dir === "desc"))
+          .slice(0, VIEWS_LIMIT).map(v => ({ name: v.name.slice(0, 40), q: v.q, f: Object.fromEntries(Object.entries(v.f).filter(([, x]) => typeof x === "string")), sort: v.sort, dir: v.dir }));
+      }
+    }
+    return (this._views = clean);
+  }
+
+  persistViews() {
+    try { globalThis.localStorage?.setItem(VIEWS_KEY, JSON.stringify(this._views || {})); } catch (_) { /* a private window: the views last until the page closes */ }
+  }
+
+  viewsControl(id) {
+    const st = this.lv[id], saved = this.viewsStore()[id] || [];
+    const dirty = Boolean(st.q.trim()) || Object.values(st.f).some(Boolean);
+    if (!saved.length && !dirty) return "";
+    const select = saved.length ? `<select data-lview="${id}" aria-label="${this.esc(this.t("viewsLabel"))}"><option value="">${this.t("viewsNone")}</option>${saved.map(v => `<option value="${this.esc(v.name)}" ${st.view === v.name ? "selected" : ""}>${this.esc(v.name)}</option>`).join("")}</select>` : "";
+    const save = dirty ? `<button type="button" class="btn quiet" data-lview-save="${id}">${this.t("viewSave")}</button>` : "";
+    const remove = st.view && saved.some(v => v.name === st.view) ? `<button type="button" class="btn quiet" data-lview-delete="${id}">${this.t("viewDelete")}</button>` : "";
+    return `<span class="viewgroup">${select}${save}${remove}</span>`;
+  }
+
+  applyView(id, name) {
+    const st = this.lv[id], view = (this.viewsStore()[id] || []).find(v => v.name === name);
+    st.view = view ? view.name : "";
+    if (view) { st.q = view.q; st.f = { ...view.f }; st.sort = view.sort; st.dir = view.dir; }
+    this.pages = {}; this.render();
+  }
+
+  saveView(id) {
+    const st = this.lv[id];
+    const name = String(globalThis.prompt?.(this.t("viewName"), st.view || "") || "").trim().slice(0, 40);
+    if (!name) return;
+    const store = this.viewsStore(), list = (store[id] ||= []);
+    const view = { name, q: st.q, f: Object.fromEntries(Object.entries(st.f).filter(([, v]) => v)), sort: st.sort, dir: st.dir };
+    const at = list.findIndex(v => v.name === name);
+    if (at >= 0) list[at] = view; else if (list.length < VIEWS_LIMIT) list.push(view); else list[list.length - 1] = view;
+    st.view = name; this.persistViews(); this.render();
+  }
+
+  deleteView(id) {
+    const st = this.lv[id], store = this.viewsStore();
+    store[id] = (store[id] || []).filter(v => v.name !== st.view);
+    st.view = ""; this.persistViews(); this.render();
   }
 
   // Long explanations of how a number is counted fold away, so the lists end earlier.
@@ -4056,6 +4115,9 @@ class HAHousekeeperPanel extends HTMLElement {
       this.lv[input.dataset.lq].q = input.value; this.pages = {};
       this.scheduleRender();
     });
+    root.querySelectorAll("[data-lview]").forEach(el => el.onchange = () => this.applyView(el.dataset.lview, el.value));
+    root.querySelectorAll("[data-lview-save]").forEach(el => el.onclick = () => this.saveView(el.dataset.lviewSave));
+    root.querySelectorAll("[data-lview-delete]").forEach(el => el.onclick = () => this.deleteView(el.dataset.lviewDelete));
     root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.pages = {}; this.render(); });

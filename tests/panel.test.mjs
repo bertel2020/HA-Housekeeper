@@ -2718,3 +2718,41 @@ test("the search sits in the top bar and its texts exist in both languages", () 
   const { TEXT } = loadPanel();
   for (const lang of ["de", "en"]) for (const key of ["quickPlaceholder", "quickLabel", "quickNone"]) assert.ok(TEXT[lang][key], `${lang}.${key}`);
 });
+
+test("a list view can be saved under a name, applied again, overwritten and deleted", () => {
+  const storage = fakeStorage({});
+  let answer = "Kaputte Sensoren";
+  const { el } = panel("en", { localStorage: storage, prompt: () => answer });
+  const read = () => JSON.parse(storage.getItem("ha_housekeeper.views"));
+  el.data = DATA;
+  const st = el.lvState("inv", "name", "asc");
+  assert.equal(el.viewsControl("inv"), "", "nothing to save and nothing saved: no control");
+  st.q = "sensor"; st.f = { status: "orphaned", type: "" };
+  assert.ok(el.viewsControl("inv").includes("data-lview-save"));
+  el.saveView("inv");
+  assert.equal(read().inv[0].name, "Kaputte Sensoren");
+  assert.equal(JSON.stringify(read().inv[0].f), JSON.stringify({ status: "orphaned" }), "empty filters are not stored");
+  st.q = ""; st.f = {}; st.sort = "status"; st.dir = "desc";
+  el.applyView("inv", "Kaputte Sensoren");
+  assert.equal(st.q, "sensor"); assert.equal(st.f.status, "orphaned"); assert.equal(st.sort, "name"); assert.equal(st.dir, "asc");
+  const bar = el.viewsControl("inv");
+  assert.ok(bar.includes("data-lview=") && bar.includes("data-lview-delete") && bar.includes("selected"));
+  st.q = "neu"; el.saveView("inv");
+  assert.equal(read().inv.length, 1, "the same name overwrites");
+  answer = "";
+  el.saveView("inv");
+  assert.equal(read().inv.length, 1, "no name, no view");
+  el.deleteView("inv");
+  assert.equal(read().inv.length, 0);
+});
+
+test("saved views from a broken browser store are ignored and a failing write does not crash", () => {
+  const broken = JSON.stringify({ inv: [1, { name: 5 }, { name: "ok", q: "", f: { a: "b", c: 3 }, sort: "name", dir: "up" }, { name: "ok", q: "x", f: { a: "b", c: 3 }, sort: "name", dir: "asc" }], other: "x" });
+  const { el } = panel("en", { localStorage: { getItem: () => broken, setItem() { throw new Error("full"); } }, prompt: () => "neu" });
+  el.data = DATA;
+  const views = el.viewsStore();
+  assert.equal(views.inv.length, 1); assert.equal(JSON.stringify(views.inv[0].f), JSON.stringify({ a: "b" })); assert.ok(!views.other);
+  const st = el.lvState("inv", "name", "asc"); st.q = "z";
+  el.saveView("inv");
+  assert.equal(views.inv.length, 2);
+});

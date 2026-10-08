@@ -15,6 +15,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 
 from .const import IGNORE_LABEL
+from .payloads import ExposureResult
 
 ASSISTANTS = ("conversation", "cloud.alexa", "cloud.google_assistant")
 CLOUD_ASSISTANTS = ("cloud.alexa", "cloud.google_assistant")
@@ -225,7 +226,7 @@ def evaluate(
     }
 
 
-def exposure(hass: HomeAssistant, snapshot: dict[str, Any]) -> dict[str, Any]:
+def exposure(hass: HomeAssistant, snapshot: dict[str, Any]) -> ExposureResult:
     """Exposure of the entities in the snapshot to assistants and bridges."""
     entities = {
         item["object_id"]: {
@@ -244,4 +245,4 @@ def exposure(hass: HomeAssistant, snapshot: dict[str, Any]) -> dict[str, Any]:
         for item in snapshot["objects"]
         if item["object_type"] == "entity" and IGNORE_LABEL in (item.get("labels") or [])
     }
-    return {"available": True, **evaluate(collect(hass, list(entities)), entities, ignored)}
+    return {"available": True, **evaluate(collect(hass, list(entities)), entities, ignored)}  # type: ignore[typeddict-item]
