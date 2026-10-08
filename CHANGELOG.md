@@ -1,5 +1,93 @@
 # Changelog
 
+## 0.8.0 - 2026-10-08
+
+Sicherheits- und Kompatibilitätsrelease nach einem Code-Review. **Housekeeper
+benötigt jetzt Home Assistant 2026.8 oder neuer**, weil ein Gerät dort genau
+einem Config Entry gehört. Automatisiert gegen Home Assistant 2026.8.3 und die
+jeweils neueste vom Testpaket unterstützte Version getestet (Python 3.14).
+
+### Geändert
+
+- Die Gerätebereinigung nutzt den einzelnen Config Entry eines Geräts. Das
+  reguläre Entfernen fragt die Integration und entfernt das Gerät danach über
+  den aktuellen Weg von Home Assistant. Journal-Einträge früherer Versionen
+  mit einem Config Entry lassen sich weiterhin wiederherstellen.
+- Die README (Deutsch und Englisch) unterscheidet jetzt eindeutig zwischen
+  bestätigter Bereinigung, Rückgängig im Journal, nicht Rückgängigem (die
+  Statistik des Zählerwechsels) und einem vollständigen Backup-Restore.
+
+### Behoben
+
+- **Untergeräte (Child Devices)** werden inventarisiert. Entities eines
+  Untergeräts oder einer älteren zusammengesetzten Geräte-ID galten vorher als
+  „Gerät fehlt“ und damit als Bereinigungskandidaten. Untergeräte werden
+  angezeigt, aber nie deaktiviert, entfernt oder vergessen; ein Gerät mit
+  Untergeräten zählt wie ein Hub.
+- **Verweise ersetzen**: Eine bereits geschriebene Quelle wird sofort für das
+  Zurücksetzen registriert, auch wenn das anschließende Lesen fehlschlägt. Jedes
+  Ergebnis eines Rollbacks steht im Journal; bleibt eine Quelle verändert, ist
+  der Plan „Teilweise ausgeführt“ und lässt sich mit „Rückgängig“ erneut
+  versuchen.
+- **Rückgängig bei YAML-Dateien** stellt die ursprüngliche Datei bytegenau
+  wieder her (Kommentare, Anführungszeichen, Anker), solange sie noch so ist,
+  wie Housekeeper sie geschrieben hat; sonst wird wie bisher nur der geänderte
+  Eintrag zurückgesetzt.
+- **Zählerwechsel**: Lässt sich die alte Entity nach einer hängenden
+  ID-Übernahme nicht zurückbenennen, steht das als unvollständiger Schritt im
+  Journal (statt einer unregistrierten alten ID mit einer rohen Fehlermeldung),
+  und „Rückgängig“ kann ihn abschließen. Ein in der Zwischenzeit berechneter
+  Stundenwert der neuen Reihe lässt den Import nicht mehr als fehlgeschlagen
+  gelten. Fehlt dem alten Ende die Summe, verlangt die Vorschau eine Prüfung.
+- Der erste und der geplante Scan starteten unter Home Assistant 2026.9 und
+  neuer nicht, weil sie in einem Thread statt auf der Event-Loop liefen.
+- Das Wiederherstellen einer entfernten Entity schlug mit Python 3.14 fehl.
+- Ein abgelehntes Entladen der Plattformen lässt Panel, Scanner und
+  Reparaturhinweise bestehen.
+
+---
+
+### English
+
+Security and compatibility release after a code review. **Housekeeper now
+needs Home Assistant 2026.8 or newer**, because a device belongs to exactly one
+config entry there. Tested automatically against Home Assistant 2026.8.3 and
+the latest version the test package supports (Python 3.14).
+
+#### Changed
+
+- Device cleanup uses the single config entry of a device. Regular removal asks
+  the integration and then removes the device the way current Home Assistant
+  expects. Journal entries of earlier versions with one config entry can still
+  be restored.
+- The README (German and English) now clearly separates confirmed cleanup,
+  undo in the journal, what cannot be undone (the statistics of a meter change)
+  and a full backup restore.
+
+#### Fixed
+
+- **Child devices** are inventoried. Entities of a child device or of an older
+  composite device ID used to count as “device missing” and so as cleanup
+  candidates. Child devices are shown but never disabled, removed or forgotten;
+  a device with child devices counts like a hub.
+- **Replace references**: a source that was already written is registered for
+  rollback at once, even if reading it again fails. Every rollback outcome is
+  in the journal; if a source stays changed, the plan is “Partially executed”
+  and Undo can try again.
+- **Undo for YAML files** restores the original file byte for byte (comments,
+  quoting, anchors) while it is still as Housekeeper wrote it; otherwise only
+  the changed item is put back, as before.
+- **Meter change**: if the old entity cannot be renamed back after a stuck ID
+  takeover, the journal shows an incomplete step (instead of an unregistered
+  old ID with a raw error), and Undo can finish it. An hourly value compiled in
+  the meantime no longer makes the import count as failed. If the old end has
+  no total, the preview asks for a look.
+- The initial and the scheduled scan did not start on Home Assistant 2026.9 and
+  newer, because they ran in a thread instead of on the event loop.
+- Restoring a removed entity failed on Python 3.14.
+- A refused unload of the platforms keeps the panel, the scanner and the
+  repairs hints.
+
 ## 0.7.0 - 2026-10-07
 
 Zählerwechsel und eine neue Wartungsansicht. Der Zählerwechsel schreibt in die
