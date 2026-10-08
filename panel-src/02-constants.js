@@ -66,5 +66,8 @@ const STATUS_TONE = {
   disabled: "mute", empty: "mute", unknown: "violet", ignored: "mute", possible_duplicate: "violet", unused: "mute",
 };
 
+// Finding classes that call for action when they are new.
+const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
+
 // Object types the housekeeping status is calculated from.
 const HEALTH_TYPES = ["entity", "automation", "script", "scene"];

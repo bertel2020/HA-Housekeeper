@@ -16,7 +16,7 @@ class StylesMixin {
       h1{font-size:calc(25px*var(--hk-fs,1));font-weight:600;line-height:1.2}.sub{display:block;margin-top:6px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
       .btn.primary{border-color:var(--hk-blue);color:var(--hk-on,#fff);background:var(--hk-blue)}.btn.primary:hover{background:#0a8ccf}.btn[disabled]{opacity:.6;cursor:wait}
-      .summary{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:12px;margin-bottom:14px}
+      .summary{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:12px;margin-bottom:14px}
       .card{min-width:0;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;padding:15px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);color:inherit;text-align:left}
       button.card:hover{border-color:var(--hk-blue)}
       .ring{--p:90;--c:var(--hk-green);width:58px;height:58px;display:grid;place-content:center;border-radius:50%;text-align:center;background:radial-gradient(circle at center,var(--hk-surface) 58%,transparent 60%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}.ring b{font-size:calc(16px*var(--hk-fs,1));font-weight:600;line-height:1}.ring.warn{--c:var(--hk-amber)}.ring.red{--c:var(--hk-red)}
@@ -77,7 +77,7 @@ class StylesMixin {
       .shell{align-items:start}
       .side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain}
       /* Equal-width tiles on the overview and the changes view. */
-      .summary{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.summary>.card:has(.ring){grid-template-columns:auto minmax(0,1fr)}.summary .ring{width:52px;height:52px}.summary>.card:has(.ring) .card-text strong{font-size:calc(19px*var(--hk-fs,1));line-height:1.25}
+      .summary{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.summary>.card:has(.ring){grid-template-columns:auto minmax(0,1fr)}.summary .ring{width:44px;height:44px}.summary>.card:has(.ring) .card-text strong{font-size:calc(16px*var(--hk-fs,1));line-height:1.25}
       .summary>.card{min-height:92px;border-top:3px solid var(--hk-border)}
       .summary>.card:has(.ring){border-top-color:var(--hk-green)}.summary>.card:has(.ring.warn){border-top-color:var(--hk-amber)}.summary>.card:has(.ring.red){border-top-color:var(--hk-red)}
       .summary>.card:has(.tile.ok){border-top-color:var(--hk-green)}.summary>.card:has(.tile.warn){border-top-color:var(--hk-amber)}.summary>.card:has(.tile.red){border-top-color:var(--hk-red)}.summary>.card:has(.tile.violet){border-top-color:var(--hk-violet)}

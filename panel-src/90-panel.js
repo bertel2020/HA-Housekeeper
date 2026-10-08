@@ -43,6 +43,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.busy = false;
     this.scanStatus = null;
     this.error = null;
+    this.trend = null;
     this._rev = 0; // bumped when data is changed in place (ignore flags), so cached lists are rebuilt
     this._debug = this.debugEnabled();
   }
@@ -392,7 +393,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.view = el.dataset.jump; this.pages = {};
       if (el.dataset.filter !== undefined) this.findingFilter = el.dataset.filter;
-      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = ""; this.pages = {}; }
+      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });

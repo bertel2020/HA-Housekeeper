@@ -36,6 +36,12 @@ const TEXT = {
     systemState: "Systemzustand", health: "Housekeeping-Status", healthGood: "Gut", healthCheck: "Prüfen",
     healthBad: "Problematisch", healthHint: "Anteil der Entities, Automationen, Skripte und Szenen ohne Befund", healthTip: "Gezählt werden betroffene Objekte, nicht einzelne Befunde. Ausgeblendete Befunde und andere Objekttypen (Dashboards, Geräte, Helfer) zählen nicht. Der Wert ist gerundet. Betroffen: {affected} von {base}.",
     openFindings: "Offene Befunde", needsAttention: "Benötigt Aufmerksamkeit",
+    actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
+    actIntegrations: "Integrationen mit Problem", actIntegrationsHint: "Einträge, die nicht geladen sind oder Fehler melden",
+    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem",
+    actBackup: "Backup prüfen", actBackupHint: "Der Update-Preflight meldet ein Backup-Problem", actBackupOutdated: "Das letzte Backup ist älter als 48 Stunden oder nicht abrufbar.", actBackupNone: "Es ist kein aktuelles Backup eingerichtet.",
+    actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
+    trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
     sortedBySure: "Nach Sicherheit der Diagnose sortiert", allFindings: "Alle Befunde",
     inventoryStatus: "Inventarstatus", byType: "Nach Objekttyp", noFindings: "Keine Befunde – alles unauffällig.",
     openInHA: "In Home Assistant öffnen", diagnosis: "Ursachendiagnose", present: "Vorhanden", missing: "Fehlt",
@@ -197,6 +203,12 @@ const TEXT = {
     systemState: "System health", health: "Housekeeping status", healthGood: "Good", healthCheck: "Review",
     healthBad: "Problematic", healthHint: "Share of entities, automations, scripts and scenes without findings", healthTip: "Affected objects are counted, not single findings. Hidden findings and other object types (dashboards, devices, helpers) do not count. The value is rounded. Affected: {affected} of {base}.",
     openFindings: "Open findings", needsAttention: "Needs attention",
+    actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
+    actIntegrations: "Integrations with a problem", actIntegrationsHint: "Entries that are not loaded or report errors",
+    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem",
+    actBackup: "Check the backup", actBackupHint: "The update preflight reports a backup problem", actBackupOutdated: "The latest backup is older than 48 hours or cannot be read.", actBackupNone: "No current backup is set up.",
+    actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
+    trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
     sortedBySure: "Sorted by diagnosis confidence", allFindings: "All findings",
     inventoryStatus: "Inventory status", byType: "By object type", noFindings: "No findings – everything looks fine.",
     openInHA: "Open in Home Assistant", diagnosis: "Root-cause diagnosis", present: "Present", missing: "Missing",
@@ -392,6 +404,9 @@ const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
   disabled: "mute", empty: "mute", unknown: "violet", ignored: "mute", possible_duplicate: "violet", unused: "mute",
 };
+
+// Finding classes that call for action when they are new.
+const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
 
 // Object types the housekeeping status is calculated from.
 const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
@@ -658,7 +673,7 @@ class StylesMixin {
       h1{font-size:calc(25px*var(--hk-fs,1));font-weight:600;line-height:1.2}.sub{display:block;margin-top:6px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
       .btn.primary{border-color:var(--hk-blue);color:var(--hk-on,#fff);background:var(--hk-blue)}.btn.primary:hover{background:#0a8ccf}.btn[disabled]{opacity:.6;cursor:wait}
-      .summary{display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:12px;margin-bottom:14px}
+      .summary{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:12px;margin-bottom:14px}
       .card{min-width:0;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;padding:15px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);color:inherit;text-align:left}
       button.card:hover{border-color:var(--hk-blue)}
       .ring{--p:90;--c:var(--hk-green);width:58px;height:58px;display:grid;place-content:center;border-radius:50%;text-align:center;background:radial-gradient(circle at center,var(--hk-surface) 58%,transparent 60%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}.ring b{font-size:calc(16px*var(--hk-fs,1));font-weight:600;line-height:1}.ring.warn{--c:var(--hk-amber)}.ring.red{--c:var(--hk-red)}
@@ -719,7 +734,7 @@ class StylesMixin {
       .shell{align-items:start}
       .side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain}
       /* Equal-width tiles on the overview and the changes view. */
-      .summary{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.summary>.card:has(.ring){grid-template-columns:auto minmax(0,1fr)}.summary .ring{width:52px;height:52px}.summary>.card:has(.ring) .card-text strong{font-size:calc(19px*var(--hk-fs,1));line-height:1.25}
+      .summary{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.summary>.card:has(.ring){grid-template-columns:auto minmax(0,1fr)}.summary .ring{width:44px;height:44px}.summary>.card:has(.ring) .card-text strong{font-size:calc(16px*var(--hk-fs,1));line-height:1.25}
       .summary>.card{min-height:92px;border-top:3px solid var(--hk-border)}
       .summary>.card:has(.ring){border-top-color:var(--hk-green)}.summary>.card:has(.ring.warn){border-top-color:var(--hk-amber)}.summary>.card:has(.ring.red){border-top-color:var(--hk-red)}
       .summary>.card:has(.tile.ok){border-top-color:var(--hk-green)}.summary>.card:has(.tile.warn){border-top-color:var(--hk-amber)}.summary>.card:has(.tile.red){border-top-color:var(--hk-red)}.summary>.card:has(.tile.violet){border-top-color:var(--hk-violet)}
@@ -819,12 +834,72 @@ class OverviewMixin {
     return `<div class="panel" style="margin-bottom:14px"><div class="row"><span class="tile warn"><ha-icon icon="mdi:timer-sand"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("warmupBanner"))}</strong></span></div></div>`;
   }
 
-  staleBanner() {
+  // What to do now, most urgent first: broken integrations and new critical findings, then an
+  // overdue scan and the backup, then removals that are ready. Rows without data are left out.
+  todoItems() {
+    const items = [], m = this.data.meta;
+    const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem").length;
+    if (broken) items.push({ key: "integrations", tone: "red", icon: "mdi:puzzle-remove-outline", label: "actIntegrations", hint: "actIntegrationsHint", count: broken, view: "inventory", type: "config_entry", status: "problem" });
+    const fresh = (this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).length;
+    if (fresh) items.push({ key: "critical", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, view: "findingsNav", filter: "" });
     const stale = this.staleScan();
-    if (!stale) return "";
-    const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
-    const text = stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age });
-    return `<div class="panel" style="margin-bottom:14px"><div class="row"><span class="tile warn"><ha-icon icon="mdi:clock-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(text)}</strong></span><button class="btn" data-action="scan">${this.t("scan")}</button></div></div>`;
+    if (stale) {
+      const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
+      items.push({ key: "stale", tone: "warn", icon: "mdi:clock-alert-outline", text: stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age }), scan: true });
+    }
+    const backup = (this.preflight?.checks || []).find(c => c.check === "backup");
+    if (backup && backup.level !== "ok") {
+      items.push({ key: "backup", tone: backup.level === "red" ? "red" : "warn", icon: "mdi:backup-restore", label: "actBackup", hint: backup.level === "red" ? "actBackupNone" : "actBackupOutdated", view: "maintenance" });
+    }
+    const limit = m.quarantine_days ?? 14;
+    const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
+    if (ready) items.push({ key: "quarantine", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
+    return items;
+  }
+
+  todoCard() {
+    const items = this.todoItems();
+    const row = it => {
+      const inner = `<span class="tile ${it.tone}"><ha-icon icon="${it.icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(it.text || this.t(it.label))}</strong>${it.hint ? `<small>${this.esc(this.t(it.hint))}</small>` : ""}</span>`;
+      if (it.scan) return `<div class="row todo" data-todo="${it.key}">${inner}<button class="btn" data-action="scan">${this.t("scan")}</button></div>`;
+      const target = `data-jump="${it.view}"${it.filter !== undefined ? ` data-filter="${it.filter}"` : ""}${it.type ? ` data-type="${it.type}"` : ""}${it.status ? ` data-status="${it.status}"` : ""}`;
+      return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${it.count !== undefined ? `<span class="pill ${it.tone}">${this.formatNumber(it.count)}</span>` : ""}</button>`;
+    };
+    const body = items.length ? items.map(row).join("")
+      : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
+    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}</section>`;
+  }
+
+  // The comparison with the previous scan is fetched once per data set; the overview shows it when it is there.
+  ensureTrend() {
+    if (this._trendFor === this.data || !this._hass?.callWS) return;
+    this._trendFor = this.data;
+    this.loadTrend(this.data);
+  }
+
+  async loadTrend(data) {
+    try {
+      const result = await this._hass.callWS({ type: "ha_housekeeper/compare", baseline: "previous" });
+      if (this.data !== data) return;
+      this.trend = result?.available === true ? result : null;
+      if (this.view === "overview" && !this.selected) this.render();
+    } catch (_) { if (this.data === data) this.trend = null; }
+  }
+
+  trendCard() {
+    const c = this.trend;
+    if (!c?.available) return "";
+    const date = this.formatDate(c.baseline_at);
+    const rows = [
+      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+"],
+      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−"],
+      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", ""],
+      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+"],
+    ].filter(([, n]) => n);
+    const body = rows.length
+      ? rows.map(([label, n, icon, tone, sign]) => `<button class="row" data-jump="changes"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
+      : `<div class="emptymsg">${this.esc(this.t("trendNone", { date }))}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }
 
   overview() {
@@ -838,11 +913,13 @@ class OverviewMixin {
     ];
     const order = ["active", "unknown", "unavailable", "orphaned", "disabled", "empty", "problem"].filter(s => counts[s]);
     const total = Math.max(1, m.object_count);
-    return `${this.staleBanner()}<div class="summary"><div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
-      ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
+    this.ensureTrend();
+    return `${this.todoCard()}<div class="summary">
+      ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}
+      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div></div>
       <div class="grid2"><div class="stack"><div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
-      <div class="stack">${this.cleanupCard()}<div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
+      <div class="stack">${this.trendCard()}${this.cleanupCard()}<div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
       <div class="bar">${order.map(s => `<i class="${this.tone(s)}" style="width:${(100 * counts[s] / total).toFixed(2)}%"></i>`).join("")}</div>
       <div class="legend">${order.map(s => `<div><span><i class="dot ${this.tone(s)}"></i>${this.t(s)}</span><b>${this.formatNumber(counts[s])}</b></div>`).join("")}</div></div>
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
@@ -2173,6 +2250,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.busy = false;
     this.scanStatus = null;
     this.error = null;
+    this.trend = null;
     this._rev = 0; // bumped when data is changed in place (ignore flags), so cached lists are rebuilt
     this._debug = this.debugEnabled();
   }
@@ -2522,7 +2600,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.view = el.dataset.jump; this.pages = {};
       if (el.dataset.filter !== undefined) this.findingFilter = el.dataset.filter;
-      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = ""; this.pages = {}; }
+      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });

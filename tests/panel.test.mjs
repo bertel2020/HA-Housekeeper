@@ -309,6 +309,7 @@ test("loadCompare asks the backend with the selected baseline", async () => {
   const { el } = panel();
   const calls = [];
   el._hass.callWS = async msg => { calls.push(msg); return COMPARE; };
+  el.view = "changes"; // the overview would fetch its own comparison
   el.compareBaseline = "2026-10-05T20:00:00+00:00";
   await el.loadCompare();
   assert.equal(JSON.stringify(calls), JSON.stringify([{ type: "ha_housekeeper/compare", baseline: "2026-10-05T20:00:00+00:00" }]));
@@ -793,18 +794,18 @@ test("many integration problems get a search; few do not", () => {
   assert.ok(html.includes("Integration 7") && !html.includes("Integration 2"));
 });
 
-test("an overdue scan shows a banner on the overview", () => {
+test("an overdue scan is an item in the to-do list of the overview", () => {
   const { el } = panel("en");
   const meta = scanned => ({ ...DATA.meta, scanned_at: scanned, scan_interval_hours: 24 });
   el.data = { ...DATA, meta: meta(new Date().toISOString()) };
   assert.equal(el.staleScan(), null);
   el.data = { ...DATA, meta: meta(new Date(Date.now() - 80 * 3.6e6).toISOString()) };
   assert.equal(el.staleScan().hours, 80);
-  assert.ok(el.staleBanner().includes("scans every 24 hours"));
+  assert.ok(el.todoItems().find(i => i.key === "stale").text.includes("scans every 24 hours"));
   el.data = { ...DATA, meta: { ...meta(new Date(Date.now() - 80 * 3.6e6).toISOString()), scan_interval_hours: 0 } };
   assert.equal(el.staleScan(), null); // manual scans: only after a week
   el.data = { ...DATA, meta: { ...meta(new Date(Date.now() - 9 * 24 * 3.6e6).toISOString()), scan_interval_hours: 0 } };
-  assert.ok(el.staleBanner().includes("9 days old"));
+  assert.ok(el.todoItems().find(i => i.key === "stale").text.includes("9 days old"));
 });
 
 test("the journal lists short entries and opening one fetches the plan", async () => {
@@ -1481,4 +1482,99 @@ test("the sidebar keeps its scroll position and shows the current entry after a 
   el.view = "maintenance";
   el.restoreSideScroll({ left: 120, top: 30 }); // another view: scroll the current entry into view
   assert.deepEqual(revealed, ["center"]);
+});
+
+const TREND = {
+  available: true, baseline_at: "2026-10-07T09:00:00+00:00",
+  new_findings: { total: 3, items: [
+    { rule_id: "entity.state_missing", object_id: "sensor.new1", classification: "unavailable", ignored: false },
+    { rule_id: "automation.missing_entity", object_id: "automation.new2", classification: "broken_reference", ignored: false },
+    { rule_id: "automation.missing_entity", object_id: "automation.hidden", classification: "broken_reference", ignored: true },
+  ] },
+  resolved_findings: { total: 5, items: [] }, status_changes: { total: 2, items: [] }, new_objects: { total: 0, items: [] },
+};
+
+test("the overview starts with what needs doing, most urgent first", () => {
+  const { el, shadow } = panel("en");
+  const now = new Date().toISOString();
+  el.data = {
+    ...DATA,
+    meta: { ...DATA.meta, scanned_at: new Date(Date.now() - 80 * 3.6e6).toISOString(), scan_interval_hours: 24, quarantine_days: 14 },
+    objects: [...DATA.objects, { object_type: "config_entry", object_id: "e1", name: "Hub", status: "problem", domain: "hue", state: "setup_error" }],
+    quarantine: [{ object_id: "sensor.old", object_type: "entity", since: new Date(Date.now() - 20 * 864e5).toISOString() }, { object_id: "sensor.fresh", object_type: "entity", since: now }],
+  };
+  el.trend = TREND;
+  el.preflight = { checks: [{ check: "backup", level: "warn" }] };
+  const keys = el.todoItems().map(i => i.key);
+  assert.equal(JSON.stringify(keys), JSON.stringify(["integrations", "critical", "stale", "backup", "quarantine"]));
+  const byKey = Object.fromEntries(el.todoItems().map(i => [i.key, i]));
+  assert.equal(byKey.integrations.count, 1);
+  assert.equal(byKey.critical.count, 2, "hidden findings and other classes do not count");
+  assert.equal(byKey.quarantine.count, 1, "only entries past the quarantine period");
+  assert.equal(byKey.backup.tone, "warn");
+
+  el.view = "overview"; el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.indexOf("What needs doing now?") < html.indexOf('class="summary"'), "the list comes before the statistics");
+  assert.ok(html.indexOf('data-todo="integrations"') < html.indexOf('data-todo="critical"') && html.indexOf('data-todo="critical"') < html.indexOf('data-todo="stale"'));
+  assert.ok(html.includes('data-jump="inventory" data-type="config_entry" data-status="problem"'));
+  assert.ok(html.indexOf('class="summary"') < html.indexOf('class="ring'), "the health ring moved behind the statistics");
+});
+
+test("without anything to do the list says so, and rows without data are left out", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: new Date().toISOString(), scan_interval_hours: 24 }, objects: [], quarantine: [] };
+  assert.equal(el.todoItems().length, 0);
+  el.view = "overview"; el.render();
+  assert.ok(shadow.innerHTML.includes("Nothing to do. Last scan:"));
+  el.preflight = { checks: [{ check: "backup", level: "ok" }] };
+  assert.equal(el.todoItems().length, 0, "a healthy backup is no item");
+  el.preflight = { checks: [{ check: "backup", level: "red" }] };
+  assert.equal(el.todoItems()[0].tone, "red");
+  el.preflight = null;
+  assert.equal(el.todoItems().length, 0, "no preflight loaded: no backup row");
+});
+
+test("the trend is fetched once per data set and summarised with signs and text", async () => {
+  const { el, shadow } = panel("en");
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg.type + ":" + msg.baseline); return TREND; };
+  el.view = "overview";
+  el.render(); el.render();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(JSON.stringify(calls), JSON.stringify(["ha_housekeeper/compare:previous"]), "one request for the same data");
+  assert.equal(el.trend, TREND);
+  const html = el.trendCard();
+  assert.ok(html.includes("Since the last scan") && html.includes("+3") && html.includes("−5") && html.includes(">2<"));
+  assert.ok(!html.includes("New objects"), "zero rows are left out");
+  el.data = { ...DATA }; // a new scan: fetched again
+  el.render();
+  assert.equal(calls.length, 2);
+  el.trend = { ...TREND, new_findings: { total: 0, items: [] }, resolved_findings: { total: 0, items: [] }, status_changes: { total: 0, items: [] } };
+  assert.ok(el.trendCard().includes("No changes since the scan of"));
+  el.trend = { available: false };
+  assert.equal(el.trendCard(), "");
+  assert.ok(shadow.innerHTML.length > 0);
+});
+
+test("a failed or empty comparison leaves the overview without a trend card", async () => {
+  const { el } = panel("en");
+  el._hass.callWS = async () => { throw new Error("nope"); };
+  el.view = "overview";
+  el.render();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(el.trend, null);
+  assert.equal(el.trendCard(), "");
+});
+
+test("jumping from a to-do row to the inventory sets its type and status filter", () => {
+  const { el, shadow } = panel("en");
+  const row = { dataset: { jump: "inventory", type: "config_entry", status: "problem" } };
+  shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [row] : []);
+  el.render();
+  el.statusFilter = "x"; el.typeFilter = "y";
+  row.onclick();
+  assert.equal(el.view, "inventory");
+  assert.equal(el.typeFilter, "config_entry");
+  assert.equal(el.statusFilter, "problem");
 });

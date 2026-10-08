@@ -17,12 +17,72 @@ class OverviewMixin {
     return `<div class="panel" style="margin-bottom:14px"><div class="row"><span class="tile warn"><ha-icon icon="mdi:timer-sand"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("warmupBanner"))}</strong></span></div></div>`;
   }
 
-  staleBanner() {
+  // What to do now, most urgent first: broken integrations and new critical findings, then an
+  // overdue scan and the backup, then removals that are ready. Rows without data are left out.
+  todoItems() {
+    const items = [], m = this.data.meta;
+    const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem").length;
+    if (broken) items.push({ key: "integrations", tone: "red", icon: "mdi:puzzle-remove-outline", label: "actIntegrations", hint: "actIntegrationsHint", count: broken, view: "inventory", type: "config_entry", status: "problem" });
+    const fresh = (this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).length;
+    if (fresh) items.push({ key: "critical", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, view: "findingsNav", filter: "" });
     const stale = this.staleScan();
-    if (!stale) return "";
-    const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
-    const text = stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age });
-    return `<div class="panel" style="margin-bottom:14px"><div class="row"><span class="tile warn"><ha-icon icon="mdi:clock-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(text)}</strong></span><button class="btn" data-action="scan">${this.t("scan")}</button></div></div>`;
+    if (stale) {
+      const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
+      items.push({ key: "stale", tone: "warn", icon: "mdi:clock-alert-outline", text: stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age }), scan: true });
+    }
+    const backup = (this.preflight?.checks || []).find(c => c.check === "backup");
+    if (backup && backup.level !== "ok") {
+      items.push({ key: "backup", tone: backup.level === "red" ? "red" : "warn", icon: "mdi:backup-restore", label: "actBackup", hint: backup.level === "red" ? "actBackupNone" : "actBackupOutdated", view: "maintenance" });
+    }
+    const limit = m.quarantine_days ?? 14;
+    const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
+    if (ready) items.push({ key: "quarantine", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
+    return items;
+  }
+
+  todoCard() {
+    const items = this.todoItems();
+    const row = it => {
+      const inner = `<span class="tile ${it.tone}"><ha-icon icon="${it.icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(it.text || this.t(it.label))}</strong>${it.hint ? `<small>${this.esc(this.t(it.hint))}</small>` : ""}</span>`;
+      if (it.scan) return `<div class="row todo" data-todo="${it.key}">${inner}<button class="btn" data-action="scan">${this.t("scan")}</button></div>`;
+      const target = `data-jump="${it.view}"${it.filter !== undefined ? ` data-filter="${it.filter}"` : ""}${it.type ? ` data-type="${it.type}"` : ""}${it.status ? ` data-status="${it.status}"` : ""}`;
+      return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${it.count !== undefined ? `<span class="pill ${it.tone}">${this.formatNumber(it.count)}</span>` : ""}</button>`;
+    };
+    const body = items.length ? items.map(row).join("")
+      : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
+    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}</section>`;
+  }
+
+  // The comparison with the previous scan is fetched once per data set; the overview shows it when it is there.
+  ensureTrend() {
+    if (this._trendFor === this.data || !this._hass?.callWS) return;
+    this._trendFor = this.data;
+    this.loadTrend(this.data);
+  }
+
+  async loadTrend(data) {
+    try {
+      const result = await this._hass.callWS({ type: "ha_housekeeper/compare", baseline: "previous" });
+      if (this.data !== data) return;
+      this.trend = result?.available === true ? result : null;
+      if (this.view === "overview" && !this.selected) this.render();
+    } catch (_) { if (this.data === data) this.trend = null; }
+  }
+
+  trendCard() {
+    const c = this.trend;
+    if (!c?.available) return "";
+    const date = this.formatDate(c.baseline_at);
+    const rows = [
+      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+"],
+      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−"],
+      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", ""],
+      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+"],
+    ].filter(([, n]) => n);
+    const body = rows.length
+      ? rows.map(([label, n, icon, tone, sign]) => `<button class="row" data-jump="changes"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
+      : `<div class="emptymsg">${this.esc(this.t("trendNone", { date }))}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }
 
   overview() {
@@ -36,11 +96,13 @@ class OverviewMixin {
     ];
     const order = ["active", "unknown", "unavailable", "orphaned", "disabled", "empty", "problem"].filter(s => counts[s]);
     const total = Math.max(1, m.object_count);
-    return `${this.staleBanner()}<div class="summary"><div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
-      ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
+    this.ensureTrend();
+    return `${this.todoCard()}<div class="summary">
+      ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}
+      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div></div>
       <div class="grid2"><div class="stack"><div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
-      <div class="stack">${this.cleanupCard()}<div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
+      <div class="stack">${this.trendCard()}${this.cleanupCard()}<div class="panel"><div class="panelhead"><h2>${this.t("inventoryStatus")}</h2><span class="date">${this.formatNumber(m.object_count)}</span></div>
       <div class="bar">${order.map(s => `<i class="${this.tone(s)}" style="width:${(100 * counts[s] / total).toFixed(2)}%"></i>`).join("")}</div>
       <div class="legend">${order.map(s => `<div><span><i class="dot ${this.tone(s)}"></i>${this.t(s)}</span><b>${this.formatNumber(counts[s])}</b></div>`).join("")}</div></div>
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
