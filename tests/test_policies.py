@@ -273,3 +273,41 @@ async def test_prefixes_are_validated_limited_and_persisted(
         and "d0" not in again.prefixes
         and len(again.prefixes) == 9
     )
+
+
+async def test_the_state_rate_rule_waits_for_numbers_and_counts_from_the_limit(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    from custom_components.ha_housekeeper.policies import stored_rates
+
+    objects = [
+        entity("sensor.loud"),
+        entity("sensor.calm"),
+        entity("sensor.off", disabled_by="user"),
+    ]
+    rule = lambda r: next(x for x in r["rules"] if x["id"] == "state_rate")  # noqa: E731
+    waiting = evaluate({"objects": objects}, {"state_rate"}, set(), set(), None, {}, None, 5000)
+    assert rule(waiting)["pending"] is True and rule(waiting)["count"] == 0
+    rates = {"sensor.loud": 5000, "sensor.calm": 4999, "sensor.off": 9000, "sensor.gone": 9000}
+    found = evaluate({"objects": objects}, {"state_rate"}, set(), set(), None, {}, rates, 5000)
+    assert [i["object_id"] for i in rule(found)["items"]] == ["sensor.loud"]
+    assert rule(found)["items"][0]["rate"] == 5000 and "pending" not in rule(found)
+
+    class Kept:
+        replies = {
+            "storms:1": {"computed_at": 1, "entities": [{"entity_id": "a.old", "per_day": 1}]},
+            "storms:7": {"computed_at": 2, "entities": [{"entity_id": "a.new", "per_day": 7}]},
+        }
+
+    assert stored_rates(Kept()) == {"a.new": 7} and stored_rates(None) is None
+
+    store = PolicyStore(hass)
+    await store.async_load()
+    store.set_limit(250)
+    for bad in (99, 100001, True):
+        with pytest.raises(ValueError):
+            store.set_limit(bad)
+    await store._store.async_save(store._data())
+    again = PolicyStore(hass)
+    await again.async_load()
+    assert again.limit == 250

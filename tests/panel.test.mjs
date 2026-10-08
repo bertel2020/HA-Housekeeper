@@ -3234,3 +3234,19 @@ test("a list can hide columns and offers its rows as CSV", () => {
   const ex = el._exporters.inventory;
   assert.equal(ex.rows().length, el.filtered().length);
 });
+
+test("the flow tab shows triggers, conditions and nested actions and marks missing objects", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.hall", name: "Hall light", status: "active" }], edges: [], findings: [] };
+  const item = {
+    object_type: "automation", object_id: "automation.hall", name: "Hall",
+    triggers: [{ trigger: "state", entity_id: "binary_sensor.gone", to: "on" }], conditions: [{ condition: "state", entity_id: "light.hall", state: "off" }],
+    actions: [{ choose: [{ conditions: [{ condition: "template", value_template: "{{ true }}" }], sequence: [{ action: "light.turn_on", target: { entity_id: "light.hall" } }] }], default: [{ delay: { seconds: 5 } }] }],
+  };
+  assert.ok(el.detailTabs(item, "automation:automation.hall").some(([id]) => id === "flow"));
+  const html = el.flowCard(item, "automation:automation.hall");
+  assert.ok(html.includes("Choose") && html.includes("Hall light") && html.includes("light.turn_on") && html.includes("Delay") && html.includes("action/0/choose/0/sequence/0"));
+  assert.ok(html.includes("binary_sensor.gone") && html.includes("fstep broken"));
+  const script = el.flowCard({ object_type: "script", object_id: "script.x", name: "X", actions: [{ delay: "00:01:00" }] }, "script:script.x");
+  assert.ok(script.includes("sequence/0") && !html.includes("Trigger</h2>x"));
+});

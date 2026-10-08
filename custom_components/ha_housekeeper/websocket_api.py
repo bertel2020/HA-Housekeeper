@@ -687,7 +687,7 @@ async def websocket_policies(
         return
     try:
         snapshot = await scanner.async_get_snapshot()
-        result = policies(hass, snapshot, scanner.policies, scanner.ignored)
+        result = policies(hass, snapshot, scanner.policies, scanner.ignored, scanner.replies)
     except Exception as err:
         connection.send_error(msg["id"], "policies_failed", f"{type(err).__name__}: {err}")
         return
@@ -715,6 +715,29 @@ def websocket_set_policy(
         return
     scanner.policies.set_enabled(msg["rule"], msg["enabled"])
     connection.send_result(msg["id"], {"enabled": sorted(scanner.policies.enabled)})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/set_policy_limit", vol.Required("limit"): int}
+)
+@callback
+def websocket_set_policy_limit(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Set the daily limit of the state-changes rule. Only Housekeeper's own setting changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        scanner.policies.set_limit(msg["limit"])
+    except ValueError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    connection.send_result(msg["id"], {"limit": scanner.policies.limit})
 
 
 @websocket_api.require_admin
@@ -937,6 +960,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_policies)
     websocket_api.async_register_command(hass, websocket_set_policy)
     websocket_api.async_register_command(hass, websocket_set_policy_prefix)
+    websocket_api.async_register_command(hass, websocket_set_policy_limit)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)

@@ -676,6 +676,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-pol-rule]").forEach(el => el.onclick = () => { this.polRule = el.dataset.polRule; this.pages = {}; this.render(); });
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
     root.querySelectorAll("[data-policy-toggle]").forEach(el => el.onchange = () => this.changePolicy({ type: "ha_housekeeper/set_policy", rule: el.dataset.policyToggle, enabled: el.checked }));
+    root.querySelector("[data-policy-limit-save]")?.addEventListener("click", () => this.setPolicyLimit(root.querySelector("#polLimit")?.value));
     root.querySelector("[data-policy-prefix-add]")?.addEventListener("click", () => this.addPolicyPrefix(root.querySelector("#polDomain")?.value, root.querySelector("#polPrefix")?.value));
     root.querySelectorAll("[data-policy-prefix-remove]").forEach(el => el.onclick = () => this.removePolicyPrefix(el.dataset.policyPrefixRemove));
     root.querySelectorAll("[data-policy-ignore]").forEach(el => el.onclick = () => this.changePolicy({ type: "ha_housekeeper/ignore", finding_key: el.dataset.policyIgnore, ignored: el.dataset.policyValue === "1" }));

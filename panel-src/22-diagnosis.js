@@ -306,6 +306,7 @@ class DiagnosisMixin {
   detailTabs(item, key) {
     const tabs = [["overview", "tabOverview"], ["relations", "tabRelations", this.edgesTo(key).length + this.edgesFrom(key).length], ["technical", "tabTechnical"]];
     if (item.attributes && Object.keys(item.attributes).length) tabs.push(["attributes", "tabAttributes"]);
+    if (["automation", "script"].includes(item.object_type) && (item.actions?.length || item.triggers?.length)) tabs.push(["flow", "flowTab"]);
     if (this.runsRow(item)) tabs.push(["runs", "runsTab"]);
     if (this.reliabilityRow(item)) tabs.push(["reliability", "relTab"]);
     return tabs;
@@ -335,6 +336,7 @@ class DiagnosisMixin {
   // Only the open tab is built, so large attributes and relations cost nothing until they are asked for.
   detailPanel(tab, item, key) {
     if (tab === "relations") return `<div class="stack">${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
+    if (tab === "flow") return this.flowCard(item, key);
     if (tab === "runs") return this.runsDetailCard(this.runsRow(item));
     if (tab === "reliability") return this.reliabilityDetailCard(this.reliabilityRow(item));
     if (tab === "attributes") {

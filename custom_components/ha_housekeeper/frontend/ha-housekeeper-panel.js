@@ -1076,7 +1076,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.listtools{display:flex;gap:8px;justify-content:flex-end;padding:0 14px 10px}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;gap:6px;min-width:180px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:8px;align-items:center;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){.tablewrap.lt,.tablewrap.inv{max-height:calc(100vh - 140px)}.tablewrap.lt thead th,.tablewrap.inv thead th{position:sticky;top:0;z-index:2}}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.fflow{padding:6px 14px 12px}.fstep{margin:6px 0;padding:8px 10px;border:1px solid var(--hk-border);border-left:3px solid var(--hk-blue);border-radius:8px;background:var(--hk-surface)}.fstep.broken{border-left-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 6%,var(--hk-surface))}.fstep>summary{cursor:pointer;list-style-position:inside}.fhead{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - 20px);vertical-align:middle}.fhead ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.ffacts{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fpath{margin-left:auto;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.fkids{margin:8px 0 2px 14px;padding-left:10px;border-left:1px dashed var(--hk-border)}.fgroup>small{display:block;margin:6px 0 2px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(10px*var(--hk-fs,1))}.fbranch{margin:6px 0}.chip.flowref{cursor:pointer;padding:2px 8px;font-size:calc(12px*var(--hk-fs,1))}.chip.flowref.missing{border-color:var(--hk-red,#b3261e);color:var(--hk-red,#b3261e);cursor:default}.listtools{display:flex;gap:8px;justify-content:flex-end;padding:0 14px 10px}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;gap:6px;min-width:180px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:8px;align-items:center;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){.tablewrap.lt,.tablewrap.inv{max-height:calc(100vh - 140px)}.tablewrap.lt thead th,.tablewrap.inv thead th{position:sticky;top:0;z-index:2}}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -1180,6 +1180,7 @@ Object.assign(TEXT.de, {
   polHide: "Ausblenden", polShow: "Einblenden", polHiddenLabel: "ausgeblendet", polByLabel: "per Label ausgeblendet",
   polHiddenN: "{n} ausgeblendet", polShowHidden: "Ausgeblendete zeigen", polHideHidden: "Ausgeblendete verbergen", polMore: "und {n} weitere",
   polFootnote: "Richtlinien sind Hinweise zur Ordnung und keine Defekte: Sie zählen nicht in Gesundheit, Befunde, Reparaturhinweise oder Sensoren. Housekeeper vergleicht nur die vorhandenen Daten des letzten Scans. Mit dem Label housekeeper_ignore an einer Entität, einem Gerät oder einer Automation oder über Ausblenden nimmst du ein Objekt aus. Die Schalter liegen nur in Housekeeper.",
+  polRule_state_rate: "Zustandsänderungen pro Tag", polDesc_state_rate: "Entitäten, die in den zuletzt berechneten Last-Zahlen mindestens so oft am Tag ihren Zustand geändert haben, wie die Grenze sagt. Die Regel startet keine Recorder-Abfrage.", polLimit: "Grenze (Änderungen pro Entität und Tag)", polLimitSave: "Speichern", polPending: "Noch nicht berechnet: Öffne Recorder → Last einmal, dann prüft die Regel diese Zahlen.", polRate: "{n} Änderungen pro Tag",
 });
 Object.assign(TEXT.en, {
   polAllRules: "All rules", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
@@ -1197,6 +1198,7 @@ Object.assign(TEXT.en, {
   polHide: "Hide", polShow: "Show", polHiddenLabel: "hidden", polByLabel: "hidden by label",
   polHiddenN: "{n} hidden", polShowHidden: "Show hidden", polHideHidden: "Hide hidden", polMore: "and {n} more",
   polFootnote: "Policies are hints about tidiness and not defects: they do not count in health, findings, repair hints or sensors. Housekeeper only compares the data of the last scan. The label housekeeper_ignore on an entity, device or automation, or Hide, takes an object out. The switches live only in Housekeeper.",
+  polRule_state_rate: "State changes per day", polDesc_state_rate: "Entities that changed state at least as often per day as the limit says, in the last calculated load numbers. The rule never starts a recorder query.", polLimit: "Limit (changes per entity and day)", polLimitSave: "Save", polPending: "Not calculated yet: open Recorder → Load once, then the rule checks those numbers.", polRate: "{n} changes per day",
 });
 
 // ListsMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -1406,6 +1408,24 @@ class ListsMixin {
     return { rows, footer };
   }
 }
+
+// Texts for the flow tab of automations and scripts; merged into TEXT.
+Object.assign(TEXT.de, {
+  flowTab: "Ablauf", flowMode: "Modus", flowMax: "Maximal gleichzeitig", flowNone: "Nichts eingerichtet.", flowNoConditions: "Keine Bedingungen: Die Aktionen laufen bei jedem Auslöser.",
+  flowIf: "Wenn", flowThen: "Dann", flowElse: "Sonst", flowBranch: "Zweig {n}", flowBranches: "{n} Zweige", flowWhile: "Solange", flowUntil: "Bis", flowForEach: "Für jedes Element", flowFrom: "von", flowTo: "auf", flowFor: "für", flowTemplate: "Vorlage",
+  flowContinueOnError: "weiter bei Fehler", flowDisabled: "ausgeschaltet", flowCut: "{n} weitere Schritte sind nicht dargestellt.",
+  flowNote: "Der Pfad rechts jedes Schritts ist die Fundstelle, wie sie auch in den Befunden steht. Rot markiert sind Schritte mit fehlenden Objekten oder einem Befund.",
+  flow_state: "Zustand", flow_numeric_state: "Zahlenwert", flow_time: "Zeit", flow_time_pattern: "Zeitmuster", flow_sun: "Sonne", flow_event: "Ereignis", flow_template: "Vorlage", flow_webhook: "Webhook", flow_mqtt: "MQTT", flow_homeassistant: "Home Assistant", flow_zone: "Zone", flow_device: "Gerät", flow_trigger: "Auslöser",
+  flow_action: "Aktion", flow_choose: "Auswahl", flow_if: "Wenn-Dann", flow_repeat: "Wiederholung", flow_parallel: "Parallel", flow_sequence: "Folge", flow_wait_template: "Warten auf Vorlage", flow_wait_for_trigger: "Warten auf Auslöser", flow_delay: "Verzögerung", flow_variables: "Variablen", flow_stop: "Stopp", flow_scene: "Szene", flow_and: "Alle", flow_or: "Eine davon", flow_not: "Keine", flow_condition: "Bedingung", flow_unknown: "Schritt",
+});
+Object.assign(TEXT.en, {
+  flowTab: "Flow", flowMode: "Mode", flowMax: "Maximum at once", flowNone: "Nothing set up.", flowNoConditions: "No conditions: the actions run on every trigger.",
+  flowIf: "If", flowThen: "Then", flowElse: "Else", flowBranch: "Branch {n}", flowBranches: "{n} branches", flowWhile: "While", flowUntil: "Until", flowForEach: "For each item", flowFrom: "from", flowTo: "to", flowFor: "for", flowTemplate: "template",
+  flowContinueOnError: "continue on error", flowDisabled: "disabled", flowCut: "{n} more steps are not shown.",
+  flowNote: "The path on the right of each step is the location as it appears in the findings. Steps with missing objects or a finding are marked red.",
+  flow_state: "State", flow_numeric_state: "Number", flow_time: "Time", flow_time_pattern: "Time pattern", flow_sun: "Sun", flow_event: "Event", flow_template: "Template", flow_webhook: "Webhook", flow_mqtt: "MQTT", flow_homeassistant: "Home Assistant", flow_zone: "Zone", flow_device: "Device", flow_trigger: "Trigger",
+  flow_action: "Action", flow_choose: "Choose", flow_if: "If-then", flow_repeat: "Repeat", flow_parallel: "Parallel", flow_sequence: "Sequence", flow_wait_template: "Wait for template", flow_wait_for_trigger: "Wait for trigger", flow_delay: "Delay", flow_variables: "Variables", flow_stop: "Stop", flow_scene: "Scene", flow_and: "All of", flow_or: "Any of", flow_not: "None of", flow_condition: "Condition", flow_unknown: "Step",
+});
 
 // OverviewMixin: methods of the panel element, mixed into the class in 99-register.js.
 class OverviewMixin {
@@ -3063,6 +3083,7 @@ class DiagnosisMixin {
   detailTabs(item, key) {
     const tabs = [["overview", "tabOverview"], ["relations", "tabRelations", this.edgesTo(key).length + this.edgesFrom(key).length], ["technical", "tabTechnical"]];
     if (item.attributes && Object.keys(item.attributes).length) tabs.push(["attributes", "tabAttributes"]);
+    if (["automation", "script"].includes(item.object_type) && (item.actions?.length || item.triggers?.length)) tabs.push(["flow", "flowTab"]);
     if (this.runsRow(item)) tabs.push(["runs", "runsTab"]);
     if (this.reliabilityRow(item)) tabs.push(["reliability", "relTab"]);
     return tabs;
@@ -3092,6 +3113,7 @@ class DiagnosisMixin {
   // Only the open tab is built, so large attributes and relations cost nothing until they are asked for.
   detailPanel(tab, item, key) {
     if (tab === "relations") return `<div class="stack">${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
+    if (tab === "flow") return this.flowCard(item, key);
     if (tab === "runs") return this.runsDetailCard(this.runsRow(item));
     if (tab === "reliability") return this.reliabilityDetailCard(this.reliabilityRow(item));
     if (tab === "attributes") {
@@ -4200,6 +4222,7 @@ class PoliciesMixin {
 
   polItemNote(item) {
     if (item.also?.length) return `<small>${this.esc(this.t("polAlso", { ids: item.also.join(", ") }))}</small>`;
+    if (item.rate !== undefined) return `<small>${this.esc(this.t("polRate", { n: this.formatNumber(item.rate) }))}</small>`;
     if (item.expected) return `<small>${this.esc(this.t("polExpected", { prefix: item.expected }))}</small>`;
     return "";
   }
@@ -4210,6 +4233,18 @@ class PoliciesMixin {
     const rows = entries.map(([domain, prefix]) => `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:format-letter-starts-with"></ha-icon></span><span class="row-text"><strong>${this.esc(domain)}</strong><small>${this.esc(this.t("polPrefixIs", { prefix }))}</small></span><button class="btn" data-policy-prefix-remove="${this.esc(domain)}">${this.t("polPrefixRemove")}</button></div>`).join("");
     const form = `<div class="row politem polform"><label class="sr-only" for="polDomain">${this.t("polPrefixDomain")}</label><input id="polDomain" type="text" placeholder="${this.esc(this.t("polPrefixDomain"))}" autocomplete="off" maxlength="40"><label class="sr-only" for="polPrefix">${this.t("polPrefixValue")}</label><input id="polPrefix" type="text" placeholder="${this.esc(this.t("polPrefixValue"))}" autocomplete="off" maxlength="30"><button class="btn" data-policy-prefix-add>${this.t("polPrefixAdd")}</button></div>`;
     return `${rows}${form}${entries.length ? "" : `<p class="factnote">${this.t("polPrefixNone")}</p>`}`;
+  }
+
+  // The daily limit of the state-changes rule and, while the load numbers are missing, why the rule shows nothing.
+  polLimitEditor(rule) {
+    const note = rule.pending ? `<p class="factnote">${this.t("polPending")}</p>` : "";
+    return `<div class="row politem polform"><label for="polLimit">${this.t("polLimit")}</label><input id="polLimit" type="number" min="100" max="100000" step="100" value="${this.esc(String(this.policies?.limit ?? 5000))}"><button class="btn" data-policy-limit-save>${this.t("polLimitSave")}</button></div>${note}`;
+  }
+
+  setPolicyLimit(value) {
+    const limit = Number.parseInt(value, 10);
+    if (!Number.isFinite(limit)) return Promise.resolve();
+    return this.changePolicy({ type: "ha_housekeeper/set_policy_limit", limit });
   }
 
   polItemRow(item) {
@@ -4224,7 +4259,8 @@ class PoliciesMixin {
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
-    return head + (rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : "");
+    const extra = rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : rule.enabled && rule.id === "state_rate" ? this.polLimitEditor(rule) : "";
+    return head + extra;
   }
 
   // The violations of all switched-on rules in one list: filter by rule, search, open the entity.
@@ -4308,6 +4344,134 @@ class LayoutMixin {
     this.render();
   }
 }
+
+// FlowMixin: the "Ablauf" tab of an automation or script: triggers, conditions and actions as a readable tree; mixed in by 99-register.js.
+// The configuration is the one the detail request already delivers; nothing here reads Home Assistant.
+const FLOW_NESTED = ["sequence", "then", "else", "default", "parallel", "conditions", "condition", "choose", "if", "repeat"];
+const FLOW_LIMIT = 300;
+const FLOW_DEPTH = 6;
+const FLOW_REF_KEYS = ["entity_id", "device_id", "area_id", "floor_id", "label_id"];
+
+class FlowMixin {
+  // The concrete ids a block names itself (not what its nested blocks name): target, data and the block's own keys.
+  flowRefs(step) {
+    const out = [];
+    const take = (type, value) => {
+      for (const v of Array.isArray(value) ? value : [value]) {
+        if (typeof v === "string" && v && !["all", "none"].includes(v) && !v.includes("{{") && !v.startsWith("!input")) out.push([type, v]);
+      }
+    };
+    const walk = (node, depth) => {
+      if (!node || typeof node !== "object" || Array.isArray(node) || depth > 3) return;
+      for (const [k, v] of Object.entries(node)) {
+        if (FLOW_NESTED.includes(k)) continue;
+        if (FLOW_REF_KEYS.includes(k)) take(k.replace("_id", ""), v);
+        else if (typeof v === "object") walk(v, depth + 1);
+      }
+    };
+    walk(step, 0);
+    return out;
+  }
+
+  flowType(step, kind) {
+    if (!step || typeof step !== "object") return "unknown";
+    if (kind === "trigger") return step.trigger || step.platform || "unknown";
+    if (kind === "condition") return step.condition || "unknown";
+    for (const key of ["choose", "if", "repeat", "parallel", "sequence", "wait_template", "wait_for_trigger", "delay", "variables", "stop", "event", "scene", "set_conversation_response"]) if (key in step) return key;
+    if ("action" in step || "service" in step) return "action";
+    if ("condition" in step) return "condition";
+    if (step.device_id && step.domain && step.type) return "device";
+    return "unknown";
+  }
+
+  flowLabel(type) { const key = `flow_${type}`; const text = this.t(key); return text === key ? type : text; }
+
+  // One line of facts for a block, built from the keys people look for first.
+  flowFacts(step, type) {
+    const facts = [];
+    const add = v => { if (v !== undefined && v !== null && v !== "" && typeof v !== "object") facts.push(String(v)); };
+    if (step.alias) add(step.alias);
+    if (type === "action") add(step.action || step.service);
+    if (["state", "numeric_state"].includes(type)) { add(step.attribute); add(step.from !== undefined ? `${this.t("flowFrom")} ${step.from}` : ""); add(step.to !== undefined ? `${this.t("flowTo")} ${step.to}` : ""); add(step.state !== undefined ? `= ${Array.isArray(step.state) ? step.state.join(", ") : step.state}` : ""); add(step.above !== undefined ? `> ${step.above}` : ""); add(step.below !== undefined ? `< ${step.below}` : ""); }
+    if (["time", "sun"].includes(type)) { add(step.at); add(step.event); add(step.after); add(step.before); add(step.offset); }
+    if (type === "time_pattern") add([step.hours, step.minutes, step.seconds].filter(x => x !== undefined).join(":"));
+    if (type === "event") add(step.event_type);
+    if (type === "delay") add(typeof step.delay === "object" ? Object.entries(step.delay).map(([k, v]) => `${v} ${k}`).join(" ") : step.delay);
+    if (type === "wait_template") add(this.t("flowTemplate"));
+    if (type === "template") add(this.t("flowTemplate"));
+    if (type === "repeat") { const r = step.repeat || {}; add(r.count !== undefined ? `${r.count}×` : r.while ? this.t("flowWhile") : r.until ? this.t("flowUntil") : r.for_each !== undefined ? this.t("flowForEach") : ""); }
+    if (type === "choose") add(this.t("flowBranches", { n: (step.choose || []).length }));
+    if (type === "stop") add(step.stop);
+    if (type === "device") add(`${step.domain} · ${step.type}`);
+    if (step.for !== undefined && type === "state") add(`${this.t("flowFor")} ${typeof step.for === "object" ? Object.values(step.for).join(":") : step.for}`);
+    if (step.continue_on_error) add(this.t("flowContinueOnError"));
+    if (step.enabled === false) add(this.t("flowDisabled"));
+    return facts;
+  }
+
+  flowRefButton([type, id]) {
+    const key = `${type}:${id}`, obj = this.findObject(key);
+    return obj
+      ? `<button class="chip flowref" data-object="${this.esc(key)}">${this.esc(obj.name || id)}</button>`
+      : `<span class="chip flowref missing" title="${this.esc(id)}">${this.esc(id)} · ${this.t("missing")}</span>`;
+  }
+
+  // Locations of the findings of this object, with the root keys of the lists made equal ("actions" and "action").
+  flowNormal(path) { return String(path).replace(/^(trigger|condition|action)s?(?=\/|$)/, "$1").replace(/\/conditions?\//g, "/condition/"); }
+
+  // One block and what it contains. `ctx` carries the counter, the finding places and the kind of the list.
+  flowNode(step, path, kind, depth, ctx) {
+    if (ctx.count >= FLOW_LIMIT) { ctx.cut += 1; return ""; }
+    ctx.count += 1;
+    const type = this.flowType(step, kind);
+    const refs = this.flowRefs(step);
+    const broken = ctx.places.some(place => place.startsWith(this.flowNormal(path))) || refs.some(([t, id]) => !this.findObject(`${t}:${id}`));
+    const facts = this.flowFacts(step, type).map(f => this.esc(f)).join(" · ");
+    const head = `<span class="fhead"><ha-icon icon="${FLOW_ICONS[type] || "mdi:circle-small"}"></ha-icon><b>${this.esc(this.flowLabel(type))}</b>${facts ? `<span class="ffacts">${facts}</span>` : ""}${refs.map(r => this.flowRefButton(r)).join("")}<code class="fpath">${this.esc(path)}</code></span>`;
+    const kids = depth >= FLOW_DEPTH ? "" : this.flowChildren(step, type, path, depth, ctx);
+    const cls = `fstep${broken ? " broken" : ""}`;
+    return kids ? `<details class="${cls}" open><summary>${head}</summary><div class="fkids">${kids}</div></details>` : `<div class="${cls}">${head}</div>`;
+  }
+
+  flowList(list, path, kind, depth, ctx) {
+    return (Array.isArray(list) ? list : list ? [list] : []).map((step, i) => this.flowNode(step, `${path}/${i}`, kind, depth + 1, ctx)).join("");
+  }
+
+  flowGroup(label, body) { return body ? `<div class="fgroup"><small>${this.esc(label)}</small>${body}</div>` : ""; }
+
+  flowChildren(step, type, path, depth, ctx) {
+    if (type === "choose") {
+      const branches = (step.choose || []).map((b, i) => `<div class="fbranch"><b>${this.t("flowBranch", { n: i + 1 })}</b>${this.flowGroup(this.t("flowIf"), this.flowList(b.conditions ?? b.condition, `${path}/choose/${i}/conditions`, "condition", depth + 1, ctx))}${this.flowGroup(this.t("flowThen"), this.flowList(b.sequence, `${path}/choose/${i}/sequence`, "action", depth + 1, ctx))}</div>`).join("");
+      return branches + this.flowGroup(this.t("flowElse"), this.flowList(step.default, `${path}/default`, "action", depth, ctx));
+    }
+    if (type === "if") return this.flowGroup(this.t("flowIf"), this.flowList(step.if, `${path}/if`, "condition", depth, ctx)) + this.flowGroup(this.t("flowThen"), this.flowList(step.then, `${path}/then`, "action", depth, ctx)) + this.flowGroup(this.t("flowElse"), this.flowList(step.else, `${path}/else`, "action", depth, ctx));
+    if (type === "repeat") { const r = step.repeat || {}; return this.flowList(r.sequence, `${path}/repeat/sequence`, "action", depth, ctx) + this.flowGroup(this.t("flowWhile"), this.flowList(r.while, `${path}/repeat/while`, "condition", depth, ctx)) + this.flowGroup(this.t("flowUntil"), this.flowList(r.until, `${path}/repeat/until`, "condition", depth, ctx)); }
+    if (type === "parallel") return this.flowList(step.parallel, `${path}/parallel`, "action", depth, ctx);
+    if (type === "sequence") return this.flowList(step.sequence, `${path}/sequence`, "action", depth, ctx);
+    if (["and", "or", "not"].includes(type)) return this.flowList(step.conditions, `${path}/conditions`, "condition", depth, ctx);
+    return "";
+  }
+
+  flowCard(item, key) {
+    const script = item.object_type === "script";
+    const places = (this.data?.findings || []).filter(f => this.findingKey(f) === key && !f.ignored).map(f => this.flowNormal(f.evidence?.[0]?.location || "")).filter(Boolean);
+    const ctx = { count: 0, cut: 0, places };
+    const root = script ? ["sequence"] : ["trigger", "condition", "action"];
+    const blocks = script ? [["actions", item.actions, "sequence", "action"]] : [["triggers", item.triggers, "trigger", "trigger"], ["conditions", item.conditions, "condition", "condition"], ["actions", item.actions, "action", "action"]];
+    const sections = blocks.map(([label, list, path, kind]) => {
+      const body = this.flowList(list, root.length === 1 ? "sequence" : path, kind, 0, ctx);
+      return `<section class="panel"><div class="panelhead"><h2>${this.t(label)} <em class="date">${this.formatNumber((list || []).length)}</em></h2></div><div class="fflow">${body || `<p class="factnote">${this.t(label === "conditions" ? "flowNoConditions" : "flowNone")}</p>`}</div></section>`;
+    }).join("");
+    const facts = [item.mode ? [this.t("flowMode"), item.mode] : null, item.max ? [this.t("flowMax"), item.max] : null].filter(Boolean).map(([k, v]) => `<span><small>${k}</small><b>${this.esc(String(v))}</b></span>`).join("");
+    const cut = ctx.cut ? `<p class="factnote">${this.t("flowCut", { n: ctx.cut })}</p>` : "";
+    return `<div class="stack">${facts ? `<div class="panel sumline">${facts}</div>` : ""}${sections}${cut}<p class="factnote">${this.t("flowNote")}</p></div>`;
+  }
+}
+
+const FLOW_ICONS = {
+  state: "mdi:toggle-switch-outline", numeric_state: "mdi:numeric", time: "mdi:clock-outline", time_pattern: "mdi:timer-sand", sun: "mdi:weather-sunny", event: "mdi:lightning-bolt-outline", template: "mdi:code-braces", webhook: "mdi:webhook", mqtt: "mdi:message-text-outline", homeassistant: "mdi:home-assistant", zone: "mdi:map-marker-outline", device: "mdi:devices", trigger: "mdi:flash-outline",
+  action: "mdi:play-circle-outline", choose: "mdi:source-branch", if: "mdi:help-rhombus-outline", repeat: "mdi:repeat", parallel: "mdi:call-split", sequence: "mdi:format-list-numbered", wait_template: "mdi:timer-sand-empty", wait_for_trigger: "mdi:timer-sand-empty", delay: "mdi:timer-outline", variables: "mdi:variable", stop: "mdi:stop-circle-outline", scene: "mdi:palette-outline", and: "mdi:set-all", or: "mdi:set-merge", not: "mdi:not-equal-variant", condition: "mdi:filter-outline",
+};
 
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
@@ -4987,6 +5151,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-pol-rule]").forEach(el => el.onclick = () => { this.polRule = el.dataset.polRule; this.pages = {}; this.render(); });
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
     root.querySelectorAll("[data-policy-toggle]").forEach(el => el.onchange = () => this.changePolicy({ type: "ha_housekeeper/set_policy", rule: el.dataset.policyToggle, enabled: el.checked }));
+    root.querySelector("[data-policy-limit-save]")?.addEventListener("click", () => this.setPolicyLimit(root.querySelector("#polLimit")?.value));
     root.querySelector("[data-policy-prefix-add]")?.addEventListener("click", () => this.addPolicyPrefix(root.querySelector("#polDomain")?.value, root.querySelector("#polPrefix")?.value));
     root.querySelectorAll("[data-policy-prefix-remove]").forEach(el => el.onclick = () => this.removePolicyPrefix(el.dataset.policyPrefixRemove));
     root.querySelectorAll("[data-policy-ignore]").forEach(el => el.onclick = () => this.changePolicy({ type: "ha_housekeeper/ignore", finding_key: el.dataset.policyIgnore, ignored: el.dataset.policyValue === "1" }));
@@ -5055,7 +5220,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

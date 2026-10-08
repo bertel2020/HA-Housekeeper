@@ -28,7 +28,11 @@ RULES = (
     "duplicate_name",
     "automation_label",
     "naming_scheme",
+    "state_rate",
 )
+LIMIT_DEFAULT = 5000
+LIMIT_MIN = 100
+LIMIT_MAX = 100000
 PREFIX_LIMIT = 10
 DOMAIN_SHAPE = re.compile(r"^[a-z0-9_]{1,40}$")
 PREFIX_SHAPE = re.compile(r"^[a-z0-9_]{1,30}$")
@@ -48,6 +52,9 @@ class PolicyStore:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, POLICIES_STORAGE_KEY)
         self.enabled: set[str] = set()
         self.prefixes: dict[str, str] = {}  # domain -> the prefix its entity ids must start with
+        self.limit = (
+            LIMIT_DEFAULT  # state_rate: state changes per entity and day from which it counts
+        )
 
     async def async_load(self) -> None:
         """Load the switches; anything that is not a known rule set to ``true`` is dropped."""
@@ -58,6 +65,13 @@ class PolicyStore:
             self.enabled = {
                 rule for rule, on in data["enabled"].items() if rule in RULES and on is True
             }
+        limit = data.get("limit")
+        if (
+            isinstance(limit, int)
+            and not isinstance(limit, bool)
+            and LIMIT_MIN <= limit <= LIMIT_MAX
+        ):
+            self.limit = limit
         if isinstance(data.get("prefixes"), dict):
             self.prefixes = {
                 domain: prefix
@@ -94,8 +108,17 @@ class PolicyStore:
             self.prefixes[domain] = prefix
             self._store.async_delay_save(self._data, SAVE_DELAY)
 
+    def set_limit(self, value: int) -> None:
+        """Set the daily limit of the state_rate rule. Raises ``ValueError`` outside the range."""
+        if isinstance(value, bool) or not LIMIT_MIN <= value <= LIMIT_MAX:
+            raise ValueError(value)
+        if value != self.limit:
+            self.limit = value
+            self._store.async_delay_save(self._data, SAVE_DELAY)
+
     def _data(self) -> dict[str, Any]:
         return {
+            "limit": self.limit,
             "enabled": {rule: True for rule in sorted(self.enabled)},
             "prefixes": dict(sorted(self.prefixes.items())),
         }
@@ -181,6 +204,14 @@ def _naming_scheme(entities: dict[str, dict[str, Any]], prefixes: dict[str, str]
             yield {**item, "expected": prefix}
 
 
+def _state_rate(entities: dict[str, dict[str, Any]], rates: dict[str, int], limit: int):
+    """Entities that changed state at least ``limit`` times a day in the last calculated load numbers."""
+    for entity_id, per_day in rates.items():
+        item = entities.get(entity_id)
+        if item is not None and per_day >= limit and not item.get("disabled_by"):
+            yield {**item, "rate": per_day}
+
+
 def evaluate(
     snapshot: dict[str, Any],
     enabled: set[str] | frozenset[str],
@@ -188,6 +219,8 @@ def evaluate(
     labelled: set[str],
     automation_labels: dict[str, bool] | None = None,
     prefixes: dict[str, str] | None = None,
+    rates: dict[str, int] | None = None,
+    limit: int = LIMIT_DEFAULT,
 ) -> PoliciesResult:
     """Violations per rule. ``labelled`` holds the object ids that carry the ignore label.
 
@@ -209,11 +242,25 @@ def evaluate(
             by_type.get("automation", []), automation_labels or {}
         ),
         "naming_scheme": lambda: _naming_scheme(entities, prefixes or {}),
+        "state_rate": lambda: _state_rate(entities, rates or {}, limit),
     }
     rules = []
     for rule in RULES:
         if rule not in enabled:
             rules.append({"id": rule, "enabled": False, "count": 0, "ignored": 0, "items": []})
+            continue
+        if rule == "state_rate" and rates is None:
+            # Never calculated: the rule waits for the load numbers instead of starting a recorder query.
+            rules.append(
+                {
+                    "id": rule,
+                    "enabled": True,
+                    "count": 0,
+                    "ignored": 0,
+                    "items": [],
+                    "pending": True,
+                }
+            )
             continue
         items, ignored = [], 0
         for item in found[rule]():
@@ -228,7 +275,7 @@ def evaluate(
                     "key": key,
                     "ignored": bool(hidden),
                     "by": "label" if item["object_id"] in labelled else "user" if hidden else None,
-                    **{k: item[k] for k in ("also", "expected") if k in item},
+                    **{k: item[k] for k in ("also", "expected", "rate") if k in item},
                 }
             )
         items.sort(key=lambda i: (i["ignored"], i["name"].casefold(), i["object_id"]))
@@ -247,11 +294,16 @@ def evaluate(
         "violations": sum(r["count"] for r in rules),
         "enabled": len(enabled),
         "prefixes": dict(prefixes or {}),
+        "limit": limit,
     }
 
 
 def policies(
-    hass: HomeAssistant, snapshot: dict[str, Any], store: PolicyStore, ignored: Any
+    hass: HomeAssistant,
+    snapshot: dict[str, Any],
+    store: PolicyStore,
+    ignored: Any,
+    replies: Any = None,
 ) -> PoliciesResult:
     """The result for the panel: the rules, how many objects break each, and which are hidden."""
     from homeassistant.helpers import entity_registry as er
@@ -280,4 +332,33 @@ def policies(
         for item in snapshot["objects"]
         if ignored.is_ignored(policy_key(rule, item["object_id"]))
     }
-    return evaluate(snapshot, store.enabled, keys, labelled, with_labels, store.prefixes)
+    return evaluate(
+        snapshot,
+        store.enabled,
+        keys,
+        labelled,
+        with_labels,
+        store.prefixes,
+        stored_rates(replies),
+        store.limit,
+    )
+
+
+def stored_rates(replies: Any) -> dict[str, int] | None:
+    """Changes per day and entity from the newest kept load reply; ``None`` if there is none.
+
+    Only reads what the load view already kept; it never starts a recorder query.
+    """
+    kept = [
+        reply
+        for key, reply in getattr(replies, "replies", {}).items()
+        if key.startswith("storms:") and isinstance(reply.get("entities"), list)
+    ]
+    if not kept:
+        return None
+    newest = max(kept, key=lambda r: r.get("computed_at", 0))
+    return {
+        row["entity_id"]: int(row["per_day"])
+        for row in newest["entities"]
+        if isinstance(row.get("entity_id"), str) and isinstance(row.get("per_day"), (int, float))
+    }

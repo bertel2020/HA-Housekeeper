@@ -166,6 +166,7 @@ class PolicyItem(TypedDict):
     by: str | None  # "label", "user" or None
     also: NotRequired[list[str]]  # duplicate_name: the other entities with the same name
     expected: NotRequired[str]  # naming_scheme: the prefix the id should start with
+    rate: NotRequired[int]  # state_rate: state changes per day
 
 
 class PolicyRule(TypedDict):
@@ -174,6 +175,7 @@ class PolicyRule(TypedDict):
     count: int  # violations that are not hidden
     ignored: int
     items: list[PolicyItem]
+    pending: NotRequired[bool]  # state_rate: the load numbers were never calculated
 
 
 class PoliciesResult(TypedDict):
@@ -182,3 +184,4 @@ class PoliciesResult(TypedDict):
     violations: int
     enabled: int
     prefixes: dict[str, str]  # naming scheme: domain -> prefix
+    limit: int  # state_rate: changes per entity and day from which it counts

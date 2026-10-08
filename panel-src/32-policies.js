@@ -32,6 +32,7 @@ class PoliciesMixin {
 
   polItemNote(item) {
     if (item.also?.length) return `<small>${this.esc(this.t("polAlso", { ids: item.also.join(", ") }))}</small>`;
+    if (item.rate !== undefined) return `<small>${this.esc(this.t("polRate", { n: this.formatNumber(item.rate) }))}</small>`;
     if (item.expected) return `<small>${this.esc(this.t("polExpected", { prefix: item.expected }))}</small>`;
     return "";
   }
@@ -42,6 +43,18 @@ class PoliciesMixin {
     const rows = entries.map(([domain, prefix]) => `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:format-letter-starts-with"></ha-icon></span><span class="row-text"><strong>${this.esc(domain)}</strong><small>${this.esc(this.t("polPrefixIs", { prefix }))}</small></span><button class="btn" data-policy-prefix-remove="${this.esc(domain)}">${this.t("polPrefixRemove")}</button></div>`).join("");
     const form = `<div class="row politem polform"><label class="sr-only" for="polDomain">${this.t("polPrefixDomain")}</label><input id="polDomain" type="text" placeholder="${this.esc(this.t("polPrefixDomain"))}" autocomplete="off" maxlength="40"><label class="sr-only" for="polPrefix">${this.t("polPrefixValue")}</label><input id="polPrefix" type="text" placeholder="${this.esc(this.t("polPrefixValue"))}" autocomplete="off" maxlength="30"><button class="btn" data-policy-prefix-add>${this.t("polPrefixAdd")}</button></div>`;
     return `${rows}${form}${entries.length ? "" : `<p class="factnote">${this.t("polPrefixNone")}</p>`}`;
+  }
+
+  // The daily limit of the state-changes rule and, while the load numbers are missing, why the rule shows nothing.
+  polLimitEditor(rule) {
+    const note = rule.pending ? `<p class="factnote">${this.t("polPending")}</p>` : "";
+    return `<div class="row politem polform"><label for="polLimit">${this.t("polLimit")}</label><input id="polLimit" type="number" min="100" max="100000" step="100" value="${this.esc(String(this.policies?.limit ?? 5000))}"><button class="btn" data-policy-limit-save>${this.t("polLimitSave")}</button></div>${note}`;
+  }
+
+  setPolicyLimit(value) {
+    const limit = Number.parseInt(value, 10);
+    if (!Number.isFinite(limit)) return Promise.resolve();
+    return this.changePolicy({ type: "ha_housekeeper/set_policy_limit", limit });
   }
 
   polItemRow(item) {
@@ -56,7 +69,8 @@ class PoliciesMixin {
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
-    return head + (rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : "");
+    const extra = rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : rule.enabled && rule.id === "state_rate" ? this.polLimitEditor(rule) : "";
+    return head + extra;
   }
 
   // The violations of all switched-on rules in one list: filter by rule, search, open the entity.

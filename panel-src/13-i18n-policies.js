@@ -15,6 +15,7 @@ Object.assign(TEXT.de, {
   polHide: "Ausblenden", polShow: "Einblenden", polHiddenLabel: "ausgeblendet", polByLabel: "per Label ausgeblendet",
   polHiddenN: "{n} ausgeblendet", polShowHidden: "Ausgeblendete zeigen", polHideHidden: "Ausgeblendete verbergen", polMore: "und {n} weitere",
   polFootnote: "Richtlinien sind Hinweise zur Ordnung und keine Defekte: Sie zählen nicht in Gesundheit, Befunde, Reparaturhinweise oder Sensoren. Housekeeper vergleicht nur die vorhandenen Daten des letzten Scans. Mit dem Label housekeeper_ignore an einer Entität, einem Gerät oder einer Automation oder über Ausblenden nimmst du ein Objekt aus. Die Schalter liegen nur in Housekeeper.",
+  polRule_state_rate: "Zustandsänderungen pro Tag", polDesc_state_rate: "Entitäten, die in den zuletzt berechneten Last-Zahlen mindestens so oft am Tag ihren Zustand geändert haben, wie die Grenze sagt. Die Regel startet keine Recorder-Abfrage.", polLimit: "Grenze (Änderungen pro Entität und Tag)", polLimitSave: "Speichern", polPending: "Noch nicht berechnet: Öffne Recorder → Last einmal, dann prüft die Regel diese Zahlen.", polRate: "{n} Änderungen pro Tag",
 });
 Object.assign(TEXT.en, {
   polAllRules: "All rules", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
@@ -32,4 +33,5 @@ Object.assign(TEXT.en, {
   polHide: "Hide", polShow: "Show", polHiddenLabel: "hidden", polByLabel: "hidden by label",
   polHiddenN: "{n} hidden", polShowHidden: "Show hidden", polHideHidden: "Hide hidden", polMore: "and {n} more",
   polFootnote: "Policies are hints about tidiness and not defects: they do not count in health, findings, repair hints or sensors. Housekeeper only compares the data of the last scan. The label housekeeper_ignore on an entity, device or automation, or Hide, takes an object out. The switches live only in Housekeeper.",
+  polRule_state_rate: "State changes per day", polDesc_state_rate: "Entities that changed state at least as often per day as the limit says, in the last calculated load numbers. The rule never starts a recorder query.", polLimit: "Limit (changes per entity and day)", polLimitSave: "Save", polPending: "Not calculated yet: open Recorder → Load once, then the rule checks those numbers.", polRate: "{n} changes per day",
 });
