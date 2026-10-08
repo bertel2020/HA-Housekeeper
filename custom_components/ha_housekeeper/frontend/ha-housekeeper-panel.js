@@ -780,6 +780,7 @@ Object.assign(TEXT.de, {
   optScanIntervalTitle: "Automatischer Scan", optScanIntervalHint: "Wie oft Housekeeper von selbst scannt. 0 schaltet den automatischen Scan aus.",
   optLowBatteryTitle: "Schwache Batterie", optLowBatteryHint: "Unter diesem Ladestand erscheint ein Batteriegerät in der Liste der schwachen Batterien.",
   optHistoryDaysTitle: "Scanverlauf", optHistoryDaysHint: "Wie viele Tage der letzte Scan jedes Tages als Vergleichspunkt erhalten bleibt.",
+  quickPlaceholder: "Suchen …", quickLabel: "Alles durchsuchen", quickNone: "Keine Treffer",
   setKeptTitle: "Was Housekeeper speichert", setKeptHint: "Alles liegt im Speicher von Home Assistant (.storage) und verlässt deine Instanz nicht.",
   setKeptObservations: "Beobachtungen", setKeptObservationsText: "Seit wann ein Objekt in seinem Zustand ist. Bleibt, solange das Objekt existiert.",
   setKeptHistory: "Scanverlauf", setKeptHistoryText: "Der letzte Scan jedes Tages als Vergleichspunkt, {days} Tage lang.",
@@ -798,6 +799,7 @@ Object.assign(TEXT.en, {
   optScanIntervalTitle: "Automatic scan", optScanIntervalHint: "How often Housekeeper scans by itself. 0 turns the automatic scan off.",
   optLowBatteryTitle: "Low battery", optLowBatteryHint: "Below this level a battery device appears in the list of low batteries.",
   optHistoryDaysTitle: "Scan history", optHistoryDaysHint: "How many days the last scan of each day is kept as a comparison point.",
+  quickPlaceholder: "Search …", quickLabel: "Search everything", quickNone: "No results",
   setKeptTitle: "What Housekeeper stores", setKeptHint: "Everything lives in Home Assistant's storage (.storage) and does not leave your instance.",
   setKeptObservations: "Observations", setKeptObservationsText: "Since when an object has been in its state. Kept as long as the object exists.",
   setKeptHistory: "Scan history", setKeptHistoryText: "The last scan of each day as a comparison point, for {days} days.",
@@ -1002,7 +1004,7 @@ class StylesMixin {
       .shell{min-height:100vh;display:block}
       .top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:22px;padding:0 clamp(16px,2.4vw,32px);min-height:calc(60px*var(--hk-fs,1));border-bottom:1px solid var(--hk-border);background:var(--hk-surface)}
       .brand{display:flex;align-items:center;gap:10px;flex:none}.brandmark{width:34px;height:34px;display:grid;place-items:center;flex:none}.brandmark img{width:34px;height:34px;object-fit:contain}.brandmark ha-icon{display:none}.brandmark.nologo{border-radius:10px;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brandmark.nologo ha-icon{display:block}.brand strong{font-weight:600;font-size:calc(17px*var(--hk-fs,1));white-space:nowrap}
-      .topnav{flex:1;min-width:0;display:flex;align-items:stretch;align-self:stretch;gap:2px}.navmenu{position:relative;display:flex;align-items:stretch}.navend{margin-left:auto;display:flex;align-items:stretch}.navhead{display:none;padding:10px 12px 2px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+      .topnav{flex:1;min-width:0;display:flex;align-items:stretch;align-self:stretch;gap:2px}.navmenu{position:relative;display:flex;align-items:stretch}.navend{margin-left:auto;display:flex;align-items:stretch;gap:8px}.quick{position:relative;display:flex;align-items:center;align-self:center}.quick>ha-icon{position:absolute;left:8px;--mdc-icon-size:18px;color:var(--hk-muted);pointer-events:none}.quick input{width:150px;max-width:100%;min-height:36px;padding:0 10px 0 32px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.quick input:focus{outline:2px solid var(--hk-blue);outline-offset:0}.quicklist{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:min(380px,90vw);max-height:60vh;overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.quicklist li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}.quicklist li.on,.quicklist li:hover{background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.quicklist li.none{display:block;color:var(--hk-muted);cursor:default}.quicklist .row-text{min-width:0}.quicklist small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.quick{display:flex;margin:6px 0}.quick input{width:100%}.navend{flex-direction:column;align-items:stretch}}.navhead{display:none;padding:10px 12px 2px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}
       .nav{min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--hk-muted);background:transparent;font-weight:500;white-space:nowrap}.nav:hover{color:var(--hk-text);background:var(--hk-soft)}.nav ha-icon{--mdc-icon-size:20px}.nav .caret{--mdc-icon-size:16px;margin-left:-2px}
       .navpop{display:none;position:absolute;top:100%;left:0;min-width:210px;padding:6px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.navmenu.open .navpop{display:grid;gap:2px}.navpop .nav{min-height:40px;border-bottom:0;border-radius:8px}.navpop .nav.active{box-shadow:none;background-image:linear-gradient(var(--hk-blue),var(--hk-blue));background-size:3px 100%;background-repeat:no-repeat;background-position:left top}
       .nav.active{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}.nav em{min-width:22px;padding:2px 6px;border-radius:10px;color:var(--hk-muted);background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-align:center}.nav.group-active{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}.navtoggle{display:none;margin-left:auto;min-height:40px;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit}
@@ -3380,6 +3382,77 @@ class ExposureMixin {
   }
 }
 
+// SearchMixin: one search box in the top bar for entities, devices, integrations, automations and scripts.
+const QUICK_TYPES = ["entity", "device", "config_entry", "automation", "script"];
+const QUICK_LIMIT = 12;
+
+class SearchMixin {
+  quickResults() {
+    const terms = this.quickQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!this.data || this.quickQuery.trim().length < 2) return [];
+    const found = [];
+    for (const item of this.data.objects) {
+      if (!QUICK_TYPES.includes(item.object_type)) continue;
+      const name = String(item.name || "").toLowerCase();
+      const hay = `${name} ${String(item.object_id).toLowerCase()} ${String(item.platform || item.domain || "").toLowerCase()} ${String(item.manufacturer || "").toLowerCase()} ${String(item.model || "").toLowerCase()}`;
+      if (!terms.every(term => hay.includes(term))) continue;
+      found.push({ item, rank: name.startsWith(terms[0]) ? 0 : name.includes(terms[0]) ? 1 : 2 });
+    }
+    found.sort((a, b) => a.rank - b.rank || QUICK_TYPES.indexOf(a.item.object_type) - QUICK_TYPES.indexOf(b.item.object_type) || String(a.item.name).localeCompare(String(b.item.name)));
+    return found.slice(0, QUICK_LIMIT).map(entry => entry.item);
+  }
+
+  quickSearchBox() {
+    if (!this.data) return "";
+    const results = this.quickOpen ? this.quickResults() : [];
+    const active = Math.min(this.quickIndex, Math.max(results.length - 1, 0));
+    const list = this.quickOpen && this.quickQuery.trim().length >= 2
+      ? `<ul class="quicklist" id="quick-list" role="listbox" aria-label="${this.esc(this.t("quickLabel"))}">${results.length
+        ? results.map((item, i) => `<li role="option" id="quick-opt-${i}" aria-selected="${i === active}" data-quick-item="${this.esc(this.objectKey(item))}" class="${i === active ? "on" : ""}">${this.tile(item.object_type)}<span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(this.t(item.object_type))} · ${this.esc(item.object_id)}</small></span></li>`).join("")
+        : `<li class="none">${this.t("quickNone")}</li>`}</ul>` : "";
+    return `<div class="quick"><ha-icon icon="mdi:magnify"></ha-icon><input type="search" data-quick autocomplete="off" role="combobox" aria-expanded="${Boolean(list)}" aria-controls="quick-list" aria-autocomplete="list" ${list && results.length ? `aria-activedescendant="quick-opt-${active}"` : ""} placeholder="${this.esc(this.t("quickPlaceholder"))}" aria-label="${this.esc(this.t("quickLabel"))}" value="${this.esc(this.quickQuery)}">${list}</div>`;
+  }
+
+  quickPick(key) {
+    const obj = this.findObject(key);
+    if (!obj) return;
+    this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.menuOpen = null; this.navOpen = false;
+    this.openObject(obj);
+  }
+
+  bindQuick(root) {
+    const input = root.querySelector("[data-quick]");
+    if (input) {
+      input.oninput = () => { this.quickQuery = input.value; this.quickOpen = true; this.quickIndex = 0; this.scheduleRender(); };
+      input.onfocus = () => { if (this.quickQuery && !this.quickOpen) { this.quickOpen = true; this.render(); } };
+      input.onkeydown = ev => {
+        const results = this.quickResults();
+        if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+          if (!results.length) return;
+          ev.preventDefault();
+          this.quickOpen = true;
+          this.quickIndex = (this.quickIndex + (ev.key === "ArrowDown" ? 1 : results.length - 1)) % results.length;
+          this.render();
+        } else if (ev.key === "Enter" && results.length) {
+          ev.preventDefault();
+          this.quickPick(this.objectKey(results[Math.min(this.quickIndex, results.length - 1)]));
+        } else if (ev.key === "Escape" && (this.quickOpen || this.quickQuery)) {
+          ev.stopPropagation();
+          this.quickQuery = ""; this.quickOpen = false; this.render();
+        }
+      };
+    }
+    root.querySelectorAll("[data-quick-item]").forEach(el => el.onclick = () => this.quickPick(el.dataset.quickItem));
+    if (!this._quickBound && root.addEventListener) {
+      this._quickBound = true;
+      root.addEventListener("click", ev => {
+        if (!this.quickOpen || (ev.composedPath?.() || []).some(node => node.classList?.contains?.("quick"))) return;
+        this.quickOpen = false; this.render();
+      });
+    }
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -3415,7 +3488,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -3727,7 +3800,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     return `<header class="top${this.navOpen ? " open" : ""}"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><strong>${this.t("title")}</strong></div>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
-      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].map(item).join("")}${menus.map(menu).join("")}<div class="navend">${item("settings")}</div></nav></header>`;
+      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${item("settings")}</div></nav></header>`;
   }
 
   // The small line above the title names the menu group the view belongs to.
@@ -3814,6 +3887,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const root = this.shadowRoot;
     root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
+    this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
     if (!this._menuBound && root.addEventListener) {
       this._menuBound = true;
@@ -3991,7 +4065,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, SearchMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

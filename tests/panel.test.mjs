@@ -2669,3 +2669,52 @@ test("the reliability comparison asks for the period before and shows the differ
   await el.loadReliability();
   assert.ok(!("compare" in calls.at(-1)));
 });
+
+const QUICK = {
+  ...DATA,
+  objects: [
+    { object_type: "entity", object_id: "sensor.kueche_temp", name: "Küche Temperatur", status: "active", platform: "mqtt" },
+    { object_type: "entity", object_id: "light.kueche", name: "Küche Licht", status: "active", platform: "hue" },
+    { object_type: "automation", object_id: "automation.kueche_aus", name: "Küche aus", status: "active" },
+    { object_type: "device", object_id: "dev1", name: "Hue Bridge", status: "active", manufacturer: "Signify", model: "BSB002" },
+    { object_type: "area", object_id: "kueche", name: "Küche", status: "active" },
+    { object_type: "entity", object_id: "sensor.<b>x</b>", name: "<b>Küche</b> böse", status: "active" },
+  ],
+};
+
+test("the top bar search finds entities, devices and automations, best match first, and escapes names", () => {
+  const { el } = panel("en");
+  el.data = QUICK;
+  el.quickQuery = "k"; assert.equal(el.quickResults().length, 0, "one letter does not search");
+  el.quickQuery = "küche";
+  const names = el.quickResults().map(o => o.object_id);
+  assert.ok(names.includes("light.kueche") && names.includes("automation.kueche_aus") && !names.includes("kueche"), "areas are not offered");
+  el.quickQuery = "signify bsb"; assert.equal(JSON.stringify(el.quickResults().map(o => o.object_id)), JSON.stringify(["dev1"]), "manufacturer and model count");
+  el.quickQuery = "küche"; el.quickOpen = true;
+  const html = el.quickSearchBox();
+  assert.ok(html.includes('role="combobox"') && html.includes('role="listbox"') && html.includes("data-quick-item"));
+  assert.ok(html.includes("&lt;b&gt;Küche&lt;/b&gt; böse") && !html.includes("<b>Küche</b>"));
+  el.quickQuery = "zzzz"; assert.ok(el.quickSearchBox().includes("No results"));
+});
+
+test("the search opens the chosen object and closes; the keyboard moves through the results", () => {
+  const { el } = panel("en");
+  el.data = QUICK;
+  const opened = [];
+  el.openObject = o => opened.push(o.object_id);
+  el.quickQuery = "küche"; el.quickOpen = true;
+  const first = el.quickResults()[0].object_id;
+  el.quickPick(`entity:${first}`);
+  assert.equal(JSON.stringify(opened), JSON.stringify([first]));
+  assert.equal(el.quickQuery, ""); assert.equal(el.quickOpen, false);
+  el.quickPick("entity:does.not.exist");
+  assert.equal(opened.length, 1);
+});
+
+test("the search sits in the top bar and its texts exist in both languages", () => {
+  const { el } = panel("en");
+  el.data = QUICK;
+  assert.ok(el.topbar().includes("data-quick"));
+  const { TEXT } = loadPanel();
+  for (const lang of ["de", "en"]) for (const key of ["quickPlaceholder", "quickLabel", "quickNone"]) assert.ok(TEXT[lang][key], `${lang}.${key}`);
+});
