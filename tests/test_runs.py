@@ -165,6 +165,12 @@ async def test_a_real_automation_is_counted_without_variables_or_error_texts(
     await hass.async_block_till_done()
 
     store = RunStore(hass)
+    assert await store.async_collect() == 0  # the first collection is only a starting point
+    assert store.since is not None and store.items["automation.demo"]["seen"]
+    assert not store.items["automation.demo"]["days"]
+    assert await store.async_collect() == 0
+    hass.bus.async_fire("demo_go", {"payload": "TOPSECRET-PAYLOAD"})
+    await hass.async_block_till_done()
     assert await store.async_collect() == 2
     assert await store.async_collect() == 0
     assert store.items["automation.demo"]["days"]
@@ -250,6 +256,7 @@ async def test_the_websocket_rates_a_failing_automation_and_hides_secrets(
     await scanner.async_initialize()
     assert await async_setup_component(hass, "websocket_api", {})
     client = await hass_ws_client(hass)
+    await scanner.runs.async_collect()  # the starting point
     for _ in range(3):
         hass.bus.async_fire("demo_go")
         await hass.async_block_till_done()
@@ -262,3 +269,41 @@ async def test_the_websocket_rates_a_failing_automation_and_hides_secrets(
     assert row["runs"] == 3 and row["errors"] == 3 and row["name"] == "Broken"
     assert {f["kind"] for f in row["findings"]} == {"failing", "long_wait"}
     assert "TOPSECRET" not in json.dumps(result)
+
+
+def test_a_bucket_larger_than_twenty_is_counted_once() -> None:
+    item: dict = {}
+    heads = [head(f"r{n}", at=T0 + timedelta(seconds=n)) for n in range(50)]
+    assert aggregate(item, heads, 50) == 50
+    assert aggregate(item, heads, 50) == 0  # the second collection sees the same 50 traces
+    shifted = heads[10:] + [head(f"n{n}", at=T0 + timedelta(seconds=100 + n)) for n in range(10)]
+    assert aggregate(item, shifted, 50) == 10  # only the new ones, however the bucket shifts
+    assert len(item["seen"]) >= 50
+
+
+def test_the_first_collection_only_remembers_what_is_there() -> None:
+    item: dict = {}
+    assert aggregate(item, [head("a"), head("b")], 5, baseline=True) == 0
+    assert item["seen"] == ["a", "b"] and not item.get("days")
+    assert aggregate(item, [head("a"), head("b"), head("c")], 5) == 1
+
+
+async def test_the_starting_point_is_saved_even_without_a_counted_run(hass: HomeAssistant) -> None:
+    from unittest.mock import MagicMock
+
+    assert await async_setup_component(hass, "trace", {})
+    store = RunStore(hass)
+    store._store.async_delay_save = MagicMock()
+    await store.async_collect()  # no automation, nothing to count
+    assert store.since is not None
+    store._store.async_delay_save.assert_called_once()
+    store._store.async_delay_save.reset_mock()
+    await store.async_collect()  # nothing changed: no needless write
+    store._store.async_delay_save.assert_not_called()
+
+
+def test_pruning_reports_what_it_removed() -> None:
+    old = T0 - timedelta(days=90)
+    items = {"automation.a": {"days": {old.date().isoformat(): {"c": [0] * 10}}, "seen": ["x"]}}
+    assert prune(items, T0) is True and items == {}
+    assert prune(items, T0) is False

@@ -9,6 +9,7 @@ The extended trace, which carries variables, is never read.
 from __future__ import annotations
 
 import logging
+from collections.abc import Collection
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -21,7 +22,8 @@ _LOGGER = logging.getLogger(__name__)
 
 SAVE_DELAY = 300
 RETENTION_DAYS = 60
-SEEN_KEEP = 20  # run ids remembered per automation so a run is counted once
+SEEN_KEEP = 20  # run ids remembered per automation at least, so a run is counted once
+SEEN_CAP = 500  # and at most, however large a trace bucket is configured
 DEFAULT_BUCKET = 5  # Home Assistant keeps this many run traces per automation unless configured
 MAX_STEPS_PER_DAY = 10
 DOMAINS = ("automation", "script")
@@ -54,12 +56,15 @@ def _parse(value: Any) -> datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
 
 
-def aggregate(item: dict[str, Any], heads: list[dict[str, Any]], bucket: int) -> int:
+def aggregate(
+    item: dict[str, Any], heads: list[dict[str, Any]], bucket: int, *, baseline: bool = False
+) -> int:
     """Count the finished, not yet seen runs of one automation into ``item``; return how many.
 
     ``heads`` are short trace heads of the runs bucket. A run that is still running is left for
     the next collection. When the bucket is full of runs never seen before, older runs may have
-    been evicted unseen, so the day is marked as a lower bound.
+    been evicted unseen, so the day is marked as a lower bound. With ``baseline`` the runs that are
+    already there are only remembered, not counted: the first collection is a starting point.
     """
     seen = item.setdefault("seen", [])
     known_before = bool(seen)
@@ -70,6 +75,12 @@ def aggregate(item: dict[str, Any], heads: list[dict[str, Any]], bucket: int) ->
         if h.get("state") == "stopped" and h.get("run_id") and h["run_id"] not in seen
     ]
     fresh.sort(key=lambda h: str((h.get("timestamp") or {}).get("start")))
+    # The ids of a whole bucket must stay known, or its older runs would count again at every collection.
+    keep = min(max(SEEN_KEEP, 2 * max(bucket, len(heads))), SEEN_CAP)
+    if baseline:
+        seen.extend(head["run_id"] for head in fresh)
+        del seen[:-keep]
+        return 0
     counted = 0
     for head in fresh:
         timestamps = head.get("timestamp") or {}
@@ -105,19 +116,28 @@ def aggregate(item: dict[str, Any], heads: list[dict[str, Any]], bucket: int) ->
         )
         if last is not None:
             last["lo"] = 1
-    del seen[:-SEEN_KEEP]
+    del seen[:-keep]
     return counted
 
 
-def prune(items: dict[str, dict[str, Any]], now: datetime) -> None:
-    """Drop days beyond the retention and automations without any day left."""
+def prune(items: dict[str, dict[str, Any]], now: datetime, present: Collection[str] = ()) -> bool:
+    """Drop days beyond the retention and automations without any day left.
+
+    An automation that still has traces (``present``) is kept without a day: its run ids matter.
+
+    Returns whether anything was removed, so the caller knows the store has to be saved.
+    """
     cutoff = (now - timedelta(days=RETENTION_DAYS)).date().isoformat()
+    changed = False
     for key in list(items):
         days = items[key].get("days", {})
         for day in [d for d in days if d < cutoff]:
             del days[day]
-        if not days:
+            changed = True
+        if not days and key not in present:
             del items[key]
+            changed = True
+    return changed
 
 
 class RunStore:
@@ -151,23 +171,32 @@ class RunStore:
 
         now = now or datetime.now(UTC)
         grouped: dict[str, list[dict[str, Any]]] = {}
+        listed = False
         for domain in DOMAINS:
             try:
                 heads = await async_list_traces(self._hass, domain, None)
             except Exception:
                 _LOGGER.debug("Trace heads of %s unavailable", domain, exc_info=True)
                 continue
+            listed = True
             for head in heads:
                 if head.get("not_triggered") or not head.get("item_id"):
                     continue
                 grouped.setdefault(f"{domain}.{head['item_id']}", []).append(head)
+        # The first collection that could read the traces is the starting point: what is there is not counted.
+        baseline = self.since is None and listed
         total = 0
         for key, heads in grouped.items():
-            total += aggregate(self.items.setdefault(key, {}), heads, _bucket_size(self._hass, key))
-        if grouped and self.since is None:
+            total += aggregate(
+                self.items.setdefault(key, {}),
+                heads,
+                _bucket_size(self._hass, key),
+                baseline=baseline,
+            )
+        if baseline:
             self.since = now.isoformat()
-        prune(self.items, now)
-        if total:
+        pruned = prune(self.items, now, grouped.keys())
+        if total or baseline or pruned:
             self._store.async_delay_save(self._data, SAVE_DELAY)
         return total
 
@@ -201,5 +230,5 @@ def _clean_item(item: Any) -> dict[str, Any] | None:
             if entry.get("lo"):
                 clean["lo"] = 1
             days[day] = clean
-    seen = [r for r in item.get("seen") or [] if isinstance(r, str)][-SEEN_KEEP:]
+    seen = [r for r in item.get("seen") or [] if isinstance(r, str)][-SEEN_CAP:]
     return {"days": days, "seen": seen}
