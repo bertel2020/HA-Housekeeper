@@ -101,7 +101,7 @@ class MaintenanceMixin {
   preflightCard() {
     const p = this.preflight;
     const buttons = `<button class="btn" data-pf-refresh ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightRefresh")}</button><button class="btn primary" data-pf-save ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightSave")}</button>`;
-    const head = `<div class="panelhead"><div><h2>${this.t("preflightTitle")}</h2><p>${this.t("preflightHint")}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${buttons}</div></div>`;
+    const head = `<div class="panelhead"><div><h2>${this.t("preflightTitle")}</h2><p>${this.t("preflightHint")}</p></div><div class="actions">${buttons}</div></div>`;
     if (this.preflightError) return `<div class="panel">${head}<div class="error">${this.esc(this.preflightError)}</div></div>`;
     if (!p) return `<div class="panel">${head}${this.skeleton("preflightLoading")}</div>`;
     const updates = p.state.pending_updates || [];

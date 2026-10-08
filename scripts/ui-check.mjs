@@ -20,16 +20,21 @@ import { makeLoadFixture } from "./make_load_fixture.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i >= 0 ? process.argv[i + 1] : fallback; };
 // Not execFileSync: the page is served by this process, which must stay free to answer Chrome.
+// A Chrome that does not come up in time is killed and started once more.
+const runChrome = async (file, args, options) => { try { return await run(file, args, options); } catch (err) { if (!/^timeout/.test(err.message)) throw err; return run(file, args, options); } };
 // Chrome gets no stdin: with the open pipe that execFile hands to it, it never starts in some
 // environments (no connection to the page, no screenshot, no exit).
 const run = (file, args, { timeout = 60000, maxBuffer = 1024 * 1024, encoding = "utf8" } = {}) => new Promise((resolve, reject) => {
-  const child = spawn(file, args, { stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(file, args, { stdio: ["ignore", "pipe", "pipe"], detached: true }); // own process group, so a kill takes the helpers along
+  const kill = () => { try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); } };
   let stdout = "", stderr = "", done = false;
   const finish = (fn, value) => { if (!done) { done = true; clearTimeout(timer); fn(value); } };
-  const timer = setTimeout(() => { child.kill("SIGKILL"); finish(reject, new Error(`timeout after ${timeout} ms: ${path.basename(file)}`)); }, timeout);
-  child.stdout.on("data", chunk => { stdout += chunk; if (stdout.length > maxBuffer) { child.kill("SIGKILL"); finish(reject, new Error("output too large")); } });
+  const timer = setTimeout(() => { kill(); finish(reject, new Error(`timeout after ${timeout} ms: ${path.basename(file)}`)); }, timeout);
+  child.stdout.on("data", chunk => { stdout += chunk; if (stdout.length > maxBuffer) { kill(); finish(reject, new Error("output too large")); } });
   child.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-4000); });
   child.on("error", err => finish(reject, err));
+  // Chrome's helpers keep the pipes open after it has exited; ending the group lets "close" fire.
+  child.on("exit", kill);
   child.on("close", code => code === 0 ? finish(resolve, { stdout, stderr }) : finish(reject, new Error(`${path.basename(file)} exited with ${code}: ${stderr.slice(-300)}`)));
 });
 const flag = name => process.argv.includes(`--${name}`);
@@ -239,7 +244,7 @@ try {
   for (const view of views) for (const viewport of viewports) for (const scheme of SCHEMES) shots.push({ view, viewport, scheme });
   const files = await pool(shots, jobsParallel, ({ view, viewport, scheme }) => withProfile(async profile => {
     const size = VIEWPORTS[viewport], [w, h] = windowSize(size), file = path.join(out, `${view}-${viewport}-${scheme}.png`);
-    await run(chrome, [...chromeArgs(profile, w, h), `--screenshot=${file}`, pageUrl(port, view, size, scheme)], { timeout: 60000 });
+    await runChrome(chrome, [...chromeArgs(profile, w, h), `--screenshot=${file}`, pageUrl(port, view, size, scheme)], { timeout: 30000 });
     return file;
   }));
   for (const file of files.sort()) console.log(file);
@@ -249,7 +254,7 @@ try {
     for (const view of views) for (const viewport of ["desktop", "mobile"]) for (const scheme of SCHEMES) scans.push({ view, viewport, scheme });
     const found = await pool(scans, jobsParallel, ({ view, viewport, scheme }) => withProfile(async profile => {
       const size = VIEWPORTS[viewport], [w, h] = windowSize(size);
-      const { stdout: dom } = await run(chrome, [...chromeArgs(profile, w, h), "--dump-dom", pageUrl(port, view, size, scheme, "&axe=1")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 90000 });
+      const { stdout: dom } = await runChrome(chrome, [...chromeArgs(profile, w, h), "--dump-dom", pageUrl(port, view, size, scheme, "&axe=1")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 90000 });
       const match = /<pre id="axe-result">(.*?)<\/pre>/s.exec(dom);
       return { view, viewport, scheme, violations: match ? JSON.parse(Buffer.from(match[1].trim(), "base64").toString("utf8")) : null };
     }));
