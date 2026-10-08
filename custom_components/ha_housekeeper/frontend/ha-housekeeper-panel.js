@@ -707,6 +707,7 @@ Object.assign(TEXT.de, {
   relUnstable: "instabil", relFlapping: "flatternd", relEpisodes: "{n} Ausfälle in {days} Tagen ({rate} pro Tag) · zusammen {total}, im Mittel {mean}",
   relPattern: "wiederkehrend, meist zwischen {from} und {to} Uhr", relFollowers: "wird von {n} Automationen, Skripten oder Szenen verwendet", relUnstableMore: "{shown} von {total} Entities gezeigt.",
   relUnstableFootnote: "Instabil: mindestens 3 Ausfälle und 0,5 pro Tag, flatternd ab 1,5 pro Tag. Ausfälle während eines gemeinsamen Ausfalls der Integration zählen für die Integration, nicht für die Entity. Dauerhaft ausgefallene, deaktivierte und ignorierte Entities fehlen.",
+  relCoverage: "Letzte {days} Tage · {withData} von {known} Entities mit Daten · im Mittel {share} % des Zeitraums beobachtet (neue Entities kürzer).",
   relFootnote: "Verfügbarkeit: Anteil der Zeit ohne „nicht verfügbar“ in den letzten {days} Tagen, gerechnet ab der ersten Meldung im Zeitraum. Ein gemeinsamer Ausfall heißt: mindestens 80 % der Entities des Eintrags, mindestens drei, mindestens 5 Minuten zugleich nicht verfügbar. Ein Ausfall, der vor dem Zeitraum begann, zählt erst ab der ersten Meldung darin.",
 });
 Object.assign(TEXT.en, {
@@ -723,6 +724,7 @@ Object.assign(TEXT.en, {
   relUnstable: "unstable", relFlapping: "flapping", relEpisodes: "{n} failures in {days} days ({rate} a day) · {total} in all, {mean} on average",
   relPattern: "recurring, mostly between {from} and {to} o'clock", relFollowers: "used by {n} automations, scripts or scenes", relUnstableMore: "{shown} of {total} entities shown.",
   relUnstableFootnote: "Unstable: at least 3 failures and 0.5 a day, flapping from 1.5 a day. Failures during a shared outage of the integration count for the integration, not the entity. Entities that are down all the time, disabled or ignored are left out.",
+  relCoverage: "Last {days} days · {withData} of {known} entities with data · on average {share} % of the period observed (new entities less).",
   relFootnote: "Availability: the share of time without “unavailable” in the last {days} days, counted from the first report in the period. A shared outage means at least 80 % of the entry's entities, at least three, were unavailable together for at least 5 minutes. An outage that began before the period counts from the first report in it.",
 });
 
@@ -733,6 +735,7 @@ Object.assign(TEXT.de, {
   runsSince: "Gezählt seit {date}; ältere Läufe sind in Home Assistant nicht mehr vorhanden.", runsRefresh: "Neu zählen",
   runsLoading: "Die Läufe werden gezählt …", runsNone: "Nichts Auffälliges in den gezählten Läufen.", runsNoData: "Noch keine Läufe gezählt. Der Zähler liest alle 15 Minuten.",
   runsAll: "Alle gezählten Läufe", runsColName: "Name", runsColRuns: "Läufe", runsColErrors: "Fehler", runsColConditions: "Bedingung", runsColDuration: "Dauer Ø / max", runsColTrend: "7 Tage",
+  runsCoverageFull: "Letzte {days} Tage · alle Zahlen vollständig, soweit Home Assistant die Läufe noch kannte.", runsCoverageLower: "Letzte {days} Tage · bei {n} Einträgen nur „mindestens“: der Trace-Speicher war voll, Läufe können fehlen.",
   runsLowerBound: "mindestens, Läufe können fehlen", runsMore: "{shown} von {total} Zeilen gezeigt.", runsTrendLabel: "Läufe je Tag, ältester zuerst: {values}",
   runsMs: "{n} ms", runsSec: "{n} s", runsTab: "Läufe", runsTabHint: "Letzte 7 Tage, gezählt seit {date}",
   runsFootnote: "Gezählt wird, was Home Assistant je Automation kurz vorhält (standardmäßig 5 Läufe), alle 15 Minuten. Gespeichert werden nur Zähler je Tag und die Stelle eines Fehlers, keine Variablen, Daten oder Fehlertexte. Die Hinweise sind Anlässe, genauer hinzusehen, kein Urteil.",
@@ -751,6 +754,7 @@ Object.assign(TEXT.en, {
   runsSince: "Counted since {date}; older runs are no longer in Home Assistant.", runsRefresh: "Count again",
   runsLoading: "Counting the runs …", runsNone: "Nothing stands out in the counted runs.", runsNoData: "No runs counted yet. The counter reads every 15 minutes.",
   runsAll: "All counted runs", runsColName: "Name", runsColRuns: "Runs", runsColErrors: "Errors", runsColConditions: "Condition", runsColDuration: "Duration avg / max", runsColTrend: "7 days",
+  runsCoverageFull: "Last {days} days · all numbers complete as far as Home Assistant still knew the runs.", runsCoverageLower: "Last {days} days · “at least” for {n} entries: the trace store was full, runs may be missing.",
   runsLowerBound: "at least, runs may be missing", runsMore: "{shown} of {total} rows shown.", runsTrendLabel: "Runs per day, oldest first: {values}",
   runsMs: "{n} ms", runsSec: "{n} s", runsTab: "Runs", runsTabHint: "Last 7 days, counted since {date}",
   runsFootnote: "What is counted is what Home Assistant keeps for each automation for a short time (5 runs by default), read every 15 minutes. Only counters per day and the place of a failure are stored, no variables, data or error texts. The notes are reasons to look closer, not a verdict.",
@@ -1045,7 +1049,7 @@ class StylesMixin {
       .object{display:flex;align-items:center;gap:11px;min-width:260px}.object .tile{width:34px;height:34px}.object strong{display:block;font-weight:600}.id{display:block;color:var(--hk-muted);font-family:ui-monospace,SFMono-Regular,monospace;font-size:calc(11px*var(--hk-fs,1));margin-top:2px;max-width:390px;overflow:hidden;text-overflow:ellipsis}
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
       .chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue-text);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
-      .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:18px;border-radius:12px;background:color-mix(in srgb,var(--hk-red) 12%,transparent);color:var(--hk-red)}
+      .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.skeleton{display:grid;gap:10px;padding:18px 16px}.skeleton i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--hk-soft),color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface)),var(--hk-soft)) 0 0/200% 100%;animation:hk-shimmer 1.4s ease-in-out infinite}.skeleton i:nth-of-type(2){width:80%}.skeleton i:nth-of-type(3){width:60%}@keyframes hk-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.skeleton i{animation:none}}.coverage{display:flex;gap:6px;align-items:flex-start}.coverage ha-icon{--mdc-icon-size:16px;flex:none;margin-top:1px}.fline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:18px;border-radius:12px;background:color-mix(in srgb,var(--hk-red) 12%,transparent);color:var(--hk-red)}
       .bhattest{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px 12px 62px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.bhattest label{display:flex;align-items:center;gap:8px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.bhattest input{padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
       .bh .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .bhguide{padding:12px 16px;border-top:1px solid var(--hk-border)}.bhguide summary{font-size:calc(12px*var(--hk-fs,1))}.bhguide .factnote{padding:8px 0 0;border:0}
@@ -1063,7 +1067,7 @@ class StylesMixin {
       .crumbs{display:flex;align-items:center;gap:12px;margin-bottom:14px}.crumbs .trail{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));text-transform:uppercase;letter-spacing:.07em}
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
-      .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
+      .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
       .factnote{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}
@@ -1080,7 +1084,7 @@ class StylesMixin {
       h4{font-size:calc(12px*var(--hk-fs,1));margin:12px 0 6px;color:var(--hk-muted)}
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
       @media(max-width:860px){.top{flex-wrap:wrap;gap:8px;padding:8px 12px}.navtoggle{display:inline-flex}.topnav{display:none;flex:1 1 100%;flex-direction:column;align-items:stretch;gap:0;padding-bottom:8px}.top.open .topnav{display:flex}.navmenu{display:block}.navmenu>.menubtn{display:none}.navpop{display:grid;position:static;min-width:0;padding:0;border:0;box-shadow:none;background:transparent}.navhead{display:block}.nav{width:100%;min-height:44px;border-bottom:0;border-radius:8px}.nav.active{box-shadow:none;background:linear-gradient(var(--hk-blue),var(--hk-blue)) left top/3px 100% no-repeat,color-mix(in srgb,var(--hk-blue) 8%,transparent)}.navend{margin:0;display:block}.navend .nav{width:100%}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.inv td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
-      @media(max-width:520px){.summary{grid-template-columns:1fr}}
+      @media(max-width:520px){.summary{grid-template-columns:1fr 1fr}.summary>.card:has(.ring){grid-column:1/-1}.summary>.card{min-height:0;padding:12px}}
       /* Fixed sidebar: it stays in view while long content scrolls; Settings sits at the visible bottom edge. */
       /* Equal-width tiles on the overview and the changes view. */
       .card:has(.ring) .card-text em{overflow:visible;white-space:normal;text-overflow:clip;line-height:1.35}
@@ -1465,7 +1469,7 @@ class ChangesMixin {
 
   changesView() {
     const c = this.compare;
-    if (!c) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
+    if (!c) return `${this.skeleton("loading")}`;
     const baselines = c.baselines || [];
     const options = baselines.map(b => `<option value="${this.esc(b.id)}" ${b.id === this.compareBaseline ? "selected" : ""}>${b.id === "previous" ? `${this.t("previousScan")} · ` : ""}${this.esc(this.formatDate(b.at))}</option>`).join("");
     const hint = baselines.length <= 1 ? `<p class="factnote" style="margin:10px 0 0">${this.t("historyBuilding", { days: c.retention_days ?? 30 })}</p>` : "";
@@ -1573,7 +1577,7 @@ class SettingsMixin {
   // The five thresholds as cards with their unit and default; saving stays off until a value differs.
   scanCard() {
     const m = this.data?.meta || {};
-    if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
+    if (!this.data) return `${this.skeleton("loading")}`;
     const cards = OPTION_FIELDS.map(([key, title, hint, unit, standard]) => {
       const [min, max] = OPTION_LIMITS[key];
       return `<div class="optcard"><label for="opt-${key}"><strong>${this.t(title)}</strong></label><small>${this.t(hint)}</small>
@@ -1601,8 +1605,8 @@ class SettingsMixin {
     const facts = [fact(this.t("version"), this.esc(m.version || "–")), fact(this.t("haVersion"), this.esc(m.ha_version || "–")), fact(this.t("mode"), this.t("readOnlyValue")),
       fact(this.t("lastScan"), m.scanned_at ? this.formatDate(m.scanned_at) : "–"), fact(this.t("objects"), this.formatNumber(m.object_count ?? 0))].join("");
     const link = (icon, href, label, hint) => `<a class="row" href="${href}" target="_blank" rel="noopener noreferrer"><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${label}</strong>${hint ? `<small>${hint}</small>` : ""}</span><ha-icon icon="mdi:open-in-new"></ha-icon></a>`;
-    const kept = [["setKeptObservations", "setKeptObservationsText"], ["setKeptHistory", "setKeptHistoryText"], ["setKeptJournal", "setKeptJournalText"], ["setKeptEvents", "setKeptEventsText"], ["setKeptRuns", "setKeptRunsText"]]
-      .map(([title, text]) => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:database-outline"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(text, { days: m.history_days ?? 30 })}</small></span></div>`).join("");
+    const kept = [["setKeptObservations", "setKeptObservationsText", "observations"], ["setKeptHistory", "setKeptHistoryText", "history"], ["setKeptJournal", "setKeptJournalText", "journal"], ["setKeptEvents", "setKeptEventsText", "events"], ["setKeptRuns", "setKeptRunsText", "runs"]]
+      .map(([title, text, store]) => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:database-outline"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(text, { days: m.history_days ?? 30 })}</small></span>${m.storage?.[store] !== undefined ? `<span class="pill mute">${this.formatBytes(m.storage[store])}</span>` : ""}</div>`).join("");
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div></section>
       <section class="panel"><div class="panelhead"><div><h2>${this.t("setKeptTitle")}</h2><p>${this.t("setKeptHint")}</p></div></div>${kept}<p class="factnote">${this.t("setPrivacy")}</p></section>
       <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}</section></div>`;
@@ -2826,7 +2830,7 @@ class MaintenanceMixin {
   recorderCard() {
     const c = this.costs;
     const head = (extra = "") => `<div class="panelhead"><div><h2>${this.t("recorderTitle")}</h2><p>${this.t("recorderHint")}</p></div><div class="actions">${extra}</div></div>`;
-    if (this.costsLoading) return `<div class="panel">${head()}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("recorderLoading")}</p></div></div>`;
+    if (this.costsLoading) return `<div class="panel">${head()}${this.skeleton("recorderLoading")}</div>`;
     if (this.costsError) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<div class="error">${this.esc(this.costsError)}</div></div>`;
     if (!c) return `<div class="panel">${head(`<button class="btn primary" data-costs-load>${this.t("recorderLoad")}</button>`)}</div>`;
     if (c.busy) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.t("relBusy")}</p></div>`;
@@ -2889,7 +2893,7 @@ class MaintenanceMixin {
     const buttons = `<button class="btn" data-pf-refresh ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightRefresh")}</button><button class="btn primary" data-pf-save ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightSave")}</button>`;
     const head = `<div class="panelhead"><div><h2>${this.t("preflightTitle")}</h2><p>${this.t("preflightHint")}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${buttons}</div></div>`;
     if (this.preflightError) return `<div class="panel">${head}<div class="error">${this.esc(this.preflightError)}</div></div>`;
-    if (!p) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("preflightLoading")}</p></div></div>`;
+    if (!p) return `<div class="panel">${head}${this.skeleton("preflightLoading")}</div>`;
     const updates = p.state.pending_updates || [];
     const updateRow = `<div class="row rel"><span class="tile ${updates.length ? "warn" : "ok"}"><ha-icon icon="mdi:package-up"></ha-icon></span><span class="row-text"><strong>${this.t("pf_updates")}</strong><small>${updates.length ? updates.slice(0, 6).map(u => `${this.esc(u.name)} ${this.esc(u.installed ?? "")} → ${this.esc(u.latest ?? "")}`).join(" · ") : this.t("pf_updates_none")}</small></span></div>`;
     const record = p.record
@@ -2995,7 +2999,7 @@ class BackupMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("backupTitle")}</h2><p>${this.t("backupHint")}</p></div><div class="actions"><button class="btn" data-bh-refresh ${this.backupLoading ? "disabled" : ""}>${this.t("backupRefresh")}</button></div></div>`;
     if (this.backupError) return `<div class="panel">${head}<div class="error">${this.esc(this.backupError)}</div></div>`;
     const b = this.backup;
-    if (!b) return `<div class="panel">${head}<div class="loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("backupLoading")}</p></div></div>`;
+    if (!b) return `<div class="panel">${head}${this.skeleton("backupLoading")}</div>`;
     if (!b.available) return `<div class="panel">${head}<div class="emptymsg">${this.t("backupUnavailable")}</div></div>`;
     const guide = `<details class="bhguide"><summary>${this.t("bhGuideTitle")}</summary><p class="factnote">${this.t("bhGuideSteps")}</p></details>`;
     return `<div class="panel">${head}${b.checks.map(c => this.bhRow(c)).join("")}${this.bhBackups(b.backups)}${guide}</div>`;
@@ -3048,13 +3052,15 @@ class ReliabilityMixin {
     const took = r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
     const head = `<div class="panelhead"><div><h2>${this.t("relTitle")}</h2><p>${this.t("relHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-rel-refresh ${this.relLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.relError) return `<div class="panel">${head}<div class="error">${this.esc(this.relError)}</div></div>`;
-    if (!r) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("relLoading")}</p></div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("relLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
     if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
+    const cov = r.coverage;
+    const coverage = cov && cov.observed_share !== null && cov.observed_share !== undefined ? this.coverageNote(this.t("relCoverage", { days: r.window_days, withData: this.formatNumber(cov.with_data), known: this.formatNumber(cov.known), share: cov.observed_share })) : "";
     const pg = this.paginate("relentries", r.entries);
-    return `<div class="stack"><div class="panel">${head}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days })}</div>${this.unstableCard(r)}</div>`;
+    return `<div class="stack"><div class="panel">${head}${coverage}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days })}</div>${this.unstableCard(r)}</div>`;
   }
 
   unstableRow(item, days) {
@@ -3124,7 +3130,7 @@ class RunsMixin {
   }
 
   runsFindingLines(row) {
-    return row.findings.map(f => `<small><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span> ${this.runFindingText(f)}</small>`).join("");
+    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span>${this.runFindingText(f)}</span></small>`).join("");
   }
 
   runsAttentionRow(row) {
@@ -3165,14 +3171,16 @@ class RunsMixin {
     const since = r?.since ? ` · ${this.t("runsSince", { date: this.formatDate(r.since) })}` : "";
     const head = `<div class="panelhead"><div><h2>${this.t("runsTitle")}</h2><p>${this.t("runsHint")}${since}</p></div><div class="actions"><button class="btn" data-runs-refresh ${this.runsLoading ? "disabled" : ""}>${this.t("runsRefresh")}</button></div></div>`;
     if (this.runsError) return `<div class="panel">${head}<div class="error">${this.esc(this.runsError)}</div></div>`;
-    if (!r) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("runsLoading")}</p></div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("runsLoading")}</div>`;
+    const lower = r.items.filter(row => row.lower_bound).length;
+    const coverage = this.coverageNote(this.t(lower ? "runsCoverageLower" : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }));
     const flagged = r.items.filter(row => row.findings.length);
     const counted = r.items.filter(row => row.runs);
     const flaggedPage = this.paginate("runsflag", flagged);
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
     const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}${this.howCounted("runsFootnote")}</div>` : "";
-    return `<div class="stack"><div class="panel">${head}${attention}</div>${all}</div>`;
+    return `<div class="stack"><div class="panel">${head}${coverage}${attention}</div>${all}</div>`;
   }
 }
 
@@ -3237,7 +3245,7 @@ class StormsMixin {
     const took = r && r.available && r.took_ms !== null && r.took_ms !== undefined ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
     const head = `<div class="panelhead"><div><h2>${this.t("stormTitle")}</h2><p>${this.t("stormHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-storm-refresh ${this.stormsLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.stormsError) return `<div class="panel">${head}<div class="error">${this.esc(this.stormsError)}</div></div>`;
-    if (!r) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("stormLoading")}</p></div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("stormLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
     if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
     const loading = this.stormsLoading ? `<p class="factnote">${this.t("stormLoading")}</p>` : "";
@@ -3292,7 +3300,7 @@ class DbHealthMixin {
     const took = r?.available && r.took_ms !== null && r.took_ms !== undefined ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
     const head = `<div class="panelhead"><div><h2>${this.t("dbTitle")}</h2><p>${this.t("dbHint2")}${took}</p></div><div class="actions"><button class="btn" data-db-refresh ${this.dbLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.dbError) return `<div class="panel">${head}<div class="error">${this.esc(this.dbError)}</div></div>`;
-    if (!r) return `<div class="panel">${head}<div class="loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("dbLoading")}</p></div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("dbLoading")}</div>`;
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
     if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
     const facts = [];
@@ -3359,7 +3367,7 @@ class ExposureMixin {
     const r = this.exposure;
     const head = `<div class="panelhead"><div><h2>${this.t("expoTitle")}</h2><p>${this.t("expoHint")}</p></div><div class="actions"><button class="btn" data-expo-refresh ${this.exposureLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.exposureError) return `<div class="panel">${head}<div class="error">${this.esc(this.exposureError)}</div></div>`;
-    if (!r) return `<div class="panel">${head}<div class="loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("expoLoading")}</p></div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("expoLoading")}</div>`;
     const sources = r.assistants.map(a => this.expoAssistantRow(a)).join("") + r.bridges.map(b => this.expoBridgeRow(b)).join("");
     const findings = r.findings.length ? r.findings.map(f => this.expoFindingRows(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
     return `<div class="panel">${head}${sources}${findings}${this.howCounted("expoFootnote")}</div>`;
@@ -3717,6 +3725,16 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   // The small line above the title names the menu group the view belongs to.
+  // Placeholder lines while a card loads; the text stays for screen readers.
+  skeleton(key) {
+    return `<div class="skeleton" role="status" aria-live="polite"><span class="sr-only">${this.t(key)}</span><i></i><i></i><i></i></div>`;
+  }
+
+  // One line that says how complete the numbers are, so a precise figure does not pretend more.
+  coverageNote(text) {
+    return `<p class="factnote coverage"><ha-icon icon="mdi:information-outline"></ha-icon><span>${text}</span></p>`;
+  }
+
   eyebrowFor(view) {
     if (view === "settings") return this.t("title");
     const group = NAV_GROUPS.find(([, views]) => views.includes(view));
@@ -3760,7 +3778,7 @@ class HAHousekeeperPanel extends HTMLElement {
   content() {
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
-    if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
+    if (!this.data) return `${this.skeleton("loading")}`;
     if (this.view === "inventory") return this.inventory();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();

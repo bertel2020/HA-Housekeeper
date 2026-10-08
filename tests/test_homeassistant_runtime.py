@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
 
 pytest.importorskip("homeassistant")
@@ -921,3 +923,17 @@ async def test_reliability_over_the_websocket_validates_the_window(
         assert reply["success"] and reply["result"]["available"] is False
     await client.send_json_auto_id({"type": "ha_housekeeper/reliability", "window_days": 3})
     assert (await client.receive_json())["success"] is False
+
+
+async def test_the_scan_reports_the_size_of_housekeepers_own_files(
+    hass: HomeAssistant, tmp_path
+) -> None:
+    from custom_components.ha_housekeeper.inventory import storage_sizes
+
+    storage = tmp_path / ".storage"
+    storage.mkdir()
+    (storage / "ha_housekeeper.events").write_text("x" * 123)
+    (storage / "ha_housekeeper.runs").write_text("y" * 45)
+    with patch.object(hass.config, "path", lambda *parts: str(tmp_path.joinpath(*parts))):
+        sizes = storage_sizes(hass)
+    assert sizes == {"events": 123, "runs": 45}  # missing files are simply absent

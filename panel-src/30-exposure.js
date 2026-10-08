@@ -51,7 +51,7 @@ class ExposureMixin {
     const r = this.exposure;
     const head = `<div class="panelhead"><div><h2>${this.t("expoTitle")}</h2><p>${this.t("expoHint")}</p></div><div class="actions"><button class="btn" data-expo-refresh ${this.exposureLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.exposureError) return `<div class="panel">${head}<div class="error">${this.esc(this.exposureError)}</div></div>`;
-    if (!r) return `<div class="panel">${head}<div class="loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("expoLoading")}</p></div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("expoLoading")}</div>`;
     const sources = r.assistants.map(a => this.expoAssistantRow(a)).join("") + r.bridges.map(b => this.expoBridgeRow(b)).join("");
     const findings = r.findings.length ? r.findings.map(f => this.expoFindingRows(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
     return `<div class="panel">${head}${sources}${findings}${this.howCounted("expoFootnote")}</div>`;

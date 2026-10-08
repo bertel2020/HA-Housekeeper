@@ -40,7 +40,7 @@ class MaintenanceMixin {
   recorderCard() {
     const c = this.costs;
     const head = (extra = "") => `<div class="panelhead"><div><h2>${this.t("recorderTitle")}</h2><p>${this.t("recorderHint")}</p></div><div class="actions">${extra}</div></div>`;
-    if (this.costsLoading) return `<div class="panel">${head()}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("recorderLoading")}</p></div></div>`;
+    if (this.costsLoading) return `<div class="panel">${head()}${this.skeleton("recorderLoading")}</div>`;
     if (this.costsError) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<div class="error">${this.esc(this.costsError)}</div></div>`;
     if (!c) return `<div class="panel">${head(`<button class="btn primary" data-costs-load>${this.t("recorderLoad")}</button>`)}</div>`;
     if (c.busy) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.t("relBusy")}</p></div>`;
@@ -103,7 +103,7 @@ class MaintenanceMixin {
     const buttons = `<button class="btn" data-pf-refresh ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightRefresh")}</button><button class="btn primary" data-pf-save ${this.preflightLoading ? "disabled" : ""}>${this.t("preflightSave")}</button>`;
     const head = `<div class="panelhead"><div><h2>${this.t("preflightTitle")}</h2><p>${this.t("preflightHint")}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${buttons}</div></div>`;
     if (this.preflightError) return `<div class="panel">${head}<div class="error">${this.esc(this.preflightError)}</div></div>`;
-    if (!p) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("preflightLoading")}</p></div></div>`;
+    if (!p) return `<div class="panel">${head}${this.skeleton("preflightLoading")}</div>`;
     const updates = p.state.pending_updates || [];
     const updateRow = `<div class="row rel"><span class="tile ${updates.length ? "warn" : "ok"}"><ha-icon icon="mdi:package-up"></ha-icon></span><span class="row-text"><strong>${this.t("pf_updates")}</strong><small>${updates.length ? updates.slice(0, 6).map(u => `${this.esc(u.name)} ${this.esc(u.installed ?? "")} → ${this.esc(u.latest ?? "")}`).join(" · ") : this.t("pf_updates_none")}</small></span></div>`;
     const record = p.record

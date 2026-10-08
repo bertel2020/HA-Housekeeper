@@ -45,7 +45,7 @@ class RunsMixin {
   }
 
   runsFindingLines(row) {
-    return row.findings.map(f => `<small><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span> ${this.runFindingText(f)}</small>`).join("");
+    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span>${this.runFindingText(f)}</span></small>`).join("");
   }
 
   runsAttentionRow(row) {
@@ -86,13 +86,15 @@ class RunsMixin {
     const since = r?.since ? ` · ${this.t("runsSince", { date: this.formatDate(r.since) })}` : "";
     const head = `<div class="panelhead"><div><h2>${this.t("runsTitle")}</h2><p>${this.t("runsHint")}${since}</p></div><div class="actions"><button class="btn" data-runs-refresh ${this.runsLoading ? "disabled" : ""}>${this.t("runsRefresh")}</button></div></div>`;
     if (this.runsError) return `<div class="panel">${head}<div class="error">${this.esc(this.runsError)}</div></div>`;
-    if (!r) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("runsLoading")}</p></div></div>`;
+    if (!r) return `<div class="panel">${head}${this.skeleton("runsLoading")}</div>`;
+    const lower = r.items.filter(row => row.lower_bound).length;
+    const coverage = this.coverageNote(this.t(lower ? "runsCoverageLower" : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }));
     const flagged = r.items.filter(row => row.findings.length);
     const counted = r.items.filter(row => row.runs);
     const flaggedPage = this.paginate("runsflag", flagged);
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
     const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}${this.howCounted("runsFootnote")}</div>` : "";
-    return `<div class="stack"><div class="panel">${head}${attention}</div>${all}</div>`;
+    return `<div class="stack"><div class="panel">${head}${coverage}${attention}</div>${all}</div>`;
   }
 }

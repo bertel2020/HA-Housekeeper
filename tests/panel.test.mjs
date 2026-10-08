@@ -2621,3 +2621,34 @@ test("every number cell of the runs table carries its label, and only the invent
   const css = loadPanel().TEXT && el.styles ? el.styles() : "";
   assert.ok(!css.includes(".tablewrap td:nth-child(3)::before"), "no position based label hiding for every table");
 });
+
+test("loading cards show placeholder lines and keep the text for screen readers", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el._runsRequested = true; el._exposureRequested = true;
+  for (const html of [el.runsView(), el.exposureView()]) {
+    assert.ok(html.includes('class="skeleton"') && html.includes('role="status"') && html.includes("sr-only"));
+    assert.ok(!html.includes("mdi:loading"));
+  }
+  assert.ok(el.runsView().includes("Counting the runs"));
+});
+
+test("runs and reliability say how complete their numbers are", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el._runsRequested = true;
+  el.runs = { ...RUNS, window_days: 7 };
+  assert.ok(el.runsView().includes("trace store was full"));
+  el.runs = { ...RUNS, window_days: 7, items: RUNS.items.map(i => ({ ...i, lower_bound: false })) };
+  assert.ok(el.runsView().includes("all numbers complete"));
+  el._relRequested = true;
+  el.reliability = { available: true, busy: false, window_days: 7, entries: [{ entry_id: "e", title: "Hue", domain: "hue", state: "loaded", entities: 3, permanent: 0, availability: 99, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null }], unstable: { items: [] }, coverage: { known: 430, with_data: 412, observed_share: 96 } };
+  const html = el.reliabilityView();
+  assert.ok(html.includes("412 of 430 entities with data") && html.includes("96 %"));
+});
+
+test("the info card shows how much space each stored file takes", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, storage: { events: 2048, runs: 1048576 } } };
+  const html = el.infoCard();
+  assert.ok(html.includes("2 KB") || html.includes("2.0 KB") || html.includes("2 kB"));
+  assert.ok(html.includes("1 MB") || html.includes("1.0 MB"));
+});

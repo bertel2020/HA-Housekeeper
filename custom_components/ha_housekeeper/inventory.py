@@ -6,6 +6,7 @@ import asyncio
 import time
 from collections import Counter
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from homeassistant.const import __version__ as HA_VERSION
@@ -449,6 +450,21 @@ def _split_details(objects: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     return details
 
 
+STORED = ("observations", "history", "journal", "events", "runs")
+
+
+def storage_sizes(hass: HomeAssistant) -> dict[str, int]:
+    """Blocking: the size in bytes of each of Housekeeper's own files in ``.storage``."""
+    base = Path(hass.config.path(".storage"))
+    sizes: dict[str, int] = {}
+    for name in STORED:
+        try:
+            sizes[name] = (base / f"{DOMAIN}.{name}").stat().st_size
+        except OSError:
+            continue
+    return sizes
+
+
 class InventoryScanner:
     """Build and cache a normalized, read-only inventory."""
 
@@ -724,8 +740,11 @@ class InventoryScanner:
 
         self.status.update(phase="finalizing", progress=90)
 
+        storage = await self.hass.async_add_executor_job(storage_sizes, self.hass)
+
         return {
             "meta": {
+                "storage": storage,
                 "scanned_at": observed_at.isoformat(),
                 "read_only": True,
                 "preliminary": preliminary,

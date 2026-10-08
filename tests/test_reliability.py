@@ -362,3 +362,11 @@ async def test_one_entity_that_flaps_alone_is_named_with_its_followers(
     assert item["entity_id"] == "sensor.a" and item["episodes"] == 5
     assert item["level"] == "unstable" and item["used"] == 1  # 5 in 7 days
     assert item["entry_title"] == "Probe" and item["mean_seconds"] == 600
+
+
+def test_the_coverage_says_how_many_entities_had_data_and_how_much_of_the_period() -> None:
+    # a was seen from the start (100 h observed), b only for the last 50 h; c never reported.
+    result = compute(runs({"a": START, "b": 50 * HOUR}, {}), entities("a", "b", "c"), ENTRIES)
+    assert result["coverage"] == {"known": 3, "with_data": 2, "observed_share": 75}
+    empty = compute(runs({}, {}), entities("c"), ENTRIES)
+    assert empty["coverage"] == {"known": 1, "with_data": 0, "observed_share": None}

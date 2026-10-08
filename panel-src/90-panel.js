@@ -349,6 +349,16 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   // The small line above the title names the menu group the view belongs to.
+  // Placeholder lines while a card loads; the text stays for screen readers.
+  skeleton(key) {
+    return `<div class="skeleton" role="status" aria-live="polite"><span class="sr-only">${this.t(key)}</span><i></i><i></i><i></i></div>`;
+  }
+
+  // One line that says how complete the numbers are, so a precise figure does not pretend more.
+  coverageNote(text) {
+    return `<p class="factnote coverage"><ha-icon icon="mdi:information-outline"></ha-icon><span>${text}</span></p>`;
+  }
+
   eyebrowFor(view) {
     if (view === "settings") return this.t("title");
     const group = NAV_GROUPS.find(([, views]) => views.includes(view));
@@ -392,7 +402,7 @@ class HAHousekeeperPanel extends HTMLElement {
   content() {
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
-    if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
+    if (!this.data) return `${this.skeleton("loading")}`;
     if (this.view === "inventory") return this.inventory();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();

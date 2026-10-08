@@ -164,6 +164,9 @@ def compute(
             per_entry.setdefault(item["config_entry_id"], []).append(item)
     rows = []
     periods: dict[str, list[tuple[float, float]]] = {}
+    known = sum(len(members) for members in per_entry.values())
+    with_data = 0
+    observed_sum = 0.0
     for entry_id, members in per_entry.items():
         info = entries[entry_id]
         counted: list[list[tuple[float, float]]] = []
@@ -194,6 +197,8 @@ def compute(
                 continue
             counted.append(merged)
             observed_total += observed
+            with_data += 1
+            observed_sum += min(observed, window)
             down_total += down
             if merged and (last_single is None or merged[-1][1] > last_single[1]):
                 last_single = merged[-1]
@@ -234,6 +239,13 @@ def compute(
         "start": start,
         "end": end,
         "window_days": round(window / DAY),
+        "coverage": {
+            "known": known,
+            "with_data": with_data,
+            "observed_share": round(100 * observed_sum / (with_data * window))
+            if with_data
+            else None,
+        },
         "took_ms": runs.get("took_ms"),
     }
 
