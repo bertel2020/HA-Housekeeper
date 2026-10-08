@@ -35,6 +35,15 @@ PATTERN_SHARE = 0.6
 PATTERN_MIN_DAYS = 3
 PATTERN_MIN_WINDOW_DAYS = 6
 UNSTABLE_LIMIT = 30
+THRESHOLDS = {
+    "shared_share_percent": SHARED_SHARE,
+    "shared_min_entities": SHARED_MIN_ENTITIES,
+    "shared_min_seconds": SHARED_MIN_SECONDS,
+    "permanent_share": PERMANENT_SHARE,
+    "unstable_min_episodes": UNSTABLE_MIN_EPISODES,
+    "unstable_per_day": UNSTABLE_PER_DAY,
+    "flapping_per_day": FLAPPING_PER_DAY,
+}
 
 
 def query_runs(hass: HomeAssistant, start: float, end: float) -> dict[str, Any]:
@@ -410,5 +419,6 @@ async def reliability(
         "busy": False,
         "cached": found.cached,
         "unstable": unstable,
+        "thresholds": THRESHOLDS,
         **result,
     }

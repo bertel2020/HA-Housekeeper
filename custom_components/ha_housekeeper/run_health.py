@@ -46,6 +46,28 @@ UPDATE_MIN_RUNS = 10
 UPDATE_MIN_INCREASE = 0.2
 UPDATE_MIN_ERRORS = 3
 LIMIT = 300  # rows sent to the panel; the total stays exact
+# Every limit a finding is judged by, for the panel and for anyone reading the reply.
+THRESHOLDS = {
+    "window_days": WINDOW_DAYS,
+    "baseline_days": BASELINE_DAYS,
+    "min_baseline_days": MIN_BASELINE_DAYS,
+    "failing_min_errors": FAIL_MIN_ERRORS,
+    "failing_min_rate": FAIL_MIN_RATE,
+    "failing_red_rate": FAIL_RED_RATE,
+    "overlap_min": OVERLAP_MIN,
+    "never_ok_min_runs": NEVER_OK_MIN_RUNS,
+    "no_effect_min_runs": IDLE_MIN_RUNS,
+    "no_effect_share": IDLE_SHARE,
+    "burst_factor": BURST_FACTOR,
+    "burst_min_per_day": BURST_MIN_PER_DAY,
+    "long_run_factor": LONG_FACTOR,
+    "long_run_min_ms": LONG_MIN_MS,
+    "long_wait_seconds": LONG_WAIT_SECONDS,
+    "after_update_lookback_days": UPDATE_LOOKBACK_DAYS,
+    "after_update_min_runs": UPDATE_MIN_RUNS,
+    "after_update_min_increase": UPDATE_MIN_INCREASE,
+    "after_update_min_errors": UPDATE_MIN_ERRORS,
+}
 
 _CLOCK = re.compile(r"^\s*(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)\s*$")
 
@@ -348,7 +370,7 @@ async def report(scanner: Any) -> dict[str, Any]:
             details = scanner.get_details(obj["object_type"], obj["object_id"]) or {}
             actions[obj["object_id"]] = details.get("actions")
     updates = [e for e in scanner.events.events if e["kind"] in ("ha_version", "entry_version")]
-    return evaluate(
+    result = evaluate(
         scanner.runs.items,
         snapshot["objects"],
         actions,
@@ -357,3 +379,4 @@ async def report(scanner: Any) -> dict[str, Any]:
         datetime.now(UTC),
         scanner.runs.since,
     )
+    return {**result, "thresholds": THRESHOLDS}

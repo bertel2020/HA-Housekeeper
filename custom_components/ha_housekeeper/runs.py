@@ -213,7 +213,8 @@ def _clean_item(item: Any) -> dict[str, Any] | None:
     if not isinstance(item, dict):
         return None
     days: dict[str, Any] = {}
-    for day, entry in (item.get("days") or {}).items():
+    stored_days = item.get("days")
+    for day, entry in stored_days.items() if isinstance(stored_days, dict) else ():
         counters = entry.get("c") if isinstance(entry, dict) else None
         if (
             _parse(day)
@@ -230,5 +231,8 @@ def _clean_item(item: Any) -> dict[str, Any] | None:
             if entry.get("lo"):
                 clean["lo"] = 1
             days[day] = clean
-    seen = [r for r in item.get("seen") or [] if isinstance(r, str)][-SEEN_CAP:]
+    stored_seen = item.get("seen")
+    seen = [
+        r for r in (stored_seen if isinstance(stored_seen, list) else []) if isinstance(r, str)
+    ][-SEEN_CAP:]
     return {"days": days, "seen": seen}

@@ -15,6 +15,19 @@ SAVE_DELAY = 10
 LIST_LIMIT = 500  # entries per section sent to the panel; totals stay exact
 
 
+def _valid_checkpoint(value: Any) -> dict[str, Any] | None:
+    """A stored checkpoint, or None when what is on disk is not one."""
+    if (
+        isinstance(value, dict)
+        and isinstance(value.get("at"), str)
+        and isinstance(value.get("objects"), dict)
+        and all(isinstance(group, dict) for group in value["objects"].values())
+        and isinstance(value.get("findings"), list)
+    ):
+        return value
+    return None
+
+
 def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
     """Reduce a snapshot to what a later comparison needs."""
     objects: dict[str, dict[str, str]] = {}
@@ -112,9 +125,12 @@ class ScanHistory:
         data = await self._store.async_load()
         if not isinstance(data, dict):
             return
-        self._latest = data.get("latest")
-        self._previous = data.get("previous")
-        self._daily = data.get("daily") or []
+        self._latest = _valid_checkpoint(data.get("latest"))
+        self._previous = _valid_checkpoint(data.get("previous"))
+        daily = data.get("daily")
+        self._daily = (
+            [cp for cp in daily if _valid_checkpoint(cp)] if isinstance(daily, list) else []
+        )
 
     def record(self, snapshot: dict[str, Any]) -> None:
         """Remember a finished scan; the last one becomes the 'previous' baseline."""

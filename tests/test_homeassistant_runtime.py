@@ -833,6 +833,9 @@ async def test_replies_carry_the_api_schema_version(hass: HomeAssistant, hass_ws
         "reliability": await reply({"type": "ha_housekeeper/reliability"}),
         "events": await reply({"type": "ha_housekeeper/events"}),
         "automation_runs": await reply({"type": "ha_housekeeper/automation_runs"}),
+        "storms": await reply({"type": "ha_housekeeper/storms"}),
+        "db_health": await reply({"type": "ha_housekeeper/db_health"}),
+        "exposure": await reply({"type": "ha_housekeeper/exposure"}),
     }
     for name, result in results.items():
         assert result["schema"] == API_SCHEMA, name
@@ -937,3 +940,39 @@ async def test_the_scan_reports_the_size_of_housekeepers_own_files(
     with patch.object(hass.config, "path", lambda *parts: str(tmp_path.joinpath(*parts))):
         sizes = storage_sizes(hass)
     assert sizes == {"events": 123, "runs": 45}  # missing files are simply absent
+
+
+# What the panel reads from each reply: renaming or removing one of these fields needs a new API schema.
+CONTRACT = {
+    "ha_housekeeper/exposure": {
+        "available": bool,
+        "assistants": list,
+        "bridges": list,
+        "webhooks": int,
+        "checked": int,
+        "findings": list,
+    },
+    "ha_housekeeper/automation_runs": {
+        "items": list,
+        "since": (str, type(None)),
+        "window_days": int,
+    },
+    "ha_housekeeper/events": {"events": list},
+    "ha_housekeeper/storms": {"available": bool, "findings": list},
+    "ha_housekeeper/db_health": {"available": bool, "findings": list},
+    "ha_housekeeper/reliability": {"available": bool},
+    "ha_housekeeper/backup_health": {"available": bool},
+    "ha_housekeeper/recorder_costs": {"available": bool, "entities": list, "statistics": list},
+}
+
+
+async def test_replies_keep_the_fields_the_panel_reads(hass: HomeAssistant, hass_ws_client) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    for command, fields in CONTRACT.items():
+        await client.send_json_auto_id({"type": command})
+        reply = await client.receive_json()
+        assert reply["success"], (command, reply)
+        for field, kind in fields.items():
+            assert field in reply["result"], (command, field)
+            assert isinstance(reply["result"][field], kind), (command, field)

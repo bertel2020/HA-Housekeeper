@@ -34,6 +34,18 @@ STATE_GAP_WINDOW_DAYS = 7
 RESTART_GRACE = 60  # seconds a gap may reach beyond the downtime and still count as the restart
 LIST_LIMIT = 5
 # Findings of validate_statistics that mean "gone or not recorded" belong to the unused view.
+THRESHOLDS = {
+    "wal_share": WAL_SHARE,
+    "wal_bytes": WAL_BYTES,
+    "growth_factor": GROWTH_FACTOR,
+    "growth_min_bytes": GROWTH_MIN_BYTES,
+    "growth_recent_days": GROWTH_RECENT_DAYS,
+    "growth_base_days": GROWTH_BASE_DAYS,
+    "gap_window_days": GAP_WINDOW_DAYS,
+    "gap_min_hours": GAP_MIN_HOURS,
+    "state_gap_minutes": STATE_GAP_MINUTES,
+    "state_gap_window_days": STATE_GAP_WINDOW_DAYS,
+}
 IGNORED_ISSUES = {"no_state", "entity_no_longer_recorded", "entity_not_recorded"}
 
 
@@ -349,4 +361,10 @@ async def db_health(
             int(raw["db_bytes"]) + int(raw.get("wal_bytes") or 0),
         )
     result = evaluate(raw, names, events.sizes, events.events, datetime.now(UTC).date())
-    return {"available": True, "busy": False, "cached": found.cached, **result}
+    return {
+        "available": True,
+        "busy": False,
+        "cached": found.cached,
+        "thresholds": THRESHOLDS,
+        **result,
+    }

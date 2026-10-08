@@ -150,3 +150,12 @@ def test_every_optional_component_that_is_imported_is_an_after_dependency() -> N
     assert used - {"websocket_api", "frontend", "http", "sensor", "homeassistant"} <= declared, (
         used - declared
     )
+
+
+def test_every_finding_module_publishes_its_limits_as_numbers() -> None:
+    from custom_components.ha_housekeeper import db_health, reliability, run_health, storms
+
+    for module in (db_health, reliability, run_health, storms):
+        assert module.THRESHOLDS, module.__name__
+        for name, value in module.THRESHOLDS.items():
+            assert isinstance(value, int | float) and not isinstance(value, bool), (module, name)

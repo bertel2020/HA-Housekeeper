@@ -41,6 +41,18 @@ EVENT_BURST = 100000
 CHAIN_DEPTH = 3
 ROW_OVERHEAD = 100  # bytes a row costs besides its attributes (state text, timestamps, indexes): a rough weight
 STATE_CHANGED = "state_changed"
+THRESHOLDS = {
+    "storm_peak_rows": STORM_PEAK_ROWS,
+    "storm_rows_per_day": STORM_ROWS_PER_DAY,
+    "flood_attr_bytes": FLOOD_ATTR_BYTES,
+    "flood_min_rows_per_day": FLOOD_MIN_ROWS_PER_DAY,
+    "no_new_state_share": NO_NEW_STATE_SHARE,
+    "no_new_state_min_rows_per_day": NO_NEW_STATE_MIN_ROWS_PER_DAY,
+    "share_percent": SHARE_PERCENT,
+    "share_min_rows_per_day": SHARE_MIN_ROWS_PER_DAY,
+    "event_burst": EVENT_BURST,
+    "chain_depth": CHAIN_DEPTH,
+}
 
 
 def query_storms(hass: HomeAssistant, start: float, end: float) -> dict[str, Any]:
@@ -335,4 +347,10 @@ async def storms(
     result = evaluate_storms(
         found.raw, info, await entry_info(hass), snapshot.get("edges", []), ignored, window_days
     )
-    return {"available": True, "busy": False, "cached": found.cached, **result}
+    return {
+        "available": True,
+        "busy": False,
+        "cached": found.cached,
+        "thresholds": THRESHOLDS,
+        **result,
+    }
