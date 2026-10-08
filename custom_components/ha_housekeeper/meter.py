@@ -89,7 +89,7 @@ def analyse(
 
     ``reasons`` holds codes for the judge: ``stats_missing_old``, ``stats_unit_differs`` and
     ``stats_type_differs`` and ``stats_nothing_to_import`` block; ``stats_overlap``,
-    ``stats_gap`` and ``stats_new_empty`` need a closer look.
+    ``stats_gap``, ``stats_no_sum`` and ``stats_new_empty`` need a closer look.
     """
     reasons: list[str] = []
     result: dict[str, Any] = {
@@ -132,6 +132,8 @@ def analyse(
                 reasons.append("stats_gap")
         else:
             reasons.append("stats_new_empty")
+        if result["has_sum"] and switch is not None and last.get("sum") is None:
+            reasons.append("stats_no_sum")  # the new totals cannot be continued from the old end
         if result["has_sum"] and switch is not None and last.get("sum") is not None:
             result["offset"] = last["sum"]
             first = new_rows[0]

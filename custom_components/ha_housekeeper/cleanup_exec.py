@@ -611,9 +611,14 @@ class CleanupRunner:
             try:
                 result["take_id"] = await self._take_id(action)
             except StepAbort as stop:
-                if result["statistics"] is None:
+                if stop.result is not None:  # the old entity could not be put back
+                    result["take_id"] = stop.result
+                    result["cause"] = stop.reason
+                    result["stopped"] = "rollback_incomplete"
+                elif result["statistics"] is None:
                     raise
-                result["stopped"] = stop.reason
+                else:
+                    result["stopped"] = stop.reason
         return result
 
     async def _join_statistics(self, action: dict[str, Any]) -> dict[str, Any]:
@@ -658,8 +663,12 @@ class CleanupRunner:
             )
         await instance.async_block_till_done()
         _, after = await instance.async_add_executor_job(read_series, self.hass, new)
-        verified = len(after) == len(rows) + len(new_rows) and (
-            not after or after[0]["start"] == rows[0]["start"]
+        # The new series is live: an hourly value compiled meanwhile is no failure.
+        present = {row["start"] for row in after}
+        verified = (
+            bool(after)
+            and after[0]["start"] == rows[0]["start"]
+            and all(row["start"] in present for row in (*rows, *new_rows))
         )
         if verified and offset is not None and new_rows:
             moved = next((r for r in after if r["start"] == switch), None)
@@ -697,17 +706,29 @@ class CleanupRunner:
             raise StepAbort("entity_gone")
         if registry.async_get(alt) is not None or self.hass.states.get(alt) is not None:
             raise StepAbort("alt_id_taken")
-        registry.async_update_entity(old, new_entity_id=alt)
+        try:
+            registry.async_update_entity(old, new_entity_id=alt)
+        except ValueError as err:
+            raise StepAbort("id_takeover_failed") from err
         try:
             if not await self._wait_free(old):
                 raise StepAbort("id_not_freed")
             registry.async_update_entity(new, new_entity_id=old)
-        except StepAbort:
-            registry.async_update_entity(alt, new_entity_id=old)  # put the old entity back
-            raise
-        except ValueError as err:
-            registry.async_update_entity(alt, new_entity_id=old)
-            raise StepAbort("id_takeover_failed") from err
+        except (StepAbort, ValueError) as err:
+            reason = err.reason if isinstance(err, StepAbort) else "id_takeover_failed"
+            if await self._put_back(alt, old):
+                raise StepAbort(reason) from err
+            # The old entity still sits under its other ID: journal that instead of hiding it.
+            raise StepAbort(
+                reason,
+                {
+                    "old_id": old,
+                    "alt_id": alt,
+                    "new_id": new,
+                    "partial": True,
+                    "old_after": registry_fingerprint(registry.async_get(alt)),
+                },
+            ) from err
         if recorder_ready(self.hass):
             from homeassistant.components.recorder import get_instance
 
@@ -721,9 +742,36 @@ class CleanupRunner:
             "new_after": registry_fingerprint(registry.async_get(old)),
         }
 
+    async def _put_back(self, moved_id: str, holder_id: str) -> bool:
+        """Give a moved entity the ID ``holder_id`` again; wait for the old state to go first."""
+        registry = er.async_get(self.hass)
+        await self._wait_free(holder_id)
+        try:
+            registry.async_update_entity(moved_id, new_entity_id=holder_id)
+        except ValueError:
+            return False
+        return True
+
     async def _undo_take_id(self, take: dict[str, Any]) -> str:
         """Give both entities their IDs back while they are exactly as Housekeeper left them."""
         registry = er.async_get(self.hass)
+        if take.get("partial"):
+            # Only the old entity was moved; the new one never took its ID.
+            moved = registry.async_get(take["alt_id"])
+            if moved is None:
+                return "conflict_gone"
+            if registry_fingerprint(moved) != take["old_after"]:
+                return "conflict_changed"
+            await self._wait_free(take["old_id"])
+            if registry.async_get(take["old_id"]) is not None or (
+                self.hass.states.get(take["old_id"]) is not None
+            ):
+                return "conflict_taken"
+            return (
+                "undone"
+                if await self._put_back(take["alt_id"], take["old_id"])
+                else ("conflict_unrestorable")
+            )
         holder, moved = registry.async_get(take["old_id"]), registry.async_get(take["alt_id"])
         if holder is None or moved is None:
             return "conflict_gone"
@@ -737,12 +785,14 @@ class CleanupRunner:
         ):
             return "conflict_taken"
         registry.async_update_entity(take["old_id"], new_entity_id=take["new_id"])
-        try:
-            if not await self._wait_free(take["old_id"]):
-                raise ValueError
-            registry.async_update_entity(take["alt_id"], new_entity_id=take["old_id"])
-        except ValueError:
-            registry.async_update_entity(take["new_id"], new_entity_id=take["old_id"])
+        if not await self._wait_free(take["old_id"]) or not await self._put_back(
+            take["alt_id"], take["old_id"]
+        ):
+            # Put the new entity back where it was, as it is the one that moved first.
+            if await self._put_back(take["new_id"], take["old_id"]):
+                return "conflict_unrestorable"
+            # Neither could be moved: say where the new entity sits now.
+            take["stuck"] = {"entity_at": take["new_id"], "should_be": take["old_id"]}
             return "conflict_unrestorable"
         if recorder_ready(self.hass):
             from homeassistant.components.recorder import get_instance
@@ -1034,7 +1084,7 @@ class CleanupRunner:
     async def _verify_meter(self, action: dict[str, Any]) -> list[dict[str, Any]]:
         result, checks = action["result"], []
         object_id = action["object_id"]
-        if take := result.get("take_id"):
+        if (take := result.get("take_id")) and not take.get("partial"):
             registry = er.async_get(self.hass)
             holder, moved = registry.async_get(take["old_id"]), registry.async_get(take["alt_id"])
             ok = (
@@ -1045,7 +1095,8 @@ class CleanupRunner:
             )
             checks.append({"check": "meter_id_taken", "object_id": object_id, "ok": ok})
         if stats := result.get("statistics"):
-            series = (result["take_id"] or {}).get("old_id") if result.get("take_id") else None
+            take = result.get("take_id")
+            series = take["old_id"] if take and not take.get("partial") else None
             series = series or stats["series_id"]
             ok = False
             if recorder_ready(self.hass):

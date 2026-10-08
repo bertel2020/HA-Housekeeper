@@ -398,3 +398,92 @@ async def test_the_panel_commands_plan_a_meter_change_and_report_maintenance(
     assert saved["record"]["objects"] > 0 and saved["after"] is None
     await client.send_json_auto_id({"type": "ha_housekeeper/preflight_save", "clear": True})
     assert (await client.receive_json())["result"]["record"] is None
+
+
+def test_analyse_asks_for_a_look_when_the_old_series_has_no_final_total() -> None:
+    old = stat_rows(START, 48)
+    old[-1]["sum"] = None
+    new = stat_rows(START + timedelta(hours=48), 24, step=0.5)
+    result = analyse(meta(OLD), old, meta(NEW), new)
+    assert result["offset"] is None and "stats_no_sum" in result["reasons"]
+    assert not {"stats_missing_old", "stats_unit_differs", "stats_type_differs"} & set(
+        result["reasons"]
+    )
+
+
+async def test_a_value_compiled_meanwhile_does_not_fail_the_join(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    from custom_components.ha_housekeeper import cleanup_exec
+
+    two_meters(hass)
+    await async_wait_recording_done(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    real = cleanup_exec.read_series
+    calls = {"n": 0}
+
+    def with_a_new_hour(hass, statistic_id):
+        meta_, found = real(hass, statistic_id)
+        calls["n"] += 1
+        if calls["n"] == 3:  # the read after the import: the live series grew by one hour
+            found = [*found, {**found[-1], "start": found[-1]["start"] + 3600}]
+        return meta_, found
+
+    with (
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+        patch.object(cleanup_exec, "read_series", with_a_new_hour),
+    ):
+        plan = await make_meter_plan(scanner, hass, "statistics")
+        await run(scanner, plan, [OLD])
+    assert plan["actions"][0]["result"]["statistics"]["verified"] is True
+
+
+async def _stuck_id_takeover(hass: HomeAssistant, scanner, *, state_goes_after: float | None):
+    """Run an ID takeover whose old state does not go away (or only after a while)."""
+    two_meters(hass)
+    hass.states.async_set(OLD, "9")  # nothing drops this state when the entity is renamed
+    await async_wait_recording_done(hass)
+    manager, _ = fake_backup()
+    with (
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+        patch("custom_components.ha_housekeeper.cleanup_exec.ID_FREE_TIMEOUT", 0.3),
+    ):
+        plan = await make_meter_plan(scanner, hass, "id")
+        if state_goes_after is not None:
+            hass.loop.call_later(state_goes_after, hass.states.async_remove, OLD)
+        await run(scanner, plan, [OLD])
+    return plan
+
+
+async def test_an_old_state_that_goes_late_still_lets_the_old_entity_come_back(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    scanner = await make_scanner(hass)
+    plan = await _stuck_id_takeover(hass, scanner, state_goes_after=0.45)
+    registry = er.async_get(hass)
+    assert plan["actions"][0]["result"]["reason"] == "id_not_freed"
+    assert plan["status"] == "aborted"
+    assert registry.async_get(OLD).unique_id == "meter_old"  # back under its own ID
+    assert registry.async_get(NEW).unique_id == "meter_new"
+
+
+async def test_an_old_entity_that_cannot_come_back_is_journalled_and_can_be_undone(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    scanner = await make_scanner(hass)
+    plan = await _stuck_id_takeover(hass, scanner, state_goes_after=None)
+    registry = er.async_get(hass)
+    result = plan["actions"][0]["result"]
+    assert result["state"] == "done" and result["stopped"] == "rollback_incomplete"
+    assert result["cause"] == "id_not_freed" and result["take_id"]["partial"] is True
+    assert plan["status"] == "partial"
+    assert registry.async_get(OLD) is None  # the stuck state, not the entity, holds the ID
+    assert registry.async_get("sensor.meter_old_alt").unique_id == "meter_old"
+    assert registry.async_get(NEW).unique_id == "meter_new"
+
+    hass.states.async_remove(OLD)
+    undo = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert undo["results"] == [{"object_id": OLD, "outcome": "undone"}]
+    assert registry.async_get(OLD).unique_id == "meter_old"
+    assert registry.async_get("sensor.meter_old_alt") is None
