@@ -98,6 +98,12 @@ const TEXT = {
     cleanupSubtitle: "Vorschau für das Aufräumen: Housekeeper prüft Kandidaten und protokolliert das Ergebnis. Es wird nichts geändert.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entities.", cleanupNone: "Keine Kandidaten gefunden.",
     selectPage: "Seite auswählen", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
+    stepsLabel: "Ablauf des Plans", stepSelect: "Auswahl", stepAnalysis: "Auswirkungsanalyse", stepConfirm: "Bestätigung", stepBackup: "Backup", stepRun: "Ausführung", stepVerify: "Verifikation",
+    stepDone: "erledigt", stepCurrent: "aktuell", stepTodo: "ausstehend", stepSkipped: "entfällt", stepFailed: "fehlgeschlagen",
+    stepAnalysisBlocked: "Keine ausführbare Aktion", stepBackupSkipped: "Nicht nötig: alles lässt sich per Housekeeper zurücknehmen", stepBackupDone: "Erstellt am {date}{job}", stepBackupJob: " · Job {id}",
+    stepRunPartial: "Nur teilweise ausgeführt", stepVerifyFailed: "Die Prüfung hat Auffälligkeiten ergeben",
+    backupRestoreHint: "Ein Backup stellt nur Home Assistant selbst wieder her (Einstellungen → System → Backups); Housekeeper spielt keine Backups ein.",
+    undoHousekeeper: "Rückgängig per Housekeeper", undoBackupOnly: "Nur per Backup rückgängig", planDetails: "Details",
     planResult: "Ergebnis der Vorschau", planClose: "Schließen", planCreating: "Erstelle Vorschau …", planError: "Vorschau fehlgeschlagen",
     planSummary: "{total} geprüft: {ok} ohne bekannte Verwendung, {review} zu prüfen, {blocked} blockiert.", planUses: "{count} Verwendungen betroffen", planStats: "{count} mit Langzeitstatistik",
     verdict_ok: "Keine bekannte Verwendung", verdict_review: "Prüfen", verdict_blocked: "Blockiert", journal: "Journal", journalHint: "Frühere Vorschauen (die letzten 50).", journalEmpty: "Noch keine Vorschau erstellt.",
@@ -267,6 +273,12 @@ const TEXT = {
     cleanupSubtitle: "Preview for tidying up: Housekeeper checks candidates and records the result. Nothing is changed.",
     cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
     selectPage: "Select page", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
+    stepsLabel: "Steps of the plan", stepSelect: "Selection", stepAnalysis: "Impact analysis", stepConfirm: "Confirmation", stepBackup: "Backup", stepRun: "Execution", stepVerify: "Verification",
+    stepDone: "done", stepCurrent: "current", stepTodo: "pending", stepSkipped: "not needed", stepFailed: "failed",
+    stepAnalysisBlocked: "No executable action", stepBackupSkipped: "Not needed: everything can be taken back by Housekeeper", stepBackupDone: "Created {date}{job}", stepBackupJob: " · job {id}",
+    stepRunPartial: "Only partly executed", stepVerifyFailed: "The check found irregularities",
+    backupRestoreHint: "Only Home Assistant itself restores a backup (Settings → System → Backups); Housekeeper does not restore backups.",
+    undoHousekeeper: "Undo by Housekeeper", undoBackupOnly: "Backup only", planDetails: "Details",
     planResult: "Preview result", planClose: "Close", planCreating: "Creating preview …", planError: "Preview failed",
     planSummary: "{total} checked: {ok} with no known use, {review} to review, {blocked} blocked.", planUses: "{count} uses affected", planStats: "{count} with long-term statistics",
     verdict_ok: "No known use", verdict_review: "Review", verdict_blocked: "Blocked", journal: "Journal", journalHint: "Earlier previews (the last 50).", journalEmpty: "No preview created yet.",
@@ -348,6 +360,9 @@ const ICONS = {
 };
 
 const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
+// Kinds that get a Home Assistant backup first (as in the backend).
+const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter"];
+const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent"];
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 
 const PREFS_KEY = "ha_housekeeper.prefs";
@@ -752,6 +767,9 @@ class StylesMixin {
       .nav.active{box-shadow:inset 3px 0 0 var(--hk-blue)}.nav{border-radius:10px}.nav em{font-weight:600}.nav.active em{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
       .panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
+      .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
+      .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
+      .rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
@@ -1417,6 +1435,48 @@ class CleanupMixin {
     this.render();
   }
 
+  // The stages of a plan in the order the backend runs them: the typed confirmation comes first, the backup
+  // is made when the run starts. Each step is "done", "current", "todo", "skipped" or "failed".
+  planSteps(plan, confirming) {
+    const status = plan.status, open = status === "dry_run";
+    const executable = plan.actions.filter(a => a.executable);
+    const needsBackup = executable.some(a => BACKUP_KINDS.includes(a.kind));
+    const backupFailure = plan.actions.map(a => a.result?.reason).find(r => BACKUP_FAILURES.includes(r));
+    const steps = [{ id: "stepSelect", state: "done" }];
+    steps.push(open && !confirming ? (executable.length ? { id: "stepAnalysis", state: "current" } : { id: "stepAnalysis", state: "failed", note: this.t("stepAnalysisBlocked") }) : { id: "stepAnalysis", state: "done" });
+    steps.push({ id: "stepConfirm", state: open ? (confirming ? "current" : "todo") : "done" });
+    if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
+    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: this.t(`abort_${backupFailure}`) });
+    else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
+    else if (open) steps.push({ id: "stepBackup", state: "todo" });
+    else {
+      const job = plan.backup?.job_id ? this.t("stepBackupJob", { id: plan.backup.job_id }) : "";
+      steps.push({ id: "stepBackup", state: "done", note: plan.backup?.at ? this.t("stepBackupDone", { date: this.formatDate(plan.backup.at), job }) : null });
+    }
+    const ranStates = ["executed", "verified", "undone", "partially_undone"];
+    steps.push(status === "running" ? { id: "stepRun", state: "current" }
+      : ranStates.includes(status) ? { id: "stepRun", state: "done" }
+      : status === "partial" ? { id: "stepRun", state: "failed", note: this.t("stepRunPartial") }
+      : status === "aborted" && !backupFailure ? { id: "stepRun", state: "failed" } : { id: "stepRun", state: "todo" });
+    const verification = plan.verification;
+    steps.push(verification ? (verification.ok ? { id: "stepVerify", state: "done" } : { id: "stepVerify", state: "failed", note: this.t("stepVerifyFailed") })
+      : status === "executed" ? { id: "stepVerify", state: "current" } : { id: "stepVerify", state: "todo" });
+    return steps;
+  }
+
+  planStepper(plan, confirming) {
+    const mark = { done: "✓", failed: "!", skipped: "–" };
+    const items = this.planSteps(plan, confirming).map((step, i) => `<li class="step ${step.state}"${step.state === "current" ? ' aria-current="step"' : ""}><span class="mark" aria-hidden="true">${mark[step.state] || i + 1}</span><span class="steptext"><b>${this.t(step.id)}</b><span class="sr-only">: ${this.t(`step${{ done: "Done", current: "Current", todo: "Todo", skipped: "Skipped", failed: "Failed" }[step.state]}`)}</span>${step.note ? `<small>${this.esc(step.note)}</small>` : ""}</span></li>`).join("");
+    const backup = plan.backup ? `<p class="factnote">${this.t("backupRestoreHint")}</p>` : "";
+    return `<ol class="steps" aria-label="${this.esc(this.t("stepsLabel"))}">${items}</ol>${backup}`;
+  }
+
+  // Housekeeper can take every action back except merged statistics, which only a backup restores.
+  undoBadge(action) {
+    const backupOnly = action.kind === "migrate_meter";
+    return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" style="--mdc-icon-size:14px"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
+  }
+
   planCard(plan) {
     const sm = plan.summary || {};
     const open = plan.status === "dry_run";
@@ -1437,8 +1497,8 @@ class CleanupMixin {
       const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
       const undo = result?.state === "done" ? `<button class="btn" data-undo-one="${this.esc(a.object_id)}">${this.t("undoOne")}</button>` : "";
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
-        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(sub)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}${ack}</span>
-        <span style="display:flex;gap:8px;align-items:center">${resultPill}${undo}<span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></span></div>`;
+        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(sub)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable ? this.undoBadge(a) : ""}<span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></span></div>`;
     }).join("");
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
@@ -1452,7 +1512,7 @@ class CleanupMixin {
     else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<p class="factnote"><b>${this.t("verification")}:</b> ${plan.verification.checks.map(c => `${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}`).join(" · ")}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      <p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}${checks}${control}</section>`;
+      ${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}${checks}${control}</section>`;
   }
 
   kindSelect() {

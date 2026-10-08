@@ -1670,3 +1670,67 @@ test("the address carries the selected detail tab and a deep link opens it", () 
   el.syncUrl();
   assert.equal(urls.at(-1), "/ha-housekeeper?object=entity%3Alight.kitchen", "the overview tab is the default and stays out of the address");
 });
+
+const stepStates = steps => steps.map(s => `${s.id.replace("step", "")}:${s.state}`).join(" ");
+const act = (kind, extra = {}) => ({ kind, object_id: `sensor.${kind}`, name: kind, verdict: "ok", executable: true, reasons: [], used_by: [], ...extra });
+const planOf = (status, actions, extra = {}) => ({ plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status, executed: false, summary: { total: actions.length, ok: actions.length, review: 0, blocked: 0 }, actions, ...extra });
+
+test("the plan steps follow the order of the run: confirmation first, backup when the run starts", () => {
+  const { el } = panel("en");
+  const disable = [act("disable_entity")], remove = [act("remove_entity")];
+  assert.equal(stepStates(el.planSteps(planOf("dry_run", disable), false)), "Select:done Analysis:current Confirm:todo Backup:skipped Run:todo Verify:todo");
+  assert.equal(stepStates(el.planSteps(planOf("dry_run", remove), false)), "Select:done Analysis:current Confirm:todo Backup:todo Run:todo Verify:todo");
+  assert.equal(stepStates(el.planSteps(planOf("dry_run", remove), true)), "Select:done Analysis:done Confirm:current Backup:todo Run:todo Verify:todo");
+  assert.equal(stepStates(el.planSteps(planOf("dry_run", [act("remove_entity", { executable: false, verdict: "blocked" })]), false)), "Select:done Analysis:failed Confirm:todo Backup:skipped Run:todo Verify:todo");
+
+  const backup = el.planSteps(planOf("backup", remove), false);
+  assert.equal(stepStates(backup), "Select:done Analysis:done Confirm:done Backup:current Run:todo Verify:todo");
+  assert.ok(backup[3].note.includes("Backup running"));
+
+  const running = el.planSteps(planOf("running", remove, { backup: { job_id: "job-7", at: "2026-10-07T10:05:00+00:00" } }), false);
+  assert.equal(stepStates(running), "Select:done Analysis:done Confirm:done Backup:done Run:current Verify:todo");
+  assert.ok(running[3].note.includes("Created") && running[3].note.includes("job job-7"));
+
+  const verified = planOf("verified", remove, { backup: { job_id: null, at: "2026-10-07T10:05:00+00:00" }, verification: { ok: true, checks: [] } });
+  assert.equal(stepStates(el.planSteps(verified, false)), "Select:done Analysis:done Confirm:done Backup:done Run:done Verify:done");
+  assert.ok(!el.planSteps(verified, false)[3].note.includes("job"));
+});
+
+test("a failed backup, a partial run and a failed check each mark their own step", () => {
+  const { el } = panel("en");
+  const failedBackup = planOf("aborted", [act("remove_entity", { result: { state: "not_run", reason: "no_backup_agent" } })]);
+  const steps = el.planSteps(failedBackup, false);
+  assert.equal(stepStates(steps), "Select:done Analysis:done Confirm:done Backup:failed Run:todo Verify:todo", "nothing ran after a failed backup");
+  assert.ok(steps[3].note.includes("No backup location"));
+  assert.equal(stepStates(el.planSteps(planOf("partial", [act("disable_entity")]), false)), "Select:done Analysis:done Confirm:done Backup:skipped Run:failed Verify:todo");
+  assert.equal(stepStates(el.planSteps(planOf("executed", [act("disable_entity")]), false)), "Select:done Analysis:done Confirm:done Backup:skipped Run:done Verify:current");
+  const unchecked = planOf("executed", [act("disable_entity")], { verification: { ok: false, checks: [] } });
+  assert.equal(stepStates(el.planSteps(unchecked, false)), "Select:done Analysis:done Confirm:done Backup:skipped Run:done Verify:failed");
+  assert.equal(stepStates(el.planSteps(planOf("undone", [act("disable_entity")], { verification: { ok: true, checks: [] } }), false)), "Select:done Analysis:done Confirm:done Backup:skipped Run:done Verify:done");
+});
+
+test("the plan card shows the steps with text, marks undo kinds and folds the details", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  const plan = planOf("verified", [
+    act("disable_entity"),
+    act("migrate_meter", { object_id: "sensor.old_meter", target: "sensor.new_meter", sources: [] }),
+    act("remove_entity", { executable: false, verdict: "blocked", reasons: ["used_certain"], used_by: [{ source: "automation:automation.a", relation: "TARGETS", confidence: "certain" }] }),
+  ], { backup: { job_id: "job-9", at: "2026-10-07T10:05:00+00:00" }, verification: { ok: true, checks: [] } });
+  const html = el.planCard(plan);
+  assert.ok(html.indexOf('<ol class="steps"') < html.indexOf('class="row planrow'), "the steps come before the actions");
+  assert.equal((html.match(/aria-current="step"/g) || []).length, 0, "a finished plan has no current step");
+  assert.ok(html.includes('<span class="sr-only">: done</span>') && html.includes('<span class="sr-only">: not needed</span>') === false);
+  assert.ok(html.includes("Created") && html.includes(el.t("backupRestoreHint")));
+  assert.equal((html.match(/Undo by Housekeeper/g) || []).length, 1);
+  assert.equal((html.match(/Backup only/g) || []).length, 1, "merged statistics can only be restored from the backup");
+  assert.equal((html.match(/<details class="rowdetails">/g) || []).length, 2, "the meter detail and the uses fold; the plain disable row has none");
+  const open = el.planCard(planOf("dry_run", [act("disable_entity")]));
+  assert.equal((open.match(/aria-current="step"/g) || []).length, 1);
+  assert.ok(open.includes('<span class="sr-only">: not needed</span>') && open.includes('<span class="sr-only">: current</span>') && open.includes('<span class="sr-only">: pending</span>'));
+  assert.ok(open.includes("Not needed: everything can be taken back by Housekeeper"));
+  for (const lang of ["de", "en"]) {
+    const text = panel(lang).el.t.bind(panel(lang).el);
+    for (const key of ["stepsLabel", "stepSelect", "stepAnalysis", "stepConfirm", "stepBackup", "stepRun", "stepVerify", "stepDone", "stepCurrent", "stepTodo", "stepSkipped", "stepFailed", "undoHousekeeper", "undoBackupOnly", "backupRestoreHint", "planDetails"]) assert.notEqual(text(key), key, `${lang} ${key}`);
+  }
+});

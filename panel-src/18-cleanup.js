@@ -191,6 +191,48 @@ class CleanupMixin {
     this.render();
   }
 
+  // The stages of a plan in the order the backend runs them: the typed confirmation comes first, the backup
+  // is made when the run starts. Each step is "done", "current", "todo", "skipped" or "failed".
+  planSteps(plan, confirming) {
+    const status = plan.status, open = status === "dry_run";
+    const executable = plan.actions.filter(a => a.executable);
+    const needsBackup = executable.some(a => BACKUP_KINDS.includes(a.kind));
+    const backupFailure = plan.actions.map(a => a.result?.reason).find(r => BACKUP_FAILURES.includes(r));
+    const steps = [{ id: "stepSelect", state: "done" }];
+    steps.push(open && !confirming ? (executable.length ? { id: "stepAnalysis", state: "current" } : { id: "stepAnalysis", state: "failed", note: this.t("stepAnalysisBlocked") }) : { id: "stepAnalysis", state: "done" });
+    steps.push({ id: "stepConfirm", state: open ? (confirming ? "current" : "todo") : "done" });
+    if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
+    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: this.t(`abort_${backupFailure}`) });
+    else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
+    else if (open) steps.push({ id: "stepBackup", state: "todo" });
+    else {
+      const job = plan.backup?.job_id ? this.t("stepBackupJob", { id: plan.backup.job_id }) : "";
+      steps.push({ id: "stepBackup", state: "done", note: plan.backup?.at ? this.t("stepBackupDone", { date: this.formatDate(plan.backup.at), job }) : null });
+    }
+    const ranStates = ["executed", "verified", "undone", "partially_undone"];
+    steps.push(status === "running" ? { id: "stepRun", state: "current" }
+      : ranStates.includes(status) ? { id: "stepRun", state: "done" }
+      : status === "partial" ? { id: "stepRun", state: "failed", note: this.t("stepRunPartial") }
+      : status === "aborted" && !backupFailure ? { id: "stepRun", state: "failed" } : { id: "stepRun", state: "todo" });
+    const verification = plan.verification;
+    steps.push(verification ? (verification.ok ? { id: "stepVerify", state: "done" } : { id: "stepVerify", state: "failed", note: this.t("stepVerifyFailed") })
+      : status === "executed" ? { id: "stepVerify", state: "current" } : { id: "stepVerify", state: "todo" });
+    return steps;
+  }
+
+  planStepper(plan, confirming) {
+    const mark = { done: "✓", failed: "!", skipped: "–" };
+    const items = this.planSteps(plan, confirming).map((step, i) => `<li class="step ${step.state}"${step.state === "current" ? ' aria-current="step"' : ""}><span class="mark" aria-hidden="true">${mark[step.state] || i + 1}</span><span class="steptext"><b>${this.t(step.id)}</b><span class="sr-only">: ${this.t(`step${{ done: "Done", current: "Current", todo: "Todo", skipped: "Skipped", failed: "Failed" }[step.state]}`)}</span>${step.note ? `<small>${this.esc(step.note)}</small>` : ""}</span></li>`).join("");
+    const backup = plan.backup ? `<p class="factnote">${this.t("backupRestoreHint")}</p>` : "";
+    return `<ol class="steps" aria-label="${this.esc(this.t("stepsLabel"))}">${items}</ol>${backup}`;
+  }
+
+  // Housekeeper can take every action back except merged statistics, which only a backup restores.
+  undoBadge(action) {
+    const backupOnly = action.kind === "migrate_meter";
+    return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" style="--mdc-icon-size:14px"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
+  }
+
   planCard(plan) {
     const sm = plan.summary || {};
     const open = plan.status === "dry_run";
@@ -211,8 +253,8 @@ class CleanupMixin {
       const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
       const undo = result?.state === "done" ? `<button class="btn" data-undo-one="${this.esc(a.object_id)}">${this.t("undoOne")}</button>` : "";
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
-        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(sub)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}${ack}</span>
-        <span style="display:flex;gap:8px;align-items:center">${resultPill}${undo}<span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></span></div>`;
+        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(sub)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable ? this.undoBadge(a) : ""}<span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></span></div>`;
     }).join("");
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
@@ -226,7 +268,7 @@ class CleanupMixin {
     else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<p class="factnote"><b>${this.t("verification")}:</b> ${plan.verification.checks.map(c => `${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}`).join(" · ")}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      <p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}${checks}${control}</section>`;
+      ${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}${checks}${control}</section>`;
   }
 
   kindSelect() {

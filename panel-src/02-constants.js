@@ -5,6 +5,9 @@ const ICONS = {
 };
 
 const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
+// Kinds that get a Home Assistant backup first (as in the backend).
+const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter"];
+const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent"];
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 
 const PREFS_KEY = "ha_housekeeper.prefs";
