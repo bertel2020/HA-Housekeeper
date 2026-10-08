@@ -11,7 +11,7 @@ from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.start import async_at_started
@@ -104,6 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Scanning while Home Assistant is still starting would classify entities of
     # integrations that have not finished loading as orphaned and persist that.
+    @callback
     def _start_initial_scan(_: HomeAssistant) -> None:
         entry.async_create_background_task(
             hass,
@@ -120,6 +121,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     interval_hours = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
     if interval_hours > 0:
 
+        @callback
         def _scheduled_scan(_: Any) -> None:
             if scanner.paused:  # A cleanup run is in progress and scans itself.
                 return
