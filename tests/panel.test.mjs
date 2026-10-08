@@ -858,6 +858,31 @@ test("on small screens reason and observed-since stay visible and the list can s
   assert.ok(mobile.includes(".row-text small{white-space:normal;overflow:visible"), "long reasons wrap instead of being cut off");
 });
 
+test("navigation marks the current page and progress is announced to screen readers", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA };
+  el.view = "findingsNav";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.equal((html.match(/aria-current="page"/g) || []).length, 1);
+  assert.ok(/data-view="findingsNav"\s+aria-current="page"/.test(html));
+  assert.ok(html.includes('role="status" aria-live="polite"'));
+  assert.ok(!/aria-live="polite">[^<]/.test(html), "silent while idle");
+  el.view = "settings";
+  el.render();
+  assert.ok(/data-view="settings"\s+aria-current="page"/.test(shadow.innerHTML));
+  el.view = "cleanup";
+  el.plan = { status: "running", actions: [] };
+  el.planProgress = { done: 2, total: 5, phase: "execute" };
+  assert.ok(el.liveStatus().includes("2") && el.liveStatus().includes("5"));
+  el.plan = { status: "backup", actions: [] };
+  assert.equal(el.liveStatus(), el.t("backupRunning"));
+  el.plan = null; el.busy = true; el.scanStatus = { running: true, progress: 40 };
+  assert.ok(el.liveStatus().includes("40%"));
+  assert.ok(shadow.innerHTML.includes(":focus-visible") || el.styles().includes(":focus-visible"), "visible focus style");
+  assert.ok(el.styles().includes(".sr-only{"));
+});
+
 test("the scan button is disabled while a plan runs", () => {
   const { el } = panel("en");
   el.data = { ...DATA };

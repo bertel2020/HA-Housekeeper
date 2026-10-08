@@ -170,9 +170,20 @@ class HAHousekeeperPanel extends HTMLElement {
     window.dispatchEvent(new CustomEvent("location-changed"));
   }
 
+  // What a screen reader announces: scan, backup and plan progress, nothing while idle.
+  liveStatus() {
+    if (this.busy) return `${this.t("scanning")}${this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : ""}`;
+    const plan = this.plan;
+    if (plan && (plan.status === "backup" || plan.status === "running")) {
+      if (plan.status === "backup" || this.planProgress?.phase === "backup") return this.t("backupRunning");
+      return `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`.trim();
+    }
+    return "";
+  }
+
   render() {
     if (!this.shadowRoot) return;
-    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main></div>`;
+    this.shadowRoot.innerHTML = `${this.styles()}<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     this.bind();
     if (this.data) this.syncUrl();
   }
@@ -207,8 +218,8 @@ class HAHousekeeperPanel extends HTMLElement {
   sidebar() {
     const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
     return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
-      <nav>${NAV.filter(([view]) => view !== "settings").map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
-      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings"><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
+      <nav>${NAV.filter(([view]) => view !== "settings").map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
+      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings" ${this.view === "settings" ? 'aria-current="page"' : ""}><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
   }
 
   heading() {
