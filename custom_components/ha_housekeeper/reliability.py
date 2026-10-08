@@ -1,0 +1,294 @@
+"""Integration reliability: how available each config entry's entities were, and shared outages.
+
+Everything here only reads Home Assistant (the recorder, the registries, the config entries).
+Nothing is stored. The recorder query is the expensive part, so it runs in the background, is
+kept for a few minutes and never runs twice at the same time.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import time
+from typing import Any
+
+from homeassistant.core import HomeAssistant
+
+from .const import DOMAIN
+from .meter import recorder_ready
+
+DAY = 86400
+WINDOWS = (1, 7)  # days
+CACHE_SECONDS = 300
+CHUNK = 500  # entities per second-pass query
+SHARED_SHARE = 80  # percent of an entry's entities that must be down together
+SHARED_MIN_ENTITIES = 3
+SHARED_MIN_SECONDS = 300
+PERMANENT_SHARE = 0.99  # share of the observed time spent unavailable
+CLOUD_CLASSES = {"cloud_polling", "cloud_push"}
+
+
+def query_runs(hass: HomeAssistant, start: float, end: float) -> dict[str, Any]:
+    """Blocking: the unavailable intervals per entity in [start, end].
+
+    Two passes: first find the entities that had any unavailable row at all, then read the rows
+    of only those entities with a window function. That is several times faster than running
+    the window function over every row of the window.
+    """
+    from homeassistant.components.recorder.db_schema import States, StatesMeta
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import case, func, select
+
+    started = time.monotonic()
+    seen: dict[str, float] = {}
+    intervals: dict[str, list[tuple[float, float]]] = {}
+    with session_scope(hass=hass, read_only=True) as session:
+        down = func.sum(case((States.state == "unavailable", 1), else_=0))
+        rows = session.execute(
+            select(
+                States.metadata_id,
+                StatesMeta.entity_id,
+                func.min(States.last_updated_ts),
+                down,
+            )
+            .join(StatesMeta, States.metadata_id == StatesMeta.metadata_id)
+            .where(States.last_updated_ts >= start, States.last_updated_ts <= end)
+            .group_by(States.metadata_id, StatesMeta.entity_id)
+        ).all()
+        affected: dict[int, str] = {}
+        for metadata_id, entity_id, first, count in rows:
+            seen[entity_id] = float(first)
+            if count:
+                affected[metadata_id] = entity_id
+        ids = list(affected)
+        for offset in range(0, len(ids), CHUNK):
+            part = ids[offset : offset + CHUNK]
+            nxt = (
+                func.lead(States.last_updated_ts)
+                .over(partition_by=States.metadata_id, order_by=States.last_updated_ts)
+                .label("nxt")
+            )
+            inner = (
+                select(States.metadata_id, States.last_updated_ts.label("ts"), States.state, nxt)
+                .where(
+                    States.metadata_id.in_(part),
+                    States.last_updated_ts >= start,
+                    States.last_updated_ts <= end,
+                )
+                .subquery()
+            )
+            for metadata_id, ts, nxt_ts in session.execute(
+                select(inner.c.metadata_id, inner.c.ts, inner.c.nxt).where(
+                    inner.c.state == "unavailable"
+                )
+            ).all():
+                intervals.setdefault(affected[metadata_id], []).append(
+                    (float(ts), float(nxt_ts if nxt_ts is not None else end))
+                )
+    return {
+        "start": start,
+        "end": end,
+        "seen": seen,
+        "intervals": intervals,
+        "took_ms": round((time.monotonic() - started) * 1000),
+    }
+
+
+def _merge(intervals: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    merged: list[list[float]] = []
+    for begin, finish in sorted(intervals):
+        if merged and begin <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], finish)
+        else:
+            merged.append([begin, finish])
+    return [(a, b) for a, b in merged]
+
+
+def shared_outages(
+    members: list[list[tuple[float, float]]],
+    *,
+    share: int = SHARED_SHARE,
+    min_entities: int = SHARED_MIN_ENTITIES,
+    min_seconds: float = SHARED_MIN_SECONDS,
+) -> list[tuple[float, float]]:
+    """Periods in which at least ``share`` percent of the members were down together."""
+    total = len(members)
+    if total < min_entities:
+        return []
+    events: list[tuple[float, int]] = []
+    for intervals in members:
+        for begin, finish in intervals:
+            if finish > begin:
+                events.append((begin, 1))
+                events.append((finish, -1))
+    # An interval that ends exactly when another begins must not count as an overlap.
+    events.sort(key=lambda e: (e[0], e[1]))
+    result: list[tuple[float, float]] = []
+    active = 0
+    since: float | None = None
+    for moment, step in events:
+        active += step
+        if since is None and active * 100 >= share * total:
+            since = moment
+        elif since is not None and active * 100 < share * total:
+            if moment - since >= min_seconds:
+                result.append((since, moment))
+            since = None
+    return result
+
+
+def compute(
+    runs: dict[str, Any],
+    entities: list[dict[str, Any]],
+    entries: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Join the recorder intervals with the registries into one row per config entry.
+
+    ``entities`` carries ``entity_id``, ``config_entry_id`` and ``status`` (the inventory's);
+    ``entries`` maps an entry id to ``title``, ``domain``, ``state``, ``reauth`` and ``iot_class``.
+    """
+    start, end = runs["start"], runs["end"]
+    window = max(end - start, 1.0)
+    per_entry: dict[str, list[dict[str, Any]]] = {}
+    for item in entities:
+        if item.get("config_entry_id") in entries:
+            per_entry.setdefault(item["config_entry_id"], []).append(item)
+    rows = []
+    for entry_id, members in per_entry.items():
+        info = entries[entry_id]
+        counted: list[list[tuple[float, float]]] = []
+        observed_total = down_total = 0.0
+        permanent = 0
+        last_single: tuple[float, float] | None = None
+        for item in members:
+            entity_id = item["entity_id"]
+            first = runs["seen"].get(entity_id)
+            if first is None:
+                # No state change in the window: down the whole time if it is down now.
+                if item.get("status") == "unavailable":
+                    permanent += 1
+                continue
+            merged = _merge(
+                [
+                    (max(a, start), min(b, end))
+                    for a, b in runs["intervals"].get(entity_id, [])
+                    if min(b, end) > max(a, start)
+                ]
+            )
+            observed = end - first
+            down = sum(b - a for a, b in merged)
+            if observed <= 0:
+                continue
+            if down >= observed * PERMANENT_SHARE and observed >= window * 0.95:
+                permanent += 1
+                continue
+            counted.append(merged)
+            observed_total += observed
+            down_total += down
+            if merged and (last_single is None or merged[-1][1] > last_single[1]):
+                last_single = merged[-1]
+        if not counted and not permanent:
+            continue
+        outages = shared_outages(counted)
+        layer = None
+        if outages:
+            layer = "cloud" if info.get("iot_class") in CLOUD_CLASSES else "local"
+        last = outages[-1] if outages else last_single
+        rows.append(
+            {
+                "entry_id": entry_id,
+                "title": info.get("title") or entry_id,
+                "domain": info.get("domain"),
+                "state": info.get("state"),
+                "reauth": bool(info.get("reauth")),
+                "entities": len(counted),
+                "permanent": permanent,
+                "availability": (
+                    round(100 * (1 - down_total / observed_total), 2) if observed_total else None
+                ),
+                "shared_outages": len(outages),
+                "longest_outage": round(max((b - a for a, b in outages), default=0)),
+                "layer": layer,
+                "last_disruption": (
+                    {"end": last[1], "seconds": round(last[1] - last[0]), "shared": bool(outages)}
+                    if last
+                    else None
+                ),
+            }
+        )
+    rows.sort(key=lambda r: (r["availability"] is None, r["availability"] or 0, r["title"]))
+    return {
+        "entries": rows,
+        "start": start,
+        "end": end,
+        "window_days": round(window / DAY),
+        "took_ms": runs.get("took_ms"),
+    }
+
+
+async def _entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:
+    from homeassistant.loader import async_get_integrations
+
+    entries = hass.config_entries.async_entries()
+    integrations = await async_get_integrations(hass, {entry.domain for entry in entries})
+    reauth = {
+        flow["context"].get("entry_id")
+        for flow in hass.config_entries.flow.async_progress()
+        if flow["context"].get("source") == "reauth"
+    }
+    info = {}
+    for entry in entries:
+        integration = integrations.get(entry.domain)
+        info[entry.entry_id] = {
+            "title": entry.title,
+            "domain": entry.domain,
+            "state": getattr(entry.state, "value", str(entry.state)),
+            "reauth": entry.entry_id in reauth,
+            "iot_class": getattr(integration, "iot_class", None)
+            if integration and not isinstance(integration, Exception)
+            else None,
+        }
+    return info
+
+
+async def reliability(
+    hass: HomeAssistant,
+    snapshot: dict[str, Any],
+    *,
+    window_days: int = 7,
+    refresh: bool = False,
+) -> dict[str, Any]:
+    """Availability and shared outages per config entry for the last day or week."""
+    if not recorder_ready(hass):
+        return {"available": False, "entries": []}
+    from homeassistant.components.recorder import get_instance
+
+    store = hass.data.setdefault(DOMAIN, {})
+    cache: dict[int, tuple[float, dict[str, Any]]] = store.setdefault("reliability_cache", {})
+    lock: asyncio.Lock = store.setdefault("reliability_lock", asyncio.Lock())
+    kept = cache.get(window_days)
+    fresh = bool(kept) and time.monotonic() - kept[0] < CACHE_SECONDS
+    cached = True
+    if (refresh or not fresh) and lock.locked():
+        # Another query is running; hand out what there is instead of starting a second one.
+        if not kept:
+            return {"available": True, "busy": True, "entries": [], "window_days": window_days}
+    elif refresh or not fresh:
+        async with lock:
+            now = time.time()
+            raw = await get_instance(hass).async_add_executor_job(
+                query_runs, hass, now - window_days * DAY, now
+            )
+            cache[window_days] = kept = (time.monotonic(), raw)
+            cached = False
+    assert kept is not None
+    entities = [
+        {
+            "entity_id": item["object_id"],
+            "config_entry_id": item.get("config_entry_id"),
+            "status": item.get("status"),
+        }
+        for item in snapshot["objects"]
+        if item["object_type"] == "entity"
+    ]
+    result = compute(kept[1], entities, await _entry_info(hass))
+    return {"available": True, "busy": False, "cached": cached, **result}
