@@ -1,5 +1,6 @@
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
+  releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
   kindDisableDevice: "Gerät deaktivieren (Quarantäne, umkehrbar)", kindRemoveDevice: "Gerät entfernen (nach Quarantäne, mit Backup)",
   kindForgetDevice: "Gerät lokal vergessen (erzwingen, nach Quarantäne, mit Backup)", kindReplace: "Verweise ersetzen (alt → neu, mit Backup)",
   reason_device_has_working_entities: "Mindestens eine Entity des Geräts funktioniert noch.", reason_has_children: "Andere Geräte hängen an diesem Gerät (Hub oder Koordinator).",
@@ -17,13 +18,14 @@ Object.assign(TEXT.de, {
   confirmWordReplace: "ERSETZEN", confirmedSummaryDeviceDisable: "{count} Geräte werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange das Gerät unverändert bleibt.",
   confirmedSummaryDeviceRemove: "{count} Geräte werden samt Entities entfernt. Vorher legt Housekeeper ein Home-Assistant-Backup an und startet nur, wenn es erfolgreich ist. Wiederherstellen legt den Registry-Eintrag neu an; Entities stellt die Integration bereit, wenn sie es kann.",
   confirmedSummaryReplace: "In {count} Entity-Verweisen wird die alte durch die neue Entity ersetzt (Automationen, Skripte, Szenen, Dashboards, Energie). Vorher legt Housekeeper ein Home-Assistant-Backup an. Jede Quelle wird vorab gesichert und lässt sich zurücksetzen, solange sie unverändert ist.",
-  quarantineHint: "Entities und Geräte, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich. Das Deaktivieren machst du über das Journal rückgängig.",
+  quarantineHint: "Entities und Geräte, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich. Mit „Aus Quarantäne holen“ aktivierst du ein Objekt wieder.",
   deviceCandidatesHint: "Geräte ohne funktionierende Entities. Deaktivieren schickt sie in Quarantäne.", removalDeviceHint: "Geräte in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", deviceEntities: "{count} Entities", sortEntities: "Entities",
   replaceTitle: "Verweise ersetzen", replaceHint: "Ersetzt die alte Entity überall dort, wo sie exakt eingetragen ist: Automationen, Skripte, Szenen, Dashboards im Speichermodus und das Energie-Dashboard. Templates und YAML-Dashboards zeigt Housekeeper nur an. Die alte Entity bleibt unverändert; danach kannst du sie in Quarantäne schicken.",
   replaceOld: "Alte Entity (wird ersetzt)", replaceNew: "Neue Entity", replacePreview: "Vorschau erstellen", replaceChanges: "{count} Änderungen", replaceManual: "von Hand prüfen: {count} Templates", replaceNoSources: "Keine Verweise gefunden", replaceSources: "Quellen",
   recurringTitle: "Wiederkehrende Geräte", recurringHint: "Diese Geräte hat Housekeeper vergessen, doch die Integration hat sie wieder angelegt. Deaktivieren ist hier meist sinnvoller; oft muss das Gerät am Quellsystem (Hub, App, Cloud) entfernt werden.", recurringSince: "vergessen am {date} · Integration: {domains}",
 });
 Object.assign(TEXT.en, {
+  releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",
   kindDisableDevice: "Disable device (quarantine, reversible)", kindRemoveDevice: "Remove device (after quarantine, with backup)",
   kindForgetDevice: "Forget device locally (forced, after quarantine, with backup)", kindReplace: "Replace references (old → new, with backup)",
   reason_device_has_working_entities: "At least one entity of the device still works.", reason_has_children: "Other devices hang off this device (hub or coordinator).",
@@ -41,7 +43,7 @@ Object.assign(TEXT.en, {
   confirmWordReplace: "REPLACE", confirmedSummaryDeviceDisable: "{count} devices will be disabled (quarantine). This is reversible at any time while the device stays unchanged.",
   confirmedSummaryDeviceRemove: "{count} devices will be removed together with their entities. Housekeeper creates a Home Assistant backup first and only continues if it succeeds. Restoring recreates the registry entry; the integration provides the entities if it can.",
   confirmedSummaryReplace: "In {count} entity references the old entity is replaced by the new one (automations, scripts, scenes, dashboards, Energy). Housekeeper creates a Home Assistant backup first. Each source is saved beforehand and can be put back while it is unchanged.",
-  quarantineHint: "Entities and devices Housekeeper has disabled. Removal is possible no earlier than after {days} days. You can undo the disabling from the journal.",
+  quarantineHint: "Entities and devices Housekeeper has disabled. Removal is possible no earlier than after {days} days. “Take out of quarantine” enables an object again.",
   deviceCandidatesHint: "Devices without working entities. Disabling sends them to quarantine.", removalDeviceHint: "Devices in quarantine. Removal is possible only after {days} days.", deviceEntities: "{count} entities", sortEntities: "Entities",
   replaceTitle: "Replace references", replaceHint: "Replaces the old entity wherever it is entered exactly: automations, scripts, scenes, storage-mode dashboards and the Energy dashboard. Housekeeper only lists templates and YAML dashboards. The old entity stays as it is; afterwards you can send it to quarantine.",
   replaceOld: "Old entity (to be replaced)", replaceNew: "New entity", replacePreview: "Create preview", replaceChanges: "{count} changes", replaceManual: "check by hand: {count} templates", replaceNoSources: "No references found", replaceSources: "Sources",

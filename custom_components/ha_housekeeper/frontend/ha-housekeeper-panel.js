@@ -449,6 +449,7 @@ const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
 
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
+  releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
   kindDisableDevice: "Gerät deaktivieren (Quarantäne, umkehrbar)", kindRemoveDevice: "Gerät entfernen (nach Quarantäne, mit Backup)",
   kindForgetDevice: "Gerät lokal vergessen (erzwingen, nach Quarantäne, mit Backup)", kindReplace: "Verweise ersetzen (alt → neu, mit Backup)",
   reason_device_has_working_entities: "Mindestens eine Entity des Geräts funktioniert noch.", reason_has_children: "Andere Geräte hängen an diesem Gerät (Hub oder Koordinator).",
@@ -466,13 +467,14 @@ Object.assign(TEXT.de, {
   confirmWordReplace: "ERSETZEN", confirmedSummaryDeviceDisable: "{count} Geräte werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange das Gerät unverändert bleibt.",
   confirmedSummaryDeviceRemove: "{count} Geräte werden samt Entities entfernt. Vorher legt Housekeeper ein Home-Assistant-Backup an und startet nur, wenn es erfolgreich ist. Wiederherstellen legt den Registry-Eintrag neu an; Entities stellt die Integration bereit, wenn sie es kann.",
   confirmedSummaryReplace: "In {count} Entity-Verweisen wird die alte durch die neue Entity ersetzt (Automationen, Skripte, Szenen, Dashboards, Energie). Vorher legt Housekeeper ein Home-Assistant-Backup an. Jede Quelle wird vorab gesichert und lässt sich zurücksetzen, solange sie unverändert ist.",
-  quarantineHint: "Entities und Geräte, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich. Das Deaktivieren machst du über das Journal rückgängig.",
+  quarantineHint: "Entities und Geräte, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich. Mit „Aus Quarantäne holen“ aktivierst du ein Objekt wieder.",
   deviceCandidatesHint: "Geräte ohne funktionierende Entities. Deaktivieren schickt sie in Quarantäne.", removalDeviceHint: "Geräte in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", deviceEntities: "{count} Entities", sortEntities: "Entities",
   replaceTitle: "Verweise ersetzen", replaceHint: "Ersetzt die alte Entity überall dort, wo sie exakt eingetragen ist: Automationen, Skripte, Szenen, Dashboards im Speichermodus und das Energie-Dashboard. Templates und YAML-Dashboards zeigt Housekeeper nur an. Die alte Entity bleibt unverändert; danach kannst du sie in Quarantäne schicken.",
   replaceOld: "Alte Entity (wird ersetzt)", replaceNew: "Neue Entity", replacePreview: "Vorschau erstellen", replaceChanges: "{count} Änderungen", replaceManual: "von Hand prüfen: {count} Templates", replaceNoSources: "Keine Verweise gefunden", replaceSources: "Quellen",
   recurringTitle: "Wiederkehrende Geräte", recurringHint: "Diese Geräte hat Housekeeper vergessen, doch die Integration hat sie wieder angelegt. Deaktivieren ist hier meist sinnvoller; oft muss das Gerät am Quellsystem (Hub, App, Cloud) entfernt werden.", recurringSince: "vergessen am {date} · Integration: {domains}",
 });
 Object.assign(TEXT.en, {
+  releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",
   kindDisableDevice: "Disable device (quarantine, reversible)", kindRemoveDevice: "Remove device (after quarantine, with backup)",
   kindForgetDevice: "Forget device locally (forced, after quarantine, with backup)", kindReplace: "Replace references (old → new, with backup)",
   reason_device_has_working_entities: "At least one entity of the device still works.", reason_has_children: "Other devices hang off this device (hub or coordinator).",
@@ -490,7 +492,7 @@ Object.assign(TEXT.en, {
   confirmWordReplace: "REPLACE", confirmedSummaryDeviceDisable: "{count} devices will be disabled (quarantine). This is reversible at any time while the device stays unchanged.",
   confirmedSummaryDeviceRemove: "{count} devices will be removed together with their entities. Housekeeper creates a Home Assistant backup first and only continues if it succeeds. Restoring recreates the registry entry; the integration provides the entities if it can.",
   confirmedSummaryReplace: "In {count} entity references the old entity is replaced by the new one (automations, scripts, scenes, dashboards, Energy). Housekeeper creates a Home Assistant backup first. Each source is saved beforehand and can be put back while it is unchanged.",
-  quarantineHint: "Entities and devices Housekeeper has disabled. Removal is possible no earlier than after {days} days. You can undo the disabling from the journal.",
+  quarantineHint: "Entities and devices Housekeeper has disabled. Removal is possible no earlier than after {days} days. “Take out of quarantine” enables an object again.",
   deviceCandidatesHint: "Devices without working entities. Disabling sends them to quarantine.", removalDeviceHint: "Devices in quarantine. Removal is possible only after {days} days.", deviceEntities: "{count} entities", sortEntities: "Entities",
   replaceTitle: "Replace references", replaceHint: "Replaces the old entity wherever it is entered exactly: automations, scripts, scenes, storage-mode dashboards and the Energy dashboard. Housekeeper only lists templates and YAML dashboards. The old entity stays as it is; afterwards you can send it to quarantine.",
   replaceOld: "Old entity (to be replaced)", replaceNew: "New entity", replacePreview: "Create preview", replaceChanges: "{count} changes", replaceManual: "check by hand: {count} templates", replaceNoSources: "No references found", replaceSources: "Sources",
@@ -850,6 +852,7 @@ class StylesMixin {
       .row .tile{width:34px;height:34px}.row-text{min-width:0;display:grid;gap:2px}.row-text strong{overflow:hidden;font-size:calc(13px*var(--hk-fs,1));font-weight:600;text-overflow:ellipsis;white-space:nowrap}.row-text small{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));text-overflow:ellipsis;white-space:nowrap}.date{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}
       .pill{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:3px 9px;border-radius:99px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;white-space:nowrap;color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 13%,transparent)}
       .pill.ok{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.pill.warn{color:color-mix(in srgb,var(--hk-amber) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-amber) 16%,transparent)}.pill.red{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.pill.mute{color:color-mix(in srgb,var(--hk-gray) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-gray) 16%,transparent)}.pill.violet{color:color-mix(in srgb,var(--hk-violet) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
+      .linklike{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.linklike:hover{text-decoration:underline}.qrow{grid-template-columns:auto minmax(0,1fr) auto auto}.qconfirm{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.factaction{display:block;margin-top:6px}
       .spark{display:inline-flex;align-items:flex-end;gap:2px;height:22px}.spark i{display:block;width:5px;min-height:2px;border-radius:1px;background:var(--hk-blue)}
       .bar{display:flex;height:10px;margin:16px;border-radius:99px;overflow:hidden;background:var(--hk-soft)}.bar i{display:block;min-width:2px}.legend{display:grid;gap:9px;padding:0 16px 16px;font-size:calc(12px*var(--hk-fs,1))}.legend div{display:flex;align-items:center;justify-content:space-between;gap:8px}.legend span{display:flex;align-items:center;gap:8px}.dot{width:9px;height:9px;border-radius:50%;background:var(--hk-blue)}
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
@@ -1408,15 +1411,40 @@ class CleanupMixin {
 
   quarantineOf(objectId) { return (this.data?.quarantine || []).find(q => q.object_id === objectId) || null; }
 
+  // Takes one disabled object out of quarantine again: the journal's undo for just that object, after a question.
+  releaseControl(q) {
+    const key = `${q.object_type || "entity"}:${q.object_id}`;
+    if (this.releaseConfirm === key) {
+      return `<span class="qconfirm" role="group" aria-label="${this.esc(this.t("releaseQuestion"))}"><span>${this.t("releaseQuestion")}</span><button class="btn" data-release-yes="${this.esc(key)}">${this.t("yes")}</button><button class="btn" data-release-no>${this.t("cancelRun")}</button></span>`;
+    }
+    return `<button class="btn" data-release="${this.esc(key)}" ${this.cleanupRunning() ? "disabled" : ""}>${this.t("releaseAction")}</button>`;
+  }
+
+  async releaseQuarantine(key) {
+    const q = (this.data?.quarantine || []).find(e => `${e.object_type || "entity"}:${e.object_id}` === key);
+    this.releaseConfirm = null;
+    if (!q) return this.render();
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/plan_undo", plan_id: q.plan_id, object_ids: [q.object_id] });
+      this.releaseMessage = res.results.length
+        ? res.results.map(r => `${q.object_id}: ${this.t(`undo_${r.outcome}`)}`).join(" · ")
+        : `${q.object_id}: ${this.t("releaseNothing")}`;
+      this.journal = null;
+      if (this.data) await this.load(false);
+    } catch (err) { this.releaseMessage = this.errText(err); }
+    this.render();
+  }
+
   quarantineCard() {
     const entries = this.data.quarantine || [];
     if (!entries.length) return "";
     const limit = this.data.meta.quarantine_days ?? 14;
     const rows = entries.map(q => {
       const type = q.object_type || "entity", item = this.findObject(`${type}:${q.object_id}`), days = this.daysSince(q.since), left = limit - days;
-      return `<button class="row rel" data-object="${this.esc(`${type}:${q.object_id}`)}"><span class="tile mute"><ha-icon icon="${type === "device" ? "mdi:devices" : "mdi:archive-clock-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item?.name || q.object_id)}</strong><small>${this.esc(type === "device" ? [item?.manufacturer, item?.model].filter(Boolean).join(" ") || q.object_id : q.object_id)} · ${this.t("quarantineSince", { date: this.formatDate(q.since), days })}</small></span><span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("quarantineWait", { days: left }) : this.t("quarantineReady")}</span></button>`;
+      return `<div class="row qrow"><span class="tile mute"><ha-icon icon="${type === "device" ? "mdi:devices" : "mdi:archive-clock-outline"}"></ha-icon></span><span class="row-text"><strong><button class="linklike" data-object="${this.esc(`${type}:${q.object_id}`)}">${this.esc(item?.name || q.object_id)}</button></strong><small>${this.esc(type === "device" ? [item?.manufacturer, item?.model].filter(Boolean).join(" ") || q.object_id : q.object_id)} · ${this.t("quarantineSince", { date: this.formatDate(q.since), days })}</small></span><span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("quarantineWait", { days: left }) : this.t("quarantineReady")}</span>${this.releaseControl(q)}</div>`;
     }).join("");
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("quarantine")} (${entries.length})</h2><p>${this.t("quarantineHint", { days: limit })}</p></div></div>${rows}</div>`;
+    const message = this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("quarantine")} (${entries.length})</h2><p>${this.t("quarantineHint", { days: limit })}</p></div></div>${rows}${message}</div>`;
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them.
@@ -2265,8 +2293,8 @@ class DiagnosisMixin {
       facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
     }
     if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
-    const quarantined = item.object_type === "entity" ? this.quarantineOf(item.object_id) : null;
-    if (quarantined) facts.push([this.t("quarantine"), this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })]);
+    const quarantined = ["entity", "device"].includes(item.object_type) ? this.quarantineOf(item.object_id) : null;
+    if (quarantined) facts.push([this.t("quarantine"), `${this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })}<span class="factaction">${this.releaseControl(quarantined)}</span>`]);
     if (item.object_type === "entity" && this.data.meta.recorder_available) facts.push([this.t("longTermStats"), this.t(item.has_statistics ? "yes" : "no")]);
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
@@ -3402,6 +3430,9 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-meter-mode]")?.addEventListener("change", e => { this.meterMode = e.target.value; this.render(); });
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-cost-sort]").forEach(el => el.onclick = () => { this.costSort = el.dataset.costSort; this.render(); });
+    root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
+    root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));
+    root.querySelectorAll("[data-release-no]").forEach(el => el.onclick = () => { this.releaseConfirm = null; this.render(); });
     root.querySelector("[data-runs-refresh]")?.addEventListener("click", () => this.loadRuns());
     root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.pages.relentries = 1; this.pages.relunstable = 1; this.loadReliability(); });
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));

@@ -171,8 +171,8 @@ class DiagnosisMixin {
       facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
     }
     if (item.object_type === "entity") facts.push([this.t("refCount"), this.formatNumber(usage)]);
-    const quarantined = item.object_type === "entity" ? this.quarantineOf(item.object_id) : null;
-    if (quarantined) facts.push([this.t("quarantine"), this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })]);
+    const quarantined = ["entity", "device"].includes(item.object_type) ? this.quarantineOf(item.object_id) : null;
+    if (quarantined) facts.push([this.t("quarantine"), `${this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })}<span class="factaction">${this.releaseControl(quarantined)}</span>`]);
     if (item.object_type === "entity" && this.data.meta.recorder_available) facts.push([this.t("longTermStats"), this.t(item.has_statistics ? "yes" : "no")]);
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;

@@ -2290,3 +2290,37 @@ test("the reliability and runs lists are split into pages", () => {
   html = shadow.innerHTML;
   assert.ok(html.includes("Lauf 19") && !html.includes("Lauf 20") && html.includes("1–20"));
 });
+
+test("an object leaves quarantine after a question, through the undo of just that object", async () => {
+  const { el, shadow } = panel("en");
+  const item = id => ({ object_type: "entity", object_id: id, name: id.toUpperCase(), status: "disabled" });
+  el.data = { ...DATA, meta: { ...DATA.meta, quarantine_days: 14 }, objects: [item("sensor.a"), item("sensor.b")], edges: [], findings: [],
+    quarantine: [{ object_id: "sensor.a", object_type: "entity", plan_id: "p1", since: new Date().toISOString() }, { object_id: "sensor.b", plan_id: "p2", since: new Date().toISOString() }] };
+  el.journal = []; el.view = "cleanup";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.equal(html.split("data-release=\"").length - 1, 2);
+  assert.ok(html.includes('class="linklike" data-object="entity:sensor.a"'));
+  el.releaseConfirm = "entity:sensor.a"; el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("Enable it again?") && html.includes('data-release-yes="entity:sensor.a"') && html.includes('data-release="entity:sensor.b"'));
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push({ ...msg }); return msg.type.endsWith("plan_list") ? { plans: [] } : { results: [{ object_id: "sensor.a", outcome: "undone" }], status: "undone" }; };
+  el.load = async () => { el.data = { ...el.data, quarantine: el.data.quarantine.slice(1) }; };
+  await el.releaseQuarantine("entity:sensor.a");
+  assert.equal(JSON.stringify(calls.filter(c => c.type.endsWith("plan_undo"))), JSON.stringify([{ type: "ha_housekeeper/plan_undo", plan_id: "p1", object_ids: ["sensor.a"] }]));
+  html = shadow.innerHTML;
+  assert.ok(html.includes("sensor.a: enabled again") && html.includes("Quarantine (1)") && el.releaseConfirm === null);
+  el._hass.callWS = async () => { throw new Error("boom"); };
+  await el.releaseQuarantine("entity:sensor.b");
+  assert.ok(shadow.innerHTML.includes("boom"));
+});
+
+test("a quarantined entity's detail page offers to take it out of quarantine", () => {
+  const { el, shadow } = panel("en");
+  const entity = { object_type: "entity", object_id: "sensor.q", name: "Q", status: "disabled", disabled_by: "user", state: null };
+  el.data = { ...DATA, objects: [...DATA.objects, entity], quarantine: [{ object_id: "sensor.q", object_type: "entity", plan_id: "p1", since: new Date().toISOString() }] };
+  el.selected = entity; el.view = "detail"; el.detailTab = "overview";
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-release="entity:sensor.q"'));
+});

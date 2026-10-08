@@ -8,15 +8,40 @@ class CleanupMixin {
 
   quarantineOf(objectId) { return (this.data?.quarantine || []).find(q => q.object_id === objectId) || null; }
 
+  // Takes one disabled object out of quarantine again: the journal's undo for just that object, after a question.
+  releaseControl(q) {
+    const key = `${q.object_type || "entity"}:${q.object_id}`;
+    if (this.releaseConfirm === key) {
+      return `<span class="qconfirm" role="group" aria-label="${this.esc(this.t("releaseQuestion"))}"><span>${this.t("releaseQuestion")}</span><button class="btn" data-release-yes="${this.esc(key)}">${this.t("yes")}</button><button class="btn" data-release-no>${this.t("cancelRun")}</button></span>`;
+    }
+    return `<button class="btn" data-release="${this.esc(key)}" ${this.cleanupRunning() ? "disabled" : ""}>${this.t("releaseAction")}</button>`;
+  }
+
+  async releaseQuarantine(key) {
+    const q = (this.data?.quarantine || []).find(e => `${e.object_type || "entity"}:${e.object_id}` === key);
+    this.releaseConfirm = null;
+    if (!q) return this.render();
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/plan_undo", plan_id: q.plan_id, object_ids: [q.object_id] });
+      this.releaseMessage = res.results.length
+        ? res.results.map(r => `${q.object_id}: ${this.t(`undo_${r.outcome}`)}`).join(" · ")
+        : `${q.object_id}: ${this.t("releaseNothing")}`;
+      this.journal = null;
+      if (this.data) await this.load(false);
+    } catch (err) { this.releaseMessage = this.errText(err); }
+    this.render();
+  }
+
   quarantineCard() {
     const entries = this.data.quarantine || [];
     if (!entries.length) return "";
     const limit = this.data.meta.quarantine_days ?? 14;
     const rows = entries.map(q => {
       const type = q.object_type || "entity", item = this.findObject(`${type}:${q.object_id}`), days = this.daysSince(q.since), left = limit - days;
-      return `<button class="row rel" data-object="${this.esc(`${type}:${q.object_id}`)}"><span class="tile mute"><ha-icon icon="${type === "device" ? "mdi:devices" : "mdi:archive-clock-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item?.name || q.object_id)}</strong><small>${this.esc(type === "device" ? [item?.manufacturer, item?.model].filter(Boolean).join(" ") || q.object_id : q.object_id)} · ${this.t("quarantineSince", { date: this.formatDate(q.since), days })}</small></span><span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("quarantineWait", { days: left }) : this.t("quarantineReady")}</span></button>`;
+      return `<div class="row qrow"><span class="tile mute"><ha-icon icon="${type === "device" ? "mdi:devices" : "mdi:archive-clock-outline"}"></ha-icon></span><span class="row-text"><strong><button class="linklike" data-object="${this.esc(`${type}:${q.object_id}`)}">${this.esc(item?.name || q.object_id)}</button></strong><small>${this.esc(type === "device" ? [item?.manufacturer, item?.model].filter(Boolean).join(" ") || q.object_id : q.object_id)} · ${this.t("quarantineSince", { date: this.formatDate(q.since), days })}</small></span><span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("quarantineWait", { days: left }) : this.t("quarantineReady")}</span>${this.releaseControl(q)}</div>`;
     }).join("");
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("quarantine")} (${entries.length})</h2><p>${this.t("quarantineHint", { days: limit })}</p></div></div>${rows}</div>`;
+    const message = this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("quarantine")} (${entries.length})</h2><p>${this.t("quarantineHint", { days: limit })}</p></div></div>${rows}${message}</div>`;
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them.
