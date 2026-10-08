@@ -185,14 +185,13 @@ async def test_collect_never_leaks_secrets(hass: HomeAssistant) -> None:
         },
     )
     entry.add_to_hass(hass)
-    hass.data["webhook"] = {
-        SECRETS[4]: {
-            "domain": "mobile_app",
-            "name": "Phone",
-            "handler": object(),
-            "local_only": False,
-        }
-    }
+    from homeassistant.components import webhook
+    from homeassistant.setup import async_setup_component
+
+    assert await async_setup_component(hass, "webhook", {})
+    webhook.async_register(
+        hass, "mobile_app", "Phone", SECRETS[4], lambda *args: None, allowed_methods=["POST"]
+    )
     raw_data = collect(hass, ["light.a"])
     result = exposure(hass, snapshot("light.a"))
     for payload in (raw_data, result):
@@ -238,3 +237,15 @@ async def test_collect_runs_against_real_exposed_entities(hass: HomeAssistant) -
     async_expose_entity(hass, "conversation", "light.a", True)
     exposed = collect(hass, ["light.a", "sensor.z"])["assistants"]["conversation"]["exposed"]
     assert "light.a" in exposed and "sensor.z" not in exposed
+
+
+async def test_webhooks_are_counted_per_integration_from_the_real_registry(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.components import webhook
+    from homeassistant.setup import async_setup_component
+
+    assert await async_setup_component(hass, "webhook", {})
+    for index, domain in enumerate(("mobile_app", "mobile_app", "gone")):
+        webhook.async_register(hass, domain, "n", f"id{index}", lambda *args: None)
+    assert collect(hass, [])["webhooks"] == {"mobile_app": 2, "gone": 1}

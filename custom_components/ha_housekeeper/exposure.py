@@ -96,10 +96,10 @@ def _webhook_counts(hass: HomeAssistant) -> dict[str, int]:
     """Webhooks per integration. Only the domain of a registration is read, never its id."""
     counts: dict[str, int] = {}
     registered = hass.data.get("webhook")
-    if not isinstance(registered, dict):
+    if not isinstance(registered, Mapping):
         return counts
     for registration in list(registered.values()):
-        domain = registration.get("domain") if isinstance(registration, dict) else None
+        domain = getattr(registration, "domain", None)
         key = domain if isinstance(domain, str) else ""
         counts[key] = counts.get(key, 0) + 1
     return counts
