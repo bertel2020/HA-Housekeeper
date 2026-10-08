@@ -164,7 +164,7 @@ class UnusedMixin {
     const pg = this.paginate("unreferenced", rows);
     const dash = `<span class="muted">–</span>`;
     const columns = [
-      { key: "name", label: "utName", dir: "asc", cell: o => `<div title="${this.esc(o.name)}&#10;${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
+      { key: "name", label: "utName", dir: "asc", cell: o => `<div data-tip="${this.esc(o.name)}" data-tip-sub="${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
       { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
       { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
       { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },

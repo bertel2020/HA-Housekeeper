@@ -1076,7 +1076,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.unref td:first-child{width:280px;max-width:280px}.tablewrap.unref .cut{display:block;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.tablewrap.unref td:first-child{width:auto;max-width:none}.tablewrap.unref .cut{max-width:none}}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.tablewrap.unref td:first-child{width:280px;max-width:280px}.tablewrap.unref .cut{display:block;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.tablewrap.unref td:first-child{width:auto;max-width:none}.tablewrap.unref .cut{max-width:none}}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -2626,7 +2626,7 @@ class UnusedMixin {
     const pg = this.paginate("unreferenced", rows);
     const dash = `<span class="muted">–</span>`;
     const columns = [
-      { key: "name", label: "utName", dir: "asc", cell: o => `<div title="${this.esc(o.name)}&#10;${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
+      { key: "name", label: "utName", dir: "asc", cell: o => `<div data-tip="${this.esc(o.name)}" data-tip-sub="${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
       { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
       { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
       { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },
@@ -4589,6 +4589,20 @@ class HAHousekeeperPanel extends HTMLElement {
 
   edgesTo(key) { return this.edgeIndex().byTarget.get(key) || []; }
 
+  // One tooltip for name and id: the name in bold, the id below. The browser's own tooltip cannot style the two lines.
+  showTip(el) {
+    const root = this.shadowRoot;
+    let tip = this._tip;
+    if (!tip || tip.parentNode !== root) { tip = this._tip = document.createElement("div"); tip.className = "tip"; tip.setAttribute("role", "tooltip"); root.appendChild(tip); }
+    tip.innerHTML = `<strong>${this.esc(el.dataset.tip)}</strong><span>${this.esc(el.dataset.tipSub || "")}</span>`;
+    const box = el.getBoundingClientRect();
+    tip.style.left = `${Math.max(8, Math.min(box.left, globalThis.innerWidth - 320))}px`;
+    tip.style.top = `${box.bottom + 6}px`;
+    tip.hidden = false;
+  }
+
+  hideTip() { if (this._tip) this._tip.hidden = true; }
+
   render() {
     if (!this.shadowRoot) return;
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
@@ -4789,6 +4803,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
+    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip(); });
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));

@@ -363,6 +363,20 @@ class HAHousekeeperPanel extends HTMLElement {
 
   edgesTo(key) { return this.edgeIndex().byTarget.get(key) || []; }
 
+  // One tooltip for name and id: the name in bold, the id below. The browser's own tooltip cannot style the two lines.
+  showTip(el) {
+    const root = this.shadowRoot;
+    let tip = this._tip;
+    if (!tip || tip.parentNode !== root) { tip = this._tip = document.createElement("div"); tip.className = "tip"; tip.setAttribute("role", "tooltip"); root.appendChild(tip); }
+    tip.innerHTML = `<strong>${this.esc(el.dataset.tip)}</strong><span>${this.esc(el.dataset.tipSub || "")}</span>`;
+    const box = el.getBoundingClientRect();
+    tip.style.left = `${Math.max(8, Math.min(box.left, globalThis.innerWidth - 320))}px`;
+    tip.style.top = `${box.bottom + 6}px`;
+    tip.hidden = false;
+  }
+
+  hideTip() { if (this._tip) this._tip.hidden = true; }
+
   render() {
     if (!this.shadowRoot) return;
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
@@ -563,6 +577,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
+    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip(); });
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
