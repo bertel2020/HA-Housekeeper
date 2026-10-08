@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.8.1 - 2026-10-08
+
+Zwei Korrekturen aus dem Handtest in einer echten Instanz (Home Assistant
+2026.10, rund 8.000 Objekte). Automatisiert gegen Home Assistant 2026.8.3 und
+die jeweils neueste vom Testpaket unterstützte Version getestet.
+
+### Behoben
+
+- **Scans beim Start von Home Assistant** waren zu früh: Home Assistant meldet
+  „gestartet“, während langsame Integrationen noch Entities anlegen. Der
+  Start-Scan stufte deshalb Entities ohne Zustand (vor allem Automationen) als
+  „verwaist“ ein, zählte Reparaturhinweise falsch und setzte das „beobachtet
+  seit“ zurück, sodass lange nicht verfügbare Entities unter die Schwelle
+  fielen. Jetzt sind Scans in den ersten fünf Minuten nach einem Start
+  vorläufig: Sie ändern keine gespeicherten Beobachtungen, Reparaturhinweise
+  und keinen Verlauf, die Zähler-Sensoren zeigen „unbekannt“, und Aufräumen ist
+  gesperrt. Danach folgt ein endgültiger Scan. Das Panel zeigt dazu einen
+  Hinweis und lädt sich selbst neu.
+- Der **Update-Preflight** zählte auch gespeicherte Reparaturen, die gerade
+  keine Integration meldet, und zeigte so Hunderte offene Reparaturen. Es
+  zählen nur aktive. Das Backup-Alter steht jetzt als „vor 1 h“.
+
+---
+
+### English
+
+Two fixes from a hand test in a real instance (Home Assistant 2026.10, about
+8,000 objects). Tested automatically against Home Assistant 2026.8.3 and the
+latest version the test package supports.
+
+#### Fixed
+
+- **Scans while Home Assistant starts** ran too early: Home Assistant reports
+  “started” while slow integrations are still adding entities. The startup scan
+  therefore classified entities without a state (mostly automations) as
+  “orphaned”, counted repairs hints wrongly and reset “observed since”, so that
+  entities that had been unavailable for a long time fell below the threshold.
+  Scans in the first five minutes after a start are now preliminary: they change
+  no stored observations, repairs hints or history, the count sensors show
+  “unknown”, and cleanup is locked. A final scan follows. The panel shows a
+  notice and reloads itself.
+- The **update preflight** also counted stored repairs that no integration
+  raises right now and so showed hundreds of open repairs. Only active ones
+  count. The backup age now reads “1 h ago”.
+
 ## 0.8.0 - 2026-10-08
 
 Sicherheits- und Kompatibilitätsrelease nach einem Code-Review. **Housekeeper
