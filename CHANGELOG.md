@@ -12,8 +12,11 @@ geändert oder gelöscht.
 
 - **Automationsläufe (Menü Betrieb):** Housekeeper zählt alle 15 Minuten die
   Läufe aus den Traces von Home Assistant und behält nur Tageszahlen. Die
-  Ansicht nennt Automationen und Skripte, die häufig fehlschlagen, nie laufen,
-  ungewöhnlich oft laufen oder kaum noch laufen, jeweils mit den Zahlen dahinter.
+  Ansicht nennt Automationen und Skripte, die häufig fehlschlagen, sich selbst
+  überlappen („Already running“), nie erfolgreich enden, fast immer an einer
+  Bedingung enden, plötzlich ungewöhnlich oft oder lange laufen oder nach einem
+  Update öfter fehlschlagen, dazu statische Hinweise auf lange Wartezeiten ohne
+  Zeitgrenze; jeweils mit den Zahlen dahinter.
   Auf der Detailseite zeigt ein Reiter „Läufe“ den Verlauf.
 - **Last (Menü Betrieb):** Welche Entities, Integrationen und Ereignistypen den
   Recorder am meisten beschreiben, für 24 Stunden oder 7 Tage: Stürme,
@@ -63,8 +66,11 @@ deleted.
 
 - **Automation runs (Operation menu):** Housekeeper counts runs from Home
   Assistant's traces every 15 minutes and keeps daily numbers only. The view
-  names automations and scripts that often fail, never run, run unusually often
-  or hardly run any more, each with the numbers behind it. A “Runs” tab on the
+  names automations and scripts that often fail, overlap themselves (“Already
+  running”), never finish successfully, almost always stop at a condition,
+  suddenly run unusually often or long, or fail more often after an update,
+  plus static hints on long waits without a timeout; each with the numbers
+  behind it. A “Runs” tab on the
   detail page shows the history.
 - **Load (Operation menu):** Which entities, integrations and event types write
   the most to the recorder, for 24 hours or 7 days: storms, attribute floods,
