@@ -147,9 +147,23 @@ def _restore_data(entry: Any) -> dict[str, Any]:
         hidden_by=_value(entry.hidden_by),
         disabled_by=_value(entry.disabled_by),
         labels=sorted(entry.labels),
-        aliases=sorted(entry.aliases),
+        aliases=sorted(alias for alias in entry.aliases if isinstance(alias, str)),
+        # The "use the computed name" sentinel of newer Home Assistant versions is not text.
+        computed_alias=any(not isinstance(alias, str) for alias in entry.aliases),
     )
     return data
+
+
+def _restored_aliases(data: dict[str, Any]) -> set[Any]:
+    """The aliases to put back, including the computed-name marker where there was one."""
+    aliases: set[Any] = set(data["aliases"])
+    if data.get("computed_alias"):
+        try:
+            from homeassistant.helpers.entity_registry import COMPUTED_NAME
+        except ImportError:  # a Home Assistant version without the marker
+            return aliases
+        aliases.add(COMPUTED_NAME)
+    return aliases
 
 
 def _device_restore_data(entry: Any) -> dict[str, Any]:
@@ -1246,7 +1260,7 @@ class CleanupRunner:
             area_id=data["area_id"],
             device_class=data["device_class"],
             labels=set(data["labels"]),
-            aliases=set(data["aliases"]),
+            aliases=_restored_aliases(data),
         )
         return "undone"
 

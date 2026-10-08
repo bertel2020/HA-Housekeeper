@@ -89,3 +89,61 @@ async def test_devices_with_longer_identifiers_do_not_break_the_scan(hass: HomeA
     snapshot = await InventoryScanner(hass).async_scan()
     item = next(o for o in snapshot["objects"] if o["object_id"] == device.id)
     assert item["identifiers"] == ["odd:a:b"]
+
+
+def test_the_computed_name_marker_of_newer_versions_is_text_in_the_snapshot() -> None:
+    from enum import Enum
+
+    from custom_components.ha_housekeeper.inventory import alias_texts
+
+    class Marker(Enum):
+        COMPUTED = 1
+
+    assert alias_texts({"b", Marker.COMPUTED, "a"}, "Lamp") == ["Lamp", "a", "b"]
+    assert alias_texts({Marker.COMPUTED}, None) == []
+    assert alias_texts(set(), "Lamp") == []
+
+
+async def test_an_entity_with_the_computed_name_alias_scans_and_has_text_aliases(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers import entity_registry as er
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    computed = getattr(er, "COMPUTED_NAME", None)
+    if computed is None:
+        pytest.skip("this Home Assistant version has no computed-name alias")
+    entry = MockConfigEntry(domain="hue", title="Hue")
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    lamp = registry.async_get_or_create(
+        "light", "hue", "u2", config_entry=entry, original_name="Desk lamp"
+    )
+    registry.async_update_entity(lamp.entity_id, aliases={computed, "schreibtisch"})
+    hass.states.async_set(lamp.entity_id, "on")
+    snapshot = await InventoryScanner(hass).async_scan()
+    shown = {o["object_id"]: o for o in snapshot["objects"]}[lamp.entity_id]
+    assert shown["aliases"] == ["Desk lamp", "schreibtisch"]
+
+
+async def test_the_journal_data_of_an_entity_with_the_computed_name_alias_is_plain_json(
+    hass: HomeAssistant,
+) -> None:
+    import json
+
+    from homeassistant.helpers import entity_registry as er
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper.cleanup_exec import _restore_data, _restored_aliases
+
+    computed = getattr(er, "COMPUTED_NAME", None)
+    if computed is None:
+        pytest.skip("this Home Assistant version has no computed-name alias")
+    entry = MockConfigEntry(domain="hue", title="Hue")
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    lamp = registry.async_get_or_create("light", "hue", "u3", config_entry=entry)
+    registry.async_update_entity(lamp.entity_id, aliases={computed, "b", "a"})
+    data = _restore_data(registry.async_get(lamp.entity_id))
+    assert json.loads(json.dumps(data))["aliases"] == ["a", "b"] and data["computed_alias"] is True
+    assert _restored_aliases(data) == {computed, "a", "b"}

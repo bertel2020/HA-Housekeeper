@@ -190,7 +190,7 @@ def evaluate(
         for eid in raw["assistants"][name]["exposed"]:
             if eid not in entities or eid in ignored:
                 continue
-            for alias in entities[eid].get("aliases") or []:
+            for alias in (a for a in entities[eid].get("aliases") or [] if isinstance(a, str)):
                 key = normalize_alias(alias)
                 if key:
                     group = aliases.setdefault(key, {"alias": alias, "entities": set()})

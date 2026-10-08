@@ -249,3 +249,12 @@ async def test_webhooks_are_counted_per_integration_from_the_real_registry(
     for index, domain in enumerate(("mobile_app", "mobile_app", "gone")):
         webhook.async_register(hass, domain, "n", f"id{index}", lambda *args: None)
     assert collect(hass, [])["webhooks"] == {"mobile_app": 2, "gone": 1}
+
+
+def test_a_non_text_alias_is_ignored() -> None:
+    entities = {
+        "light.a": entity("A", aliases=[object(), "x"]),
+        "light.b": entity("B", aliases=["x"]),
+    }
+    result = evaluate(raw(exposed=["light.a", "light.b"]), entities, set())
+    assert [f["kind"] for f in result["findings"]] == ["alias_duplicate"]

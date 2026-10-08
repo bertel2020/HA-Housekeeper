@@ -150,6 +150,18 @@ def _entity_status(
     return "active", "state_available"
 
 
+def alias_texts(aliases: Any, computed_name: str | None = None) -> list[str]:
+    """The aliases of a registry entry as sorted text.
+
+    Newer Home Assistant versions mark "use the computed name" with a sentinel instead of text.
+    That sentinel stands for the entity's own name, so it is replaced by it (or dropped without one).
+    """
+    texts = {alias for alias in aliases if isinstance(alias, str)}
+    if computed_name and any(not isinstance(alias, str) for alias in aliases):
+        texts.add(computed_name)
+    return sorted(texts)
+
+
 def _entity_item(
     entry: Any, state: Any, config_entries: dict[str, Any], devices: dict[str, Any]
 ) -> dict[str, Any]:
@@ -163,7 +175,10 @@ def _entity_item(
         "platform": entry.platform,
         "original_name": entry.original_name,
         "icon": entry.icon or entry.original_icon,
-        "aliases": sorted(entry.aliases),
+        "aliases": alias_texts(
+            entry.aliases,
+            entry.name or entry.original_name or (state.name if state else None),
+        ),
         "state_class": state.attributes.get("state_class") if state else None,
         "device_class": (state.attributes.get("device_class") if state else None)
         or getattr(entry, "device_class", None)
