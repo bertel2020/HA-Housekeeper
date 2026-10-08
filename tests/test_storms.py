@@ -204,11 +204,13 @@ async def test_the_recorder_separates_new_states_from_updates_without_one(
     from homeassistant.util import dt as dt_util
 
     now = dt_util.utcnow()
-    freezer.move_to(now - timedelta(hours=3))
+    # Ten past a full hour, so the five later updates share one hour bucket whatever time the test runs.
+    base = (now - timedelta(hours=3)).replace(minute=10, second=0, microsecond=0)
+    freezer.move_to(base)
     hass.states.async_set("sensor.loud", "1", {"blob": "x" * 5000})
     hass.states.async_set("sensor.calm", "1")
     for i in range(1, 6):
-        freezer.move_to(now - timedelta(hours=3) + timedelta(minutes=i))
+        freezer.move_to(base + timedelta(minutes=i))
         hass.states.async_set(
             "sensor.loud", "1", {"blob": "x" * 5000, "n": i}
         )  # same state, new attributes
