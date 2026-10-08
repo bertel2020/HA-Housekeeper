@@ -28,7 +28,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -96,6 +96,12 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
       if (t.endsWith("/compare")) return trend;
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };
       if (t.endsWith("/backup_health")) return BACKUP;
+      if (t.endsWith("/automation_runs")) return { schema: 1, window_days: 7, since: "2026-10-01T08:00:00+00:00", total: 3, items: [
+        { object_type: "automation", entity_id: "automation.flurlicht", name: "Flurlicht", status: "active", runs: 48, ok: 30, errors: 18, conditions: 0, mean_ms: 1200, max_ms: 95000, per_day: [2, 5, 8, 9, 7, 9, 8], lower_bound: true,
+          findings: [{ kind: "failing", level: "warn", errors: 18, runs: 48, step: "action/2", step_count: 12 }, { kind: "long_wait", level: "info", seconds: 600 }] },
+        { object_type: "script", entity_id: "script.nachtlicht", name: "Nachtlicht", status: "active", runs: 6, ok: 0, errors: 6, conditions: 0, mean_ms: null, max_ms: null, per_day: [0, 0, 1, 2, 1, 1, 1], lower_bound: false,
+          findings: [{ kind: "never_ok", level: "red", runs: 6 }] },
+        { object_type: "automation", entity_id: "automation.heizung", name: "Heizung Nacht", status: "active", runs: 140, ok: 140, errors: 0, conditions: 0, mean_ms: 300, max_ms: 900, per_day: [20, 20, 20, 20, 20, 20, 20], lower_bound: false, findings: [] }] };
       if (t.endsWith("/reliability")) return { available: true, busy: false, cached: false, took_ms: 2800, window_days: 7, schema: 1, unstable: { total: 31, items: [
         { entity_id: "sensor.tuer_batterie", name: "Türsensor Batterie", entry_id: "e2", entry_title: "Zigbee", episodes: 12, per_day: 1.7, total_seconds: 4800, mean_seconds: 400, level: "flapping", pattern_hour: 3, used: 2 },
         { entity_id: "sensor.garten_feuchte", name: "Gartenfeuchte", entry_id: "e2", entry_title: "Zigbee", episodes: 4, per_day: 0.6, total_seconds: 120, mean_seconds: 30, level: "unstable", pattern_hour: null, used: 0 }] }, entries: [

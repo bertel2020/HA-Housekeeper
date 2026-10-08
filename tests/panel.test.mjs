@@ -1547,7 +1547,7 @@ test("the navigation groups every view once, with settings at the foot", () => {
   el.render();
   const html = shadow.innerHTML;
   const menus = [...html.matchAll(/<div class="navmenu[^"]*"><button[^>]*data-menu="([^"]+)"/g)].map(m => m[1]);
-  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupExplore", "navGroupMaintain", "navGroupSpecial"]), "three menus after the direct entries");
+  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupOperation", "navGroupExplore", "navGroupMaintain", "navGroupSpecial"]), "four menus after the direct entries");
   assert.ok(html.includes('<nav class="topnav" id="topnav" aria-label="Main navigation">'));
   const order = ["overview", "findingsNav", "changes", "inventory", "cleanup", "maintenance", "batteries", "settings"].map(v => html.indexOf(`data-view="${v}"`));
   assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), "views keep their order and settings comes last");
@@ -2185,4 +2185,86 @@ test("without any unstable entity the card says so, and an old backend without t
   el._hass = { language: "en", callWS: async () => RELIABILITY };
   await el.loadReliability();
   assert.ok(!shadow.innerHTML.includes("Unstable entities"));
+});
+
+const RUNS = {
+  schema: 1, window_days: 7, since: "2026-10-01T08:00:00+00:00", total: 3,
+  items: [
+    { object_type: "automation", entity_id: "automation.flur", name: "Flur <b>Licht</b>", status: "active", runs: 48, ok: 30, errors: 18, conditions: 0, mean_ms: 1200, max_ms: 95000, per_day: [2, 5, 8, 9, 7, 9, 8], lower_bound: true,
+      findings: [{ kind: "failing", level: "warn", errors: 18, runs: 48, step: "action/2", step_count: 12 }, { kind: "long_wait", level: "info", seconds: 600 },
+        { kind: "after_update", level: "warn", event: "ha_version", to: "2026.10.0", rate_before: 5, rate_after: 40 }] },
+    { object_type: "script", entity_id: "script.nacht", name: "Nacht", status: "active", runs: 6, ok: 0, errors: 6, conditions: 0, mean_ms: null, max_ms: null, per_day: [0, 0, 1, 2, 1, 1, 1], lower_bound: false,
+      findings: [{ kind: "never_ok", level: "red", runs: 6 }] },
+    { object_type: "automation", entity_id: "automation.heizung", name: "Heizung", status: "active", runs: 140, ok: 140, errors: 0, conditions: 0, mean_ms: 300, max_ms: 900, per_day: [20, 20, 20, 20, 20, 20, 20], lower_bound: false, findings: [] },
+  ],
+};
+
+test("the runs view names each finding in words with its numbers and escapes names", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "runs";
+  el._hass = { language: "en", callWS: async () => RUNS };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Counting the runs"));
+  await el.loadRuns();
+  const html = shadow.innerHTML;
+  for (const text of ["Needs a look", "Counted since", "Flur &lt;b&gt;Licht&lt;/b&gt;", "18 of 48 runs ended with an error.", "Mostly at step action/2 (12 times).",
+    "Contains a wait of 10 min; it is lost on a restart.", "Error rate 40 % after the update (Home Assistant 2026.10.0) instead of 5 % before. Close in time, not proven as the cause.",
+    "No run succeeded (6 runs).", "at least, runs may be missing", "failing", "never succeeds", "after update", "long wait", "All counted runs", "1.2 s / 2 min",
+    "Runs per day, oldest first: 2, 5, 8, 9, 7, 9, 8", "not a verdict"]) assert.ok(html.includes(text), text);
+  assert.ok(!html.includes("<b>Licht</b>"));
+  assert.ok(html.includes('data-object="automation:automation.flur"') && html.includes('data-object="script:script.nacht"'));
+  assert.ok(html.indexOf("Flur &lt;b&gt;") < html.indexOf("Heizung"));
+  assert.equal(html.split('class="row"').length - 1, 2, "only the two with findings are in the attention list");
+});
+
+test("the runs view loads once per visit and counts again on request", async () => {
+  const queue = [];
+  const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg); return RUNS; };
+  const drain = async () => { while (queue.length) await queue.shift()(); };
+  el.data = DATA; el.view = "runs";
+  el.ensureRuns(); el.ensureRuns(); el.render();
+  await drain();
+  assert.equal(calls.length, 1);
+  assert.deepEqual({ ...calls[0] }, { type: "ha_housekeeper/automation_runs" });
+  await el.loadRuns();
+  assert.equal(calls.length, 2);
+});
+
+test("the runs view says so when nothing was counted, nothing stands out, or the call fails", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "runs";
+  el.runs = { items: [], total: 0, since: null };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("No runs counted yet"));
+  el.runs = { ...RUNS, items: [RUNS.items[2]], total: 1 };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Nothing stands out in the counted runs."));
+  el.runs = null; el._hass = { language: "en", callWS: async () => { throw new Error("boom"); } };
+  await el.loadRuns();
+  assert.ok(shadow.innerHTML.includes("boom"));
+});
+
+test("the runs texts exist in both languages and the entry sits in the overview group", () => {
+  const { TEXT, NAV_GROUPS } = loadPanel();
+  assert.ok(NAV_GROUPS.some(([, views]) => views.includes("runs")));
+  const keys = new Set([...Object.keys(TEXT.de), ...Object.keys(TEXT.en)].filter(k => k.startsWith("runs") || k.startsWith("rf")));
+  for (const key of keys) for (const lang of ["de", "en"]) assert.ok(TEXT[lang][key], `${lang} ${key}`);
+});
+
+test("an automation's detail page gets a Runs tab only when runs were counted for it", () => {
+  const { el, shadow } = panel("en");
+  const auto = { object_type: "automation", object_id: "automation.flur", name: "Flur", status: "active", actions: [], triggers: [], conditions: [] };
+  const other = { object_type: "automation", object_id: "automation.other", name: "Other", status: "active", actions: [], triggers: [], conditions: [] };
+  el.data = { ...DATA, objects: [...DATA.objects, auto, other] };
+  el.selected = auto; el.view = "detail"; el.detailTab = "runs";
+  el.runs = RUNS;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('data-detail-tab="runs"'));
+  for (const text of ["Last 7 days, counted since", "18 of 48 runs ended with an error.", "1.2 s / 2 min", "Runs per day, oldest first"]) assert.ok(html.includes(text), text);
+  el.selected = other; el.detailTab = "runs"; el.render();
+  assert.ok(!shadow.innerHTML.includes('data-detail-tab="runs"'));
+  assert.ok(shadow.innerHTML.includes('aria-selected="true"'), "falls back to an existing tab");
 });
