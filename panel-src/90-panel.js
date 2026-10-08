@@ -61,7 +61,16 @@ class HAHousekeeperPanel extends HTMLElement {
 
   connectedCallback() {
     this._basePath = typeof window === "undefined" ? null : window.location.pathname;
+    this.installFonts();
     this.render();
+  }
+
+  installFonts() {
+    const head = globalThis.document?.head;
+    if (!head || globalThis.document.getElementById("hk-fonts")) return;
+    const style = globalThis.document.createElement("style");
+    style.id = "hk-fonts"; style.textContent = FONT_CSS;
+    head.appendChild(style);
   }
 
   get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
@@ -189,15 +198,6 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // The sidebar is rebuilt with the page: keep its scroll position, and bring the current entry into
   // view when the view changed (on a small screen the navigation scrolls sideways).
-  restoreSideScroll(saved) {
-    const side = this.shadowRoot.querySelector?.(".side");
-    if (!side) return;
-    if (this._navView !== this.view && this._navView !== undefined) {
-      this.shadowRoot.querySelector(".nav.active")?.scrollIntoView?.({ inline: "center", block: "nearest" });
-    } else if (saved) { side.scrollLeft = saved.left; side.scrollTop = saved.top; }
-    this._navView = this.view;
-  }
-
   scanButtonInner() {
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}`;
@@ -292,15 +292,12 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const side = this.shadowRoot.querySelector?.(".side");
-    const sideScroll = side ? { left: side.scrollLeft, top: side.scrollTop } : null;
-    const shell = `<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell">${this.topbar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
     else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
     this.restoreFocus(focus);
-    this.restoreSideScroll(sideScroll);
     this.bind();
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) this.syncUrl();
@@ -337,11 +334,17 @@ class HAHousekeeperPanel extends HTMLElement {
     try { window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "")); } catch (_) { /* ignore */ }
   }
 
-  sidebar() {
+  topbar() {
     const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
-    return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
-      <nav aria-label="${this.esc(this.t("navMain"))}">${NAV_GROUPS.map(([label, views]) => `<div class="navgroup" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</div>`).join("")}</nav>
-      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings" ${this.view === "settings" ? 'aria-current="page"' : ""}><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
+    const item = view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
+    const [direct, ...menus] = NAV_GROUPS;
+    const menu = ([label, views]) => {
+      const open = this.menuOpen === label;
+      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span><ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
+    };
+    return `<header class="top${this.navOpen ? " open" : ""}"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><strong>${this.t("title")}</strong></div>
+      <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
+      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].map(item).join("")}${menus.map(menu).join("")}<div class="navend">${item("settings")}</div></nav></header>`;
   }
 
   heading() {
@@ -390,7 +393,22 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
+    root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
+    if (!this._menuBound && root.addEventListener) {
+      this._menuBound = true;
+      root.addEventListener("click", ev => {
+        if (!this.menuOpen || (ev.composedPath?.() || []).some(node => node.classList?.contains?.("navmenu"))) return;
+        this.menuOpen = null; this.render();
+      });
+      root.addEventListener("keydown", ev => {
+        if (ev.key !== "Escape" || !(this.menuOpen || this.navOpen)) return;
+        const label = this.menuOpen;
+        this.menuOpen = null; this.navOpen = false; this.render();
+        root.querySelector(label ? `[data-menu="${label}"]` : "[data-navtoggle]")?.focus?.();
+      });
+    }
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {

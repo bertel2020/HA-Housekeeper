@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    navMain: "Hauptnavigation", navGroupOverview: "Überblick", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
+    navMain: "Hauptnavigation", navMenu: "Menü", navGroupOverview: "Überblick", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -183,7 +183,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    navMain: "Main navigation", navGroupOverview: "Overview", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
+    navMain: "Main navigation", navMenu: "Menu", navGroupOverview: "Overview", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -428,6 +428,10 @@ const NAV_GROUPS = [
   ["navGroupSpecial", ["batteries", "unreferenced"]],
 ];
 const NAV_ICONS = Object.fromEntries(NAV);
+
+// IBM Plex, shipped with the integration. A shadow root cannot declare fonts, so the rules go into the document once.
+const FONT_BASE = "/ha_housekeeper/fonts/";
+const FONT_CSS = `@font-face{font-family:"IBM Plex Sans";font-weight:400 700;font-display:swap;src:url(${FONT_BASE}ibm-plex-sans-latin.woff2) format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}@font-face{font-family:"IBM Plex Sans";font-weight:400 700;font-display:swap;src:url(${FONT_BASE}ibm-plex-sans-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}@font-face{font-family:"IBM Plex Mono";font-weight:400;font-display:swap;src:url(${FONT_BASE}ibm-plex-mono-400-latin.woff2) format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}@font-face{font-family:"IBM Plex Mono";font-weight:500;font-display:swap;src:url(${FONT_BASE}ibm-plex-mono-500-latin.woff2) format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}`;
 
 const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
@@ -722,7 +726,7 @@ class ThemeMixin {
       const dark = this.isDark(), p = (SCHEMES[scheme] || SCHEMES.standard)[dark ? "dark" : "light"];
       vars += `;--hk-blue:${p.accent};--hk-bg:${p.bg};--hk-surface:${p.surface};--hk-soft:${p.soft};--hk-text:${p.text};--hk-muted:${p.muted};--hk-border:${p.border};--hk-on:${p.on || "#ffffff"};--hk-green:${p.positive};--hk-amber:${p.warning};--hk-red:${p.danger};color-scheme:${dark ? "dark" : "light"}`;
     }
-    const compact = this.prefs.density === "compact" ? `.row{padding-top:6px;padding-bottom:6px}.card{padding:10px 12px}.panelhead{min-height:44px;padding-top:8px;padding-bottom:8px}td{padding:6px 14px}th{padding:7px 14px}.nav{min-height:32px;padding-top:4px;padding-bottom:4px}.tile{width:30px;height:30px}.setrow{padding-top:9px;padding-bottom:9px}.chips{padding-top:8px;padding-bottom:8px}.listbar{padding-top:8px;padding-bottom:8px}.summary,.stack,.grid2{gap:10px}.heading{margin-bottom:14px}` : "";
+    const compact = this.prefs.density === "compact" ? `.row{padding-top:6px;padding-bottom:6px}.card{padding:10px 12px}.panelhead{min-height:44px;padding-top:8px;padding-bottom:8px}td{padding:6px 14px}th{padding:7px 14px}.nav{min-height:36px}.tile{width:30px;height:30px}.setrow{padding-top:9px;padding-bottom:9px}.chips{padding-top:8px;padding-bottom:8px}.listbar{padding-top:8px;padding-bottom:8px}.summary,.stack,.grid2{gap:10px}.heading{margin-bottom:14px}` : "";
     const calm = "*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}";
     const motion = this.prefs.motion === "reduced" ? calm : `@media(prefers-reduced-motion:reduce){${calm}}`;
     return `:host{${vars}}${compact}${motion}`;
@@ -741,16 +745,18 @@ class ThemeMixin {
 class StylesMixin {
   styles() {
     return `<style data-hk>
-      :host{--hk-blue:var(--primary-color,#0789cf);--hk-blue-solid:color-mix(in srgb,var(--hk-blue) 76%,#000);--hk-blue-text:color-mix(in srgb,var(--hk-blue) 58%,var(--hk-text,#1c1c1c));--hk-surface:var(--card-background-color,#fff);--hk-bg:var(--primary-background-color,#f4f6f9);--hk-soft:var(--secondary-background-color,#f6f8fa);--hk-text:var(--primary-text-color,#17212b);--hk-muted:var(--secondary-text-color,#637281);--hk-border:var(--divider-color,#dde4ea);--hk-green:#1f9d63;--hk-amber:#d68a00;--hk-red:#d94452;--hk-violet:#7a62c9;--hk-gray:#7b8794;display:block;min-height:100%;background:var(--hk-bg);color:var(--hk-text);font-family:var(--paper-font-body1_-_font-family,Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif)}
+      :host{--hk-blue:var(--primary-color,#0789cf);--hk-blue-solid:color-mix(in srgb,var(--hk-blue) 76%,#000);--hk-blue-text:color-mix(in srgb,var(--hk-blue) 58%,var(--hk-text,#1c1c1c));--hk-surface:var(--card-background-color,#fff);--hk-bg:var(--primary-background-color,#f4f6f9);--hk-soft:var(--secondary-background-color,#f6f8fa);--hk-text:var(--primary-text-color,#17212b);--hk-muted:var(--secondary-text-color,#637281);--hk-border:var(--divider-color,#dde4ea);--hk-green:#1f9d63;--hk-amber:#d68a00;--hk-red:#d94452;--hk-violet:#7a62c9;--hk-gray:#7b8794;display:block;min-height:100%;background:var(--hk-bg);color:var(--hk-text);font-family:"IBM Plex Sans",var(--paper-font-body1_-_font-family,Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif)}
       *{box-sizing:border-box} button,input,select{font:inherit;color:inherit} button{cursor:pointer} h1,h2,h3,h4,p{margin:0}
       ha-icon{--mdc-icon-size:20px}
-      .shell{min-height:100vh;display:grid;grid-template-columns:calc(208px*var(--hk-fs,1)) minmax(0,1fr)}
-      .side{display:flex;flex-direction:column;gap:18px;padding:20px 12px 14px;border-right:1px solid var(--hk-border);background:var(--hk-surface)}
-      .brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:4px 8px 8px}.brandmark{width:72px;height:72px;display:grid;place-items:center;flex:none}.brandmark img{width:72px;height:72px;object-fit:contain}.brandmark ha-icon{display:none}.brandmark.nologo{width:34px;height:34px;border-radius:10px;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brandmark.nologo ha-icon{display:block}.brand strong{font-weight:600;font-size:calc(19px*var(--hk-fs,1))}.brand small{display:block;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));margin-top:2px}
-      .side nav{display:grid;gap:4px}.navgroup{display:grid;gap:2px}.navgroup+.navgroup{margin-top:10px}.navhead{padding:0 10px 4px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}.nav{width:100%;min-height:40px;display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:9px;padding:7px 10px;border:0;border-radius:8px;color:var(--hk-muted);background:transparent;text-align:left}.nav:hover{background:var(--hk-soft)}
-      .nav.active{color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 12%,transparent);font-weight:600}.nav em{min-width:22px;padding:2px 6px;border-radius:10px;color:var(--hk-muted);background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-align:center}
-      .side-foot{margin-top:auto;display:grid;gap:8px;padding:0 8px}.lock{display:flex;align-items:center;gap:7px;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-green)}.lock ha-icon{--mdc-icon-size:16px}
-      .main{min-width:0;padding:26px clamp(16px,2.4vw,32px) 60px}
+      .shell{min-height:100vh;display:block}
+      .top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:22px;padding:0 clamp(16px,2.4vw,32px);min-height:calc(60px*var(--hk-fs,1));border-bottom:1px solid var(--hk-border);background:var(--hk-surface)}
+      .brand{display:flex;align-items:center;gap:10px;flex:none}.brandmark{width:34px;height:34px;display:grid;place-items:center;flex:none}.brandmark img{width:34px;height:34px;object-fit:contain}.brandmark ha-icon{display:none}.brandmark.nologo{border-radius:10px;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brandmark.nologo ha-icon{display:block}.brand strong{font-weight:600;font-size:calc(17px*var(--hk-fs,1));white-space:nowrap}
+      .topnav{flex:1;min-width:0;display:flex;align-items:stretch;align-self:stretch;gap:2px}.navmenu{position:relative;display:flex;align-items:stretch}.navend{margin-left:auto;display:flex;align-items:stretch}.navhead{display:none;padding:10px 12px 2px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+      .nav{min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--hk-muted);background:transparent;font-weight:500;white-space:nowrap}.nav:hover{color:var(--hk-text);background:var(--hk-soft)}.nav ha-icon{--mdc-icon-size:20px}.nav .caret{--mdc-icon-size:16px;margin-left:-2px}
+      .navpop{display:none;position:absolute;top:100%;left:0;min-width:210px;padding:6px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.navmenu.open .navpop{display:grid;gap:2px}.navpop .nav{min-height:40px;border-bottom:0;border-radius:8px}.navpop .nav.active{box-shadow:inset 3px 0 0 var(--hk-blue)}
+      .nav.active{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}.nav em{min-width:22px;padding:2px 6px;border-radius:10px;color:var(--hk-muted);background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-align:center}.nav.group-active{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}.navtoggle{display:none;margin-left:auto;min-height:40px;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit}
+      .lock{display:flex;align-items:center;gap:7px;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-green)}.lock ha-icon{--mdc-icon-size:16px}
+      .main{min-width:0;max-width:1480px;margin:0 auto;padding:26px clamp(16px,2.4vw,32px) 60px}
       .heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px}.eyebrow{color:var(--hk-blue-text);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px}
       h1{font-size:calc(25px*var(--hk-fs,1));font-weight:600;line-height:1.2}.sub{display:block;margin-top:6px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
@@ -819,11 +825,9 @@ class StylesMixin {
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:calc(11px*var(--hk-fs,1))/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:calc(12px*var(--hk-fs,1));margin:12px 0 6px;color:var(--hk-muted)}
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
-      @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:calc(15px*var(--hk-fs,1))}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.lock{display:none}.side-foot{margin:0;padding:0;display:flex}.side nav{display:flex}.navgroup{display:flex;gap:4px}.navgroup+.navgroup{margin:0;padding-left:8px;border-left:1px solid var(--hk-border)}.navhead{display:none}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
+      @media(max-width:860px){.top{flex-wrap:wrap;gap:8px;padding:8px 12px}.navtoggle{display:inline-flex}.topnav{display:none;flex:1 1 100%;flex-direction:column;align-items:stretch;gap:0;padding-bottom:8px}.top.open .topnav{display:flex}.navmenu{display:block}.navmenu>.menubtn{display:none}.navpop{display:grid;position:static;min-width:0;padding:0;border:0;box-shadow:none;background:transparent}.navhead{display:block}.nav{width:100%;min-height:44px;border-bottom:0;border-radius:8px}.nav.active{box-shadow:inset 3px 0 0 var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 8%,transparent)}.navend{margin:0;display:block}.navend .nav{width:100%}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       @media(max-width:520px){.summary{grid-template-columns:1fr}}
       /* Fixed sidebar: it stays in view while long content scrolls; Settings sits at the visible bottom edge. */
-      .shell{align-items:start}
-      .side{position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow-y:auto;overscroll-behavior:contain}
       /* Equal-width tiles on the overview and the changes view. */
       .summary{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.summary>.card:has(.ring){grid-template-columns:auto minmax(0,1fr)}.summary .ring{width:56px;height:56px}.summary>.card:has(.ring) .card-text strong{font-size:calc(16px*var(--hk-fs,1));line-height:1.25}
       .summary>.card{min-height:92px;border-top:3px solid var(--hk-border)}
@@ -834,7 +838,7 @@ class StylesMixin {
       .card{border-radius:14px}.card .tile{width:46px;height:46px;border-radius:13px}.card-text strong{font-size:calc(26px*var(--hk-fs,1));letter-spacing:-.01em}
       button.card{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}button.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px color-mix(in srgb,var(--hk-text) 12%,transparent)}
       h1{font-size:calc(28px*var(--hk-fs,1));letter-spacing:-.015em}.eyebrow{font-weight:700}
-      .nav.active{border-radius:0;box-shadow:inset 3px 0 0 var(--hk-blue)}.nav{border-radius:10px}.nav em{font-weight:600}.nav.active em{color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 6%,transparent)}
+      .nav em{font-weight:600}.nav.active em{color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 6%,transparent)}
       .panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
@@ -846,7 +850,14 @@ class StylesMixin {
       .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}
       .head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
       .safe-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;border:1px solid color-mix(in srgb,var(--hk-green) 32%,transparent);color:color-mix(in srgb,var(--hk-green) 62%,var(--hk-text));background:color-mix(in srgb,var(--hk-green) 11%,transparent);font-size:calc(12px*var(--hk-fs,1));font-weight:600;white-space:nowrap}.safe-badge ha-icon{--mdc-icon-size:16px}
-      @media(max-width:860px){.side{position:sticky;top:0;z-index:20;height:auto}.heading{flex-direction:column;align-items:stretch}.head-actions{justify-content:flex-start}}
+      @media(max-width:860px){.heading{flex-direction:column;align-items:stretch}.head-actions{justify-content:flex-start}}
+      /* Look of the Zeitarchiv app: larger radius, soft shadow, calm tables, bold headings, Plex Mono for ids. */
+      .card,.panel{border-radius:14px;box-shadow:0 1px 2px rgba(19,28,23,.06),0 1px 1px rgba(19,28,23,.04)}
+      h1{font-size:calc(28px*var(--hk-fs,1));font-weight:700;letter-spacing:-.01em}
+      .panelhead h2{font-size:calc(16px*var(--hk-fs,1));font-weight:600}
+      th{background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:500;letter-spacing:0;text-transform:none;border-bottom:1px solid var(--hk-border)}
+      .id,.ring b,code,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace}
+      .btn{border-radius:10px}.chip{padding:5px 13px}input,select{border-radius:10px}
       ${this.themeCss()}
     </style>`;
   }
@@ -2692,7 +2703,16 @@ class HAHousekeeperPanel extends HTMLElement {
 
   connectedCallback() {
     this._basePath = typeof window === "undefined" ? null : window.location.pathname;
+    this.installFonts();
     this.render();
+  }
+
+  installFonts() {
+    const head = globalThis.document?.head;
+    if (!head || globalThis.document.getElementById("hk-fonts")) return;
+    const style = globalThis.document.createElement("style");
+    style.id = "hk-fonts"; style.textContent = FONT_CSS;
+    head.appendChild(style);
   }
 
   get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
@@ -2820,15 +2840,6 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // The sidebar is rebuilt with the page: keep its scroll position, and bring the current entry into
   // view when the view changed (on a small screen the navigation scrolls sideways).
-  restoreSideScroll(saved) {
-    const side = this.shadowRoot.querySelector?.(".side");
-    if (!side) return;
-    if (this._navView !== this.view && this._navView !== undefined) {
-      this.shadowRoot.querySelector(".nav.active")?.scrollIntoView?.({ inline: "center", block: "nearest" });
-    } else if (saved) { side.scrollLeft = saved.left; side.scrollTop = saved.top; }
-    this._navView = this.view;
-  }
-
   scanButtonInner() {
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}`;
@@ -2923,15 +2934,12 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const side = this.shadowRoot.querySelector?.(".side");
-    const sideScroll = side ? { left: side.scrollLeft, top: side.scrollTop } : null;
-    const shell = `<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell">${this.topbar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
     else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
     this.restoreFocus(focus);
-    this.restoreSideScroll(sideScroll);
     this.bind();
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) this.syncUrl();
@@ -2968,11 +2976,17 @@ class HAHousekeeperPanel extends HTMLElement {
     try { window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "")); } catch (_) { /* ignore */ }
   }
 
-  sidebar() {
+  topbar() {
     const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
-    return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
-      <nav aria-label="${this.esc(this.t("navMain"))}">${NAV_GROUPS.map(([label, views]) => `<div class="navgroup" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</div>`).join("")}</nav>
-      <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings" ${this.view === "settings" ? 'aria-current="page"' : ""}><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
+    const item = view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
+    const [direct, ...menus] = NAV_GROUPS;
+    const menu = ([label, views]) => {
+      const open = this.menuOpen === label;
+      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span><ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
+    };
+    return `<header class="top${this.navOpen ? " open" : ""}"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><strong>${this.t("title")}</strong></div>
+      <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
+      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].map(item).join("")}${menus.map(menu).join("")}<div class="navend">${item("settings")}</div></nav></header>`;
   }
 
   heading() {
@@ -3021,7 +3035,22 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
+    root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
+    if (!this._menuBound && root.addEventListener) {
+      this._menuBound = true;
+      root.addEventListener("click", ev => {
+        if (!this.menuOpen || (ev.composedPath?.() || []).some(node => node.classList?.contains?.("navmenu"))) return;
+        this.menuOpen = null; this.render();
+      });
+      root.addEventListener("keydown", ev => {
+        if (ev.key !== "Escape" || !(this.menuOpen || this.navOpen)) return;
+        const label = this.menuOpen;
+        this.menuOpen = null; this.navOpen = false; this.render();
+        root.querySelector(label ? `[data-menu="${label}"]` : "[data-navtoggle]")?.focus?.();
+      });
+    }
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {

@@ -2,7 +2,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    navMain: "Hauptnavigation", navGroupOverview: "Überblick", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
+    navMain: "Hauptnavigation", navMenu: "Menü", navGroupOverview: "Überblick", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -181,7 +181,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    navMain: "Main navigation", navGroupOverview: "Overview", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
+    navMain: "Main navigation", navMenu: "Menu", navGroupOverview: "Overview", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",

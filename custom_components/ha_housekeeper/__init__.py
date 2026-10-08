@@ -29,6 +29,7 @@ from .const import (
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
     DOMAIN,
+    FONTS_URL,
     FRONTEND_URL,
     LOGO_URL,
     PANEL_ELEMENT,
@@ -93,6 +94,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     FRONTEND_URL, str(frontend_dir / "ha-housekeeper-panel.js"), False
                 ),
                 StaticPathConfig(LOGO_URL, str(Path(__file__).parent / "brand" / "logo.png"), True),
+                StaticPathConfig(FONTS_URL, str(Path(__file__).parent / "fonts"), True),
             ]
         )
         hass.data[DOMAIN]["static_path_registered"] = True

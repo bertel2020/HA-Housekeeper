@@ -1006,13 +1006,13 @@ test("removal candidates are the quarantined entities and wait for the quarantin
   assert.ok(shadow.innerHTML.includes("sensor.new") && !shadow.innerHTML.includes('data-sel="sensor.old"'));
 });
 
-test("the safety badge sits in the header, the sidebar is fixed, and tiles are equal width", () => {
+test("the safety badge sits in the header, the top bar is fixed, and tiles are equal width", () => {
   const { el, shadow } = panel("en");
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes('class="safe-badge"') && html.includes("Changes only on confirmation"));
   assert.ok(!html.includes("Read only") && !html.includes('class="lock"'));
-  assert.ok(html.includes(".side{position:sticky;top:0") && html.includes("repeat(auto-fit,minmax(210px,1fr))"));
+  assert.ok(html.includes(".top{position:sticky;top:0") && html.includes("repeat(auto-fit,minmax(210px,1fr))"));
   assert.ok(html.indexOf('class="safe-badge"') > html.indexOf('class="heading"'));
 });
 
@@ -1546,29 +1546,26 @@ test("the navigation groups every view once, with settings at the foot", () => {
   el.view = "cleanup";
   el.render();
   const html = shadow.innerHTML;
-  const groups = [...html.matchAll(/<div class="navgroup" role="group" aria-label="([^"]+)">/g)].map(m => m[1]);
-  assert.equal(JSON.stringify(groups), JSON.stringify(["Overview", "Explore", "Maintain", "Special views"]));
-  assert.ok(html.includes('<nav aria-label="Main navigation">'));
-  assert.ok(html.indexOf('data-view="maintenance"') < html.indexOf('data-view="batteries"') && html.indexOf('data-view="batteries"') < html.indexOf('data-view="settings"'));
+  const menus = [...html.matchAll(/<div class="navmenu[^"]*"><button[^>]*data-menu="([^"]+)"/g)].map(m => m[1]);
+  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupExplore", "navGroupMaintain", "navGroupSpecial"]), "three menus after the direct entries");
+  assert.ok(html.includes('<nav class="topnav" id="topnav" aria-label="Main navigation">'));
+  const order = ["overview", "findingsNav", "changes", "inventory", "cleanup", "maintenance", "batteries", "settings"].map(v => html.indexOf(`data-view="${v}"`));
+  assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), "views keep their order and settings comes last");
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1, "one current entry");
   assert.ok(/data-view="cleanup"\s+aria-current="page"/.test(html));
+  assert.ok(/class="nav menubtn group-active" data-menu="navGroupMaintain"/.test(html), "the menu holding the current view is marked");
 });
 
-test("the sidebar keeps its scroll position and shows the current entry after a view change", () => {
+test("an open menu and the phone menu show their state in the markup", () => {
   const { el, shadow } = panel("en");
-  const side = { scrollLeft: 120, scrollTop: 30 };
-  const revealed = [];
-  const active = { scrollIntoView: opts => revealed.push(opts.inline) };
-  shadow.querySelector = selector => (selector === ".side" ? side : selector === ".nav.active" ? active : null);
-  el.restoreSideScroll({ left: 120, top: 30 }); // first render: nothing to reveal yet
-  side.scrollLeft = 0; side.scrollTop = 0;
-  el.restoreSideScroll({ left: 120, top: 30 }); // same view: the saved position comes back
-  assert.equal(side.scrollLeft, 120);
-  assert.equal(side.scrollTop, 30);
-  assert.equal(revealed.length, 0);
-  el.view = "maintenance";
-  el.restoreSideScroll({ left: 120, top: 30 }); // another view: scroll the current entry into view
-  assert.deepEqual(revealed, ["center"]);
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-menu="navGroupExplore" aria-expanded="false"'));
+  el.menuOpen = "navGroupExplore"; el.render();
+  assert.ok(shadow.innerHTML.includes('class="navmenu open"') && shadow.innerHTML.includes('aria-expanded="true"'));
+  el.navOpen = true; el.render();
+  assert.ok(shadow.innerHTML.includes('<header class="top open">') && shadow.innerHTML.includes('data-navtoggle aria-expanded="true"'));
+  const css = el.styles();
+  assert.ok(css.includes(".navmenu.open .navpop{display:grid"));
 });
 
 const TREND = {
@@ -2095,7 +2092,7 @@ test("the whole confirmation flow works end to end against a scripted backend", 
 test("on a phone the cause, the time and the plan steps stay visible", () => {
   const { el } = panel("en");
   const css = el.styles();
-  const phone = css.slice(css.indexOf("@media(max-width:860px){.brand"));
+  const phone = css.slice(css.indexOf("@media(max-width:860px){.top{flex-wrap"));
   const hidden = [...phone.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(([, , body]) => /display:none/.test(body)).map(([, selector]) => selector.trim());
   for (const kept of [".sumline", ".steps", ".step", ".planrow", ".msince", ".tab", ".tabs", ".graphbar"]) {
     assert.ok(!hidden.some(selector => selector.split(",").some(part => part.trim() === kept || part.trim().startsWith(`${kept} `))), `${kept} is not hidden on a phone`);

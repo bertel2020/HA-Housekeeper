@@ -9,6 +9,7 @@ PANEL_URL: Final = "ha-housekeeper"
 PANEL_ELEMENT: Final = "ha-housekeeper-panel"
 FRONTEND_URL: Final = "/ha_housekeeper/ha-housekeeper-panel.js"
 LOGO_URL: Final = "/ha_housekeeper/logo.png"
+FONTS_URL: Final = "/ha_housekeeper/fonts"
 
 STORAGE_KEY: Final = f"{DOMAIN}.observations"
 IGNORED_STORAGE_KEY: Final = f"{DOMAIN}.ignored"
