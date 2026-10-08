@@ -2102,3 +2102,56 @@ test("on a phone the cause, the time and the plan steps stay visible", () => {
   // The table rows keep their reason and date columns as labelled lines instead of dropping them.
   assert.ok(phone.includes(".tablewrap td[data-label]::before"));
 });
+
+const RELIABILITY = {
+  available: true, busy: false, cached: false, took_ms: 2800, window_days: 7,
+  entries: [
+    { entry_id: "e1", title: "Cloud <b>Hub</b>", domain: "hue", state: "setup_retry", reauth: true, entities: 12, permanent: 2, availability: 93.4, shared_outages: 3, longest_outage: 7200, layer: "cloud", last_disruption: { end: 1791470000, seconds: 3600, shared: true } },
+    { entry_id: "e2", title: "Local Box", domain: "zha", state: "loaded", reauth: false, entities: 5, permanent: 0, availability: 100, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null },
+  ],
+};
+
+test("the reliability view lists the worst integration first with numbers, words and the guessed layer", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "reliability";
+  el._hass = { language: "en", callWS: async () => RELIABILITY };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Evaluating the recorder"));
+  await el.loadReliability();
+  const html = shadow.innerHTML;
+  for (const text of ["Integrations by availability", "Cloud &lt;b&gt;Hub&lt;/b&gt;", "93.4 %", "12 entities", "2 down all the time, not counted",
+    "3 shared outages, longest 2 h", "probably the cloud or its API (a guess)", "Re-authentication open", "setup_retry", "Last shared outage until",
+    "No disruption", "calculated in 2.8 s", "24 hours", "7 days"]) assert.ok(html.includes(text), text);
+  assert.ok(html.indexOf("Cloud &lt;b&gt;") < html.indexOf("Local Box"));
+  assert.ok(!html.includes("<b>Hub</b>"));
+});
+
+test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
+  const queue = [];
+  const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg); return RELIABILITY; };
+  const drain = async () => { while (queue.length) await queue.shift()(); };
+  el.data = DATA; el.view = "reliability";
+  el.ensureReliability(); el.ensureReliability(); el.render();
+  await drain();
+  assert.equal(calls.length, 1);
+  assert.deepEqual({ ...calls[0] }, { type: "ha_housekeeper/reliability", window_days: 7, refresh: false });
+  el.relWindow = 1; el.ensureReliability(); await drain();
+  assert.equal(calls[1].window_days, 1);
+  await el.loadReliability(true);
+  assert.equal(calls[2].refresh, true);
+});
+
+test("the reliability view says so when the recorder is missing, busy or has nothing", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "reliability";
+  for (const [reply, text] of [[{ available: false, entries: [] }, "recorder is not available"], [{ available: true, busy: true, entries: [] }, "Another calculation is still running"], [{ ...RELIABILITY, entries: [] }, "no integration states"]]) {
+    el._hass = { language: "en", callWS: async () => reply };
+    await el.loadReliability();
+    assert.ok(shadow.innerHTML.includes(text), text);
+  }
+  el._hass = { language: "en", callWS: async () => { throw new Error("boom <i>"); } };
+  await el.loadReliability();
+  assert.ok(shadow.innerHTML.includes("boom &lt;i&gt;"));
+});

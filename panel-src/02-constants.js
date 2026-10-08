@@ -52,6 +52,7 @@ const NAV = [
   ["graph", "mdi:source-fork"],
   ["cleanup", "mdi:broom"],
   ["maintenance", "mdi:wrench-clock"],
+  ["reliability", "mdi:chart-timeline-variant"],
   ["batteries", "mdi:battery-alert-variant-outline"],
   ["unreferenced", "mdi:link-variant-off"],
   ["settings", "mdi:cog-outline"],
@@ -59,7 +60,7 @@ const NAV = [
 
 // The sidebar groups every view but "settings", which stands alone at the foot.
 const NAV_GROUPS = [
-  ["navGroupOverview", ["overview", "findingsNav", "changes"]],
+  ["navGroupOverview", ["overview", "findingsNav", "changes", "reliability"]],
   ["navGroupExplore", ["inventory", "graph"]],
   ["navGroupMaintain", ["cleanup", "maintenance"]],
   ["navGroupSpecial", ["batteries", "unreferenced"]],

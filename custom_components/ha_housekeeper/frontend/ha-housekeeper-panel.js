@@ -415,6 +415,7 @@ const NAV = [
   ["graph", "mdi:source-fork"],
   ["cleanup", "mdi:broom"],
   ["maintenance", "mdi:wrench-clock"],
+  ["reliability", "mdi:chart-timeline-variant"],
   ["batteries", "mdi:battery-alert-variant-outline"],
   ["unreferenced", "mdi:link-variant-off"],
   ["settings", "mdi:cog-outline"],
@@ -422,7 +423,7 @@ const NAV = [
 
 // The sidebar groups every view but "settings", which stands alone at the foot.
 const NAV_GROUPS = [
-  ["navGroupOverview", ["overview", "findingsNav", "changes"]],
+  ["navGroupOverview", ["overview", "findingsNav", "changes", "reliability"]],
   ["navGroupExplore", ["inventory", "graph"]],
   ["navGroupMaintain", ["cleanup", "maintenance"]],
   ["navGroupSpecial", ["batteries", "unreferenced"]],
@@ -669,6 +670,32 @@ Object.assign(TEXT.en, {
   bhListTitle: "Latest backups", bhColDate: "Date", bhColSize: "Size", bhColTargets: "Targets", bhColProtected: "Encrypted", bhYes: "Yes", bhNo: "No",
   bhGuideTitle: "How to test a restore", bhGuideSteps: "1. Set up a test instance or a second installation (never the main instance first). 2. Restore a recent backup there: Settings → System → Backups → upload a backup, or restore during setup. 3. Check that integrations, automations and dashboards are there. 4. Save the date of the test here. Housekeeper never performs a restore itself.",
   todoBackupProblem: "Backup protection: problem",
+});
+
+// Texts for the reliability view; merged into TEXT.
+Object.assign(TEXT.de, {
+  reliability: "Zuverlässigkeit", reliabilitySubtitle: "Wie verfügbar die Entities jeder Integration waren und wann sie gemeinsam ausfielen. Liest nur den Recorder.",
+  relTitle: "Integrationen nach Verfügbarkeit", relHint: "Schlechteste zuerst. Gerechnet aus den Zuständen im Recorder",
+  relWindow1: "24 Stunden", relWindow7: "7 Tage", relRefresh: "Neu berechnen", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
+  relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
+  relBusy: "Eine andere Berechnung läuft noch. Bitte gleich mit „Neu berechnen“ erneut abrufen.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
+  relEntities: "{n} Entities", relPermanent: "{n} dauerhaft ausgefallen, nicht eingerechnet",
+  relShared: "{n} gemeinsame Ausfälle, längster {longest}", relSharedOne: "1 gemeinsamer Ausfall, {longest}", relLayerCloud: "wahrscheinlich Cloud oder API (Vermutung)", relLayerLocal: "wahrscheinlich Gerät, Netz oder Integration (Vermutung)",
+  relReauth: "Neu anmelden offen", relLastShared: "Letzter gemeinsamer Ausfall bis {date} ({duration})", relLastSingle: "Letzte Störung bis {date} ({duration})", relNoDisruption: "Keine Störung",
+  relMinutes: "{n} Min.", relHours: "{n} Std.", relDays: "{n} Tage",
+  relFootnote: "Verfügbarkeit: Anteil der Zeit ohne „nicht verfügbar“ in den letzten {days} Tagen, gerechnet ab der ersten Meldung im Zeitraum. Ein gemeinsamer Ausfall heißt: mindestens 80 % der Entities des Eintrags, mindestens drei, mindestens 5 Minuten zugleich nicht verfügbar. Ein Ausfall, der vor dem Zeitraum begann, zählt erst ab der ersten Meldung darin.",
+});
+Object.assign(TEXT.en, {
+  reliability: "Reliability", reliabilitySubtitle: "How available each integration's entities were and when they failed together. Only reads the recorder.",
+  relTitle: "Integrations by availability", relHint: "Worst first. Calculated from the states in the recorder",
+  relWindow1: "24 hours", relWindow7: "7 days", relRefresh: "Recalculate", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
+  relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
+  relBusy: "Another calculation is still running. Fetch it again in a moment with “Recalculate”.", relEmpty: "There are no integration states in this period.",
+  relEntities: "{n} entities", relPermanent: "{n} down all the time, not counted",
+  relShared: "{n} shared outages, longest {longest}", relSharedOne: "1 shared outage, {longest}", relLayerCloud: "probably the cloud or its API (a guess)", relLayerLocal: "probably the device, the network or the integration (a guess)",
+  relReauth: "Re-authentication open", relLastShared: "Last shared outage until {date} ({duration})", relLastSingle: "Last disruption until {date} ({duration})", relNoDisruption: "No disruption",
+  relMinutes: "{n} min", relHours: "{n} h", relDays: "{n} days",
+  relFootnote: "Availability: the share of time without “unavailable” in the last {days} days, counted from the first report in the period. A shared outage means at least 80 % of the entry's entities, at least three, were unavailable together for at least 5 minutes. An outage that began before the period counts from the first report in it.",
 });
 
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -2640,6 +2667,61 @@ class BackupMixin {
   }
 }
 
+// ReliabilityMixin: the reliability view; mixed into the panel in 99-register.js.
+class ReliabilityMixin {
+  async loadReliability(refresh = false) {
+    this.relLoading = true; this.relError = ""; this.render();
+    try { this.reliability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, refresh }); }
+    catch (err) { this.relError = err?.message || String(err); }
+    this.relLoading = false; this.render();
+  }
+
+  // The first visit and every change of the window load once; the backend keeps the result for a few minutes.
+  ensureReliability() {
+    if (this.relLoading || this._relRequested === this.relWindow) return;
+    this._relRequested = this.relWindow;
+    setTimeout(() => this.loadReliability(), 0);
+  }
+
+  relDuration(seconds) {
+    if (seconds >= 86400) return this.t("relDays", { n: Math.round(seconds / 86400) });
+    if (seconds >= 3600) return this.t("relHours", { n: Math.round(seconds / 3600) });
+    return this.t("relMinutes", { n: Math.max(1, Math.round(seconds / 60)) });
+  }
+
+  relRow(item) {
+    const percent = item.availability;
+    const tone = percent === null ? "mute" : percent >= 99.5 ? "ok" : percent >= 95 ? "warn" : "red";
+    const lines = [`${this.esc(item.domain || "")} · ${this.t("relEntities", { n: item.entities })}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
+    if (item.shared_outages) {
+      const layer = item.layer === "cloud" ? this.t("relLayerCloud") : this.t("relLayerLocal");
+      lines.push(`${this.t(item.shared_outages === 1 ? "relSharedOne" : "relShared", { n: item.shared_outages, longest: this.relDuration(item.longest_outage) })} · ${layer}`);
+    }
+    const flags = [];
+    if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
+    if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn">${this.esc(item.state)}</span>`);
+    lines.push(item.last_disruption
+      ? this.t(item.last_disruption.shared ? "relLastShared" : "relLastSingle", { date: this.formatDate(new Date(item.last_disruption.end * 1000).toISOString()), duration: this.relDuration(item.last_disruption.seconds) })
+      : this.t("relNoDisruption"));
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${percent === null ? "—" : `${this.formatNumber(percent)} %`}</span></div>`;
+  }
+
+  reliabilityView() {
+    this.ensureReliability();
+    const r = this.reliability;
+    const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("");
+    const took = r && r.took_ms !== null && r.took_ms !== undefined && r.available ? ` · ${this.t(r.cached ? "relCached" : "relTook", { s: this.formatNumber(Math.round(r.took_ms / 100) / 10) })}` : "";
+    const head = `<div class="panelhead"><div><h2>${this.t("relTitle")}</h2><p>${this.t("relHint")}${took}</p></div><div class="actions" style="display:flex;gap:8px;flex-wrap:wrap">${windows}<button class="btn" data-rel-refresh ${this.relLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
+    if (this.relError) return `<div class="panel">${head}<div class="error">${this.esc(this.relError)}</div></div>`;
+    if (!r) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("relLoading")}</p></div></div>`;
+    if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
+    if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
+    if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
+    const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
+    return `<div class="panel">${head}${loading}${r.entries.map(item => this.relRow(item)).join("")}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>`;
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -2674,7 +2756,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -3001,6 +3083,7 @@ class HAHousekeeperPanel extends HTMLElement {
       settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
       cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
       maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
+      reliability: [this.t("diagnosis"), this.t("reliability"), this.t("reliabilitySubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
@@ -3019,6 +3102,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "maintenance") return this.maintenanceView();
+    if (this.view === "reliability") return this.reliabilityView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -3147,6 +3231,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-meter-mode]")?.addEventListener("change", e => { this.meterMode = e.target.value; this.render(); });
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-cost-sort]").forEach(el => el.onclick = () => { this.costSort = el.dataset.costSort; this.render(); });
+    root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.loadReliability(); });
+    root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {
       const kind = el.dataset.bhSave, date = root.querySelector(`[data-bh-date="${kind}"]`)?.value;
@@ -3184,7 +3270,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

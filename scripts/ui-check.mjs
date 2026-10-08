@@ -28,7 +28,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -96,6 +96,10 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
       if (t.endsWith("/compare")) return trend;
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };
       if (t.endsWith("/backup_health")) return BACKUP;
+      if (t.endsWith("/reliability")) return { available: true, busy: false, cached: false, took_ms: 2800, window_days: 7, schema: 1, entries: [
+        { entry_id: "e1", title: "Cloud-Hub", domain: "hue", state: "setup_retry", reauth: true, entities: 12, permanent: 2, availability: 93.4, shared_outages: 3, longest_outage: 7200, layer: "cloud", last_disruption: { end: 1791470000, seconds: 3600, shared: true } },
+        { entry_id: "e2", title: "Zigbee", domain: "zha", state: "loaded", reauth: false, entities: 40, permanent: 0, availability: 98.2, shared_outages: 1, longest_outage: 900, layer: "local", last_disruption: { end: 1791400000, seconds: 900, shared: true } },
+        { entry_id: "e3", title: "Wetterstation", domain: "ecowitt", state: "loaded", reauth: false, entities: 8, permanent: 0, availability: 100, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null }] };
       if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
       return {}; } };
   for (let i = 0; i < 50 && !el.data; i++) await wait(100);

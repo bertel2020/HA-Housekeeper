@@ -32,7 +32,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -359,6 +359,7 @@ class HAHousekeeperPanel extends HTMLElement {
       settings: [this.t("objects"), this.t("settings"), this.t("settingsSubtitle")],
       cleanup: [this.t("diagnosis"), this.t("cleanup"), this.t("cleanupSubtitle")],
       maintenance: [this.t("diagnosis"), this.t("maintenance"), this.t("maintenanceSubtitle")],
+      reliability: [this.t("diagnosis"), this.t("reliability"), this.t("reliabilitySubtitle")],
     };
     const [eyebrow, title, sub] = titles[this.view] || titles.overview;
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
@@ -377,6 +378,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "maintenance") return this.maintenanceView();
+    if (this.view === "reliability") return this.reliabilityView();
     if (this.view === "graph") return this.graph();
     return this.overview();
   }
@@ -505,6 +507,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-meter-mode]")?.addEventListener("change", e => { this.meterMode = e.target.value; this.render(); });
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-cost-sort]").forEach(el => el.onclick = () => { this.costSort = el.dataset.costSort; this.render(); });
+    root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.loadReliability(); });
+    root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {
       const kind = el.dataset.bhSave, date = root.querySelector(`[data-bh-date="${kind}"]`)?.value;
