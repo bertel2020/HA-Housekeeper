@@ -79,6 +79,48 @@ def _brief(row: dict[str, Any] | None) -> dict[str, Any] | None:
     return {key: row.get(key) for key in ("start", "state", "sum")}
 
 
+def _row_key(row: dict[str, Any] | None) -> tuple[Any, ...]:
+    """Every value of a row that an import reads or a later check compares."""
+    if row is None:
+        return ()
+    return (row.get("start"), *(row.get(key) for key in sorted(ROW_TYPES)))
+
+
+def _fingerprint(
+    old_meta: dict[str, Any] | None,
+    new_meta: dict[str, Any] | None,
+    importable: list[dict[str, Any]],
+    new_rows: list[dict[str, Any]],
+    dropped_overlap: int,
+) -> str:
+    """Hash of everything the preview judged: a change anywhere in it stops the run.
+
+    That is every importable row of the old series with all of its values, the first row of the
+    new series (it decides the switch point and the offset), the rows left out as overlap and
+    the properties that make the series compatible. Later rows of the live new series are not
+    part of it: an hour compiled meanwhile changes nothing the import does.
+    """
+
+    def meta_key(meta: dict[str, Any] | None) -> tuple[Any, ...]:
+        if meta is None:
+            return ()
+        return (
+            meta.get("unit_of_measurement") or None,
+            bool(meta.get("has_sum")),
+            _flag(meta, "mean_type"),
+            meta.get("unit_class"),
+        )
+
+    parts = [
+        repr(meta_key(old_meta)),
+        repr(meta_key(new_meta)),
+        str(dropped_overlap),
+        repr(_row_key(new_rows[0] if new_rows else None)),
+        *(repr(_row_key(row)) for row in importable),
+    ]
+    return text_hash("|".join(parts))
+
+
 def analyse(
     old_meta: dict[str, Any] | None,
     old_rows: list[dict[str, Any]],
@@ -150,20 +192,8 @@ def analyse(
                 "before": [_brief(row) for row in importable[-PREVIEW_ROWS:]],
                 "after": [_brief(row) for row in new_rows[:PREVIEW_ROWS]],
             }
-    result["hash"] = text_hash(
-        "|".join(
-            str(part)
-            for part in (
-                result["old_rows"],
-                result["old_first"],
-                result["old_last"],
-                (importable[-1].get("sum") if importable else None),
-                result["new_rows"],
-                result["new_first"],
-                (new_rows[0].get("sum") if new_rows else None),
-                result["unit"],
-            )
-        )
+    result["hash"] = _fingerprint(
+        old_meta, new_meta, importable, new_rows, result["dropped_overlap"]
     )
     return result
 

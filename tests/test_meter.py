@@ -487,3 +487,58 @@ async def test_an_old_entity_that_cannot_come_back_is_journalled_and_can_be_undo
     assert undo["results"] == [{"object_id": OLD, "outcome": "undone"}]
     assert registry.async_get(OLD).unique_id == "meter_old"
     assert registry.async_get("sensor.meter_old_alt") is None
+
+
+# ---- the fingerprint covers the whole series -------------------------------------------------
+
+
+def _hash(old, new, old_meta=None, new_meta=None) -> str:
+    return analyse(old_meta or meta(OLD), old, new_meta or meta(NEW), new)["hash"]
+
+
+def test_the_fingerprint_changes_when_any_importable_row_changes() -> None:
+    old = stat_rows(START, 48)
+    new = stat_rows(START + timedelta(hours=72), 24)
+    base = _hash(old, new)
+    assert _hash(stat_rows(START, 48), stat_rows(START + timedelta(hours=72), 24)) == base
+
+    for field in ("state", "sum", "min", "max", "mean", "last_reset"):
+        changed = [dict(row) for row in old]
+        changed[20][field] = 123.0  # a middle row: count, first, last and the last sum stay
+        assert _hash(changed, new) != base, field
+
+
+def test_the_fingerprint_follows_the_switch_point_and_the_compatibility() -> None:
+    old = stat_rows(START, 48)
+    new = stat_rows(START + timedelta(hours=72), 24)
+    base = _hash(old, new)
+    first_changed = [dict(row) for row in new]
+    first_changed[0]["sum"] = 9.0
+    assert _hash(old, first_changed) != base
+    assert _hash(old, new, new_meta=meta(NEW, unit="MWh")) != base
+    assert _hash(old, new, new_meta=meta(NEW, has_sum=False)) != base
+
+
+def test_a_value_compiled_later_in_the_new_series_does_not_change_the_fingerprint() -> None:
+    old = stat_rows(START, 48)
+    new = stat_rows(START + timedelta(hours=72), 24)
+    grown = [*new, {**new[-1], "start": new[-1]["start"] + 3600}]
+    assert _hash(old, grown) == _hash(old, new)  # the live series grows; the import is the same
+
+
+async def test_a_changed_middle_row_after_the_preview_stops_the_run(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    two_meters(hass)
+    await async_wait_recording_done(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    with patch("homeassistant.components.backup.async_get_manager", return_value=manager):
+        plan = await make_meter_plan(scanner, hass, "statistics")
+        middle = rows(START, 48)[20]
+        seed(hass, OLD, [{**middle, "sum": middle["sum"] + 0.5}])  # same hour, other value
+        await async_wait_recording_done(hass)
+        await run(scanner, plan, [OLD])
+    assert plan["status"] == "aborted" and plan["executed"] is False
+    assert plan["actions"][0]["result"]["reason"] == "meter_changed"
+    assert len(await series(hass, NEW)) == 24
