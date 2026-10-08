@@ -64,6 +64,7 @@ from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
 from .policies import PolicyStore
 from .queries import ReplyStore
 from .runs import RunStore
+from .window import WindowStore
 
 # Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
 ENERGY_KEYS = frozenset(
@@ -501,6 +502,7 @@ class InventoryScanner:
         self.attest = AttestStore(hass)
         self.events = EventLog(hass)
         self.lifecycle = LifecycleStore(hass)
+        self.window = WindowStore(hass)
         self.runs = RunStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
@@ -538,6 +540,7 @@ class InventoryScanner:
         await self.attest.async_load()
         await self.events.async_load()
         await self.lifecycle.async_load()
+        await self.window.async_load()
         await self.runs.async_load()
 
     def begin_boot(self) -> None:

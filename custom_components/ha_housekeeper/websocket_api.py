@@ -44,6 +44,7 @@ from .run_health import report as runs_report
 from .statistics_last import statistics_last
 from .storms import WINDOWS as STORMS_WINDOWS
 from .storms import storms
+from .window import SKIPPABLE, STEPS, WindowError, reload_targets
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
 RUNS_TIMEOUT = 20
@@ -938,6 +939,124 @@ def websocket_lifecycle_note(
     connection.send_result(msg["id"], {"note": scanner.lifecycle.notes.get(msg["device_id"])})
 
 
+def _window_view(scanner: InventoryScanner) -> dict[str, Any]:
+    window = scanner.window
+    return {"enabled": window.enabled, "state": window.state, "current": window.current()}
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/window"})
+@callback
+def websocket_window(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """The maintenance window: whether it is switched on and where it stands. Reads the store only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    connection.send_result(msg["id"], _versioned(_window_view(scanner)))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/window_set",
+        vol.Required("action"): vol.In(("enable", "disable", "begin", "advance", "clear")),
+        vol.Optional("plan_id"): str,
+        vol.Optional("step"): vol.In(STEPS),
+        vol.Optional("note", default=""): str,
+        vol.Optional("skip", default=False): bool,
+    }
+)
+@callback
+def websocket_window_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Switch the window on or off, open it with a plan, take the next step, or close it.
+
+    Taking a step only records it. The plan step needs the plan to have run; the restart step needs
+    a restart in the event log after the window began (or an explicit skip).
+    """
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    window, now = scanner.window, datetime.now(UTC).isoformat()
+    try:
+        action = msg["action"]
+        if action in ("enable", "disable"):
+            window.set_enabled(action == "enable")
+        elif action == "begin":
+            window.begin(now, msg.get("plan_id", ""))
+        elif action == "clear":
+            window.clear()
+        else:
+            step = msg.get("step")
+            if step is None or window.state is None:
+                raise WindowError("out of order")
+            if msg["skip"] and step not in SKIPPABLE:
+                raise WindowError("not skippable")
+            if step == "plan":
+                plan = scanner.journal.get(window.state["plan_id"] or "")
+                if not plan or not plan.get("executed"):
+                    raise WindowError("the plan has not run")
+            if step == "restart" and not msg["skip"]:
+                started = window.state["started_at"]
+                if not any(
+                    e["kind"] == "start" and e["at"] > started for e in scanner.events.events
+                ):
+                    raise WindowError("no restart seen yet")
+            window.advance(step, now, "skipped" if msg["skip"] else msg["note"])
+    except WindowError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(_window_view(scanner)))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/window_reload",
+        vol.Optional("execute", default=False): bool,
+    }
+)
+@websocket_api.async_response
+async def websocket_window_reload(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """List, or with ``execute`` reload, the integrations that the window's executed plan changed."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    state = scanner.window.state
+    plan = scanner.journal.get((state or {}).get("plan_id") or "")
+    if state is None or not plan or not plan.get("executed"):
+        connection.send_error(msg["id"], "invalid_format", "Not accepted: the plan has not run")
+        return
+    snapshot = await scanner.async_get_snapshot()
+    targets = reload_targets(plan, snapshot)
+    if msg["execute"]:
+        if scanner.window.current() != "reload":
+            connection.send_error(msg["id"], "invalid_format", "Not accepted: out of order")
+            return
+        for target in targets:
+            try:
+                await hass.config_entries.async_reload(target["entry_id"])
+                target["ok"] = True
+            except Exception as err:
+                target["ok"] = False
+                target["error"] = type(err).__name__
+    connection.send_result(msg["id"], _versioned({"targets": targets, "executed": msg["execute"]}))
+
+
 @websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/correlations"})
 @websocket_api.async_response
@@ -1050,6 +1169,9 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_set_policy_limit)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
+    websocket_api.async_register_command(hass, websocket_window)
+    websocket_api.async_register_command(hass, websocket_window_set)
+    websocket_api.async_register_command(hass, websocket_window_reload)
     websocket_api.async_register_command(hass, websocket_lifecycle)
     websocket_api.async_register_command(hass, websocket_lifecycle_note)
     websocket_api.async_register_command(hass, websocket_correlations)

@@ -3277,3 +3277,17 @@ test("a device has a history tab with its steps and note; removed devices are li
   const list = el.removedCard();
   assert.ok(list.includes("Old hub") && list.includes("Removed by a plan") && list.includes("retired"));
 });
+
+test("the maintenance window is off until switched on, then shows the open step and builds a report", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._winRequested = true; el.journal = [{ plan_id: "aabbccddeeff", created_at: "2026-10-01T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 2, ok: 2, review: 0, blocked: 0 } }]; el._journalRequested = true;
+  el.win = { enabled: false, state: null, current: null };
+  assert.ok(el.windowCard().includes("Switch on (experimental)") && !el.windowCard().includes("data-win-act=\"begin"));
+  el.win = { enabled: true, state: null, current: null };
+  assert.ok(el.windowCard().includes('data-win-act="begin:aabbccddeeff"'));
+  el.win = { enabled: true, current: "plan", state: { started_at: "2026-10-01T10:00:00+00:00", plan_id: "aabbccddeeff", done: ["preflight", "baseline"], log: [{ step: "preflight", at: "2026-10-01T10:01:00+00:00", note: "" }] } };
+  const html = el.windowCard();
+  assert.ok(html.includes('data-win-act="plan:aabbccddeeff"') && html.includes('data-win-act="next:plan"') && !html.includes("Restart (by you)</strong></span></div><div class=\"pad\">"));
+  const report = el.windowReport();
+  assert.ok(report.startsWith("# Maintenance window") && report.includes("1. Check first"));
+});
