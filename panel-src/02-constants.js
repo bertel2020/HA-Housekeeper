@@ -18,6 +18,14 @@ const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: 
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 // The dependency graph shows this many nodes per side at first; "more" adds another step.
 const GRAPH_NODE_STEP = 40;
+// Scan thresholds as cards: option key, title, explanation, unit and default (the defaults of const.py).
+const OPTION_FIELDS = [
+  ["min_unavailable_days", "optMinUnavailableTitle", "optMinUnavailableHint", "unitDays", 7],
+  ["unused_automation_days", "optUnusedAutomationTitle", "optUnusedAutomationHint", "unitDays", 90],
+  ["scan_interval_hours", "optScanIntervalTitle", "optScanIntervalHint", "unitHours", 24],
+  ["low_battery_percent", "optLowBatteryTitle", "optLowBatteryHint", "unitPercent", 20],
+  ["history_days", "optHistoryDaysTitle", "optHistoryDaysHint", "unitDays", 30],
+];
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
 const REPO_URL = "https://github.com/bertel2020/HA-Housekeeping";
 // Palettes for explicit light/dark; taken from the Zeitarchiv app's design system (app.css).

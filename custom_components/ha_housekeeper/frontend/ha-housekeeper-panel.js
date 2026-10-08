@@ -381,6 +381,14 @@ const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: 
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 // The dependency graph shows this many nodes per side at first; "more" adds another step.
 const GRAPH_NODE_STEP = 40;
+// Scan thresholds as cards: option key, title, explanation, unit and default (the defaults of const.py).
+const OPTION_FIELDS = [
+  ["min_unavailable_days", "optMinUnavailableTitle", "optMinUnavailableHint", "unitDays", 7],
+  ["unused_automation_days", "optUnusedAutomationTitle", "optUnusedAutomationHint", "unitDays", 90],
+  ["scan_interval_hours", "optScanIntervalTitle", "optScanIntervalHint", "unitHours", 24],
+  ["low_battery_percent", "optLowBatteryTitle", "optLowBatteryHint", "unitPercent", 20],
+  ["history_days", "optHistoryDaysTitle", "optHistoryDaysHint", "unitDays", 30],
+];
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
 const REPO_URL = "https://github.com/bertel2020/HA-Housekeeping";
 // Palettes for explicit light/dark; taken from the Zeitarchiv app's design system (app.css).
@@ -754,6 +762,44 @@ Object.assign(TEXT.en, {
   rfContinue: "{n} step(s) with “continue_on_error”; errors stay invisible there.",
 });
 
+// Texts for the settings page; merged into TEXT.
+Object.assign(TEXT.de, {
+  setTabLook: "Darstellung", setTabScan: "Scan und Schwellen", setTabHidden: "Ausgeblendet", setTabInfo: "Info",
+  setReadability: "Lesbarkeit",
+  unitDays: "Tage", unitHours: "Std.", unitPercent: "%", optDefault: "Standard: {n} {unit}",
+  optMinUnavailableTitle: "Nicht verfügbar", optMinUnavailableHint: "Ab wie vielen Tagen ohne Zustand eine Entity als Befund gilt. 0 meldet sofort.",
+  optUnusedAutomationTitle: "Ungenutzte Automationen", optUnusedAutomationHint: "Ab wie vielen Tagen ohne Auslösung eine Automation als ungenutzt gilt. 0 schaltet die Prüfung aus.",
+  optScanIntervalTitle: "Automatischer Scan", optScanIntervalHint: "Wie oft Housekeeper von selbst scannt. 0 schaltet den automatischen Scan aus.",
+  optLowBatteryTitle: "Schwache Batterie", optLowBatteryHint: "Unter diesem Ladestand erscheint ein Batteriegerät in der Liste der schwachen Batterien.",
+  optHistoryDaysTitle: "Scanverlauf", optHistoryDaysHint: "Wie viele Tage der letzte Scan jedes Tages als Vergleichspunkt erhalten bleibt.",
+  setKeptTitle: "Was Housekeeper speichert", setKeptHint: "Alles liegt im Speicher von Home Assistant (.storage) und verlässt deine Instanz nicht.",
+  setKeptObservations: "Beobachtungen", setKeptObservationsText: "Seit wann ein Objekt in seinem Zustand ist. Bleibt, solange das Objekt existiert.",
+  setKeptHistory: "Scanverlauf", setKeptHistoryText: "Der letzte Scan jedes Tages als Vergleichspunkt, {days} Tage lang.",
+  setKeptJournal: "Journal", setKeptJournalText: "Pläne des Aufräumens mit Ergebnis und Rückgängig-Angaben, bis du sie löschst.",
+  setKeptEvents: "Ereignisse", setKeptEventsText: "Neustarts, Versionswechsel von Home Assistant und Integrationen sowie ausgeführte Pläne, höchstens 5.000 Einträge.",
+  setKeptRuns: "Automationsläufe", setKeptRunsText: "Zähler je Automation und Tag aus den Läufen (ohne Variablen, Auslöserdaten und Fehlertexte), 60 Tage lang.",
+  setPrivacy: "Housekeeper sendet nichts nach außen. Die Auswertung der Datenbank liest nur und merkt sich keine Zustandswerte.",
+  setLinks: "Links",
+});
+Object.assign(TEXT.en, {
+  setTabLook: "Appearance", setTabScan: "Scan and thresholds", setTabHidden: "Hidden", setTabInfo: "Info",
+  setReadability: "Readability",
+  unitDays: "days", unitHours: "h", unitPercent: "%", optDefault: "Default: {n} {unit}",
+  optMinUnavailableTitle: "Unavailable", optMinUnavailableHint: "After how many days without a state an entity becomes a finding. 0 reports at once.",
+  optUnusedAutomationTitle: "Unused automations", optUnusedAutomationHint: "After how many days without a trigger an automation counts as unused. 0 turns the check off.",
+  optScanIntervalTitle: "Automatic scan", optScanIntervalHint: "How often Housekeeper scans by itself. 0 turns the automatic scan off.",
+  optLowBatteryTitle: "Low battery", optLowBatteryHint: "Below this level a battery device appears in the list of low batteries.",
+  optHistoryDaysTitle: "Scan history", optHistoryDaysHint: "How many days the last scan of each day is kept as a comparison point.",
+  setKeptTitle: "What Housekeeper stores", setKeptHint: "Everything lives in Home Assistant's storage (.storage) and does not leave your instance.",
+  setKeptObservations: "Observations", setKeptObservationsText: "Since when an object has been in its state. Kept as long as the object exists.",
+  setKeptHistory: "Scan history", setKeptHistoryText: "The last scan of each day as a comparison point, for {days} days.",
+  setKeptJournal: "Journal", setKeptJournalText: "Cleanup plans with their result and undo details, until you delete them.",
+  setKeptEvents: "Events", setKeptEventsText: "Restarts, version changes of Home Assistant and integrations, and executed plans, at most 5,000 entries.",
+  setKeptRuns: "Automation runs", setKeptRunsText: "Counters per automation and day from the runs (without variables, trigger data and error texts), for 60 days.",
+  setPrivacy: "Housekeeper sends nothing out. The database evaluation only reads and does not remember state values.",
+  setLinks: "Links",
+});
+
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
 class ThemeMixin {
   // Display preferences live in this browser only; storage may be unavailable.
@@ -844,6 +890,10 @@ class StylesMixin {
       h1{font-size:calc(25px*var(--hk-fs,1));font-weight:600;line-height:1.2}.sub{display:block;margin-top:6px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
       .howto{padding:6px 16px 10px}.howto summary{cursor:pointer;color:var(--hk-blue-text);font-weight:600;font-size:calc(12.5px*var(--hk-fs,1));padding:4px 0}.howto .factnote{margin:4px 0 0;padding:0}
+      .setband{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:12px 16px;margin-bottom:14px}.setband .grow{flex:1}.bandbit{display:grid;gap:1px}.bandbit small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.bandbit b{font-size:calc(14px*var(--hk-fs,1))}
+      .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;padding:14px 16px}.tilebtn{display:grid;gap:8px;justify-items:start;align-content:start;padding:10px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);text-align:left;font-weight:600}.tilebtn ha-icon{color:var(--hk-blue-text)}.tilebtn:hover{border-color:var(--hk-blue)}.tilebtn[aria-pressed=true]{border-color:var(--hk-blue-solid);box-shadow:0 0 0 2px color-mix(in srgb,var(--hk-blue) 35%,transparent)}
+      .mini{display:flex;gap:4px;width:100%;height:38px;padding:5px;border:1px solid;border-radius:8px}.mini i{flex:1;border-radius:4px}.mini b{width:16px;border-radius:4px}
+      .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:14px 16px}.optcard{display:grid;gap:8px;align-content:start;padding:14px;border:1px solid var(--hk-border);border-radius:12px}.optcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.unitrow{display:flex;align-items:center;gap:8px}.unitrow input{width:110px}.savebar{border-bottom:0;border-top:1px solid var(--hk-border)}.quietreset{grid-template-columns:1fr auto}a.row{text-decoration:none}
       .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.toolgap{flex:1}.btn.quiet{border-color:transparent;background:none;color:var(--hk-blue-text);padding:8px 10px}.btn.quiet:hover{background:var(--hk-soft)}.btn.quiet[disabled]{color:var(--hk-muted);opacity:.7;cursor:default}
       .btn.primary{border-color:var(--hk-blue-solid);color:var(--hk-on,#fff);background:var(--hk-blue-solid)}.btn.primary:hover{background:#0a8ccf}.btn[disabled]{opacity:.6;cursor:wait}
       .summary{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:12px;margin-bottom:14px}
@@ -1357,45 +1407,64 @@ class SettingsMixin {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
-  settingsView() {
-    const m = this.data?.meta || {}, p = this.prefs;
-    const days = n => (n > 0 ? this.t("daysValue", { n }) : this.t("immediately"));
-    const fact = (k, v) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`;
-    const facts = [
-      fact(this.t("version"), this.esc(m.version || "–")), fact(this.t("haVersion"), this.esc(m.ha_version || "–")),
-      fact(this.t("mode"), this.t("readOnlyValue")),
-      fact(this.t("lastScan"), m.scanned_at ? this.formatDate(m.scanned_at) : "–"),
-      fact(this.t("objects"), this.formatNumber(m.object_count ?? 0)),
-      fact(this.t("scanInterval"), m.scan_interval_hours > 0 ? this.t("hoursValue", { n: m.scan_interval_hours }) : this.t("offValue")),
-      fact(this.t("unavailableAfter"), days(m.min_unavailable_days ?? 0)),
-      fact(this.t("unusedAfter"), m.unused_automation_days > 0 ? this.t("daysValue", { n: m.unused_automation_days }) : this.t("offValue")),
-      fact(this.t("lowBatteryAt"), `${this.esc(m.low_battery_percent ?? 20)} %`),
-    ].join("");
-    const links = `<div class="actions" style="padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px">
-      <button class="btn" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button>
-      <a class="btn" href="${REPO_URL}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:github"></ha-icon>${this.t("repository")}</a>
-      <a class="btn" href="${REPO_URL}/issues" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:bug-outline"></ha-icon>${this.t("reportIssue")}</a>
-      <a class="btn" href="${REPO_URL}/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:history"></ha-icon>${this.t("changelog")}</a>
-      <button class="btn" data-copy-info><ha-icon icon="mdi:content-copy"></ha-icon>${this.t(this.copied ? "copied" : "copyInfo")}</button></div>`;
-    const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
-    const select = (key, options) => `<select data-pref-select="${key}">${options.map(([v, l]) => `<option value="${v}" ${String(p[key]) === String(v) ? "selected" : ""}>${l}</option>`).join("")}</select>`;
-    const appearance = `<section class="panel"><div class="panelhead"><h2>${this.t("appearance")}</h2></div>
-      ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
-      ${row(this.t("colorMode"), this.t("modeHint"), this.segment("mode", [["auto", this.t("modeAuto")], ["light", this.t("modeLight")], ["dark", this.t("modeDark")]]))}
-      ${row(this.t("density"), "", this.segment("density", [["normal", this.t("densityNormal")], ["compact", this.t("densityCompact")]]))}
-      ${row(this.t("motion"), this.t("motionHint"), this.segment("motion", [["auto", this.t("motionAuto")], ["reduced", this.t("motionReduced")]]))}
-      ${row(this.t("colorScheme"), "", this.segment("scheme", [["standard", this.t("schemeStandard"), "#0789cf"], ["housekeeper", this.t("schemeHousekeeper"), SCHEMES.housekeeper.light.accent], ["modern", this.t("schemeModern"), SCHEMES.modern.light.accent]]))}</section>`;
-    const behavior = `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
-      ${row(this.t("startView"), "", select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
-      ${row(this.t("pageSizeSetting"), "", select("pageSize", [20, 50, 100].map(n => [n, n])))}
-      <div class="setrow"><small style="margin:0">${this.t("prefsNote")}</small><button class="btn" data-pref-reset>${this.t("resetPrefs")}</button></div></section>`;
-    const optionRow = (key, label) => {
-      const [min, max] = OPTION_LIMITS[key];
-      return row(label, "", `<input type="number" data-opt="${key}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}" style="max-width:160px">`);
+  // The tab ids of the settings page, in display order.
+  settingsTabs() {
+    const hidden = (this.data?.findings || []).filter(f => f.ignored).length;
+    return [["look", "setTabLook"], ["scan", "setTabScan"], ["hidden", "setTabHidden", hidden], ["info", "setTabInfo"]];
+  }
+
+  // One line with what runs and how fresh the data is, plus the one button for support questions.
+  settingsBand() {
+    const m = this.data?.meta || {};
+    const bit = (label, value) => `<span class="bandbit"><small>${label}</small><b>${value}</b></span>`;
+    return `<div class="panel setband">${bit("Housekeeper", this.esc(m.version || "–"))}${bit("Home Assistant", this.esc(m.ha_version || "–"))}${bit(this.t("objects"), this.formatNumber(m.object_count ?? 0))}
+      <span class="grow"></span><button class="btn" data-copy-info><ha-icon icon="mdi:content-copy"></ha-icon>${this.t(this.copied ? "copied" : "copyInfo")}</button></div>`;
+  }
+
+  // Scheme and mode as tiles: the scheme tile shows its own colors in the mode that is on screen.
+  lookCard() {
+    const p = this.prefs, dark = this.isDark();
+    const tile = (pref, value, label, inner) => `<button class="tilebtn" data-pref="${pref}|${value}" aria-pressed="${String(p[pref]) === String(value)}">${inner}<span>${label}</span></button>`;
+    const mini = scheme => {
+      const c = SCHEMES[scheme][dark ? "dark" : "light"];
+      return `<span class="mini" aria-hidden="true" style="background:${c.bg};border-color:${c.border}"><i style="background:${c.surface}"></i><i style="background:${c.surface}"></i><b style="background:${c.accent}"></b></span>`;
     };
-    const optionsCard = this.data ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>
-      ${optionRow("min_unavailable_days", this.t("optMinUnavailable"))}${optionRow("unused_automation_days", this.t("optUnusedAutomation"))}${optionRow("scan_interval_hours", this.t("optScanInterval"))}${optionRow("low_battery_percent", this.t("optLowBattery"))}${optionRow("history_days", this.t("optHistoryDays"))}
-      <div class="setrow"><small style="margin:0">${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-opts-save>${this.t("saveOptions")}</button></div></section>` : "";
+    const schemes = [["standard", "schemeStandard"], ["housekeeper", "schemeHousekeeper"], ["modern", "schemeModern"]].map(([id, key]) => tile("scheme", id, this.t(key), mini(id))).join("");
+    const modes = [["auto", "modeAuto", "mdi:theme-light-dark"], ["light", "modeLight", "mdi:white-balance-sunny"], ["dark", "modeDark", "mdi:weather-night"]].map(([id, key, icon]) => tile("mode", id, this.t(key), `<ha-icon icon="${icon}"></ha-icon>`)).join("");
+    const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles">${schemes}</div>
+      <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div>
+      <div class="panelhead"><h2>${this.t("setReadability")}</h2></div>
+      ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
+      ${row(this.t("density"), "", this.segment("density", [["normal", this.t("densityNormal")], ["compact", this.t("densityCompact")]]))}
+      ${row(this.t("motion"), this.t("motionHint"), this.segment("motion", [["auto", this.t("motionAuto")], ["reduced", this.t("motionReduced")]]))}</section>`;
+  }
+
+  behaviorCard() {
+    const p = this.prefs;
+    const row = (label, control) => `<div class="setrow"><div>${label}</div>${control}</div>`;
+    const select = (key, options) => `<select data-pref-select="${key}" aria-label="${this.esc(this.t(key === "startView" ? "startView" : "pageSizeSetting"))}">${options.map(([v, l]) => `<option value="${v}" ${String(p[key]) === String(v) ? "selected" : ""}>${l}</option>`).join("")}</select>`;
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
+      ${row(this.t("startView"), select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
+      ${row(this.t("pageSizeSetting"), select("pageSize", [20, 50, 100].map(n => [n, n])))}
+      <div class="setrow quietreset"><small>${this.t("prefsNote")}</small><button class="btn quiet" data-pref-reset>${this.t("resetPrefs")}</button></div></section>`;
+  }
+
+  // The five thresholds as cards with their unit and default; saving stays off until a value differs.
+  scanCard() {
+    const m = this.data?.meta || {};
+    if (!this.data) return `<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("loading")}</p></div>`;
+    const cards = OPTION_FIELDS.map(([key, title, hint, unit, standard]) => {
+      const [min, max] = OPTION_LIMITS[key];
+      return `<div class="optcard"><label for="opt-${key}"><strong>${this.t(title)}</strong></label><small>${this.t(hint)}</small>
+        <div class="unitrow"><input id="opt-${key}" type="number" data-opt="${key}" data-saved="${this.esc(m[key] ?? "")}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}"><span>${this.t(unit)}</span></div>
+        <small>${this.t("optDefault", { n: standard, unit: this.t(unit) })} · ${min}–${max}</small></div>`;
+    }).join("");
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div><div class="optgrid">${cards}</div>
+      <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save disabled>${this.t("saveOptions")}</button></div></section>`;
+  }
+
+  hiddenCard() {
     const hidden = (this.data?.findings || []).filter(f => f.ignored);
     const pg = this.paginate("hidden", hidden);
     const hiddenRow = f => {
@@ -1403,8 +1472,28 @@ class SettingsMixin {
       const action = f.ignored_by === "label" ? `<span class="pill mute">${this.t("ignoredByLabel")}</span>` : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0">${this.t("showFinding")}</button>`;
       return `<div class="row"><span class="tile mute"><ha-icon icon="mdi:eye-off-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || f.object_id)}</strong><small>${this.esc(f.object_id)} · ${this.esc(this.findingTitle(f))}</small></span>${action}</div>`;
     };
-    const hiddenCard = `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${hidden.length ? pg.rows.map(hiddenRow).join("") : `<div class="emptymsg"><ha-icon icon="mdi:eye-check-outline"></ha-icon>${this.t("hiddenNone")}</div>`}${pg.footer}</section>`;
-    return `<div class="grid2"><div class="stack">${appearance}${behavior}${optionsCard}${hiddenCard}</div><div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div>${links}</section></div></div>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${hidden.length ? pg.rows.map(hiddenRow).join("") : `<div class="emptymsg"><ha-icon icon="mdi:eye-check-outline"></ha-icon>${this.t("hiddenNone")}</div>`}${pg.footer}</section>`;
+  }
+
+  infoCard() {
+    const m = this.data?.meta || {};
+    const fact = (k, v) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`;
+    const facts = [fact(this.t("version"), this.esc(m.version || "–")), fact(this.t("haVersion"), this.esc(m.ha_version || "–")), fact(this.t("mode"), this.t("readOnlyValue")),
+      fact(this.t("lastScan"), m.scanned_at ? this.formatDate(m.scanned_at) : "–"), fact(this.t("objects"), this.formatNumber(m.object_count ?? 0))].join("");
+    const link = (icon, href, label, hint) => `<a class="row" href="${href}" target="_blank" rel="noopener noreferrer"><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${label}</strong>${hint ? `<small>${hint}</small>` : ""}</span><ha-icon icon="mdi:open-in-new"></ha-icon></a>`;
+    const kept = [["setKeptObservations", "setKeptObservationsText"], ["setKeptHistory", "setKeptHistoryText"], ["setKeptJournal", "setKeptJournalText"], ["setKeptEvents", "setKeptEventsText"], ["setKeptRuns", "setKeptRunsText"]]
+      .map(([title, text]) => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:database-outline"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(text, { days: m.history_days ?? 30 })}</small></span></div>`).join("");
+    return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div></section>
+      <section class="panel"><div class="panelhead"><div><h2>${this.t("setKeptTitle")}</h2><p>${this.t("setKeptHint")}</p></div></div>${kept}<p class="factnote">${this.t("setPrivacy")}</p></section>
+      <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}</section></div>`;
+  }
+
+  settingsView() {
+    const tabs = this.settingsTabs();
+    const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
+    const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-set-${id}" aria-selected="${id === tab}" aria-controls="hk-setpanel" tabindex="${id === tab ? 0 : -1}" data-set-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
+    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => this.scanCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    return `${this.settingsBand()}<div class="tabs" role="tablist" aria-label="${this.esc(this.t("settings"))}">${tablist}</div><div role="tabpanel" id="hk-setpanel" aria-labelledby="hk-set-${tab}" tabindex="0">${body}</div>`;
   }
 
   async saveOptions() {
@@ -2983,6 +3072,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.sort = "name";
     this.selected = null;
     this.detailTab = "overview";
+    this.settingsTab = "look";
     this.trail = [];
     this.compare = null;
     this.compareBaseline = "previous";
@@ -3519,6 +3609,24 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => this.openPlan(el.dataset.planOpen));
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => this.deletePlan(el.dataset.planDelete));
     root.querySelector("[data-opts-save]")?.addEventListener("click", () => this.saveOptions());
+    // Saving stays off until a threshold differs from the saved one; typing must not rebuild the page.
+    const optInputs = [...root.querySelectorAll("[data-opt]")];
+    optInputs.forEach(el => el.oninput = () => {
+      const save = root.querySelector("[data-opts-save]");
+      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved);
+    });
+    root.querySelectorAll("[data-set-tab]").forEach(el => {
+      el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
+      el.onkeydown = ev => {
+        const ids = [...root.querySelectorAll("[data-set-tab]")].map(b => b.dataset.setTab), at = ids.indexOf(el.dataset.setTab);
+        const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];
+        if (!next) return;
+        ev.preventDefault();
+        this.settingsTab = next;
+        this.render();
+        this.shadowRoot.querySelector(`[data-set-tab="${next}"]`)?.focus();
+      };
+    });
     root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
     root.querySelector("[data-copy-info]")?.addEventListener("click", async () => {
       try { await globalThis.navigator?.clipboard?.writeText(this.infoText()); this.copied = true; } catch (_) { this.copied = false; }

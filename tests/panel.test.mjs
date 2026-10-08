@@ -26,8 +26,8 @@ function loadPanel(extra = {}) {
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, setTimeout: () => 0,
     ...extra,
   };
-  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS;", context);
-  return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, shadow };
+  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS; this.OPTION_FIELDS = OPTION_FIELDS;", context);
+  return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, OPTION_FIELDS: context.OPTION_FIELDS, shadow };
 }
 
 const DATA = {
@@ -562,19 +562,37 @@ function fakeStorage(initial = {}) {
   return { store, getItem: key => (key in store ? store[key] : null), setItem: (key, value) => { store[key] = String(value); } };
 }
 
-test("settings view shows version info, appearance, behavior and hidden findings", () => {
+test("settings view has a header band and four tabs: appearance, thresholds, hidden findings, info", () => {
   const { el, shadow } = panel("en");
-  el.data = { ...DATA, meta: { ...DATA.meta, version: "0.3.1", ha_version: "2026.9.4", scan_interval_hours: 24, min_unavailable_days: 7, unused_automation_days: 90, low_battery_percent: 20 },
+  el.data = { ...DATA, meta: { ...DATA.meta, version: "0.3.1", ha_version: "2026.9.4", scanned_at: new Date(Date.now() - 3 * 3600e3).toISOString(), scan_interval_hours: 24, min_unavailable_days: 7, unused_automation_days: 90, low_battery_percent: 20, history_days: 30 },
     findings: [{ ...DATA.findings[0], key: "k1", ignored: true, ignored_by: "user" }, { ...DATA.findings[1], key: "k2", ignored: true, ignored_by: "label" }] };
   el.view = "settings";
-  el.render();
-  const html = shadow.innerHTML;
-  assert.ok(html.includes("0.3.1") && html.includes("2026.9.4") && html.includes("every 24 hours") && html.includes("7 days") && html.includes("20 %"));
-  assert.ok(html.includes('data-pref="size|small"') && html.includes('data-pref="mode|dark"') && html.includes('data-pref="scheme|modern"'));
-  assert.ok(html.includes('data-pref-select="pageSize"') && html.includes("Hidden findings (2)"));
-  assert.ok(html.includes('data-ignore="k1" data-ignore-value="0"') && !html.includes('data-ignore="k2"'));
-  assert.ok(html.includes("https://github.com/bertel2020/HA-Housekeeping/issues"));
+  const show = tab => { el.settingsTab = tab; el.render(); return shadow.innerHTML; };
+  let html = show("look");
+  assert.ok(html.includes("0.3.1") && html.includes("2026.9.4") && html.includes("data-copy-info"), "header band");
+  const tabs = [...html.matchAll(/data-set-tab="(\w+)"/g)].map(m => m[1]);
+  assert.equal(JSON.stringify(tabs), JSON.stringify(["look", "scan", "hidden", "info"]));
+  assert.ok(/id="hk-set-look" aria-selected="true" aria-controls="hk-setpanel" tabindex="0"/.test(html) && /id="hk-set-scan" aria-selected="false"[^>]*tabindex="-1"/.test(html));
+  assert.ok(html.includes("<em>2</em>"), "the hidden tab carries its count");
+  for (const key of ['data-pref="size|small"', 'data-pref="mode|dark"', 'data-pref="scheme|modern"', 'data-pref="density|compact"', 'data-pref-select="pageSize"', 'data-pref-reset']) assert.ok(html.includes(key), key);
+  assert.ok(html.includes('aria-pressed="true"') && html.includes('class="mini"'), "scheme tiles show a preview");
+  html = show("scan");
+  for (const key of ["min_unavailable_days", "unused_automation_days", "scan_interval_hours", "low_battery_percent", "history_days"]) assert.ok(html.includes(`data-opt="${key}"`), key);
+  assert.ok(html.includes("Default: 7 days") && html.includes("Default: 24 h") && html.includes("Default: 20 %") && html.includes("Default: 30 days"));
+  assert.ok(/data-opts-save disabled/.test(html), "saving is off until a value changes");
+  assert.ok(!html.includes("optHistoryDays"), "no raw text key");
+  html = show("hidden");
+  assert.ok(html.includes("Hidden findings (2)") && html.includes('data-ignore="k1" data-ignore-value="0"') && !html.includes('data-ignore="k2"'));
+  html = show("info");
+  assert.ok(html.includes("https://github.com/bertel2020/HA-Housekeeping/issues") && html.includes("What Housekeeper stores") && html.includes("5,000"));
   assert.ok(el.infoText().includes("HA Housekeeper 0.3.1") && el.infoText().includes("Home Assistant 2026.9.4"));
+  el.settingsTab = "nonsense";
+  assert.ok(el.settingsView().includes('id="hk-set-look" aria-selected="true"'), "a stale tab falls back to appearance");
+});
+
+test("every settings text exists in both languages", () => {
+  const { TEXT, OPTION_FIELDS } = loadPanel();
+  for (const [, title, hint, unit] of OPTION_FIELDS) for (const key of [title, hint, unit]) for (const lang of ["de", "en"]) assert.ok(TEXT[lang][key], `${lang}:${key}`);
 });
 
 test("settings are available before data has loaded", () => {
@@ -682,7 +700,7 @@ test("scan settings are validated and sent to the options command", async () => 
   const sent = [];
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return { options: {} }; } };
   el.data = { ...DATA, meta: { ...DATA.meta, min_unavailable_days: 7, unused_automation_days: 90, scan_interval_hours: 24, low_battery_percent: 20 } };
-  el.view = "settings";
+  el.view = "settings"; el.settingsTab = "scan";
   el.render();
   assert.ok(shadow.innerHTML.includes('data-opt="scan_interval_hours"') && shadow.innerHTML.includes('value="24"'));
   const input = (key, value) => ({ dataset: { opt: key }, value });
@@ -2390,4 +2408,28 @@ test("a changes section whose rows are all filtered out says so instead of showi
   el.lvState("changes", "", "asc").q = "zzz";
   const html = el.changesView();
   assert.ok(html.includes("The filter hides all 1 entries"), html.slice(0, 400));
+});
+
+test("settings tabs follow click and arrow keys, and saving the thresholds is allowed only after a change", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, min_unavailable_days: 7 } };
+  el.view = "settings";
+  const buttons = ["look", "scan", "hidden", "info"].map(id => ({ dataset: { setTab: id } }));
+  const focused = [];
+  const save = { disabled: true, addEventListener() {} };
+  const inputs = [{ dataset: { saved: "7" }, value: "7" }, { dataset: { saved: "24" }, value: "24" }];
+  shadow.querySelectorAll = selector => (selector === "[data-set-tab]" ? buttons : selector === "[data-opt]" ? inputs : []);
+  shadow.querySelector = selector => { const m = /^\[data-set-tab="(\w+)"\]$/.exec(selector); return m ? { focus: () => focused.push(m[1]) } : selector === "[data-opts-save]" ? save : null; };
+  el.render();
+  buttons[1].onclick();
+  assert.equal(el.settingsTab, "scan");
+  const press = (button, key) => { const ev = { key, preventDefault() {} }; button.onkeydown(ev); };
+  press(buttons[1], "ArrowRight"); assert.equal(el.settingsTab, "hidden");
+  press(buttons[2], "End"); assert.equal(el.settingsTab, "info");
+  press(buttons[3], "ArrowRight"); assert.equal(el.settingsTab, "look", "wraps around");
+  assert.equal(JSON.stringify(focused), JSON.stringify(["hidden", "info", "look"]));
+  inputs[0].value = "10"; inputs[0].oninput();
+  assert.equal(save.disabled, false);
+  inputs[0].value = "7"; inputs[0].oninput();
+  assert.equal(save.disabled, true, "back to the saved value");
 });

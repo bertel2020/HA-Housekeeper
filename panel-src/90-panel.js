@@ -16,6 +16,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.sort = "name";
     this.selected = null;
     this.detailTab = "overview";
+    this.settingsTab = "look";
     this.trail = [];
     this.compare = null;
     this.compareBaseline = "previous";
@@ -552,6 +553,24 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => this.openPlan(el.dataset.planOpen));
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => this.deletePlan(el.dataset.planDelete));
     root.querySelector("[data-opts-save]")?.addEventListener("click", () => this.saveOptions());
+    // Saving stays off until a threshold differs from the saved one; typing must not rebuild the page.
+    const optInputs = [...root.querySelectorAll("[data-opt]")];
+    optInputs.forEach(el => el.oninput = () => {
+      const save = root.querySelector("[data-opts-save]");
+      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved);
+    });
+    root.querySelectorAll("[data-set-tab]").forEach(el => {
+      el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
+      el.onkeydown = ev => {
+        const ids = [...root.querySelectorAll("[data-set-tab]")].map(b => b.dataset.setTab), at = ids.indexOf(el.dataset.setTab);
+        const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];
+        if (!next) return;
+        ev.preventDefault();
+        this.settingsTab = next;
+        this.render();
+        this.shadowRoot.querySelector(`[data-set-tab="${next}"]`)?.focus();
+      };
+    });
     root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
     root.querySelector("[data-copy-info]")?.addEventListener("click", async () => {
       try { await globalThis.navigator?.clipboard?.writeText(this.infoText()); this.copied = true; } catch (_) { this.copied = false; }
