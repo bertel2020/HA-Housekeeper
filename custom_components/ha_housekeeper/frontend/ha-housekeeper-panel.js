@@ -18,7 +18,7 @@ const TEXT = {
     lastScan: "Letzter Scan", evidence: "Nachweis", registry: "Registry",
     state: "Zustand & Attribute", incoming: "Eingehend", outgoing: "Ausgehend",
     graphMode: "Darstellung", graphList: "Liste", graphGraph: "Graph", graphDepth: "Ebenen", graphRelation: "Beziehungstyp", graphAllRelations: "Alle Beziehungen", graphConfidence: "Sicherheit", graphAllConf: "Alle Sicherheiten", graphCertainOnly: "Nur sichere",
-    graphImpact: "Was bricht beim Entfernen?", graphBreaks: "bricht", graphLabel: "Abhängigkeitsgraph von {name}", graphNodes: "Objekte: {n}", graphMore: "Mehr anzeigen",
+    graphGroup: "{n} × {type}", graphGroupOpen: "Zum Aufklappen anklicken", graphRegroup: "Wieder zusammenfassen", graphImpact: "Was bricht beim Entfernen?", graphBreaks: "bricht", graphLabel: "Abhängigkeitsgraph von {name}", graphNodes: "Objekte: {n}", graphMore: "Mehr anzeigen",
     graphLegend: "Durchgezogen: sicher · Gestrichelt: wahrscheinlich · Rot gepunktet: Zyklus · Roter Rahmen: bricht beim Entfernen · Gestrichelter Rahmen: Objekt fehlt.",
     graphMissing: "Fehlende Ziele: {n}", graphProbable: "Wahrscheinliche Beziehungen: {n}", graphCycles: "Zyklen: {n}", graphHidden: "Ausgeblendet: {n}", graphHitsOutside: "{n} betroffene Objekte liegen außerhalb des Graphen (mehr Ebenen wählen)",
     graphHint: "Wähle ein Objekt aus, um seine direkten Beziehungen zu untersuchen.",
@@ -101,7 +101,7 @@ const TEXT = {
     saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
     cleanupSubtitle: "Vorschau für das Aufräumen: Housekeeper prüft Kandidaten und protokolliert das Ergebnis. Es wird nichts geändert.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entitäten.", cleanupNone: "Keine Kandidaten gefunden.",
-    selectPage: "Seite auswählen", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
+    selectPage: "Seite auswählen", findHideSelected: "Ausgewählte ausblenden", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
     stepsLabel: "Ablauf des Plans", stepSelect: "Auswahl", stepAnalysis: "Auswirkungsanalyse", stepConfirm: "Bestätigung", stepBackup: "Backup", stepRun: "Ausführung", stepVerify: "Verifikation",
     stepDone: "erledigt", stepCurrent: "aktuell", stepTodo: "ausstehend", stepSkipped: "entfällt", stepFailed: "fehlgeschlagen",
     stepAnalysisBlocked: "Keine ausführbare Aktion", stepBackupSkipped: "Nicht nötig: alles lässt sich per Housekeeper zurücknehmen", stepBackupDone: "Erstellt am {date}{job}", stepBackupJob: " · Job {id}",
@@ -197,7 +197,7 @@ const TEXT = {
     lastScan: "Last scan", evidence: "Evidence", registry: "Registry",
     state: "State & attributes", incoming: "Incoming", outgoing: "Outgoing",
     graphMode: "View", graphList: "List", graphGraph: "Graph", graphDepth: "Levels", graphRelation: "Relation type", graphAllRelations: "All relations", graphConfidence: "Certainty", graphAllConf: "All certainties", graphCertainOnly: "Certain only",
-    graphImpact: "What breaks when removed?", graphBreaks: "breaks", graphLabel: "Dependency graph of {name}", graphNodes: "Objects: {n}", graphMore: "Show more",
+    graphGroup: "{n} × {type}", graphGroupOpen: "Click to expand", graphRegroup: "Group again", graphImpact: "What breaks when removed?", graphBreaks: "breaks", graphLabel: "Dependency graph of {name}", graphNodes: "Objects: {n}", graphMore: "Show more",
     graphLegend: "Solid: certain · Dashed: probable · Red dotted: cycle · Red outline: breaks when removed · Dashed outline: object is missing.",
     graphMissing: "Missing targets: {n}", graphProbable: "Probable relations: {n}", graphCycles: "Cycles: {n}", graphHidden: "Hidden: {n}", graphHitsOutside: "{n} affected objects are outside the graph (choose more levels)",
     graphHint: "Select an object to inspect its direct relationships.",
@@ -280,7 +280,7 @@ const TEXT = {
     saveOptions: "Save", optionsSaved: "Saved. Housekeeper is reloading …", optionsInvalid: "Please enter values within the allowed range.",
     cleanupSubtitle: "Preview for tidying up: Housekeeper checks candidates and records the result. Nothing is changed.",
     cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
-    selectPage: "Select page", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
+    selectPage: "Select page", findHideSelected: "Hide selected", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
     stepsLabel: "Steps of the plan", stepSelect: "Selection", stepAnalysis: "Impact analysis", stepConfirm: "Confirmation", stepBackup: "Backup", stepRun: "Execution", stepVerify: "Verification",
     stepDone: "done", stepCurrent: "current", stepTodo: "pending", stepSkipped: "not needed", stepFailed: "failed",
     stepAnalysisBlocked: "No executable action", stepBackupSkipped: "Not needed: everything can be taken back by Housekeeper", stepBackupDone: "Created {date}{job}", stepBackupJob: " · job {id}",
@@ -381,6 +381,7 @@ const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: 
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 // The dependency graph shows this many nodes per side at first; "more" adds another step.
 const GRAPH_NODE_STEP = 40;
+const GRAPH_GROUP_MIN = 5; // leaf nodes of one type on one node from which the graph folds them into one
 // Scan thresholds as cards: option key, title, explanation, unit and default (the defaults of const.py).
 const OPTION_FIELDS = [
   ["min_unavailable_days", "optMinUnavailableTitle", "optMinUnavailableHint", "unitDays", 7],
@@ -1097,7 +1098,7 @@ class StylesMixin {
       .bhguide{padding:12px 16px;border-top:1px solid var(--hk-border)}.bhguide summary{font-size:calc(12px*var(--hk-fs,1))}.bhguide .factnote{padding:8px 0 0;border:0}
       .graphbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:10px 14px;margin-bottom:14px}.graphctl{display:flex;align-items:center;gap:8px}.graphctl small{color:var(--hk-muted)}.graphwrap{overflow:auto;padding:14px}.graphsvg{display:block;max-width:none}
       .gedge{fill:none;stroke:var(--hk-muted);stroke-width:1.5}.gedge.prob{stroke-dasharray:7 4}.gedge.cycle{stroke:var(--hk-red);stroke-dasharray:2 3}.gedge.hit{stroke:var(--hk-red);stroke-width:2.5}.garrow{fill:var(--hk-muted)}.gdim{opacity:.3}
-      .gnode{cursor:pointer}.gnode.center{cursor:default}.gnode rect{fill:var(--hk-surface);stroke:var(--hk-border);stroke-width:1.5}.gnode.center rect{stroke:var(--hk-blue);stroke-width:2.5}.gnode.missing rect{stroke:var(--hk-red);stroke-dasharray:4 3}.gnode.hit rect{stroke:var(--hk-red);stroke-width:2.5}.gnode rect.bar{stroke:none;fill:var(--hk-blue)}.gnode rect.bar.ok{fill:var(--hk-green)}.gnode rect.bar.warn{fill:var(--hk-amber)}.gnode rect.bar.red{fill:var(--hk-red)}.gnode rect.bar.mute{fill:var(--hk-gray)}.gnode rect.bar.violet{fill:var(--hk-violet)}
+      .gnode{cursor:pointer}.gnode.center{cursor:default}.gnode rect{fill:var(--hk-surface);stroke:var(--hk-border);stroke-width:1.5}.gnode.center rect{stroke:var(--hk-blue);stroke-width:2.5}.gnode.missing rect{stroke:var(--hk-red);stroke-dasharray:4 3}.gnode.ggroup rect{stroke-dasharray:2 3}.gnode.hit rect{stroke:var(--hk-red);stroke-width:2.5}.gnode rect.bar{stroke:none;fill:var(--hk-blue)}.gnode rect.bar.ok{fill:var(--hk-green)}.gnode rect.bar.warn{fill:var(--hk-amber)}.gnode rect.bar.red{fill:var(--hk-red)}.gnode rect.bar.mute{fill:var(--hk-gray)}.gnode rect.bar.violet{fill:var(--hk-violet)}
       .gnode text{fill:var(--hk-text);font-size:calc(12px*var(--hk-fs,1));font-weight:600}.gnode text.t1{fill:var(--hk-muted);font-size:calc(10px*var(--hk-fs,1));font-weight:400}.gnode:focus-visible{outline:none}.gnode:focus-visible rect:first-of-type{stroke:var(--hk-blue);stroke-width:3.5}.gnode:hover rect:first-of-type{stroke:var(--hk-blue)}
       .pathcard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:16px;margin-bottom:14px}.pathcard h2{font-size:calc(17px*var(--hk-fs,1));font-weight:600}
       .path{padding:16px;display:grid;gap:0}.node{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:inherit;text-align:left;width:100%}button.node:hover{border-color:var(--hk-blue)}
@@ -1110,6 +1111,7 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
+      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
@@ -1214,7 +1216,27 @@ class ListsMixin {
   }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
-  lvState(id, sort, dir) { return (this.lv[id] ||= { q: "", sort, dir, f: {}, view: "" }); }
+  // The sort and the filters of a list come back at the next visit (this browser only); the search text does not.
+  lvState(id, sort, dir) {
+    if (this.lv[id]) return this.lv[id];
+    const kept = this.lvStored()[id];
+    const ok = kept && typeof kept.sort === "string" && (kept.dir === "asc" || kept.dir === "desc");
+    return (this.lv[id] = { q: "", sort: ok ? kept.sort : sort, dir: ok ? kept.dir : dir, f: ok && kept.f && typeof kept.f === "object" ? Object.fromEntries(Object.entries(kept.f).filter(([, v]) => typeof v === "string")) : {}, view: "" });
+  }
+
+  lvStored() {
+    if (this._lvStored) return this._lvStored;
+    let stored = {};
+    try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.lv") || "{}"); } catch (_) { stored = {}; }
+    return (this._lvStored = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {});
+  }
+
+  persistLv(id) {
+    const st = this.lv[id];
+    if (!st) return;
+    this.lvStored()[id] = { sort: st.sort, dir: st.dir, f: Object.fromEntries(Object.entries(st.f).filter(([, v]) => v)) };
+    try { globalThis.localStorage?.setItem("ha_housekeeper.lv", JSON.stringify(this._lvStored)); } catch (_) { /* kept until the page closes */ }
+  }
 
   areaName(item) {
     const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
@@ -1249,6 +1271,7 @@ class ListsMixin {
 
   listBar(id, { sorts, filters = [], columns = [] }) {
     const st = this.lv[id];
+    for (const f of filters) if (st.f[f.name] && !f.options.some(([v]) => v === st.f[f.name])) delete st.f[f.name]; // a kept value this list no longer offers
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
@@ -1624,7 +1647,8 @@ class FindingsMixin {
       : finding.affected_object
         ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
         : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+    const button = `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+    return `<div class="rowwrap"><input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">${button}</div>`;
   }
 
   findingSorts() {
@@ -1651,7 +1675,8 @@ class FindingsMixin {
   }
 
   exportRows() {
-    const list = this.visibleFindings();
+    const shown = this.visibleFindings();
+    const list = this.findSel.size ? shown.filter(f => this.findSel.has(f.key)) : shown;
     return list.map(f => {
       const key = this.findingKey(f), object = this.findObject(key);
       return {
@@ -1701,7 +1726,29 @@ class FindingsMixin {
       ...classes.map(c => ({ label: this.t(c), value: this.formatNumber(all.filter(f => f.classification === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c })),
     ]);
     return `<div class="stack">${tiles}<div class="panel"><div class="chips">${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
-      ${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
+      ${this.findSelBar(pg.rows)}${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
+  }
+
+  // The selection of findings: hide several at once, or export just those. Kept across pages until cleared.
+  findSelBar(pageRows) {
+    const n = this.findSel.size;
+    this._findPage = pageRows.map(f => f.key);
+    if (!pageRows.length && !n) return "";
+    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div>`;
+  }
+
+  async hideSelectedFindings() {
+    const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
+    try {
+      for (const key of keys) {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true });
+        const finding = this.data.findings.find(f => f.key === key);
+        if (finding) { finding.ignored = true; finding.ignored_by = "user"; }
+      }
+      this._rev++;
+    } catch (err) { this.error = err?.message || String(err); }
+    this.findSel.clear();
+    this.render();
   }
 
   findingTitle(f) {
@@ -2523,7 +2570,7 @@ class GraphMixin {
   // Walks the edges level by level from the object. Left: what the object comes from (non-usage
   // edges pointing at it). Right: what uses it (usage edges pointing at it) and what it uses
   // (edges leaving it). Returns nodes per level, the edges between included nodes and the notes.
-  graphModel(item, key, { depth = 1, relation = "", certainOnly = false, limit = GRAPH_NODE_STEP } = {}) {
+  graphModel(item, key, { depth = 1, relation = "", certainOnly = false, limit = GRAPH_NODE_STEP, group = true, open = new Set() } = {}) {
     const keep = e => (!relation || e.relation === relation) && (!certainOnly || e.confidence === "certain");
     const sides = {
       left: { levels: [], seen: new Map(), next: node => this.edgesTo(node).filter(e => !USAGE_RELATIONS.includes(e.relation) && keep(e)).map(e => [e.source, e]) },
@@ -2562,8 +2609,40 @@ class GraphMixin {
         frontier = found;
       }
     }
-    const nodes = new Set([key, ...sides.left.seen.keys(), ...sides.right.seen.keys()]);
-    const shown = edges.filter(e => nodes.has(e.from) && nodes.has(e.to));
+    // Leaf nodes of one type that hang on the same node, five or more of them, become one node ("12 × Sensor") until it is opened.
+    const repl = new Map();
+    if (group) {
+      for (const [name, side] of Object.entries(sides)) {
+        side.levels = side.levels.map((level, i) => {
+          const parents = new Set((side.levels[i + 1] || []).map(n => n.parent));
+          const buckets = new Map();
+          for (const n of level) {
+            if (parents.has(n.key)) continue;
+            const id = `${name}|${n.parent}|${n.key.split(":")[0]}|${n.via}`;
+            if (!buckets.has(id)) buckets.set(id, []);
+            buckets.get(id).push(n);
+          }
+          const grouped = new Set(), made = [];
+          for (const [id, members] of buckets) {
+            if (members.length < GRAPH_GROUP_MIN || open.has(id)) continue;
+            const g = { key: `group:${id}`, level: members[0].level, via: members[0].via, parent: members[0].parent, group: members.map(m => m.key) };
+            members.forEach(m => { repl.set(m.key, g.key); grouped.add(m.key); });
+            made.push(g);
+          }
+          return [...level.filter(n => !grouped.has(n.key)), ...made];
+        });
+      }
+    }
+    const seenEdge = new Set(), mapped = [];
+    for (const e of edges) {
+      const from = repl.get(e.from) ?? e.from, to = repl.get(e.to) ?? e.to;
+      const id = `${from}>${to}>${e.edge.relation}`;
+      if (from === to || seenEdge.has(id)) continue;
+      seenEdge.add(id);
+      mapped.push({ ...e, from, to });
+    }
+    const nodes = new Set([key, ...sides.left.levels.flat().map(n => n.key), ...sides.right.levels.flat().map(n => n.key)]);
+    const shown = mapped.filter(e => nodes.has(e.from) && nodes.has(e.to));
     const all = [...sides.left.seen.values(), ...sides.right.seen.values()];
     return {
       key, left: sides.left.levels, right: sides.right.levels, edges: shown,
@@ -2633,6 +2712,13 @@ class GraphMixin {
       return `<path class="${cls}" d="M${x1},${y1} C${x1 + dx},${y1} ${sameColumn ? x2 + dx : x2 - dx},${y2} ${x2},${y2}" ${mark}><title>${this.esc(`${edge.source} → ${edge.target}: ${this.t(edge.relation)} (${this.t(edge.confidence)})`)}</title></path>`;
     }).join("");
     const nodeSvg = [...at.entries()].map(([key, { x, y, node }]) => {
+      if (node.group) {
+        const type = node.group[0].split(":")[0], hit = hitKeys && node.group.some(k => hitKeys.has(k));
+        const names = node.group.slice(0, 8).map(k => this.findObject(k)?.name || k.split(":").slice(1).join(":")).join(", ") + (node.group.length > 8 ? ", …" : "");
+        const label = this.t("graphGroup", { n: node.group.length, type: this.t(type) });
+        return `<g class="gnode ggroup ${hit ? "hit" : ""}" data-graph-group="${this.esc(key.slice(6))}" tabindex="0" role="button" aria-label="${this.esc(`${label}. ${this.t("graphGroupOpen")}`)}" data-tip="${this.esc(label)}" data-tip-sub="${this.esc(names)}" transform="translate(${x},${y})">
+          <rect width="${W}" height="${H}" rx="8"></rect><text class="t1" x="14" y="18">${this.esc(this.graphClip(label, 30))}</text><text x="14" y="36">${this.esc(this.graphClip(this.t("graphGroupOpen"), 30))}</text></g>`;
+      }
       const obj = this.findObject(key), [type, ...rest] = key.split(":"), id = rest.join(":");
       const name = obj?.name || id, status = obj ? this.statusLabel(obj.status) : this.t("missing");
       const hit = hitKeys?.has(key), tone = obj ? this.tone(obj.status) : "red";
@@ -2662,17 +2748,17 @@ class GraphMixin {
   }
 
   graphPanel(item, key) {
-    const model = this.graphModel(item, key, { depth: this.graphDepth, relation: this.graphRel, certainOnly: this.graphConf === "certain", limit: this.graphLimit });
+    const model = this.graphModel(item, key, { depth: this.graphDepth, relation: this.graphRel, certainOnly: this.graphConf === "certain", limit: this.graphLimit, open: this.graphOpen });
     const impact = this.graphImpact ? this.impact(item, key) : null;
     const hitKeys = impact ? new Set([...impact.hits.map(h => h.key)]) : null;
     const nothing = !model.count;
-    const shownHits = hitKeys ? [...hitKeys].filter(k => model.left.concat(model.right).some(level => level.some(n => n.key === k))).length : 0;
+    const shownHits = hitKeys ? [...hitKeys].filter(k => model.left.concat(model.right).some(level => level.some(n => n.key === k || n.group?.includes(k)))).length : 0;
     const notes = [
       hitKeys && hitKeys.size > shownHits ? this.t("graphHitsOutside", { n: hitKeys.size - shownHits }) : "",
       model.missing ? this.t("graphMissing", { n: model.missing }) : "", model.probable ? this.t("graphProbable", { n: model.probable }) : "",
       model.cycles ? this.t("graphCycles", { n: model.cycles }) : "", model.hidden ? this.t("graphHidden", { n: model.hidden }) : "",
     ].filter(Boolean).join(" · ");
-    const more = model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "";
+    const more = (model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "") + (this.graphOpen.size ? ` <button class="btn" data-graph-regroup>${this.t("graphRegroup")}</button>` : "");
     return `<div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("graphNodes", { n: model.count })}</span></div>
       ${nothing ? `<p style="padding:6px 16px;color:var(--hk-muted)">${this.t("noRelations")}</p>` : this.graphSvg(model, item, hitKeys)}
       <p class="factnote">${this.t("graphLegend")}${notes ? ` ${this.esc(notes)}` : ""} ${more}</p></div>`;
@@ -4881,11 +4967,12 @@ class HAHousekeeperPanel extends HTMLElement {
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
-    this.graphDepth = 1; this.graphRel = ""; this.graphConf = "all"; this.graphImpact = false; this.graphLimit = GRAPH_NODE_STEP;
+    this.graphDepth = 1; this.graphRel = ""; this.graphConf = "all"; this.graphImpact = false; this.graphLimit = GRAPH_NODE_STEP; this.graphOpen = new Set();
     this.pages = {};
     this.lv = {};
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
+    this.findSel = new Set();
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
@@ -5484,21 +5571,29 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     // Table rows and graph nodes are not native buttons: Enter and Space open them like a click.
-    root.querySelectorAll("tr[data-object], g[data-graph]").forEach(el => el.onkeydown = ev => {
+    const openByKey = el => el.onkeydown = ev => {
       if (ev.target !== el || (ev.key !== "Enter" && ev.key !== " ")) return;
       ev.preventDefault();
       if (el.click) el.click(); else el.onclick?.();
-    });
+    };
+    root.querySelectorAll("tr[data-object], g[data-graph]").forEach(openByKey);
+    root.querySelectorAll("g[data-graph-group]").forEach(openByKey);
     root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
     root.querySelector("[data-graph-impact]")?.addEventListener("click", () => { this.graphImpact = !this.graphImpact; this.render(); });
     root.querySelector("[data-graph-more]")?.addEventListener("click", () => { this.graphLimit += GRAPH_NODE_STEP; this.render(); });
     const gr = root.querySelector("#graphRel"); if (gr) gr.onchange = () => { this.graphRel = gr.value; this.render(); };
     const gc = root.querySelector("#graphConf"); if (gc) gc.onchange = () => { this.graphConf = gc.value; this.render(); };
+    root.querySelectorAll("[data-graph-group]").forEach(el => el.onclick = () => { this.graphOpen.add(el.dataset.graphGroup); this.render(); });
+    root.querySelector("[data-graph-regroup]")?.addEventListener("click", () => { this.graphOpen = new Set(); this.render(); });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.noteGraphStep(obj); this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { el.checked ? this.findSel.add(el.dataset.fsel) : this.findSel.delete(el.dataset.fsel); this.render(); });
+    root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
+    root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
+    root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
@@ -5591,15 +5686,15 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-lview]").forEach(el => el.onchange = () => this.applyView(el.dataset.lview, el.value));
     root.querySelectorAll("[data-lview-save]").forEach(el => el.onclick = () => this.saveView(el.dataset.lviewSave));
     root.querySelectorAll("[data-lview-delete]").forEach(el => el.onclick = () => this.deleteView(el.dataset.lviewDelete));
-    root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.persistLv(id); this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.persistLv(el.dataset.ls); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lsort]").forEach(el => el.onclick = () => {
       const [id, key, dir] = el.dataset.lsort.split("|"), st = this.lv[id];
       if (st.sort === key) st.dir = st.dir === "desc" ? "asc" : "desc"; else { st.sort = key; st.dir = dir; }
-      this.pages = {}; this.render();
+      this.persistLv(id); this.pages = {}; this.render();
     });
     root.querySelectorAll("[data-dense]").forEach(el => el.onclick = () => { this.dense = !this.dense; try { globalThis.localStorage?.setItem("ha_housekeeper.dense", this.dense ? "1" : "0"); } catch (_) { /* kept until the page closes */ } this.render(); });
-    root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.persistLv(el.dataset.ld); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); });
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });
   }

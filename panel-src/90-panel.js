@@ -26,11 +26,12 @@ class HAHousekeeperPanel extends HTMLElement {
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
-    this.graphDepth = 1; this.graphRel = ""; this.graphConf = "all"; this.graphImpact = false; this.graphLimit = GRAPH_NODE_STEP;
+    this.graphDepth = 1; this.graphRel = ""; this.graphConf = "all"; this.graphImpact = false; this.graphLimit = GRAPH_NODE_STEP; this.graphOpen = new Set();
     this.pages = {};
     this.lv = {};
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
+    this.findSel = new Set();
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
@@ -629,21 +630,29 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     // Table rows and graph nodes are not native buttons: Enter and Space open them like a click.
-    root.querySelectorAll("tr[data-object], g[data-graph]").forEach(el => el.onkeydown = ev => {
+    const openByKey = el => el.onkeydown = ev => {
       if (ev.target !== el || (ev.key !== "Enter" && ev.key !== " ")) return;
       ev.preventDefault();
       if (el.click) el.click(); else el.onclick?.();
-    });
+    };
+    root.querySelectorAll("tr[data-object], g[data-graph]").forEach(openByKey);
+    root.querySelectorAll("g[data-graph-group]").forEach(openByKey);
     root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
     root.querySelector("[data-graph-impact]")?.addEventListener("click", () => { this.graphImpact = !this.graphImpact; this.render(); });
     root.querySelector("[data-graph-more]")?.addEventListener("click", () => { this.graphLimit += GRAPH_NODE_STEP; this.render(); });
     const gr = root.querySelector("#graphRel"); if (gr) gr.onchange = () => { this.graphRel = gr.value; this.render(); };
     const gc = root.querySelector("#graphConf"); if (gc) gc.onchange = () => { this.graphConf = gc.value; this.render(); };
+    root.querySelectorAll("[data-graph-group]").forEach(el => el.onclick = () => { this.graphOpen.add(el.dataset.graphGroup); this.render(); });
+    root.querySelector("[data-graph-regroup]")?.addEventListener("click", () => { this.graphOpen = new Set(); this.render(); });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.noteGraphStep(obj); this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { el.checked ? this.findSel.add(el.dataset.fsel) : this.findSel.delete(el.dataset.fsel); this.render(); });
+    root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
+    root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
+    root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
@@ -736,15 +745,15 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-lview]").forEach(el => el.onchange = () => this.applyView(el.dataset.lview, el.value));
     root.querySelectorAll("[data-lview-save]").forEach(el => el.onclick = () => this.saveView(el.dataset.lviewSave));
     root.querySelectorAll("[data-lview-delete]").forEach(el => el.onclick = () => this.deleteView(el.dataset.lviewDelete));
-    root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.persistLv(id); this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.persistLv(el.dataset.ls); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lsort]").forEach(el => el.onclick = () => {
       const [id, key, dir] = el.dataset.lsort.split("|"), st = this.lv[id];
       if (st.sort === key) st.dir = st.dir === "desc" ? "asc" : "desc"; else { st.sort = key; st.dir = dir; }
-      this.pages = {}; this.render();
+      this.persistLv(id); this.pages = {}; this.render();
     });
     root.querySelectorAll("[data-dense]").forEach(el => el.onclick = () => { this.dense = !this.dense; try { globalThis.localStorage?.setItem("ha_housekeeper.dense", this.dense ? "1" : "0"); } catch (_) { /* kept until the page closes */ } this.render(); });
-    root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.persistLv(el.dataset.ld); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); });
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });
   }

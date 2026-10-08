@@ -18,6 +18,7 @@ const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: 
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 // The dependency graph shows this many nodes per side at first; "more" adds another step.
 const GRAPH_NODE_STEP = 40;
+const GRAPH_GROUP_MIN = 5; // leaf nodes of one type on one node from which the graph folds them into one
 // Scan thresholds as cards: option key, title, explanation, unit and default (the defaults of const.py).
 const OPTION_FIELDS = [
   ["min_unavailable_days", "optMinUnavailableTitle", "optMinUnavailableHint", "unitDays", 7],

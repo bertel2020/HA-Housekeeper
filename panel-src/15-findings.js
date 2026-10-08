@@ -27,7 +27,8 @@ class FindingsMixin {
       : finding.affected_object
         ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
         : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+    const button = `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.t("ignoredLabel")}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+    return `<div class="rowwrap"><input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">${button}</div>`;
   }
 
   findingSorts() {
@@ -54,7 +55,8 @@ class FindingsMixin {
   }
 
   exportRows() {
-    const list = this.visibleFindings();
+    const shown = this.visibleFindings();
+    const list = this.findSel.size ? shown.filter(f => this.findSel.has(f.key)) : shown;
     return list.map(f => {
       const key = this.findingKey(f), object = this.findObject(key);
       return {
@@ -104,7 +106,29 @@ class FindingsMixin {
       ...classes.map(c => ({ label: this.t(c), value: this.formatNumber(all.filter(f => f.classification === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c })),
     ]);
     return `<div class="stack">${tiles}<div class="panel"><div class="chips">${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
-      ${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
+      ${this.findSelBar(pg.rows)}${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
+  }
+
+  // The selection of findings: hide several at once, or export just those. Kept across pages until cleared.
+  findSelBar(pageRows) {
+    const n = this.findSel.size;
+    this._findPage = pageRows.map(f => f.key);
+    if (!pageRows.length && !n) return "";
+    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div>`;
+  }
+
+  async hideSelectedFindings() {
+    const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
+    try {
+      for (const key of keys) {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true });
+        const finding = this.data.findings.find(f => f.key === key);
+        if (finding) { finding.ignored = true; finding.ignored_by = "user"; }
+      }
+      this._rev++;
+    } catch (err) { this.error = err?.message || String(err); }
+    this.findSel.clear();
+    this.render();
   }
 
   findingTitle(f) {

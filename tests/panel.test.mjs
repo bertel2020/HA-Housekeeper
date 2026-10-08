@@ -2098,6 +2098,41 @@ test("graph filters by relation and certainty, and limits the nodes", () => {
   assert.ok(small.edges.every(e => [...small.left.flat(), ...small.right.flat()].some(n => n.key === e.from) || e.from === key));
 });
 
+test("five or more leaf nodes of one type fold into one node that opens on a click", () => {
+  const { el, shadow } = graphPanel();
+  const data = graphData();
+  for (let i = 0; i < 6; i++) {
+    data.objects.push({ object_type: "automation", object_id: `automation.x${i}`, name: `X${i}`, status: "active" });
+    data.edges.push({ source: `automation:automation.x${i}`, target: "entity:sensor.e", relation: "TRIGGERS_ON", confidence: "certain" });
+  }
+  el.data = data;
+  const folded = el.graphModel(el.graphSelected, "entity:sensor.e", { depth: 1 });
+  const node = folded.right[0].find(n => n.group);
+  assert.equal(node.group.length, 7, "the six new automations and automation A");
+  assert.ok(folded.edges.every(e => !e.from.startsWith("automation:automation.x")), "edges end at the group");
+  el.graphDepth = 1;
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-graph-group="'));
+  const id = node.key.slice(6);
+  const open = el.graphModel(el.graphSelected, "entity:sensor.e", { depth: 1, open: new Set([id]) });
+  assert.equal(open.right[0].filter(n => n.group).length, 0);
+});
+
+test("the sort and filter of a list come back, the search text does not; findings can be selected", () => {
+  const storage = fakeStorage();
+  const { el, shadow } = panel("en", { localStorage: storage });
+  el.lvState("demo", "name", "asc");
+  el.lv.demo.sort = "since"; el.lv.demo.dir = "desc"; el.lv.demo.q = "abc"; el.lv.demo.f.type = "x";
+  el.persistLv("demo");
+  const again = panel("en", { localStorage: storage }).el.lvState("demo", "name", "asc");
+  assert.equal(`${again.sort}|${again.dir}|${again.q}|${again.f.type}`, "since|desc||x");
+  el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1" }] };
+  el.view = "findingsNav"; el.findSel = new Set(["k1"]);
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-fsel="k1" checked') && shadow.innerHTML.includes("data-fsel-hide"));
+  assert.equal(el.exportRows().length, 1);
+});
+
 test("the layout puts levels in columns without overlapping nodes", () => {
   const { el } = graphPanel();
   const model = el.graphModel(el.graphSelected, "entity:sensor.e", { depth: 3 });

@@ -12,7 +12,7 @@ class GraphMixin {
   // Walks the edges level by level from the object. Left: what the object comes from (non-usage
   // edges pointing at it). Right: what uses it (usage edges pointing at it) and what it uses
   // (edges leaving it). Returns nodes per level, the edges between included nodes and the notes.
-  graphModel(item, key, { depth = 1, relation = "", certainOnly = false, limit = GRAPH_NODE_STEP } = {}) {
+  graphModel(item, key, { depth = 1, relation = "", certainOnly = false, limit = GRAPH_NODE_STEP, group = true, open = new Set() } = {}) {
     const keep = e => (!relation || e.relation === relation) && (!certainOnly || e.confidence === "certain");
     const sides = {
       left: { levels: [], seen: new Map(), next: node => this.edgesTo(node).filter(e => !USAGE_RELATIONS.includes(e.relation) && keep(e)).map(e => [e.source, e]) },
@@ -51,8 +51,40 @@ class GraphMixin {
         frontier = found;
       }
     }
-    const nodes = new Set([key, ...sides.left.seen.keys(), ...sides.right.seen.keys()]);
-    const shown = edges.filter(e => nodes.has(e.from) && nodes.has(e.to));
+    // Leaf nodes of one type that hang on the same node, five or more of them, become one node ("12 × Sensor") until it is opened.
+    const repl = new Map();
+    if (group) {
+      for (const [name, side] of Object.entries(sides)) {
+        side.levels = side.levels.map((level, i) => {
+          const parents = new Set((side.levels[i + 1] || []).map(n => n.parent));
+          const buckets = new Map();
+          for (const n of level) {
+            if (parents.has(n.key)) continue;
+            const id = `${name}|${n.parent}|${n.key.split(":")[0]}|${n.via}`;
+            if (!buckets.has(id)) buckets.set(id, []);
+            buckets.get(id).push(n);
+          }
+          const grouped = new Set(), made = [];
+          for (const [id, members] of buckets) {
+            if (members.length < GRAPH_GROUP_MIN || open.has(id)) continue;
+            const g = { key: `group:${id}`, level: members[0].level, via: members[0].via, parent: members[0].parent, group: members.map(m => m.key) };
+            members.forEach(m => { repl.set(m.key, g.key); grouped.add(m.key); });
+            made.push(g);
+          }
+          return [...level.filter(n => !grouped.has(n.key)), ...made];
+        });
+      }
+    }
+    const seenEdge = new Set(), mapped = [];
+    for (const e of edges) {
+      const from = repl.get(e.from) ?? e.from, to = repl.get(e.to) ?? e.to;
+      const id = `${from}>${to}>${e.edge.relation}`;
+      if (from === to || seenEdge.has(id)) continue;
+      seenEdge.add(id);
+      mapped.push({ ...e, from, to });
+    }
+    const nodes = new Set([key, ...sides.left.levels.flat().map(n => n.key), ...sides.right.levels.flat().map(n => n.key)]);
+    const shown = mapped.filter(e => nodes.has(e.from) && nodes.has(e.to));
     const all = [...sides.left.seen.values(), ...sides.right.seen.values()];
     return {
       key, left: sides.left.levels, right: sides.right.levels, edges: shown,
@@ -122,6 +154,13 @@ class GraphMixin {
       return `<path class="${cls}" d="M${x1},${y1} C${x1 + dx},${y1} ${sameColumn ? x2 + dx : x2 - dx},${y2} ${x2},${y2}" ${mark}><title>${this.esc(`${edge.source} → ${edge.target}: ${this.t(edge.relation)} (${this.t(edge.confidence)})`)}</title></path>`;
     }).join("");
     const nodeSvg = [...at.entries()].map(([key, { x, y, node }]) => {
+      if (node.group) {
+        const type = node.group[0].split(":")[0], hit = hitKeys && node.group.some(k => hitKeys.has(k));
+        const names = node.group.slice(0, 8).map(k => this.findObject(k)?.name || k.split(":").slice(1).join(":")).join(", ") + (node.group.length > 8 ? ", …" : "");
+        const label = this.t("graphGroup", { n: node.group.length, type: this.t(type) });
+        return `<g class="gnode ggroup ${hit ? "hit" : ""}" data-graph-group="${this.esc(key.slice(6))}" tabindex="0" role="button" aria-label="${this.esc(`${label}. ${this.t("graphGroupOpen")}`)}" data-tip="${this.esc(label)}" data-tip-sub="${this.esc(names)}" transform="translate(${x},${y})">
+          <rect width="${W}" height="${H}" rx="8"></rect><text class="t1" x="14" y="18">${this.esc(this.graphClip(label, 30))}</text><text x="14" y="36">${this.esc(this.graphClip(this.t("graphGroupOpen"), 30))}</text></g>`;
+      }
       const obj = this.findObject(key), [type, ...rest] = key.split(":"), id = rest.join(":");
       const name = obj?.name || id, status = obj ? this.statusLabel(obj.status) : this.t("missing");
       const hit = hitKeys?.has(key), tone = obj ? this.tone(obj.status) : "red";
@@ -151,17 +190,17 @@ class GraphMixin {
   }
 
   graphPanel(item, key) {
-    const model = this.graphModel(item, key, { depth: this.graphDepth, relation: this.graphRel, certainOnly: this.graphConf === "certain", limit: this.graphLimit });
+    const model = this.graphModel(item, key, { depth: this.graphDepth, relation: this.graphRel, certainOnly: this.graphConf === "certain", limit: this.graphLimit, open: this.graphOpen });
     const impact = this.graphImpact ? this.impact(item, key) : null;
     const hitKeys = impact ? new Set([...impact.hits.map(h => h.key)]) : null;
     const nothing = !model.count;
-    const shownHits = hitKeys ? [...hitKeys].filter(k => model.left.concat(model.right).some(level => level.some(n => n.key === k))).length : 0;
+    const shownHits = hitKeys ? [...hitKeys].filter(k => model.left.concat(model.right).some(level => level.some(n => n.key === k || n.group?.includes(k)))).length : 0;
     const notes = [
       hitKeys && hitKeys.size > shownHits ? this.t("graphHitsOutside", { n: hitKeys.size - shownHits }) : "",
       model.missing ? this.t("graphMissing", { n: model.missing }) : "", model.probable ? this.t("graphProbable", { n: model.probable }) : "",
       model.cycles ? this.t("graphCycles", { n: model.cycles }) : "", model.hidden ? this.t("graphHidden", { n: model.hidden }) : "",
     ].filter(Boolean).join(" · ");
-    const more = model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "";
+    const more = (model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "") + (this.graphOpen.size ? ` <button class="btn" data-graph-regroup>${this.t("graphRegroup")}</button>` : "");
     return `<div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("graphNodes", { n: model.count })}</span></div>
       ${nothing ? `<p style="padding:6px 16px;color:var(--hk-muted)">${this.t("noRelations")}</p>` : this.graphSvg(model, item, hitKeys)}
       <p class="factnote">${this.t("graphLegend")}${notes ? ` ${this.esc(notes)}` : ""} ${more}</p></div>`;

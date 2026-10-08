@@ -9,7 +9,27 @@ class ListsMixin {
   }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
-  lvState(id, sort, dir) { return (this.lv[id] ||= { q: "", sort, dir, f: {}, view: "" }); }
+  // The sort and the filters of a list come back at the next visit (this browser only); the search text does not.
+  lvState(id, sort, dir) {
+    if (this.lv[id]) return this.lv[id];
+    const kept = this.lvStored()[id];
+    const ok = kept && typeof kept.sort === "string" && (kept.dir === "asc" || kept.dir === "desc");
+    return (this.lv[id] = { q: "", sort: ok ? kept.sort : sort, dir: ok ? kept.dir : dir, f: ok && kept.f && typeof kept.f === "object" ? Object.fromEntries(Object.entries(kept.f).filter(([, v]) => typeof v === "string")) : {}, view: "" });
+  }
+
+  lvStored() {
+    if (this._lvStored) return this._lvStored;
+    let stored = {};
+    try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.lv") || "{}"); } catch (_) { stored = {}; }
+    return (this._lvStored = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {});
+  }
+
+  persistLv(id) {
+    const st = this.lv[id];
+    if (!st) return;
+    this.lvStored()[id] = { sort: st.sort, dir: st.dir, f: Object.fromEntries(Object.entries(st.f).filter(([, v]) => v)) };
+    try { globalThis.localStorage?.setItem("ha_housekeeper.lv", JSON.stringify(this._lvStored)); } catch (_) { /* kept until the page closes */ }
+  }
 
   areaName(item) {
     const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
@@ -44,6 +64,7 @@ class ListsMixin {
 
   listBar(id, { sorts, filters = [], columns = [] }) {
     const st = this.lv[id];
+    for (const f of filters) if (st.f[f.name] && !f.options.some(([v]) => v === st.f[f.name])) delete st.f[f.name]; // a kept value this list no longer offers
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
