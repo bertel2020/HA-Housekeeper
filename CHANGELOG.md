@@ -1,5 +1,90 @@
 # Changelog
 
+## 0.10.0 - 2026-10-08
+
+Backup-Schutz, Integrations-Zuverlässigkeit und eine neue Oberfläche: das Menü
+liegt jetzt oben, die Gestaltung folgt dem Look der Zeitarchiv-App, IBM Plex
+wird mitgeliefert. Automatisiert gegen Home Assistant 2026.8.3, 2026.9.4 und
+2026.10.0b4 getestet (224 Python- und 123 Panel-Tests); die Oberfläche
+zusätzlich mit Browser-Screenshots und einer axe-Prüfung.
+
+### Neu
+
+- **Backup-Schutz in der Wartung:** Eine Karte prüft die Backups von Home
+  Assistant: Einrichtung, Alter des neuesten Backups, letzter Lauf, Ziele,
+  Größenverlauf, Aufbewahrung, Verschlüsselung, Notfall-Kit und Restore-Test
+  sowie die Backups vor Plänen. Die Übersicht zeigt nur echte Probleme als
+  To-do. Notfall-Kit und Restore-Test lassen sich mit Datum bestätigen; ein
+  geführter Restore-Test erklärt die Schritte.
+- **Zuverlässigkeit:** Neue Ansicht je Konfigurationseintrag mit Verfügbarkeit
+  der letzten 24 Stunden oder 7 Tage, gemeinsamen Ausfällen (mindestens 80 %
+  der Entities, mindestens drei, mindestens 5 Minuten), einer Vermutung zur
+  Ebene (Cloud oder Gerät und Netz), dauerhaft Ausgefallenen getrennt gezählt
+  und offener Neu-Anmeldung. Housekeeper liest dafür nur den Recorder, im
+  Hintergrund, mit Sperre gegen parallele Abfragen und fünf Minuten
+  Zwischenspeicher.
+- **Instabile Entities:** Eine Karte darunter nennt Entities, die immer wieder
+  ausfallen und zurückkommen (instabil ab 3 Ausfällen und 0,5 pro Tag,
+  flatternd ab 1,5 pro Tag), mit Dauer, Tageszeit-Muster und der Zahl der
+  Automationen, Skripte und Szenen, die daran hängen. Ausfälle während eines
+  gemeinsamen Ausfalls zählen für die Integration.
+- **Geräteseite mit Untergeräten:** Art „Untergerät“, übergeordnetes Gerät als
+  Link, „Daran hängen“ zählt Untergeräte mit, und Aufräumen nennt die
+  strukturellen Sperrgründe.
+
+### Geändert
+
+- **Das Menü liegt oben statt in der Seitenleiste:** Übersicht, Befunde und
+  Änderungen sind direkt erreichbar, Erkunden, Pflegen und Spezialansichten
+  klappen als Menü auf, Einstellungen stehen rechts. Auf dem Handy öffnet ein
+  Menü-Knopf die Liste; Escape und ein Klick außerhalb schließen.
+- **Neue Gestaltung im Stil der Zeitarchiv-App:** weichere Karten, kräftigere
+  Überschriften, ruhigere Tabellenköpfe, Inhalt mittig bis 1480 px. IBM Plex
+  Sans und Mono werden mitgeliefert (Schrift-Lizenz OFL), mit Systemschrift als
+  Rückfall. Die Farbschemas bleiben unverändert.
+
+### English
+
+Backup protection, integration reliability and a new interface: the menu is now
+on top, the design follows the look of the Zeitarchiv app, and IBM Plex ships
+with the panel. Tested automatically against Home Assistant 2026.8.3, 2026.9.4
+and 2026.10.0b4 (224 Python and 123 panel tests); the interface was also
+checked with browser screenshots and an axe scan.
+
+#### New
+
+- **Backup protection in maintenance:** A card checks Home Assistant's backups:
+  setup, age of the newest backup, last run, targets, size trend, retention,
+  encryption, emergency kit and restore test, plus the backups taken before
+  plans. The overview shows only real problems as a to-do. Emergency kit and
+  restore test can be confirmed with a date; a guided restore test explains the
+  steps.
+- **Reliability:** A new view for each config entry with availability over the
+  last 24 hours or 7 days, shared outages (at least 80 % of the entities, at
+  least three, at least 5 minutes), a guess at the layer (cloud or device and
+  network), entities that were down all the time counted apart, and open
+  re-authentication. Housekeeper only reads the recorder for this, in the
+  background, with a lock against parallel queries and a five-minute cache.
+- **Unstable entities:** A card below lists entities that keep failing and
+  coming back (unstable from 3 failures and 0.5 a day, flapping from 1.5 a
+  day), with duration, time-of-day pattern and the number of automations,
+  scripts and scenes that depend on them. Failures during a shared outage count
+  for the integration.
+- **Device page with child devices:** kind “Child device”, parent device as a
+  link, “Depends on it” counts child devices, and cleanup names the structural
+  reasons for a block.
+
+#### Changed
+
+- **The menu is on top instead of in the side bar:** overview, findings and
+  changes are one click away, explore, maintain and special views open as
+  menus, settings sit on the right. On a phone a menu button opens the list;
+  Escape and a click outside close it.
+- **New design in the style of the Zeitarchiv app:** softer cards, bolder
+  headings, calmer table heads, content centred up to 1480 px. IBM Plex Sans
+  and Mono ship with the panel (OFL font licence), with the system font as a
+  fallback. The colour schemes are unchanged.
+
 ## 0.9.0 - 2026-10-08
 
 Großes Sammelrelease: Härtung nach dem zweiten Code-Review (Journal,
