@@ -20,6 +20,8 @@ from .cleanup import (
     build_plan,
     device_fingerprint,
     device_support,
+    plan_summary,
+    public_plan,
     registry_fingerprint,
 )
 from .cleanup_exec import CleanupError, entity_restorable
@@ -279,7 +281,7 @@ async def websocket_plan_create(
         meter_data=meter_data,
     )
     scanner.journal.add(plan)
-    connection.send_result(msg["id"], plan)
+    connection.send_result(msg["id"], public_plan(plan))
 
 
 @websocket_api.require_admin
@@ -290,12 +292,31 @@ def websocket_plan_list(
     connection: websocket_api.ActiveConnection,
     msg: dict[str, Any],
 ) -> None:
-    """Return the journal of dry-run plans, newest first."""
+    """Return the journal of plans as short entries, newest first; details come per plan."""
     scanner = _scanner(hass)
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    connection.send_result(msg["id"], {"plans": scanner.journal.plans})
+    connection.send_result(msg["id"], {"plans": [plan_summary(p) for p in scanner.journal.plans]})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/plan_detail", vol.Required("plan_id"): str}
+)
+@callback
+def websocket_plan_detail(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Return one plan for display, without the data only the server needs to undo it."""
+    scanner = _scanner(hass)
+    plan = scanner.journal.get(msg["plan_id"]) if scanner else None
+    if scanner is None or plan is None:
+        connection.send_error(msg["id"], "not_found", "Plan not found")
+        return
+    connection.send_result(msg["id"], public_plan(plan))
 
 
 @websocket_api.require_admin
@@ -412,7 +433,9 @@ def websocket_plan_status(
     if scanner is None or plan is None:
         connection.send_error(msg["id"], "not_found", "Plan not found")
         return
-    connection.send_result(msg["id"], {"progress": scanner.cleanup.status, "plan": plan})
+    connection.send_result(
+        msg["id"], {"progress": scanner.cleanup.status, "plan": public_plan(plan)}
+    )
 
 
 @websocket_api.require_admin
@@ -530,6 +553,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_list)
+    websocket_api.async_register_command(hass, websocket_plan_detail)
     websocket_api.async_register_command(hass, websocket_plan_delete)
     websocket_api.async_register_command(hass, websocket_plan_confirm)
     websocket_api.async_register_command(hass, websocket_plan_execute)

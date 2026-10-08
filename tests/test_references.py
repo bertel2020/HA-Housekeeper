@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -26,6 +27,7 @@ from custom_components.ha_housekeeper.cleanup_exec import (  # noqa: E402
     CleanupError,
     entity_restorable,
 )
+from custom_components.ha_housekeeper.const import DOMAIN  # noqa: E402
 from custom_components.ha_housekeeper.references import (  # noqa: E402
     mentions,
     preview_replacement,
@@ -695,3 +697,56 @@ async def test_a_journal_without_the_old_file_still_undoes_the_item(hass: HomeAs
     assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
     assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD
     assert source["restored_as"] == "item"
+
+
+def _keys_anywhere(value, found=None):
+    found = set() if found is None else found
+    if isinstance(value, dict):
+        for key, item in value.items():
+            found.add(key)
+            _keys_anywhere(item, found)
+    elif isinstance(value, list):
+        for item in value:
+            _keys_anywhere(item, found)
+    return found
+
+
+async def test_the_panel_never_receives_the_restore_data_of_a_plan(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.ha_housekeeper import async_setup
+
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED)
+    assert await async_setup(hass, {})
+    hass.data[DOMAIN]["scanner"] = scanner
+    assert await async_setup_component(hass, "websocket_api", {})
+    client = await hass_ws_client(hass)
+    internal = {"file_before", "file_after_hash", "restore"}
+    with state, backup:
+        plan = await make_reference_plan(scanner, hass)
+        await run(scanner, plan, [OLD])
+        stored = plan["actions"][0]["result"]["sources"][0]
+        assert stored["file_before"] and stored["before"]  # the server keeps what it needs to undo
+
+        await client.send_json_auto_id({"type": "ha_housekeeper/plan_list"})
+        listing = (await client.receive_json())["result"]["plans"]
+        assert [p["plan_id"] for p in listing] == [plan["plan_id"]]
+        assert set(listing[0]) == {"plan_id", "created_at", "status", "executed", "run", "summary"}
+
+        for message in (
+            {"type": "ha_housekeeper/plan_detail", "plan_id": plan["plan_id"]},
+            {"type": "ha_housekeeper/plan_status", "plan_id": plan["plan_id"]},
+        ):
+            await client.send_json_auto_id(message)
+            reply = await client.receive_json()
+            assert reply["success"] is True
+            assert not internal & _keys_anywhere(reply["result"]), message["type"]
+            assert len(json.dumps(reply["result"])) < len(json.dumps(plan))
+        # Undo still works from the server-side data.
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+
+    await client.send_json_auto_id({"type": "ha_housekeeper/plan_detail", "plan_id": "nope"})
+    assert (await client.receive_json())["error"]["code"] == "not_found"

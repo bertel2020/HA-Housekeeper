@@ -102,6 +102,12 @@ class CleanupMixin {
     this.render();
   }
 
+  // The journal list holds short entries only; the plan itself is fetched when it is opened.
+  async openPlan(planId) {
+    try { this.plan = await this._hass.callWS({ type: "ha_housekeeper/plan_detail", plan_id: planId }); this.cleanupError = ""; } catch (err) { this.cleanupError = this.errText(err); }
+    this.render();
+  }
+
   async createPlan() {
     const pair = this.cleanupKind === "replace_references" ? [this.replOld, this.replNew] : this.cleanupKind === "migrate_meter" ? [this.meterOld, this.meterNew] : null;
     if (pair ? !(pair[0] && pair[1]) : !this.cleanupSel.size) return;

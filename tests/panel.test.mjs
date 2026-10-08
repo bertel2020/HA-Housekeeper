@@ -790,6 +790,23 @@ test("an overdue scan shows a banner on the overview", () => {
   assert.ok(el.staleBanner().includes("9 days old"));
 });
 
+test("the journal lists short entries and opening one fetches the plan", async () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  el.view = "cleanup";
+  el.journal = [{ plan_id: "p9", created_at: "2026-10-07T10:00:00+00:00", status: "verified", executed: true, run: true, summary: { total: 1, ok: 1, review: 0, blocked: 0 } }];
+  el.plan = null;
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-plan-open="p9"'));
+  const asked = [];
+  el._hass = { language: "en", callWS: async msg => { asked.push(msg); return { plan_id: "p9", created_at: "2026-10-07T10:00:00+00:00", status: "verified", executed: true, summary: { total: 1, ok: 1, review: 0, blocked: 0 },
+    actions: [{ kind: "disable_entity", object_id: "sensor.a", name: "A", verdict: "ok", executable: true, reasons: [], used_by: [], result: { state: "done" } }] }; } };
+  await el.openPlan("p9");
+  assert.equal(JSON.stringify(asked), JSON.stringify([{ type: "ha_housekeeper/plan_detail", plan_id: "p9" }]));
+  assert.equal(el.plan.plan_id, "p9");
+  assert.ok(shadow.innerHTML.includes("sensor.a"));
+});
+
 test("the scan button is disabled while a plan runs", () => {
   const { el } = panel("en");
   el.data = { ...DATA };

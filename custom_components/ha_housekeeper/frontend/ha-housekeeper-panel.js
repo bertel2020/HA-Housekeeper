@@ -1216,6 +1216,12 @@ class CleanupMixin {
     this.render();
   }
 
+  // The journal list holds short entries only; the plan itself is fetched when it is opened.
+  async openPlan(planId) {
+    try { this.plan = await this._hass.callWS({ type: "ha_housekeeper/plan_detail", plan_id: planId }); this.cleanupError = ""; } catch (err) { this.cleanupError = this.errText(err); }
+    this.render();
+  }
+
   async createPlan() {
     const pair = this.cleanupKind === "replace_references" ? [this.replOld, this.replNew] : this.cleanupKind === "migrate_meter" ? [this.meterOld, this.meterNew] : null;
     if (pair ? !(pair[0] && pair[1]) : !this.cleanupSel.size) return;
@@ -2416,7 +2422,7 @@ class HAHousekeeperPanel extends HTMLElement {
       setTimeout(() => { this.snippetCopied = false; this.render(); }, 1500);
     });
     root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
-    root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => { this.plan = (this.journal || []).find(p => p.plan_id === el.dataset.planOpen) || null; this.render(); });
+    root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => this.openPlan(el.dataset.planOpen));
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => this.deletePlan(el.dataset.planDelete));
     root.querySelector("[data-opts-save]")?.addEventListener("click", () => this.saveOptions());
     root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });

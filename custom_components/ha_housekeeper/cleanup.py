@@ -663,6 +663,44 @@ def build_plan(
     }
 
 
+# Fields that only the server needs to undo a step. They can be large (a whole config file) and are
+# never sent to the panel.
+INTERNAL_RESULT_KEYS = frozenset({"restore"})
+INTERNAL_SOURCE_KEYS = frozenset({"before", "file_before", "file_after_hash"})
+
+
+def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
+    """What the journal list shows: no actions and no restore data."""
+    return {
+        "plan_id": plan["plan_id"],
+        "created_at": plan.get("created_at"),
+        "status": plan.get("status"),
+        "executed": bool(plan.get("executed")),
+        "run": bool(plan.get("run")),
+        "summary": plan.get("summary"),
+    }
+
+
+def public_plan(plan: dict[str, Any]) -> dict[str, Any]:
+    """A plan for the panel: the stored plan without the internal restore data."""
+
+    def action_view(action: dict[str, Any]) -> dict[str, Any]:
+        result = action.get("result")
+        if not result:
+            return action
+        shown = {k: v for k, v in result.items() if k not in INTERNAL_RESULT_KEYS}
+        if isinstance(result.get("sources"), list):
+            shown["sources"] = [
+                {k: v for k, v in source.items() if k not in INTERNAL_SOURCE_KEYS}
+                if isinstance(source, dict)
+                else source
+                for source in result["sources"]
+            ]
+        return {**action, "result": shown}
+
+    return {**plan, "actions": [action_view(action) for action in plan.get("actions", [])]}
+
+
 class JournalStore:
     """Journal of dry-run plans, newest first. Stored by Housekeeper only."""
 
