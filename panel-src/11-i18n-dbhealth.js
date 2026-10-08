@@ -1,5 +1,6 @@
 // Texts for the database card; merged into TEXT.
 Object.assign(TEXT.de, {
+  dbKeep: "Aufbewahrung in Home Assistant: {n} Tage", dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
   dbTitle: "Datenbank", dbHint2: "Größe, Statistiken und Lücken im Recorder. Nur lesend", dbLoading: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   dbNone: "Keine Auffälligkeit in der Datenbank.", dbProblem: "Problem", dbHint: "Hinweis",
   dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect}); nur SQLite wird gemessen", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
@@ -18,6 +19,7 @@ Object.assign(TEXT.de, {
   todoDbProblem: "Datenbank: Problem",
 });
 Object.assign(TEXT.en, {
+  dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
   dbTitle: "Database", dbHint2: "Size, statistics and gaps in the recorder. Read only", dbLoading: "Checking the database. On a large database this can take a few seconds …",
   dbNone: "Nothing unusual in the database.", dbProblem: "Problem", dbHint: "Hint",
   dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect}); only SQLite is measured", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbRestartGaps: "{n} gaps from restarts (normal)",

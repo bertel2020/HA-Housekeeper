@@ -2679,6 +2679,16 @@ test("an entity's details name flapping or instability from the calculated numbe
   assert.ok(el.factsCard(lamp, "entity:sensor.w").includes("Stable in the period"));
 });
 
+test("the database card names the retention set in Home Assistant, and warns when purging is off", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, database: { dialect: "sqlite", db_bytes: 1e9, wal_bytes: 8000, per_day: null, samples: 1, keep_days: 10, auto_purge: true } } };
+  let html = el.databaseCard();
+  assert.ok(html.includes("Retention") && html.includes("10 days") && !html.includes("keeps growing"));
+  el.data.meta.database = { ...el.data.meta.database, keep_days: null, auto_purge: false };
+  html = el.databaseCard();
+  assert.ok(!html.includes("Retention") && html.includes("keeps growing"));
+});
+
 test("the runtime state shows its unit, but not for special states or entities without one", () => {
   const { el } = panel("en");
   const html = state => {

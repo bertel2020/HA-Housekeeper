@@ -865,6 +865,7 @@ Object.assign(TEXT.en, {
 
 // Texts for the database card; merged into TEXT.
 Object.assign(TEXT.de, {
+  dbKeep: "Aufbewahrung in Home Assistant: {n} Tage", dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
   dbTitle: "Datenbank", dbHint2: "Größe, Statistiken und Lücken im Recorder. Nur lesend", dbLoading: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   dbNone: "Keine Auffälligkeit in der Datenbank.", dbProblem: "Problem", dbHint: "Hinweis",
   dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect}); nur SQLite wird gemessen", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
@@ -883,6 +884,7 @@ Object.assign(TEXT.de, {
   todoDbProblem: "Datenbank: Problem",
 });
 Object.assign(TEXT.en, {
+  dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
   dbTitle: "Database", dbHint2: "Size, statistics and gaps in the recorder. Read only", dbLoading: "Checking the database. On a large database this can take a few seconds …",
   dbNone: "Nothing unusual in the database.", dbProblem: "Problem", dbHint: "Hint",
   dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect}); only SQLite is measured", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbRestartGaps: "{n} gaps from restarts (normal)",
@@ -1461,9 +1463,11 @@ class OverviewMixin {
     const rows = measured ? [
       [this.t("dbOvSize"), this.formatBytes(d.db_bytes)],
       [this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)],
+      ...(d.keep_days ? [[this.t("dbOvKeep"), this.t("dbOvKeepDays", { n: this.formatNumber(d.keep_days) })]] : []),
       [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, d.per_day)) }) : this.t("dbOvObserving")],
     ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(d.dialect || "?") })]];
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbOvTitle")}</h2><p>${this.t("dbOvHint")}</p></div><button class="link" data-jump="recorder">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div></div>`;
+    const purgeOff = d.auto_purge === false ? `<p class="factnote">${this.t("dbOvPurgeOff")}</p>` : "";
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbOvTitle")}</h2><p>${this.t("dbOvHint")}</p></div><button class="link" data-jump="recorder">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${purgeOff}</div>`;
   }
 
   // Quick links to the hint views; counts exclude hidden findings.
@@ -3746,6 +3750,8 @@ class DbHealthMixin {
     else facts.push(this.t("dbNoSize", { dialect: this.esc(r.dialect || "?") }));
     if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.formatBytes(Math.max(0, r.growth.per_day)) }));
     else facts.push(this.t("dbGrowthUnknown"));
+    if (r.keep_days) facts.push(this.t("dbKeep", { n: this.formatNumber(r.keep_days) }));
+    if (r.auto_purge === false) facts.push(this.t("dbOvPurgeOff"));
     if (r.restart_gaps) facts.push(this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }));
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
     return `<div class="panel">${head}${rows}<p class="factnote">${facts.join(" · ")}</p>${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div>`;

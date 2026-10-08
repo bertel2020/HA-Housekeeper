@@ -136,6 +136,8 @@ class StormsResult(Reply, total=False):
 
 
 class DbHealthResult(Reply, total=False):
+    keep_days: int | None
+    auto_purge: bool | None
     stale: bool
     age_seconds: int
     computed_at: float

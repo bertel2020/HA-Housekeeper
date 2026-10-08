@@ -334,6 +334,19 @@ async def sample_size(hass: HomeAssistant, events: Any) -> None:
         )
 
 
+def recorder_retention(hass: HomeAssistant) -> dict[str, Any]:
+    """How long the recorder keeps states and whether it purges by itself; only read, never changed."""
+    from homeassistant.components.recorder import get_instance
+
+    instance = get_instance(hass)
+    days = getattr(instance, "keep_days", None)
+    purge = getattr(instance, "auto_purge", None)
+    return {
+        "keep_days": days if isinstance(days, int) and not isinstance(days, bool) else None,
+        "auto_purge": purge if isinstance(purge, bool) else None,
+    }
+
+
 async def database_summary(hass: HomeAssistant, events: Any) -> dict[str, Any] | None:
     """Size, WAL and growth per day for the overview: two file stats and the stored daily sizes.
 
@@ -351,6 +364,7 @@ async def database_summary(hass: HomeAssistant, events: Any) -> dict[str, Any] |
         "wal_bytes": files.get("wal_bytes"),
         "per_day": grown.get("per_day") if grown.get("known") else None,
         "samples": grown.get("samples", 0),
+        **recorder_retention(hass),
     }
 
 
@@ -397,6 +411,7 @@ async def db_health(
         "age_seconds": 0,
         "computed_at": now,
         "thresholds": THRESHOLDS,
+        **recorder_retention(hass),
         **result,
     }
     if store is not None:

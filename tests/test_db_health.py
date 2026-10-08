@@ -324,7 +324,16 @@ async def test_the_overview_summary_names_size_and_growth(
 
     summary = await database_summary(hass, Events())
     assert summary is not None and summary["per_day"] == 100 and summary["samples"] == 2
-    assert set(summary) == {"dialect", "db_bytes", "wal_bytes", "per_day", "samples"}
+    assert set(summary) == {
+        "dialect",
+        "db_bytes",
+        "wal_bytes",
+        "per_day",
+        "samples",
+        "keep_days",
+        "auto_purge",
+    }
+    assert summary["keep_days"] == 10 and summary["auto_purge"] is True  # Home Assistant's defaults
 
 
 async def test_the_last_database_reply_is_kept_and_handed_out_while_the_recorder_is_busy(
