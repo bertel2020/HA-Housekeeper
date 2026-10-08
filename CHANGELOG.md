@@ -1,9 +1,21 @@
 # Changelog
 
-## 0.13.1 - 2026-10-08
+## 0.13.2 - 2026-10-08
 
-Behebt einen Fehler in der Ansicht Freigaben. Automatisiert gegen Home Assistant
-2026.8.3, 2026.9.4 und 2026.10.0b4 getestet (517 Python- und 177 Panel-Tests).
+Behebt einen Fehler in der Ansicht Freigaben und ergänzt Suchfelder in langen
+Listen. (Version 0.13.1 wurde nicht veröffentlicht; alles daraus steckt hier.)
+Automatisiert gegen Home Assistant 2026.8.3, 2026.9.4 und 2026.10.0b4 getestet
+(517 Python- und 180 Panel-Tests). Alles Neue liest nur.
+
+### Neu
+
+- **Suche in Listen:** Die Liste der Läufe (Ansicht Automationen) lässt sich nach
+  Name und ID durchsuchen, nach Typ und „mit Fehlern“ filtern und per Klick auf
+  die Spaltenköpfe sortieren; die Suche gilt auch für „Auffällig“. Suchfelder
+  gibt es jetzt auch in der Zuverlässigkeit (Integrationen mit Filter nach
+  Zustand, instabile Entities), im Recorder (lauteste Entities, Befunde,
+  Integrationen), bei den Richtlinien und bei den Freigaben. Sie erscheinen ab
+  sechs Einträgen.
 
 ### Behoben
 
@@ -18,8 +30,19 @@ Behebt einen Fehler in der Ansicht Freigaben. Automatisiert gegen Home Assistant
 
 ### English
 
-Fixes an error in the Exposure view. Automatically tested against Home
-Assistant 2026.8.3, 2026.9.4 and 2026.10.0b4 (517 Python and 177 panel tests).
+Fixes an error in the Exposure view and adds search boxes to long lists.
+(Version 0.13.1 was not published; everything from it is in here.)
+Automatically tested against Home Assistant 2026.8.3, 2026.9.4 and 2026.10.0b4
+(517 Python and 180 panel tests). Everything new only reads.
+
+#### New
+
+- **Search in lists:** the list of runs (Automations view) can be searched by
+  name and id, filtered by type and “with errors” and sorted by clicking the
+  column headers; the search also applies to “Stands out”. Search boxes now also
+  exist in Reliability (integrations with a filter by state, unstable entities),
+  in Recorder (loudest entities, findings, integrations), in Policies and in
+  Exposure. They appear from six entries on.
 
 #### Fixed
 
