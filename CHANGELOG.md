@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.8.2 - 2026-10-08
+
+Korrektur zur vorläufigen Aufwärmphase aus 0.8.1. Automatisiert gegen Home
+Assistant 2026.8.3 und die jeweils neueste vom Testpaket unterstützte Version
+getestet.
+
+### Behoben
+
+- Die **vorläufige Aufwärmphase** beginnt jetzt schon beim Booten von Home
+  Assistant und nicht erst mit dem Ereignis „gestartet“. Öffnete man das Panel
+  vorher, löste es einen Scan aus, der noch als endgültig galt und viele
+  Entities fälschlich als verwaist zählte. Solche Scans sind jetzt ebenfalls
+  vorläufig; die Aufwärmphase endet fünf Minuten nach dem Start.
+
+---
+
+### English
+
+Fix for the preliminary warm-up from 0.8.1. Tested automatically against Home
+Assistant 2026.8.3 and the latest version the test package supports.
+
+#### Fixed
+
+- The **preliminary warm-up** now begins at the boot of Home Assistant and not
+  only with the “started” event. If the panel was opened earlier, it triggered
+  a scan that still counted as final and wrongly counted many entities as
+  orphaned. Such scans are now preliminary too; the warm-up ends five minutes
+  after the start.
+
 ## 0.8.1 - 2026-10-08
 
 Zwei Korrekturen aus dem Handtest in einer echten Instanz (Home Assistant
