@@ -8,7 +8,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.query = "";
     this.typeFilter = "";
     this.statusFilter = "";
-    this.findingFilter = "";
+    this.findingFilter = ""; this.findingAfter = false;
     this.showIgnored = false;
     this.batteryFilter = "low";
 
@@ -603,6 +603,7 @@ class HAHousekeeperPanel extends HTMLElement {
       } catch (err) { this.error = err?.message || String(err); }
       this.render();
     });
+    root.querySelectorAll("[data-finding-after]").forEach(el => el.onclick = () => { this.findingAfter = !this.findingAfter; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { this.findingFilter = el.dataset.findingFilter; this.pages = {}; this.render(); });
     const searchField = (selector, setter) => {
       const input = root.querySelector(selector);

@@ -1638,7 +1638,8 @@ class FindingsMixin {
   // The findings as shown (classification chip, search, type filter, sort); the export uses the same list.
   visibleFindings() {
     const all = this.sortedFindings(this.showIgnored);
-    const byClass = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
+    const classed = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
+    const byClass = this.findingAfter ? classed.filter(f => this.corr?.by_key?.[f.key]) : classed;
     this.lvState("findings", "certainty", "desc");
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
@@ -1689,9 +1690,12 @@ class FindingsMixin {
     const pg = this.paginate("findings", list);
     const h = this.health();
     const classTone = c => { const tone = this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
+    this.ensureCorrelations();
+    const afterCount = all.filter(f => this.corr?.by_key?.[f.key]).length;
     const tiles = this.sumTiles([
       { label: this.t("health"), value: `${h.percent} %`, sub: this.t("findSumAffected", { n: this.formatNumber(h.affected), m: this.formatNumber(h.base) }), tone: h.tone },
       { label: this.t("all"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok", filter: "", active: !this.findingFilter },
+      afterCount ? { label: this.t("corrTile"), value: this.formatNumber(afterCount), sub: this.t("corrTileSub"), tone: "warn", attr: ["data-finding-after", "1"], active: this.findingAfter } : null,
       ...classes.map(c => ({ label: this.t(c), value: this.formatNumber(all.filter(f => f.classification === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c })),
     ]);
     return `<div class="stack">${tiles}<div class="panel"><div class="chips">${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
@@ -1709,10 +1713,22 @@ class FindingsMixin {
   findingsCard(key) {
     const list = this.data.findings.filter(f => this.findingKey(f) === key);
     if (!list.length) return "";
-    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small>${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" ? "" : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="${f.ignored ? 0 : 1}"><ha-icon icon="${f.ignored ? "mdi:eye-outline" : "mdi:eye-off-outline"}"></ha-icon>${this.t(f.ignored ? "showFinding" : "hideFinding")}</button>`}</div>`).join("");
+    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.t("ignoredLabel")}` : ""}</small>${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" ? "" : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="${f.ignored ? 0 : 1}"><ha-icon icon="${f.ignored ? "mdi:eye-outline" : "mdi:eye-off-outline"}"></ha-icon>${this.t(f.ignored ? "showFinding" : "hideFinding")}</button>`}</div>`).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("findingsOfObject")} (${list.length})</h2></div>${rows}</section>`;
   }
 }
+
+// Texts for the findings that began together with an update or restart; merged into TEXT.
+Object.assign(TEXT.de, {
+  corrAfter: "Zeitlich zusammen mit: {what} ({when})", corrTile: "Nach Update neu", corrTileSub: "begannen zusammen mit einem Update", corrTitle: "Zeitlich zusammen mit Updates und Neustarts",
+  corrHint: "Befunde, die zur selben Zeit begannen wie ein Update, ein Neustart oder ein Bereinigungsplan. Das ist ein zeitlicher Zusammenhang, keine Ursache.",
+  corr_ha_version: "Home-Assistant-Update {from} → {to}", corr_entry_version: "Update von {domain} {from} → {to}", corr_start: "Neustart von Home Assistant", corr_plan: "Bereinigungsplan ausgeführt", corrCount: "{n} Befunde",
+});
+Object.assign(TEXT.en, {
+  corrAfter: "At about the same time as: {what} ({when})", corrTile: "New after update", corrTileSub: "began together with an update", corrTitle: "At about the same time as updates and restarts",
+  corrHint: "Findings that began at the same time as an update, a restart or a cleanup plan. This is a link in time, not a cause.",
+  corr_ha_version: "Home Assistant update {from} → {to}", corr_entry_version: "Update of {domain} {from} → {to}", corr_start: "Home Assistant restart", corr_plan: "Cleanup plan run", corrCount: "{n} findings",
+});
 
 // ChangesMixin: methods of the panel element, mixed into the class in 99-register.js.
 class ChangesMixin {
@@ -1747,6 +1763,7 @@ class ChangesMixin {
   changesView() {
     const c = this.compare;
     if (!c) return `${this.skeleton("loading")}`;
+    this.ensureCorrelations();
     const baselines = c.baselines || [];
     const options = baselines.map(b => `<option value="${this.esc(b.id)}" ${b.id === this.compareBaseline ? "selected" : ""}>${b.id === "previous" ? `${this.t("previousScan")} · ` : ""}${this.esc(this.formatDate(b.at))}</option>`).join("");
     const hint = baselines.length <= 1 ? `<p class="factnote" style="margin:10px 0 0">${this.t("historyBuilding", { days: c.retention_days ?? 30 })}</p>` : "";
@@ -1792,7 +1809,7 @@ class ChangesMixin {
       removedObjects: paged("removedObjects", c.removed_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")),
     };
     const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
-    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p>${cards}${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
+    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p>${cards}${this.corrGroupsCard()}${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
   }
 }
 
@@ -3096,6 +3113,7 @@ class DiagnosisMixin {
     if (["automation", "script"].includes(item.object_type)) this.ensureRuns();
     if (item.object_type === "config_entry") this.ensureReliability();
     if (item.object_type === "entity") this.ensureStability();
+    this.ensureCorrelations();
     const tabs = this.detailTabs(item, key);
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
@@ -4473,6 +4491,48 @@ const FLOW_ICONS = {
   action: "mdi:play-circle-outline", choose: "mdi:source-branch", if: "mdi:help-rhombus-outline", repeat: "mdi:repeat", parallel: "mdi:call-split", sequence: "mdi:format-list-numbered", wait_template: "mdi:timer-sand-empty", wait_for_trigger: "mdi:timer-sand-empty", delay: "mdi:timer-outline", variables: "mdi:variable", stop: "mdi:stop-circle-outline", scene: "mdi:palette-outline", and: "mdi:set-all", or: "mdi:set-merge", not: "mdi:not-equal-variant", condition: "mdi:filter-outline",
 };
 
+// CorrelationMixin: findings that began at about the time of an update or restart; mixed in by 99-register.js.
+// Always worded "at about the same time as", never as a cause.
+class CorrelationMixin {
+  async loadCorrelations() {
+    try { this.corr = await this._hass.callWS({ type: "ha_housekeeper/correlations" }); }
+    catch (_) { this.corr = { groups: [], by_key: {} }; }
+    this.render();
+  }
+
+  // Loads once, and again after every new scan.
+  ensureCorrelations() {
+    const key = this.data?.meta?.scanned_at || "";
+    if (!this.data || (this._corrKey === key && this._corrRequested)) return;
+    this._corrRequested = true; this._corrKey = key;
+    setTimeout(() => this.loadCorrelations(), 0);
+  }
+
+  corrText(group) {
+    const vars = { domain: this.esc(group.domain || ""), from: this.esc(group.from ?? ""), to: this.esc(group.to ?? "") };
+    return this.t(`corr_${group.kind}`, vars);
+  }
+
+  // The sentence on one finding, or "" when it began with nothing the log knows.
+  corrLine(key) {
+    const id = this.corr?.by_key?.[key];
+    const group = id && this.corr.groups.find(g => g.id === id);
+    return group ? this.t("corrAfter", { what: this.corrText(group), when: this.formatDate(group.at) }) : "";
+  }
+
+  corrFindingCount() { return Object.keys(this.corr?.by_key || {}).length; }
+
+  corrGroupsCard() {
+    const groups = this.corr?.groups || [];
+    if (!groups.length) return "";
+    const rows = groups.map(g => {
+      const names = g.keys.slice(0, 6).map(k => { const f = this.data.findings.find(x => x.key === k); return f ? (this.findObject(this.findingKey(f))?.name || f.object_id) : ""; }).filter(Boolean).map(n => this.esc(n)).join(", ");
+      return `<div class="row rel"><span class="tile ${g.only_group ? "mute" : "warn"}"><ha-icon icon="${g.kind === "start" ? "mdi:restart" : g.kind === "plan" ? "mdi:broom" : "mdi:package-up"}"></ha-icon></span><span class="row-text"><strong>${this.corrText(g)}</strong><small>${this.esc(this.formatDate(g.at))}${names ? ` · ${names}` : ""}</small></span><span class="pill ${g.only_group ? "mute" : "warn"}">${this.t("corrCount", { n: this.formatNumber(g.total) })}</span></div>`;
+    }).join("");
+    return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("corrTitle")}</h2><p>${this.t("corrHint")}</p></div></div>${rows}</section>`;
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -4483,7 +4543,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.query = "";
     this.typeFilter = "";
     this.statusFilter = "";
-    this.findingFilter = "";
+    this.findingFilter = ""; this.findingAfter = false;
     this.showIgnored = false;
     this.batteryFilter = "low";
 
@@ -5078,6 +5138,7 @@ class HAHousekeeperPanel extends HTMLElement {
       } catch (err) { this.error = err?.message || String(err); }
       this.render();
     });
+    root.querySelectorAll("[data-finding-after]").forEach(el => el.onclick = () => { this.findingAfter = !this.findingAfter; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { this.findingFilter = el.dataset.findingFilter; this.pages = {}; this.render(); });
     const searchField = (selector, setter) => {
       const input = root.querySelector(selector);
@@ -5220,7 +5281,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

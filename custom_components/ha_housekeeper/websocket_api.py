@@ -28,6 +28,7 @@ from .cleanup import (
 )
 from .cleanup_exec import CleanupError, entity_restorable
 from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
+from .correlation import correlate
 from .db_health import db_health
 from .exposure import exposure
 from .inventory import InventoryScanner
@@ -870,6 +871,24 @@ async def websocket_automation_runs(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/correlations"})
+@websocket_api.async_response
+async def websocket_correlations(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Findings that began at about the time of an update or restart. Reads the last scan only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    snapshot = await scanner.async_get_snapshot()
+    result = correlate(snapshot["findings"], scanner.events.recent())
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/events"})
 @callback
 def websocket_events(
@@ -963,5 +982,6 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_set_policy_limit)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
+    websocket_api.async_register_command(hass, websocket_correlations)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_automation_runs)

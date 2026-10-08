@@ -3250,3 +3250,16 @@ test("the flow tab shows triggers, conditions and nested actions and marks missi
   const script = el.flowCard({ object_type: "script", object_id: "script.x", name: "X", actions: [{ delay: "00:01:00" }] }, "script:script.x");
   assert.ok(script.includes("sequence/0") && !html.includes("Trigger</h2>x"));
 });
+
+test("findings that began with an update get a line, a tile and a filter", () => {
+  const { el } = panel("en");
+  const finding = { key: "k1", rule_id: "entity.unavailable", object_id: "light.a", classification: "unavailable", confidence: 0.9, ignored: false };
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "A", status: "unavailable" }], edges: [], findings: [finding, { ...finding, key: "k2", object_id: "light.b" }] };
+  el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  el.corr = { groups: [{ id: "g", kind: "entry_version", at: "2026-10-01T10:05:00+00:00", domain: "hue", from: "1", to: "2", total: 1, keys: ["k1"], only_group: false }], by_key: { k1: "g" } };
+  assert.ok(el.corrLine("k1").includes("Update of hue 1 → 2") && el.corrLine("k2") === "");
+  assert.deepEqual(el.visibleFindings().length, 2);
+  el.findingAfter = true;
+  assert.deepEqual(el.visibleFindings().map(f => f.key), ["k1"]);
+  assert.ok(el.findingsView().includes('data-finding-after="1"') && el.corrGroupsCard().includes("Update of hue"));
+});
