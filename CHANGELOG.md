@@ -1,5 +1,91 @@
 # Changelog
 
+## 0.16.0 - 2026-10-09
+
+Der Ablauf-Reiter für Automationen und Skripte, Befunde mit Bezug zu Updates,
+der Verlauf eines Geräts, ein experimentelles Wartungsfenster und eine
+verständlichere Auswertung fehlender Statistik-Stunden. Automatisiert gegen
+Home Assistant 2026.8.3, 2026.9.4 und 2026.10.0b4 getestet (530 Python- und
+189 Panel-Tests). Bis auf zwei kleine Notizen (Gerät, Grenze einer Regel) und das
+Wartungsfenster liest alles Neue nur.
+
+### Neu
+
+- **Ablauf-Reiter:** Automationen und Skripte zeigen Auslöser, Bedingungen und
+  Aktionen als aufklappbaren Baum (Wenn/Dann, Wiederholungen, parallele Schritte)
+  mit Klartext je Schritt, anklickbaren Entitäten und dem Pfad der Fundstelle.
+  Schritte mit fehlenden Objekten oder einem Befund sind rot markiert.
+- **Richtlinie „Zustandsänderungen pro Tag“:** Entitäten, die mindestens so oft am
+  Tag ihren Zustand ändern wie die einstellbare Grenze (Standard 5.000). Die Regel
+  liest nur die zuletzt berechneten Zahlen der Last-Ansicht und startet nie eine
+  Recorder-Abfrage.
+- **Zeitlich zusammen mit Updates:** Befunde, die zur selben Zeit begannen wie ein
+  Update von Home Assistant oder einer Integration, tragen einen Hinweis, haben
+  Kachel und Filter „Nach Update neu“ und stehen gruppiert unter Änderungen.
+  Neustarts und Bereinigungspläne erscheinen nur als Gruppe. Es ist ein zeitlicher
+  Zusammenhang, keine Ursache.
+- **Verlauf eines Geräts:** Der Reiter zeigt entdeckt, in Quarantäne, durch einen
+  Plan deaktiviert, ersetzt oder entfernt und ob es jetzt instabil ist, dazu eine
+  eigene Notiz (höchstens 200 Zeichen, nur in Housekeeper gespeichert). Unter
+  Wartung listet der Reiter „Entfernte Geräte“, was ein Plan entfernt hat.
+- **Wartungsfenster (experimentell, standardmäßig aus):** Führt unter Wartung der
+  Reihe nach durch Vorab-Prüfung, Ausgangsstand, einen Bereinigungsplan, das
+  Neuladen der betroffenen Integrationen, deinen Neustart und den Vergleich, am
+  Ende mit Bericht als Markdown. Nichts läuft zeitgesteuert, Housekeeper startet
+  Home Assistant nie neu. Mit simulierten Schritten getestet, noch nicht in einer
+  echten Instanz.
+- **Fehlende Stunden in Statistiken:** Der Befund trennt Stunden, die bei allen
+  Reihen zugleich fehlen (mit Zeitraum und Ursache: Neustart oder Recorder), von
+  eigenen Lücken einer Reihe; aufklappbare Details mit Tabelle der Reihen.
+- **Recorder → Last:** Die Abschnitte (Auffälligkeiten, Lauteste Entitäten,
+  Integrationen, Ereignisse) sind Reiter statt untereinander.
+
+### Geändert
+
+- **Zurück-Knöpfe:** Alle stehen in derselben Zeile ganz oben über der
+  Überschrift.
+
+### English
+
+The flow tab for automations and scripts, findings linked to updates, the history
+of a device, an experimental maintenance window and a clearer evaluation of
+missing statistics hours. Automatically tested against Home Assistant 2026.8.3,
+2026.9.4 and 2026.10.0b4 (530 Python and 189 panel tests). Apart from two small
+notes (device, limit of a rule) and the maintenance window, everything new only
+reads.
+
+#### New
+
+- **Flow tab:** automations and scripts show triggers, conditions and actions as
+  a collapsible tree (if/then, repeats, parallel steps) with a plain sentence per
+  step, clickable entities and the path of the location. Steps with missing
+  objects or a finding are marked red.
+- **Policy “State changes per day”:** entities that change state at least as
+  often per day as the adjustable limit (default 5,000). The rule only reads the
+  last calculated numbers of the load view and never starts a recorder query.
+- **At about the same time as updates:** findings that began at the same time as
+  an update of Home Assistant or an integration carry a note, have a tile and a
+  filter “New after update” and are grouped under Changes. Restarts and cleanup
+  plans appear only as a group. It is a link in time, not a cause.
+- **History of a device:** the tab shows discovered, in quarantine, disabled by a
+  plan, replaced or removed and whether it is unstable now, plus your own note
+  (200 characters at most, kept only in Housekeeper). Under Maintenance the tab
+  “Removed devices” lists what a plan removed.
+- **Maintenance window (experimental, off by default):** under Maintenance it
+  guides you through the check, the starting state, a cleanup plan, the reload of
+  the affected integrations, your restart and the comparison, ending with a
+  Markdown report. Nothing runs on a timer, Housekeeper never restarts Home
+  Assistant. Tested with simulated steps, not yet in a real instance.
+- **Missing hours in statistics:** the finding separates hours missing from all
+  series at once (with the period and the cause: restart or recorder) from gaps
+  of a single series; collapsible details with a table of the series.
+- **Recorder → Load:** the sections (Findings, Loudest entities, Integrations,
+  Events) are tabs instead of one long page.
+
+#### Changed
+
+- **Back buttons:** all sit in the same row at the top, above the heading.
+
 ## 0.15.0 - 2026-10-09
 
 Kennzahlen in fast allen Ansichten, Tabellen mit abgeschnittenen Namen,
