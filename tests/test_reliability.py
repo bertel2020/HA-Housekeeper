@@ -204,3 +204,161 @@ async def test_a_second_query_does_not_start_while_one_runs(
     finally:
         lock.release()
     assert result["busy"] is True and result["entries"] == []
+
+
+# --- flapping -------------------------------------------------------------------------------
+
+DAY = 86400
+WEEK_END = 7 * DAY
+
+
+def week(seen: dict, intervals: dict) -> dict:
+    return {"start": 0.0, "end": WEEK_END, "seen": seen, "intervals": intervals, "took_ms": 1}
+
+
+def episodes(count: int, *, every: float = 3600, at: float = 1000, length: float = 60) -> list:
+    return [(at + i * every, at + i * every + length) for i in range(count)]
+
+
+def flap(intervals: dict, *, outages=None, used=None, ignored=None, status="active", runs=None):
+    from custom_components.ha_housekeeper.reliability import flapping
+
+    seen = {name: 0.0 for name in intervals}
+    items = [
+        {"entity_id": n, "name": n, "config_entry_id": "e1", "status": status} for n in intervals
+    ]
+    return flapping(
+        runs or week(seen, intervals), items, outages or {}, used or {}, ignored or set()
+    )
+
+
+def test_three_episodes_a_week_are_not_enough_but_four_are_unstable() -> None:
+    assert flap({"a": episodes(2)})["items"] == []
+    # 3 episodes in 7 days is 0.43 a day: below 0.5.
+    assert flap({"a": episodes(3)})["items"] == []
+    result = flap({"a": episodes(4)})
+    assert [(i["episodes"], i["level"]) for i in result["items"]] == [(4, "unstable")]
+
+
+def test_a_rate_of_one_and_a_half_a_day_is_flapping() -> None:
+    below = flap({"a": episodes(10)})["items"][0]  # 1.43 a day
+    assert below["level"] == "unstable" and below["per_day"] == 1.4
+    exact = flap({"a": episodes(11)})["items"][0]  # 1.57 a day
+    assert exact["level"] == "flapping"
+
+
+def test_the_day_window_needs_three_episodes() -> None:
+    day = {"start": 0.0, "end": DAY, "seen": {"a": 0.0}, "intervals": {"a": episodes(2)}}
+    assert flap({"a": []}, runs=day)["items"] == []
+    day["intervals"] = {"a": episodes(3)}
+    assert flap({"a": []}, runs=day)["items"][0]["level"] == "flapping"
+
+
+def test_episodes_inside_a_shared_outage_belong_to_the_integration() -> None:
+    inside = [(a, b) for a, b in episodes(6, every=600)]
+    covered = {"e1": [(0.0, 10 * 3600.0)]}
+    assert flap({"a": inside}, outages=covered)["items"] == []
+    partly = {"e1": [(0.0, 5000.0)]}  # the first two episodes lie in it
+    assert flap({"a": episodes(6)}, outages=partly)["items"][0]["episodes"] == 4
+
+
+def test_entities_that_are_down_all_the_time_disabled_or_ignored_are_left_out() -> None:
+    assert flap({"a": [(0.0, float(WEEK_END))]})["items"] == []
+    assert flap({"a": episodes(8)}, status="disabled")["items"] == []
+    assert flap({"a": episodes(8)}, ignored={"a"})["items"] == []
+    assert flap({"a": episodes(8)})["items"][0]["entity_id"] == "a"
+
+
+def test_duration_and_followers_set_the_order() -> None:
+    result = flap({"quiet": episodes(8, length=120), "used": episodes(6)}, used={"used": 3})
+    assert [i["entity_id"] for i in result["items"]] == ["used", "quiet"]
+    quiet = result["items"][1]
+    assert quiet["total_seconds"] == 960 and quiet["mean_seconds"] == 120 and quiet["used"] == 0
+
+
+def pattern(hours: list[int], days: list[int]):
+    """Episode starts at the given hours on the given days (UTC)."""
+    starts = [d * DAY + h * 3600 for d, h in zip(days, hours, strict=True)]
+    return flap({"a": [(t, t + 60.0) for t in starts]})["items"]
+
+
+def test_a_daily_pattern_needs_sixty_percent_in_two_hours_on_three_days() -> None:
+    assert pattern([3, 3, 4, 3], [0, 1, 2, 3])[0]["pattern_hour"] == 3
+    # 3 of 5 in the band is exactly 60 %: counts. 2 of 5 does not.
+    assert pattern([3, 3, 4, 9, 15], [0, 1, 2, 3, 4])[0]["pattern_hour"] == 3
+    assert pattern([3, 3, 9, 15, 20], [0, 1, 2, 3, 4])[0]["pattern_hour"] is None
+    # Enough starts in the band but only on two days.
+    assert pattern([3, 4, 3, 4], [0, 0, 1, 1])[0]["pattern_hour"] is None
+    # The band may wrap around midnight.
+    assert pattern([23, 0, 23, 0], [0, 1, 2, 3])[0]["pattern_hour"] == 23
+
+
+def test_the_list_is_capped_and_counts_all() -> None:
+    result = flap({f"e{i:03d}": episodes(5) for i in range(40)})
+    assert len(result["items"]) == 30 and result["total"] == 40
+
+
+async def test_the_recorder_result_carries_the_unstable_entities(
+    recorder_mock, hass: HomeAssistant, freezer
+) -> None:
+    from homeassistant.util import dt as dt_util
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="test", title="Probe")
+    entry.add_to_hass(hass)
+    now = dt_util.utcnow()
+    start = now - timedelta(days=3)
+    for step in range(5):
+        for name, state in (
+            ("sensor.a", "unavailable"),
+            ("sensor.b", "unavailable"),
+            ("sensor.c", "unavailable"),
+        ):
+            freezer.move_to(start + timedelta(hours=step * 6))
+            hass.states.async_set(name, state)
+        freezer.move_to(start + timedelta(hours=step * 6, minutes=10))
+        hass.states.async_set("sensor.a", "1")
+        hass.states.async_set("sensor.b", "1")
+        hass.states.async_set("sensor.c", "1")
+    freezer.move_to(now)
+    await async_wait_recording_done(hass)
+
+    snapshot = snapshot_for("sensor.a", "sensor.b", "sensor.c", entry=entry.entry_id)
+    snapshot["edges"] = [{"target": "entity:sensor.a", "source": "automation:x"}]
+    result = await reliability(hass, snapshot, refresh=True)
+    # Both entities fail together: that is a shared outage of the entry, not their own flapping.
+    assert result["unstable"] == {"items": [], "total": 0}
+    assert "outage_periods" not in result
+    assert result["entries"][0]["shared_outages"] == 5
+
+
+async def test_one_entity_that_flaps_alone_is_named_with_its_followers(
+    recorder_mock, hass: HomeAssistant, freezer
+) -> None:
+    from homeassistant.util import dt as dt_util
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="test", title="Probe")
+    entry.add_to_hass(hass)
+    now = dt_util.utcnow()
+    start = now - timedelta(days=3)
+    for name in ("sensor.a", "sensor.b", "sensor.c"):
+        freezer.move_to(start)
+        hass.states.async_set(name, "1")
+    for step in range(1, 6):
+        freezer.move_to(start + timedelta(hours=step * 6))
+        hass.states.async_set("sensor.a", "unavailable")
+        freezer.move_to(start + timedelta(hours=step * 6, minutes=10))
+        hass.states.async_set("sensor.a", "1")
+    freezer.move_to(now)
+    await async_wait_recording_done(hass)
+
+    snapshot = snapshot_for("sensor.a", "sensor.b", "sensor.c", entry=entry.entry_id)
+    snapshot["edges"] = [
+        {"target": "entity:sensor.a", "source": "automation:x"},
+        {"target": "entity:sensor.a", "source": "automation:y", "confidence": "probable"},
+    ]
+    item = (await reliability(hass, snapshot, refresh=True))["unstable"]["items"][0]
+    assert item["entity_id"] == "sensor.a" and item["episodes"] == 5
+    assert item["level"] == "unstable" and item["used"] == 1  # 5 in 7 days
+    assert item["entry_title"] == "Probe" and item["mean_seconds"] == 600

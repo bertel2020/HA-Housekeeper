@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import asyncio
 import time
+from datetime import UTC, datetime, tzinfo
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN
+from .const import DOMAIN, IGNORE_LABEL
 from .meter import recorder_ready
 
 DAY = 86400
@@ -25,6 +27,14 @@ SHARED_MIN_ENTITIES = 3
 SHARED_MIN_SECONDS = 300
 PERMANENT_SHARE = 0.99  # share of the observed time spent unavailable
 CLOUD_CLASSES = {"cloud_polling", "cloud_push"}
+UNSTABLE_MIN_EPISODES = 3
+UNSTABLE_PER_DAY = 0.5
+FLAPPING_PER_DAY = 1.5
+PATTERN_MIN_EPISODES = 4
+PATTERN_SHARE = 0.6
+PATTERN_MIN_DAYS = 3
+PATTERN_MIN_WINDOW_DAYS = 6
+UNSTABLE_LIMIT = 30
 
 
 def query_runs(hass: HomeAssistant, start: float, end: float) -> dict[str, Any]:
@@ -153,6 +163,7 @@ def compute(
         if item.get("config_entry_id") in entries:
             per_entry.setdefault(item["config_entry_id"], []).append(item)
     rows = []
+    periods: dict[str, list[tuple[float, float]]] = {}
     for entry_id, members in per_entry.items():
         info = entries[entry_id]
         counted: list[list[tuple[float, float]]] = []
@@ -189,6 +200,7 @@ def compute(
         if not counted and not permanent:
             continue
         outages = shared_outages(counted)
+        periods[entry_id] = outages
         layer = None
         if outages:
             layer = "cloud" if info.get("iot_class") in CLOUD_CLASSES else "local"
@@ -218,11 +230,94 @@ def compute(
     rows.sort(key=lambda r: (r["availability"] is None, r["availability"] or 0, r["title"]))
     return {
         "entries": rows,
+        "outage_periods": periods,
         "start": start,
         "end": end,
         "window_days": round(window / DAY),
         "took_ms": runs.get("took_ms"),
     }
+
+
+def _pattern_hour(starts: list[float], zone: tzinfo) -> int | None:
+    """The first hour of the two-hour band that holds most episode starts, if they cluster."""
+    if len(starts) < PATTERN_MIN_EPISODES:
+        return None
+    local = [datetime.fromtimestamp(ts, UTC).astimezone(zone) for ts in starts]
+    best_hour, best = None, []
+    for hour in range(24):
+        inside = [moment for moment in local if moment.hour in (hour, (hour + 1) % 24)]
+        if len(inside) > len(best):
+            best_hour, best = hour, inside
+    if len(best) < PATTERN_SHARE * len(local) or len({m.date() for m in best}) < PATTERN_MIN_DAYS:
+        return None
+    return best_hour
+
+
+def flapping(
+    runs: dict[str, Any],
+    entities: list[dict[str, Any]],
+    outage_periods: dict[str, list[tuple[float, float]]],
+    used: dict[str, int],
+    ignored: set[str],
+    zone: tzinfo = UTC,
+) -> dict[str, Any]:
+    """Entities that keep failing and coming back, worst first.
+
+    An episode inside a shared outage of the entity's config entry belongs to the integration
+    and is not counted here. Entities that are down all the time, disabled or ignored are left out.
+    """
+    start, end = runs["start"], runs["end"]
+    window = max(end - start, 1.0)
+    days = window / DAY
+    items = []
+    for item in entities:
+        entity_id = item["entity_id"]
+        first = runs["seen"].get(entity_id)
+        if first is None or entity_id in ignored or item.get("status") == "disabled":
+            continue
+        merged = _merge(
+            [
+                (max(a, start), min(b, end))
+                for a, b in runs["intervals"].get(entity_id, [])
+                if min(b, end) > max(a, start)
+            ]
+        )
+        observed = end - first
+        down = sum(b - a for a, b in merged)
+        if observed <= 0 or (down >= observed * PERMANENT_SHARE and observed >= window * 0.95):
+            continue
+        shared = outage_periods.get(item.get("config_entry_id"), [])
+        episodes = [
+            (a, b)
+            for a, b in merged
+            if not any(a < other_end and b > other_start for other_start, other_end in shared)
+        ]
+        rate = len(episodes) / days
+        if len(episodes) < UNSTABLE_MIN_EPISODES or rate < UNSTABLE_PER_DAY:
+            continue
+        total = sum(b - a for a, b in episodes)
+        followers = used.get(entity_id, 0)
+        items.append(
+            {
+                "entity_id": entity_id,
+                "name": item.get("name") or entity_id,
+                "entry_id": item.get("config_entry_id"),
+                "episodes": len(episodes),
+                "per_day": round(rate, 1),
+                "total_seconds": round(total),
+                "mean_seconds": round(total / len(episodes)),
+                "level": "flapping" if rate >= FLAPPING_PER_DAY else "unstable",
+                "pattern_hour": _pattern_hour([a for a, _ in episodes], zone)
+                if days >= PATTERN_MIN_WINDOW_DAYS
+                else None,
+                "used": followers,
+                "_rank": rate * (1 + followers),
+            }
+        )
+    items.sort(key=lambda i: (-i["_rank"], i["entity_id"]))
+    for entry in items:
+        del entry["_rank"]
+    return {"items": items[:UNSTABLE_LIMIT], "total": len(items)}
 
 
 async def _entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:
@@ -284,11 +379,33 @@ async def reliability(
     entities = [
         {
             "entity_id": item["object_id"],
+            "name": item.get("name"),
             "config_entry_id": item.get("config_entry_id"),
             "status": item.get("status"),
         }
         for item in snapshot["objects"]
         if item["object_type"] == "entity"
     ]
-    result = compute(kept[1], entities, await _entry_info(hass))
-    return {"available": True, "busy": False, "cached": cached, **result}
+    entries = await _entry_info(hass)
+    result = compute(kept[1], entities, entries)
+    periods = result.pop("outage_periods")
+    used: dict[str, int] = {}
+    for edge in snapshot.get("edges", []):
+        target = edge["target"]
+        if target.startswith("entity:") and edge.get("confidence", "certain") == "certain":
+            used[target[7:]] = used.get(target[7:], 0) + 1
+    ignored = {f["object_id"] for f in snapshot.get("findings", []) if f.get("ignored")} | {
+        item["object_id"]
+        for item in snapshot["objects"]
+        if item["object_type"] == "entity" and IGNORE_LABEL in (item.get("labels") or [])
+    }
+    unstable = flapping(kept[1], entities, periods, used, ignored, dt_util.get_default_time_zone())
+    for item in unstable["items"]:
+        item["entry_title"] = (entries.get(item["entry_id"]) or {}).get("title")
+    return {
+        "available": True,
+        "busy": False,
+        "cached": cached,
+        "unstable": unstable,
+        **result,
+    }
