@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.15.0 - 2026-10-09
+
+Kennzahlen in fast allen Ansichten, Tabellen mit abgeschnittenen Namen,
+Spaltenauswahl und CSV-Export, ein lesbarerer Graph und Recorder-Kosten, die von
+selbst laden. Automatisiert gegen Home Assistant 2026.8.3, 2026.9.4 und
+2026.10.0b4 getestet (521 Python- und 184 Panel-Tests). Alles Neue liest nur.
+
+### Neu
+
+- **Kennzahlen überall:** Auch Wartung, Befunde, Inventar, Nicht verwendet,
+  Batterien, Änderungen und Aufräumen beginnen mit einer Zeile Kennzahlen; wo es
+  passt, filtert ein Klick die Liste. Wartung hat die Reiter Backup-Schutz und
+  Update-Preflight. Die Reihenfolge der Kacheln folgt der Reihenfolge der Reiter.
+- **Zuverlässigkeit:** Beide Reiter sind gleich aufgebaut; Instabile Entitäten
+  lassen sich nach flatternd oder instabil filtern und nach Ausfällen, Ausfällen
+  pro Tag und Gesamtdauer sortieren.
+- **Recorder-Kosten laden von selbst:** Beim Öffnen des Reiters startet die
+  Analyse; das letzte Ergebnis wird gespeichert, sofort gezeigt und im
+  Hintergrund aktuell gehalten.
+- **Tabellen:** Name und ID werden bei der Spaltenbreite abgeschnitten; ein
+  Tooltip zeigt beides vollständig (Name fett). Er erscheint per Maus, per
+  Tastaturfokus und per Langdruck. Der Tabellenkopf bleibt beim Scrollen stehen.
+- **Spalten und Export:** In Inventar, Nicht verwendet, Verwaiste Statistiken
+  und Läufen lassen sich Spalten aus- und einblenden (wird im Browser gemerkt).
+  Ein Knopf exportiert alle Zeilen der aktuellen Suche als CSV.
+- **Kompakte Zeilen:** Ein Schalter in der Listenleiste zeigt nur die erste Zeile
+  je Eintrag; er wirkt auch auf Tabellen.
+- **Graph:** Breitere Knoten, die Knoten stehen in der Reihenfolge ihrer
+  Elternknoten (weniger Kreuzungen) und der Tooltip zeigt Name, Typ, Status und
+  ID.
+- **Richtlinien:** Die Regeln lassen sich mit einem Schalter ein- und ausschalten.
+
+### Geändert
+
+- **Überblick:** „Was muss ich jetzt tun?“ steht unter den Kennzahlen, die
+  Datenbank-Karte oben in der rechten Spalte.
+
+### English
+
+Key figures in nearly every view, tables with cut-off names, a column picker and
+CSV export, a more readable graph and recorder costs that load on their own.
+Automatically tested against Home Assistant 2026.8.3, 2026.9.4 and 2026.10.0b4
+(521 Python and 184 panel tests). Everything new only reads.
+
+#### New
+
+- **Key figures everywhere:** Maintenance, Findings, Inventory, Unused,
+  Batteries, Changes and Cleanup also start with a row of key figures; where it
+  fits, a click filters the list. Maintenance has the tabs Backup protection and
+  Update preflight. The order of the tiles follows the order of the tabs.
+- **Reliability:** both tabs are built alike; unstable entities can be filtered
+  by flapping or unstable and sorted by outages, outages per day and total
+  duration.
+- **Recorder costs load on their own:** opening the tab starts the analysis; the
+  last result is kept, shown at once and refreshed in the background.
+- **Tables:** name and id are cut at the column width; a tooltip shows both in
+  full (name in bold). It appears on hover, on keyboard focus and on a long
+  press. The table header stays in place while scrolling.
+- **Columns and export:** Inventory, Unused, Orphaned statistics and Runs let
+  you show or hide columns (kept in the browser). A button exports all rows of
+  the current search as CSV.
+- **Compact rows:** a switch in the list bar shows only the first line of every
+  entry; it also works on tables.
+- **Graph:** wider nodes, nodes stand in the order of their parents (fewer
+  crossings) and the tooltip shows name, type, status and id.
+- **Policies:** the rules are switched on and off with a switch.
+
+#### Changed
+
+- **Overview:** “What needs doing now?” sits below the key figures, the database
+  card at the top of the right column.
+
 ## 0.14.0 - 2026-10-08
 
 Übersichtlichere lange Ansichten, der Stabilitätsstatus in den Details einer
