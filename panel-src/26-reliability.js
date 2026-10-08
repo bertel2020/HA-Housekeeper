@@ -49,7 +49,8 @@ class ReliabilityMixin {
     if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
-    return `<div class="stack"><div class="panel">${head}${loading}${r.entries.map(item => this.relRow(item)).join("")}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>${this.unstableCard(r)}</div>`;
+    const pg = this.paginate("relentries", r.entries);
+    return `<div class="stack"><div class="panel">${head}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>${this.unstableCard(r)}</div>`;
   }
 
   unstableRow(item, days) {
@@ -67,6 +68,7 @@ class ReliabilityMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("relUnstableTitle")}</h2><p>${this.t("relUnstableHint")}</p></div></div>`;
     if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
     const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
-    return `<div class="panel">${head}${u.items.map(item => this.unstableRow(item, r.window_days)).join("")}${more}<p class="factnote">${this.t("relUnstableFootnote")}</p></div>`;
+    const pg = this.paginate("relunstable", u.items);
+    return `<div class="panel">${head}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}<p class="factnote">${this.t("relUnstableFootnote")}</p></div>`;
   }
 }

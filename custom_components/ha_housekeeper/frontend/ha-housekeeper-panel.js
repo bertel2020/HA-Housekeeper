@@ -2769,7 +2769,8 @@ class ReliabilityMixin {
     if (r.busy) return `<div class="panel">${head}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!r.entries.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relEmpty")}</div></div>`;
     const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
-    return `<div class="stack"><div class="panel">${head}${loading}${r.entries.map(item => this.relRow(item)).join("")}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>${this.unstableCard(r)}</div>`;
+    const pg = this.paginate("relentries", r.entries);
+    return `<div class="stack"><div class="panel">${head}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}<p class="factnote">${this.t("relFootnote", { days: r.window_days })}</p></div>${this.unstableCard(r)}</div>`;
   }
 
   unstableRow(item, days) {
@@ -2787,7 +2788,8 @@ class ReliabilityMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("relUnstableTitle")}</h2><p>${this.t("relUnstableHint")}</p></div></div>`;
     if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
     const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
-    return `<div class="panel">${head}${u.items.map(item => this.unstableRow(item, r.window_days)).join("")}${more}<p class="factnote">${this.t("relUnstableFootnote")}</p></div>`;
+    const pg = this.paginate("relunstable", u.items);
+    return `<div class="panel">${head}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}<p class="factnote">${this.t("relUnstableFootnote")}</p></div>`;
   }
 }
 
@@ -2854,8 +2856,9 @@ class RunsMixin {
   }
 
   runsTable(rows) {
-    const body = rows.map(row => `<tr data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"><td><strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span></td><td data-label="${this.esc(this.t("runsColRuns"))}">${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}</td><td data-label="${this.esc(this.t("runsColErrors"))}">${this.formatNumber(row.errors)}</td><td data-label="${this.esc(this.t("runsColConditions"))}">${this.formatNumber(row.conditions)}</td><td data-label="${this.esc(this.t("runsColDuration"))}">${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}</td><td data-label="${this.esc(this.t("runsColTrend"))}">${this.runsTrend(row)}</td></tr>`).join("");
-    return `<div class="tablewrap"><table><thead><tr><th>${this.t("runsColName")}</th><th>${this.t("runsColRuns")}</th><th>${this.t("runsColErrors")}</th><th>${this.t("runsColConditions")}</th><th>${this.t("runsColDuration")}</th><th>${this.t("runsColTrend")}</th></tr></thead><tbody>${body}</tbody></table></div>`;
+    const pg = this.paginate("runsall", rows);
+    const body = pg.rows.map(row => `<tr data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"><td><strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span></td><td data-label="${this.esc(this.t("runsColRuns"))}">${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}</td><td data-label="${this.esc(this.t("runsColErrors"))}">${this.formatNumber(row.errors)}</td><td data-label="${this.esc(this.t("runsColConditions"))}">${this.formatNumber(row.conditions)}</td><td data-label="${this.esc(this.t("runsColDuration"))}">${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}</td><td data-label="${this.esc(this.t("runsColTrend"))}">${this.runsTrend(row)}</td></tr>`).join("");
+    return `<div class="tablewrap"><table><thead><tr><th>${this.t("runsColName")}</th><th>${this.t("runsColRuns")}</th><th>${this.t("runsColErrors")}</th><th>${this.t("runsColConditions")}</th><th>${this.t("runsColDuration")}</th><th>${this.t("runsColTrend")}</th></tr></thead><tbody>${body}</tbody></table></div>${pg.footer}`;
   }
 
   // The numbers of one automation or script for its detail page; only when runs were counted for it.
@@ -2881,7 +2884,8 @@ class RunsMixin {
     if (!r) return `<div class="panel">${head}<div class="panel loading"><ha-icon icon="mdi:loading"></ha-icon><p>${this.t("runsLoading")}</p></div></div>`;
     const flagged = r.items.filter(row => row.findings.length);
     const counted = r.items.filter(row => row.runs);
-    const attention = flagged.length ? flagged.map(row => this.runsAttentionRow(row)).join("") : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
+    const flaggedPage = this.paginate("runsflag", flagged);
+    const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
     const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}<p class="factnote">${this.t("runsFootnote")}</p></div>` : "";
     return `<div class="stack"><div class="panel">${head}${attention}</div>${all}</div>`;
@@ -3399,7 +3403,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-cost-sort]").forEach(el => el.onclick = () => { this.costSort = el.dataset.costSort; this.render(); });
     root.querySelector("[data-runs-refresh]")?.addEventListener("click", () => this.loadRuns());
-    root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.loadReliability(); });
+    root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.pages.relentries = 1; this.pages.relunstable = 1; this.loadReliability(); });
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {

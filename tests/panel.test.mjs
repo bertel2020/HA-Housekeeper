@@ -2270,3 +2270,23 @@ test("the runtime state shows its unit, but not for special states or entities w
   assert.ok(plain.includes(">on<") || plain.includes("on</"));
   assert.ok(!plain.includes("on null") && !plain.includes("on undefined"));
 });
+
+test("the reliability and runs lists are split into pages", () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.view = "reliability";
+  const entries = Array.from({ length: 45 }, (_, n) => ({ entry_id: `e${n}`, title: `Eintrag ${String(n).padStart(2, "0")}`, domain: "x", state: "loaded", reauth: false, entities: 3, permanent: 0, availability: 99, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null }));
+  el.reliability = { ...RELIABILITY, entries, unstable: { total: 0, items: [] } };
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Eintrag 00") && html.includes("Eintrag 19") && !html.includes("Eintrag 20"));
+  assert.ok(html.includes("1–20") && html.includes("45"));
+  el.pages.relentries = 3; el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("Eintrag 44") && !html.includes("Eintrag 19"));
+  el.view = "runs";
+  const rows = Array.from({ length: 30 }, (_, n) => ({ object_type: "automation", entity_id: `automation.a${n}`, name: `Lauf ${String(n).padStart(2, "0")}`, status: "active", runs: 5, ok: 5, errors: 0, conditions: 0, mean_ms: 100, max_ms: 200, per_day: [0, 0, 0, 0, 0, 0, 5], lower_bound: false, findings: [] }));
+  el.runs = { ...RUNS, items: rows, total: 30 };
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("Lauf 19") && !html.includes("Lauf 20") && html.includes("1–20"));
+});

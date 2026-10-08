@@ -509,7 +509,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-cost-sort]").forEach(el => el.onclick = () => { this.costSort = el.dataset.costSort; this.render(); });
     root.querySelector("[data-runs-refresh]")?.addEventListener("click", () => this.loadRuns());
-    root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.loadReliability(); });
+    root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.pages.relentries = 1; this.pages.relunstable = 1; this.loadReliability(); });
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {
