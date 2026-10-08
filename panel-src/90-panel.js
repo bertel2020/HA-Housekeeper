@@ -497,7 +497,10 @@ class HAHousekeeperPanel extends HTMLElement {
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
     const from = this.viewTrail[this.viewTrail.length - 1];
-    const back = from ? `<div class="crumbs"><button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button></div>` : "";
+    // Every back button sits in this row at the top of the page, like the one of the detail page.
+    const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
+    const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
+    const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }

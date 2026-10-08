@@ -109,6 +109,16 @@ class StormsMixin {
     const shares = r.integrations.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormShares")}</h2><p>${this.t("stormSharesHint")}</p></div></div>${foundShares.bar}${foundShares.none}${foundShares.rows.map(item => this.stormShareRow(item)).join("")}</div>` : "";
     const events = r.events.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormEvents")}</h2><p>${this.t("stormEventsHint")}</p></div></div>${r.events.map(e => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:flash-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.type)}</strong></span><span class="pill mute">${this.formatNumber(e.count)}</span></div>`).join("")}${this.howCounted("stormFootnote")}</div>` : "";
     const left = this.excludedText(r.excluded);
-    return `<div class="stack"><div class="panel">${head}${loading}${attention}${summary}${left ? `<p class="factnote">${left}</p>` : ""}</div>${table}${shares}${events}</div>`;
+    // The sections are tabs, so the lower ones are not hidden far down the page.
+    const warn = r.findings.some(f => f.kind === "storm" || f.kind === "integration_share");
+    const tabs = [
+      { id: "findings", label: this.t("stormTabFindings"), count: r.findings.length, tone: warn ? "red" : r.findings.length ? "warn" : "ok" },
+      r.entities.length ? { id: "entities", label: this.t("stormTabEntities"), count: r.entities.length } : null,
+      r.integrations.length ? { id: "shares", label: this.t("stormTabIntegrations"), count: r.integrations.length } : null,
+      r.events.length ? { id: "events", label: this.t("stormTabEvents"), count: r.events.length } : null,
+    ].filter(Boolean);
+    const open = this.viewTabOf("recload", tabs, r.findings.length ? "findings" : "entities");
+    const body = open === "entities" ? table : open === "shares" ? shares : open === "events" ? events : `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormTabFindings")}</h2></div></div>${attention}</div>`;
+    return `<div class="stack"><div class="panel">${head}${loading}${summary}${left ? `<p class="factnote">${left}</p>` : ""}</div>${this.viewTabBar("recload", tabs, open)}${body}</div>`;
   }
 }

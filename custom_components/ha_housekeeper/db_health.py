@@ -34,6 +34,8 @@ STATE_GAP_MINUTES = 10
 STATE_GAP_WINDOW_DAYS = 7
 RESTART_GRACE = 60  # seconds a gap may reach beyond the downtime and still count as the restart
 LIST_LIMIT = 5
+MISSING_SERIES_LIMIT = 60  # series with missing hours sent to the panel
+MISSING_GAPS_LIMIT = 8  # gaps shared by all series that are named
 # Findings of validate_statistics that mean "gone or not recorded" belong to the unused view.
 THRESHOLDS = {
     "wal_share": WAL_SHARE,
@@ -130,6 +132,14 @@ def query_db(hass: HomeAssistant, now: float) -> dict[str, Any]:
             ).all()
             if mid in names and names[mid][1] == "recorder"
         ]
+        hour = cast(Statistics.start_ts / 3600, Integer)
+        result["hours"] = sorted(
+            int(h)
+            for (h,) in session.execute(
+                select(hour).where(Statistics.start_ts >= since).group_by(hour)
+            ).all()
+            if h is not None
+        )
         bucket = cast(States.last_updated_ts / 60, Integer)
         window = now - STATE_GAP_WINDOW_DAYS * DAY
         result["state_minutes"] = sorted(
@@ -201,6 +211,36 @@ def state_gaps(
     return gaps
 
 
+def shared_gaps(hours: list[int], down: list[tuple[float, float]]) -> list[dict[str, Any]]:
+    """Runs of hours that no series has a row for: the statistics were not compiled then.
+
+    Told apart like the state gaps: while Home Assistant was down it is a restart, else the recorder
+    was not working. ``hours`` are the hours (epoch seconds divided by 3600) that have any row.
+    """
+    if not hours:
+        return []
+    present, runs, start = set(hours), [], None
+    for hour in range(hours[0], hours[-1] + 1):
+        if hour not in present:
+            start = hour if start is None else start
+        elif start is not None:
+            runs.append((start, hour))
+            start = None
+    gaps = []
+    for first, end in runs:
+        lo, hi = first * 3600.0, end * 3600.0
+        restart = any(a - RESTART_GRACE <= hi and lo <= b + RESTART_GRACE for a, b in down)
+        gaps.append(
+            {
+                "start": lo,
+                "end": hi,
+                "hours": end - first,
+                "cause": "restart" if restart else "recorder",
+            }
+        )
+    return gaps
+
+
 def down_periods(events: list[dict[str, Any]]) -> list[tuple[float, float]]:
     """Intervals Home Assistant was down, from the start entries that carry ``down_seconds``."""
     periods = []
@@ -260,22 +300,47 @@ def evaluate(
             }
         )
     holes = []
+    gaps_all = shared_gaps(raw.get("hours", []), down_periods(events))
     for series in raw.get("series", []):
         if series["statistic_id"] not in names:
             continue
         missing = round((series["last"] - series["first"]) / 3600) + 1 - series["rows"]
         if missing >= GAP_MIN_HOURS:
-            holes.append({**series, "name": names[series["statistic_id"]], "missing": missing})
-    holes.sort(key=lambda h: h["missing"], reverse=True)
+            lo, hi = series["first"] // 3600, series["last"] // 3600
+            shared = sum(
+                max(0, min(hi + 1, g["end"] // 3600) - max(lo, g["start"] // 3600))
+                for g in gaps_all
+            )
+            shared = int(min(shared, missing))
+            holes.append(
+                {
+                    **series,
+                    "name": names[series["statistic_id"]],
+                    "missing": missing,
+                    "shared": shared,
+                }
+            )
+    holes.sort(key=lambda h: (h["missing"] - h["shared"], h["missing"]), reverse=True)
     if holes:
+        biggest = sorted(gaps_all, key=lambda g: g["hours"], reverse=True)[:MISSING_GAPS_LIMIT]
         findings.append(
             {
                 "kind": "missing_hours",
                 "level": "hint",
                 "series_total": len(holes),
+                "own_series": sum(h["missing"] - h["shared"] >= GAP_MIN_HOURS for h in holes),
+                "gap_hours": sum(g["hours"] for g in gaps_all),
+                "gaps_total": len(gaps_all),
+                "gaps": sorted(biggest, key=lambda g: g["start"], reverse=True),
                 "series": [
-                    {"statistic_id": h["statistic_id"], "name": h["name"], "missing": h["missing"]}
-                    for h in holes[:LIST_LIMIT]
+                    {
+                        "statistic_id": h["statistic_id"],
+                        "name": h["name"],
+                        "missing": h["missing"],
+                        "shared": h["shared"],
+                        "own": h["missing"] - h["shared"],
+                    }
+                    for h in holes[:MISSING_SERIES_LIMIT]
                 ],
             }
         )

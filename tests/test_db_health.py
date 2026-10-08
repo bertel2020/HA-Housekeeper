@@ -358,3 +358,25 @@ async def test_the_last_database_reply_is_kept_and_handed_out_while_the_recorder
     finally:
         lock.release()
     assert held["stale"] is True and held["busy"] is False
+
+
+def test_missing_hours_tell_what_all_series_lack_from_what_only_one_lacks() -> None:
+    # Hours 0..99 expected; hours 40..59 have no row in any series (a shared gap of 20 hours).
+    present = [h for h in range(100) if not 40 <= h < 60]
+    both = {"first": 0.0, "last": 99 * 3600.0}
+    series = [
+        {"statistic_id": "sensor.a", "rows": 80, **both},  # only the shared gap
+        {"statistic_id": "sensor.b", "rows": 70, **both},  # the shared gap and ten more hours
+    ]
+    down = [{"kind": "start", "at": "1970-01-06T00:00:00+00:00", "down_seconds": 3600}]
+    result = run(
+        raw(series=series, hours=present), names={"sensor.a": "A", "sensor.b": "B"}, events=down
+    )
+    finding = result["findings"][0]
+    assert finding["gap_hours"] == 20 and finding["gaps_total"] == 1
+    assert finding["gaps"][0]["hours"] == 20 and finding["gaps"][0]["cause"] == "recorder"
+    assert [(s["name"], s["shared"], s["own"]) for s in finding["series"]] == [
+        ("B", 20, 10),
+        ("A", 20, 0),
+    ]
+    assert finding["own_series"] == 1  # A is explained by the shared gap alone

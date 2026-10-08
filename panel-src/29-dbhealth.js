@@ -24,14 +24,30 @@ class DbHealthMixin {
     if (f.kind === "wal_large") return this.t("dbWal", { wal: size(f.wal_bytes), db: size(f.db_bytes) });
     if (f.kind === "growth") return this.t("dbGrowth", { recent: size(f.recent_bytes), base: size(f.base_bytes) });
     if (f.kind === "duplicates") return this.t("dbDuplicates", { n: n(f.groups), more: f.capped ? "+" : "", list: this.dbSeriesList(f.series) });
-    if (f.kind === "missing_hours") return this.t("dbMissing", { n: n(f.series_total), list: f.series.map(s => `${this.esc(s.name || s.statistic_id)} (${this.t("dbMissingHours", { n: n(s.missing) })})`).join(", ") });
+    if (f.kind === "missing_hours") {
+      const list = (rows) => rows.map(s => `${this.esc(s.name || s.statistic_id)} (${this.t("dbMissingHours", { n: n(s.own ?? s.missing) })})`).join(", ");
+      if (!f.gap_hours) return this.t("dbMissing", { n: n(f.series_total), list: list(f.series) });
+      const own = f.series.filter(s => s.own >= 6);
+      const shared = this.t("dbMissingShared", { n: n(f.series_total), hours: n(f.gap_hours), count: n(f.gaps_total) });
+      return `${shared} ${f.own_series ? this.t("dbMissingOwn", { n: n(f.own_series), list: list(own.slice(0, 5)) }) : this.t("dbMissingOnlyShared")}`;
+    }
     if (f.kind === "statistics_issues") return this.t("dbIssues", { n: n(f.series_total), list: f.series.map(s => `${this.esc(s.name || s.statistic_id)} (${s.types.map(type => this.t(`dbIssue_${type}`) === `dbIssue_${type}` ? type : this.t(`dbIssue_${type}`)).join(", ")})`).join(", ") });
     return this.t("dbRecorderGap", { n: n(f.gaps), longest: this.relDuration(f.longest_seconds), latest: this.formatDate(new Date(f.latest[0].start * 1000).toISOString()) });
   }
 
+  // What lies behind a finding: the periods all series lack, and the series with their own and their shared hours.
+  dbFindingExtra(f) {
+    if (f.kind !== "missing_hours" || !(f.gaps?.length || f.series?.length)) return "";
+    const gaps = (f.gaps || []).map(g => `<div class="row rel"><span class="tile ${g.cause === "restart" ? "mute" : "warn"}"><ha-icon icon="${g.cause === "restart" ? "mdi:restart" : "mdi:database-clock-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(new Date(g.start * 1000).toISOString()))} – ${this.esc(this.formatDate(new Date(g.end * 1000).toISOString()))}</strong><small>${this.t("dbMissingHours", { n: this.formatNumber(g.hours) })} · ${this.t(`dbGapCause_${g.cause}`)}</small></span></div>`).join("");
+    const rows = f.series.map(s => { const obj = this.findObject(`entity:${s.statistic_id}`); const name = this.esc(s.name || s.statistic_id); return `<tr${obj ? ` data-object="${this.esc(`entity:${s.statistic_id}`)}" tabindex="0" role="button"` : ' class="static"'}><td>${this.nameCell(s.name || s.statistic_id, s.statistic_id, "span")}</td><td data-label="${this.esc(this.t("dbColOwn"))}">${this.formatNumber(s.own)}</td><td data-label="${this.esc(this.t("dbColShared"))}">${this.formatNumber(s.shared)}</td><td data-label="${this.esc(this.t("dbColMissing"))}">${this.formatNumber(s.missing)}</td></tr>`; }).join("");
+    const more = f.series_total > f.series.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: f.series.length, total: f.series_total })}</p>` : "";
+    const table = rows ? `<div class="tablewrap lt"><table><thead><tr><th scope="col">${this.t("dbColSeries")}</th><th scope="col">${this.t("dbColOwn")}</th><th scope="col">${this.t("dbColShared")}</th><th scope="col">${this.t("dbColMissing")}</th></tr></thead><tbody>${rows}</tbody></table></div>${more}` : "";
+    return `<details class="howto dbextra"><summary>${this.t("dbDetails", { gaps: this.formatNumber(f.gaps_total || 0), series: this.formatNumber(f.series_total) })}</summary>${f.gaps?.length ? `<div class="sectionlabel">${this.t("dbGapsTitle")}</div>${gaps}` : ""}<div class="sectionlabel">${this.t("dbSeriesTitle")}</div>${table}</details>`;
+  }
+
   dbFindingRow(f) {
     const tone = f.level === "problem" ? "red" : "warn";
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>`;
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
   }
 
   dbCard() {

@@ -2648,6 +2648,7 @@ test("the load view, the policies and the exposure view have a search box once t
   el.data = { ...DATA }; el._stormsRequested = 1; el._exposureRequested = true;
   const entities = Array.from({ length: 7 }, (_, i) => ({ entity_id: `sensor.e${i}`, name: `Laut ${i}`, rows: 10 - i, per_day: 10, no_new_state: 0, attr_bytes: null, peak_hour: null }));
   el.storms = { ...STORMS, entities };
+  el.viewTab = { recload: "entities" };
   assert.ok(el.stormsView().includes('data-lq="stormentities"'));
   el.lvState("stormentities", "", "asc").q = "laut 5";
   let html = el.stormsView();
@@ -2867,7 +2868,7 @@ test("the load view names each finding in words with its numbers, the followers,
   const { el } = panel("en");
   el.data = { ...DATA };
   el.storms = STORMS; el._stormsRequested = 1;
-  const html = el.stormsView();
+  const html = ["findings", "entities", "shares", "events"].map(tab => { el.viewTab = { recload: tab }; return el.stormsView(); }).join("");
   assert.ok(html.includes("72,000 rows a day, 5,100 in the busiest hour") && html.includes("Depending on it: 2 Automation, 1 Entity"), html.slice(0, 600));
   assert.ok(html.includes("5.1 KB of attributes") && html.includes("96 % of the rows are updates without a new state"));
   assert.ok(html.includes("About 41.5 % of the recorder load") && html.includes("120,000 events of type zha_event"));
@@ -3290,4 +3291,17 @@ test("the maintenance window is off until switched on, then shows the open step 
   assert.ok(html.includes('data-win-act="plan:aabbccddeeff"') && html.includes('data-win-act="next:plan"') && !html.includes("Restart (by you)</strong></span></div><div class=\"pad\">"));
   const report = el.windowReport();
   assert.ok(report.startsWith("# Maintenance window") && report.includes("1. Check first"));
+});
+
+test("missing statistics hours say what all series lack, name the periods and list the series", () => {
+  const { el } = panel("en");
+  el.data = DATA;
+  const f = { kind: "missing_hours", level: "hint", series_total: 2, own_series: 1, gap_hours: 20, gaps_total: 1,
+    gaps: [{ start: 1_000_000, end: 1_072_000, hours: 20, cause: "recorder" }],
+    series: [{ statistic_id: "sensor.b", name: "B <i>", missing: 30, shared: 20, own: 10 }, { statistic_id: "sensor.a", name: "A", missing: 20, shared: 20, own: 0 }] };
+  const text = el.dbFindingText(f);
+  assert.ok(text.includes("20 hours are missing from all series at once") && text.includes("1 series have gaps of their own"));
+  const extra = el.dbFindingExtra(f);
+  assert.ok(extra.includes("The recorder was not running") && extra.includes("B &lt;i&gt;") && !extra.includes("<i>"));
+  assert.ok(el.dbFindingExtra({ kind: "growth" }) === "");
 });

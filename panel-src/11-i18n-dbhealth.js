@@ -12,11 +12,12 @@ Object.assign(TEXT.de, {
   dbAdvice_wal_large: "Ein Neustart oder ein Checkpoint verkleinert die WAL-Datei; bleibt sie groß, prüfe, ob etwas die Datenbank lange offen hält. Erst ein Backup anlegen.",
   dbAdvice_growth: "Die Ansicht „Last“ zeigt, wer so viel schreibt. Danach Entitäten vom Recorder ausschließen oder die Aufbewahrung senken.",
   dbAdvice_duplicates: "Housekeeper repariert das nicht. Lege ein Backup an und prüfe die Reihen in Entwicklerwerkzeuge → Statistiken.",
-  dbAdvice_missing_hours: "Meist war die Entität zeitweise nicht verfügbar. Bei vielen Reihen zugleich war der Recorder nicht aktiv.",
+  dbAdvice_missing_hours: "Gemeinsame Lücken lassen sich nicht nachholen: Home Assistant stand oder der Recorder arbeitete nicht. Eigene Lücken heißen meist, dass die Entität zeitweise nicht verfügbar war.",
   dbAdvice_statistics_issues: "Entwicklerwerkzeuge → Statistiken bietet an, die Einheit zu korrigieren oder die Reihe zu löschen. Vorher ein Backup anlegen.",
   dbAdvice_recorder_gap: "Prüfe das Protokoll auf Recorder-Fehler (Datenbank gesperrt, Platte voll) und sichere die Datenbank.",
   dbFootnote: "Gemessen wird nur lesend. Die Größe der Datenbank wird jeden Tag notiert (nur die Zahl), daraus entsteht das Wachstum. Eine Lücke ist ein Zeitraum von mindestens {gap} Minuten ohne einen einzigen Eintrag in den Zuständen der letzten {gapDays} Tage; endet sie, wo Home Assistant nach seinem eigenen Protokoll stand, gilt sie als Neustart. Fehlende Stunden zählen ab {missing} in den letzten {missingDays} Tagen. Housekeeper repariert nichts und löscht nichts.",
   todoDbProblem: "Datenbank: Problem",
+  stormTabFindings: "Auffälligkeiten", stormTabEntities: "Lauteste Entitäten", stormTabIntegrations: "Integrationen", stormTabEvents: "Ereignisse", dbMissingShared: "{n} Reihen haben Lücken im Stundenverlauf. Bei allen Reihen zugleich fehlen {hours} Stunden in {count} Zeiträumen; dort wurde keine Statistik berechnet.", dbMissingOwn: "{n} Reihen haben darüber hinaus eigene Lücken, vor allem: {list}.", dbMissingOnlyShared: "Alle Lücken fallen in diese gemeinsamen Zeiträume.", dbGapCause_restart: "Home Assistant stand (Neustart)", dbGapCause_recorder: "Recorder lief nicht oder die Statistik wurde nicht berechnet", dbDetails: "Details: {gaps} gemeinsame Zeiträume, {series} Reihen", dbGapsTitle: "Gemeinsame Lücken (bei allen Reihen)", dbSeriesTitle: "Reihen mit fehlenden Stunden", dbColSeries: "Reihe", dbColOwn: "Eigene", dbColShared: "Gemeinsame", dbColMissing: "Gesamt",
 });
 Object.assign(TEXT.en, {
   dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
@@ -31,9 +32,10 @@ Object.assign(TEXT.en, {
   dbAdvice_wal_large: "A restart or a checkpoint shrinks the WAL file; if it stays large, check whether something keeps the database open for long. Create a backup first.",
   dbAdvice_growth: "The Load view shows who writes so much. Then exclude entities from the recorder or lower the retention.",
   dbAdvice_duplicates: "Housekeeper does not repair this. Create a backup and check the series in Developer tools → Statistics.",
-  dbAdvice_missing_hours: "Usually the entity was unavailable for a while. With many series at once, the recorder was not active.",
+  dbAdvice_missing_hours: "Shared gaps cannot be made up: Home Assistant was down or the recorder was not working. Own gaps usually mean the entity was unavailable for a while.",
   dbAdvice_statistics_issues: "Developer tools → Statistics offers to fix the unit or delete the series. Create a backup first.",
   dbAdvice_recorder_gap: "Check the log for recorder errors (database locked, disk full) and back up the database.",
   dbFootnote: "Only reads. The size of the database is noted once a day (just the number); the growth comes from that. A gap is a stretch of at least {gap} minutes without a single entry in the states of the last {gapDays} days; if it ends where Home Assistant was down according to its own log, it counts as a restart. Missing hours count from {missing} in the last {missingDays} days. Housekeeper repairs nothing and deletes nothing.",
   todoDbProblem: "Database: problem",
+  stormTabFindings: "Findings", stormTabEntities: "Loudest entities", stormTabIntegrations: "Integrations", stormTabEvents: "Events", dbMissingShared: "{n} series have gaps in their hourly record. {hours} hours are missing from all series at once, in {count} periods; no statistics were compiled then.", dbMissingOwn: "{n} series have gaps of their own on top of that, mostly: {list}.", dbMissingOnlyShared: "All gaps fall into these shared periods.", dbGapCause_restart: "Home Assistant was down (restart)", dbGapCause_recorder: "The recorder was not running or the statistics were not compiled", dbDetails: "Details: {gaps} shared periods, {series} series", dbGapsTitle: "Shared gaps (all series)", dbSeriesTitle: "Series with missing hours", dbColSeries: "Series", dbColOwn: "Own", dbColShared: "Shared", dbColMissing: "Total",
 });

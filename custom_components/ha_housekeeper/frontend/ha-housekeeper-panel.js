@@ -887,11 +887,12 @@ Object.assign(TEXT.de, {
   dbAdvice_wal_large: "Ein Neustart oder ein Checkpoint verkleinert die WAL-Datei; bleibt sie groß, prüfe, ob etwas die Datenbank lange offen hält. Erst ein Backup anlegen.",
   dbAdvice_growth: "Die Ansicht „Last“ zeigt, wer so viel schreibt. Danach Entitäten vom Recorder ausschließen oder die Aufbewahrung senken.",
   dbAdvice_duplicates: "Housekeeper repariert das nicht. Lege ein Backup an und prüfe die Reihen in Entwicklerwerkzeuge → Statistiken.",
-  dbAdvice_missing_hours: "Meist war die Entität zeitweise nicht verfügbar. Bei vielen Reihen zugleich war der Recorder nicht aktiv.",
+  dbAdvice_missing_hours: "Gemeinsame Lücken lassen sich nicht nachholen: Home Assistant stand oder der Recorder arbeitete nicht. Eigene Lücken heißen meist, dass die Entität zeitweise nicht verfügbar war.",
   dbAdvice_statistics_issues: "Entwicklerwerkzeuge → Statistiken bietet an, die Einheit zu korrigieren oder die Reihe zu löschen. Vorher ein Backup anlegen.",
   dbAdvice_recorder_gap: "Prüfe das Protokoll auf Recorder-Fehler (Datenbank gesperrt, Platte voll) und sichere die Datenbank.",
   dbFootnote: "Gemessen wird nur lesend. Die Größe der Datenbank wird jeden Tag notiert (nur die Zahl), daraus entsteht das Wachstum. Eine Lücke ist ein Zeitraum von mindestens {gap} Minuten ohne einen einzigen Eintrag in den Zuständen der letzten {gapDays} Tage; endet sie, wo Home Assistant nach seinem eigenen Protokoll stand, gilt sie als Neustart. Fehlende Stunden zählen ab {missing} in den letzten {missingDays} Tagen. Housekeeper repariert nichts und löscht nichts.",
   todoDbProblem: "Datenbank: Problem",
+  stormTabFindings: "Auffälligkeiten", stormTabEntities: "Lauteste Entitäten", stormTabIntegrations: "Integrationen", stormTabEvents: "Ereignisse", dbMissingShared: "{n} Reihen haben Lücken im Stundenverlauf. Bei allen Reihen zugleich fehlen {hours} Stunden in {count} Zeiträumen; dort wurde keine Statistik berechnet.", dbMissingOwn: "{n} Reihen haben darüber hinaus eigene Lücken, vor allem: {list}.", dbMissingOnlyShared: "Alle Lücken fallen in diese gemeinsamen Zeiträume.", dbGapCause_restart: "Home Assistant stand (Neustart)", dbGapCause_recorder: "Recorder lief nicht oder die Statistik wurde nicht berechnet", dbDetails: "Details: {gaps} gemeinsame Zeiträume, {series} Reihen", dbGapsTitle: "Gemeinsame Lücken (bei allen Reihen)", dbSeriesTitle: "Reihen mit fehlenden Stunden", dbColSeries: "Reihe", dbColOwn: "Eigene", dbColShared: "Gemeinsame", dbColMissing: "Gesamt",
 });
 Object.assign(TEXT.en, {
   dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
@@ -906,11 +907,12 @@ Object.assign(TEXT.en, {
   dbAdvice_wal_large: "A restart or a checkpoint shrinks the WAL file; if it stays large, check whether something keeps the database open for long. Create a backup first.",
   dbAdvice_growth: "The Load view shows who writes so much. Then exclude entities from the recorder or lower the retention.",
   dbAdvice_duplicates: "Housekeeper does not repair this. Create a backup and check the series in Developer tools → Statistics.",
-  dbAdvice_missing_hours: "Usually the entity was unavailable for a while. With many series at once, the recorder was not active.",
+  dbAdvice_missing_hours: "Shared gaps cannot be made up: Home Assistant was down or the recorder was not working. Own gaps usually mean the entity was unavailable for a while.",
   dbAdvice_statistics_issues: "Developer tools → Statistics offers to fix the unit or delete the series. Create a backup first.",
   dbAdvice_recorder_gap: "Check the log for recorder errors (database locked, disk full) and back up the database.",
   dbFootnote: "Only reads. The size of the database is noted once a day (just the number); the growth comes from that. A gap is a stretch of at least {gap} minutes without a single entry in the states of the last {gapDays} days; if it ends where Home Assistant was down according to its own log, it counts as a restart. Missing hours count from {missing} in the last {missingDays} days. Housekeeper repairs nothing and deletes nothing.",
   todoDbProblem: "Database: problem",
+  stormTabFindings: "Findings", stormTabEntities: "Loudest entities", stormTabIntegrations: "Integrations", stormTabEvents: "Events", dbMissingShared: "{n} series have gaps in their hourly record. {hours} hours are missing from all series at once, in {count} periods; no statistics were compiled then.", dbMissingOwn: "{n} series have gaps of their own on top of that, mostly: {list}.", dbMissingOnlyShared: "All gaps fall into these shared periods.", dbGapCause_restart: "Home Assistant was down (restart)", dbGapCause_recorder: "The recorder was not running or the statistics were not compiled", dbDetails: "Details: {gaps} shared periods, {series} series", dbGapsTitle: "Shared gaps (all series)", dbSeriesTitle: "Series with missing hours", dbColSeries: "Series", dbColOwn: "Own", dbColShared: "Shared", dbColMissing: "Total",
 });
 
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -2440,7 +2442,7 @@ class InventoryMixin {
       return `${search}<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:graph-outline"></ha-icon>${this.t("graphHint")}</div></div>`;
     }
     const item = this.graphSelected, key = this.objectKey(item);
-    const head = `${this.graphBackLabel() ? `<div class="crumbs"><button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button></div>` : ""}<div class="panel pathcard">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div><h2>${this.esc(item.name)} ${this.pill(item.status)}</h2><span class="id">${this.esc(item.object_id)}</span></div><button class="btn" data-object="${this.esc(key)}">${this.t("details")}</button></div>`;
+    const head = `<div class="panel pathcard">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<div><h2>${this.esc(item.name)} ${this.pill(item.status)}</h2><span class="id">${this.esc(item.object_id)}</span></div><button class="btn" data-object="${this.esc(key)}">${this.t("details")}</button></div>`;
     if (this.useGraph()) return `${search}${head}${this.graphBar(item, key)}${this.graphPanel(item, key)}`;
     const USAGE = USAGE_RELATIONS;
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
@@ -4017,7 +4019,17 @@ class StormsMixin {
     const shares = r.integrations.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormShares")}</h2><p>${this.t("stormSharesHint")}</p></div></div>${foundShares.bar}${foundShares.none}${foundShares.rows.map(item => this.stormShareRow(item)).join("")}</div>` : "";
     const events = r.events.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormEvents")}</h2><p>${this.t("stormEventsHint")}</p></div></div>${r.events.map(e => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:flash-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.type)}</strong></span><span class="pill mute">${this.formatNumber(e.count)}</span></div>`).join("")}${this.howCounted("stormFootnote")}</div>` : "";
     const left = this.excludedText(r.excluded);
-    return `<div class="stack"><div class="panel">${head}${loading}${attention}${summary}${left ? `<p class="factnote">${left}</p>` : ""}</div>${table}${shares}${events}</div>`;
+    // The sections are tabs, so the lower ones are not hidden far down the page.
+    const warn = r.findings.some(f => f.kind === "storm" || f.kind === "integration_share");
+    const tabs = [
+      { id: "findings", label: this.t("stormTabFindings"), count: r.findings.length, tone: warn ? "red" : r.findings.length ? "warn" : "ok" },
+      r.entities.length ? { id: "entities", label: this.t("stormTabEntities"), count: r.entities.length } : null,
+      r.integrations.length ? { id: "shares", label: this.t("stormTabIntegrations"), count: r.integrations.length } : null,
+      r.events.length ? { id: "events", label: this.t("stormTabEvents"), count: r.events.length } : null,
+    ].filter(Boolean);
+    const open = this.viewTabOf("recload", tabs, r.findings.length ? "findings" : "entities");
+    const body = open === "entities" ? table : open === "shares" ? shares : open === "events" ? events : `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormTabFindings")}</h2></div></div>${attention}</div>`;
+    return `<div class="stack"><div class="panel">${head}${loading}${summary}${left ? `<p class="factnote">${left}</p>` : ""}</div>${this.viewTabBar("recload", tabs, open)}${body}</div>`;
   }
 }
 
@@ -4047,14 +4059,30 @@ class DbHealthMixin {
     if (f.kind === "wal_large") return this.t("dbWal", { wal: size(f.wal_bytes), db: size(f.db_bytes) });
     if (f.kind === "growth") return this.t("dbGrowth", { recent: size(f.recent_bytes), base: size(f.base_bytes) });
     if (f.kind === "duplicates") return this.t("dbDuplicates", { n: n(f.groups), more: f.capped ? "+" : "", list: this.dbSeriesList(f.series) });
-    if (f.kind === "missing_hours") return this.t("dbMissing", { n: n(f.series_total), list: f.series.map(s => `${this.esc(s.name || s.statistic_id)} (${this.t("dbMissingHours", { n: n(s.missing) })})`).join(", ") });
+    if (f.kind === "missing_hours") {
+      const list = (rows) => rows.map(s => `${this.esc(s.name || s.statistic_id)} (${this.t("dbMissingHours", { n: n(s.own ?? s.missing) })})`).join(", ");
+      if (!f.gap_hours) return this.t("dbMissing", { n: n(f.series_total), list: list(f.series) });
+      const own = f.series.filter(s => s.own >= 6);
+      const shared = this.t("dbMissingShared", { n: n(f.series_total), hours: n(f.gap_hours), count: n(f.gaps_total) });
+      return `${shared} ${f.own_series ? this.t("dbMissingOwn", { n: n(f.own_series), list: list(own.slice(0, 5)) }) : this.t("dbMissingOnlyShared")}`;
+    }
     if (f.kind === "statistics_issues") return this.t("dbIssues", { n: n(f.series_total), list: f.series.map(s => `${this.esc(s.name || s.statistic_id)} (${s.types.map(type => this.t(`dbIssue_${type}`) === `dbIssue_${type}` ? type : this.t(`dbIssue_${type}`)).join(", ")})`).join(", ") });
     return this.t("dbRecorderGap", { n: n(f.gaps), longest: this.relDuration(f.longest_seconds), latest: this.formatDate(new Date(f.latest[0].start * 1000).toISOString()) });
   }
 
+  // What lies behind a finding: the periods all series lack, and the series with their own and their shared hours.
+  dbFindingExtra(f) {
+    if (f.kind !== "missing_hours" || !(f.gaps?.length || f.series?.length)) return "";
+    const gaps = (f.gaps || []).map(g => `<div class="row rel"><span class="tile ${g.cause === "restart" ? "mute" : "warn"}"><ha-icon icon="${g.cause === "restart" ? "mdi:restart" : "mdi:database-clock-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(new Date(g.start * 1000).toISOString()))} – ${this.esc(this.formatDate(new Date(g.end * 1000).toISOString()))}</strong><small>${this.t("dbMissingHours", { n: this.formatNumber(g.hours) })} · ${this.t(`dbGapCause_${g.cause}`)}</small></span></div>`).join("");
+    const rows = f.series.map(s => { const obj = this.findObject(`entity:${s.statistic_id}`); const name = this.esc(s.name || s.statistic_id); return `<tr${obj ? ` data-object="${this.esc(`entity:${s.statistic_id}`)}" tabindex="0" role="button"` : ' class="static"'}><td>${this.nameCell(s.name || s.statistic_id, s.statistic_id, "span")}</td><td data-label="${this.esc(this.t("dbColOwn"))}">${this.formatNumber(s.own)}</td><td data-label="${this.esc(this.t("dbColShared"))}">${this.formatNumber(s.shared)}</td><td data-label="${this.esc(this.t("dbColMissing"))}">${this.formatNumber(s.missing)}</td></tr>`; }).join("");
+    const more = f.series_total > f.series.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: f.series.length, total: f.series_total })}</p>` : "";
+    const table = rows ? `<div class="tablewrap lt"><table><thead><tr><th scope="col">${this.t("dbColSeries")}</th><th scope="col">${this.t("dbColOwn")}</th><th scope="col">${this.t("dbColShared")}</th><th scope="col">${this.t("dbColMissing")}</th></tr></thead><tbody>${rows}</tbody></table></div>${more}` : "";
+    return `<details class="howto dbextra"><summary>${this.t("dbDetails", { gaps: this.formatNumber(f.gaps_total || 0), series: this.formatNumber(f.series_total) })}</summary>${f.gaps?.length ? `<div class="sectionlabel">${this.t("dbGapsTitle")}</div>${gaps}` : ""}<div class="sectionlabel">${this.t("dbSeriesTitle")}</div>${table}</details>`;
+  }
+
   dbFindingRow(f) {
     const tone = f.level === "problem" ? "red" : "warn";
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>`;
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
   }
 
   dbCard() {
@@ -5254,7 +5282,10 @@ class HAHousekeeperPanel extends HTMLElement {
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
     const from = this.viewTrail[this.viewTrail.length - 1];
-    const back = from ? `<div class="crumbs"><button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button></div>` : "";
+    // Every back button sits in this row at the top of the page, like the one of the detail page.
+    const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
+    const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
+    const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
