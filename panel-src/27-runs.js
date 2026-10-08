@@ -91,7 +91,7 @@ class RunsMixin {
     this.lvState("runs", "runs", "desc");
     const pg = this.paginate("runsall", rows);
     const columns = [
-      { key: "name", label: "runsColName", dir: "asc", cell: row => `<strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span>` },
+      { key: "name", label: "runsColName", dir: "asc", cell: row => this.nameCell(row.name, row.entity_id) },
       { key: "runs", label: "runsColRuns", dir: "desc", cell: row => `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}` },
       { key: "errors", label: "runsColErrors", dir: "desc", cell: row => this.formatNumber(row.errors) },
       { key: "conditions", label: "runsColConditions", dir: "desc", cell: row => this.formatNumber(row.conditions) },

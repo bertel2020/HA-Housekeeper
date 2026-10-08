@@ -119,7 +119,7 @@ class UnusedMixin {
       return this.ageCell(new Date(ts * 1000).toISOString());
     };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", cell: o => `<strong>${this.esc(o.statistic_id)}</strong>${this.statSuccessorLine(o)}` },
+      { key: "id", label: "utStatId", dir: "asc", cell: o => `${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
@@ -164,7 +164,7 @@ class UnusedMixin {
     const pg = this.paginate("unreferenced", rows);
     const dash = `<span class="muted">–</span>`;
     const columns = [
-      { key: "name", label: "utName", dir: "asc", cell: o => `<div data-tip="${this.esc(o.name)}" data-tip-sub="${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
+      { key: "name", label: "utName", dir: "asc", cell: o => this.nameCell(o.name, o.object_id) },
       { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
       { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
       { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },
@@ -199,7 +199,13 @@ class UnusedMixin {
       filters: { area: (r, v) => this.areaName(r.item) === v }, sorts: this.batterySorts(), tie: r => r.item.object_id,
     });
     const limit = this.data.meta.low_battery_percent ?? 20;
-    const chips = `<div class="chips"><button class="chip ${this.batteryFilter === "low" ? "active" : ""}" data-battery-filter="low">${this.t("batteryLow")} (${low.length})</button><button class="chip ${this.batteryFilter === "low" ? "" : "active"}" data-battery-filter="all">${this.t("batteryAll")} (${all.length})</button></div>`;
+    const levels = all.map(r => r.level).filter(x => x !== null && x !== undefined);
+    const lowest = all.filter(r => r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
+    const chips = this.sumTiles([
+      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
+      { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: limit }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
+      lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc(lowest.item.name), tone: lowest.low ? "warn" : "mute" } : null,
+    ]);
     const row = ({ item, level, low: isLow }) => {
       const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
       const area = this.findObject(`area:${item.area_id || device?.area_id}`);
@@ -207,6 +213,6 @@ class UnusedMixin {
       return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
     };
     const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
-    return `<div class="panel">${chips}${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>`;
+    return `<div class="stack">${chips}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div></div>`;
   }
 }

@@ -399,7 +399,7 @@ test("battery view lists the lowest levels first and counts low ones", () => {
   assert.equal(JSON.stringify(Array.from(el.batteryRows().map(r => r.item.object_id))), JSON.stringify(["binary_sensor.flag", "sensor.low", "sensor.edge", "binary_sensor.fine", "sensor.full"]));
   el.view = "batteries";
   el.render();
-  assert.ok(shadow.innerHTML.includes("Low (3)") && shadow.innerHTML.includes("All (5)"));
+  assert.ok(shadow.innerHTML.includes("sumvalue\">3<") && shadow.innerHTML.includes("sumvalue\">5<"));
   assert.ok(!shadow.innerHTML.includes("sensor.full"));
   el.batteryFilter = "all";
   el.render();
@@ -794,7 +794,7 @@ test("orphaned statistics show their last entry and sort by it, oldest or newest
   assert.ok(shadow.innerHTML.includes("<span class=\"muted\">…</span>"), "the column says it is loading");
   await loading;
   assert.deepEqual(calls, ["ha_housekeeper/statistics_last"]);
-  const order = () => [...shadow.innerHTML.matchAll(/<strong>(sensor\.[abc])<\/strong>/g)].map(m => m[1]);
+  const order = () => [...shadow.innerHTML.matchAll(/<strong class="cut">(sensor\.[abc])<\/strong>/g)].map(m => m[1]);
   el.lv.orphanstats.sort = "last"; el.lv.orphanstats.dir = "desc";
   el.render();
   assert.deepEqual(order(), ["sensor.b", "sensor.a", "sensor.c"]); // newest first, no entry last
@@ -853,7 +853,7 @@ test("orphaned statistics are a table that filters by unit and by the age of the
   el.orphanLast = { available: true, busy: false, last: { "sensor.new": now - 5 * day, "sensor.old": now - 400 * day, "sensor.dead": now - 900 * day } };
   el._orphanLastRequested = true;
   el.view = "unreferenced"; el.unrefTab = "statistics"; el.render();
-  const ids = () => [...shadow.innerHTML.matchAll(/<strong>(sensor\.[a-z]+)<\/strong>/g)].map(m => m[1]);
+  const ids = () => [...shadow.innerHTML.matchAll(/<strong class="cut">(sensor\.[a-z]+)<\/strong>/g)].map(m => m[1]);
   let html = shadow.innerHTML;
   for (const head of ["Statistic ID", "Kind", "Unit", "Last entry", "Energy dashboard"]) assert.ok(html.includes(`>${head}`), head);
   assert.equal(JSON.stringify(ids()), JSON.stringify(["sensor.dead", "sensor.new", "sensor.old"]));
@@ -1803,7 +1803,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
 
   el.view = "overview"; el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.indexOf("What needs doing now?") < html.indexOf('class="summary"'), "the list comes before the statistics");
+  assert.ok(html.indexOf("What needs doing now?") > html.indexOf('class="summary"'), "the list comes after the key figures");
   assert.ok(html.indexOf('data-todo="integrations"') < html.indexOf('data-todo="critical"') && html.indexOf('data-todo="critical"') < html.indexOf('data-todo="stale"'));
   assert.ok(html.includes('data-jump="inventory" data-type="config_entry" data-status="problem"'));
   assert.ok(html.indexOf('class="summary"') < html.indexOf('class="ring') && html.indexOf('class="ring') < html.indexOf('data-jump="inventory" data-status'), "the health card is the first card of the statistics row");

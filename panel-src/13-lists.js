@@ -74,6 +74,12 @@ class ListsMixin {
     return `<div class="tablewrap lt ${cls}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
 
+  // Name over id for a table cell: both are cut at the column width and shown in full in the tooltip (see showTip).
+  nameCell(name, id, tag = "div") {
+    const sub = id || "";
+    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}</${tag}>`;
+  }
+
   // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.
   ageCell(iso) {
     if (!iso) return `<span class="muted">–</span>`;

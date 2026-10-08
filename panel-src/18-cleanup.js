@@ -384,7 +384,14 @@ class CleanupMixin {
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
     const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
-    return `<div class="stack"><div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
+    const tiles = this.sumTiles([
+      { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
+      removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
+      removal ? { label: this.t("waitingShort"), value: this.formatNumber(all.filter(r => !ready(r)).length), tone: "mute" } : null,
+      { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
+      { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
+    ]);
+    return `<div class="stack">${tiles}<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
       ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${this.recurringCard()}${assistant}${journalCard}</div>`;
   }
 }

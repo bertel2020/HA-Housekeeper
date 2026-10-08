@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
+    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", cleanupSumSelected: "Ausgewählt", batterySumLimit: "unter {n} %", batterySumLowest: "Niedrigster Stand", recSumCosts: "Größter Platzbedarf", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -183,7 +183,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
+    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", cleanupSumSelected: "Selected", batterySumLimit: "below {n} %", batterySumLowest: "Lowest level", recSumCosts: "Largest footprint", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -1076,7 +1076,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.tablewrap.unref td:first-child{width:280px;max-width:280px}.tablewrap.unref .cut{display:block;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.tablewrap.unref td:first-child{width:auto;max-width:none}.tablewrap.unref .cut{max-width:none}}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){.tablewrap.lt,.tablewrap.inv{max-height:calc(100vh - 140px)}.tablewrap.lt thead th,.tablewrap.inv thead th{position:sticky;top:0;z-index:2}}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -1275,6 +1275,12 @@ class ListsMixin {
     return `<div class="tablewrap lt ${cls}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
 
+  // Name over id for a table cell: both are cut at the column width and shown in full in the tooltip (see showTip).
+  nameCell(name, id, tag = "div") {
+    const sub = id || "";
+    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}</${tag}>`;
+  }
+
   // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.
   ageCell(iso) {
     if (!iso) return `<span class="muted">–</span>`;
@@ -1453,12 +1459,12 @@ class OverviewMixin {
     ];
     this.ensureTrend();
     this.ensureBackup();
-    return `${this.todoCard()}<div class="summary">
+    return `<div class="summary">
       <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
-      <div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
+      ${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
-      <div class="stack">${this.trendCard()}${this.databaseCard()}${this.cleanupCard()}
+      <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
   }
 
@@ -1689,7 +1695,7 @@ class ChangesMixin {
       ["removedObjects", "mdi:minus-circle-outline", c.removed_objects],
     ];
     const total = sections.reduce((n, [, , part]) => n + part.total, 0);
-    const cards = sections.map(([label, icon, part]) => `<div class="card"><span class="tile ${part.total ? (label === "resolvedFindings" ? "ok" : label === "newFindings" ? "warn" : "") : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><div class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(part.total)}</strong></div></div>`).join("");
+    const cards = this.sumTiles(sections.map(([label, , part]) => ({ label: this.t(label), value: this.formatNumber(part.total), tone: !part.total ? "mute" : label === "resolvedFindings" ? "ok" : label === "newFindings" ? "warn" : "mute" })));
     const more = part => part.total > part.items.length ? `<p class="factnote">${this.t("moreItems", { count: part.total - part.items.length })}</p>` : "";
     const st = this.lvState("changes", "", "asc"), query = st.q.trim().toLowerCase();
     const typeOf = it => it.object_type || String(it.rule_id || "").split(".")[0];
@@ -1719,7 +1725,7 @@ class ChangesMixin {
       removedObjects: paged("removedObjects", c.removed_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")),
     };
     const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
-    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p><div class="summary changesum">${cards}</div>${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
+    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p>${cards}${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
   }
 }
 
@@ -2227,7 +2233,14 @@ class CleanupMixin {
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
     const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journal || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
-    return `<div class="stack"><div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
+    const tiles = this.sumTiles([
+      { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
+      removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
+      removal ? { label: this.t("waitingShort"), value: this.formatNumber(all.filter(r => !ready(r)).length), tone: "mute" } : null,
+      { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
+      { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
+    ]);
+    return `<div class="stack">${tiles}<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
       ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${this.recurringCard()}${assistant}${journalCard}</div>`;
   }
 }
@@ -2277,7 +2290,7 @@ class InventoryMixin {
     ]);
     return `<div class="stack">${tiles}<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter" aria-label="${this.t("type")}"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter" aria-label="${this.t("status")}"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select>
         <div class="mobsort"><select id="sortKey" aria-label="${this.t("sortBy")}">${[["name", "sortName"], ["type", "sortType"], ["status", "sortStatus"], ["since", "sortSince"]].map(([key, label]) => `<option value="${key}" ${this.sort === key ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select><button class="btn" id="sortDir" aria-label="${this.t("sortBy")}">${this.sortDir === "desc" ? "▼" : "▲"}</button></div></div>
-      <div class="tablewrap inv"><table><thead><tr>${this.th("name", "name")}${this.th("type", "type")}${this.th("status", "status")}<th>${this.t("reason")}</th>${this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><strong>${this.esc(item.name)}</strong><span class="id">${this.esc(item.object_id)}</span></span></span></td><td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td><td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td><td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
+      <div class="tablewrap inv"><table><thead><tr>${this.th("name", "name")}${this.th("type", "type")}${this.th("status", "status")}<th>${this.t("reason")}</th>${this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}${this.nameCell(item.name, item.object_id, "span")}</span></td><td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td><td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td><td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
       ${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(this.data.objects.length)} ${this.t("shown")}</span></div>`}</div>`;
   }
 
@@ -2581,7 +2594,7 @@ class UnusedMixin {
       return this.ageCell(new Date(ts * 1000).toISOString());
     };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", cell: o => `<strong>${this.esc(o.statistic_id)}</strong>${this.statSuccessorLine(o)}` },
+      { key: "id", label: "utStatId", dir: "asc", cell: o => `${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
@@ -2626,7 +2639,7 @@ class UnusedMixin {
     const pg = this.paginate("unreferenced", rows);
     const dash = `<span class="muted">–</span>`;
     const columns = [
-      { key: "name", label: "utName", dir: "asc", cell: o => `<div data-tip="${this.esc(o.name)}" data-tip-sub="${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
+      { key: "name", label: "utName", dir: "asc", cell: o => this.nameCell(o.name, o.object_id) },
       { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
       { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
       { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },
@@ -2661,7 +2674,13 @@ class UnusedMixin {
       filters: { area: (r, v) => this.areaName(r.item) === v }, sorts: this.batterySorts(), tie: r => r.item.object_id,
     });
     const limit = this.data.meta.low_battery_percent ?? 20;
-    const chips = `<div class="chips"><button class="chip ${this.batteryFilter === "low" ? "active" : ""}" data-battery-filter="low">${this.t("batteryLow")} (${low.length})</button><button class="chip ${this.batteryFilter === "low" ? "" : "active"}" data-battery-filter="all">${this.t("batteryAll")} (${all.length})</button></div>`;
+    const levels = all.map(r => r.level).filter(x => x !== null && x !== undefined);
+    const lowest = all.filter(r => r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
+    const chips = this.sumTiles([
+      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
+      { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: limit }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
+      lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc(lowest.item.name), tone: lowest.low ? "warn" : "mute" } : null,
+    ]);
     const row = ({ item, level, low: isLow }) => {
       const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
       const area = this.findObject(`area:${item.area_id || device?.area_id}`);
@@ -2669,7 +2688,7 @@ class UnusedMixin {
       return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
     };
     const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
-    return `<div class="panel">${chips}${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>`;
+    return `<div class="stack">${chips}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div></div>`;
   }
 }
 
@@ -3678,7 +3697,7 @@ class RunsMixin {
     this.lvState("runs", "runs", "desc");
     const pg = this.paginate("runsall", rows);
     const columns = [
-      { key: "name", label: "runsColName", dir: "asc", cell: row => `<strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span>` },
+      { key: "name", label: "runsColName", dir: "asc", cell: row => this.nameCell(row.name, row.entity_id) },
       { key: "runs", label: "runsColRuns", dir: "desc", cell: row => `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}` },
       { key: "errors", label: "runsColErrors", dir: "desc", cell: row => this.formatNumber(row.errors) },
       { key: "conditions", label: "runsColConditions", dir: "desc", cell: row => this.formatNumber(row.conditions) },
@@ -3804,10 +3823,11 @@ class StormsMixin {
     const bytes = db?.db_bytes ?? meta?.db_bytes;
     const perDay = db?.growth?.known ? db.growth.per_day : meta?.per_day;
     const keep = db?.keep_days ?? meta?.keep_days, purge = db?.auto_purge ?? meta?.auto_purge;
-    const loud = st?.entities?.[0];
+    const loud = st?.entities?.[0], topCost = this.costs?.entities?.[0];
     const tiles = this.sumTiles([
       st && { label: this.t("recSumRows"), value: this.formatNumber(st.per_day), sub: this.t(this.stormsWindow === 1 ? "relWindow1" : "relWindow7"), tone: "mute", tab: "recorder|load" },
       loud && { label: this.t("recSumLoudest"), value: this.esc(loud.name || loud.entity_id), sub: this.t("stormRows", { rows: this.formatNumber(loud.rows), perDay: this.formatNumber(loud.per_day) }), tone: "mute", tab: "recorder|load" },
+      topCost && { label: this.t("recSumCosts"), value: this.esc(topCost.name || topCost.entity_id), sub: this.t("recorderShare", { share: topCost.share }), tone: "mute", tab: "recorder|costs" },
       bytes !== null && bytes !== undefined && { label: this.t("recSumDb"), value: this.formatBytes(bytes), sub: perDay !== null && perDay !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }) : "", tone: dbTone, tab: "recorder|db" },
       keep && { label: this.t("dbOvKeep"), value: this.t("dbOvKeepDays", { n: this.formatNumber(keep) }), sub: purge === false ? this.t("recSumPurgeOff") : "", tone: purge === false ? "warn" : "mute", tab: "recorder|db" },
       (st || db) && { label: this.t("recSumFindings"), value: this.formatNumber(stormFindings + dbFindings), tone: stormTone === "red" || dbTone === "red" ? "red" : stormFindings + dbFindings ? "warn" : "ok", tab: `recorder|${stormFindings || !dbFindings ? "load" : "db"}` },
@@ -4196,6 +4216,7 @@ class LayoutMixin {
     const cells = tiles.filter(Boolean).map(t => {
       const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}`;
       if (t.filter !== undefined) return `<button class="sumtile ${t.tone || "mute"}" data-finding-filter="${this.esc(t.filter)}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
+      if (t.attr) return `<button class="sumtile ${t.tone || "mute"}" ${t.attr[0]}="${this.esc(t.attr[1])}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
       if (t.unref) return `<button class="sumtile ${t.tone || "mute"}" data-unref-tab="${t.unref}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
       if (t.inv !== undefined) return `<button class="sumtile ${t.tone || "mute"}" data-inv-filter="${this.esc(t.inv)}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
       return t.tab ? `<button class="sumtile ${t.tone || "mute"}" data-view-tab="${this.esc(t.tab)}">${inner}</button>` : `<div class="sumtile ${t.tone || "mute"}">${inner}</div>`;
@@ -4803,7 +4824,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
-    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip(); });
+    root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip(); const row = el.closest?.("tr"); if (row) { row.onfocus = () => this.showTip(el); row.onblur = () => this.hideTip(); } });
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
