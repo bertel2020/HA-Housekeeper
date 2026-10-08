@@ -65,7 +65,7 @@ class GraphMixin {
 
   // Columns from the outermost left level to the outermost right level, the object in the middle.
   graphLayout(model) {
-    const W = 176, H = 48, GAPX = 72, GAPY = 14;
+    const W = 196, H = 48, GAPX = 72, GAPY = 14;
     const columns = [...[...model.left].reverse(), [{ key: model.key, center: true }], ...model.right];
     const tallest = Math.max(...columns.map(c => c.length));
     const height = tallest * H + (tallest - 1) * GAPY;
@@ -103,8 +103,8 @@ class GraphMixin {
       const label = `${this.t(type)}: ${name}, ${status}${hit ? `, ${this.t("graphBreaks")}` : ""}`;
       return `<g class="${cls}" ${node.center ? "" : `data-graph="${this.esc(key)}" tabindex="0" role="button"`} aria-label="${this.esc(label)}" transform="translate(${x},${y})"><title>${this.esc(`${label} (${id})`)}</title>
         <rect width="${W}" height="${H}" rx="8"></rect><rect class="bar ${tone}" width="5" height="${H}" rx="2"></rect>
-        <text class="t1" x="14" y="18">${this.esc(this.graphClip(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""}`, 30))}</text>
-        <text x="14" y="36">${this.esc(this.graphClip(name, 24))}</text></g>`;
+        <text class="t1" x="14" y="18">${this.esc(this.graphClip(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""}`, 32))}</text>
+        <text x="14" y="36">${this.esc(this.graphClip(name, 21))}</text></g>`;
     }).join("");
     return `<div class="graphwrap"><svg class="graphsvg" role="group" aria-label="${this.esc(this.t("graphLabel", { name: item.name }))}" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}">
       <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${edgeSvg}${nodeSvg}</svg></div>`;

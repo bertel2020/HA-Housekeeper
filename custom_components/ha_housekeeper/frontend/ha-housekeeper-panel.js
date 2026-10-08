@@ -18,9 +18,9 @@ const TEXT = {
     lastScan: "Letzter Scan", evidence: "Nachweis", registry: "Registry",
     state: "Zustand & Attribute", incoming: "Eingehend", outgoing: "Ausgehend",
     graphMode: "Darstellung", graphList: "Liste", graphGraph: "Graph", graphDepth: "Ebenen", graphRelation: "Beziehungstyp", graphAllRelations: "Alle Beziehungen", graphConfidence: "Sicherheit", graphAllConf: "Alle Sicherheiten", graphCertainOnly: "Nur sichere",
-    graphImpact: "Was bricht beim Entfernen?", graphBreaks: "bricht", graphLabel: "Abhängigkeitsgraph von {name}", graphNodes: "{n} Objekte", graphMore: "Mehr anzeigen",
+    graphImpact: "Was bricht beim Entfernen?", graphBreaks: "bricht", graphLabel: "Abhängigkeitsgraph von {name}", graphNodes: "Objekte: {n}", graphMore: "Mehr anzeigen",
     graphLegend: "Durchgezogen: sicher · Gestrichelt: wahrscheinlich · Rot gepunktet: Zyklus · Roter Rahmen: bricht beim Entfernen · Gestrichelter Rahmen: Objekt fehlt.",
-    graphMissing: "{n} fehlende Ziele", graphProbable: "{n} wahrscheinliche Beziehungen", graphCycles: "{n} Zyklen", graphHidden: "{n} weitere ausgeblendet", graphHitsOutside: "{n} betroffene Objekte liegen außerhalb des Graphen (mehr Ebenen wählen)",
+    graphMissing: "Fehlende Ziele: {n}", graphProbable: "Wahrscheinliche Beziehungen: {n}", graphCycles: "Zyklen: {n}", graphHidden: "Ausgeblendet: {n}", graphHitsOutside: "{n} betroffene Objekte liegen außerhalb des Graphen (mehr Ebenen wählen)",
     graphHint: "Wähle ein Objekt aus, um seine direkten Beziehungen zu untersuchen.",
     select: "Objekt auswählen", firstObservation: "Erster durch Housekeeper bestätigter Zeitpunkt",
     entity: "Entity", device: "Gerät", config_entry: "Integration", area: "Bereich",
@@ -197,9 +197,9 @@ const TEXT = {
     lastScan: "Last scan", evidence: "Evidence", registry: "Registry",
     state: "State & attributes", incoming: "Incoming", outgoing: "Outgoing",
     graphMode: "View", graphList: "List", graphGraph: "Graph", graphDepth: "Levels", graphRelation: "Relation type", graphAllRelations: "All relations", graphConfidence: "Certainty", graphAllConf: "All certainties", graphCertainOnly: "Certain only",
-    graphImpact: "What breaks when removed?", graphBreaks: "breaks", graphLabel: "Dependency graph of {name}", graphNodes: "{n} objects", graphMore: "Show more",
+    graphImpact: "What breaks when removed?", graphBreaks: "breaks", graphLabel: "Dependency graph of {name}", graphNodes: "Objects: {n}", graphMore: "Show more",
     graphLegend: "Solid: certain · Dashed: probable · Red dotted: cycle · Red outline: breaks when removed · Dashed outline: object is missing.",
-    graphMissing: "{n} missing targets", graphProbable: "{n} probable relations", graphCycles: "{n} cycles", graphHidden: "{n} more hidden", graphHitsOutside: "{n} affected objects are outside the graph (choose more levels)",
+    graphMissing: "Missing targets: {n}", graphProbable: "Probable relations: {n}", graphCycles: "Cycles: {n}", graphHidden: "Hidden: {n}", graphHitsOutside: "{n} affected objects are outside the graph (choose more levels)",
     graphHint: "Select an object to inspect its direct relationships.",
     select: "Select object", firstObservation: "First confirmed observation by Housekeeper",
     entity: "Entity", device: "Device", config_entry: "Integration", area: "Area",
@@ -764,7 +764,7 @@ class StylesMixin {
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:calc(11px*var(--hk-fs,1))/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:calc(12px*var(--hk-fs,1));margin:12px 0 6px;color:var(--hk-muted)}
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
-      @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:calc(15px*var(--hk-fs,1))}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.lock{display:none}.side-foot{margin:0;padding:0;display:flex}.side nav{display:flex}.navgroup{display:flex;gap:4px}.navgroup+.navgroup{margin:0;padding-left:8px;border-left:1px solid var(--hk-border)}.navhead{display:none}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
+      @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:calc(15px*var(--hk-fs,1))}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.lock{display:none}.side-foot{margin:0;padding:0;display:flex}.side nav{display:flex}.navgroup{display:flex;gap:4px}.navgroup+.navgroup{margin:0;padding-left:8px;border-left:1px solid var(--hk-border)}.navhead{display:none}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       @media(max-width:520px){.summary{grid-template-columns:1fr}}
       /* Fixed sidebar: it stays in view while long content scrolls; Settings sits at the visible bottom edge. */
       .shell{align-items:start}
@@ -782,7 +782,7 @@ class StylesMixin {
       .nav.active{box-shadow:inset 3px 0 0 var(--hk-blue)}.nav{border-radius:10px}.nav em{font-weight:600}.nav.active em{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
       .panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
-      .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
+      .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
       .rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
@@ -1766,7 +1766,7 @@ class GraphMixin {
 
   // Columns from the outermost left level to the outermost right level, the object in the middle.
   graphLayout(model) {
-    const W = 176, H = 48, GAPX = 72, GAPY = 14;
+    const W = 196, H = 48, GAPX = 72, GAPY = 14;
     const columns = [...[...model.left].reverse(), [{ key: model.key, center: true }], ...model.right];
     const tallest = Math.max(...columns.map(c => c.length));
     const height = tallest * H + (tallest - 1) * GAPY;
@@ -1804,8 +1804,8 @@ class GraphMixin {
       const label = `${this.t(type)}: ${name}, ${status}${hit ? `, ${this.t("graphBreaks")}` : ""}`;
       return `<g class="${cls}" ${node.center ? "" : `data-graph="${this.esc(key)}" tabindex="0" role="button"`} aria-label="${this.esc(label)}" transform="translate(${x},${y})"><title>${this.esc(`${label} (${id})`)}</title>
         <rect width="${W}" height="${H}" rx="8"></rect><rect class="bar ${tone}" width="5" height="${H}" rx="2"></rect>
-        <text class="t1" x="14" y="18">${this.esc(this.graphClip(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""}`, 30))}</text>
-        <text x="14" y="36">${this.esc(this.graphClip(name, 24))}</text></g>`;
+        <text class="t1" x="14" y="18">${this.esc(this.graphClip(`${this.t(type)} · ${status}${hit ? ` · ${this.t("graphBreaks")}` : ""}`, 32))}</text>
+        <text x="14" y="36">${this.esc(this.graphClip(name, 21))}</text></g>`;
     }).join("");
     return `<div class="graphwrap"><svg class="graphsvg" role="group" aria-label="${this.esc(this.t("graphLabel", { name: item.name }))}" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}">
       <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${edgeSvg}${nodeSvg}</svg></div>`;

@@ -5,6 +5,7 @@ import test from "node:test";
 import vm from "node:vm";
 
 import { buildPanel } from "../scripts/build_panel.mjs";
+import { makeLoadFixture } from "../scripts/make_load_fixture.mjs";
 
 const SOURCE = new URL("../custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js", import.meta.url);
 
@@ -21,9 +22,9 @@ function loadPanel(extra = {}) {
     Blob: class { constructor(parts) { this.text = parts.join(""); } },
     URL: { createObjectURL: blob => { downloads.push(blob); return "blob:x"; }, revokeObjectURL() {} },
     document: { createElement: () => ({ click() {}, remove() {} }), body: { appendChild() {} } },
-    ...extra,
     URLSearchParams,
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, setTimeout: () => 0,
+    ...extra,
   };
   vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS;", context);
   return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, shadow };
@@ -1819,7 +1820,7 @@ test("the graph is an SVG with focusable nodes, edge directions and text for wha
   const device = /<path class="gedge" d="[^"]+" marker-end="url\(#hk-arrow\)"><title>device:D → entity:sensor.e/.test(html);
   const automation = /<path class="gedge" d="[^"]+" marker-start="url\(#hk-arrow\)"><title>automation:automation.a → entity:sensor.e/.test(html);
   assert.ok(device && automation, "arrows follow the direction of the data");
-  assert.ok(html.includes("1 missing targets") && html.includes("1 probable relations") && html.includes("1 cycles"));
+  assert.ok(html.includes("Missing targets: 1") && html.includes("Probable relations: 1") && html.includes("Cycles: 1"));
   assert.ok(html.includes("Solid: certain"));
 });
 
@@ -1893,4 +1894,108 @@ test("graph nodes open with Enter and Space and recentre the graph", () => {
   assert.ok(ev.prevented);
   assert.equal(el.graphSelected.object_id, "automation.a", "SVG nodes have no click(), so the handler is called directly");
   assert.equal(el.graphLimit, 40);
+});
+
+test("a large installation renders every view within generous time limits", () => {
+  const { el } = panel("en");
+  el.data = makeLoadFixture(8000);
+  const views = ["overview", "inventory", "findingsNav", "unreferenced", "cleanup", "graph", "changes", "batteries"];
+  const timings = {};
+  for (const view of views) {
+    el.view = view; el.pages = {};
+    const started = performance.now();
+    el.render();
+    timings[view] = performance.now() - started;
+  }
+  // Limits are far above what a run takes (a few milliseconds) so only a real regression trips them.
+  for (const [view, ms] of Object.entries(timings)) assert.ok(ms < 1500, `${view} took ${Math.round(ms)} ms`);
+  // The expensive parts are cached: a second render of the same list is cheap.
+  el.view = "inventory";
+  const again = performance.now();
+  el.render();
+  assert.ok(performance.now() - again < 500);
+  // Detail, relations and impact of one object stay fast with 8,000 objects and their edges.
+  const entity = el.data.objects.find(o => o.object_type === "device");
+  const started = performance.now();
+  el.selected = entity; el.details = new Map(); el.detailTab = "relations"; el.render();
+  el.detailTab = "overview"; el.render();
+  assert.ok(performance.now() - started < 1500, "an object page");
+  const graph = performance.now();
+  el.selected = null; el.view = "graph"; el.graphSelected = entity; el.prefs = { ...el.prefs, graphMode: "graph" }; el.graphDepth = 3; el.render();
+  assert.ok(performance.now() - graph < 1500, "the graph");
+});
+
+test("the whole confirmation flow works end to end against a scripted backend", async () => {
+  const sent = [], snapshots = [];
+  const action = { kind: "remove_entity", object_id: "sensor.old", name: "Old", verdict: "ok", executable: true, reasons: [], used_by: [] };
+  const plan = (status, extra = {}) => ({ plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status, executed: status !== "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, actions: [{ ...action, ...(extra.result ? { result: extra.result } : {}) }], ...(extra.plan || {}) });
+  const statuses = [
+    { progress: { running: true, phase: "backup" }, plan: plan("backup") },
+    { progress: { running: true, phase: "running", done: 0, total: 1 }, plan: plan("running", { plan: { backup: { job_id: "j1", at: "2026-10-07T10:01:00+00:00" } } }) },
+    { progress: { running: false }, plan: plan("verified", { result: { state: "done" }, plan: { backup: { job_id: "j1", at: "2026-10-07T10:01:00+00:00" }, verification: { ok: true, checks: [] } } }) },
+  ];
+  let undone = false;
+  const { el, shadow } = panel("en", { setTimeout: fn => { fn(); return 0; } });
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.old", name: "Old", status: "disabled" }] };
+  el._hass = { language: "en", callWS: async msg => {
+    sent.push(msg.type.replace("ha_housekeeper/", ""));
+    switch (msg.type) {
+      case "ha_housekeeper/plan_create": return plan("dry_run");
+      case "ha_housekeeper/plan_confirm": return { plan_id: "p1", token: "tok", execute: ["sensor.old"], needs_acknowledgement: [] };
+      case "ha_housekeeper/plan_execute": assert.equal(msg.token, "tok"); return { started: true };
+      case "ha_housekeeper/plan_status":
+        if (undone) return { progress: { running: false }, plan: plan("undone", { result: { state: "undone" }, plan: { backup: { job_id: "j1", at: "2026-10-07T10:01:00+00:00" }, verification: { ok: true, checks: [] } } }) };
+        return statuses.shift() || statuses.at(-1);
+      case "ha_housekeeper/plan_undo": undone = true; return { results: [{ object_id: "sensor.old", outcome: "undone" }], status: "undone" };
+      default: return el.data;
+    } } };
+  const render = el.render.bind(el);
+  el.render = () => {
+    render();
+    if (el.plan) snapshots.push({ steps: stepStates(el.planSteps(el.plan, Boolean(el.confirmation))), live: el.liveStatus(), scanDisabled: el.cleanupRunning() });
+  };
+  el.view = "cleanup"; el.cleanupKind = "remove_entity"; el.cleanupSel = new Set(["sensor.old"]);
+
+  await el.createPlan();
+  assert.equal(el.plan.status, "dry_run");
+  assert.ok(shadow.innerHTML.includes("data-plan-confirm"), "the plan asks for confirmation");
+  assert.equal(stepStates(el.planSteps(el.plan, false)), "Select:done Analysis:current Confirm:todo Backup:todo Run:todo Verify:todo");
+
+  await el.confirmPlan();
+  assert.equal(el.confirmation.token, "tok");
+  assert.ok(shadow.innerHTML.includes("data-confirm-word") && /data-plan-execute\s+disabled/.test(shadow.innerHTML), "running stays locked until the word is typed");
+  el.confirmWord = el.planWord(el.plan);
+  el.render();
+  assert.ok(!/data-plan-execute\s+disabled/.test(shadow.innerHTML));
+
+  await el.executePlan();
+  for (let i = 0; i < 100 && el._polling; i++) await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(el._polling, null, "polling ended");
+  assert.equal(el.plan.status, "verified");
+  const seen = snapshots.map(s => s.steps);
+  assert.ok(seen.includes("Select:done Analysis:done Confirm:done Backup:current Run:todo Verify:todo"), "the backup step was shown while it ran");
+  assert.ok(seen.some(s => s.includes("Backup:done Run:current")), "then the run");
+  assert.equal(seen.at(-1), "Select:done Analysis:done Confirm:done Backup:done Run:done Verify:done");
+  assert.ok(snapshots.some(s => s.live.includes("Backup running")) && snapshots.some(s => s.scanDisabled), "screen readers and the scan button follow the run");
+  assert.equal(JSON.stringify(sent.filter(type => type !== "plan_list").slice(0, 7)), JSON.stringify(["plan_create", "plan_confirm", "plan_execute", "plan_status", "plan_status", "plan_status", "inventory"]));
+  assert.ok(shadow.innerHTML.includes("data-undo-all") && shadow.innerHTML.includes("Created"), "undo and the backup record are offered");
+
+  await el.undoPlan();
+  assert.equal(el.plan.status, "undone");
+  assert.ok(el.undoMessage.includes("sensor.old: restored"));
+  assert.ok(!el.cleanupRunning());
+});
+
+test("on a phone the cause, the time and the plan steps stay visible", () => {
+  const { el } = panel("en");
+  const css = el.styles();
+  const phone = css.slice(css.indexOf("@media(max-width:860px){.brand"));
+  const hidden = [...phone.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(([, , body]) => /display:none/.test(body)).map(([, selector]) => selector.trim());
+  for (const kept of [".sumline", ".steps", ".step", ".planrow", ".msince", ".tab", ".tabs", ".graphbar"]) {
+    assert.ok(!hidden.some(selector => selector.split(",").some(part => part.trim() === kept || part.trim().startsWith(`${kept} `))), `${kept} is not hidden on a phone`);
+  }
+  assert.ok(phone.includes(".msince{display:inline}"), "the observed-since text shows in the list rows");
+  assert.ok(phone.includes(".planrow{grid-template-columns:auto minmax(0,1fr)}"), "plan rows give the text the full width");
+  // The table rows keep their reason and date columns as labelled lines instead of dropping them.
+  assert.ok(phone.includes(".tablewrap td[data-label]::before"));
 });
