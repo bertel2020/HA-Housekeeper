@@ -1,5 +1,121 @@
 # Changelog
 
+## 0.12.0 - 2026-10-08
+
+Die Ansicht Recorder, Suche und Ansichten, eine neu geordnete Übersicht und
+mehr Ehrlichkeit darüber, was gezählt wurde. Automatisiert gegen Home Assistant
+2026.8.3, 2026.9.4 und 2026.10.0b4 getestet (404 Python- und 166 Panel-Tests).
+Alles Neue liest nur; es wird nichts geändert oder gelöscht.
+
+### Neu
+
+- **Ansicht „Recorder“ (Betrieb):** Last, Recorder-Kosten und Datenbank stehen
+  zusammen in einer Ansicht; die Wartung zeigt nur noch Backup-Schutz und
+  Update-Preflight. Die Datenbankprüfung startet erst, wenn die Last berechnet
+  ist, damit nie zwei Recorder-Abfragen gleichzeitig laufen. Der alte Link
+  `?view=storms` öffnet die neue Ansicht.
+- **Suche im Menü oben:** Ein Feld findet Entities, Geräte, Integrationen,
+  Automationen und Skripte nach Name, ID, Plattform, Hersteller und Modell.
+- **Gespeicherte Ansichten:** Suche und Filter einer Liste lassen sich
+  benennen, später wieder anwenden und löschen (je Liste höchstens zehn,
+  lokal im Browser).
+- **Zuverlässigkeit im Vergleich:** Ein Chip stellt den Zeitraum dem davor
+  gegenüber und zeigt je Integration die Veränderung in Prozentpunkten.
+- **Übersicht neu geordnet:** Der Inventarstatus steht oben links in drei
+  Gruppen (Unauffällig, Prüfen, Problematisch) mit Anzahl und Anteil. Neu ist
+  die Karte **Datenbank** mit Größe, WAL-Datei und Wachstum pro Tag; gemessen
+  werden nur zwei Dateigrößen, die Tabellen werden nicht abgefragt.
+- **Entity-Eckdaten:** letzter Zustandswechsel, letzte Meldung und bei
+  Langzeitstatistik der letzte Statistik-Eintrag.
+- **Verwaiste Statistiken:** Jede Zeile nennt den letzten Eintrag, die Liste
+  lässt sich danach sortieren (neueste oder älteste zuerst).
+- **Gesagt, was fehlt:** Läufe, Last und instabile Entities nennen, was sie
+  nicht mitgezählt haben (ausgeblendet, deaktiviert, dauerhaft ausgefallen);
+  die Zuverlässigkeit nennt ihre Datenabdeckung; die Fußnoten nehmen ihre
+  Schwellen aus den tatsächlich verwendeten Werten. Funde der Läufe stehen in
+  drei Zeilen mit einem kurzen Hinweis. Die Einstellungen nennen die
+  Dateigröße der eigenen Speicher.
+
+### Geändert
+
+- **Automationsläufe:** Beim ersten Durchgang merkt Housekeeper nur die
+  vorhandenen Läufe und zählt nichts mit; die Zählung beginnt danach. Die
+  Zahl der gemerkten Läufe wächst mit dem Trace-Speicher einer Automation.
+- **Recorder-Abfragen:** Last, Datenbank, Zuverlässigkeit und Recorder-Kosten
+  teilen sich Zwischenspeicher und Sperre. Ein Abbruch im Browser stoppt eine
+  laufende Abfrage nicht, und eine zweite startet nie darauf. Ist der Recorder
+  beschäftigt, steht ein Hinweis statt einer zweiten Abfrage.
+- **Handy:** Gesundheitskarte in voller Breite, darunter die Kennzahlen 2×2;
+  die Läufe-Tabelle als Karten; Reiter der Einstellungen zeigen Rand und
+  Schatten beim Scrollen; Platzhalter statt Drehsymbol beim Laden.
+
+### Behoben
+
+- **Änderungen:** Die Balken der nicht gewählten Scans im Verlauf hatten keine
+  Farbe und wirkten leer.
+- **Speicher:** Beschädigte Dateien in `.storage` blockieren das Einrichten
+  nicht mehr: Läufe mit unlesbaren Tageszahlen und Scan-Verläufe mit
+  ungültigen Vergleichspunkten werden verworfen statt zu einem Absturz zu
+  führen.
+- **Läufe-Tabelle:** Die Spaltenbeschriftung auf dem Handy stimmte nur im
+  Inventar; die Tabelle zeigt jetzt „Fehler“.
+
+### English
+
+The Recorder view, search and saved views, a reordered overview and more
+honesty about what was counted. Automatically tested against Home Assistant
+2026.8.3, 2026.9.4 and 2026.10.0b4 (404 Python and 166 panel tests). Everything
+new only reads; nothing is changed or deleted.
+
+#### New
+
+- **Recorder view (Operation):** load, recorder costs and database are in one
+  view; Maintenance keeps only backup protection and the update preflight. The
+  database check starts when the load is calculated, so two recorder queries
+  never run at once. The old link `?view=storms` opens the new view.
+- **Search in the top bar:** one box finds entities, devices, integrations,
+  automations and scripts by name, id, platform, manufacturer and model.
+- **Saved views:** search and filters of a list can be named, applied later
+  and deleted (at most ten per list, stored in the browser).
+- **Reliability in comparison:** a chip compares the period with the one
+  before and shows the change per integration in percentage points.
+- **Overview reordered:** the inventory status is at the top left in three
+  groups (Unremarkable, Check, Problematic) with count and share. New is the
+  **Database** card with size, WAL file and growth per day; only two file
+  sizes are measured, the tables are not queried.
+- **Entity key facts:** last state change, last report and, with long-term
+  statistics, the last statistics entry.
+- **Orphaned statistics:** every row names the last entry and the list can be
+  sorted by it (newest or oldest first).
+- **Saying what is missing:** runs, load and unstable entities name what they
+  did not count (hidden, disabled, permanently failed); reliability names its
+  data coverage; the footnotes take their limits from the values actually
+  used. Run findings come in three lines with a short hint. Settings show the
+  file size of the own stores.
+
+#### Changed
+
+- **Automation runs:** the first pass only remembers the existing runs and
+  counts nothing; counting starts after it. The number of remembered runs
+  grows with the trace storage of an automation.
+- **Recorder queries:** load, database, reliability and recorder costs share
+  cache and lock. A browser abort does not stop a running query and a second
+  one never starts on top of it. While the recorder is busy a note appears
+  instead of a second query.
+- **Phone:** the health card in full width with the key figures 2×2 below; the
+  runs table as cards; the settings tabs show edge and shadow while scrolling;
+  placeholders instead of a spinner while loading.
+
+#### Fixed
+
+- **Changes:** the bars of the unselected scans in the history had no colour
+  and looked empty.
+- **Storage:** damaged files in `.storage` no longer block setup: runs with
+  unreadable day counts and scan histories with invalid comparison points are
+  discarded instead of crashing.
+- **Runs table:** the column labels on the phone were only right in the
+  inventory; the table now shows "Failures".
+
 ## 0.11.1 - 2026-10-08
 
 Drei Korrekturen zu 0.11.0.
