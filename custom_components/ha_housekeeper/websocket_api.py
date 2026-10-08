@@ -617,6 +617,25 @@ async def websocket_backup_health(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/events"})
+@callback
+def websocket_events(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Return Housekeeper's own event log (version changes, restarts); reads the store only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    connection.send_result(
+        msg["id"],
+        _versioned({"events": scanner.events.recent(), "heartbeat": scanner.events.heartbeat}),
+    )
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/backup_attest",
@@ -683,3 +702,4 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_backup_health)
     websocket_api.async_register_command(hass, websocket_reliability)
     websocket_api.async_register_command(hass, websocket_backup_attest)
+    websocket_api.async_register_command(hass, websocket_events)

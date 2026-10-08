@@ -43,6 +43,7 @@ from .dashboard_analysis import (
     extract_entity_references,
     extract_helper_references,
 )
+from .events import EventLog
 from .history import ScanHistory
 from .hygiene import (
     automation_hygiene_findings,
@@ -458,6 +459,7 @@ class InventoryScanner:
         self.journal = JournalStore(hass)
         self.preflight = PreflightStore(hass)
         self.attest = AttestStore(hass)
+        self.events = EventLog(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
         self._booting = False
@@ -490,6 +492,7 @@ class InventoryScanner:
         await self.journal.async_load()
         await self.preflight.async_load()
         await self.attest.async_load()
+        await self.events.async_load()
 
     def begin_boot(self) -> None:
         """Home Assistant is still booting: scans are preliminary until the warm-up is over."""
@@ -528,6 +531,7 @@ class InventoryScanner:
                 if not preliminary:
                     async_sync_issues(self.hass, snapshot["findings"])
                     self.history.record(snapshot)
+                    self._observe_versions(snapshot)
                 async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
@@ -538,6 +542,14 @@ class InventoryScanner:
                     last_error=f"{type(err).__name__}: {err}",
                 )
                 raise
+
+    def _observe_versions(self, snapshot: dict[str, Any]) -> None:
+        custom = {
+            item["domain"]: item["integration_version"]
+            for item in snapshot["objects"]
+            if item["object_type"] == "config_entry" and item.get("integration_version")
+        }
+        self.events.observe(HA_VERSION, custom, datetime.now(UTC))
 
     @property
     def snapshot(self) -> dict[str, Any] | None:

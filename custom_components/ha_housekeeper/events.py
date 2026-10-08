@@ -1,0 +1,148 @@
+"""Housekeeper's own event log: what Home Assistant does not keep.
+
+Home Assistant forgets when it was updated or restarted, and it holds only a handful of traces per
+automation. This small store keeps those facts so later views can show them: version changes,
+restarts and daily counters. It holds ids, versions, times and numbers only, never names of people,
+variables, payloads or error texts.
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
+
+from .const import EVENTS_STORAGE_KEY, STORAGE_VERSION
+
+SAVE_DELAY = 300  # seconds; coalesces writes, Home Assistant flushes the store when it stops
+MAX_EVENTS = 5000
+RETENTION_DAYS = 400
+EVENT_KINDS = ("ha_version", "entry_version", "start", "plan")
+LIST_LIMIT = 200  # events sent to the panel
+
+
+def _parse(value: Any) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
+def detect(
+    previous: dict[str, Any] | None,
+    ha_version: str,
+    custom_versions: dict[str, str],
+    now: datetime,
+) -> list[dict[str, Any]]:
+    """Return the version changes since ``previous`` (None = first observation, no events)."""
+    if not previous:
+        return []
+    found: list[dict[str, Any]] = []
+    stamp = now.isoformat()
+    if previous.get("ha") and previous["ha"] != ha_version:
+        found.append({"at": stamp, "kind": "ha_version", "from": previous["ha"], "to": ha_version})
+    known = previous.get("entries") or {}
+    for domain, version in sorted(custom_versions.items()):
+        if domain in known and known[domain] != version:
+            found.append(
+                {
+                    "at": stamp,
+                    "kind": "entry_version",
+                    "domain": domain,
+                    "from": known[domain],
+                    "to": version,
+                }
+            )
+    return found
+
+
+class EventLog:
+    """Persistent, bounded log of events and daily counters."""
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, EVENTS_STORAGE_KEY)
+        self.events: list[dict[str, Any]] = []
+        self.daily: dict[str, dict[str, int]] = {}
+        self.versions: dict[str, Any] = {}
+        self.heartbeat: str | None = None
+
+    async def async_load(self) -> None:
+        data = await self._store.async_load()
+        if not isinstance(data, dict):
+            return
+        events = data.get("events")
+        if isinstance(events, list):
+            self.events = [
+                e
+                for e in events
+                if isinstance(e, dict) and e.get("kind") in EVENT_KINDS and _parse(e.get("at"))
+            ][-MAX_EVENTS:]
+        daily = data.get("daily")
+        if isinstance(daily, dict):
+            for day, counters in daily.items():
+                if isinstance(counters, dict) and _parse(day):
+                    self.daily[day] = {
+                        k: v for k, v in counters.items() if isinstance(v, int) and v >= 0
+                    }
+        versions = data.get("versions")
+        if isinstance(versions, dict):
+            self.versions = versions
+        if _parse(data.get("heartbeat")):
+            self.heartbeat = data["heartbeat"]
+
+    def _save(self) -> None:
+        self._store.async_delay_save(self._data, SAVE_DELAY)
+
+    def _data(self) -> dict[str, Any]:
+        return {
+            "events": self.events,
+            "daily": self.daily,
+            "versions": self.versions,
+            "heartbeat": self.heartbeat,
+        }
+
+    def record(self, kind: str, now: datetime, **fields: Any) -> None:
+        """Append one event; the oldest fall out beyond the cap."""
+        if kind not in EVENT_KINDS:
+            raise ValueError(kind)
+        self.events.append({"at": now.isoformat(), "kind": kind, **fields})
+        del self.events[:-MAX_EVENTS]
+        self._save()
+
+    def record_start(self, now: datetime) -> None:
+        """Home Assistant started; the last heartbeat tells for how long it had been down."""
+        last = _parse(self.heartbeat)
+        fields: dict[str, Any] = {}
+        if last is not None and last <= now:
+            fields["down_seconds"] = int((now - last).total_seconds())
+        self.record("start", now, **fields)
+        self.beat(now)
+
+    def beat(self, now: datetime) -> None:
+        self.heartbeat = now.isoformat()
+        self._save()
+
+    def observe(self, ha_version: str, custom_versions: dict[str, str], now: datetime) -> None:
+        """Compare the installed versions with the last observation and log changes."""
+        for event in detect(self.versions, ha_version, custom_versions, now):
+            self.events.append(event)
+        del self.events[:-MAX_EVENTS]
+        self.versions = {"ha": ha_version, "entries": dict(custom_versions)}
+        self._save()
+
+    def count(self, day: str, key: str, amount: int = 1) -> None:
+        """Add to a daily counter; days older than the retention fall out."""
+        counters = self.daily.setdefault(day, {})
+        counters[key] = counters.get(key, 0) + amount
+        cutoff = (datetime.now(UTC) - timedelta(days=RETENTION_DAYS)).date().isoformat()
+        for old in [d for d in self.daily if d < cutoff]:
+            del self.daily[old]
+        self._save()
+
+    def recent(self, limit: int = LIST_LIMIT) -> list[dict[str, Any]]:
+        return list(reversed(self.events[-limit:]))

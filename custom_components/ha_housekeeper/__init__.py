@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -121,6 +121,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     @callback
     def _start_initial_scan(_: HomeAssistant) -> None:
+        # Once per Home Assistant run: a reload of this entry is not a restart.
+        if not hass.data[DOMAIN].get("start_logged"):
+            hass.data[DOMAIN]["start_logged"] = True
+            scanner.events.record_start(datetime.now(UTC))
         if booting:
             scanner.begin_warmup(WARMUP_SECONDS)
             entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 5, _final_scan))
@@ -134,6 +138,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(async_at_started(hass, _start_initial_scan))
+
+    @callback
+    def _heartbeat(_: Any) -> None:
+        scanner.events.beat(datetime.now(UTC))
+
+    entry.async_on_unload(async_track_time_interval(hass, _heartbeat, timedelta(minutes=5)))
 
     # Regular scans keep the comparison history, findings and hints current.
     interval_hours = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
