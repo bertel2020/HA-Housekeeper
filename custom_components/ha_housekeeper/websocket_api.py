@@ -34,8 +34,10 @@ from .meter import prepare_meter
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
+from .run_health import report as runs_report
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
+RUNS_TIMEOUT = 20
 RELIABILITY_TIMEOUT = 120  # seconds; the recorder query is slow on a large database
 
 
@@ -617,6 +619,28 @@ async def websocket_backup_health(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/automation_runs"})
+@websocket_api.async_response
+async def websocket_automation_runs(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Rate automation and script runs; reads trace heads and Housekeeper's own numbers."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        async with asyncio.timeout(RUNS_TIMEOUT):
+            result = await runs_report(scanner)
+    except Exception as err:
+        connection.send_error(msg["id"], "automation_runs_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/events"})
 @callback
 def websocket_events(
@@ -703,3 +727,4 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_reliability)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)
+    websocket_api.async_register_command(hass, websocket_automation_runs)

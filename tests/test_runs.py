@@ -217,3 +217,48 @@ async def test_bad_stored_data_is_dropped(hass: HomeAssistant, hass_storage) -> 
     assert list(item["days"]) == ["2026-10-08"]
     assert item["days"]["2026-10-08"]["s"] == {"action/0": 1}
     assert item["seen"] == ["r1"]
+
+
+async def test_the_websocket_rates_a_failing_automation_and_hides_secrets(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from custom_components.ha_housekeeper import async_setup
+    from custom_components.ha_housekeeper.const import DOMAIN
+    from custom_components.ha_housekeeper.inventory import InventoryScanner
+
+    assert await async_setup_component(hass, "trace", {})
+    assert await async_setup_component(
+        hass,
+        "automation",
+        {
+            "automation": [
+                {
+                    "id": "broken",
+                    "alias": "Broken",
+                    "trigger": {"platform": "event", "event_type": "demo_go"},
+                    "action": [
+                        {"service": "no_such_domain.explode", "data": {"x": "TOPSECRET-ERROR"}},
+                        {"delay": "00:10:00"},
+                    ],
+                }
+            ]
+        },
+    )
+    assert await async_setup(hass, {})
+    scanner = InventoryScanner(hass)
+    hass.data[DOMAIN]["scanner"] = scanner
+    await scanner.async_initialize()
+    assert await async_setup_component(hass, "websocket_api", {})
+    client = await hass_ws_client(hass)
+    for _ in range(3):
+        hass.bus.async_fire("demo_go")
+        await hass.async_block_till_done()
+    await client.send_json_auto_id({"type": "ha_housekeeper/automation_runs"})
+    reply = await client.receive_json()
+    assert reply["success"], reply
+    result = reply["result"]
+    assert result["schema"] == 1 and result["window_days"] == 7 and result["since"]
+    row = next(r for r in result["items"] if r["entity_id"] == "automation.broken")
+    assert row["runs"] == 3 and row["errors"] == 3 and row["name"] == "Broken"
+    assert {f["kind"] for f in row["findings"]} == {"failing", "long_wait"}
+    assert "TOPSECRET" not in json.dumps(result)

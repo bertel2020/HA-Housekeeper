@@ -830,6 +830,7 @@ async def test_replies_carry_the_api_schema_version(hass: HomeAssistant, hass_ws
         "backup_health": await reply({"type": "ha_housekeeper/backup_health"}),
         "reliability": await reply({"type": "ha_housekeeper/reliability"}),
         "events": await reply({"type": "ha_housekeeper/events"}),
+        "automation_runs": await reply({"type": "ha_housekeeper/automation_runs"}),
     }
     for name, result in results.items():
         assert result["schema"] == API_SCHEMA, name
@@ -900,6 +901,7 @@ async def test_backup_commands_are_refused_for_non_admins(
         {"type": "ha_housekeeper/backup_attest", "kind": "restore_test"},
         {"type": "ha_housekeeper/reliability"},
         {"type": "ha_housekeeper/events"},
+        {"type": "ha_housekeeper/automation_runs"},
     ):
         await client.send_json_auto_id(message)
         reply = await client.receive_json()

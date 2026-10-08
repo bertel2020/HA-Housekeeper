@@ -12,6 +12,7 @@ import statistics
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
+from .const import IGNORE_LABEL
 from .runs import (
     ALREADY,
     CONDITION,
@@ -330,3 +331,29 @@ def evaluate(
         "total": len(rows),
         "items": rows[:LIMIT],
     }
+
+
+async def report(scanner: Any) -> dict[str, Any]:
+    """Collect the newest runs, then rate everything; reads traces and the snapshot only."""
+    await scanner.runs.async_collect()
+    snapshot = await scanner.async_get_snapshot()
+    ignored = {f["object_id"] for f in snapshot.get("findings", []) if f.get("ignored")} | {
+        item["object_id"]
+        for item in snapshot["objects"]
+        if item["object_type"] == "entity" and IGNORE_LABEL in (item.get("labels") or [])
+    }
+    actions = {}
+    for obj in snapshot["objects"]:
+        if obj["object_type"] in ("automation", "script"):
+            details = scanner.get_details(obj["object_type"], obj["object_id"]) or {}
+            actions[obj["object_id"]] = details.get("actions")
+    updates = [e for e in scanner.events.events if e["kind"] in ("ha_version", "entry_version")]
+    return evaluate(
+        scanner.runs.items,
+        snapshot["objects"],
+        actions,
+        ignored,
+        updates,
+        datetime.now(UTC),
+        scanner.runs.since,
+    )
