@@ -33,7 +33,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.orphanLast = null; this.orphanLastLoading = false; this._orphanLastRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -528,7 +528,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
-    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });

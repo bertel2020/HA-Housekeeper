@@ -51,6 +51,35 @@ class UnusedMixin {
     return `<small>${this.t("statSuccessors")} ${links}</small>`;
   }
 
+  // When the statistic last received a value: read on the first visit of the list, never during a scan.
+  async loadOrphanLast(refresh = false) {
+    this.orphanLastLoading = true; this.render();
+    try { this.orphanLast = await this._hass.callWS({ type: "ha_housekeeper/orphan_last", refresh }); }
+    catch (_) { this.orphanLast = null; }
+    this.orphanLastLoading = false; this.render();
+  }
+
+  // Switching to the tab asks again after a failure or a busy recorder; rendering alone never loops.
+  retryOrphanLast() {
+    if (!this.orphanLast || this.orphanLast.busy) this._orphanLastRequested = false;
+  }
+
+  ensureOrphanLast() {
+    if (this.orphanLastLoading || this._orphanLastRequested || !this.data?.meta?.recorder_available) return;
+    this._orphanLastRequested = true;
+    setTimeout(() => this.loadOrphanLast(), 0);
+  }
+
+  orphanLastLine(o) {
+    if (this.orphanLastLoading && !this.orphanLast) return `<small>${this.t("lastEntryLoading")}</small>`;
+    if (!this.orphanLast?.available) return "";
+    if (this.orphanLast.busy) return `<small>${this.t("lastEntryBusy")}</small>`;
+    const ts = this.orphanLast.last?.[o.statistic_id];
+    if (ts === null || ts === undefined) return `<small>${this.t("lastEntry")}: ${this.t("lastEntryNone")}</small>`;
+    const iso = new Date(ts * 1000).toISOString();
+    return `<small>${this.t("lastEntry")}: ${this.esc(this.formatDate(iso))} · ${this.esc(this.relTime(iso))}</small>`;
+  }
+
   orphanStatsView() {
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
@@ -58,12 +87,14 @@ class UnusedMixin {
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
       { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
+      { key: "last", label: "sortLastEntry", dir: "desc", get: o => this.orphanLast?.last?.[o.statistic_id] },
     ];
+    this.ensureOrphanLast();
     const kinds = [...new Set(all.map(kind))];
     const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
     const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
-    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.orphanLastLine(o)}${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
   }

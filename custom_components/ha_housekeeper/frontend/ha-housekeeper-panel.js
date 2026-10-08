@@ -460,6 +460,7 @@ const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
   changesFiltered: "Der Filter blendet alle {n} Einträge dieses Abschnitts aus.",
+  lastEntry: "Letzter Eintrag", lastEntryNone: "kein Eintrag gefunden", lastEntryLoading: "Letzter Eintrag wird gelesen …", lastEntryBusy: "Der Recorder ist gerade beschäftigt, der letzte Eintrag fehlt noch.", sortLastEntry: "Letzter Eintrag",
   statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entity umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger sind Vermutungen aus Name und Einheit.",
   noBaselinePreliminary: "Der letzte Scan war vorläufig, weil Home Assistant gerade gestartet ist. Vorläufige Scans werden nicht gespeichert. Scanne in ein paar Minuten erneut, dann gibt es einen ersten Vergleichspunkt.", noBaselineOneScan: "Es gibt erst einen gespeicherten Scan. Ein Vergleich braucht zwei: Scanne nach Änderungen an deiner Installation erneut oder warte auf den automatischen Scan (alle {hours} Stunden). Jeder Scan wird als Vergleichspunkt gespeichert.", scanPoint: "Jetzt scannen und Vergleichspunkt setzen",
   releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
@@ -488,6 +489,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   changesFiltered: "The filter hides all {n} entries of this section.",
+  lastEntry: "Last entry", lastEntryNone: "no entry found", lastEntryLoading: "Reading the last entry …", lastEntryBusy: "The recorder is busy, the last entry is still missing.", sortLastEntry: "Last entry",
   statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are guesses from name and unit.",
   noBaselinePreliminary: "The last scan was preliminary because Home Assistant has just started. Preliminary scans are not saved. Scan again in a few minutes to get a first comparison point.", noBaselineOneScan: "There is only one saved scan so far. A comparison needs two: scan again after changing your installation or wait for the automatic scan (every {hours} hours). Every scan is saved as a comparison point.", scanPoint: "Scan now and set a comparison point",
   releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",
@@ -2368,6 +2370,35 @@ class UnusedMixin {
     return `<small>${this.t("statSuccessors")} ${links}</small>`;
   }
 
+  // When the statistic last received a value: read on the first visit of the list, never during a scan.
+  async loadOrphanLast(refresh = false) {
+    this.orphanLastLoading = true; this.render();
+    try { this.orphanLast = await this._hass.callWS({ type: "ha_housekeeper/orphan_last", refresh }); }
+    catch (_) { this.orphanLast = null; }
+    this.orphanLastLoading = false; this.render();
+  }
+
+  // Switching to the tab asks again after a failure or a busy recorder; rendering alone never loops.
+  retryOrphanLast() {
+    if (!this.orphanLast || this.orphanLast.busy) this._orphanLastRequested = false;
+  }
+
+  ensureOrphanLast() {
+    if (this.orphanLastLoading || this._orphanLastRequested || !this.data?.meta?.recorder_available) return;
+    this._orphanLastRequested = true;
+    setTimeout(() => this.loadOrphanLast(), 0);
+  }
+
+  orphanLastLine(o) {
+    if (this.orphanLastLoading && !this.orphanLast) return `<small>${this.t("lastEntryLoading")}</small>`;
+    if (!this.orphanLast?.available) return "";
+    if (this.orphanLast.busy) return `<small>${this.t("lastEntryBusy")}</small>`;
+    const ts = this.orphanLast.last?.[o.statistic_id];
+    if (ts === null || ts === undefined) return `<small>${this.t("lastEntry")}: ${this.t("lastEntryNone")}</small>`;
+    const iso = new Date(ts * 1000).toISOString();
+    return `<small>${this.t("lastEntry")}: ${this.esc(this.formatDate(iso))} · ${this.esc(this.relTime(iso))}</small>`;
+  }
+
   orphanStatsView() {
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
@@ -2375,12 +2406,14 @@ class UnusedMixin {
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
       { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
+      { key: "last", label: "sortLastEntry", dir: "desc", get: o => this.orphanLast?.last?.[o.statistic_id] },
     ];
+    this.ensureOrphanLast();
     const kinds = [...new Set(all.map(kind))];
     const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
     const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
-    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.orphanLastLine(o)}${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
   }
@@ -3559,7 +3592,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
+    this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.orphanLast = null; this.orphanLastLoading = false; this._orphanLastRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
     this.confirmWord = "";
@@ -4054,7 +4087,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
-    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });

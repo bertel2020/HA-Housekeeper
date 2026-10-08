@@ -782,6 +782,37 @@ test("orphaned statistics have their own tab with search, kind filter and energy
   assert.ok(shadow.innerHTML.includes("recorder is not available"));
 });
 
+test("orphaned statistics show their last entry and sort by it, oldest or newest first", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  const day = 86400, now = Date.now() / 1000;
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.type); return { available: true, busy: false, last: { "sensor.a": now - 40 * day, "sensor.b": now - 3 * day, "sensor.c": null } }; } };
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [], edges: [], findings: [], orphaned_statistics: ["a", "b", "c"].map(n => ({ statistic_id: `sensor.${n}`, unit: "%", has_sum: false, has_mean: true, in_energy: false })) };
+  el.view = "unreferenced"; el.unrefTab = "statistics";
+  el.render();
+  const loading = el.loadOrphanLast();
+  assert.ok(shadow.innerHTML.includes("Reading the last entry"));
+  await loading;
+  assert.deepEqual(calls, ["ha_housekeeper/orphan_last"]);
+  const order = () => [...shadow.innerHTML.matchAll(/<strong>(sensor\.[abc])<\/strong>/g)].map(m => m[1]);
+  el.lv.orphanstats.sort = "last"; el.lv.orphanstats.dir = "desc";
+  el.render();
+  assert.deepEqual(order(), ["sensor.b", "sensor.a", "sensor.c"]); // newest first, no entry last
+  assert.ok(shadow.innerHTML.includes("Last entry: ") && shadow.innerHTML.includes("no entry found") && shadow.innerHTML.includes("days ago"));
+  el.lv.orphanstats.dir = "asc";
+  el.render();
+  assert.deepEqual(order(), ["sensor.a", "sensor.b", "sensor.c"]); // oldest first, no entry still last
+  // A busy recorder shows a note and is not asked in a loop; opening the tab again retries.
+  el._hass.callWS = async msg => { calls.push(msg.type); return { available: true, busy: true, last: {} }; };
+  await el.loadOrphanLast();
+  assert.ok(shadow.innerHTML.includes("recorder is busy"));
+  const before = calls.length;
+  el.render();
+  assert.equal(calls.length, before);
+  el.retryOrphanLast();
+  assert.equal(el._orphanLastRequested, false);
+});
+
 test("changes can be searched and filtered by object type", () => {
   const { el, shadow } = panel("en");
   const part = items => ({ total: items.length, items });

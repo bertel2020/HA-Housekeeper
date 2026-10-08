@@ -33,6 +33,7 @@ from .exposure import exposure
 from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
+from .orphan_stats import orphan_last
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
@@ -635,6 +636,31 @@ async def websocket_db_health(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/orphan_last", vol.Optional("refresh", default=False): bool}
+)
+@websocket_api.async_response
+async def websocket_orphan_last(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """When each orphaned statistic last received a value. Read-only; kept for ten minutes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            result = await orphan_last(hass, snapshot, refresh=msg["refresh"])
+    except Exception as err:
+        connection.send_error(msg["id"], "orphan_last_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/exposure"})
 @websocket_api.async_response
 async def websocket_exposure(
@@ -819,6 +845,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_reliability)
     websocket_api.async_register_command(hass, websocket_storms)
     websocket_api.async_register_command(hass, websocket_db_health)
+    websocket_api.async_register_command(hass, websocket_orphan_last)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_events)
