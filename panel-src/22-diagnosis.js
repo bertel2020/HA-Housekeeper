@@ -42,7 +42,7 @@ class DiagnosisMixin {
         rows.push(this.check(t("runtimeState"), item.disabled_by ? "mute" : "red", t("noState"), item.disabled_by ? t("notExpected") : t("missing")));
       } else if (state === "unavailable") rows.push(this.check(t("runtimeState"), "red", state, t("unavailable")));
       else if (state === "unknown") rows.push(this.check(t("runtimeState"), "violet", state, t("unknown")));
-      else rows.push(this.check(t("runtimeState"), "ok", state, t("available")));
+      else rows.push(this.check(t("runtimeState"), "ok", item.unit ? `${state} ${item.unit}` : state, t("available")));
 
       const broken = integ?.broken ? { state: t(`cs_${integ.state}`) } : null;
       switch (item.reason) {

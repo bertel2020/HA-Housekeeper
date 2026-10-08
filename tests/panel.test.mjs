@@ -2257,3 +2257,16 @@ test("an automation's detail page gets a Runs tab only when runs were counted fo
   assert.ok(!shadow.innerHTML.includes('data-detail-tab="runs"'));
   assert.ok(shadow.innerHTML.includes('aria-selected="true"'), "falls back to an existing tab");
 });
+
+test("the runtime state shows its unit, but not for special states or entities without one", () => {
+  const { el } = panel("en");
+  const html = state => {
+    const entity = { object_type: "entity", object_id: "sensor.t", name: "T", status: "active", state, unit: "°C", disabled_by: null };
+    return el.diagnosisCard(entity);
+  };
+  assert.ok(html("23.5").includes("23.5 °C"));
+  assert.ok(!html("unavailable").includes("unavailable °C"));
+  const plain = el.diagnosisCard({ object_type: "entity", object_id: "light.a", name: "A", status: "active", state: "on", unit: null, disabled_by: null });
+  assert.ok(plain.includes(">on<") || plain.includes("on</"));
+  assert.ok(!plain.includes("on null") && !plain.includes("on undefined"));
+});
