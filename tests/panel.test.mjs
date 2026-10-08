@@ -790,6 +790,16 @@ test("an overdue scan shows a banner on the overview", () => {
   assert.ok(el.staleBanner().includes("9 days old"));
 });
 
+test("preliminary data during the Home Assistant start shows a banner on every page", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, preliminary: false } };
+  assert.equal(el.warmupBanner(), "");
+  assert.ok(!el.heading().includes("still starting"));
+  el.data = { ...DATA, meta: { ...DATA.meta, preliminary: true, warmup_seconds_left: 120 } };
+  assert.ok(el.warmupBanner().includes("still starting"));
+  assert.ok(el.heading().includes("still starting")); // part of the page heading, so on every view
+});
+
 test("a dry-run plan is confirmed, typed, executed with progress, and can be undone", async () => {
   const { el, shadow } = panel("en");
   el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "A", status: "orphaned" }, { object_type: "entity", object_id: "sensor.b", name: "B", status: "orphaned" }], edges: [], findings: [] };

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -456,6 +457,7 @@ class InventoryScanner:
         self.preflight = PreflightStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
+        self._warmup_until: float | None = None
         self._recorder_available = False
         self._lock = asyncio.Lock()
         self._snapshot: dict[str, Any] | None = None
@@ -484,16 +486,36 @@ class InventoryScanner:
         await self.journal.async_load()
         await self.preflight.async_load()
 
+    def begin_warmup(self, seconds: float) -> None:
+        """Treat scans as preliminary for the next ``seconds`` (Home Assistant just started)."""
+        self._warmup_until = time.monotonic() + seconds
+
+    @property
+    def warmup_seconds_left(self) -> int:
+        """Seconds until scans count again, 0 when the warm-up is over."""
+        if self._warmup_until is None:
+            return 0
+        return max(0, round(self._warmup_until - time.monotonic()))
+
+    @property
+    def warming_up(self) -> bool:
+        """Whether entity states may still be missing because Home Assistant is starting."""
+        return self.warmup_seconds_left > 0
+
     async def async_scan(self) -> dict[str, Any]:
         """Scan registries and states. Concurrent callers share serialized work."""
         async with self._lock:
             self.status.update(running=True, phase="registries", progress=5, last_error=None)
             try:
-                snapshot = await self._async_build_snapshot()
+                # Decided before the states are read: a scan that began during the warm-up stays
+                # preliminary even if the warm-up ends while it runs.
+                preliminary = self.warming_up
+                snapshot = await self._async_build_snapshot(preliminary)
                 self._details = _split_details(snapshot["objects"])
                 self._snapshot = snapshot
-                async_sync_issues(self.hass, snapshot["findings"])
-                self.history.record(snapshot)
+                if not preliminary:
+                    async_sync_issues(self.hass, snapshot["findings"])
+                    self.history.record(snapshot)
                 async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
@@ -529,7 +551,7 @@ class InventoryScanner:
         )
         return {} if known else None
 
-    async def _async_build_snapshot(self) -> dict[str, Any]:
+    async def _async_build_snapshot(self, preliminary: bool = False) -> dict[str, Any]:
         entity_registry = er.async_get(self.hass)
         device_registry = dr.async_get(self.hass)
         area_registry = ar.async_get(self.hass)
@@ -608,9 +630,11 @@ class InventoryScanner:
         tracked = [("entity", item) for item in entities] + [
             ("automation", item) for item in automations
         ]
-        await self.observations.async_update(
-            {f"{kind}:{item['object_id']}": item["status"] for kind, item in tracked}, observed_at
-        )
+        if not preliminary:
+            await self.observations.async_update(
+                {f"{kind}:{item['object_id']}": item["status"] for kind, item in tracked},
+                observed_at,
+            )
         for kind, item in tracked:
             item["status_since"] = self.observations.since(
                 f"{kind}:{item['object_id']}", item["status"]
@@ -674,6 +698,8 @@ class InventoryScanner:
             "meta": {
                 "scanned_at": observed_at.isoformat(),
                 "read_only": True,
+                "preliminary": preliminary,
+                "warmup_seconds_left": self.warmup_seconds_left,
                 "min_unavailable_days": self.min_unavailable_days,
                 "unused_automation_days": self.unused_automation_days,
                 "ignore_label": IGNORE_LABEL,

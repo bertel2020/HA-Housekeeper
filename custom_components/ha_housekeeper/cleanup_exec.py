@@ -262,6 +262,8 @@ class CleanupRunner:
     def confirm(self, plan_id: str, acknowledged: list[str], user_id: str | None) -> dict[str, Any]:
         """Select the actions that may run and hand out a short-lived confirmation token."""
         plan = self._plan(plan_id)
+        if self.scanner.warming_up:
+            raise CleanupError("warming_up")
         if plan["status"] != "dry_run" or plan.get("run"):
             raise CleanupError("plan_not_open")
         age = _now() - datetime.fromisoformat(plan["created_at"])
@@ -312,6 +314,8 @@ class CleanupRunner:
         if self.running:
             raise CleanupError("busy")
         plan = self._plan(plan_id)
+        if self.scanner.warming_up:
+            raise CleanupError("warming_up")
         saved = self._tokens.pop(plan_id, None)
         if saved is None or not secrets.compare_digest(saved[0], token) or saved[1] < _now():
             raise CleanupError("bad_token")

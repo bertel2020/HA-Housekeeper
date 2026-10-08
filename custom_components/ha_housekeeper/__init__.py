@@ -11,9 +11,9 @@ from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
@@ -33,6 +33,7 @@ from .const import (
     LOGO_URL,
     PANEL_ELEMENT,
     PANEL_URL,
+    WARMUP_SECONDS,
 )
 from .inventory import InventoryScanner
 from .issues import async_clear_issues
@@ -104,8 +105,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Scanning while Home Assistant is still starting would classify entities of
     # integrations that have not finished loading as orphaned and persist that.
+    # Home Assistant reports "started" while slow integrations are still adding entities, so the
+    # first scan after a boot is preliminary and a final one follows once things have settled.
+    booting = hass.state is not CoreState.running
+
+    @callback
+    def _final_scan(_: Any) -> None:
+        entry.async_create_background_task(
+            hass, _async_initial_scan(scanner), "HA Housekeeper final startup scan"
+        )
+
     @callback
     def _start_initial_scan(_: HomeAssistant) -> None:
+        if booting:
+            scanner.begin_warmup(WARMUP_SECONDS)
+            entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 5, _final_scan))
         entry.async_create_background_task(
             hass,
             _async_initial_scan(scanner),

@@ -226,6 +226,9 @@ async def websocket_plan_create(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
+    if scanner.warming_up:
+        connection.send_error(msg["id"], "warming_up", "Home Assistant is still starting")
+        return
     try:
         snapshot = await scanner.async_get_snapshot()
     except Exception as err:

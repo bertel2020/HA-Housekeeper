@@ -11,6 +11,12 @@ class OverviewMixin {
     return null;
   }
 
+  // Shown while the backend treats scans as preliminary because Home Assistant is still starting.
+  warmupBanner() {
+    if (!this.data?.meta?.preliminary) return "";
+    return `<div class="panel" style="margin-bottom:14px"><div class="row"><span class="tile warn"><ha-icon icon="mdi:timer-sand"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("warmupBanner"))}</strong></span></div></div>`;
+  }
+
   staleBanner() {
     const stale = this.staleScan();
     if (!stale) return "";

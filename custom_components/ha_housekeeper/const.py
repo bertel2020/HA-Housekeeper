@@ -38,4 +38,7 @@ OPTION_LIMITS: Final = {
     CONF_LOW_BATTERY_PERCENT: (1, 100),
     CONF_HISTORY_DAYS: (1, 365),
 }
+# While Home Assistant is still starting, entities of slow integrations have no state yet.
+# Scans in this window are preliminary: they change no stored observations, issues or history.
+WARMUP_SECONDS: Final = 300
 SIGNAL_SCAN_COMPLETE: Final = f"{DOMAIN}_scan_complete"

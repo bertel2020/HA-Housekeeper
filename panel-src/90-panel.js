@@ -80,6 +80,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   async load(fresh = false) {
     if (!this._hass || this.busy) return;
+    if (this._warmupTimer) window.clearTimeout(this._warmupTimer);
     this.busy = true; this.error = null; this.render();
     let progressTimer = null;
     if (fresh) progressTimer = window.setInterval(() => this.updateScanStatus(), 250);
@@ -96,6 +97,11 @@ class HAHousekeeperPanel extends HTMLElement {
       this.busy = false; this.render();
     }
     if (this.view === "changes" && this.data) this.loadCompare();
+    // Preliminary data: fetch the final scan once the backend's warm-up is over.
+    if (this.data?.meta?.preliminary) {
+      const wait = ((Number(this.data.meta.warmup_seconds_left) || 0) + 20) * 1000;
+      this._warmupTimer = window.setTimeout(() => this.load(), wait);
+    }
   }
 
   async updateScanStatus() {
@@ -222,7 +228,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>`;
+      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {

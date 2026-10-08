@@ -33,7 +33,8 @@ COUNT_KEYS = (
 
 def compute_values(snapshot: dict[str, Any] | None) -> dict[str, Any]:
     """Derive the sensor values from a snapshot; hidden findings never count."""
-    if snapshot is None:
+    # Counts taken while Home Assistant is still starting would be wrong; stay "unknown".
+    if snapshot is None or snapshot["meta"].get("preliminary"):
         return {}
     active = [f for f in snapshot["findings"] if not f.get("ignored")]
     by_class = Counter(f["classification"] for f in active)

@@ -596,3 +596,136 @@ async def test_a_refused_unload_keeps_the_runtime_objects(hass: HomeAssistant) -
 
     assert "scanner" in hass.data[DOMAIN]
     assert "ha-housekeeper" in hass.data["frontend_panels"]
+
+
+async def test_preliminary_scan_during_warmup_changes_no_stored_state(
+    hass: HomeAssistant,
+) -> None:
+    """While Home Assistant is starting, a scan neither records history nor raises repairs."""
+    from homeassistant.helpers import issue_registry as ir
+
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="w-1", suggested_object_id="late_sensor"
+    )
+    scanner = InventoryScanner(hass)
+    scanner.begin_warmup(300)
+    assert scanner.warming_up
+
+    snapshot = await scanner.async_scan()
+    assert snapshot["meta"]["preliminary"] is True
+    assert snapshot["meta"]["warmup_seconds_left"] > 0
+    assert scanner.observations.since("entity:sensor.late_sensor", "orphaned") is None
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is None
+    assert scanner.history.compare(snapshot, None)["baselines"] == []
+
+    scanner._warmup_until = 0.0  # the warm-up is over
+    assert not scanner.warming_up
+    snapshot = await scanner.async_scan()
+    assert snapshot["meta"]["preliminary"] is False
+    assert scanner.observations.since("entity:sensor.late_sensor", "orphaned") is not None
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "orphaned_entities") is not None
+
+
+async def test_a_brief_orphan_flash_does_not_reset_the_unavailable_period(
+    hass: HomeAssistant,
+) -> None:
+    """A long outage must keep its start when an early scan sees the state missing."""
+    from datetime import UTC, datetime, timedelta
+
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="w-2", suggested_object_id="long_gone"
+    )
+    scanner = InventoryScanner(hass)
+    long_ago = datetime.now(UTC) - timedelta(days=30)
+    await scanner.observations.async_update({"entity:sensor.long_gone": "unavailable"}, long_ago)
+    since = scanner.observations.since("entity:sensor.long_gone", "unavailable")
+
+    scanner.begin_warmup(300)
+    await scanner.async_scan()  # no state yet: classified orphaned, but only preliminarily
+    scanner._warmup_until = 0.0
+    hass.states.async_set(entry.entity_id, "unavailable")
+    snapshot = await scanner.async_scan()
+
+    item = next(o for o in snapshot["objects"] if o["object_id"] == "sensor.long_gone")
+    assert item["status"] == "unavailable"
+    assert item["status_since"] == since
+    assert any(f["object_id"] == "sensor.long_gone" for f in snapshot["findings"])
+
+
+async def test_sensors_stay_unknown_for_preliminary_snapshots(hass: HomeAssistant) -> None:
+    """Counts taken during the warm-up would be wrong, so the sensors do not show them."""
+    from custom_components.ha_housekeeper.sensor import compute_values
+
+    scanner = InventoryScanner(hass)
+    scanner.begin_warmup(300)
+    snapshot = await scanner.async_scan()
+    assert compute_values(snapshot) == {}
+    scanner._warmup_until = 0.0
+    assert compute_values(await scanner.async_scan())["findings"] == 0
+
+
+async def test_cleanup_is_locked_while_warming_up(hass: HomeAssistant, hass_ws_client) -> None:
+    """Plans are neither created nor confirmed from preliminary data."""
+    registry = er.async_get(hass)
+    orphan = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="w-3", suggested_object_id="locked"
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    scanner.begin_warmup(300)
+
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/plan_create",
+            "actions": [{"kind": "disable_entity", "object_id": orphan.entity_id}],
+        }
+    )
+    reply = await client.receive_json()
+    assert reply["success"] is False and reply["error"]["code"] == "warming_up"
+
+    scanner._warmup_until = 0.0
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/plan_create",
+            "actions": [{"kind": "disable_entity", "object_id": orphan.entity_id}],
+        }
+    )
+    plan = (await client.receive_json())["result"]
+    scanner.begin_warmup(300)
+    from custom_components.ha_housekeeper.cleanup_exec import CleanupError
+
+    with pytest.raises(CleanupError, match="warming_up"):
+        scanner.cleanup.confirm(plan["plan_id"], [], None)
+    with pytest.raises(CleanupError, match="warming_up"):
+        scanner.cleanup.start(plan["plan_id"], "token", None)
+
+
+async def test_a_boot_scan_is_followed_by_a_final_scan(hass: HomeAssistant) -> None:
+    """A set-up that happens while Home Assistant boots scans again once the warm-up is over."""
+    from datetime import timedelta
+
+    from homeassistant.core import CoreState
+    from homeassistant.util import dt as dt_util
+    from pytest_homeassistant_custom_component.common import async_fire_time_changed
+
+    from custom_components.ha_housekeeper.const import WARMUP_SECONDS
+
+    hass.set_state(CoreState.not_running)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    scanner = hass.data[DOMAIN]["scanner"]
+    assert scanner.snapshot is None  # nothing scans before Home Assistant has started
+
+    await hass.async_start()
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert scanner.snapshot["meta"]["preliminary"] is True
+
+    scanner._warmup_until = 0.0
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=WARMUP_SECONDS + 10))
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert scanner.snapshot["meta"]["preliminary"] is False

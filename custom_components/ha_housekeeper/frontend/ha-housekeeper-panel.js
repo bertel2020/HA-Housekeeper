@@ -100,6 +100,8 @@ const TEXT = {
     orphanStats: "Verwaiste Statistiken", unreferencedEntities: "Entities", noOrphanStats: "Keine verwaisten Statistiken.", noRecorder: "Der Recorder ist nicht verfügbar; es gibt keine Statistiken zu prüfen.",
     orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt. Housekeeper löscht nichts. Entfernen lässt sich so etwas in Home Assistant unter Entwicklerwerkzeuge → Statistiken.",
     kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
+    warmupBanner: "Home Assistant startet noch. Die Befunde sind vorläufig und werden nach dem Start neu erhoben; Aufräumen ist bis dahin gesperrt.",
+    err_warming_up: "Home Assistant startet noch. Bitte in wenigen Minuten erneut versuchen.",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
     kindDisable: "Deaktivieren (Quarantäne, umkehrbar)", kindRemove: "Entfernen (nach Quarantäne, mit Backup)", actionKind: "Aktion",
     cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts, bis du einen Plan ausdrücklich bestätigst. Deaktivieren ist umkehrbar und lässt Historie und Statistiken unberührt; Entfernen geht erst nach der Quarantäne und mit Backup.",
@@ -258,6 +260,8 @@ const TEXT = {
     orphanStats: "Orphaned statistics", unreferencedEntities: "Entities", noOrphanStats: "No orphaned statistics.", noRecorder: "The recorder is not available; there are no statistics to check.",
     orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity. Housekeeper deletes nothing. In Home Assistant such statistics can be removed under Developer tools → Statistics.",
     kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
+    warmupBanner: "Home Assistant is still starting. The findings are preliminary and will be collected again after startup; cleanup is locked until then.",
+    err_warming_up: "Home Assistant is still starting. Please try again in a few minutes.",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
     kindDisable: "Disable (quarantine, reversible)", kindRemove: "Remove (after quarantine, with backup)", actionKind: "Action",
     cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing until you explicitly confirm a plan. Disabling is reversible and leaves history and statistics untouched; removal only works after the quarantine and with a backup.",
@@ -784,6 +788,12 @@ class OverviewMixin {
     if (!Number.isFinite(hours)) return null;
     if (interval > 0 ? hours > interval * 1.5 + 1 : hours > 24 * 7) return { hours: Math.round(hours), interval };
     return null;
+  }
+
+  // Shown while the backend treats scans as preliminary because Home Assistant is still starting.
+  warmupBanner() {
+    if (!this.data?.meta?.preliminary) return "";
+    return `<div class="panel" style="margin-bottom:14px"><div class="row"><span class="tile warn"><ha-icon icon="mdi:timer-sand"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("warmupBanner"))}</strong></span></div></div>`;
   }
 
   staleBanner() {
@@ -2138,6 +2148,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   async load(fresh = false) {
     if (!this._hass || this.busy) return;
+    if (this._warmupTimer) window.clearTimeout(this._warmupTimer);
     this.busy = true; this.error = null; this.render();
     let progressTimer = null;
     if (fresh) progressTimer = window.setInterval(() => this.updateScanStatus(), 250);
@@ -2154,6 +2165,11 @@ class HAHousekeeperPanel extends HTMLElement {
       this.busy = false; this.render();
     }
     if (this.view === "changes" && this.data) this.loadCompare();
+    // Preliminary data: fetch the final scan once the backend's warm-up is over.
+    if (this.data?.meta?.preliminary) {
+      const wait = ((Number(this.data.meta.warmup_seconds_left) || 0) + 20) * 1000;
+      this._warmupTimer = window.setTimeout(() => this.load(), wait);
+    }
   }
 
   async updateScanStatus() {
@@ -2280,7 +2296,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<div class="heading"><div><p class="eyebrow">${eyebrow}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
       <div class="head-actions"><span class="safe-badge" title="${this.esc(this.t("safeBadgeHint"))}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("safeBadge")}</span>
-      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>`;
+      <button class="btn primary" data-action="scan" ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {
