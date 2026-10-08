@@ -1209,6 +1209,33 @@ test("the maintenance view loads the preflight and offers the recorder analysis 
   assert.ok(html.includes("Suggestion for configuration.yaml") && html.includes("- sensor.noisy") && !html.includes("- sensor.used"));
 });
 
+test("the recorder costs rank by the current rate, switch to the total and ask for a refresh", async () => {
+  const { el, shadow } = panel("en");
+  const costs = { ...COSTS, took_ms: 1234, cached: false, entities: [
+    { entity_id: "sensor.history", name: "History", states: 9000, per_day: 300, per_day_avg: 300, states_24h: 2, states_7d: 6, share: 75, used: 0, has_statistics: false, known: true, excluded: false, suggest_exclude: false },
+    { entity_id: "sensor.loud", name: "Loud", states: 600, per_day: 600, per_day_avg: 600, states_24h: 500, states_7d: 3000, share: 5, used: 0, has_statistics: false, known: true, excluded: false, suggest_exclude: true },
+  ] };
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return costs; } };
+  el.view = "maintenance";
+  await el.loadCosts();
+  assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/recorder_costs" }));
+  let html = shadow.innerHTML;
+  assert.ok(html.indexOf("sensor.loud") < html.indexOf("sensor.history"), "current rate first");
+  assert.ok(html.includes("24 h: 500 · 7 days: 3,000 · avg 600 per day") && html.includes("calculated in 1,234 ms"));
+  assert.ok(html.includes('data-cost-sort="recent"') && html.includes('aria-pressed="true"'));
+  const totalButton = { dataset: { costSort: "total" } };
+  el.shadowRoot.querySelectorAll = selector => (selector === "[data-cost-sort]" ? [totalButton] : []);
+  el.render(); // binds the button
+  totalButton.onclick();
+  html = shadow.innerHTML;
+  assert.ok(html.indexOf("sensor.history") < html.indexOf("sensor.loud"), "by the total in the database");
+  assert.ok(html.includes("24 h: 2 · 7 days: 6 · avg 300 per day"));
+  await el.loadCosts(true);
+  assert.equal(JSON.stringify(sent[1]), JSON.stringify({ type: "ha_housekeeper/recorder_costs", refresh: true }));
+  assert.ok(el.t("recorderCached", { ms: 5 }).includes("few minutes"));
+});
+
 test("after an update the preflight lists what is new since the saved state", async () => {
   const { el, shadow } = panel("en");
   const state = { ha_version: "2026.3.0", backup: { available: false }, repairs: [], failed_entries: [], broken: [], pending_updates: [] };
