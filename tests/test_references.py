@@ -613,3 +613,85 @@ async def test_a_rollback_that_fails_is_journalled_and_can_be_undone(
         outcome = await scanner.cleanup.undo(plan["plan_id"], None)
         assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
         assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD
+
+
+FORMATTED = """\
+# Heating, kept by hand
+- id: auto-1
+  alias: 'Heating'   # single quotes on purpose
+  trigger:
+    - platform: state
+      entity_id: sensor.old_temp
+
+
+  action: []
+- id: auto-2
+  alias: Unrelated
+  variables: &shared {limit: 5}
+  trigger:
+    - platform: state
+      entity_id: sensor.other
+  action:
+    - variables: *shared
+"""
+
+
+async def _replace_in_formatted_file(hass: HomeAssistant, text: str, newline: str | None = None):
+    make_entities(hass)
+    path = hass.config.path("automations.yaml")
+    with open(path, "w", encoding="utf-8", newline=newline) as handle:
+        handle.write(text)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    patches = (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    )
+    return path, scanner, patches
+
+
+@pytest.mark.parametrize("newline", [None, "\r\n"])
+async def test_undo_restores_the_file_byte_for_byte(hass: HomeAssistant, newline) -> None:
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED, newline)
+    original = Path(path).read_bytes()
+    with state, backup:
+        plan = await make_reference_plan(scanner, hass)
+        await run(scanner, plan, [OLD])
+        assert Path(path).read_bytes() != original
+        assert load_yaml(path)[0]["trigger"][0]["entity_id"] == NEW
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+    assert Path(path).read_bytes() == original  # comments, quotes, blank lines, anchors, line ends
+    assert plan["actions"][0]["result"]["sources"][0]["restored_as"] == "file"
+
+
+async def test_undo_after_an_edit_elsewhere_only_puts_back_the_item(hass: HomeAssistant) -> None:
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED)
+    with state, backup:
+        plan = await make_reference_plan(scanner, hass)
+        await run(scanner, plan, [OLD])
+        data = load_yaml(path)
+        data[1]["alias"] = "Edited by the user"
+        Path(path).write_text(dump(data), encoding="utf-8")
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+    data = load_yaml(path)
+    assert data[0]["trigger"][0]["entity_id"] == OLD and data[1]["alias"] == "Edited by the user"
+    assert plan["actions"][0]["result"]["sources"][0]["restored_as"] == "item"
+
+
+async def test_a_journal_without_the_old_file_still_undoes_the_item(hass: HomeAssistant) -> None:
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED)
+    with state, backup:
+        plan = await make_reference_plan(scanner, hass)
+        await run(scanner, plan, [OLD])
+        source = plan["actions"][0]["result"]["sources"][0]
+        del source["file_before"], source["file_after_hash"]  # as written by version 0.7.0
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+    assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD
+    assert source["restored_as"] == "item"

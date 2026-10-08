@@ -36,9 +36,11 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import copy
+import hashlib
 import inspect
 import secrets
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from homeassistant import loader
@@ -172,19 +174,51 @@ def _device_restore_data(entry: Any) -> dict[str, Any]:
     return data
 
 
-def _write_yaml_item(path: str, kind: str, ref: str, expected_hash: str, item: Any) -> str:
-    """Blocking: replace one item in a YAML file if it is still as it was read; return the old text."""
+MAX_FILE_BACKUP = 512 * 1024  # larger files are not kept whole in the journal
+
+
+def _bytes_hash(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()[:16]
+
+
+def _write_yaml_item(
+    path: str, kind: str, ref: str, expected_hash: str, item: Any
+) -> tuple[str, dict[str, Any]]:
+    """Blocking: replace one item in a YAML file if it is still as it was read.
+
+    Returns the old item as text and, for files up to ``MAX_FILE_BACKUP``, the whole old file
+    with the hash of the new one: writing the file again loses comments and formatting, so
+    only the old file itself puts it back exactly.
+    """
     data, _ = load_file(path)
     current = find_yaml_item(kind, data, ref)
     if current is None or yaml_hash(current) != expected_hash:
         raise StepAbort("source_changed")
     before = dump(current)
+    raw = Path(path).read_bytes()
     if kind == "script":
         data[ref] = item
     else:
         data[next(i for i, existing in enumerate(data) if existing is current)] = item
     write_utf8_file_atomic(path, dump(data))
-    return before
+    extra: dict[str, Any] = {}
+    if len(raw) <= MAX_FILE_BACKUP:
+        try:
+            extra = {
+                "file_before": raw.decode("utf-8"),
+                "file_after_hash": _bytes_hash(Path(path).read_bytes()),
+            }
+        except UnicodeDecodeError:
+            extra = {}
+    return before, extra
+
+
+def _restore_yaml_file(path: str, text_before: str, expected_hash: str) -> bool:
+    """Blocking: put the old file back byte for byte if it is still as Housekeeper wrote it."""
+    if _bytes_hash(Path(path).read_bytes()) != expected_hash:
+        return False
+    write_utf8_file_atomic(path, text_before.encode("utf-8"), mode="wb")
+    return True
 
 
 class CleanupRunner:
@@ -733,7 +767,7 @@ class CleanupRunner:
                 item, changes, _ = rewrite(loaded["item"], old, new)
                 if not changes:
                     raise StepAbort("source_changed")
-                before = await self._write_source(loaded, item, planned["hash"])
+                before, extra = await self._write_source(loaded, item, planned["hash"])
                 # Registered at once: from here on the source is changed, so every failure path
                 # must be able to put it back, even if reading it again fails.
                 source = {
@@ -744,6 +778,7 @@ class CleanupRunner:
                     "after_hash": None,
                     "change_count": len(changes),
                     "state": "written",
+                    **extra,
                 }
                 written.append(source)
                 # What Home Assistant now holds is the reference for a later undo: it may
@@ -778,8 +813,10 @@ class CleanupRunner:
                 {"before": action["fingerprint"], "sources": written, "cause": reason},
             )
 
-    async def _write_source(self, loaded: dict[str, Any], item: Any, expected_hash: str) -> Any:
-        """Write one rewritten configuration and return the text/value it replaces."""
+    async def _write_source(
+        self, loaded: dict[str, Any], item: Any, expected_hash: str
+    ) -> tuple[Any, dict[str, Any]]:
+        """Write one rewritten configuration; return the text/value it replaces and extras to keep."""
         fmt = loaded["format"]
         if fmt == "yaml":
             kind = loaded["type"]
@@ -789,7 +826,7 @@ class CleanupRunner:
         if fmt == "dashboard":
             before = copy.deepcopy(loaded["item"])
             await loaded["dashboard"].async_save(item)
-            return before
+            return before, {}
         from homeassistant.components.energy.data import async_get_manager
 
         manager = await async_get_manager(self.hass)
@@ -797,7 +834,7 @@ class CleanupRunner:
             {key: manager.data[key] for key in ENERGY_PARTS if manager.data and key in manager.data}
         )
         await manager.async_update(item)
-        return before
+        return before, {}
 
     async def _reload(self, loaded: dict[str, Any]) -> None:
         """Let Home Assistant read a rewritten file. Dashboards and Energy apply at once."""
@@ -812,6 +849,23 @@ class CleanupRunner:
             return "conflict_gone"
         # Without a verified hash (reading it after the write failed) the file as it is now
         # is the only reference there is.
+        if source.get("file_before") is not None:
+            try:
+                restored = await self.hass.async_add_executor_job(
+                    _restore_yaml_file,
+                    loaded["path"],
+                    source["file_before"],
+                    source["file_after_hash"],
+                )
+            except Exception:
+                return "conflict_unrestorable"
+            if restored:
+                source["state"] = "undone"
+                source["restored_as"] = "file"
+                # The old file is back; a failing reload is Home Assistant's to report.
+                with contextlib.suppress(Exception):
+                    await self._reload(loaded)
+                return "undone"
         expected = source["after_hash"] or loaded["hash"]
         if loaded["hash"] != expected:
             return "conflict_changed"
@@ -822,6 +876,7 @@ class CleanupRunner:
         except Exception:
             return "conflict_unrestorable"
         source["state"] = "undone"
+        source["restored_as"] = "item"  # the file changed since, so only this item was put back
         return "undone"
 
     async def _precheck(self, action: dict[str, Any], context: dict[str, Any]) -> str | None:
