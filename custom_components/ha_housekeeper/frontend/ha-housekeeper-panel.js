@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
+    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -183,7 +183,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
+    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -1076,7 +1076,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.unref td:first-child{width:280px;max-width:280px}.tablewrap.unref .cut{display:block;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.tablewrap.unref td:first-child{width:auto;max-width:none}.tablewrap.unref .cut{max-width:none}}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -2267,7 +2267,15 @@ class InventoryMixin {
       types: [...new Set(this.data.objects.map(x => x.object_type))].sort(),
       statuses: [...new Set(this.data.objects.map(x => x.status))].sort(),
     }));
-    return `<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter" aria-label="${this.t("type")}"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter" aria-label="${this.t("status")}"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select>
+    const all = this.data.objects, count = pred => all.filter(pred).length;
+    const typeTile = type => { const n = count(x => x.object_type === type); return n && { label: this.t(type), value: this.formatNumber(n), tone: "mute", inv: `${type}|`, active: this.typeFilter === type && !this.statusFilter }; };
+    const statusTile = (status, tone) => { const n = count(x => x.status === status); return n && { label: this.statusLabel(status), value: this.formatNumber(n), tone, inv: `|${status}`, active: this.statusFilter === status && !this.typeFilter }; };
+    const tiles = this.sumTiles([
+      { label: this.t("all"), value: this.formatNumber(all.length), tone: "mute", inv: "|", active: !this.typeFilter && !this.statusFilter },
+      typeTile("entity"), typeTile("device"), typeTile("automation"), typeTile("config_entry"),
+      statusTile("unavailable", "red"), statusTile("orphaned", "warn"),
+    ]);
+    return `<div class="stack">${tiles}<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter" aria-label="${this.t("type")}"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter" aria-label="${this.t("status")}"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select>
         <div class="mobsort"><select id="sortKey" aria-label="${this.t("sortBy")}">${[["name", "sortName"], ["type", "sortType"], ["status", "sortStatus"], ["since", "sortSince"]].map(([key, label]) => `<option value="${key}" ${this.sort === key ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select><button class="btn" id="sortDir" aria-label="${this.t("sortBy")}">${this.sortDir === "desc" ? "▼" : "▲"}</button></div></div>
       <div class="tablewrap inv"><table><thead><tr>${this.th("name", "name")}${this.th("type", "type")}${this.th("status", "status")}<th>${this.t("reason")}</th>${this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><strong>${this.esc(item.name)}</strong><span class="id">${this.esc(item.object_id)}</span></span></span></td><td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td><td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td><td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td><td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td></tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
       ${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(this.data.objects.length)} ${this.t("shown")}</span></div>`}</div>`;
@@ -2482,6 +2490,22 @@ class UnusedMixin {
     return `<div class="chips">${chip("entities", this.t("unreferencedEntities"), this.unreferencedRows().length)}${chip("statistics", this.t("orphanStats"), stats.length)}</div>`;
   }
 
+  // Key figures of both tabs; the two main ones switch the tab.
+  unrefTiles() {
+    const stats = this.data.orphaned_statistics || [], rows = this.unreferencedRows();
+    const top = list => { const counts = new Map(); list.forEach(x => x && counts.set(x, (counts.get(x) || 0) + 1)); return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]; };
+    const domain = top(rows.map(o => o.object_id.split(".")[0])), platform = top(rows.map(o => o.platform));
+    const withStats = rows.filter(o => o.has_statistics).length, inEnergy = stats.filter(o => o.in_energy).length;
+    return this.sumTiles([
+      { label: this.t("unreferencedEntities"), value: this.formatNumber(rows.length), tone: rows.length ? "warn" : "ok", unref: "entities", active: this.unrefTab !== "statistics" },
+      this.data.meta.recorder_available && rows.length ? { label: this.t("unrefSumStats"), value: this.formatNumber(withStats), sub: this.t("unrefSumStatsHint"), tone: "mute" } : null,
+      domain ? { label: this.t("unrefSumDomain"), value: this.esc(domain[0]), sub: this.formatNumber(domain[1]), tone: "mute" } : null,
+      platform ? { label: this.t("unrefSumPlatform"), value: this.esc(platform[0]), sub: this.formatNumber(platform[1]), tone: "mute" } : null,
+      { label: this.t("orphanStats"), value: this.formatNumber(stats.length), tone: stats.length ? "warn" : "ok", unref: "statistics", active: this.unrefTab === "statistics" },
+      inEnergy ? { label: this.t("unrefSumEnergy"), value: this.formatNumber(inEnergy), sub: this.t("unrefSumEnergyHint"), tone: "red", unref: "statistics" } : null,
+    ]);
+  }
+
   // Active entities that look like what an orphaned statistic became after a rename: same domain, same unit, similar name.
   statSuccessors(orphan) {
     const [domain, name = ""] = orphan.statistic_id.split(".");
@@ -2565,7 +2589,7 @@ class UnusedMixin {
     ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${table}${pg.footer}</div>`;
+    return `<div class="stack">${this.unrefTiles()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${table}${pg.footer}</div></div>`;
   }
 
   unreferencedView() {
@@ -2602,7 +2626,7 @@ class UnusedMixin {
     const pg = this.paginate("unreferenced", rows);
     const dash = `<span class="muted">–</span>`;
     const columns = [
-      { key: "name", label: "utName", dir: "asc", cell: o => `<strong>${this.esc(o.name)}</strong><span class="id">${this.esc(o.object_id)}</span>` },
+      { key: "name", label: "utName", dir: "asc", cell: o => `<div title="${this.esc(o.name)}&#10;${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
       { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
       { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
       { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },
@@ -2613,7 +2637,7 @@ class UnusedMixin {
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`;
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div>`;
+    return `<div class="stack">${this.unrefTiles()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
   }
 
   batterySorts() {
@@ -4172,6 +4196,8 @@ class LayoutMixin {
     const cells = tiles.filter(Boolean).map(t => {
       const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}`;
       if (t.filter !== undefined) return `<button class="sumtile ${t.tone || "mute"}" data-finding-filter="${this.esc(t.filter)}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
+      if (t.unref) return `<button class="sumtile ${t.tone || "mute"}" data-unref-tab="${t.unref}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
+      if (t.inv !== undefined) return `<button class="sumtile ${t.tone || "mute"}" data-inv-filter="${this.esc(t.inv)}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
       return t.tab ? `<button class="sumtile ${t.tone || "mute"}" data-view-tab="${this.esc(t.tab)}">${inner}</button>` : `<div class="sumtile ${t.tone || "mute"}">${inner}</div>`;
     }).join("");
     return cells ? `<div class="sumtiles" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
@@ -4763,6 +4789,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();
     });
+    root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.pages = {}; this.render(); });

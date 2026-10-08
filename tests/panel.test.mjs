@@ -767,7 +767,7 @@ test("orphaned statistics have their own tab with search, kind filter and energy
   el.unrefTab = "statistics";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Orphaned statistics (3)") && html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("Developer tools"));
+  assert.ok(html.includes("Orphaned statistics</span><b class=\"sumvalue\">3</b>") && html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("Developer tools"));
   assert.equal((html.match(/In the Energy dashboard/g) || []).length, 1);
   el.lv.orphanstats.f.kind = "kindMean";
   el.render();
@@ -829,7 +829,7 @@ test("unused entities are a table with columns that sort and filters for domain,
   for (const head of ["Name", "Domain", "Device", "Area", "Integration", "Last change", "Last report", "Observed since", "Statistics"]) assert.ok(html.includes(`>${head}`), head);
   assert.ok(html.includes("data-lsort=\"unreferenced|changed|desc\"") && html.includes('aria-sort="ascending"'));
   assert.ok(html.includes("3 days ago") && html.includes("30 days ago") && html.includes("Kitchen"));
-  const order = () => [...shadow.innerHTML.matchAll(/<span class="id">([a-z_.]+)<\/span>/g)].map(m => m[1]);
+  const order = () => [...shadow.innerHTML.matchAll(/<span class="id cut"[^>]*>([a-z_.]+)<\/span>/g)].map(m => m[1]);
   assert.equal(JSON.stringify(order()), JSON.stringify(["light.a", "sensor.b", "switch.c"]));
   el.lv.unreferenced.sort = "changed"; el.lv.unreferenced.dir = "desc"; el.render();
   assert.equal(JSON.stringify(order()), JSON.stringify(["light.a", "sensor.b", "switch.c"]), "newest first, unknown last");

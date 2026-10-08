@@ -28,6 +28,22 @@ class UnusedMixin {
     return `<div class="chips">${chip("entities", this.t("unreferencedEntities"), this.unreferencedRows().length)}${chip("statistics", this.t("orphanStats"), stats.length)}</div>`;
   }
 
+  // Key figures of both tabs; the two main ones switch the tab.
+  unrefTiles() {
+    const stats = this.data.orphaned_statistics || [], rows = this.unreferencedRows();
+    const top = list => { const counts = new Map(); list.forEach(x => x && counts.set(x, (counts.get(x) || 0) + 1)); return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]; };
+    const domain = top(rows.map(o => o.object_id.split(".")[0])), platform = top(rows.map(o => o.platform));
+    const withStats = rows.filter(o => o.has_statistics).length, inEnergy = stats.filter(o => o.in_energy).length;
+    return this.sumTiles([
+      { label: this.t("unreferencedEntities"), value: this.formatNumber(rows.length), tone: rows.length ? "warn" : "ok", unref: "entities", active: this.unrefTab !== "statistics" },
+      this.data.meta.recorder_available && rows.length ? { label: this.t("unrefSumStats"), value: this.formatNumber(withStats), sub: this.t("unrefSumStatsHint"), tone: "mute" } : null,
+      domain ? { label: this.t("unrefSumDomain"), value: this.esc(domain[0]), sub: this.formatNumber(domain[1]), tone: "mute" } : null,
+      platform ? { label: this.t("unrefSumPlatform"), value: this.esc(platform[0]), sub: this.formatNumber(platform[1]), tone: "mute" } : null,
+      { label: this.t("orphanStats"), value: this.formatNumber(stats.length), tone: stats.length ? "warn" : "ok", unref: "statistics", active: this.unrefTab === "statistics" },
+      inEnergy ? { label: this.t("unrefSumEnergy"), value: this.formatNumber(inEnergy), sub: this.t("unrefSumEnergyHint"), tone: "red", unref: "statistics" } : null,
+    ]);
+  }
+
   // Active entities that look like what an orphaned statistic became after a rename: same domain, same unit, similar name.
   statSuccessors(orphan) {
     const [domain, name = ""] = orphan.statistic_id.split(".");
@@ -111,7 +127,7 @@ class UnusedMixin {
     ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${table}${pg.footer}</div>`;
+    return `<div class="stack">${this.unrefTiles()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${table}${pg.footer}</div></div>`;
   }
 
   unreferencedView() {
@@ -148,7 +164,7 @@ class UnusedMixin {
     const pg = this.paginate("unreferenced", rows);
     const dash = `<span class="muted">–</span>`;
     const columns = [
-      { key: "name", label: "utName", dir: "asc", cell: o => `<strong>${this.esc(o.name)}</strong><span class="id">${this.esc(o.object_id)}</span>` },
+      { key: "name", label: "utName", dir: "asc", cell: o => `<div title="${this.esc(o.name)}&#10;${this.esc(o.object_id)}"><strong class="cut">${this.esc(o.name)}</strong><span class="id cut">${this.esc(o.object_id)}</span></div>` },
       { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
       { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
       { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },
@@ -159,7 +175,7 @@ class UnusedMixin {
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`;
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div>`;
+    return `<div class="stack">${this.unrefTiles()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
   }
 
   batterySorts() {
