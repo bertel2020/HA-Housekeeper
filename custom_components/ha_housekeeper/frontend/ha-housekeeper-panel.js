@@ -2376,6 +2376,52 @@ class CleanupMixin {
   }
 }
 
+// Texts for the second set of policy rules; merged into TEXT.
+Object.assign(TEXT.de, {
+  polRule_entity_id_suffix: "Entitäts-ID mit angehängter Zahl", polDesc_entity_id_suffix: "IDs, die auf _2, _3 … enden, ohne dass der Name die Zahl trägt. Meist ein Rest von Doppelungen oder Umbenennungen.",
+  polRule_default_name: "Standardname bei Automation oder Skript", polDesc_default_name: "Name wie „Neue Automation“ oder „Skript 3“. Ein sprechender Name spart später das Suchen.",
+  polRule_script_description: "Skript ohne Beschreibung", polDesc_script_description: "Skripte brauchen eine Beschreibung.",
+  polRule_script_label: "Skript ohne Label", polDesc_script_label: "Skripte sollen mindestens ein Label tragen. Geprüft werden nur Skripte mit Eintrag in der Entitäts-Registry.",
+  polRule_device_model: "Gerät ohne Hersteller oder Modell", polDesc_device_model: "Aktive Geräte (keine Dienste, keine Untergeräte), die nicht beides nennen. Das trifft meist Helfer und ältere Integrationen.",
+  polRule_area_empty: "Leerer Bereich", polDesc_area_empty: "Bereiche ohne Entität und ohne Gerät.",
+  polRule_label_unused: "Label ohne Zuordnung", polDesc_label_unused: "Labels, die an keiner Entität, keinem Gerät und keinem Bereich hängen. Das Label housekeeper_ignore zählt nicht.",
+  polRule_automation_error_handling: "Automation ohne Fehlerbehandlung (Hinweis)", polDesc_automation_error_handling: "Mindestens zwei Aktionen, keine Bedingung und weder continue_on_error noch Verzweigung. Eine Heuristik: Sie meldet nur, wo ein fehlschlagender Schritt die übrigen mitreißt.",
+  polRule_automation_triggers: "Automation mit sehr vielen Auslösern", polDesc_automation_triggers: "Mehr als 10 Auslöser sind schwer zu pflegen. Oft helfen mehrere kleine Automationen.",
+  polRule_automation_literal_ids: "Feste Entitäts-IDs in Templates (Hinweis)", polDesc_automation_literal_ids: "Templates, die eine Entität als Text nennen (zum Beispiel states('sensor.x')). Bei einer Umbenennung bricht das ohne Warnung. Eine Heuristik: Die Regel sieht nur Treffer in Anführungszeichen.",
+  polRule_automation_self_trigger: "Automation löst sich selbst aus (Hinweis)", polDesc_automation_self_trigger: "Ein Zustandsauslöser auf eine Entität, die dieselbe Automation ändert. Das kann eine Schleife sein, ist aber manchmal gewollt.",
+  polRule_turn_on_only: "Wird nur eingeschaltet (Hinweis)", polDesc_turn_on_only: "Schalter, Lichter, Ventilatoren und Helfer, die Automationen oder Skripte einschalten, ohne dass eine Konfiguration sie ausschaltet oder umschaltet. Ausschalten per Hand, Dashboard oder Sprache sieht die Regel nicht.",
+  polRule_exposure_unused: "Freigabe ohne Verwendung", polDesc_exposure_unused: "Für Assistenten oder Bridges freigegebene Entitäten, auf die keine Automation, kein Skript, keine Szene und kein Dashboard verweist.",
+  polRule_exposure_sensitive: "Sensible Entität freigegeben", polDesc_exposure_sensitive: "Schloss, Alarmanlage, Person, Standort-Tracker und Garagen-/Tor-Abdeckung für einen Assistenten oder eine Bridge freigegeben.",
+  polRule_battery_no_automation: "Batterie niedrig ohne Automation", polDesc_battery_no_automation: "Batterien unter der eingestellten Schwelle, auf die keine Automation verweist. Niemand wird benachrichtigt.",
+  polRule_recorder_unused: "Schreibt viel in den Recorder, wird nicht verwendet", polDesc_recorder_unused: "Entitäten mit mindestens 200 Änderungen pro Tag in den letzten Last-Zahlen, auf die nichts verweist. Kandidaten für den Recorder-Ausschluss. Die Regel startet keine Recorder-Abfrage.",
+  polRule_recorder_retention: "Lange Aufbewahrung bei großer Datenbank", polDesc_recorder_retention: "Der Recorder behält mehr als 30 Tage und die Datenbank ist größer als 2 GB. Die Regel liest die zuletzt berechneten Datenbank-Zahlen.",
+  polPendingLoad: "Noch nicht berechnet: Öffne Recorder → Last einmal, dann prüft die Regel diese Zahlen.", polPendingDb: "Noch nicht berechnet: Öffne Recorder → Datenbank einmal, dann prüft die Regel diese Zahlen.",
+  polAlso_automation_literal_ids: "Feste IDs: {ids}", polAlso_automation_self_trigger: "Ändert den eigenen Auslöser: {ids}", polAlso_exposure_unused: "Freigegeben für: {ids}", polAlso_exposure_sensitive: "Freigegeben für: {ids}",
+  polRetention: "Behält {days} Tage, Datenbank {size}", polTriggers: "{n} Auslöser",
+});
+Object.assign(TEXT.en, {
+  polRule_entity_id_suffix: "Entity id with a trailing number", polDesc_entity_id_suffix: "Ids that end in _2, _3 … without the name carrying the number. Mostly a leftover of duplicates or renames.",
+  polRule_default_name: "Default name on an automation or script", polDesc_default_name: "A name like “New automation” or “Script 3”. A telling name saves searching later.",
+  polRule_script_description: "Script without a description", polDesc_script_description: "Scripts need a description.",
+  polRule_script_label: "Script without a label", polDesc_script_label: "Scripts should carry at least one label. Only scripts with an entity registry entry are checked.",
+  polRule_device_model: "Device without manufacturer or model", polDesc_device_model: "Active devices (no services, no sub-devices) that do not name both. Mostly helpers and older integrations.",
+  polRule_area_empty: "Empty area", polDesc_area_empty: "Areas with no entity and no device.",
+  polRule_label_unused: "Label without use", polDesc_label_unused: "Labels that no entity, device or area carries. The label housekeeper_ignore does not count.",
+  polRule_automation_error_handling: "Automation without error handling (hint)", polDesc_automation_error_handling: "At least two actions, no condition, and neither continue_on_error nor a branch. A heuristic: it only shows where one failing step takes the others down.",
+  polRule_automation_triggers: "Automation with very many triggers", polDesc_automation_triggers: "More than 10 triggers are hard to maintain. Several small automations often help.",
+  polRule_automation_literal_ids: "Literal entity ids in templates (hint)", polDesc_automation_literal_ids: "Templates that name an entity as text (for example states('sensor.x')). A rename breaks them without a warning. A heuristic: the rule only sees hits in quotation marks.",
+  polRule_automation_self_trigger: "Automation triggers itself (hint)", polDesc_automation_self_trigger: "A state trigger on an entity the same automation changes. That can be a loop, but sometimes it is intended.",
+  polRule_turn_on_only: "Only ever turned on (hint)", polDesc_turn_on_only: "Switches, lights, fans and helpers that automations or scripts turn on while no configuration turns them off or toggles them. Turning off by hand, dashboard or voice is not seen.",
+  polRule_exposure_unused: "Exposure without use", polDesc_exposure_unused: "Entities exposed to assistants or bridges that no automation, script, scene or dashboard refers to.",
+  polRule_exposure_sensitive: "Sensitive entity exposed", polDesc_exposure_sensitive: "Lock, alarm panel, person, location tracker and garage/gate cover exposed to an assistant or a bridge.",
+  polRule_battery_no_automation: "Low battery without an automation", polDesc_battery_no_automation: "Batteries below the set threshold that no automation refers to. Nobody gets notified.",
+  polRule_recorder_unused: "Writes a lot to the recorder, unused", polDesc_recorder_unused: "Entities with at least 200 changes per day in the last load numbers that nothing refers to. Candidates for a recorder exclusion. The rule never starts a recorder query.",
+  polRule_recorder_retention: "Long retention with a big database", polDesc_recorder_retention: "The recorder keeps more than 30 days and the database is bigger than 2 GB. The rule reads the last calculated database numbers.",
+  polPendingLoad: "Not calculated yet: open Recorder → Load once, then the rule checks those numbers.", polPendingDb: "Not calculated yet: open Recorder → Database once, then the rule checks those numbers.",
+  polAlso_automation_literal_ids: "Literal ids: {ids}", polAlso_automation_self_trigger: "Changes its own trigger: {ids}", polAlso_exposure_unused: "Exposed to: {ids}", polAlso_exposure_sensitive: "Exposed to: {ids}",
+  polRetention: "Keeps {days} days, database {size}", polTriggers: "{n} triggers",
+});
+
 // InventoryMixin: methods of the panel element, mixed into the class in 99-register.js.
 class InventoryMixin {
   filtered() {
@@ -4338,7 +4384,8 @@ class PoliciesMixin {
   }
 
   polItemNote(item) {
-    if (item.also?.length) return `<small>${this.esc(this.t("polAlso", { ids: item.also.join(", ") }))}</small>`;
+    if (item.keep_days !== undefined) return `<small>${this.esc(this.t("polRetention", { days: item.keep_days, size: this.formatBytes(item.db_bytes) }))}</small>`;
+    if (item.also?.length) return `<small>${this.esc(this.t(TEXT[this.lang]?.[`polAlso_${item.rule}`] ? `polAlso_${item.rule}` : "polAlso", { ids: item.also.join(", ") }))}</small>`;
     if (item.rate !== undefined) return `<small>${this.esc(this.t("polRate", { n: this.formatNumber(item.rate) }))}</small>`;
     if (item.expected) return `<small>${this.esc(this.t("polExpected", { prefix: item.expected }))}</small>`;
     return "";
@@ -4367,7 +4414,7 @@ class PoliciesMixin {
   polItemRow(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : "polHiddenLabel")}</span>` : "";
     const button = item.by === "label" ? "" : `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "polShow" : "polHide")}</button>`;
-    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
+    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
   }
 
   // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
@@ -4376,7 +4423,8 @@ class PoliciesMixin {
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
-    const extra = rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : rule.enabled && rule.id === "state_rate" ? this.polLimitEditor(rule) : "";
+    const wait = rule.pending && rule.id !== "state_rate" ? `<p class="factnote">${this.t(rule.id === "recorder_retention" ? "polPendingDb" : "polPendingLoad")}</p>` : "";
+    const extra = (rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : rule.enabled && rule.id === "state_rate" ? this.polLimitEditor(rule) : "") + wait;
     return head + extra;
   }
 

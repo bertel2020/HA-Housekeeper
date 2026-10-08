@@ -14,6 +14,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
+from . import policy_rules as rules_more
 from .const import IGNORE_LABEL, POLICIES_STORAGE_KEY, STORAGE_VERSION
 from .hygiene import finding_key
 from .payloads import PoliciesResult
@@ -29,7 +30,27 @@ RULES = (
     "automation_label",
     "naming_scheme",
     "state_rate",
+    "entity_id_suffix",
+    "default_name",
+    "script_description",
+    "script_label",
+    "device_model",
+    "area_empty",
+    "label_unused",
+    "automation_error_handling",
+    "automation_triggers",
+    "automation_literal_ids",
+    "automation_self_trigger",
+    "turn_on_only",
+    "exposure_unused",
+    "exposure_sensitive",
+    "battery_no_automation",
+    "recorder_unused",
+    "recorder_retention",
 )
+# Rules that wait for numbers the Recorder views keep; they never start a recorder query themselves.
+NEEDS_LOAD = ("state_rate", "recorder_unused")
+NEEDS_DB = ("recorder_retention",)
 LIMIT_DEFAULT = 5000
 LIMIT_MIN = 100
 LIMIT_MAX = 100000
@@ -221,18 +242,48 @@ def evaluate(
     prefixes: dict[str, str] | None = None,
     rates: dict[str, int] | None = None,
     limit: int = LIMIT_DEFAULT,
+    extra: dict[str, Any] | None = None,
 ) -> PoliciesResult:
     """Violations per rule. ``labelled`` holds the object ids that carry the ignore label.
 
     ``automation_labels`` maps an automation to whether it carries any label (only automations in
-    the entity registry can carry one); ``prefixes`` is the naming scheme per domain.
+    the entity registry can carry one); ``prefixes`` is the naming scheme per domain. ``extra`` holds
+    what some rules need from outside the snapshot: ``used_labels``, ``exposed`` (entity id to the
+    assistants that reach it), ``battery_percent`` and ``db`` (the kept database numbers or ``None``).
     """
+    extra = extra or {}
     by_type: dict[str, list[dict[str, Any]]] = {}
     for item in snapshot["objects"]:
         by_type.setdefault(item["object_type"], []).append(item)
     entities = {i["object_id"]: i for i in by_type.get("entity", [])}
     devices = {i["object_id"]: i for i in by_type.get("device", [])}
+    automations = by_type.get("automation", [])
+    scripts = by_type.get("script", [])
+    labels_of = automation_labels or {}
+    used = rules_more.referenced(snapshot.get("edges", []))
+    exposed = extra.get("exposed") or {}
     found = {
+        "entity_id_suffix": lambda: rules_more.entity_id_suffix(entities),
+        "default_name": lambda: rules_more.default_name(automations, scripts),
+        "script_description": lambda: rules_more.script_description(scripts),
+        "script_label": lambda: rules_more.script_label(scripts, labels_of),
+        "device_model": lambda: rules_more.device_model(devices),
+        "area_empty": lambda: rules_more.area_empty(by_type.get("area", []), entities, devices),
+        "label_unused": lambda: rules_more.label_unused(
+            by_type.get("label", []), extra.get("used_labels") or set(), IGNORE_LABEL
+        ),
+        "automation_error_handling": lambda: rules_more.automation_error_handling(automations),
+        "automation_triggers": lambda: rules_more.automation_triggers(automations),
+        "automation_literal_ids": lambda: rules_more.automation_literal_ids(automations),
+        "automation_self_trigger": lambda: rules_more.automation_self_trigger(automations),
+        "turn_on_only": lambda: rules_more.turn_on_only(automations, scripts, entities),
+        "exposure_unused": lambda: rules_more.exposure_unused(exposed, entities, used),
+        "exposure_sensitive": lambda: rules_more.exposure_sensitive(exposed, entities),
+        "battery_no_automation": lambda: rules_more.battery_no_automation(
+            entities, used, extra.get("battery_percent", 20)
+        ),
+        "recorder_unused": lambda: rules_more.recorder_unused(entities, rates or {}, used),
+        "recorder_retention": lambda: rules_more.recorder_retention(extra.get("db") or {}),
         "entity_area": lambda: _entity_area(entities, devices),
         "device_area": lambda: _device_area(devices),
         "automation_description": lambda: _automation_description(by_type.get("automation", [])),
@@ -249,7 +300,7 @@ def evaluate(
         if rule not in enabled:
             rules.append({"id": rule, "enabled": False, "count": 0, "ignored": 0, "items": []})
             continue
-        if rule == "state_rate" and rates is None:
+        if (rule in NEEDS_LOAD and rates is None) or (rule in NEEDS_DB and extra.get("db") is None):
             # Never calculated: the rule waits for the load numbers instead of starting a recorder query.
             rules.append(
                 {
@@ -275,7 +326,11 @@ def evaluate(
                     "key": key,
                     "ignored": bool(hidden),
                     "by": "label" if item["object_id"] in labelled else "user" if hidden else None,
-                    **{k: item[k] for k in ("also", "expected", "rate") if k in item},
+                    **{
+                        k: item[k]
+                        for k in ("also", "expected", "rate", "keep_days", "db_bytes")
+                        if k in item
+                    },
                 }
             )
         items.sort(key=lambda i: (i["ignored"], i["name"].casefold(), i["object_id"]))
@@ -304,6 +359,7 @@ def policies(
     store: PolicyStore,
     ignored: Any,
     replies: Any = None,
+    battery_percent: int = 20,
 ) -> PoliciesResult:
     """The result for the panel: the rules, how many objects break each, and which are hidden."""
     from homeassistant.helpers import entity_registry as er
@@ -316,13 +372,13 @@ def policies(
         and IGNORE_LABEL in (item.get("labels") or [])
     }
     for item in snapshot["objects"]:
-        if item["object_type"] == "automation":
+        if item["object_type"] in ("automation", "script"):
             entry = registry.async_get(item["object_id"])
             if entry is not None and IGNORE_LABEL in entry.labels:
                 labelled.add(item["object_id"])
     with_labels = {}
     for item in snapshot["objects"]:
-        if item["object_type"] == "automation":
+        if item["object_type"] in ("automation", "script"):
             entry = registry.async_get(item["object_id"])
             if entry is not None:
                 with_labels[item["object_id"]] = bool(entry.labels)
@@ -341,7 +397,39 @@ def policies(
         store.prefixes,
         stored_rates(replies),
         store.limit,
+        _extra(hass, snapshot, store, registry, replies, battery_percent),
     )
+
+
+def _extra(
+    hass: HomeAssistant,
+    snapshot: dict[str, Any],
+    store: PolicyStore,
+    registry: Any,
+    replies: Any,
+    battery_percent: int,
+) -> dict[str, Any]:
+    """What some rules need from outside the snapshot; each part only when its rule is on."""
+    from homeassistant.helpers import area_registry as ar
+    from homeassistant.helpers import device_registry as dr
+
+    from .exposure import exposure
+
+    extra: dict[str, Any] = {"battery_percent": battery_percent}
+    if "label_unused" in store.enabled:
+        used = {label for entry in registry.entities.values() for label in entry.labels}
+        used |= {label for dev in dr.async_get(hass).devices.values() for label in dev.labels}
+        used |= {label for area in ar.async_get(hass).async_list_areas() for label in area.labels}
+        extra["used_labels"] = used
+    if store.enabled & {"exposure_unused", "exposure_sensitive"}:
+        result = exposure(hass, snapshot)
+        extra["exposed"] = {
+            row["entity_id"]: row["assistants"] for row in result["exposed_entities"]
+        }
+    kept = getattr(replies, "replies", {}).get("db_health")
+    if isinstance(kept, dict) and "db_bytes" in kept:
+        extra["db"] = kept
+    return extra
 
 
 def stored_rates(replies: Any) -> dict[str, int] | None:

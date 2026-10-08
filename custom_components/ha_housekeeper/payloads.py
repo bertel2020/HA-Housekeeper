@@ -167,6 +167,8 @@ class PolicyItem(TypedDict):
     also: NotRequired[list[str]]  # duplicate_name: the other entities with the same name
     expected: NotRequired[str]  # naming_scheme: the prefix the id should start with
     rate: NotRequired[int]  # state_rate: state changes per day
+    keep_days: NotRequired[int]  # recorder_retention: days the recorder keeps
+    db_bytes: NotRequired[int]  # recorder_retention: size of the database
 
 
 class PolicyRule(TypedDict):
@@ -175,7 +177,7 @@ class PolicyRule(TypedDict):
     count: int  # violations that are not hidden
     ignored: int
     items: list[PolicyItem]
-    pending: NotRequired[bool]  # state_rate: the load numbers were never calculated
+    pending: NotRequired[bool]  # the numbers the rule reads were never calculated
 
 
 class PoliciesResult(TypedDict):

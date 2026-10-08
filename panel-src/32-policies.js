@@ -31,7 +31,8 @@ class PoliciesMixin {
   }
 
   polItemNote(item) {
-    if (item.also?.length) return `<small>${this.esc(this.t("polAlso", { ids: item.also.join(", ") }))}</small>`;
+    if (item.keep_days !== undefined) return `<small>${this.esc(this.t("polRetention", { days: item.keep_days, size: this.formatBytes(item.db_bytes) }))}</small>`;
+    if (item.also?.length) return `<small>${this.esc(this.t(TEXT[this.lang]?.[`polAlso_${item.rule}`] ? `polAlso_${item.rule}` : "polAlso", { ids: item.also.join(", ") }))}</small>`;
     if (item.rate !== undefined) return `<small>${this.esc(this.t("polRate", { n: this.formatNumber(item.rate) }))}</small>`;
     if (item.expected) return `<small>${this.esc(this.t("polExpected", { prefix: item.expected }))}</small>`;
     return "";
@@ -60,7 +61,7 @@ class PoliciesMixin {
   polItemRow(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : "polHiddenLabel")}</span>` : "";
     const button = item.by === "label" ? "" : `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "polShow" : "polHide")}</button>`;
-    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
+    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
   }
 
   // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
@@ -69,7 +70,8 @@ class PoliciesMixin {
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
-    const extra = rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : rule.enabled && rule.id === "state_rate" ? this.polLimitEditor(rule) : "";
+    const wait = rule.pending && rule.id !== "state_rate" ? `<p class="factnote">${this.t(rule.id === "recorder_retention" ? "polPendingDb" : "polPendingLoad")}</p>` : "";
+    const extra = (rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : rule.enabled && rule.id === "state_rate" ? this.polLimitEditor(rule) : "") + wait;
     return head + extra;
   }
 

@@ -690,7 +690,14 @@ async def websocket_policies(
         return
     try:
         snapshot = await scanner.async_get_snapshot()
-        result = policies(hass, snapshot, scanner.policies, scanner.ignored, scanner.replies)
+        result = policies(
+            hass,
+            snapshot,
+            scanner.policies,
+            scanner.ignored,
+            scanner.replies,
+            scanner.low_battery_percent,
+        )
     except Exception as err:
         connection.send_error(msg["id"], "policies_failed", f"{type(err).__name__}: {err}")
         return
