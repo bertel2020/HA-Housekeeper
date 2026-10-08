@@ -828,6 +828,36 @@ test("the journal lists short entries and opening one fetches the plan", async (
   assert.ok(shadow.innerHTML.includes("sensor.a"));
 });
 
+test("on small screens reason and observed-since stay visible and the list can still be sorted", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA };
+  el.view = "inventory";
+  el.render();
+  let html = shadow.innerHTML;
+  for (const label of ["Type", "Status", "Reason", "Observed since"]) assert.ok(html.includes(`data-label="${label}"`), label);
+  const mobile = html.slice(html.indexOf("@media(max-width:860px)"), html.indexOf("@media(max-width:520px)"));
+  assert.ok(!/(th|td):nth-child\((4|5)\)\{display:none/.test(mobile), "reason and since are not hidden");
+  assert.ok(mobile.includes("td[data-label]::before") && mobile.includes(".tablewrap thead{display:none}") && mobile.includes(".mobsort{display:flex"));
+  assert.ok(html.includes('id="sortKey"') && html.includes('id="sortDir"'));
+  // the sort controls drive the same state as the table headers
+  const key = { value: "since" }, dir = {};
+  el.shadowRoot.querySelector = selector => (selector === "#sortKey" ? key : selector === "#sortDir" ? dir : null);
+  el.render();
+  key.onchange();
+  assert.equal(el.sort, "since");
+  const before = el.sortDir;
+  dir.onclick();
+  assert.notEqual(el.sortDir, before);
+  // findings carry the date in the text line for the small layout
+  el.view = "findingsNav";
+  el.shadowRoot.querySelector = () => null;
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes('class="msince"') && html.includes("Detected since"));
+  assert.ok(html.includes(".msince{display:none}") && html.includes(".msince{display:inline}"));
+  assert.ok(mobile.includes(".row-text small{white-space:normal;overflow:visible"), "long reasons wrap instead of being cut off");
+});
+
 test("the scan button is disabled while a plan runs", () => {
   const { el } = panel("en");
   el.data = { ...DATA };
