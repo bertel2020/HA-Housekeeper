@@ -75,8 +75,7 @@ const NAV_GROUPS = [
   ["navGroupOverview", ["overview", "findingsNav", "changes"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph"]],
-  ["navGroupMaintain", ["cleanup", "maintenance", "exposure", "policies"]],
-  ["navGroupSpecial", ["batteries", "unreferenced"]],
+  ["navGroupMaintain", ["cleanup", "unreferenced", "batteries", "policies", "exposure", "maintenance"]],
 ];
 const NAV_ICONS = Object.fromEntries(NAV);
 

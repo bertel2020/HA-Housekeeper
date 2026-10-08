@@ -1095,7 +1095,7 @@ test("the heading names the menu group and shows how old the last scan is", () =
   assert.equal(eyebrow("findingsNav"), "Overview");
   assert.equal(eyebrow("reliability"), "Operation");
   assert.equal(eyebrow("cleanup"), "Maintain");
-  assert.equal(eyebrow("batteries"), "Special views");
+  assert.equal(eyebrow("batteries"), "Maintain");
   assert.equal(eyebrow("settings"), el.t("title"));
   assert.ok(!el.heading().includes("Root-cause"));
   assert.ok(el.heading().includes("Last scan: 3 h ago"));
@@ -1746,9 +1746,9 @@ test("the navigation groups every view once, with settings at the foot", () => {
   el.render();
   const html = shadow.innerHTML;
   const menus = [...html.matchAll(/<div class="navmenu[^"]*"><button[^>]*data-menu="([^"]+)"/g)].map(m => m[1]);
-  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupOperation", "navGroupExplore", "navGroupMaintain", "navGroupSpecial"]), "four menus after the direct entries");
+  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupOperation", "navGroupExplore", "navGroupMaintain"]), "three menus after the direct entries");
   assert.ok(html.includes('<nav class="topnav" id="topnav" aria-label="Main navigation">'));
-  const order = ["overview", "findingsNav", "changes", "inventory", "cleanup", "maintenance", "batteries", "settings"].map(v => html.indexOf(`data-view="${v}"`));
+  const order = ["overview", "findingsNav", "changes", "inventory", "cleanup", "unreferenced", "batteries", "maintenance", "settings"].map(v => html.indexOf(`data-view="${v}"`));
   assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), "views keep their order and settings comes last");
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1, "one current entry");
   assert.ok(/data-view="cleanup"\s+aria-current="page"/.test(html));
