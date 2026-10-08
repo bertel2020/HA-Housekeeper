@@ -59,6 +59,7 @@ from .ignored import IgnoreStore
 from .issues import async_sync_issues
 from .lifecycle import LifecycleStore
 from .maintenance import PreflightStore
+from .notify import NotifyStore, async_announce
 from .observations import ObservationStore
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
 from .policies import PolicyStore
@@ -503,6 +504,7 @@ class InventoryScanner:
         self.events = EventLog(hass)
         self.lifecycle = LifecycleStore(hass)
         self.window = WindowStore(hass)
+        self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
@@ -541,6 +543,7 @@ class InventoryScanner:
         await self.events.async_load()
         await self.lifecycle.async_load()
         await self.window.async_load()
+        await self.notify.async_load()
         await self.runs.async_load()
 
     def begin_boot(self) -> None:
@@ -579,6 +582,7 @@ class InventoryScanner:
                 self._snapshot = snapshot
                 if not preliminary:
                     async_sync_issues(self.hass, snapshot["findings"])
+                    async_announce(self.hass, self.notify.new(snapshot["findings"]))
                     self.history.record(snapshot)
                     self._observe_versions(snapshot)
                 async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
@@ -788,6 +792,7 @@ class InventoryScanner:
                 "unused_automation_days": self.unused_automation_days,
                 "ignore_label": IGNORE_LABEL,
                 "version": self.version,
+                "notify": self.notify.enabled,
                 "recorder_available": self._recorder_available,
                 "orphaned_statistics": len(orphaned_statistics),
                 "quarantined": len(quarantine),

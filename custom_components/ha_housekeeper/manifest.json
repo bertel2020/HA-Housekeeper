@@ -6,7 +6,10 @@
     "recorder",
     "energy",
     "backup",
-    "trace"
+    "trace",
+    "automation",
+    "script",
+    "blueprint"
   ],
   "codeowners": [
     "@bertel2020"

@@ -2133,6 +2133,27 @@ test("the sort and filter of a list come back, the search text does not; finding
   assert.equal(el.exportRows().length, 1);
 });
 
+test("blueprints tab, notification switch, diagnostics without names and the weekly report", async () => {
+  const { el, shadow, downloads } = panel("en");
+  el.view = "maintenance"; el.viewTab = { maintenance: "blueprints" };
+  el.blueprints = { available: true, unused: 1, missing: 1, broken: 0, domains: [
+    { domain: "automation", total: 2, unused: [{ path: "a/idle.yaml", name: "Idle" }], missing: [{ path: "a/gone.yaml", users: [{ id: "automation.c", name: "C" }], count: 1 }], broken: [] },
+    { domain: "script", total: 0, unused: [], missing: [], broken: [] }] };
+  el._blueprintsRequested = true;
+  el.render();
+  assert.ok(shadow.innerHTML.includes("a/gone.yaml") && shadow.innerHTML.includes("Idle") && shadow.innerHTML.includes("data-bp-refresh"));
+  el.view = "settings"; el.settingsTab = "scan";
+  el.data = { ...DATA, meta: { ...DATA.meta, notify: true } };
+  el.render();
+  assert.ok(/data-notify checked/.test(shadow.innerHTML));
+  const diag = JSON.stringify(el.diagnosticsData());
+  assert.ok(!diag.includes("sensor.a") && diag.includes("findings_by_rule"), "numbers only, no ids");
+  el.data = DATA;
+  el.compare = { available: true, baseline_at: "2026-10-01T00:00:00+00:00", baselines: [], status_changes: { total: 0, items: [] }, new_findings: { total: 1, items: [DATA.findings[0]] }, resolved_findings: { total: 0, items: [] }, new_objects: { total: 0, items: [] }, removed_objects: { total: 0, items: [] } };
+  await el.weeklyReport();
+  assert.ok(downloads.at(-1).text.includes("# Housekeeper report") && downloads.at(-1).text.includes("sensor.a"));
+});
+
 test("the layout puts levels in columns without overlapping nodes", () => {
   const { el } = graphPanel();
   const model = el.graphModel(el.graphSelected, "entity:sensor.e", { depth: 3 });

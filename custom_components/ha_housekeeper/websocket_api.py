@@ -13,6 +13,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
 from .backup_health import ATTEST_KINDS, backup_health
+from .blueprints import async_blueprints
 from .cleanup import (
     ACTION_KINDS,
     MAX_ACTIONS,
@@ -968,6 +969,49 @@ def websocket_window(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/blueprints"})
+@websocket_api.async_response
+async def websocket_blueprints(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Blueprints nothing uses and automations whose blueprint is gone. Read-only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        result = await async_blueprints(hass, snapshot)
+    except Exception as err:
+        connection.send_error(msg["id"], "blueprints_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/notify_set",
+        vol.Required("enabled"): bool,
+    }
+)
+@callback
+def websocket_notify_set(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Switch the message about new broken references. Switching on announces nothing old."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    findings = (scanner.snapshot or {}).get("findings", [])
+    scanner.notify.set_enabled(msg["enabled"], findings)
+    if scanner.snapshot:
+        scanner.snapshot["meta"]["notify"] = scanner.notify.enabled
+    connection.send_result(msg["id"], {"enabled": scanner.notify.enabled})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/window_set",
@@ -1178,6 +1222,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_backup_attest)
     websocket_api.async_register_command(hass, websocket_window)
     websocket_api.async_register_command(hass, websocket_window_set)
+    websocket_api.async_register_command(hass, websocket_notify_set)
+    websocket_api.async_register_command(hass, websocket_blueprints)
     websocket_api.async_register_command(hass, websocket_window_reload)
     websocket_api.async_register_command(hass, websocket_lifecycle)
     websocket_api.async_register_command(hass, websocket_lifecycle_note)

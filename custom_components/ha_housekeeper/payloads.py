@@ -187,3 +187,11 @@ class PoliciesResult(TypedDict):
     enabled: int
     prefixes: dict[str, str]  # naming scheme: domain -> prefix
     limit: int  # state_rate: changes per entity and day from which it counts
+
+
+class BlueprintsResult(TypedDict):
+    available: bool
+    domains: list[dict[str, Any]]  # per domain: total, unused, missing, broken (lists of paths)
+    unused: int  # blueprints nothing uses
+    missing: int  # paths used by automations or scripts that no blueprint file answers
+    broken: int  # blueprint files that fail to load

@@ -22,6 +22,7 @@ EVENTS_STORAGE_KEY: Final = f"{DOMAIN}.events"
 RUNS_STORAGE_KEY: Final = f"{DOMAIN}.runs"
 LIFECYCLE_STORAGE_KEY: Final = f"{DOMAIN}.lifecycle"
 WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"
+NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"
 STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = "min_unavailable_days"

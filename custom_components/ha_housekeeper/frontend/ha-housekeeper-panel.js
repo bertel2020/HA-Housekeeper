@@ -101,7 +101,7 @@ const TEXT = {
     saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
     cleanupSubtitle: "Vorschau für das Aufräumen: Housekeeper prüft Kandidaten und protokolliert das Ergebnis. Es wird nichts geändert.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entitäten.", cleanupNone: "Keine Kandidaten gefunden.",
-    selectPage: "Seite auswählen", findHideSelected: "Ausgewählte ausblenden", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
+    selectPage: "Seite auswählen", bpTab: "Blueprints", bpTitle: "Blueprints", bpHint: "Blueprint-Dateien, die keine Automation und kein Skript mehr nutzt, und Automationen oder Skripte, deren Blueprint fehlt oder nicht lädt. Nur Hinweise; es wird nichts gelöscht.", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", findHideSelected: "Ausgewählte ausblenden", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
     stepsLabel: "Ablauf des Plans", stepSelect: "Auswahl", stepAnalysis: "Auswirkungsanalyse", stepConfirm: "Bestätigung", stepBackup: "Backup", stepRun: "Ausführung", stepVerify: "Verifikation",
     stepDone: "erledigt", stepCurrent: "aktuell", stepTodo: "ausstehend", stepSkipped: "entfällt", stepFailed: "fehlgeschlagen",
     stepAnalysisBlocked: "Keine ausführbare Aktion", stepBackupSkipped: "Nicht nötig: alles lässt sich per Housekeeper zurücknehmen", stepBackupDone: "Erstellt am {date}{job}", stepBackupJob: " · Job {id}",
@@ -280,7 +280,7 @@ const TEXT = {
     saveOptions: "Save", optionsSaved: "Saved. Housekeeper is reloading …", optionsInvalid: "Please enter values within the allowed range.",
     cleanupSubtitle: "Preview for tidying up: Housekeeper checks candidates and records the result. Nothing is changed.",
     cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
-    selectPage: "Select page", findHideSelected: "Hide selected", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
+    selectPage: "Select page", bpTab: "Blueprints", bpTitle: "Blueprints", bpHint: "Blueprint files that no automation or script uses any more, and automations or scripts whose blueprint is missing or fails to load. Hints only; nothing is deleted.", bpMissing: "blueprint file is missing", bpBroken: "blueprint fails to load", bpUnused: "not used", bpFiles: "files", bpNone: "Nothing to note.", notifyTitle: "Notification", notifyHint: "The only thing Housekeeper does on its own. Off by default.", notifyLabel: "Tell about new broken references", notifyDetail: "A notification in Home Assistant when an automation or script points to something that does not exist. Each finding is announced once; switching it on announces nothing old.", diagDownload: "Download diagnostics file", diagHint: "Numbers and versions only, no names, ids or attributes. Fit to attach to an issue on GitHub.", weeklyBtn: "Weekly report", weeklyHint: "Loads the comparison with the state from about a week ago and saves it as a Markdown file.", weeklyTitle: "Housekeeper report", weeklyRecorder: "Loudest entities in the recorder", findHideSelected: "Hide selected", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
     stepsLabel: "Steps of the plan", stepSelect: "Selection", stepAnalysis: "Impact analysis", stepConfirm: "Confirmation", stepBackup: "Backup", stepRun: "Execution", stepVerify: "Verification",
     stepDone: "done", stepCurrent: "current", stepTodo: "pending", stepSkipped: "not needed", stepFailed: "failed",
     stepAnalysisBlocked: "No executable action", stepBackupSkipped: "Not needed: everything can be taken back by Housekeeper", stepBackupDone: "Created {date}{job}", stepBackupJob: " · job {id}",
@@ -1807,6 +1807,33 @@ class ChangesMixin {
     return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("historyTitle")}</h2><p>${this.t("historyHint", { days: c.retention_days ?? 30 })}</p></div></div>${body}</section>`;
   }
 
+  // The report of the changes as Markdown, for the baseline closest to a week back (loaded first when another is set).
+  async weeklyReport() {
+    const week = Date.now() - 7 * 864e5;
+    const list = (this.compare?.baselines || []).filter(b => b.at);
+    const best = list.length ? list.reduce((a, b) => (Math.abs(Date.parse(b.at) - week) < Math.abs(Date.parse(a.at) - week) ? b : a)) : null;
+    if (best && best.id !== this.compareBaseline) { this.compareBaseline = best.id; await this.loadCompare(); }
+    const c = this.compare;
+    if (!c?.available) return;
+    const name = o => `${o.name || o.object_id} (${o.object_id})`;
+    const list20 = (title, part, line) => (part.total ? [`## ${title} (${part.total})`, ...part.items.slice(0, 20).map(line), part.total > 20 ? `- … ${this.t("moreItems", { count: part.total - 20 })}` : "", ""] : []);
+    const h = this.health();
+    const lines = [
+      `# ${this.t("weeklyTitle")}`, "",
+      `${this.t("comparedWith")} ${this.formatDate(c.baseline_at)} → ${this.formatDate(this.data.meta.scanned_at)}`, "",
+      `- ${this.t("health")}: ${h.percent} %`,
+      ...[["statusChanges", c.status_changes], ["newFindings", c.new_findings], ["resolvedFindings", c.resolved_findings], ["newObjects", c.new_objects], ["removedObjects", c.removed_objects]].map(([label, part]) => `- ${this.t(label)}: ${part.total}`), "",
+      ...list20(this.t("newFindings"), c.new_findings, f => `- ${this.findingTitle(f)}: ${name({ name: this.findObject(this.findingKey(f))?.name, object_id: f.object_id })}`),
+      ...list20(this.t("resolvedFindings"), c.resolved_findings, f => `- ${this.findingTitle(f)}: ${f.object_id}`),
+      ...list20(this.t("newObjects"), c.new_objects, o => `- ${this.t(o.object_type)}: ${name(o)}`),
+      ...list20(this.t("removedObjects"), c.removed_objects, o => `- ${this.t(o.object_type)}: ${name(o)}`),
+      ...list20(this.t("statusChanges"), c.status_changes, o => `- ${name(o)}: ${this.t(o.from)} → ${this.t(o.to)}`),
+    ];
+    const loud = this.storms?.available && !this.storms.busy ? (this.storms.entities || []).slice(0, 5) : [];
+    if (loud.length) lines.push(`## ${this.t("weeklyRecorder")}`, ...loud.map(e => `- ${e.entity_id}: ${this.t("polRate", { n: this.formatNumber(e.per_day) })}`), "");
+    this.downloadText("report.md", lines.filter(l => l !== undefined).join("\n"), "text/markdown");
+  }
+
   changeRank(status) { return { active: 0, disabled: 1, empty: 1, unknown: 2, problem: 3, orphaned: 3, unavailable: 3 }[status] ?? 1; }
 
   changesView() {
@@ -1858,7 +1885,7 @@ class ChangesMixin {
       removedObjects: paged("removedObjects", c.removed_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")),
     };
     const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
-    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b></p>${cards}${this.corrGroupsCard()}${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
+    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b> <button class="btn quiet" data-weekly title="${this.esc(this.t("weeklyHint"))}">${this.t("weeklyBtn")}</button></p>${cards}${this.corrGroupsCard()}${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
   }
 }
 
@@ -1986,6 +2013,21 @@ class SettingsMixin {
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${hidden.length ? pg.rows.map(hiddenRow).join("") : `<div class="emptymsg"><ha-icon icon="mdi:eye-check-outline"></ha-icon>${this.t("hiddenNone")}</div>`}${pg.footer}</section>`;
   }
 
+  // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
+  diagnosticsData() {
+    const m = this.data?.meta || {}, count = (list, pick) => list.reduce((acc, x) => { const k = pick(x); acc[k] = (acc[k] || 0) + 1; return acc; }, {});
+    const { storage, database } = m;
+    return {
+      housekeeper: m.version, home_assistant: m.ha_version, scanned_at: m.scanned_at, preliminary: Boolean(m.preliminary),
+      scan_interval_hours: m.scan_interval_hours, history_days: m.history_days, recorder_available: m.recorder_available,
+      object_count: m.object_count, type_counts: m.type_counts, status_counts: m.status_counts, edge_count: (this.data?.edges || []).length,
+      findings_by_rule: count(this.data?.findings || [], f => f.rule_id), findings_by_classification: count(this.data?.findings || [], f => f.classification),
+      policies_on: this.policies ? this.policies.rules.filter(r => r.enabled).map(r => r.id) : null,
+      storage: storage || null, database: database || null,
+      panel: { language: this.lang, size: this.prefs?.size, mode: this.prefs?.mode, scheme: this.prefs?.scheme, page_size: this.pageSize },
+    };
+  }
+
   infoCard() {
     const m = this.data?.meta || {};
     const fact = (k, v) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`;
@@ -1996,14 +2038,21 @@ class SettingsMixin {
       .map(([title, text, store]) => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:database-outline"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(text, { days: m.history_days ?? 30 })}</small></span>${m.storage?.[store] !== undefined ? `<span class="pill mute">${this.formatBytes(m.storage[store])}</span>` : ""}</div>`).join("");
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div></section>
       <section class="panel"><div class="panelhead"><div><h2>${this.t("setKeptTitle")}</h2><p>${this.t("setKeptHint")}</p></div></div>${kept}<p class="factnote">${this.t("setPrivacy")}</p></section>
-      <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}</section></div>`;
+      <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}
+        <button class="row" data-diagnostics><span class="tile mute"><ha-icon icon="mdi:stethoscope"></ha-icon></span><span class="row-text"><strong>${this.t("diagDownload")}</strong><small>${this.t("diagHint")}</small></span><ha-icon icon="mdi:download"></ha-icon></button></section></div>`;
+  }
+
+  // The one thing Housekeeper does on its own: tell about a new broken reference. Off until switched on.
+  notifyCard() {
+    const on = Boolean(this.data?.meta?.notify);
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("notifyTitle")}</h2><p>${this.t("notifyHint")}</p></div></div><div class="row"><span class="tile ${on ? "ok" : "mute"}"><ha-icon icon="mdi:bell-outline"></ha-icon></span><span class="row-text"><strong>${this.t("notifyLabel")}</strong><small>${this.t("notifyDetail")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("notifyLabel"))}" data-notify ${on ? "checked" : ""}></div></section>`;
   }
 
   settingsView() {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
     const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-set-${id}" aria-selected="${id === tab}" aria-controls="hk-setpanel" tabindex="${id === tab ? 0 : -1}" data-set-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => this.scanCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.scanCard()}${this.notifyCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="tabs" role="tablist" aria-label="${this.esc(this.t("settings"))}">${tablist}</div><div role="tabpanel" id="hk-setpanel" aria-labelledby="hk-set-${tab}" tabindex="0">${body}</div>`;
   }
 
@@ -3610,10 +3659,11 @@ class MaintenanceMixin {
       { id: "backup", label: this.t("backupTitle"), tone: backupTone },
       { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
       { id: "devices", label: this.t("lifeRemovedTab"), count: this.removed ? this.removed.length : null },
+      { id: "blueprints", label: this.t("bpTab"), count: this.blueprintsCount(), tone: this.blueprints && (this.blueprints.missing || this.blueprints.broken) ? "warn" : undefined },
       { id: "window", label: this.t("winTab") },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
+    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
   }
 }
 
@@ -4939,6 +4989,42 @@ class WindowMixin {
   }
 }
 
+// BlueprintsMixin: blueprints nothing uses and automations whose blueprint is gone; mixed into the panel in 99-register.js.
+class BlueprintsMixin {
+  ensureBlueprints() {
+    if (this._blueprintsRequested) return;
+    this._blueprintsRequested = true;
+    setTimeout(async () => {
+      try { this.blueprints = await this._hass.callWS({ type: "ha_housekeeper/blueprints" }); this.blueprintsError = ""; }
+      catch (err) { this.blueprints = null; this.blueprintsError = err?.message || String(err); }
+      this.render();
+    }, 0);
+  }
+
+  blueprintsCount() { const b = this.blueprints; return b ? b.unused + b.missing + b.broken : null; }
+
+  blueprintsCard() {
+    this.ensureBlueprints();
+    const head = `<div class="panelhead"><div><h2>${this.t("bpTitle")}</h2><p>${this.t("bpHint")}</p></div><div class="actions"><button class="btn" data-bp-refresh>${this.t("relRefresh")}</button></div></div>`;
+    if (this.blueprintsError) return `<div class="panel">${head}<div class="error">${this.esc(this.blueprintsError)}</div></div>`;
+    if (!this.blueprints) return `<div class="panel">${head}${this.skeleton("loading")}</div>`;
+    const users = (b) => (b.users || []).map(u => {
+      const obj = this.findObject(`${u.id.split(".")[0]}:${u.id}`);
+      return obj ? `<button class="linklike" data-object="${this.esc(this.objectKey(obj))}">${this.esc(u.name)}</button>` : this.esc(u.name);
+    }).join(", ") + (b.count > (b.users || []).length ? ` +${b.count - b.users.length}` : "");
+    const row = (tone, icon, title, sub) => `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${sub}</small></span></div>`;
+    const blocks = this.blueprints.domains.map(d => {
+      const rows = [
+        ...d.missing.map(b => row("red", "mdi:file-question-outline", b.path, `${this.t("bpMissing")} · ${users(b)}`)),
+        ...d.broken.map(b => row("red", "mdi:file-alert-outline", b.path, `${this.t("bpBroken")}${b.count ? ` · ${users(b)}` : ""}`)),
+        ...d.unused.map(b => row("mute", "mdi:file-hidden", b.name === b.path ? b.path : b.name, `${this.t("bpUnused")} · ${this.esc(b.path)}`)),
+      ].join("");
+      return `<div class="sectionlabel">${this.t(d.domain)} (${this.formatNumber(d.total)} ${this.t("bpFiles")})</div>${rows || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("bpNone")}</div>`}`;
+    }).join("");
+    return `<div class="panel">${head}${blocks}</div>`;
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -5590,6 +5676,14 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
+    root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
+    root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
+      try { await this._hass.callWS({ type: "ha_housekeeper/notify_set", enabled: ev.target.checked }); this.data.meta.notify = ev.target.checked; }
+      catch (err) { this.error = err?.message || String(err); }
+      this.render();
+    });
+    root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this.blueprints = null; this.render(); });
+    root.querySelector("[data-weekly]")?.addEventListener("click", () => this.weeklyReport());
     root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { el.checked ? this.findSel.add(el.dataset.fsel) : this.findSel.delete(el.dataset.fsel); this.render(); });
     root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
@@ -5701,7 +5795,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

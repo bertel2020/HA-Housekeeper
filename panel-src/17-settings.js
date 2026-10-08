@@ -78,6 +78,21 @@ class SettingsMixin {
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${hidden.length ? pg.rows.map(hiddenRow).join("") : `<div class="emptymsg"><ha-icon icon="mdi:eye-check-outline"></ha-icon>${this.t("hiddenNone")}</div>`}${pg.footer}</section>`;
   }
 
+  // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
+  diagnosticsData() {
+    const m = this.data?.meta || {}, count = (list, pick) => list.reduce((acc, x) => { const k = pick(x); acc[k] = (acc[k] || 0) + 1; return acc; }, {});
+    const { storage, database } = m;
+    return {
+      housekeeper: m.version, home_assistant: m.ha_version, scanned_at: m.scanned_at, preliminary: Boolean(m.preliminary),
+      scan_interval_hours: m.scan_interval_hours, history_days: m.history_days, recorder_available: m.recorder_available,
+      object_count: m.object_count, type_counts: m.type_counts, status_counts: m.status_counts, edge_count: (this.data?.edges || []).length,
+      findings_by_rule: count(this.data?.findings || [], f => f.rule_id), findings_by_classification: count(this.data?.findings || [], f => f.classification),
+      policies_on: this.policies ? this.policies.rules.filter(r => r.enabled).map(r => r.id) : null,
+      storage: storage || null, database: database || null,
+      panel: { language: this.lang, size: this.prefs?.size, mode: this.prefs?.mode, scheme: this.prefs?.scheme, page_size: this.pageSize },
+    };
+  }
+
   infoCard() {
     const m = this.data?.meta || {};
     const fact = (k, v) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`;
@@ -88,14 +103,21 @@ class SettingsMixin {
       .map(([title, text, store]) => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:database-outline"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(text, { days: m.history_days ?? 30 })}</small></span>${m.storage?.[store] !== undefined ? `<span class="pill mute">${this.formatBytes(m.storage[store])}</span>` : ""}</div>`).join("");
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div></section>
       <section class="panel"><div class="panelhead"><div><h2>${this.t("setKeptTitle")}</h2><p>${this.t("setKeptHint")}</p></div></div>${kept}<p class="factnote">${this.t("setPrivacy")}</p></section>
-      <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}</section></div>`;
+      <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}
+        <button class="row" data-diagnostics><span class="tile mute"><ha-icon icon="mdi:stethoscope"></ha-icon></span><span class="row-text"><strong>${this.t("diagDownload")}</strong><small>${this.t("diagHint")}</small></span><ha-icon icon="mdi:download"></ha-icon></button></section></div>`;
+  }
+
+  // The one thing Housekeeper does on its own: tell about a new broken reference. Off until switched on.
+  notifyCard() {
+    const on = Boolean(this.data?.meta?.notify);
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("notifyTitle")}</h2><p>${this.t("notifyHint")}</p></div></div><div class="row"><span class="tile ${on ? "ok" : "mute"}"><ha-icon icon="mdi:bell-outline"></ha-icon></span><span class="row-text"><strong>${this.t("notifyLabel")}</strong><small>${this.t("notifyDetail")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("notifyLabel"))}" data-notify ${on ? "checked" : ""}></div></section>`;
   }
 
   settingsView() {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
     const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-set-${id}" aria-selected="${id === tab}" aria-controls="hk-setpanel" tabindex="${id === tab ? 0 : -1}" data-set-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => this.scanCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.scanCard()}${this.notifyCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="tabs" role="tablist" aria-label="${this.esc(this.t("settings"))}">${tablist}</div><div role="tabpanel" id="hk-setpanel" aria-labelledby="hk-set-${tab}" tabindex="0">${body}</div>`;
   }
 

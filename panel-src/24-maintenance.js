@@ -141,9 +141,10 @@ class MaintenanceMixin {
       { id: "backup", label: this.t("backupTitle"), tone: backupTone },
       { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
       { id: "devices", label: this.t("lifeRemovedTab"), count: this.removed ? this.removed.length : null },
+      { id: "blueprints", label: this.t("bpTab"), count: this.blueprintsCount(), tone: this.blueprints && (this.blueprints.missing || this.blueprints.broken) ? "warn" : undefined },
       { id: "window", label: this.t("winTab") },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
+    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
   }
 }
