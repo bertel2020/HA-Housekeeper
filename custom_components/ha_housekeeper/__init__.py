@@ -43,6 +43,7 @@ from .const import (
 from .db_health import sample_size
 from .inventory import InventoryScanner
 from .issues import async_clear_issues
+from .maintenance import recorder_costs
 from .websocket_api import async_register as async_register_websocket
 
 _LOGGER = logging.getLogger(__name__)
@@ -192,6 +193,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         refresh=True,
                         store=scanner.replies,
                     )
+                elif kind == "costs":
+                    await recorder_costs(hass, snapshot, refresh=True, store=scanner.replies)
                 elif kind == "db_health":
                     await db_health_module.db_health(
                         hass, snapshot, scanner.events, refresh=True, store=scanner.replies

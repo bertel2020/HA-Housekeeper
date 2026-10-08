@@ -93,7 +93,7 @@ const TEXT = {
     hiddenFindings: "Ausgeblendete Befunde", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
     sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
-    sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
+    denseOn: "Kompakte Zeilen", denseOff: "Ausführliche Zeilen", sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
     density: "Dichte", densityNormal: "Normal", densityCompact: "Kompakt", motion: "Animationen", motionAuto: "Wie System", motionReduced: "Reduziert",
     motionHint: "Wie System folgt der Einstellung „Bewegung reduzieren“ deines Geräts.", prefsNote: "Die Darstellung wird in deinem Home-Assistant-Benutzerprofil gespeichert (und zusätzlich in diesem Browser).",
     scanSettings: "Scan und Schwellenwerte", scanSettingsHint: "Ändert die Optionen der Integration. Housekeeper lädt danach neu.", optMinUnavailable: "Nicht verfügbar gilt als Befund nach (Tage, 0 = sofort)",
@@ -272,7 +272,7 @@ const TEXT = {
     hiddenFindings: "Hidden findings", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
     sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule",
     sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
-    sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
+    denseOn: "Compact rows", denseOff: "Detailed rows", sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
     density: "Density", densityNormal: "Normal", densityCompact: "Compact", motion: "Animation", motionAuto: "Like system", motionReduced: "Reduced",
     motionHint: "Like system follows your device's “reduce motion” setting.", prefsNote: "Appearance is stored in your Home Assistant user profile (and in this browser as well).",
     scanSettings: "Scan and thresholds", scanSettingsHint: "Changes the integration options. Housekeeper reloads afterwards.", optMinUnavailable: "Unavailable becomes a finding after (days, 0 = immediately)",
@@ -676,6 +676,7 @@ Object.assign(TEXT.de, {
   bhListTitle: "Letzte Backups", bhColDate: "Datum", bhColSize: "Größe", bhColTargets: "Ziele", bhColProtected: "Verschlüsselt", bhYes: "Ja", bhNo: "Nein",
   bhGuideTitle: "So testest du eine Wiederherstellung", bhGuideSteps: "1. Eine Test-Instanz oder eine zweite Installation bereitstellen (nie zuerst die Hauptinstanz). 2. Dort ein aktuelles Backup einspielen: Einstellungen → System → Backups → Backup hochladen oder bei der Einrichtung wiederherstellen. 3. Prüfen, ob Integrationen, Automationen und Dashboards da sind. 4. Hier das Datum des Tests speichern. Housekeeper führt selbst nie eine Wiederherstellung aus.",
   todoBackupProblem: "Backup-Schutz: Problem",
+  mtProblems: "{n} Problem(e)", mtNotes: "{n} Hinweis(e)", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
 });
 Object.assign(TEXT.en, {
   backupTitle: "Backup protection", backupHint: "Is the backup strategy sound, not only: is there a backup? Housekeeper only reads and starts nothing.",
@@ -701,6 +702,7 @@ Object.assign(TEXT.en, {
   bhListTitle: "Latest backups", bhColDate: "Date", bhColSize: "Size", bhColTargets: "Targets", bhColProtected: "Encrypted", bhYes: "Yes", bhNo: "No",
   bhGuideTitle: "How to test a restore", bhGuideSteps: "1. Set up a test instance or a second installation (never the main instance first). 2. Restore a recent backup there: Settings → System → Backups → upload a backup, or restore during setup. 3. Check that integrations, automations and dashboards are there. 4. Save the date of the test here. Housekeeper never performs a restore itself.",
   todoBackupProblem: "Backup protection: problem",
+  mtProblems: "{n} problem(s)", mtNotes: "{n} note(s)", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtRecord: "Saved state", mtNoRecord: "none",
 });
 
 // Texts for the reliability view; merged into TEXT.
@@ -724,6 +726,7 @@ Object.assign(TEXT.de, {
   relCoverage: "Letzte {days} Tage · {withData} von {known} Entitäten mit Daten · im Mittel {share} % des Zeitraums beobachtet (neue Entitäten kürzer).",
   relCompare: "Mit Zeitraum davor vergleichen", relDelta: "{delta} Prozentpunkte gegenüber dem Zeitraum davor ({before} %)", relDeltaNone: "Für den Zeitraum davor liegen keine Daten vor.",
   relFootnote: "Verfügbarkeit: Anteil der Zeit ohne „nicht verfügbar“ in den letzten {days} Tagen, gerechnet ab der ersten Meldung im Zeitraum. Ein gemeinsamer Ausfall heißt: mindestens {share} % der Entitäten des Eintrags, mindestens {entities}, mindestens {minutes} Minuten zugleich nicht verfügbar. Ein Ausfall, der vor dem Zeitraum begann, zählt erst ab der ersten Meldung darin.",
+  relIntHint: "Schlechteste zuerst. Verfügbarkeit je Integration, gerechnet aus den Zuständen ihrer Entitäten.", relSortRank: "Standard", relSortEpisodes: "Ausfälle", relSortRate: "Ausfälle pro Tag", relSortDuration: "Gesamtdauer", relOnlyFlapping: "Nur flatternd", relOnlyUnstable: "Nur instabil",
 });
 Object.assign(TEXT.en, {
   reliability: "Reliability", reliabilitySubtitle: "How available each integration's entities were and when they failed together. Only reads the recorder.",
@@ -745,6 +748,7 @@ Object.assign(TEXT.en, {
   relCoverage: "Last {days} days · {withData} of {known} entities with data · on average {share} % of the period observed (new entities less).",
   relCompare: "Compare with the period before", relDelta: "{delta} percentage points against the period before ({before} %)", relDeltaNone: "There is no data for the period before.",
   relFootnote: "Availability: the share of time without “unavailable” in the last {days} days, counted from the first report in the period. A shared outage means at least {share} % of the entry's entities, at least {entities}, were unavailable together for at least {minutes} minutes. An outage that began before the period counts from the first report in it.",
+  relIntHint: "Worst first. Availability per integration, calculated from the states of its entities.", relSortRank: "Default", relSortEpisodes: "Outages", relSortRate: "Outages per day", relSortDuration: "Total duration", relOnlyFlapping: "Flapping only", relOnlyUnstable: "Unstable only",
 });
 
 // Texts for the automation runs view; merged into TEXT.
@@ -1072,7 +1076,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{width:20px;height:20px;accent-color:var(--hk-blue);flex:none;cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -1086,6 +1090,7 @@ class StylesMixin {
       .chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue-text);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
       .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.viewgroup{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}.skeleton{display:grid;gap:10px;padding:18px 16px}.skeleton i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--hk-soft),color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface)),var(--hk-soft)) 0 0/200% 100%;animation:hk-shimmer 1.4s ease-in-out infinite}.skeleton i:nth-of-type(2){width:80%}.skeleton i:nth-of-type(3){width:60%}@keyframes hk-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.skeleton i{animation:none}}.coverage{display:flex;gap:6px;align-items:flex-start}.coverage ha-icon{--mdc-icon-size:16px;flex:none;margin-top:1px}.fline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}.fline .fnote{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:18px;border-radius:12px;background:color-mix(in srgb,var(--hk-red) 12%,transparent);color:var(--hk-red)}
       .bhattest{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px 12px 62px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.bhattest label{display:flex;align-items:center;gap:8px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.bhattest input{padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
+      .dense .row-text small:not(:first-of-type){display:none}.dense .bh .row-text small:not(:first-of-type){display:block}.dirbtn[aria-pressed="true"]{border-color:var(--hk-blue);color:var(--hk-blue)}
       .bh .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .bhguide{padding:12px 16px;border-top:1px solid var(--hk-border)}.bhguide summary{font-size:calc(12px*var(--hk-fs,1))}.bhguide .factnote{padding:8px 0 0;border:0}
       .graphbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:10px 14px;margin-bottom:14px}.graphctl{display:flex;align-items:center;gap:8px}.graphctl small{color:var(--hk-muted)}.graphwrap{overflow:auto;padding:14px}.graphsvg{display:block;max-width:none}
@@ -1244,7 +1249,14 @@ class ListsMixin {
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
-    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}</div>`;
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}${this.denseButton()}</div>`;
+  }
+
+  // Compact lists show the first line of every row; one switch for all lists, kept in this browser.
+  denseButton() {
+    if (this.dense === undefined) { try { this.dense = globalThis.localStorage?.getItem("ha_housekeeper.dense") === "1"; } catch (_) { this.dense = false; } }
+    const label = this.t(this.dense ? "denseOff" : "denseOn");
+    return `<button type="button" class="dirbtn" data-dense aria-pressed="${this.dense}" title="${label}" aria-label="${label}"><ha-icon icon="${this.dense ? "mdi:format-line-spacing" : "mdi:view-agenda-outline"}"></ha-icon></button>`;
   }
 
   // A sortable table for a list built with lvState/refine: header buttons set sort and direction, the phone shows cards.
@@ -3105,6 +3117,14 @@ class MaintenanceMixin {
     this.costsLoading = true; this.costsError = ""; this.render();
     try { this.costs = await this._hass.callWS({ type: "ha_housekeeper/recorder_costs", ...(refresh ? { refresh: true } : {}) }); } catch (err) { this.costs = null; this.costsError = err?.message || String(err); }
     this.costsLoading = false; this.render();
+    this.followUp("costs", "recorder", this.costs, r => this.loadCosts(r), refresh);
+  }
+
+  // Opening the costs tab starts the analysis once; the backend answers with the last result at once.
+  ensureCosts() {
+    if (this.costsLoading || this._costsRequested) return;
+    this._costsRequested = true;
+    setTimeout(() => this.loadCosts(), 0);
   }
 
   // `action` is "save" (remember the state as the starting point), "clear" (forget it) or nothing (just check).
@@ -3139,6 +3159,7 @@ class MaintenanceMixin {
   exclusionSnippet() { return `recorder:\n  exclude:\n    entities:\n${this.suggestedExclusions().map(id => `      - ${id}`).join("\n")}\n`; }
 
   recorderCard() {
+    this.ensureCosts();
     const c = this.costs;
     const head = (extra = "") => `<div class="panelhead"><div><h2>${this.t("recorderTitle")}</h2><p>${this.t("recorderHint")}</p></div><div class="actions">${extra}</div></div>`;
     if (this.costsLoading) return `<div class="panel">${head()}${this.skeleton("recorderLoading")}</div>`;
@@ -3146,7 +3167,7 @@ class MaintenanceMixin {
     if (!c) return `<div class="panel">${head(`<button class="btn primary" data-costs-load>${this.t("recorderLoad")}</button>`)}</div>`;
     if (c.busy) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!c.available) return `<div class="panel">${head()}<div class="emptymsg"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t("recorderUnavailable")}</div></div>`;
-    const took = c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
+    const took = c.computed_at && (c.stale || c.age_seconds >= 60) ? this.tookNote(c) : c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
     const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) }) + took;
     const sortButtons = ["recent", "total"].map(key => `<button class="btn ${this.costSort === key ? "primary" : ""}" data-cost-sort="${key}" aria-pressed="${this.costSort === key}">${this.t(key === "recent" ? "recorderSortRecent" : "recorderSortTotal")}</button>`).join("");
     const rows = this.costRanking().map(e => {
@@ -3216,7 +3237,25 @@ class MaintenanceMixin {
   maintenanceView() {
     if (!this.preflight && !this.preflightLoading && !this._pfRequested) { this._pfRequested = true; setTimeout(() => this.loadPreflight(), 0); }
     this.ensureBackup();
-    return `<div class="stack">${this.backupCard()}${this.preflightCard()}</div>`;
+    const checks = this.backup?.available ? this.backup.checks || [] : [];
+    const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
+    const pf = this.preflight, pfChecks = pf?.checks || [];
+    const pfRed = pfChecks.filter(c => c.level === "red").length, pfWarn = pfChecks.filter(c => c.level === "warn").length;
+    const updates = pf?.state?.pending_updates?.length || 0;
+    const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
+    const pfTone = !pf ? "mute" : pfRed ? "red" : pfWarn ? "warn" : "ok";
+    const tiles = this.sumTiles([
+      { label: this.t("backupTitle"), value: !this.backup?.available ? "–" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), sub: this.backup?.available ? this.t("mtChecks", { n: checks.length }) : "", tone: backupTone, tab: "maintenance|backup" },
+      { label: this.t("pf_updates"), value: pf ? this.formatNumber(updates) : "–", tone: !pf ? "mute" : updates ? "warn" : "ok", tab: "maintenance|preflight" },
+      { label: this.t("mtPreflight"), value: !pf ? "–" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone, tab: "maintenance|preflight" },
+      { label: this.t("mtRecord"), value: !pf ? "–" : pf.record ? this.relTime(pf.record.at) : this.t("mtNoRecord"), sub: pf?.record ? this.esc(pf.record.ha_version) : "", tone: "mute", tab: "maintenance|preflight" },
+    ]);
+    const tabs = [
+      { id: "backup", label: this.t("backupTitle"), tone: backupTone },
+      { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
+    ];
+    const open = this.viewTabOf("maintenance", tabs, "backup");
+    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : this.backupCard()}</div>`;
   }
 }
 
@@ -3451,8 +3490,9 @@ class ReliabilityMixin {
       { id: "unstable", label: this.t("relTabUnstable"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok" },
     ];
     const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
-    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
-    return `<div class="stack"><div class="panel">${head}${coverage}</div>${tiles}${this.viewTabBar("reliability", tabs, open)}${body}</div>`;
+    const intHead = `<div class="panelhead"><div><h2>${this.t("relTabIntegrations")}</h2><p>${this.t("relIntHint")}</p></div></div>`;
+    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${intHead}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
+    return `<div class="stack"><div class="panel">${head}</div>${tiles}${this.viewTabBar("reliability", tabs, open)}${body}</div>`;
   }
 
   // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
@@ -3495,9 +3535,22 @@ class ReliabilityMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("relUnstableTitle")}</h2><p>${this.t("relUnstableHint")}</p></div></div>${r.coverage ? this.coverageNote(this.t("relUnstableCoverage", { days: r.window_days, withData: this.formatNumber(r.coverage.with_data) }) + ` ${this.excludedText(u.excluded)}`.trimEnd()) : ""}`;
     if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
     const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
-    const found = this.searchList("relunstable", u.items, item => [item.name, item.entity_id, item.entry_title].join(" "));
-    const pg = this.paginate("relunstable", found.rows);
-    return `<div class="panel">${head}${found.bar}${found.none}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}${this.howCounted("relUnstableFootnote", { episodes: th.unstable_min_episodes ?? 3, rate: this.formatNumber(th.unstable_per_day ?? 0.5), flap: this.formatNumber(th.flapping_per_day ?? 1.5) })}</div>`;
+    const rank = new Map(u.items.map((item, i) => [item, i]));
+    const sorts = [
+      { key: "rank", label: "relSortRank", dir: "asc", get: item => rank.get(item) },
+      { key: "name", label: "sortName", dir: "asc", get: item => item.name },
+      { key: "episodes", label: "relSortEpisodes", dir: "desc", get: item => item.episodes },
+      { key: "rate", label: "relSortRate", dir: "desc", get: item => item.per_day },
+      { key: "duration", label: "relSortDuration", dir: "desc", get: item => item.total_seconds },
+    ];
+    this.lvState("relunstable", "rank", "asc");
+    const rows = this.refine("relunstable", u.items, { text: item => [item.name, item.entity_id, item.entry_title].join(" "), sorts, tie: item => item.entity_id, filters: { level: (item, v) => item.level === v } });
+    const bar = u.items.length > 5 || this.lv.relunstable.q ? this.listBar("relunstable", { sorts, filters: [
+      { name: "level", all: this.t("relAllStates"), options: [["flapping", this.t("relOnlyFlapping")], ["unstable", this.t("relOnlyUnstable")]] },
+    ] }) : "";
+    const pg = this.paginate("relunstable", rows);
+    const list = rows.length ? pg.rows.map(item => this.unstableRow(item, r.window_days)).join("") : `<div class="emptymsg">${this.t("noMatches")}</div>`;
+    return `<div class="panel">${head}${bar}${list}${pg.footer}${more}${this.howCounted("relUnstableFootnote", { episodes: th.unstable_min_episodes ?? 3, rate: this.formatNumber(th.unstable_per_day ?? 0.5), flap: this.formatNumber(th.flapping_per_day ?? 1.5) })}</div>`;
   }
 }
 
@@ -3899,6 +3952,7 @@ class ExposureMixin {
     const live = sources.filter(x => x.status === "ok");
     const warn = r.findings.filter(f => f.level === "warn").length;
     const tiles = this.sumTiles([
+      { label: this.t("expoSumFindings"), value: this.formatNumber(r.findings.length), tone: warn ? "warn" : r.findings.length ? "mute" : "ok", tab: "exposure|findings" },
       ...sources.map(x => ({
         label: x.label,
         value: x.status === "ok" ? this.formatNumber(x.count) : "–",
@@ -3906,7 +3960,6 @@ class ExposureMixin {
         tone: x.status === "ok" ? "ok" : x.status === "inactive" ? "mute" : "warn",
         tab: x.status === "ok" ? `exposure|${x.id}` : "",
       })),
-      { label: this.t("expoSumFindings"), value: this.formatNumber(r.findings.length), tone: warn ? "warn" : r.findings.length ? "mute" : "ok", tab: "exposure|findings" },
     ]);
     const tabs = [
       { id: "findings", label: this.t("expoTabFindings"), count: r.findings.length, tone: warn ? "warn" : "ok" },
@@ -4094,8 +4147,8 @@ class PoliciesMixin {
       hidden ? { label: this.t("polSumHidden"), value: this.formatNumber(hidden), tone: "mute", tab: "policies|violations" } : null,
     ]);
     const tabs = [
+      { id: "rules", label: this.t("polTabRules"), count: r.rules.length },
       { id: "violations", label: this.t("polTabViolations"), count: violations, tone: violations ? "warn" : "ok" },
-      { id: "rules", label: this.t("polTabRules"), count: on.length },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
     const body = open === "rules"
@@ -4507,7 +4560,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const shell = `<div class="shell">${this.topbar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.dense ? " dense" : ""}">${this.topbar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
@@ -4848,6 +4901,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (st.sort === key) st.dir = st.dir === "desc" ? "asc" : "desc"; else { st.sort = key; st.dir = dir; }
       this.pages = {}; this.render();
     });
+    root.querySelectorAll("[data-dense]").forEach(el => el.onclick = () => { this.dense = !this.dense; try { globalThis.localStorage?.setItem("ha_housekeeper.dense", this.dense ? "1" : "0"); } catch (_) { /* kept until the page closes */ } this.render(); });
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); });
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });

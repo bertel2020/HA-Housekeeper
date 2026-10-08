@@ -133,8 +133,9 @@ class ReliabilityMixin {
       { id: "unstable", label: this.t("relTabUnstable"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok" },
     ];
     const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
-    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
-    return `<div class="stack"><div class="panel">${head}${coverage}</div>${tiles}${this.viewTabBar("reliability", tabs, open)}${body}</div>`;
+    const intHead = `<div class="panelhead"><div><h2>${this.t("relTabIntegrations")}</h2><p>${this.t("relIntHint")}</p></div></div>`;
+    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${intHead}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
+    return `<div class="stack"><div class="panel">${head}</div>${tiles}${this.viewTabBar("reliability", tabs, open)}${body}</div>`;
   }
 
   // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
@@ -177,8 +178,21 @@ class ReliabilityMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("relUnstableTitle")}</h2><p>${this.t("relUnstableHint")}</p></div></div>${r.coverage ? this.coverageNote(this.t("relUnstableCoverage", { days: r.window_days, withData: this.formatNumber(r.coverage.with_data) }) + ` ${this.excludedText(u.excluded)}`.trimEnd()) : ""}`;
     if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
     const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
-    const found = this.searchList("relunstable", u.items, item => [item.name, item.entity_id, item.entry_title].join(" "));
-    const pg = this.paginate("relunstable", found.rows);
-    return `<div class="panel">${head}${found.bar}${found.none}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}${this.howCounted("relUnstableFootnote", { episodes: th.unstable_min_episodes ?? 3, rate: this.formatNumber(th.unstable_per_day ?? 0.5), flap: this.formatNumber(th.flapping_per_day ?? 1.5) })}</div>`;
+    const rank = new Map(u.items.map((item, i) => [item, i]));
+    const sorts = [
+      { key: "rank", label: "relSortRank", dir: "asc", get: item => rank.get(item) },
+      { key: "name", label: "sortName", dir: "asc", get: item => item.name },
+      { key: "episodes", label: "relSortEpisodes", dir: "desc", get: item => item.episodes },
+      { key: "rate", label: "relSortRate", dir: "desc", get: item => item.per_day },
+      { key: "duration", label: "relSortDuration", dir: "desc", get: item => item.total_seconds },
+    ];
+    this.lvState("relunstable", "rank", "asc");
+    const rows = this.refine("relunstable", u.items, { text: item => [item.name, item.entity_id, item.entry_title].join(" "), sorts, tie: item => item.entity_id, filters: { level: (item, v) => item.level === v } });
+    const bar = u.items.length > 5 || this.lv.relunstable.q ? this.listBar("relunstable", { sorts, filters: [
+      { name: "level", all: this.t("relAllStates"), options: [["flapping", this.t("relOnlyFlapping")], ["unstable", this.t("relOnlyUnstable")]] },
+    ] }) : "";
+    const pg = this.paginate("relunstable", rows);
+    const list = rows.length ? pg.rows.map(item => this.unstableRow(item, r.window_days)).join("") : `<div class="emptymsg">${this.t("noMatches")}</div>`;
+    return `<div class="panel">${head}${bar}${list}${pg.footer}${more}${this.howCounted("relUnstableFootnote", { episodes: th.unstable_min_episodes ?? 3, rate: this.formatNumber(th.unstable_per_day ?? 0.5), flap: this.formatNumber(th.flapping_per_day ?? 1.5) })}</div>`;
   }
 }

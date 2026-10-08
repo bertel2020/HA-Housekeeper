@@ -281,3 +281,25 @@ async def test_the_costs_are_kept_for_five_minutes_and_refresh_calculates_again(
     assert second["cached"] is True and second["total_states"] == first["total_states"]
     third = await recorder_costs(hass, snapshot, refresh=True)
     assert third["cached"] is False and third["total_states"] == first["total_states"] + 1
+
+
+async def test_the_last_costs_reply_is_kept_and_handed_out_while_the_recorder_is_busy(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    import asyncio
+
+    from custom_components.ha_housekeeper.const import DOMAIN
+    from custom_components.ha_housekeeper.queries import ReplyStore
+
+    store = ReplyStore(hass)
+    snapshot = snapshot_with("sensor.chatty")
+    first = await recorder_costs(hass, snapshot, store=store, refresh=True)
+    assert first["stale"] is False and "costs" in store.replies
+    lock = hass.data.setdefault(DOMAIN, {}).setdefault("reliability_lock", asyncio.Lock())
+    hass.data[DOMAIN].pop("query_cache", None)
+    await lock.acquire()
+    try:
+        held = await recorder_costs(hass, snapshot, store=store, refresh=True)
+    finally:
+        lock.release()
+    assert held["stale"] is True and not held.get("busy")

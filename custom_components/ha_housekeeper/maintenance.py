@@ -19,7 +19,7 @@ from homeassistant.helpers.storage import Store
 from .const import PREFLIGHT_STORAGE_KEY, STORAGE_VERSION
 from .history import diff_checkpoints, make_checkpoint
 from .meter import recorder_ready
-from .queries import cached_query
+from .queries import ReplyStore, cached_query, kept_reply
 
 COST_LIMIT = 40  # entities listed per ranking; totals stay exact
 SUGGEST_MIN_PER_DAY = 100  # states per day from which an unused entity is worth excluding
@@ -187,14 +187,24 @@ def rank_costs(raw: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
 
 
 async def recorder_costs(
-    hass: HomeAssistant, snapshot: dict[str, Any], *, refresh: bool = False
+    hass: HomeAssistant,
+    snapshot: dict[str, Any],
+    *,
+    refresh: bool = False,
+    store: ReplyStore | None = None,
 ) -> dict[str, Any]:
     """The entities that fill the recorder database, with a hint where excluding is safe.
 
-    The database counts are kept for a few minutes; ``refresh`` calculates them again.
+    The database counts are kept for a few minutes; ``refresh`` calculates them again. The last
+    result is also kept in the reply store, so the view opens with it at once (``stale`` once it
+    is old) instead of waiting for the query.
     """
     if not recorder_ready(hass):
         return {"available": False, "entities": [], "statistics": []}
+    now = time.time()
+    kept = None if refresh else kept_reply(store, "costs", now, COST_CACHE_SECONDS)
+    if kept is not None:
+        return kept
     found = await cached_query(
         hass,
         "costs",
@@ -203,8 +213,19 @@ async def recorder_costs(
         refresh=refresh,
     )
     if found.busy:
+        held = kept_reply(store, "costs", now, COST_CACHE_SECONDS, stale=True)
+        if held is not None:
+            return held
         return {"available": True, "busy": True, "entities": [], "statistics": []}
-    return rank_costs({**found.raw, "cached": True} if found.cached else found.raw, snapshot)
+    reply = {
+        **rank_costs({**found.raw, "cached": True} if found.cached else found.raw, snapshot),
+        "computed_at": now,
+        "stale": False,
+        "age_seconds": 0,
+    }
+    if store is not None:
+        store.keep("costs", reply)
+    return reply
 
 
 async def _backup_state(hass: HomeAssistant) -> dict[str, Any]:

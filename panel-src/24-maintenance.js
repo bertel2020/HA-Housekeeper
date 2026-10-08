@@ -4,6 +4,14 @@ class MaintenanceMixin {
     this.costsLoading = true; this.costsError = ""; this.render();
     try { this.costs = await this._hass.callWS({ type: "ha_housekeeper/recorder_costs", ...(refresh ? { refresh: true } : {}) }); } catch (err) { this.costs = null; this.costsError = err?.message || String(err); }
     this.costsLoading = false; this.render();
+    this.followUp("costs", "recorder", this.costs, r => this.loadCosts(r), refresh);
+  }
+
+  // Opening the costs tab starts the analysis once; the backend answers with the last result at once.
+  ensureCosts() {
+    if (this.costsLoading || this._costsRequested) return;
+    this._costsRequested = true;
+    setTimeout(() => this.loadCosts(), 0);
   }
 
   // `action` is "save" (remember the state as the starting point), "clear" (forget it) or nothing (just check).
@@ -38,6 +46,7 @@ class MaintenanceMixin {
   exclusionSnippet() { return `recorder:\n  exclude:\n    entities:\n${this.suggestedExclusions().map(id => `      - ${id}`).join("\n")}\n`; }
 
   recorderCard() {
+    this.ensureCosts();
     const c = this.costs;
     const head = (extra = "") => `<div class="panelhead"><div><h2>${this.t("recorderTitle")}</h2><p>${this.t("recorderHint")}</p></div><div class="actions">${extra}</div></div>`;
     if (this.costsLoading) return `<div class="panel">${head()}${this.skeleton("recorderLoading")}</div>`;
@@ -45,7 +54,7 @@ class MaintenanceMixin {
     if (!c) return `<div class="panel">${head(`<button class="btn primary" data-costs-load>${this.t("recorderLoad")}</button>`)}</div>`;
     if (c.busy) return `<div class="panel">${head(`<button class="btn" data-costs-load>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.t("relBusy")}</p></div>`;
     if (!c.available) return `<div class="panel">${head()}<div class="emptymsg"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t("recorderUnavailable")}</div></div>`;
-    const took = c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
+    const took = c.computed_at && (c.stale || c.age_seconds >= 60) ? this.tookNote(c) : c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
     const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) }) + took;
     const sortButtons = ["recent", "total"].map(key => `<button class="btn ${this.costSort === key ? "primary" : ""}" data-cost-sort="${key}" aria-pressed="${this.costSort === key}">${this.t(key === "recent" ? "recorderSortRecent" : "recorderSortTotal")}</button>`).join("");
     const rows = this.costRanking().map(e => {
@@ -115,6 +124,24 @@ class MaintenanceMixin {
   maintenanceView() {
     if (!this.preflight && !this.preflightLoading && !this._pfRequested) { this._pfRequested = true; setTimeout(() => this.loadPreflight(), 0); }
     this.ensureBackup();
-    return `<div class="stack">${this.backupCard()}${this.preflightCard()}</div>`;
+    const checks = this.backup?.available ? this.backup.checks || [] : [];
+    const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
+    const pf = this.preflight, pfChecks = pf?.checks || [];
+    const pfRed = pfChecks.filter(c => c.level === "red").length, pfWarn = pfChecks.filter(c => c.level === "warn").length;
+    const updates = pf?.state?.pending_updates?.length || 0;
+    const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
+    const pfTone = !pf ? "mute" : pfRed ? "red" : pfWarn ? "warn" : "ok";
+    const tiles = this.sumTiles([
+      { label: this.t("backupTitle"), value: !this.backup?.available ? "–" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), sub: this.backup?.available ? this.t("mtChecks", { n: checks.length }) : "", tone: backupTone, tab: "maintenance|backup" },
+      { label: this.t("pf_updates"), value: pf ? this.formatNumber(updates) : "–", tone: !pf ? "mute" : updates ? "warn" : "ok", tab: "maintenance|preflight" },
+      { label: this.t("mtPreflight"), value: !pf ? "–" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone, tab: "maintenance|preflight" },
+      { label: this.t("mtRecord"), value: !pf ? "–" : pf.record ? this.relTime(pf.record.at) : this.t("mtNoRecord"), sub: pf?.record ? this.esc(pf.record.ha_version) : "", tone: "mute", tab: "maintenance|preflight" },
+    ]);
+    const tabs = [
+      { id: "backup", label: this.t("backupTitle"), tone: backupTone },
+      { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
+    ];
+    const open = this.viewTabOf("maintenance", tabs, "backup");
+    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : this.backupCard()}</div>`;
   }
 }

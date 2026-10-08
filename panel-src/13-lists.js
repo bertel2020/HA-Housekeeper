@@ -48,7 +48,14 @@ class ListsMixin {
     const selects = filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}</option>`).join("")}</select>`).join("");
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
-    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}</div>`;
+    return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}${this.denseButton()}</div>`;
+  }
+
+  // Compact lists show the first line of every row; one switch for all lists, kept in this browser.
+  denseButton() {
+    if (this.dense === undefined) { try { this.dense = globalThis.localStorage?.getItem("ha_housekeeper.dense") === "1"; } catch (_) { this.dense = false; } }
+    const label = this.t(this.dense ? "denseOff" : "denseOn");
+    return `<button type="button" class="dirbtn" data-dense aria-pressed="${this.dense}" title="${label}" aria-label="${label}"><ha-icon icon="${this.dense ? "mdi:format-line-spacing" : "mdi:view-agenda-outline"}"></ha-icon></button>`;
   }
 
   // A sortable table for a list built with lvState/refine: header buttons set sort and direction, the phone shows cards.

@@ -1468,7 +1468,7 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   const state = { ha_version: "2026.2.3", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [{ issue_id: "old", domain: "demo" }], failed_entries: [], broken: [], pending_updates: [{ entity_id: "update.core", name: "Core", installed: "2026.2.3", latest: "2026.3.0" }] };
   const report = { state, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "warn", count: 1 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
   el._hass = { language: "en", callWS: async msg => { sent.push(msg.type); return msg.type.endsWith("recorder_costs") ? COSTS : report; } };
-  el.view = "maintenance";
+  el.view = "maintenance"; el.viewTab = { maintenance: "preflight" };
   el.render();
   assert.ok(shadow.innerHTML.includes("Update preflight") && shadow.innerHTML.includes("Checking"));
   assert.ok(!shadow.innerHTML.includes("Start analysis") && !shadow.innerHTML.includes("Recorder costs"), "the recorder topics moved to the Recorder view");
@@ -1588,7 +1588,7 @@ test("after an update the preflight lists what is new since the saved state", as
   const after = { from_version: "2026.2.3", to_version: "2026.3.0", new_repairs: [{ issue_id: "deprecated", domain: "hue", severity: "warning" }], new_failed_entries: [{ title: "Hub <x>", domain: "demo", entry_id: "e" }], new_broken: [],
     inventory: { new_objects: { total: 2, items: [] }, removed_objects: { total: 0, items: [] }, status_changes: { total: 1, items: [] }, new_findings: { total: 0, items: [] }, resolved_findings: { total: 0, items: [] } } };
   el.preflight = { state, checks: [{ check: "backup", level: "warn" }], record: { at: "2026-10-01T10:00:00+00:00", ha_version: "2026.2.3", repairs: 0, failed_entries: 0, broken: 0, objects: 40 }, after };
-  el.view = "maintenance"; el._pfRequested = true;
+  el.view = "maintenance"; el.viewTab = { maintenance: "preflight" }; el._pfRequested = true;
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("Since the update: Home Assistant 2026.2.3 → 2026.3.0") && html.includes("hue · deprecated") && html.includes("Hub &lt;x&gt; (demo)"));

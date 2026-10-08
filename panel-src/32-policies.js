@@ -94,8 +94,8 @@ class PoliciesMixin {
       hidden ? { label: this.t("polSumHidden"), value: this.formatNumber(hidden), tone: "mute", tab: "policies|violations" } : null,
     ]);
     const tabs = [
+      { id: "rules", label: this.t("polTabRules"), count: r.rules.length },
       { id: "violations", label: this.t("polTabViolations"), count: violations, tone: violations ? "warn" : "ok" },
-      { id: "rules", label: this.t("polTabRules"), count: on.length },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
     const body = open === "rules"

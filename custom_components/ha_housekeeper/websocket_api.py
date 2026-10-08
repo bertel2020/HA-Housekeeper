@@ -512,7 +512,7 @@ async def websocket_recorder_costs(
         return
     try:
         snapshot = await scanner.async_get_snapshot()
-        result = await recorder_costs(hass, snapshot, refresh=msg["refresh"])
+        result = await recorder_costs(hass, snapshot, refresh=msg["refresh"], store=scanner.replies)
     except Exception as err:
         connection.send_error(msg["id"], "recorder_failed", f"{type(err).__name__}: {err}")
         return

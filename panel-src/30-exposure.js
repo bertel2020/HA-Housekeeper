@@ -75,6 +75,7 @@ class ExposureMixin {
     const live = sources.filter(x => x.status === "ok");
     const warn = r.findings.filter(f => f.level === "warn").length;
     const tiles = this.sumTiles([
+      { label: this.t("expoSumFindings"), value: this.formatNumber(r.findings.length), tone: warn ? "warn" : r.findings.length ? "mute" : "ok", tab: "exposure|findings" },
       ...sources.map(x => ({
         label: x.label,
         value: x.status === "ok" ? this.formatNumber(x.count) : "–",
@@ -82,7 +83,6 @@ class ExposureMixin {
         tone: x.status === "ok" ? "ok" : x.status === "inactive" ? "mute" : "warn",
         tab: x.status === "ok" ? `exposure|${x.id}` : "",
       })),
-      { label: this.t("expoSumFindings"), value: this.formatNumber(r.findings.length), tone: warn ? "warn" : r.findings.length ? "mute" : "ok", tab: "exposure|findings" },
     ]);
     const tabs = [
       { id: "findings", label: this.t("expoTabFindings"), count: r.findings.length, tone: warn ? "warn" : "ok" },
