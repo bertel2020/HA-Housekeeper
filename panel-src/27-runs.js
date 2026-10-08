@@ -134,6 +134,15 @@ class RunsMixin {
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(this.lv.runs.q || this.lv.runs.f.type || this.lv.runs.f.outcome ? "noMatches" : everyCounted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
     const all = everyCounted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${counted.length ? this.runsTable(counted) : `<div class="emptymsg">${this.t("noMatches")}</div>`}${more}${this.howCounted("runsFootnote")}</div>` : "";
-    return `<div class="stack"><div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
+    const runTotal = r.items.reduce((n, row) => n + row.runs, 0), errorTotal = r.items.reduce((n, row) => n + row.errors, 0);
+    const neverOk = r.items.filter(row => row.findings.some(f => f.kind === "never_ok")).length;
+    const allFlagged = r.items.filter(row => row.findings.length).length;
+    const tiles = this.sumTiles([
+      { label: this.t("runsSumRuns"), value: this.formatNumber(runTotal), sub: this.t("runsSumOf", { n: this.formatNumber(everyCounted.length) }), tone: "mute" },
+      { label: this.t("runsColErrors"), value: this.formatNumber(errorTotal), sub: runTotal ? this.t("runsSumShare", { n: this.formatNumber(Math.round((1000 * errorTotal) / runTotal) / 10) }) : "", tone: errorTotal ? "warn" : "ok" },
+      { label: this.t("runsSumFlagged"), value: this.formatNumber(allFlagged), tone: allFlagged ? "warn" : "ok" },
+      { label: this.t("runsSumNeverOk"), value: this.formatNumber(neverOk), tone: neverOk ? "red" : "ok" },
+    ]);
+    return `<div class="stack">${tiles}<div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
   }
 }

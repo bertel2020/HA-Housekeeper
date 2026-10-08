@@ -47,23 +47,34 @@ class PoliciesMixin {
   polItemRow(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : "polHiddenLabel")}</span>` : "";
     const button = item.by === "label" ? "" : `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "polShow" : "polHide")}</button>`;
-    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
+    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
   }
 
+  // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
   polRuleBlock(rule) {
     const state = !rule.enabled ? this.t("polOff") : rule.count === 1 ? this.t("polCountOne") : rule.count ? this.t("polCount", { n: this.formatNumber(rule.count) }) : this.t("polNone");
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
-    if (!rule.enabled) return head;
-    const editor = rule.id === "naming_scheme" ? this.polPrefixEditor() : "";
-    const q = (this.lv.policies?.q || "").trim().toLowerCase();
-    const matches = i => !q || [i.name, i.object_id, ...(i.also || [])].join(" ").toLowerCase().includes(q);
-    const visible = rule.items.filter(i => (this.policyShowHidden || !i.ignored) && matches(i));
-    const shown = visible.slice(0, q ? 50 : 10);
-    const more = visible.length > shown.length ? `<p class="factnote">${this.t("polMore", { n: this.formatNumber(visible.length - shown.length) })}</p>` : "";
-    const hidden = rule.ignored ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(rule.ignored) })}</p>` : "";
-    return head + editor + shown.map(i => this.polItemRow(i)).join("") + more + hidden;
+    return head + (rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : "");
+  }
+
+  // The violations of all switched-on rules in one list: filter by rule, search, open the entity.
+  polViolations(r) {
+    const on = r.rules.filter(rule => rule.enabled);
+    if (!on.length) return `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:toggle-switch-off-outline"></ha-icon>${this.t("polNoneOn")}</div></div>`;
+    const wanted = on.some(rule => rule.id === this.polRule) ? this.polRule : "";
+    const chip = (id, label, count) => `<button class="chip ${wanted === id ? "active" : ""}" data-pol-rule="${this.esc(id)}" aria-pressed="${wanted === id}">${this.esc(label)} <em>${this.formatNumber(count)}</em></button>`;
+    const chips = `<div class="chips">${chip("", this.t("polAllRules"), on.reduce((n, rule) => n + rule.count, 0))}${on.map(rule => chip(rule.id, this.t(`polRule_${rule.id}`), rule.count)).join("")}</div>`;
+    const items = on.filter(rule => !wanted || rule.id === wanted).flatMap(rule => rule.items.map(item => ({ ...item, rule: rule.id })))
+      .filter(item => this.policyShowHidden || !item.ignored);
+    const found = this.searchList("policies", items, item => [item.name, item.object_id, ...(item.also || [])].join(" "));
+    const pg = this.paginate("polviol", found.rows);
+    const rows = pg.rows.map(item => this.polItemRow(item)).join("");
+    const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
+    const note = hidden && !this.policyShowHidden ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(hidden) })}</p>` : "";
+    const empty = !found.rows.length && !found.none ? `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("polNoViolations")}</div>` : "";
+    return `<div class="panel">${chips}${found.bar}${found.none}${empty}${rows}${pg.footer}${note}</div>`;
   }
 
   policiesView() {
@@ -74,10 +85,22 @@ class PoliciesMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("polTitle")}</h2><p>${this.t("polHint")}</p></div><div class="actions">${actions}</div></div>`;
     if (this.policiesError) return `<div class="panel">${head}<div class="error">${this.esc(this.policiesError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("polLoading")}</div>`;
-    const none = r.enabled ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`;
-    const total = r.rules.reduce((n, rule) => n + (rule.enabled ? rule.items.length : 0), 0);
-    this.lvState("policies", "", "asc");
-    const bar = total >= 6 || this.lv.policies.q ? this.listBar("policies", { sorts: [] }) : "";
-    return `<div class="panel">${head}${bar}${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${none}${this.howCounted("polFootnote")}</div>`;
+    const on = r.rules.filter(rule => rule.enabled);
+    const violations = on.reduce((n, rule) => n + rule.count, 0);
+    const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
+    const tiles = this.sumTiles([
+      { label: this.t("polSumRules"), value: `${this.formatNumber(on.length)}`, sub: this.t("relSumOf", { n: this.formatNumber(r.rules.length) }), tone: on.length ? "ok" : "mute", tab: "policies|rules" },
+      { label: this.t("polSumViolations"), value: this.formatNumber(violations), tone: !on.length ? "mute" : violations ? "warn" : "ok", tab: "policies|violations" },
+      hidden ? { label: this.t("polSumHidden"), value: this.formatNumber(hidden), tone: "mute", tab: "policies|violations" } : null,
+    ]);
+    const tabs = [
+      { id: "violations", label: this.t("polTabViolations"), count: violations, tone: violations ? "warn" : "ok" },
+      { id: "rules", label: this.t("polTabRules"), count: on.length },
+    ];
+    const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
+    const body = open === "rules"
+      ? `<div class="panel">${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${on.length ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`}${this.howCounted("polFootnote")}</div>`
+      : this.polViolations(r);
+    return `<div class="stack"><div class="panel">${head}</div>${tiles}${this.viewTabBar("policies", tabs, open)}${body}</div>`;
   }
 }

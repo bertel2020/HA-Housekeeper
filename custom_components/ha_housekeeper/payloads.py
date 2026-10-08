@@ -50,6 +50,8 @@ class ExposureFinding(TypedDict):
 
 class ExposureResult(TypedDict):
     available: bool
+    exposed_entities: list[dict[str, Any]]
+    exposed_total: int
     assistants: list[ExposureAssistant]
     bridges: list[ExposureBridge]
     webhooks: int  # a count only, never an id or a url

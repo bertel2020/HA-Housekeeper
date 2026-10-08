@@ -949,12 +949,13 @@ test("policies: rules switch, violations list with hide buttons, hidden ones are
   assert.ok(shadow.innerHTML.includes("Checking policies"));
   await el.loadPolicies();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Entity without an area") && html.includes("2 violations") && html.includes("Device without an area") && html.includes(">off<"));
-  assert.ok(html.includes("light.a") && html.includes("light.b") && !html.includes("light.c"), "hidden ones are folded away");
+  assert.ok(html.includes("Entity without an area") && html.includes("light.a") && html.includes("light.b") && !html.includes("light.c"), "hidden ones are folded away");
   assert.ok(html.includes("2 hidden") && html.includes("Show hidden"));
+  el.viewTab = { policies: "rules" }; el.render(); html = shadow.innerHTML;
+  assert.ok(html.includes("2 violations") && html.includes("Device without an area") && html.includes(">off<"));
   assert.equal((html.match(/data-policy-toggle=/g) || []).length, 2);
   assert.ok(/data-policy-toggle="entity_area"[^>]*checked/.test(html) && !/data-policy-toggle="device_area"[^>]*checked/.test(html));
-  el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
+  el.viewTab = {}; el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
   assert.ok(html.includes("light.c") && html.includes("hidden by label") && html.includes(">Show<"));
   assert.equal((html.match(/data-policy-ignore=/g) || []).length, 3, "no button for what the label hides");
   await el.changePolicy({ type: "ha_housekeeper/set_policy", rule: "device_area", enabled: true });
@@ -976,9 +977,12 @@ test("policies, second stage: duplicate names, labels and the naming scheme with
     { id: "naming_scheme", enabled: true, count: 1, ignored: 0, items: [it("sensor.temp", { expected: "wz_" })] }] };
   el._policiesRequested = true; el.view = "policies"; el.render();
   const html = shadow.innerHTML;
-  for (const text of ["Duplicate display name", "Automation without a label", "Naming scheme", "Same name as: light.k2", "Expects the prefix wz_", "Prefix: wz_"]) assert.ok(html.includes(text), text);
-  assert.equal((html.match(/id="polDomain"/g) || []).length, 1, "the prefix editor belongs to the naming scheme only");
-  assert.ok(html.includes("data-policy-prefix-add") && html.includes('data-policy-prefix-remove="sensor"'));
+  for (const text of ["Duplicate display name", "Automation without a label", "Naming scheme", "Same name as: light.k2", "Expects the prefix wz_"]) assert.ok(html.includes(text), text);
+  el.viewTab = { policies: "rules" }; el.render();
+  assert.ok(shadow.innerHTML.includes("Prefix: wz_"));
+  const rulesHtml = shadow.innerHTML;
+  assert.equal((rulesHtml.match(/id="polDomain"/g) || []).length, 1, "the prefix editor belongs to the naming scheme only");
+  assert.ok(rulesHtml.includes("data-policy-prefix-add") && rulesHtml.includes('data-policy-prefix-remove="sensor"'));
   await el.addPolicyPrefix("  light ", " wz_ ");
   await el.addPolicyPrefix("", "x_"); // incomplete input sends nothing
   await el.removePolicyPrefix("sensor");
@@ -1473,7 +1477,7 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   assert.deepEqual(sent, ["ha_housekeeper/preflight"]);
   assert.ok(html.includes("Last backup 5 h ago") && html.includes("Open repairs") && html.includes("1 · old"));
   assert.ok(html.includes("Core 2026.2.3 → 2026.3.0") && html.includes("No starting state saved yet."));
-  el.view = "recorder";
+  el.view = "recorder"; el.viewTab = { recorder: "costs" };
   el.render();
   assert.ok(shadow.innerHTML.includes("Start analysis"));
   await el.loadCosts();
@@ -1493,7 +1497,7 @@ test("the recorder costs rank by the current rate, switch to the total and ask f
   ] };
   const sent = [];
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return costs; } };
-  el.view = "recorder";
+  el.view = "recorder"; el.viewTab = { recorder: "costs" };
   await el.loadCosts();
   assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/recorder_costs" }));
   let html = shadow.innerHTML;
@@ -2399,7 +2403,7 @@ const UNSTABLE = {
 
 test("the unstable card names level in words, pattern and followers, escapes names and opens the entity", async () => {
   const { el, shadow } = panel("en");
-  el.data = DATA; el.view = "reliability";
+  el.data = DATA; el.view = "reliability"; el.viewTab = { reliability: "unstable" };
   el._hass = { language: "en", callWS: async () => ({ ...RELIABILITY, unstable: UNSTABLE }) };
   await el.loadReliability();
   const html = shadow.innerHTML;
@@ -2412,13 +2416,13 @@ test("the unstable card names level in words, pattern and followers, escapes nam
 
 test("without any unstable entity the card says so, and an old backend without the field shows no card", async () => {
   const { el, shadow } = panel("en");
-  el.data = DATA; el.view = "reliability";
+  el.data = DATA; el.view = "reliability"; el.viewTab = { reliability: "unstable" };
   el._hass = { language: "en", callWS: async () => ({ ...RELIABILITY, unstable: { items: [], total: 0 } }) };
   await el.loadReliability();
   assert.ok(shadow.innerHTML.includes("No entity fails unusually often"));
   el._hass = { language: "en", callWS: async () => RELIABILITY };
   await el.loadReliability();
-  assert.ok(!shadow.innerHTML.includes("Unstable entities"));
+  assert.ok(!shadow.innerHTML.includes("No entity fails unusually often"));
 });
 
 const RUNS = {
@@ -2620,7 +2624,10 @@ test("reliability and the unstable entities can be searched and filtered", () =>
   const unstable = { total: 7, excluded: {}, items: Array.from({ length: 7 }, (_, i) => ({ entity_id: `sensor.u${i}`, name: `Flatter ${i}`, entry_title: "Hue", level: "unstable", episodes: 3, per_day: 1, total_seconds: 60, mean_seconds: 20, used: 0, pattern_hour: null })) };
   el.reliability = { ...RELIABILITY, entries, unstable, coverage: undefined };
   let html = el.reliabilityView();
-  assert.ok(html.includes('data-lq="relentries"') && html.includes('data-lq="relunstable"'), "both lists get a box");
+  assert.ok(html.includes('data-lq="relentries"') && !html.includes('data-lq="relunstable"'), "the open tab holds its list");
+  el.viewTab = { reliability: "unstable" };
+  assert.ok(el.reliabilityView().includes('data-lq="relunstable"'));
+  el.viewTab = {};
   assert.ok(html.indexOf("Box 6") < html.indexOf("Box 0"), "worst availability first");
   el.lvState("relentries", "avail", "asc").f = { state: "outages" };
   html = el.reliabilityView();
@@ -2631,7 +2638,7 @@ test("reliability and the unstable entities can be searched and filtered", () =>
   assert.ok(el.reliabilityView().includes("Box 6") && !el.reliabilityView().includes("Box 5"));
   el.lv.relentries.f = {}; el.lv.relentries.q = "zha";
   assert.ok(el.reliabilityView().includes("Box 3") && !el.reliabilityView().includes("Box 0"));
-  el.lv.relentries.q = ""; el.lvState("relunstable", "", "asc").q = "flatter 4";
+  el.lv.relentries.q = ""; el.lvState("relunstable", "", "asc").q = "flatter 4"; el.viewTab = { reliability: "unstable" };
   html = el.reliabilityView();
   assert.ok(html.includes("sensor.u4") && !html.includes("sensor.u2"));
 });
@@ -2649,7 +2656,7 @@ test("the load view, the policies and the exposure view have a search box once t
   el.policies = { available: true, enabled: 1, violations: 12, prefixes: {}, rules: [{ id: "entity_area", enabled: true, count: 12, ignored: 0, items }] };
   el._policiesRequested = true;
   html = el.policiesView();
-  assert.ok(html.includes('data-lq="policies"') && !html.includes("Lampe 10"), "ten rows without a search");
+  assert.ok(html.includes('data-lq="policies"'), "the violations list has a search box");
   el.lvState("policies", "", "asc").q = "lampe 11";
   html = el.policiesView();
   assert.ok(html.includes("Lampe 11") && !html.includes("Lampe 3"));
@@ -2687,6 +2694,18 @@ test("the database card names the retention set in Home Assistant, and warns whe
   el.data.meta.database = { ...el.data.meta.database, keep_days: null, auto_purge: false };
   html = el.databaseCard();
   assert.ok(!html.includes("Retention") && html.includes("keeps growing"));
+});
+
+test("key figures are buttons only with a target, and an unknown tab falls back to the first or the preferred one", () => {
+  const { el } = panel("en");
+  const html = el.sumTiles([{ label: "A", value: "1", tone: "ok", tab: "v|x" }, { label: "B", value: "2" }, null]);
+  assert.ok(html.includes('<button class="sumtile ok" data-view-tab="v|x">') && html.includes('<div class="sumtile mute">'));
+  const tabs = [{ id: "a" }, { id: "b" }];
+  assert.equal(el.viewTabOf("v", tabs, "b"), "b");
+  el.viewTab = { v: "gone" };
+  assert.equal(el.viewTabOf("v", tabs), "a");
+  el.pickViewTab("v|b");
+  assert.equal(el.viewTab.v, "b");
 });
 
 test("the runtime state shows its unit, but not for special states or entities without one", () => {
@@ -2961,6 +2980,7 @@ const EXPO = {
     { id: "cloud.google_assistant", status: "unavailable", exposed: 0 },
   ],
   bridges: [{ kind: "homekit", title: "Bridge <b>", exposed: 4 }],
+  exposed_entities: [{ entity_id: "lock.door", name: "Door <i>", assistants: ["conversation", "homekit"] }, { entity_id: "light.a", name: "A", assistants: ["conversation"] }], exposed_total: 2,
   findings: [
     { kind: "sensitive_exposed", level: "hint", count: 12, items: [{ entity_id: "lock.door", name: "Door <i>", assistants: ["conversation", "homekit"] }] },
     { kind: "alias_duplicate", level: "warn", assistant: "conversation", alias: "Küche", count: 2, items: [{ entity_id: "light.a", name: "A" }, { entity_id: "light.b", name: "B" }] },
@@ -2973,15 +2993,19 @@ test("the exposure view lists each source with its state and names every finding
   el.data = { ...DATA }; el._exposureRequested = true;
   el.exposure = EXPO;
   const html = el.exposureView();
-  assert.ok(html.includes("Assist") && html.includes("9 entities exposed"));
-  assert.ok(html.includes("not set up") && html.includes("cannot be checked"));
-  assert.ok(html.includes("HomeKit: Bridge &lt;b&gt;") && html.includes("4 entities through the filter"));
+  assert.ok(html.includes("Assist") && html.includes("entities exposed") && html.includes(">9<"), "a tile per source");
+  assert.ok(html.includes("not set up") && html.includes("cannot be checked") && html.includes("HomeKit") && html.includes('data-view-tab="exposure|conversation"'));
   assert.ok(html.includes("Sensitive entities exposed") && html.includes("and 11 more"));
   assert.ok(html.includes("Door &lt;i&gt;") && html.includes("Assist, HomeKit"));
   assert.ok(html.includes("&quot;Küche&quot; names 2 entities for Assist"));
   assert.ok(html.includes("2 webhooks belong to &quot;gone&quot;"));
   assert.ok(html.includes("data-object=\"entity:lock.door\""));
   assert.ok(!html.includes("<b>") && !html.includes("<i>"));
+  el.viewTab = { exposure: "conversation" };
+  const source = el.exposureView();
+  assert.ok(source.includes("9 entities are exposed to Assist") && source.includes('data-object="entity:lock.door"') && source.includes("also: HomeKit") && source.includes("Door &lt;i&gt;"));
+  el.viewTab = { exposure: "homekit" };
+  assert.ok(el.exposureView().includes("Bridge &lt;b&gt;"), "a bridge tab names its bridge");
 });
 
 test("the exposure view loads once, asks the backend and handles errors and an empty result", async () => {
@@ -2992,7 +3016,7 @@ test("the exposure view loads once, asks the backend and handles errors and an e
   el.exposureView(); el.ensureExposure();
   await el.loadExposure();
   assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/exposure" }));
-  el.exposure = { ...EXPO, findings: [] };
+  el.exposure = { ...EXPO, findings: [] }; el.viewTab = { exposure: "findings" };
   assert.ok(el.exposureView().includes("Nothing unusual in the exposure."));
   el.exposure = null; el.exposureError = "boom";
   assert.ok(el.exposureView().includes("boom"));

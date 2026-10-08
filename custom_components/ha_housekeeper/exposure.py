@@ -34,6 +34,7 @@ SENSITIVE_COVERS = ("garage", "gate")
 DIAGNOSTIC_CATEGORIES = ("diagnostic", "config")
 STALE_STATUSES = ("disabled", "orphaned")
 ITEM_LIMIT = 200
+EXPOSED_LIMIT = 2000  # entities listed with the assistants that reach them
 
 
 def _clean_filter(raw: Any) -> dict[str, list[str]]:
@@ -217,7 +218,13 @@ def evaluate(
         findings.append(
             {"kind": "webhook_orphan", "level": "warn", "domain": domain, "count": orphans[domain]}
         )
+    exposed_all = [
+        {"entity_id": eid, "name": names[eid], "assistants": sorted(by_entity[eid])}
+        for eid in sorted(by_entity, key=lambda e: (names[e].casefold(), e))
+    ]
     return {
+        "exposed_entities": exposed_all[:EXPOSED_LIMIT],
+        "exposed_total": len(exposed_all),
         "assistants": assistants,
         "bridges": bridges,
         "webhooks": sum(raw["webhooks"].values()),

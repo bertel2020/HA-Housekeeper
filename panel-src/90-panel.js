@@ -22,7 +22,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.compareBaseline = "previous";
     this.compareLoading = false;
     this.graphSelected = null;
-    this.graphTrail = []; this.graphOrigin = null; this.viewTrail = []; this._tabOf = new Map();
+    this.graphTrail = []; this.graphOrigin = null; this.viewTrail = []; this._tabOf = new Map(); this.viewTab = {};
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
@@ -389,6 +389,7 @@ class HAHousekeeperPanel extends HTMLElement {
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
     this._pendingTab = params.get("tab");
+    if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -404,6 +405,7 @@ class HAHousekeeperPanel extends HTMLElement {
     }
     else {
       if (this.view !== "overview") params.set("view", this.view);
+      if (this.viewTab?.[this.view]) params.set("tab", this.viewTab[this.view]);
       if (this.view === "findingsNav" && this.findingFilter) params.set("filter", this.findingFilter);
     }
     const query = params.toString();
@@ -538,6 +540,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-scan-point]").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
+    root.querySelectorAll("[data-view-tab]").forEach(el => el.onclick = () => this.pickViewTab(el.dataset.viewTab));
     root.querySelector("[data-action='graph-back']")?.addEventListener("click", () => this.graphBack());
     root.querySelector("[data-action='view-back']")?.addEventListener("click", () => this.viewBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {
@@ -643,6 +646,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
+    root.querySelectorAll("[data-pol-rule]").forEach(el => el.onclick = () => { this.polRule = el.dataset.polRule; this.pages = {}; this.render(); });
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
     root.querySelectorAll("[data-policy-toggle]").forEach(el => el.onchange = () => this.changePolicy({ type: "ha_housekeeper/set_policy", rule: el.dataset.policyToggle, enabled: el.checked }));
     root.querySelector("[data-policy-prefix-add]")?.addEventListener("click", () => this.addPolicyPrefix(root.querySelector("#polDomain")?.value, root.querySelector("#polPrefix")?.value));

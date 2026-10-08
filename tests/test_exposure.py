@@ -258,3 +258,13 @@ def test_a_non_text_alias_is_ignored() -> None:
     }
     result = evaluate(raw(exposed=["light.a", "light.b"]), entities, set())
     assert [f["kind"] for f in result["findings"]] == ["alias_duplicate"]
+
+
+def test_every_exposed_entity_is_listed_with_the_assistants_that_reach_it() -> None:
+    entities = {"light.b": entity("Bravo"), "light.a": entity("alpha"), "light.c": entity("C")}
+    result = evaluate(raw(exposed=["light.b", "light.a"]), entities, set())
+    assert [e["entity_id"] for e in result["exposed_entities"]] == ["light.a", "light.b"]
+    assert (
+        result["exposed_entities"][0]["assistants"] == ["conversation"]
+        and result["exposed_total"] == 2
+    )

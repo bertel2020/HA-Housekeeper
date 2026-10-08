@@ -58,7 +58,32 @@ class StormsMixin {
   recorderView() {
     const stormsDone = this.storms || this.stormsError;
     if (stormsDone) this.ensureDbHealth();
-    return `<div class="stack">${this.stormsView()}${this.recorderCard()}${this.dbCard()}</div>`;
+    const st = this.storms?.available && !this.storms.busy ? this.storms : null;
+    const db = this.dbHealth?.available && !this.dbHealth.busy ? this.dbHealth : null;
+    const meta = this.data?.meta?.database;
+    const stormFindings = st ? st.findings.length : 0;
+    const dbFindings = db ? db.findings.length : 0;
+    const dbTone = !db ? "mute" : db.findings.some(f => f.level === "problem") ? "red" : dbFindings ? "warn" : "ok";
+    const stormTone = !st ? "mute" : st.findings.some(f => f.kind === "storm" || f.kind === "integration_share") ? "red" : stormFindings ? "warn" : "ok";
+    const bytes = db?.db_bytes ?? meta?.db_bytes;
+    const perDay = db?.growth?.known ? db.growth.per_day : meta?.per_day;
+    const keep = db?.keep_days ?? meta?.keep_days, purge = db?.auto_purge ?? meta?.auto_purge;
+    const loud = st?.entities?.[0];
+    const tiles = this.sumTiles([
+      st && { label: this.t("recSumRows"), value: this.formatNumber(st.per_day), sub: this.t(this.stormsWindow === 1 ? "relWindow1" : "relWindow7"), tone: "mute", tab: "recorder|load" },
+      loud && { label: this.t("recSumLoudest"), value: this.esc(loud.name || loud.entity_id), sub: this.t("stormRows", { rows: this.formatNumber(loud.rows), perDay: this.formatNumber(loud.per_day) }), tone: "mute", tab: "recorder|load" },
+      bytes !== null && bytes !== undefined && { label: this.t("recSumDb"), value: this.formatBytes(bytes), sub: perDay !== null && perDay !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }) : "", tone: dbTone, tab: "recorder|db" },
+      keep && { label: this.t("dbOvKeep"), value: this.t("dbOvKeepDays", { n: this.formatNumber(keep) }), sub: purge === false ? this.t("recSumPurgeOff") : "", tone: purge === false ? "warn" : "mute", tab: "recorder|db" },
+      (st || db) && { label: this.t("recSumFindings"), value: this.formatNumber(stormFindings + dbFindings), tone: stormTone === "red" || dbTone === "red" ? "red" : stormFindings + dbFindings ? "warn" : "ok", tab: `recorder|${stormFindings || !dbFindings ? "load" : "db"}` },
+    ]);
+    const tabs = [
+      { id: "load", label: this.t("stormTitle"), count: st ? stormFindings : null, tone: stormTone },
+      { id: "costs", label: this.t("recorderTitle") },
+      { id: "db", label: this.t("dbTitle"), count: db ? dbFindings : null, tone: dbTone },
+    ];
+    const open = this.viewTabOf("recorder", tabs, "load");
+    const body = open === "costs" ? this.recorderCard() : open === "db" ? this.dbCard() : this.stormsView();
+    return `<div class="stack">${tiles}${this.viewTabBar("recorder", tabs, open)}${body}</div>`;
   }
 
   stormsView() {

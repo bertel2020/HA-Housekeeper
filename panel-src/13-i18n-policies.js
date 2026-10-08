@@ -1,5 +1,6 @@
 // Texts for the policies view; merged into TEXT.
 Object.assign(TEXT.de, {
+  polAllRules: "Alle Regeln", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
   policies: "Richtlinien", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant. Hinweise, keine Defekte; liest nur.",
   polTitle: "Qualitätsrichtlinien", polHint: "Schalte ein, was in deiner Installation gelten soll. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
   polOff: "aus", polCount: "{n} Verstöße", polCountOne: "1 Verstoß", polNone: "Keine Verstöße", polNoneOn: "Schalte oben eine Regel ein, um Verstöße zu sehen.",
@@ -16,6 +17,7 @@ Object.assign(TEXT.de, {
   polFootnote: "Richtlinien sind Hinweise zur Ordnung und keine Defekte: Sie zählen nicht in Gesundheit, Befunde, Reparaturhinweise oder Sensoren. Housekeeper vergleicht nur die vorhandenen Daten des letzten Scans. Mit dem Label housekeeper_ignore an einer Entität, einem Gerät oder einer Automation oder über Ausblenden nimmst du ein Objekt aus. Die Schalter liegen nur in Housekeeper.",
 });
 Object.assign(TEXT.en, {
+  polAllRules: "All rules", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
   policies: "Policies", policiesSubtitle: "Your own rules for tidiness in Home Assistant. Hints, not defects; only reads.",
   polTitle: "Quality policies", polHint: "Switch on what should apply to your installation. All rules start off.", polLoading: "Checking policies",
   polOff: "off", polCount: "{n} violations", polCountOne: "1 violation", polNone: "No violations", polNoneOn: "Switch on a rule above to see violations.",

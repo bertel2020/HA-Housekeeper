@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
+    sumLabel: "Kennzahlen", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -183,7 +183,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
+    sumLabel: "Key figures", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Explore", navGroupMaintain: "Maintain",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -710,6 +710,7 @@ Object.assign(TEXT.de, {
   relWindow1: "24 Stunden", relWindow7: "7 Tage", relRefresh: "Neu berechnen", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   relTab: "Zuverlässigkeit", relAllStates: "Alle Zustände", relOnlyOutages: "Mit gemeinsamen Ausfällen", relOnlyReauth: "Neue Anmeldung nötig", relOnlyNotLoaded: "Nicht geladen", relSortAvail: "Verfügbarkeit", relSortOutages: "Ausfälle", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entitäten mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entität dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
   stability: "Stabilität", stabilityOk: "Stabil im Zeitraum", stabilityMissing: "Noch nicht berechnet. Die Ansicht Zuverlässigkeit rechnet es aus.", cause_unstable: "Die Entität fällt immer wieder aus: {level}.", hint_unstable: "Prüfe Verbindung, Netz und Integration des Geräts; die Zahlen stehen in der Ansicht Zuverlässigkeit.",
+  relSumAvail: "Verfügbarkeit gesamt", relSumOutages: "Integrationen mit Ausfällen", relSumOf: "von {n}", relSumUnstable: "Instabile Entitäten", relSumFlapping: "davon {n} flatternd", relSumAttention: "Brauchen Aufmerksamkeit", relSumAttentionHint: "neue Anmeldung oder nicht geladen", relTabIntegrations: "Integrationen", relTabUnstable: "Instabile Entitäten",
   relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
   relBusy: "Eine andere Berechnung läuft noch. Housekeeper fragt automatisch erneut an.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
   relEntities: "{n} Entitäten", relPermanent: "{n} dauerhaft ausgefallen, nicht eingerechnet",
@@ -730,6 +731,7 @@ Object.assign(TEXT.en, {
   relWindow1: "24 hours", relWindow7: "7 days", relRefresh: "Recalculate", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   relTab: "Reliability", relAllStates: "All states", relOnlyOutages: "With shared outages", relOnlyReauth: "Re-authentication open", relOnlyNotLoaded: "Not loaded", relSortAvail: "Availability", relSortOutages: "Outages", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
   stability: "Stability", stabilityOk: "Stable in the period", stabilityMissing: "Not calculated yet. The Reliability view calculates it.", cause_unstable: "The entity keeps failing: {level}.", hint_unstable: "Check the connection, network and integration of the device; the numbers are in the Reliability view.",
+  relSumAvail: "Availability overall", relSumOutages: "Integrations with outages", relSumOf: "of {n}", relSumUnstable: "Unstable entities", relSumFlapping: "{n} of them flapping", relSumAttention: "Need attention", relSumAttentionHint: "re-authentication or not loaded", relTabIntegrations: "Integrations", relTabUnstable: "Unstable entities",
   relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
   relBusy: "Another calculation is still running. Housekeeper asks again by itself.", relEmpty: "There are no integration states in this period.",
   relEntities: "{n} entities", relPermanent: "{n} down all the time, not counted",
@@ -747,6 +749,7 @@ Object.assign(TEXT.en, {
 
 // Texts for the automation runs view; merged into TEXT.
 Object.assign(TEXT.de, {
+  runsSumRuns: "Gezählte Läufe", runsSumOf: "von {n} Automationen und Skripten", runsSumShare: "{n} % der Läufe", runsSumFlagged: "Auffällig", runsSumNeverOk: "Nie erfolgreich",
   runs: "Automationen", runsHeading: "Automationen im Betrieb", runsSubtitle: "Wie oft Automationen und Skripte laufen, scheitern oder ohne Wirkung enden. Gezählt aus den Läufen, die Home Assistant kurz vorhält.",
   runsTitle: "Auffällig", runsHint: "Letzte 7 Tage. Ein fehlerfreier Lauf heißt nicht, dass die Automation ihren Zweck erfüllt",
   runsSince: "Gezählt seit {date}; ältere Läufe sind in Home Assistant nicht mehr vorhanden.", runsRefresh: "Neu zählen",
@@ -767,6 +770,7 @@ Object.assign(TEXT.de, {
   rfContinue: "{n} Schritt(e) mit „continue_on_error“; Fehler bleiben dort unsichtbar.",
 });
 Object.assign(TEXT.en, {
+  runsSumRuns: "Counted runs", runsSumOf: "of {n} automations and scripts", runsSumShare: "{n} % of the runs", runsSumFlagged: "Flagged", runsSumNeverOk: "Never successful",
   runs: "Automations", runsHeading: "Automations in operation", runsSubtitle: "How often automations and scripts run, fail or end without effect. Counted from the runs Home Assistant keeps for a short time.",
   runsTitle: "Needs a look", runsHint: "Last 7 days. A run without an error does not mean the automation does its job",
   runsSince: "Counted since {date}; older runs are no longer in Home Assistant.", runsRefresh: "Count again",
@@ -833,6 +837,7 @@ Object.assign(TEXT.en, {
 
 // Texts for the recorder load view; merged into TEXT.
 Object.assign(TEXT.de, {
+  recSumRows: "Zeilen pro Tag", recSumLoudest: "Lauteste Entität", recSumDb: "Datenbank", recSumPurgeOff: "Bereinigung aus", recSumFindings: "Auffälligkeiten",
   recorder: "Recorder", recorderSubtitle: "Was den Recorder am meisten beschreibt, was die Datenbank füllt und wie gesund sie ist. Liest nur den Recorder.",
   stormTitle: "Last im Recorder", stormHint: "Gezählt werden geschriebene Zeilen, nicht Aufrufe", stormLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   stormNone: "Nichts schreibt auffällig viel.", stormSummary: "Im Zeitraum: {rows} Zeilen ({perDay} pro Tag) von {entities} Entitäten und {events} Ereignisse.",
@@ -848,6 +853,7 @@ Object.assign(TEXT.de, {
   stormFootnote: "Eine Zeile entsteht, wenn sich Zustand oder Attribute einer Entität ändern. Identische Updates schreibt Home Assistant gar nicht; „ohne neuen Zustand“ heißt: der Wert blieb gleich, nur Attribute änderten sich. Die Attributgröße gilt für die letzten 24 Stunden. Housekeeper ändert die Recorder-Einstellungen nicht: ausschließen kannst du Entitäten in der Konfiguration unter recorder, oder das Aktualisierungsintervall der Quelle erhöhen.",
 });
 Object.assign(TEXT.en, {
+  recSumRows: "Rows a day", recSumLoudest: "Loudest entity", recSumDb: "Database", recSumPurgeOff: "purging off", recSumFindings: "Findings",
   recorder: "Recorder", recorderSubtitle: "What writes the most to the recorder, what fills the database and how healthy it is. Only reads the recorder.",
   stormTitle: "Recorder load", stormHint: "Rows written are counted, not calls", stormLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   stormNone: "Nothing writes unusually much.", stormSummary: "In the period: {rows} rows ({perDay} a day) from {entities} entities and {events} events.",
@@ -975,6 +981,7 @@ class ThemeMixin {
 
 // Texts for the exposure view; merged into TEXT.
 Object.assign(TEXT.de, {
+  expoIntro: "Hier siehst du, welche Entitäten Sprachassistenten (Assist, Alexa, Google Assistant) und HomeKit-Bridges erreichen können, und was dabei auffällt. Ein Klick auf eine Kachel zeigt die Entitäten.", expoSumEntities: "Entitäten freigegeben", expoSumFindings: "Auffälligkeiten", expoTabFindings: "Auffälligkeiten", expoFindingsHint: "Freigaben, die einen Blick wert sind: nicht mehr vorhandene oder deaktivierte Entitäten, sensible Geräte, doppelte Sprachnamen und verwaiste Webhooks.", expoSourceHint: "{n} Entitäten sind für {name} freigegeben.", expoAlso: "auch: {list}", expoCapped: "Gezeigt werden die ersten {n}.", expoNoneFor: "Für diese Quelle ist nichts freigegeben.", expoInactiveText: "Nicht eingerichtet: es ist nichts freigegeben.",
   exposure: "Freigaben", exposureSubtitle: "Welche Entitäten Sprachassistenten und Bridges erreichen können. Liest nur; es wird nichts geändert und nichts gespeichert.",
   expoTitle: "Freigaben", expoHint: "Assist, Alexa, Google Assistant und HomeKit", expoLoading: "Die Freigaben werden gelesen …",
   expoNone: "Nichts Auffälliges bei den Freigaben.", expoHint2: "Hinweis", expoWarn: "Prüfen",
@@ -996,6 +1003,7 @@ Object.assign(TEXT.de, {
   expoFootnote: "Housekeeper liest je Assistent, welche Entitäten Home Assistant freigibt, bei HomeKit nur den gespeicherten Entitäts-Filter der Bridge. Passwörter, Tokens, Ports und Webhook-IDs werden nie gelesen oder angezeigt. Wenn eine Quelle nicht antwortet, steht „nicht prüfbar“, nie „nicht freigegeben“. Sprachnamen gelten als gleich, wenn sie sich nur in Groß- und Kleinschreibung, Leerzeichen oder Umlauten unterscheiden.",
 });
 Object.assign(TEXT.en, {
+  expoIntro: "Here you see which entities voice assistants (Assist, Alexa, Google Assistant) and HomeKit bridges can reach, and what stands out. A click on a tile shows the entities.", expoSumEntities: "entities exposed", expoSumFindings: "Findings", expoTabFindings: "Findings", expoFindingsHint: "Exposures worth a look: entities that are gone or disabled, sensitive devices, duplicate voice names and orphaned webhooks.", expoSourceHint: "{n} entities are exposed to {name}.", expoAlso: "also: {list}", expoCapped: "The first {n} are shown.", expoNoneFor: "Nothing is exposed to this source.", expoInactiveText: "Not set up: nothing is exposed.",
   exposure: "Exposure", exposureSubtitle: "Which entities voice assistants and bridges can reach. Only reads; nothing is changed and nothing is stored.",
   expoTitle: "Exposure", expoHint: "Assist, Alexa, Google Assistant and HomeKit", expoLoading: "Reading the exposure …",
   expoNone: "Nothing unusual in the exposure.", expoHint2: "Note", expoWarn: "Check",
@@ -1095,6 +1103,7 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
+      .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
       .factnote{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}
@@ -1151,6 +1160,7 @@ class StylesMixin {
 
 // Texts for the policies view; merged into TEXT.
 Object.assign(TEXT.de, {
+  polAllRules: "Alle Regeln", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
   policies: "Richtlinien", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant. Hinweise, keine Defekte; liest nur.",
   polTitle: "Qualitätsrichtlinien", polHint: "Schalte ein, was in deiner Installation gelten soll. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
   polOff: "aus", polCount: "{n} Verstöße", polCountOne: "1 Verstoß", polNone: "Keine Verstöße", polNoneOn: "Schalte oben eine Regel ein, um Verstöße zu sehen.",
@@ -1167,6 +1177,7 @@ Object.assign(TEXT.de, {
   polFootnote: "Richtlinien sind Hinweise zur Ordnung und keine Defekte: Sie zählen nicht in Gesundheit, Befunde, Reparaturhinweise oder Sensoren. Housekeeper vergleicht nur die vorhandenen Daten des letzten Scans. Mit dem Label housekeeper_ignore an einer Entität, einem Gerät oder einer Automation oder über Ausblenden nimmst du ein Objekt aus. Die Schalter liegen nur in Housekeeper.",
 });
 Object.assign(TEXT.en, {
+  polAllRules: "All rules", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
   policies: "Policies", policiesSubtitle: "Your own rules for tidiness in Home Assistant. Hints, not defects; only reads.",
   polTitle: "Quality policies", polHint: "Switch on what should apply to your installation. All rules start off.", polLoading: "Checking policies",
   polOff: "off", polCount: "{n} violations", polCountOne: "1 violation", polNone: "No violations", polNoneOn: "Switch on a rule above to see violations.",
@@ -3422,7 +3433,26 @@ class ReliabilityMixin {
     ] }) : "";
     const pg = this.paginate("relentries", entries);
     const list = entries.length ? pg.rows.map(item => this.relRow(item)).join("") : `<div class="emptymsg">${this.t("noMatches")}</div>`;
-    return `<div class="stack"><div class="panel">${head}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>${this.unstableCard(r)}</div>`;
+    const u = r.unstable || { total: 0, entities: {} };
+    const flapping = Object.values(u.entities || {}).filter(e => e.level === "flapping").length;
+    const outages = r.entries.filter(e => e.shared_outages > 0).length;
+    const attention = r.entries.filter(e => e.reauth || (e.state && e.state !== "loaded")).length;
+    const counted = r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.entities), 0);
+    const overall = counted ? r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.availability * e.entities), 0) / counted : null;
+    const toneOf = value => (value === null ? "mute" : value >= 99.5 ? "ok" : value >= 95 ? "warn" : "red");
+    const tiles = this.sumTiles([
+      { label: this.t("relSumAvail"), value: overall === null ? "–" : `${this.formatNumber(Math.round(overall * 10) / 10)} %`, sub: this.t(r.window_days === 1 ? "relWindow1" : "relWindow7"), tone: toneOf(overall), tab: "reliability|integrations" },
+      { label: this.t("relSumOutages"), value: this.formatNumber(outages), sub: this.t("relSumOf", { n: this.formatNumber(r.entries.length) }), tone: outages ? "warn" : "ok", tab: "reliability|integrations" },
+      { label: this.t("relSumUnstable"), value: this.formatNumber(u.total || 0), sub: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "", tone: flapping ? "red" : u.total ? "warn" : "ok", tab: "reliability|unstable" },
+      { label: this.t("relSumAttention"), value: this.formatNumber(attention), sub: this.t("relSumAttentionHint"), tone: attention ? "red" : "ok", tab: "reliability|integrations" },
+    ]);
+    const tabs = [
+      { id: "integrations", label: this.t("relTabIntegrations"), count: r.entries.length, tone: outages || attention ? "warn" : "ok" },
+      { id: "unstable", label: this.t("relTabUnstable"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok" },
+    ];
+    const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
+    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
+    return `<div class="stack"><div class="panel">${head}${coverage}</div>${tiles}${this.viewTabBar("reliability", tabs, open)}${body}</div>`;
   }
 
   // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
@@ -3607,7 +3637,16 @@ class RunsMixin {
     const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(this.lv.runs.q || this.lv.runs.f.type || this.lv.runs.f.outcome ? "noMatches" : everyCounted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
     const all = everyCounted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${counted.length ? this.runsTable(counted) : `<div class="emptymsg">${this.t("noMatches")}</div>`}${more}${this.howCounted("runsFootnote")}</div>` : "";
-    return `<div class="stack"><div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
+    const runTotal = r.items.reduce((n, row) => n + row.runs, 0), errorTotal = r.items.reduce((n, row) => n + row.errors, 0);
+    const neverOk = r.items.filter(row => row.findings.some(f => f.kind === "never_ok")).length;
+    const allFlagged = r.items.filter(row => row.findings.length).length;
+    const tiles = this.sumTiles([
+      { label: this.t("runsSumRuns"), value: this.formatNumber(runTotal), sub: this.t("runsSumOf", { n: this.formatNumber(everyCounted.length) }), tone: "mute" },
+      { label: this.t("runsColErrors"), value: this.formatNumber(errorTotal), sub: runTotal ? this.t("runsSumShare", { n: this.formatNumber(Math.round((1000 * errorTotal) / runTotal) / 10) }) : "", tone: errorTotal ? "warn" : "ok" },
+      { label: this.t("runsSumFlagged"), value: this.formatNumber(allFlagged), tone: allFlagged ? "warn" : "ok" },
+      { label: this.t("runsSumNeverOk"), value: this.formatNumber(neverOk), tone: neverOk ? "red" : "ok" },
+    ]);
+    return `<div class="stack">${tiles}<div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
   }
 }
 
@@ -3671,7 +3710,32 @@ class StormsMixin {
   recorderView() {
     const stormsDone = this.storms || this.stormsError;
     if (stormsDone) this.ensureDbHealth();
-    return `<div class="stack">${this.stormsView()}${this.recorderCard()}${this.dbCard()}</div>`;
+    const st = this.storms?.available && !this.storms.busy ? this.storms : null;
+    const db = this.dbHealth?.available && !this.dbHealth.busy ? this.dbHealth : null;
+    const meta = this.data?.meta?.database;
+    const stormFindings = st ? st.findings.length : 0;
+    const dbFindings = db ? db.findings.length : 0;
+    const dbTone = !db ? "mute" : db.findings.some(f => f.level === "problem") ? "red" : dbFindings ? "warn" : "ok";
+    const stormTone = !st ? "mute" : st.findings.some(f => f.kind === "storm" || f.kind === "integration_share") ? "red" : stormFindings ? "warn" : "ok";
+    const bytes = db?.db_bytes ?? meta?.db_bytes;
+    const perDay = db?.growth?.known ? db.growth.per_day : meta?.per_day;
+    const keep = db?.keep_days ?? meta?.keep_days, purge = db?.auto_purge ?? meta?.auto_purge;
+    const loud = st?.entities?.[0];
+    const tiles = this.sumTiles([
+      st && { label: this.t("recSumRows"), value: this.formatNumber(st.per_day), sub: this.t(this.stormsWindow === 1 ? "relWindow1" : "relWindow7"), tone: "mute", tab: "recorder|load" },
+      loud && { label: this.t("recSumLoudest"), value: this.esc(loud.name || loud.entity_id), sub: this.t("stormRows", { rows: this.formatNumber(loud.rows), perDay: this.formatNumber(loud.per_day) }), tone: "mute", tab: "recorder|load" },
+      bytes !== null && bytes !== undefined && { label: this.t("recSumDb"), value: this.formatBytes(bytes), sub: perDay !== null && perDay !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }) : "", tone: dbTone, tab: "recorder|db" },
+      keep && { label: this.t("dbOvKeep"), value: this.t("dbOvKeepDays", { n: this.formatNumber(keep) }), sub: purge === false ? this.t("recSumPurgeOff") : "", tone: purge === false ? "warn" : "mute", tab: "recorder|db" },
+      (st || db) && { label: this.t("recSumFindings"), value: this.formatNumber(stormFindings + dbFindings), tone: stormTone === "red" || dbTone === "red" ? "red" : stormFindings + dbFindings ? "warn" : "ok", tab: `recorder|${stormFindings || !dbFindings ? "load" : "db"}` },
+    ]);
+    const tabs = [
+      { id: "load", label: this.t("stormTitle"), count: st ? stormFindings : null, tone: stormTone },
+      { id: "costs", label: this.t("recorderTitle") },
+      { id: "db", label: this.t("dbTitle"), count: db ? dbFindings : null, tone: dbTone },
+    ];
+    const open = this.viewTabOf("recorder", tabs, "load");
+    const body = open === "costs" ? this.recorderCard() : open === "db" ? this.dbCard() : this.stormsView();
+    return `<div class="stack">${tiles}${this.viewTabBar("recorder", tabs, open)}${body}</div>`;
   }
 
   stormsView() {
@@ -3782,16 +3846,6 @@ class ExposureMixin {
     return (ids || []).map(id => this.expoAssistantName(id)).join(", ");
   }
 
-  expoAssistantRow(a) {
-    const state = a.status === "ok" ? this.t("expoOk", { n: this.formatNumber(a.exposed) }) : this.t(a.status === "inactive" ? "expoInactive" : "expoUnavailable");
-    const tone = a.status === "ok" ? "ok" : a.status === "inactive" ? "mute" : "warn";
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:microphone-message"></ha-icon></span><span class="row-text"><strong>${this.expoAssistantName(a.id)}</strong><small>${this.esc(state)}</small></span></div>`;
-  }
-
-  expoBridgeRow(b) {
-    return `<div class="row"><span class="tile ok"><ha-icon icon="mdi:home-automation"></ha-icon></span><span class="row-text"><strong>${this.expoAssistantName(b.kind)}: ${this.esc(b.title)}</strong><small>${this.esc(this.t("expoBridge", { n: this.formatNumber(b.exposed) }))}</small></span></div>`;
-  }
-
   expoFindingText(f) {
     return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "" });
   }
@@ -3809,20 +3863,67 @@ class ExposureMixin {
     return head + rows + more;
   }
 
+  // Voice assistants and bridges as one list: id, name, state and how many entities each one reaches.
+  expoSources(r) {
+    const list = r.assistants.map(a => ({ id: a.id, label: this.expoAssistantName(a.id), status: a.status, count: a.exposed }));
+    const kinds = {};
+    for (const b of r.bridges) {
+      const kind = (kinds[b.kind] ||= { id: b.kind, label: this.expoAssistantName(b.kind), status: "ok", count: 0, titles: [] });
+      kind.count += b.exposed; kind.titles.push(b.title);
+    }
+    return [...list, ...Object.values(kinds)];
+  }
+
+  // The entities one assistant or bridge can reach, searchable; a click opens the entity.
+  expoSourceTab(r, source) {
+    const all = (r.exposed_entities || []).filter(e => e.assistants.includes(source.id));
+    const found = this.searchList(`expo_${source.id}`, all, e => [e.name, e.entity_id].join(" "));
+    const pg = this.paginate(`expo_${source.id}`, found.rows);
+    const rows = pg.rows.map(e => {
+      const others = e.assistants.filter(id => id !== source.id);
+      return `<button class="row" data-object="entity:${this.esc(e.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong><small>${this.esc(e.entity_id)}${others.length ? ` · ${this.esc(this.t("expoAlso", { list: this.expoAssistantList(others) }))}` : ""}</small></span></button>`;
+    }).join("");
+    const where = source.titles?.length ? ` (${this.esc(source.titles.join(", "))})` : "";
+    const capped = r.exposed_total > (r.exposed_entities || []).length ? `<p class="factnote">${this.t("expoCapped", { n: this.formatNumber(r.exposed_entities.length) })}</p>` : "";
+    const empty = all.length ? "" : `<div class="emptymsg">${this.t(source.status === "inactive" ? "expoInactiveText" : "expoNoneFor")}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.esc(source.label)}${where}</h2><p>${this.t("expoSourceHint", { n: this.formatNumber(source.count), name: this.esc(source.label) })}</p></div></div>${found.bar}${found.none}${empty}${rows}${pg.footer}${capped}</div>`;
+  }
+
   exposureView() {
     this.ensureExposure();
     const r = this.exposure;
     const head = `<div class="panelhead"><div><h2>${this.t("expoTitle")}</h2><p>${this.t("expoHint")}</p></div><div class="actions"><button class="btn" data-expo-refresh ${this.exposureLoading ? "disabled" : ""}>${this.t("relRefresh")}</button></div></div>`;
     if (this.exposureError) return `<div class="panel">${head}<div class="error">${this.esc(this.exposureError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("expoLoading")}</div>`;
-    const sources = r.assistants.map(a => this.expoAssistantRow(a)).join("") + r.bridges.map(b => this.expoBridgeRow(b)).join("");
-    this.lvState("exposure", "", "asc");
-    const q = this.lv.exposure.q.trim().toLowerCase();
-    const itemCount = r.findings.reduce((n, f) => n + (f.items || []).length, 0);
-    const bar = itemCount >= 6 || q ? this.listBar("exposure", { sorts: [] }) : "";
-    const shownFindings = q ? r.findings.filter(f => (f.items || []).some(item => [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q))) : r.findings;
-    const findings = shownFindings.length ? shownFindings.map(f => this.expoFindingRows(f)).join("") : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
-    return `<div class="panel">${head}${sources}${bar}${findings}${this.howCounted("expoFootnote")}</div>`;
+    const sources = this.expoSources(r);
+    const live = sources.filter(x => x.status === "ok");
+    const warn = r.findings.filter(f => f.level === "warn").length;
+    const tiles = this.sumTiles([
+      ...sources.map(x => ({
+        label: x.label,
+        value: x.status === "ok" ? this.formatNumber(x.count) : "–",
+        sub: x.status === "ok" ? this.t("expoSumEntities") : this.t(x.status === "inactive" ? "expoInactive" : "expoUnavailable"),
+        tone: x.status === "ok" ? "ok" : x.status === "inactive" ? "mute" : "warn",
+        tab: x.status === "ok" ? `exposure|${x.id}` : "",
+      })),
+      { label: this.t("expoSumFindings"), value: this.formatNumber(r.findings.length), tone: warn ? "warn" : r.findings.length ? "mute" : "ok", tab: "exposure|findings" },
+    ]);
+    const tabs = [
+      { id: "findings", label: this.t("expoTabFindings"), count: r.findings.length, tone: warn ? "warn" : "ok" },
+      ...live.map(x => ({ id: x.id, label: x.label, count: x.count })),
+    ];
+    const open = this.viewTabOf("exposure", tabs, r.findings.length || !live.length ? "findings" : live[0].id);
+    let body;
+    if (open === "findings") {
+      this.lvState("exposure", "", "asc");
+      const q = this.lv.exposure.q.trim().toLowerCase();
+      const itemCount = r.findings.reduce((n, f) => n + (f.items || []).length, 0);
+      const bar = itemCount >= 6 || q ? this.listBar("exposure", { sorts: [] }) : "";
+      const shown = q ? r.findings.filter(f => (f.items || []).some(item => [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q))) : r.findings;
+      const rows = shown.length ? shown.map(f => this.expoFindingRows(f)).join("") : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
+      body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("expoTabFindings")}</h2><p>${this.t("expoFindingsHint")}</p></div></div>${bar}${rows}${this.howCounted("expoFootnote")}</div>`;
+    } else body = this.expoSourceTab(r, sources.find(x => x.id === open));
+    return `<div class="stack"><div class="panel">${head}<p class="factnote">${this.t("expoIntro")}</p></div>${tiles}${this.viewTabBar("exposure", tabs, open)}${body}</div>`;
   }
 }
 
@@ -3946,23 +4047,34 @@ class PoliciesMixin {
   polItemRow(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : "polHiddenLabel")}</span>` : "";
     const button = item.by === "label" ? "" : `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "polShow" : "polHide")}</button>`;
-    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
+    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button><small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
   }
 
+  // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
   polRuleBlock(rule) {
     const state = !rule.enabled ? this.t("polOff") : rule.count === 1 ? this.t("polCountOne") : rule.count ? this.t("polCount", { n: this.formatNumber(rule.count) }) : this.t("polNone");
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
-    if (!rule.enabled) return head;
-    const editor = rule.id === "naming_scheme" ? this.polPrefixEditor() : "";
-    const q = (this.lv.policies?.q || "").trim().toLowerCase();
-    const matches = i => !q || [i.name, i.object_id, ...(i.also || [])].join(" ").toLowerCase().includes(q);
-    const visible = rule.items.filter(i => (this.policyShowHidden || !i.ignored) && matches(i));
-    const shown = visible.slice(0, q ? 50 : 10);
-    const more = visible.length > shown.length ? `<p class="factnote">${this.t("polMore", { n: this.formatNumber(visible.length - shown.length) })}</p>` : "";
-    const hidden = rule.ignored ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(rule.ignored) })}</p>` : "";
-    return head + editor + shown.map(i => this.polItemRow(i)).join("") + more + hidden;
+    return head + (rule.enabled && rule.id === "naming_scheme" ? this.polPrefixEditor() : "");
+  }
+
+  // The violations of all switched-on rules in one list: filter by rule, search, open the entity.
+  polViolations(r) {
+    const on = r.rules.filter(rule => rule.enabled);
+    if (!on.length) return `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:toggle-switch-off-outline"></ha-icon>${this.t("polNoneOn")}</div></div>`;
+    const wanted = on.some(rule => rule.id === this.polRule) ? this.polRule : "";
+    const chip = (id, label, count) => `<button class="chip ${wanted === id ? "active" : ""}" data-pol-rule="${this.esc(id)}" aria-pressed="${wanted === id}">${this.esc(label)} <em>${this.formatNumber(count)}</em></button>`;
+    const chips = `<div class="chips">${chip("", this.t("polAllRules"), on.reduce((n, rule) => n + rule.count, 0))}${on.map(rule => chip(rule.id, this.t(`polRule_${rule.id}`), rule.count)).join("")}</div>`;
+    const items = on.filter(rule => !wanted || rule.id === wanted).flatMap(rule => rule.items.map(item => ({ ...item, rule: rule.id })))
+      .filter(item => this.policyShowHidden || !item.ignored);
+    const found = this.searchList("policies", items, item => [item.name, item.object_id, ...(item.also || [])].join(" "));
+    const pg = this.paginate("polviol", found.rows);
+    const rows = pg.rows.map(item => this.polItemRow(item)).join("");
+    const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
+    const note = hidden && !this.policyShowHidden ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(hidden) })}</p>` : "";
+    const empty = !found.rows.length && !found.none ? `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("polNoViolations")}</div>` : "";
+    return `<div class="panel">${chips}${found.bar}${found.none}${empty}${rows}${pg.footer}${note}</div>`;
   }
 
   policiesView() {
@@ -3973,11 +4085,55 @@ class PoliciesMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("polTitle")}</h2><p>${this.t("polHint")}</p></div><div class="actions">${actions}</div></div>`;
     if (this.policiesError) return `<div class="panel">${head}<div class="error">${this.esc(this.policiesError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("polLoading")}</div>`;
-    const none = r.enabled ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`;
-    const total = r.rules.reduce((n, rule) => n + (rule.enabled ? rule.items.length : 0), 0);
-    this.lvState("policies", "", "asc");
-    const bar = total >= 6 || this.lv.policies.q ? this.listBar("policies", { sorts: [] }) : "";
-    return `<div class="panel">${head}${bar}${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${none}${this.howCounted("polFootnote")}</div>`;
+    const on = r.rules.filter(rule => rule.enabled);
+    const violations = on.reduce((n, rule) => n + rule.count, 0);
+    const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
+    const tiles = this.sumTiles([
+      { label: this.t("polSumRules"), value: `${this.formatNumber(on.length)}`, sub: this.t("relSumOf", { n: this.formatNumber(r.rules.length) }), tone: on.length ? "ok" : "mute", tab: "policies|rules" },
+      { label: this.t("polSumViolations"), value: this.formatNumber(violations), tone: !on.length ? "mute" : violations ? "warn" : "ok", tab: "policies|violations" },
+      hidden ? { label: this.t("polSumHidden"), value: this.formatNumber(hidden), tone: "mute", tab: "policies|violations" } : null,
+    ]);
+    const tabs = [
+      { id: "violations", label: this.t("polTabViolations"), count: violations, tone: violations ? "warn" : "ok" },
+      { id: "rules", label: this.t("polTabRules"), count: on.length },
+    ];
+    const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
+    const body = open === "rules"
+      ? `<div class="panel">${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${on.length ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`}${this.howCounted("polFootnote")}</div>`
+      : this.polViolations(r);
+    return `<div class="stack"><div class="panel">${head}</div>${tiles}${this.viewTabBar("policies", tabs, open)}${body}</div>`;
+  }
+}
+
+// LayoutMixin: the pieces every long view shares (a row of key figures and tabs for its sections); mixed in by 99-register.js.
+class LayoutMixin {
+  // A row of key figures. tile: { label, value, sub, tone ("ok"|"warn"|"red"|"mute"), tab } where tab ("view|id") makes it a button.
+  sumTiles(tiles) {
+    const cells = tiles.filter(Boolean).map(t => {
+      const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}`;
+      return t.tab ? `<button class="sumtile ${t.tone || "mute"}" data-view-tab="${this.esc(t.tab)}">${inner}</button>` : `<div class="sumtile ${t.tone || "mute"}">${inner}</div>`;
+    }).join("");
+    return cells ? `<div class="sumtiles" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
+  }
+
+  // The tab that is open in a view: the chosen one if it exists, else the first one of `tabs` or `prefer`.
+  viewTabOf(view, tabs, prefer) {
+    const chosen = (this.viewTab ||= {})[view];
+    if (tabs.some(t => t.id === chosen)) return chosen;
+    return tabs.some(t => t.id === prefer) ? prefer : tabs[0].id;
+  }
+
+  // Tabs of one view; a coloured dot marks a tab that holds something to look at. tab: { id, label, count, tone }.
+  viewTabBar(view, tabs, active) {
+    const list = tabs.map(t => `<button class="tab" role="tab" aria-selected="${t.id === active}" tabindex="${t.id === active ? 0 : -1}" data-view-tab="${this.esc(`${view}|${t.id}`)}">${this.esc(t.label)}${t.count !== undefined && t.count !== null ? ` <em>${this.formatNumber(t.count)}</em>` : ""}${t.tone && t.tone !== "ok" && t.tone !== "mute" ? `<i class="tabdot ${t.tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
+    return `<div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${list}</div>`;
+  }
+
+  pickViewTab(tab) {
+    const [view, id] = String(tab || "").split("|");
+    if (!view || !id) return;
+    (this.viewTab ||= {})[view] = id;
+    this.render();
   }
 }
 
@@ -4005,7 +4161,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.compareBaseline = "previous";
     this.compareLoading = false;
     this.graphSelected = null;
-    this.graphTrail = []; this.graphOrigin = null; this.viewTrail = []; this._tabOf = new Map();
+    this.graphTrail = []; this.graphOrigin = null; this.viewTrail = []; this._tabOf = new Map(); this.viewTab = {};
     this.details = new Map();
     this.detailLoading = false;
     this.graphQuery = "";
@@ -4372,6 +4528,7 @@ class HAHousekeeperPanel extends HTMLElement {
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
     this._pendingTab = params.get("tab");
+    if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -4387,6 +4544,7 @@ class HAHousekeeperPanel extends HTMLElement {
     }
     else {
       if (this.view !== "overview") params.set("view", this.view);
+      if (this.viewTab?.[this.view]) params.set("tab", this.viewTab[this.view]);
       if (this.view === "findingsNav" && this.findingFilter) params.set("filter", this.findingFilter);
     }
     const query = params.toString();
@@ -4521,6 +4679,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-scan-point]").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
+    root.querySelectorAll("[data-view-tab]").forEach(el => el.onclick = () => this.pickViewTab(el.dataset.viewTab));
     root.querySelector("[data-action='graph-back']")?.addEventListener("click", () => this.graphBack());
     root.querySelector("[data-action='view-back']")?.addEventListener("click", () => this.viewBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {
@@ -4626,6 +4785,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
+    root.querySelectorAll("[data-pol-rule]").forEach(el => el.onclick = () => { this.polRule = el.dataset.polRule; this.pages = {}; this.render(); });
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
     root.querySelectorAll("[data-policy-toggle]").forEach(el => el.onchange = () => this.changePolicy({ type: "ha_housekeeper/set_policy", rule: el.dataset.policyToggle, enabled: el.checked }));
     root.querySelector("[data-policy-prefix-add]")?.addEventListener("click", () => this.addPolicyPrefix(root.querySelector("#polDomain")?.value, root.querySelector("#polPrefix")?.value));
@@ -4695,7 +4855,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

@@ -115,7 +115,26 @@ class ReliabilityMixin {
     ] }) : "";
     const pg = this.paginate("relentries", entries);
     const list = entries.length ? pg.rows.map(item => this.relRow(item)).join("") : `<div class="emptymsg">${this.t("noMatches")}</div>`;
-    return `<div class="stack"><div class="panel">${head}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>${this.unstableCard(r)}</div>`;
+    const u = r.unstable || { total: 0, entities: {} };
+    const flapping = Object.values(u.entities || {}).filter(e => e.level === "flapping").length;
+    const outages = r.entries.filter(e => e.shared_outages > 0).length;
+    const attention = r.entries.filter(e => e.reauth || (e.state && e.state !== "loaded")).length;
+    const counted = r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.entities), 0);
+    const overall = counted ? r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.availability * e.entities), 0) / counted : null;
+    const toneOf = value => (value === null ? "mute" : value >= 99.5 ? "ok" : value >= 95 ? "warn" : "red");
+    const tiles = this.sumTiles([
+      { label: this.t("relSumAvail"), value: overall === null ? "–" : `${this.formatNumber(Math.round(overall * 10) / 10)} %`, sub: this.t(r.window_days === 1 ? "relWindow1" : "relWindow7"), tone: toneOf(overall), tab: "reliability|integrations" },
+      { label: this.t("relSumOutages"), value: this.formatNumber(outages), sub: this.t("relSumOf", { n: this.formatNumber(r.entries.length) }), tone: outages ? "warn" : "ok", tab: "reliability|integrations" },
+      { label: this.t("relSumUnstable"), value: this.formatNumber(u.total || 0), sub: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "", tone: flapping ? "red" : u.total ? "warn" : "ok", tab: "reliability|unstable" },
+      { label: this.t("relSumAttention"), value: this.formatNumber(attention), sub: this.t("relSumAttentionHint"), tone: attention ? "red" : "ok", tab: "reliability|integrations" },
+    ]);
+    const tabs = [
+      { id: "integrations", label: this.t("relTabIntegrations"), count: r.entries.length, tone: outages || attention ? "warn" : "ok" },
+      { id: "unstable", label: this.t("relTabUnstable"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok" },
+    ];
+    const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
+    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
+    return `<div class="stack"><div class="panel">${head}${coverage}</div>${tiles}${this.viewTabBar("reliability", tabs, open)}${body}</div>`;
   }
 
   // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
