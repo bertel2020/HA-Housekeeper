@@ -320,7 +320,7 @@ def flapping(
     return {"items": items[:UNSTABLE_LIMIT], "total": len(items)}
 
 
-async def _entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:
+async def entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:
     from homeassistant.loader import async_get_integrations
 
     entries = hass.config_entries.async_entries()
@@ -386,7 +386,7 @@ async def reliability(
         for item in snapshot["objects"]
         if item["object_type"] == "entity"
     ]
-    entries = await _entry_info(hass)
+    entries = await entry_info(hass)
     result = compute(kept[1], entities, entries)
     periods = result.pop("outage_periods")
     used: dict[str, int] = {}
