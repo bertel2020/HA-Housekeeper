@@ -2495,3 +2495,61 @@ test("the load entry sits in the operation menu and has texts in both languages"
   assert.ok(NAV_GROUPS.find(([label]) => label === "navGroupOperation")[1].includes("storms"));
   for (const key of Object.keys(TEXT.de).filter(k => /^storm/.test(k))) assert.ok(TEXT.en[key], key);
 });
+
+const DBH = {
+  available: true, busy: false, cached: false, took_ms: 3200, supported: true, dialect: "sqlite", db_bytes: 11 * 1024 ** 3, wal_bytes: 3 * 1024 ** 3, growth: { known: true, per_day: 80 * 1024 ** 2 }, restart_gaps: 2,
+  findings: [
+    { kind: "duplicates", level: "problem", groups: 7, capped: false, series: [{ statistic_id: "sensor.a", name: "A <i>x</i>", groups: 5 }] },
+    { kind: "statistics_issues", level: "problem", series_total: 1, series: [{ statistic_id: "sensor.b", name: "B", types: ["units_changed", "odd_type"] }] },
+    { kind: "recorder_gap", level: "problem", gaps: 2, longest_seconds: 7200, latest: [{ start: 1790000000, end: 1790007200, seconds: 7200, cause: "recorder" }] },
+    { kind: "wal_large", level: "hint", wal_bytes: 3 * 1024 ** 3, db_bytes: 11 * 1024 ** 3 },
+    { kind: "growth", level: "hint", recent_bytes: 600 * 1024 ** 2, base_bytes: 100 * 1024 ** 2 },
+    { kind: "missing_hours", level: "hint", series_total: 1, series: [{ statistic_id: "sensor.c", name: "C", missing: 9 }] }],
+};
+
+test("the database card names each finding in words with numbers and advice, and escapes names", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el.dbHealth = DBH; el._dbRequested = true;
+  const html = el.dbCard();
+  for (const text of ["Duplicate statistics timestamps", "7 timestamps appear twice", "unit changed, odd_type", "2 periods without a single entry, the longest 2 h", "Large WAL file", "Unusual growth", "9 h missing", "Housekeeper does not repair this", "Database 11 GB, WAL file 3 GB", "Recent growth about 80 MB a day", "2 gaps from restarts"]) assert.ok(html.includes(text), text);
+  assert.ok(!html.includes("<i>x</i>") && html.includes("&lt;i&gt;x"), "names are escaped");
+  assert.ok(html.indexOf("Duplicate statistics") < html.indexOf("Large WAL"), "problems come first");
+});
+
+test("the database card loads once per visit of Maintenance and asks the backend", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/db_health")) calls.push(msg); return DBH; } };
+  el.data = { ...DATA };
+  el.dbCard(); el.ensureDbHealth(); el.ensureDbHealth();
+  await el.loadDbHealth();
+  assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/db_health", refresh: false }));
+  await el.loadDbHealth(true);
+  assert.equal(calls.at(-1).refresh, true);
+});
+
+test("the database card says so when nothing stands out, the database is not SQLite, or the call fails", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el._dbRequested = true;
+  el.dbHealth = { ...DBH, findings: [], restart_gaps: 0, growth: { known: false } };
+  const quiet = el.dbCard();
+  assert.ok(quiet.includes("Nothing unusual in the database.") && quiet.includes("shows here after a week"));
+  el.dbHealth = { ...DBH, findings: [], supported: false, dialect: "mysql", db_bytes: null };
+  assert.ok(el.dbCard().includes("only SQLite is measured"));
+  el.dbHealth = { available: false, findings: [] };
+  assert.ok(el.dbCard().includes("recorder is not available"));
+  el.dbHealth = null; el.dbError = "boom";
+  assert.ok(el.dbCard().includes("boom"));
+});
+
+test("only database problems reach the overview to-do list, and only once they were calculated", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, quarantine: [] };
+  el.dbHealth = null;
+  assert.ok(!el.todoItems().some(i => i.key === "db"));
+  el.dbHealth = { ...DBH, findings: [DBH.findings[3]] };
+  assert.ok(!el.todoItems().some(i => i.key === "db"), "hints stay out");
+  el.dbHealth = DBH;
+  const item = el.todoItems().find(i => i.key === "db");
+  assert.ok(item && item.view === "maintenance" && item.hintText.includes("Duplicate statistics timestamps"));
+});

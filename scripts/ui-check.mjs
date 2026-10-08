@@ -102,6 +102,11 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
         { object_type: "script", entity_id: "script.nachtlicht", name: "Nachtlicht", status: "active", runs: 6, ok: 0, errors: 6, conditions: 0, mean_ms: null, max_ms: null, per_day: [0, 0, 1, 2, 1, 1, 1], lower_bound: false,
           findings: [{ kind: "never_ok", level: "red", runs: 6 }] },
         { object_type: "automation", entity_id: "automation.heizung", name: "Heizung Nacht", status: "active", runs: 140, ok: 140, errors: 0, conditions: 0, mean_ms: 300, max_ms: 900, per_day: [20, 20, 20, 20, 20, 20, 20], lower_bound: false, findings: [] }] };
+      if (t.endsWith("/db_health")) return { available: true, busy: false, cached: false, took_ms: 3200, schema: 1, supported: true, dialect: "sqlite", db_bytes: 11811160064, wal_bytes: 3221225472, growth: { known: true, per_day: 83886080 }, restart_gaps: 2,
+        findings: [
+          { kind: "duplicates", level: "problem", groups: 7, capped: false, series: [{ statistic_id: "sensor.a", name: "Energie Haus", groups: 5 }] },
+          { kind: "recorder_gap", level: "problem", gaps: 2, longest_seconds: 7200, latest: [{ start: 1790000000, end: 1790007200, seconds: 7200, cause: "recorder" }] },
+          { kind: "wal_large", level: "hint", wal_bytes: 3221225472, db_bytes: 11811160064 }] };
       if (t.endsWith("/storms")) return { available: true, busy: false, cached: false, took_ms: 4100, window_days: 1, schema: 1, total_rows: 412000, per_day: 412000, entity_count: 380, event_total: 150000, state_changed_events: 140000,
         findings: [
           { kind: "storm", entity_id: "sensor.laut", name: "Lauter Sensor", window_days: 1, per_day: 72000, peak_hour: 5100, rows: 72000, followers: { automation: 2, entity: 1 } },
