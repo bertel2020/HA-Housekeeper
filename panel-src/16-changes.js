@@ -53,7 +53,12 @@ class ChangesMixin {
     const matches = it => (!query || [it.name, it.object_id, it.rule_id, it.affected_object, typeOf(it)].join(" ").toLowerCase().includes(query)) && (!st.f.type || typeOf(it) === st.f.type);
     const allTypes = [...new Set(sections.flatMap(([, , part]) => part.items.map(typeOf)).filter(Boolean))].sort();
     const bar = total ? this.listBar("changes", { sorts: [], filters: [{ name: "type", all: this.t("allTypes"), options: allTypes.map(x => [x, this.t(x)]) }] }) : "";
-    const paged = (id, items, render) => { const pg = this.paginate(`changes-${id}`, items.filter(matches)); return pg.rows.map(render).join("") + pg.footer; };
+    const paged = (id, items, render) => {
+      const shown = items.filter(matches);
+      if (items.length && !shown.length) return `<div class="emptymsg">${this.t("changesFiltered", { n: items.length })}</div>`;
+      const pg = this.paginate(`changes-${id}`, shown);
+      return pg.rows.map(render).join("") + pg.footer;
+    };
     const objectRow = (o, note, pillHtml) => {
       const key = `${o.object_type}:${o.object_id}`, obj = this.findObject(key);
       const inner = `${this.tile(o.object_type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "mute")}<span class="row-text"><strong>${this.esc(o.name || obj?.name || o.object_id)}</strong><small>${this.esc(note)}</small></span>${pillHtml}`;
@@ -65,7 +70,7 @@ class ChangesMixin {
       newFindings: paged("newFindings", c.new_findings.items, f => this.findingRow(f)),
       resolvedFindings: paged("resolvedFindings", c.resolved_findings.items, f => {
         const type = f.rule_id.split(".")[0];
-        return objectRow({ object_type: type, object_id: f.object_id }, `${f.affected_object ? `${f.affected_object} · ` : ""}${f.rule_id}`, `<span class="pill ok">${this.t("improved")}</span>`);
+        return objectRow({ object_type: type, object_id: f.object_id }, `${f.affected_object ? `${f.affected_object} · ` : ""}${this.findingTitle(f)}`, `<span class="pill ok">${this.t("improved")}</span>`);
       }),
       newObjects: paged("newObjects", c.new_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${o.object_id}`, this.pill(o.status))),
       removedObjects: paged("removedObjects", c.removed_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")),

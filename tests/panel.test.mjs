@@ -2379,3 +2379,15 @@ test("findings and hidden findings name the rule in words, never as a raw id", (
   assert.ok(row.includes(el.t("device_missing")));
   assert.equal(el.t("enabled"), "aktiviert");
 });
+
+test("a changes section whose rows are all filtered out says so instead of showing an empty card", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [] };
+  const part = (items) => ({ total: items.length, items });
+  el.compare = { available: true, baselines: [{ id: "previous", at: "2026-10-01T00:00:00+00:00" }], baseline_at: "2026-10-01T00:00:00+00:00",
+    status_changes: part([]), new_findings: part([]), resolved_findings: part([]), removed_objects: part([]),
+    new_objects: part([{ object_type: "entity", object_id: "light.a", name: "A", status: "active" }]) };
+  el.lvState("changes", "", "asc").q = "zzz";
+  const html = el.changesView();
+  assert.ok(html.includes("The filter hides all 1 entries"), html.slice(0, 400));
+});
