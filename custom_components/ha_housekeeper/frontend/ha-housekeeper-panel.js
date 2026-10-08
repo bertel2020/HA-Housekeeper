@@ -4,6 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
+    navMain: "Hauptnavigation", navGroupOverview: "Überblick", navGroupExplore: "Erkunden", navGroupMaintain: "Pflegen", navGroupSpecial: "Spezialansichten",
     scan: "Neu scannen", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -164,6 +165,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
+    navMain: "Main navigation", navGroupOverview: "Overview", navGroupExplore: "Explore", navGroupMaintain: "Maintain", navGroupSpecial: "Special views",
     scan: "Scan now", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -366,16 +368,25 @@ const SEARCH_DEBOUNCE_MS = 150;
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
-  ["inventory", "mdi:database-outline"],
   ["findingsNav", "mdi:alert-outline"],
   ["changes", "mdi:compare-horizontal"],
-  ["batteries", "mdi:battery-alert-variant-outline"],
-  ["unreferenced", "mdi:link-variant-off"],
+  ["inventory", "mdi:database-outline"],
+  ["graph", "mdi:source-fork"],
   ["cleanup", "mdi:broom"],
   ["maintenance", "mdi:wrench-clock"],
+  ["batteries", "mdi:battery-alert-variant-outline"],
+  ["unreferenced", "mdi:link-variant-off"],
   ["settings", "mdi:cog-outline"],
-  ["graph", "mdi:source-fork"],
 ];
+
+// The sidebar groups every view but "settings", which stands alone at the foot.
+const NAV_GROUPS = [
+  ["navGroupOverview", ["overview", "findingsNav", "changes"]],
+  ["navGroupExplore", ["inventory", "graph"]],
+  ["navGroupMaintain", ["cleanup", "maintenance"]],
+  ["navGroupSpecial", ["batteries", "unreferenced"]],
+];
+const NAV_ICONS = Object.fromEntries(NAV);
 
 const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
@@ -639,7 +650,7 @@ class StylesMixin {
       .shell{min-height:100vh;display:grid;grid-template-columns:calc(208px*var(--hk-fs,1)) minmax(0,1fr)}
       .side{display:flex;flex-direction:column;gap:18px;padding:20px 12px 14px;border-right:1px solid var(--hk-border);background:var(--hk-surface)}
       .brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:4px 8px 8px}.brandmark{width:72px;height:72px;display:grid;place-items:center;flex:none}.brandmark img{width:72px;height:72px;object-fit:contain}.brandmark ha-icon{display:none}.brandmark.nologo{width:34px;height:34px;border-radius:10px;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brandmark.nologo ha-icon{display:block}.brand strong{font-weight:600;font-size:calc(19px*var(--hk-fs,1))}.brand small{display:block;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));margin-top:2px}
-      .side nav{display:grid;gap:4px}.nav{width:100%;min-height:40px;display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:9px;padding:7px 10px;border:0;border-radius:8px;color:var(--hk-muted);background:transparent;text-align:left}.nav:hover{background:var(--hk-soft)}
+      .side nav{display:grid;gap:4px}.navgroup{display:grid;gap:2px}.navgroup+.navgroup{margin-top:10px}.navhead{padding:0 10px 4px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}.nav{width:100%;min-height:40px;display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:9px;padding:7px 10px;border:0;border-radius:8px;color:var(--hk-muted);background:transparent;text-align:left}.nav:hover{background:var(--hk-soft)}
       .nav.active{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 12%,transparent);font-weight:600}.nav em{min-width:22px;padding:2px 6px;border-radius:10px;color:var(--hk-muted);background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-align:center}
       .side-foot{margin-top:auto;display:grid;gap:8px;padding:0 8px}.lock{display:flex;align-items:center;gap:7px;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-green)}.lock ha-icon{--mdc-icon-size:16px}
       .main{min-width:0;padding:26px clamp(16px,2.4vw,32px) 60px}
@@ -702,7 +713,7 @@ class StylesMixin {
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:calc(11px*var(--hk-fs,1))/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:calc(12px*var(--hk-fs,1));margin:12px 0 6px;color:var(--hk-muted)}
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
-      @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:calc(15px*var(--hk-fs,1))}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.lock{display:none}.side-foot{margin:0;padding:0;display:flex}.side nav{display:flex}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
+      @media(max-width:860px){.brand{flex-direction:row;text-align:left;padding:0 8px}.brandmark,.brandmark img{width:36px;height:36px}.brand strong{font-size:calc(15px*var(--hk-fs,1))}.shell{grid-template-columns:1fr}.side{flex-direction:row;align-items:center;gap:8px;padding:10px;border-right:0;border-bottom:1px solid var(--hk-border);overflow-x:auto}.brand small,.lock{display:none}.side-foot{margin:0;padding:0;display:flex}.side nav{display:flex}.navgroup{display:flex;gap:4px}.navgroup+.navgroup{margin:0;padding-left:8px;border-left:1px solid var(--hk-border)}.navhead{display:none}.nav{width:auto;grid-template-columns:22px auto auto;white-space:nowrap}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       @media(max-width:520px){.summary{grid-template-columns:1fr}}
       /* Fixed sidebar: it stays in view while long content scrolls; Settings sits at the visible bottom edge. */
       .shell{align-items:start}
@@ -2302,6 +2313,17 @@ class HAHousekeeperPanel extends HTMLElement {
     return "";
   }
 
+  // The sidebar is rebuilt with the page: keep its scroll position, and bring the current entry into
+  // view when the view changed (on a small screen the navigation scrolls sideways).
+  restoreSideScroll(saved) {
+    const side = this.shadowRoot.querySelector?.(".side");
+    if (!side) return;
+    if (this._navView !== this.view && this._navView !== undefined) {
+      this.shadowRoot.querySelector(".nav.active")?.scrollIntoView?.({ inline: "center", block: "nearest" });
+    } else if (saved) { side.scrollLeft = saved.left; side.scrollTop = saved.top; }
+    this._navView = this.view;
+  }
+
   scanButtonInner() {
     const progress = this.scanStatus?.running ? ` ${this.scanStatus.progress}%` : "";
     return `<ha-icon icon="mdi:refresh"></ha-icon>${this.busy ? this.t("scanning") + progress : this.t("scan")}`;
@@ -2396,12 +2418,15 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
+    const side = this.shadowRoot.querySelector?.(".side");
+    const sideScroll = side ? { left: side.scrollLeft, top: side.scrollTop } : null;
     const shell = `<div class="shell">${this.sidebar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
     else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
     this.restoreFocus(focus);
+    this.restoreSideScroll(sideScroll);
     this.bind();
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) this.syncUrl();
@@ -2437,7 +2462,7 @@ class HAHousekeeperPanel extends HTMLElement {
   sidebar() {
     const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
     return `<aside class="side"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><div><strong>${this.t("title")}</strong><small>${this.t("systemState")}</small></div></div>
-      <nav>${NAV.filter(([view]) => view !== "settings").map(([view, icon]) => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${icon}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</nav>
+      <nav aria-label="${this.esc(this.t("navMain"))}">${NAV_GROUPS.map(([label, views]) => `<div class="navgroup" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`).join("")}</div>`).join("")}</nav>
       <div class="side-foot"><button class="nav ${this.view === "settings" ? "active" : ""}" data-view="settings" ${this.view === "settings" ? 'aria-current="page"' : ""}><ha-icon icon="mdi:cog-outline"></ha-icon><span>${this.t("settings")}</span></button></div></aside>`;
   }
 

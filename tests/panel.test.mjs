@@ -25,8 +25,8 @@ function loadPanel(extra = {}) {
     URLSearchParams,
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, setTimeout: () => 0,
   };
-  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT;", context);
-  return { PanelClass, downloads, TEXT: context.TEXT, shadow };
+  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS;", context);
+  return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, shadow };
 }
 
 const DATA = {
@@ -1446,4 +1446,39 @@ test("the journal list is paged like the other long lists", () => {
   const html = el.cleanupView();
   assert.equal((html.match(/data-plan-open=/g) || []).length, 20);
   assert.ok(html.includes("data-pagesize"));
+});
+
+test("the navigation groups every view once, with settings at the foot", () => {
+  const { NAV, NAV_GROUPS, TEXT } = loadPanel();
+  const grouped = NAV_GROUPS.flatMap(([, views]) => [...views]);
+  const expected = [...NAV].map(([view]) => view).filter(view => view !== "settings").sort();
+  assert.equal(JSON.stringify([...grouped].sort()), JSON.stringify(expected), "every view except settings is in exactly one group");
+  for (const lang of ["de", "en"]) for (const [label] of NAV_GROUPS) assert.ok(TEXT[lang][label], `${lang} ${label}`);
+  const { el, shadow } = panel("en");
+  el.view = "cleanup";
+  el.render();
+  const html = shadow.innerHTML;
+  const groups = [...html.matchAll(/<div class="navgroup" role="group" aria-label="([^"]+)">/g)].map(m => m[1]);
+  assert.equal(JSON.stringify(groups), JSON.stringify(["Overview", "Explore", "Maintain", "Special views"]));
+  assert.ok(html.includes('<nav aria-label="Main navigation">'));
+  assert.ok(html.indexOf('data-view="maintenance"') < html.indexOf('data-view="batteries"') && html.indexOf('data-view="batteries"') < html.indexOf('data-view="settings"'));
+  assert.equal((html.match(/aria-current="page"/g) || []).length, 1, "one current entry");
+  assert.ok(/data-view="cleanup"\s+aria-current="page"/.test(html));
+});
+
+test("the sidebar keeps its scroll position and shows the current entry after a view change", () => {
+  const { el, shadow } = panel("en");
+  const side = { scrollLeft: 120, scrollTop: 30 };
+  const revealed = [];
+  const active = { scrollIntoView: opts => revealed.push(opts.inline) };
+  shadow.querySelector = selector => (selector === ".side" ? side : selector === ".nav.active" ? active : null);
+  el.restoreSideScroll({ left: 120, top: 30 }); // first render: nothing to reveal yet
+  side.scrollLeft = 0; side.scrollTop = 0;
+  el.restoreSideScroll({ left: 120, top: 30 }); // same view: the saved position comes back
+  assert.equal(side.scrollLeft, 120);
+  assert.equal(side.scrollTop, 30);
+  assert.equal(revealed.length, 0);
+  el.view = "maintenance";
+  el.restoreSideScroll({ left: 120, top: 30 }); // another view: scroll the current entry into view
+  assert.deepEqual(revealed, ["center"]);
 });

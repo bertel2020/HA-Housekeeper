@@ -41,16 +41,25 @@ const SEARCH_DEBOUNCE_MS = 150;
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
-  ["inventory", "mdi:database-outline"],
   ["findingsNav", "mdi:alert-outline"],
   ["changes", "mdi:compare-horizontal"],
-  ["batteries", "mdi:battery-alert-variant-outline"],
-  ["unreferenced", "mdi:link-variant-off"],
+  ["inventory", "mdi:database-outline"],
+  ["graph", "mdi:source-fork"],
   ["cleanup", "mdi:broom"],
   ["maintenance", "mdi:wrench-clock"],
+  ["batteries", "mdi:battery-alert-variant-outline"],
+  ["unreferenced", "mdi:link-variant-off"],
   ["settings", "mdi:cog-outline"],
-  ["graph", "mdi:source-fork"],
 ];
+
+// The sidebar groups every view but "settings", which stands alone at the foot.
+const NAV_GROUPS = [
+  ["navGroupOverview", ["overview", "findingsNav", "changes"]],
+  ["navGroupExplore", ["inventory", "graph"]],
+  ["navGroupMaintain", ["cleanup", "maintenance"]],
+  ["navGroupSpecial", ["batteries", "unreferenced"]],
+];
+const NAV_ICONS = Object.fromEntries(NAV);
 
 const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
