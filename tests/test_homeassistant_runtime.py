@@ -65,6 +65,24 @@ async def test_scanner_reads_entity_registry_and_state(hass: HomeAssistant) -> N
     assert snapshot["meta"]["read_only"] is True
 
 
+async def test_scan_builds_the_existing_objects_once(hass: HomeAssistant) -> None:
+    """Every reference analysis of one scan works from the same view of what exists."""
+    scanner = InventoryScanner(hass)
+    await scanner.async_initialize()
+    calls = 0
+    original = scanner._existing_objects
+
+    def counting() -> dict[str, set[str]]:
+        nonlocal calls
+        calls += 1
+        return original()
+
+    scanner._existing_objects = counting  # type: ignore[method-assign]
+    await scanner.async_scan()
+
+    assert calls == 1
+
+
 async def test_registry_helpers_accept_old_and_new_home_assistant_shapes() -> None:
     """Registry adapters support mappings and read-only collections; a device has one config entry."""
 

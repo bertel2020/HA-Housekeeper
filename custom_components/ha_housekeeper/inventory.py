@@ -618,11 +618,14 @@ class InventoryScanner:
 
         self.status.update(phase="automations", progress=60)
         await asyncio.sleep(0)
-        automations, automation_edges, automation_findings = self._automation_inventory()
-        dashboards, dashboard_edges, dashboard_findings = await self._dashboard_inventory(
-            self._existing_objects()
-        )
+        # One view of what exists for the whole reference analysis of this scan.
         existing_objects = self._existing_objects()
+        automations, automation_edges, automation_findings = self._automation_inventory(
+            existing_objects
+        )
+        dashboards, dashboard_edges, dashboard_findings = await self._dashboard_inventory(
+            existing_objects
+        )
         energy, energy_edges = await self._energy_inventory(existing_objects)
         dashboards.extend(energy)
         dashboard_edges.extend(energy_edges)
@@ -876,10 +879,9 @@ class InventoryScanner:
         return items, edges, findings
 
     def _automation_inventory(
-        self,
+        self, existing: dict[str, set[str]]
     ) -> tuple[list[dict[str, Any]], list[dict[str, str]], list[dict[str, Any]]]:
         """Inspect automations, scripts and scenes."""
-        existing = self._existing_objects()
         automations, edges, findings = self._config_object_inventory(
             "automation", summarize_automation_config, existing
         )
