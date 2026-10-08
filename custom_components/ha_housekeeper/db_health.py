@@ -15,6 +15,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 
 from .meter import recorder_ready
+from .payloads import DbHealthResult
 from .queries import cached_query
 
 DAY = 86400
@@ -339,7 +340,7 @@ async def db_health(
     events: Any,
     *,
     refresh: bool = False,
-) -> dict[str, Any]:
+) -> DbHealthResult:
     """Database health: size and growth, statistics duplicates, gaps and issues, recorder gaps."""
     if not recorder_ready(hass):
         return {"available": False, "findings": []}

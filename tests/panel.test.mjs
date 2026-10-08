@@ -2785,3 +2785,23 @@ test("the old load link opens the Recorder view", () => {
   el.applyUrl();
   assert.equal(el.view, "recorder");
 });
+
+test("run findings keep the kind, the numbers and the advice on separate lines", () => {
+  const { el } = panel("en");
+  el.data = DATA;
+  const html = el.runsFindingLines(RUNS.items[0]);
+  assert.ok(html.includes('class="pill') && html.includes('class="fnum"') && html.includes('class="fnote"'));
+  assert.ok(html.includes("18 of 48 runs ended with an error.") && html.includes("trace at the named step"));
+  const { TEXT } = loadPanel();
+  for (const kind of ["failing", "overlap", "never_ok", "no_effect", "burst", "long_run", "after_update", "long_wait", "wait_no_timeout", "continue_on_error"])
+    for (const lang of ["de", "en"]) assert.ok(TEXT[lang][`rfHint_${kind}`], `${lang} ${kind}`);
+});
+
+test("what a view left out is named, so a short list is not taken for a clean bill", () => {
+  const { el } = panel("en");
+  assert.equal(el.excludedText({}), ""); assert.equal(el.excludedText(undefined), "");
+  assert.equal(el.excludedText({ ignored: 2, disabled: 1, permanent: 3 }), "Not counted: 2 hidden, 1 disabled, 3 down all the time.");
+  el.data = DATA; el._runsRequested = true;
+  el.runs = { ...RUNS, window_days: 7, excluded: { ignored: 4 } };
+  assert.ok(el.runsView().includes("Not counted: 4 hidden."));
+});

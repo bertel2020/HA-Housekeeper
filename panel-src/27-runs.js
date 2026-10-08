@@ -45,7 +45,7 @@ class RunsMixin {
   }
 
   runsFindingLines(row) {
-    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span>${this.runFindingText(f)}</span></small>`).join("");
+    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span class="fnum">${this.runFindingText(f)}</span><span class="fnote">${this.t(`rfHint_${f.kind}`)}</span></small>`).join("");
   }
 
   runsAttentionRow(row) {
@@ -88,7 +88,7 @@ class RunsMixin {
     if (this.runsError) return `<div class="panel">${head}<div class="error">${this.esc(this.runsError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("runsLoading")}</div>`;
     const lower = r.items.filter(row => row.lower_bound).length;
-    const coverage = this.coverageNote(this.t(lower ? "runsCoverageLower" : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }));
+    const coverage = this.coverageNote(this.t(lower ? "runsCoverageLower" : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }) + ` ${this.excludedText(r.excluded)}`.trimEnd());
     const flagged = r.items.filter(row => row.findings.length);
     const counted = r.items.filter(row => row.runs);
     const flaggedPage = this.paginate("runsflag", flagged);

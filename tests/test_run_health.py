@@ -265,3 +265,10 @@ def test_a_script_is_keyed_by_its_entity_id() -> None:
     put(days, 0, runs=6, err=6)
     result = evaluate({"script.night": {"days": days}}, [script], {}, set(), [], NOW, None)
     assert [f["kind"] for f in result["items"][0]["findings"]] == ["failing", "never_ok"]
+
+
+def test_the_result_counts_the_automations_it_left_out() -> None:
+    other = {**OBJ, "object_id": "automation.other", "automation_id": "other", "name": "Other"}
+    result = evaluate({}, [OBJ, other], {}, {"automation.other"}, [], NOW, None)
+    assert result["excluded"] == {"ignored": 1}
+    assert evaluate({}, [OBJ], {}, set(), [], NOW, None)["excluded"] == {"ignored": 0}

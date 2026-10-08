@@ -88,9 +88,48 @@ class ReliabilityResult(Reply):
     comparison: dict[str, bool]
 
 
+class RunsRow(TypedDict, total=False):
+    object_type: str
+    entity_id: str
+    name: str
+    status: str
+    runs: int
+    ok: int
+    errors: int
+    conditions: int
+    mean_ms: int | None
+    max_ms: int | None
+    per_day: list[int]
+    lower_bound: bool
+    findings: list[dict[str, Any]]
+
+
 class RunsResult(TypedDict, total=False):
-    items: list[dict[str, Any]]
+    items: list[RunsRow]
     since: str | None
     window_days: int
     total: int
+    excluded: dict[str, int]
     thresholds: dict[str, float]
+
+
+class StormsResult(Reply, total=False):
+    window_days: int
+    total_rows: int
+    per_day: int
+    entity_count: int
+    excluded: dict[str, int]
+    entities: list[dict[str, Any]]
+    integrations: list[dict[str, Any]]
+    events: list[dict[str, Any]]
+    event_total: int
+    state_changed_events: int
+
+
+class DbHealthResult(Reply, total=False):
+    supported: bool
+    dialect: str
+    db_bytes: int | None
+    wal_bytes: int | None
+    growth: dict[str, Any]
+    restart_gaps: int

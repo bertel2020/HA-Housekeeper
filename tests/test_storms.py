@@ -248,3 +248,11 @@ async def test_a_second_query_does_not_start_while_one_runs(
     finally:
         lock.release()
     assert result["busy"] is True and result["findings"] == []
+
+
+def test_the_result_counts_the_entities_it_left_out() -> None:
+    counts_ = {"sensor.a": counts(10), "sensor.b": counts(10)}
+    info = {n: {"name": n, "config_entry_id": None, "platform": "x"} for n in counts_}
+    result = evaluate_storms(raw(counts_), info, {}, [], {"sensor.b", "sensor.gone"}, 1)
+    assert result["excluded"] == {"ignored": 1}  # only what the recorder actually counted
+    assert [r["entity_id"] for r in result["entities"]] == ["sensor.a"]

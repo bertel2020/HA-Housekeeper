@@ -13,6 +13,7 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from .const import IGNORE_LABEL
+from .payloads import RunsResult
 from .runs import (
     ALREADY,
     CONDITION,
@@ -252,15 +253,19 @@ def evaluate(
     updates: list[dict[str, Any]],
     now: datetime,
     since: str | None,
-) -> dict[str, Any]:
+) -> RunsResult:
     """Rate every automation and script that has numbers or a structural reason to look.
 
     ``actions`` maps an entity id to its action tree for the static checks.
     """
     today = now.astimezone(UTC).date()
     rows: list[dict[str, Any]] = []
+    left_out = 0
     for obj in objects:
-        if obj["object_type"] not in ("automation", "script") or obj["object_id"] in ignored:
+        if obj["object_type"] not in ("automation", "script"):
+            continue
+        if obj["object_id"] in ignored:
+            left_out += 1
             continue
         entity_id = obj["object_id"]
         key = (
@@ -351,11 +356,12 @@ def evaluate(
         "window_days": WINDOW_DAYS,
         "since": since,
         "total": len(rows),
+        "excluded": {"ignored": left_out},
         "items": rows[:LIMIT],
     }
 
 
-async def report(scanner: Any) -> dict[str, Any]:
+async def report(scanner: Any) -> RunsResult:
     """Collect the newest runs, then rate everything; reads traces and the snapshot only."""
     await scanner.runs.async_collect()
     snapshot = await scanner.async_get_snapshot()

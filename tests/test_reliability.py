@@ -337,7 +337,11 @@ async def test_the_recorder_result_carries_the_unstable_entities(
     snapshot["edges"] = [{"target": "entity:sensor.a", "source": "automation:x"}]
     result = await reliability(hass, snapshot, refresh=True)
     # Both entities fail together: that is a shared outage of the entry, not their own flapping.
-    assert result["unstable"] == {"items": [], "total": 0}
+    assert result["unstable"] == {
+        "items": [],
+        "total": 0,
+        "excluded": {"ignored": 0, "disabled": 0, "permanent": 0},
+    }
     assert "outage_periods" not in result
     assert result["entries"][0]["shared_outages"] == 5
 
@@ -380,3 +384,33 @@ def test_the_coverage_says_how_many_entities_had_data_and_how_much_of_the_period
     assert result["coverage"] == {"known": 3, "with_data": 2, "observed_share": 75}
     empty = compute(runs({}, {}), entities("c"), ENTRIES)
     assert empty["coverage"] == {"known": 1, "with_data": 0, "observed_share": None}
+
+
+def test_the_unstable_list_counts_what_it_left_out_and_why() -> None:
+    from custom_components.ha_housekeeper.reliability import flapping
+
+    week_seen = {"ign": 0.0, "off": 0.0, "perm": 0.0, "ok": 0.0, "never": None}
+    intervals = {
+        "ign": episodes(5),
+        "off": episodes(5),
+        "perm": [(0.0, WEEK_END)],
+        "ok": episodes(5),
+    }
+    items = [
+        {
+            "entity_id": n,
+            "name": n,
+            "config_entry_id": "e1",
+            "status": "disabled" if n == "off" else "active",
+        }
+        for n in week_seen
+    ]
+    runs_data = {
+        "start": 0.0,
+        "end": WEEK_END,
+        "seen": {k: v for k, v in week_seen.items() if v is not None},
+        "intervals": intervals,
+    }
+    result = flapping(runs_data, items, {}, {}, {"ign"})
+    assert [i["entity_id"] for i in result["items"]] == ["ok"]
+    assert result["excluded"] == {"ignored": 1, "disabled": 1, "permanent": 1}

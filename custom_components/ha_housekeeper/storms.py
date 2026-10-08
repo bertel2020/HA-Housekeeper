@@ -20,6 +20,7 @@ from homeassistant.core import HomeAssistant
 from .cleanup import USAGE_RELATIONS
 from .const import IGNORE_LABEL
 from .meter import recorder_ready
+from .payloads import StormsResult
 from .queries import cached_query
 from .reliability import entry_info
 
@@ -300,6 +301,7 @@ def evaluate_storms(
         "total_rows": total_rows,
         "per_day": round(total_rows / days),
         "entity_count": len(rows_list),
+        "excluded": {"ignored": sum(1 for entity_id in counts if entity_id in ignored)},
         "entities": rows_list[:TABLE_LIMIT],
         "integrations": integrations,
         "events": [{"type": t, "count": c} for t, c in event_list[:EVENT_TYPES]],
@@ -316,7 +318,7 @@ async def storms(
     *,
     window_days: int = 1,
     refresh: bool = False,
-) -> dict[str, Any]:
+) -> StormsResult:
     """Recorder load per entity, integration and event type for the last day or week."""
     if not recorder_ready(hass):
         return {"available": False, "findings": []}

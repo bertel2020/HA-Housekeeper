@@ -292,10 +292,17 @@ def flapping(
     window = max(end - start, 1.0)
     days = window / DAY
     items = []
+    excluded = {"ignored": 0, "disabled": 0, "permanent": 0}
     for item in entities:
         entity_id = item["entity_id"]
         first = runs["seen"].get(entity_id)
-        if first is None or entity_id in ignored or item.get("status") == "disabled":
+        if first is None:
+            continue
+        if entity_id in ignored:
+            excluded["ignored"] += 1
+            continue
+        if item.get("status") == "disabled":
+            excluded["disabled"] += 1
             continue
         merged = _merge(
             [
@@ -306,7 +313,10 @@ def flapping(
         )
         observed = end - first
         down = sum(b - a for a, b in merged)
-        if observed <= 0 or (down >= observed * PERMANENT_SHARE and observed >= window * 0.95):
+        if observed <= 0:
+            continue
+        if down >= observed * PERMANENT_SHARE and observed >= window * 0.95:
+            excluded["permanent"] += 1
             continue
         shared = outage_periods.get(item.get("config_entry_id"), [])
         episodes = [
@@ -339,7 +349,7 @@ def flapping(
     items.sort(key=lambda i: (-i["_rank"], i["entity_id"]))
     for entry in items:
         del entry["_rank"]
-    return {"items": items[:UNSTABLE_LIMIT], "total": len(items)}
+    return {"items": items[:UNSTABLE_LIMIT], "total": len(items), "excluded": excluded}
 
 
 async def entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:

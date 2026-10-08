@@ -354,6 +354,15 @@ class HAHousekeeperPanel extends HTMLElement {
     return `<div class="skeleton" role="status" aria-live="polite"><span class="sr-only">${this.t(key)}</span><i></i><i></i><i></i></div>`;
   }
 
+  // "Not counted: 2 hidden, 1 disabled": what a view left out, so a short list is not mistaken for a clean bill.
+  excludedText(excluded) {
+    const e = excluded || {}, parts = [];
+    if (e.ignored) parts.push(this.t("exclIgnored", { n: this.formatNumber(e.ignored) }));
+    if (e.disabled) parts.push(this.t("exclDisabled", { n: this.formatNumber(e.disabled) }));
+    if (e.permanent) parts.push(this.t("exclPermanent", { n: this.formatNumber(e.permanent) }));
+    return parts.length ? this.t("exclLine", { list: parts.join(", ") }) : "";
+  }
+
   // One line that says how complete the numbers are, so a precise figure does not pretend more.
   coverageNote(text) {
     return `<p class="factnote coverage"><ha-icon icon="mdi:information-outline"></ha-icon><span>${text}</span></p>`;
