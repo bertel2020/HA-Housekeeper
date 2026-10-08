@@ -321,6 +321,12 @@ class HAHousekeeperPanel extends HTMLElement {
       this.pages = {}; this.render();
     });
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
+    // Table rows are not native buttons: Enter and Space open them like a click.
+    root.querySelectorAll("tr[data-object]").forEach(el => el.onkeydown = ev => {
+      if (ev.target !== el || (ev.key !== "Enter" && ev.key !== " ")) return;
+      ev.preventDefault();
+      el.click();
+    });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.graphSelected = obj; this.graphQuery = ""; this.render(); } });
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });

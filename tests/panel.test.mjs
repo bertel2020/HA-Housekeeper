@@ -1311,3 +1311,20 @@ test("the maintenance entry is in the navigation in both languages", () => {
     assert.ok(shadow.innerHTML.includes('data-view="maintenance"') && shadow.innerHTML.includes(lang === "de" ? "Wartung" : "Maintenance"));
   }
 });
+
+test("inventory rows and sortable headers can be used with the keyboard", () => {
+  const { el, shadow } = panel("en");
+  el.view = "inventory";
+  const row = { dataset: { object: "entity:sensor.b" }, click() { this.clicked = (this.clicked || 0) + 1; } };
+  row.target = row;
+  el.shadowRoot.querySelectorAll = selector => (selector === "tr[data-object]" ? [row] : []);
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(/<tr data-object="[^"]+" tabindex="0" role="button" aria-label="[^"]+">/.test(html), "rows are focusable");
+  assert.ok(/<th data-sort="name" aria-sort="[a-z]+"><button type="button" class="thbtn">/.test(html), "headers hold a real button");
+  const key = (k, target = row) => { const ev = { key: k, target, prevented: false, preventDefault() { this.prevented = true; } }; row.onkeydown(ev); return ev; };
+  assert.ok(key("Enter").prevented && row.clicked === 1);
+  assert.ok(key(" ").prevented && row.clicked === 2);
+  assert.ok(!key("a").prevented && row.clicked === 2, "other keys do nothing");
+  assert.ok(!key("Enter", {}).prevented && row.clicked === 2, "keys pressed inside a control are left alone");
+});
