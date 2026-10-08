@@ -113,6 +113,7 @@ class MaintenanceMixin {
 
   maintenanceView() {
     if (!this.preflight && !this.preflightLoading && !this._pfRequested) { this._pfRequested = true; setTimeout(() => this.loadPreflight(), 0); }
-    return `<div class="stack">${this.preflightCard()}${this.recorderCard()}</div>`;
+    this.ensureBackup();
+    return `<div class="stack">${this.backupCard()}${this.preflightCard()}${this.recorderCard()}</div>`;
   }
 }

@@ -1313,6 +1313,72 @@ test("the recorder costs rank by the current rate, switch to the total and ask f
   assert.ok(el.t("recorderCached", { ms: 5 }).includes("few minutes"));
 });
 
+const BACKUP_REPORT = {
+  available: true, overall: "problem", counts: { ok: 3, note: 3, problem: 1, unknown: 0 }, schema: 1, backup_count: 2,
+  checks: [
+    { id: "setup", level: "ok", values: { agents: ["hassio.local", "cloud.cloud"], recurrence: "daily" } },
+    { id: "newest", level: "problem", values: { age_hours: 70, limit_hours: 36, date: "2026-10-05T10:00:00+00:00", recurrence: "daily" } },
+    { id: "last_run", level: "problem", values: { attempted: "2026-10-08T03:00:00+00:00", completed: "2026-10-05T03:00:00+00:00", failed_agents: ["cloud.<b>"], failed_attempt: true } },
+    { id: "targets", level: "note", values: { local: ["hassio.local"], remote: [] } },
+    { id: "size", level: "note", values: { size: 524288000, expected: 1048576000, ratio: 0.5, baseline: 3 } },
+    { id: "retention", level: "ok", values: { copies: 3, days: null, count: 2, oldest_days: 6.4 } },
+    { id: "encryption", level: "note", values: { configured: false, newest_protected: false } },
+    { id: "emergency_kit", level: "note", values: { at: null, age_days: null } },
+    { id: "restore_test", level: "ok", values: { at: "2026-09-01T00:00:00+00:00", age_days: 37 } },
+    { id: "plan_backups", level: "note", values: { checked: 4, missing: 1 } },
+  ],
+  backups: [{ date: "2026-10-05T10:00:00+00:00", size: 524288000, agents: ["hassio.local"], protected: false, automatic: true, failed_agents: [] }],
+  attest: { emergency_kit: null, restore_test: "2026-09-01T00:00:00+00:00" },
+};
+
+test("the backup card puts text and a word next to every level and escapes what comes from outside", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA;
+  el._hass = { language: "en", callWS: async () => BACKUP_REPORT };
+  el.view = "maintenance"; el.render();
+  assert.ok(shadow.innerHTML.includes("Backup protection") && shadow.innerHTML.includes("Checking backups"));
+  await el.loadBackup();
+  const html = shadow.innerHTML;
+  for (const text of ["Targets and schedule", "Targets: hassio.local, cloud.cloud · schedule: daily", "3 days ago · limit for the schedule: 36 h",
+    "The last attempt", "no backup; last success", "Targets with errors: cloud.&lt;b&gt;", "Local only (hassio.local)", "500 MB instead of about 1,000 MB (50 %)",
+    "Retention: 3 backups · present: 2, the oldest 6 days old", "No backup password set.", "Not confirmed yet", "Last on", "37 days ago",
+    "not found any more", "Latest backups", "How to test a restore", "Housekeeper never performs a restore itself"]) assert.ok(html.includes(text), text);
+  for (const word of [">OK<", ">Note<", ">Problem<"]) assert.ok(html.includes(word), word);
+  assert.ok(!html.includes("<b>>") && !html.includes("cloud.<b>"));
+  assert.ok(html.indexOf("Backup protection") < html.indexOf("Update preflight"), "the card comes first");
+});
+
+test("the backup card says when the component is missing or the call fails", async () => {
+  const { el, shadow } = panel("de");
+  el._hass = { language: "de", callWS: async () => ({ available: false, checks: [], backups: [], overall: "unknown" }) };
+  el.view = "maintenance"; await el.loadBackup();
+  assert.ok(shadow.innerHTML.includes("Backup-Komponente von Home Assistant ist nicht verfügbar"));
+  el._hass = { language: "de", callWS: async () => { throw new Error("kaputt"); } };
+  await el.loadBackup();
+  assert.ok(shadow.innerHTML.includes("kaputt") && !shadow.innerHTML.includes("nicht verfügbar"));
+});
+
+test("the two confirmations are saved with their date and can be taken back", async () => {
+  const { el, shadow } = panel("en");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(JSON.stringify(msg)); return BACKUP_REPORT; } };
+  el.view = "maintenance"; await el.loadBackup();
+  const kit = { dataset: { bhSave: "emergency_kit" } }, restore = { dataset: { bhClear: "restore_test" } };
+  const dates = { emergency_kit: { value: "2026-10-01" } };
+  el.shadowRoot.querySelectorAll = selector => (selector === "[data-bh-save]" ? [kit] : selector === "[data-bh-clear]" ? [restore] : []);
+  el.shadowRoot.querySelector = selector => { const m = /data-bh-date="(\w+)"/.exec(selector); return m ? dates[m[1]] || null : null; };
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-bh-save="emergency_kit"') && shadow.innerHTML.includes('data-bh-save="restore_test"'));
+  assert.ok(shadow.innerHTML.includes('data-bh-clear="restore_test"') && !shadow.innerHTML.includes('data-bh-clear="emergency_kit"'), "only a recorded one can be taken back");
+  sent.length = 0;
+  kit.onclick();
+  await Promise.resolve();
+  assert.equal(sent[0], JSON.stringify({ type: "ha_housekeeper/backup_attest", kind: "emergency_kit", date: "2026-10-01" }));
+  restore.onclick();
+  await Promise.resolve();
+  assert.equal(sent[1], JSON.stringify({ type: "ha_housekeeper/backup_attest", kind: "restore_test", clear: true }));
+});
+
 test("after an update the preflight lists what is new since the saved state", async () => {
   const { el, shadow } = panel("en");
   const state = { ha_version: "2026.3.0", backup: { available: false }, repairs: [], failed_entries: [], broken: [], pending_updates: [] };

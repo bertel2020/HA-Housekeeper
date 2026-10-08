@@ -28,7 +28,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -72,6 +72,19 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
 (async () => {
   const q = new URLSearchParams(location.search), wait = ms => new Promise(r => setTimeout(r, ms));
   localStorage.setItem("ha_housekeeper.prefs", JSON.stringify({ mode: q.get("scheme") === "dark" ? "dark" : "light", graphMode: q.get("graph") ? "graph" : "list" }));
+  const ago = h => new Date(Date.now() - h * 3600000).toISOString(), MB = 1048576;
+  const BACKUP = { available: true, overall: "problem", schema: 1, backup_count: 3, counts: { ok: 3, note: 3, problem: 2, unknown: 0 },
+    checks: [{ id: "setup", level: "ok", values: { agents: ["hassio.local", "cloud.cloud"], recurrence: "daily" } },
+      { id: "newest", level: "problem", values: { age_hours: 70, limit_hours: 36, date: ago(70), recurrence: "daily" } },
+      { id: "last_run", level: "problem", values: { attempted: ago(5), completed: ago(70), failed_agents: [], failed_attempt: true } },
+      { id: "targets", level: "note", values: { local: ["hassio.local"], remote: [] } },
+      { id: "size", level: "ok", values: { size: 900 * MB, expected: 880 * MB, ratio: 1.02, baseline: 2 } },
+      { id: "retention", level: "ok", values: { copies: 3, days: null, count: 3, oldest_days: 6.4 } },
+      { id: "encryption", level: "note", values: { configured: false, newest_protected: false } },
+      { id: "emergency_kit", level: "note", values: { at: null, age_days: null } },
+      { id: "restore_test", level: "ok", values: { at: ago(24 * 37), age_days: 37 } }],
+    backups: [70, 94, 118].map((h, i) => ({ date: ago(h), size: (900 - i * 10) * MB, agents: ["hassio.local"], protected: false, automatic: true, failed_agents: [] })),
+    attest: { emergency_kit: null, restore_test: ago(24 * 37) } };
   const data = await (await fetch("/data.json")).json(), trend = await (await fetch("/trend.json")).json();
   const el = document.createElement("ha-housekeeper-panel");
   document.body.appendChild(el);
@@ -82,6 +95,8 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
       if (t.endsWith("/plan_list")) return { plans: [] };
       if (t.endsWith("/compare")) return trend;
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };
+      if (t.endsWith("/backup_health")) return BACKUP;
+      if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
       return {}; } };
   for (let i = 0; i < 50 && !el.data; i++) await wait(100);
   const plan = q.get("plan");
