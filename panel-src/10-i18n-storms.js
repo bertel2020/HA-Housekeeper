@@ -1,0 +1,31 @@
+// Texts for the recorder load view; merged into TEXT.
+Object.assign(TEXT.de, {
+  storms: "Last", stormsSubtitle: "Welche Entities, Integrationen und Ereignisse den Recorder am meisten beschreiben. Liest nur den Recorder.",
+  stormTitle: "Last im Recorder", stormHint: "Gezählt werden geschriebene Zeilen, nicht Aufrufe", stormLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
+  stormNone: "Nichts schreibt auffällig viel.", stormSummary: "Im Zeitraum: {rows} Zeilen ({perDay} pro Tag) von {entities} Entities und {events} Ereignisse.",
+  stormKind_storm: "Sturm", stormKind_attribute_flood: "Attribute", stormKind_no_new_state: "ohne neuen Zustand", stormKind_integration_share: "Anteil", stormKind_event_burst: "Ereignisse",
+  stormStorm: "{perDay} Zeilen pro Tag, in der lautesten Stunde {peak}.", stormFlood: "{perDay} Zeilen am letzten Tag, im Mittel {kb} KB Attribute je Zeile.",
+  stormNoNew: "{share} % der Zeilen sind Updates ohne neuen Zustand ({perDay} pro Tag): nur Attribute ändern sich.", stormShare: "Etwa {share} % der Last im Recorder ({perDay} Zeilen pro Tag).",
+  stormEvent: "{count} Ereignisse vom Typ {type} im Zeitraum.", stormFollowers: "Daran hängen: {list}.",
+  stormRows: "{rows} Zeilen ({perDay} pro Tag)", stormNoNewShort: "{share} % ohne neuen Zustand", stormAttr: "Attribute im Mittel {kb} KB", stormPeak: "lauteste Stunde {n} Zeilen", stormPerDay: "pro Tag",
+  stormLoudest: "Lauteste Entities", stormLoudestHint: "Nach geschriebenen Zeilen. Klick öffnet die Detailseite.",
+  stormShares: "Anteile der Integrationen", stormSharesHint: "Geschätzter Anteil an der Last, gewichtet mit der Größe der Zeilen. Die Prozentwerte sind eine Hochrechnung, keine Messung in Byte.",
+  stormShareLine: "{entities} Entities, {rows} Zeilen pro Tag, {rowShare} % der Zeilen",
+  stormEvents: "Ereignisse nach Typ", stormEventsHint: "Die häufigsten Typen im Zeitraum.",
+  stormFootnote: "Eine Zeile entsteht, wenn sich Zustand oder Attribute einer Entity ändern. Identische Updates schreibt Home Assistant gar nicht; „ohne neuen Zustand“ heißt: der Wert blieb gleich, nur Attribute änderten sich. Die Attributgröße gilt für die letzten 24 Stunden. Housekeeper ändert die Recorder-Einstellungen nicht: ausschließen kannst du Entities in der Konfiguration unter recorder, oder das Aktualisierungsintervall der Quelle erhöhen.",
+});
+Object.assign(TEXT.en, {
+  storms: "Load", stormsSubtitle: "Which entities, integrations and events write the most to the recorder. Only reads the recorder.",
+  stormTitle: "Recorder load", stormHint: "Rows written are counted, not calls", stormLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
+  stormNone: "Nothing writes unusually much.", stormSummary: "In the period: {rows} rows ({perDay} a day) from {entities} entities and {events} events.",
+  stormKind_storm: "Storm", stormKind_attribute_flood: "Attributes", stormKind_no_new_state: "no new state", stormKind_integration_share: "Share", stormKind_event_burst: "Events",
+  stormStorm: "{perDay} rows a day, {peak} in the busiest hour.", stormFlood: "{perDay} rows on the last day, {kb} KB of attributes per row on average.",
+  stormNoNew: "{share} % of the rows are updates without a new state ({perDay} a day): only attributes change.", stormShare: "About {share} % of the recorder load ({perDay} rows a day).",
+  stormEvent: "{count} events of type {type} in the period.", stormFollowers: "Depending on it: {list}.",
+  stormRows: "{rows} rows ({perDay} a day)", stormNoNewShort: "{share} % without a new state", stormAttr: "attributes {kb} KB on average", stormPeak: "busiest hour {n} rows", stormPerDay: "a day",
+  stormLoudest: "Loudest entities", stormLoudestHint: "By rows written. A click opens the detail page.",
+  stormShares: "Integration shares", stormSharesHint: "Estimated share of the load, weighted by the size of the rows. The percentages are an extrapolation, not a measurement in bytes.",
+  stormShareLine: "{entities} entities, {rows} rows a day, {rowShare} % of the rows",
+  stormEvents: "Events by type", stormEventsHint: "The most frequent types in the period.",
+  stormFootnote: "A row is written when the state or the attributes of an entity change. Home Assistant does not write identical updates at all; “without a new state” means the value stayed the same and only attributes changed. The attribute size covers the last 24 hours. Housekeeper does not change the recorder settings: you can exclude entities in the configuration under recorder, or raise the update interval of the source.",
+});

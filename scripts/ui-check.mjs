@@ -28,7 +28,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", storms: "view=storms", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -102,6 +102,14 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
         { object_type: "script", entity_id: "script.nachtlicht", name: "Nachtlicht", status: "active", runs: 6, ok: 0, errors: 6, conditions: 0, mean_ms: null, max_ms: null, per_day: [0, 0, 1, 2, 1, 1, 1], lower_bound: false,
           findings: [{ kind: "never_ok", level: "red", runs: 6 }] },
         { object_type: "automation", entity_id: "automation.heizung", name: "Heizung Nacht", status: "active", runs: 140, ok: 140, errors: 0, conditions: 0, mean_ms: 300, max_ms: 900, per_day: [20, 20, 20, 20, 20, 20, 20], lower_bound: false, findings: [] }] };
+      if (t.endsWith("/storms")) return { available: true, busy: false, cached: false, took_ms: 4100, window_days: 1, schema: 1, total_rows: 412000, per_day: 412000, entity_count: 380, event_total: 150000, state_changed_events: 140000,
+        findings: [
+          { kind: "storm", entity_id: "sensor.laut", name: "Lauter Sensor", window_days: 1, per_day: 72000, peak_hour: 5100, rows: 72000, followers: { automation: 2, entity: 1 } },
+          { kind: "no_new_state", entity_id: "sensor.attr", name: "Nur Attribute", window_days: 1, per_day: 9000, share: 96, followers: {} },
+          { kind: "integration_share", entry_id: "e1", title: "Cloud-Hub", window_days: 1, per_day: 80000, load_share: 41.5, row_share: 19.4 }],
+        entities: [{ entity_id: "sensor.laut", name: "Lauter Sensor", entry_id: "e1", rows: 72000, per_day: 72000, no_new_state: 0.12, attr_bytes: 640, peak_hour: 5100 }, { entity_id: "sensor.attr", name: "Nur Attribute", entry_id: "e2", rows: 9000, per_day: 9000, no_new_state: 0.96, attr_bytes: 5200, peak_hour: 900 }],
+        integrations: [{ entry_id: "e1", title: "Cloud-Hub", domain: "hue", entities: 12, rows: 80000, per_day: 80000, row_share: 19.4, load_share: 41.5 }, { entry_id: "e2", title: "Zigbee", domain: "zha", entities: 40, rows: 60000, per_day: 60000, row_share: 14.6, load_share: 22.1 }],
+        events: [{ type: "state_changed", count: 140000 }, { type: "call_service", count: 4000 }] };
       if (t.endsWith("/reliability")) return { available: true, busy: false, cached: false, took_ms: 2800, window_days: 7, schema: 1, unstable: { total: 31, items: [
         { entity_id: "sensor.tuer_batterie", name: "Türsensor Batterie", entry_id: "e2", entry_title: "Zigbee", episodes: 12, per_day: 1.7, total_seconds: 4800, mean_seconds: 400, level: "flapping", pattern_hour: 3, used: 2 },
         { entity_id: "sensor.garten_feuchte", name: "Gartenfeuchte", entry_id: "e2", entry_title: "Zigbee", episodes: 4, per_day: 0.6, total_seconds: 120, mean_seconds: 30, level: "unstable", pattern_hour: null, used: 0 }] }, entries: [

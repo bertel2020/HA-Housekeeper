@@ -2433,3 +2433,65 @@ test("settings tabs follow click and arrow keys, and saving the thresholds is al
   inputs[0].value = "7"; inputs[0].oninput();
   assert.equal(save.disabled, true, "back to the saved value");
 });
+
+const STORMS = {
+  available: true, busy: false, cached: false, took_ms: 4100, window_days: 1, total_rows: 412000, per_day: 412000, entity_count: 380, event_total: 150000, state_changed_events: 140000,
+  findings: [
+    { kind: "storm", entity_id: "sensor.laut", name: "Lauter <b>Sensor</b>", window_days: 1, per_day: 72000, peak_hour: 5100, rows: 72000, followers: { automation: 2, entity: 1 } },
+    { kind: "attribute_flood", entity_id: "sensor.attr", name: "Attr", window_days: 1, per_day: 2000, attr_bytes: 5200, followers: {} },
+    { kind: "no_new_state", entity_id: "sensor.same", name: "Same", window_days: 1, per_day: 9000, share: 96, followers: {} },
+    { kind: "integration_share", entry_id: "e1", title: "Cloud-Hub", window_days: 1, per_day: 80000, load_share: 41.5, row_share: 19.4 },
+    { kind: "event_burst", event_type: "zha_event", count: 120000, window_days: 1 }],
+  entities: [{ entity_id: "sensor.laut", name: "Lauter Sensor", rows: 72000, per_day: 72000, no_new_state: 0.12, attr_bytes: 640, peak_hour: 5100 }, { entity_id: "sensor.calm", name: null, rows: 10, per_day: 10, no_new_state: 0, attr_bytes: null, peak_hour: null }],
+  integrations: [{ entry_id: "e1", title: "Cloud-Hub", domain: "hue", entities: 12, rows: 80000, per_day: 80000, row_share: 19.4, load_share: 41.5 }],
+  events: [{ type: "state_changed", count: 140000 }],
+};
+
+test("the load view names each finding in words with its numbers, the followers, and escapes names", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  el.storms = STORMS; el._stormsRequested = 1;
+  const html = el.stormsView();
+  assert.ok(html.includes("72,000 rows a day, 5,100 in the busiest hour") && html.includes("Depending on it: 2 Automation, 1 Entity"), html.slice(0, 600));
+  assert.ok(html.includes("5.1 KB of attributes") && html.includes("96 % of the rows are updates without a new state"));
+  assert.ok(html.includes("About 41.5 % of the recorder load") && html.includes("120,000 events of type zha_event"));
+  assert.ok(!html.includes("<b>Sensor</b>") && html.includes("&lt;b&gt;Sensor"), "names are escaped");
+  assert.ok(html.includes('data-object="entity:sensor.laut"') && html.includes("41.5 %") && html.includes('class="sharebar" aria-hidden="true"'));
+  assert.ok(html.includes("How is this counted?"));
+  el.pageSize = 20;
+});
+
+test("the load view loads once per window, asks the backend with the right arguments and counts again on request", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/storms")) calls.push(msg); return STORMS; } };
+  el.data = { ...DATA };
+  el.stormsView(); el.stormsView();
+  await el.loadStorms();
+  assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/storms", window_days: 1, refresh: false }));
+  el.stormsWindow = 7; el.storms = null;
+  await el.loadStorms(true);
+  assert.equal(JSON.stringify(calls[1]), JSON.stringify({ type: "ha_housekeeper/storms", window_days: 7, refresh: true }));
+  el._stormsRequested = 7;
+  const before = calls.length; el.stormsView();
+  assert.equal(calls.length, before, "no repeated load");
+});
+
+test("the load view says so when the recorder is missing, busy, quiet or the call fails", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el._stormsRequested = 1;
+  el.storms = { available: false, findings: [] };
+  assert.ok(el.stormsView().includes("Home Assistant recorder is not available"));
+  el.storms = { available: true, busy: true, findings: [] };
+  assert.ok(el.stormsView().includes("Another calculation is still running"));
+  el.storms = { ...STORMS, findings: [], entities: [], integrations: [], events: [] };
+  assert.ok(el.stormsView().includes("Nothing writes unusually much."));
+  el.storms = null; el.stormsError = "boom";
+  assert.ok(el.stormsView().includes("boom"));
+});
+
+test("the load entry sits in the operation menu and has texts in both languages", () => {
+  const { NAV_GROUPS, TEXT } = loadPanel();
+  assert.ok(NAV_GROUPS.find(([label]) => label === "navGroupOperation")[1].includes("storms"));
+  for (const key of Object.keys(TEXT.de).filter(k => /^storm/.test(k))) assert.ok(TEXT.en[key], key);
+});
