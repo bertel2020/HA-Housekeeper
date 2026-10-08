@@ -1114,7 +1114,7 @@ class StylesMixin {
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
       .rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
-      .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.sel .bar i{background:var(--hk-blue)}
+      .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.rel .bar i{background:var(--hk-gray)}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
       .btn.primary{box-shadow:0 1px 3px color-mix(in srgb,var(--hk-blue) 40%,transparent)}.btn.primary:hover{filter:brightness(1.06);background:var(--hk-blue)}
       .scanago{color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}
