@@ -1699,7 +1699,7 @@ test("the detail page keeps a summary on top and builds only the open tab", () =
   el.render();
   let html = shadow.innerHTML;
   const summary = html.slice(html.indexOf('class="panel sumline"'), html.indexOf('class="tabs"'));
-  for (const text of ["Status", "Integration", "hue", "Device", "Küchenlampe", "Area", "Küche (Raum)", "Risk when removed"]) assert.ok(summary.includes(text), text);
+  for (const text of ["Integration", "hue", "Device", "Küchenlampe", "Area", "Küche (Raum)", "Risk when removed"]) assert.ok(summary.includes(text), text);
   assert.ok(html.includes('role="tablist"') && html.includes('role="tabpanel"'));
   const tabs = [...html.matchAll(/data-detail-tab="(\w+)"/g)].map(m => m[1]);
   assert.equal(JSON.stringify(tabs), JSON.stringify(["overview", "relations", "technical", "attributes"]));
@@ -1761,7 +1761,7 @@ test("the detail summary leaves out what is not known", () => {
   el.data = { ...DATA, objects: [], edges: [], findings: [] };
   const item = { object_type: "automation", object_id: "automation.c", name: "C", status: "active" };
   const labels = el.detailSummary(item, "automation:automation.c").map(([label]) => label);
-  assert.equal(JSON.stringify(labels), JSON.stringify(["Status"]), "no cause, integration, device or area; no risk for automations");
+  assert.equal(JSON.stringify(labels), JSON.stringify([]), "no cause, integration, device or area; no risk for automations; the status is in the page head only");
 });
 
 test("the address carries the selected detail tab and a deep link opens it", () => {

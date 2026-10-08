@@ -110,7 +110,7 @@ class DiagnosisMixin {
     if (!d) return "";
     const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:close-circle", mute: "mdi:minus-circle", violet: "mdi:help-circle" };
     const rows = d.rows.map(r => `<div class="check ${r.tone}"><ha-icon icon="${icon[r.tone] || icon.ok}"></ha-icon><b>${this.esc(r.label)}</b><span class="val">${this.esc(r.value)}</span><i class="pill ${r.tone}">${this.esc(r.badge)}</i></div>`).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagnosis")}</h2>${item.reason ? `<p>${this.esc(this.t(item.reason))}</p>` : ""}</div></div>
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagnosis")}</h2></div></div>
       <div class="diagcard"><div class="checks">${rows}</div>
       ${d.cause ? `<div class="cause ${d.tone}"><ha-icon icon="mdi:text-search"></ha-icon><div><strong>${this.t("causeLabel")}</strong><p>${this.esc(d.cause)}</p></div></div>` : ""}
       ${d.hint ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><strong>${this.t("hintLabel")}</strong><p>${this.esc(d.hint)}</p></div></div>` : ""}</div></section>`;
@@ -165,7 +165,7 @@ class DiagnosisMixin {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
     const usage = this.edgesTo(key).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
     const min = this.data.meta.min_unavailable_days || 0;
-    const facts = [[this.t("status"), this.pill(item.status)]];
+    const facts = [];
     if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
     if (["entity", "automation", "script", "scene", "dashboard"].includes(item.object_type)) {
       facts.push([this.t("finding"), finding ? `${this.pill(finding.classification)}<small>${this.t("certainty")}: ${Math.round(finding.confidence * 100)} %</small>` : this.t("noFinding")]);
@@ -237,7 +237,6 @@ class DiagnosisMixin {
     const impact = this.impact(item, key);
     const risk = impact ? { tone: impact.tone, text: impact.hits.length ? this.t("riskHits", { n: impact.hits.length, c: impact.certain }) : this.t("riskNone") } : null;
     return [
-      [this.t("status"), this.pill(item.status)],
       item.reason ? [this.t("sumCause"), this.esc(this.t(item.reason))] : null,
       item.status_since ? [this.t("since"), this.esc(this.formatDate(item.status_since))] : null,
       integration ? [this.t("sumIntegration"), this.esc(integration)] : null,
