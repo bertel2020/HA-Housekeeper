@@ -581,6 +581,7 @@ async def websocket_preflight_save(
         vol.Optional("window_days", default=7): vol.In(RELIABILITY_WINDOWS),
         vol.Optional("refresh", default=False): bool,
         vol.Optional("compare", default=False): bool,
+        vol.Optional("cached_only", default=False): bool,
     }
 )
 @websocket_api.async_response
@@ -604,6 +605,7 @@ async def websocket_reliability(
                 refresh=msg["refresh"],
                 compare=msg["compare"],
                 store=scanner.replies,
+                cached_only=msg["cached_only"],
             )
     except Exception as err:
         connection.send_error(msg["id"], "reliability_failed", f"{type(err).__name__}: {err}")

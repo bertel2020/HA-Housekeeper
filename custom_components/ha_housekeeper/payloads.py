@@ -83,6 +83,7 @@ class ReliabilityRow(TypedDict):
 
 
 class ReliabilityResult(Reply):
+    missing: NotRequired[bool]
     entries: list[ReliabilityRow]
     unstable: dict[str, Any]
     window_days: int

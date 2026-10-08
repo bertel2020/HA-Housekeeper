@@ -709,6 +709,7 @@ Object.assign(TEXT.de, {
   relTitle: "Integrationen nach Verfügbarkeit", relHint: "Schlechteste zuerst. Gerechnet aus den Zuständen im Recorder",
   relWindow1: "24 Stunden", relWindow7: "7 Tage", relRefresh: "Neu berechnen", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   relTab: "Zuverlässigkeit", relAllStates: "Alle Zustände", relOnlyOutages: "Mit gemeinsamen Ausfällen", relOnlyReauth: "Neue Anmeldung nötig", relOnlyNotLoaded: "Nicht geladen", relSortAvail: "Verfügbarkeit", relSortOutages: "Ausfälle", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entities mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entity dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
+  stability: "Stabilität", stabilityOk: "Stabil im Zeitraum", stabilityMissing: "Noch nicht berechnet. Die Ansicht Zuverlässigkeit rechnet es aus.", cause_unstable: "Die Entity fällt immer wieder aus: {level}.", hint_unstable: "Prüfe Verbindung, Netz und Integration des Geräts; die Zahlen stehen in der Ansicht Zuverlässigkeit.",
   relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
   relBusy: "Eine andere Berechnung läuft noch. Housekeeper fragt automatisch erneut an.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
   relEntities: "{n} Entities", relPermanent: "{n} dauerhaft ausgefallen, nicht eingerechnet",
@@ -728,6 +729,7 @@ Object.assign(TEXT.en, {
   relTitle: "Integrations by availability", relHint: "Worst first. Calculated from the states in the recorder",
   relWindow1: "24 hours", relWindow7: "7 days", relRefresh: "Recalculate", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   relTab: "Reliability", relAllStates: "All states", relOnlyOutages: "With shared outages", relOnlyReauth: "Re-authentication open", relOnlyNotLoaded: "Not loaded", relSortAvail: "Availability", relSortOutages: "Outages", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
+  stability: "Stability", stabilityOk: "Stable in the period", stabilityMissing: "Not calculated yet. The Reliability view calculates it.", cause_unstable: "The entity keeps failing: {level}.", hint_unstable: "Check the connection, network and integration of the device; the numbers are in the Reliability view.",
   relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
   relBusy: "Another calculation is still running. Housekeeper asks again by itself.", relEmpty: "There are no integration states in this period.",
   relEntities: "{n} entities", relPermanent: "{n} down all the time, not counted",
@@ -2659,6 +2661,11 @@ class DiagnosisMixin {
       else if (state === "unknown") rows.push(this.check(t("runtimeState"), "violet", state, t("unknown")));
       else rows.push(this.check(t("runtimeState"), "ok", item.unit ? `${state} ${item.unit}` : state, t("available")));
 
+      const stable = this.stabilityOf(item);
+      if (stable?.info) {
+        const flap = stable.info.level === "flapping";
+        rows.push(this.check(t("stability"), flap ? "red" : "warn", this.unstableLines(stable.info, stable.r.window_days)[0], t(flap ? "relFlapping" : "relUnstable")));
+      }
       const broken = integ?.broken ? { state: t(`cs_${integ.state}`) } : null;
       switch (item.reason) {
         case "state_available": cause = t("cause_ok"); break;
@@ -2680,6 +2687,11 @@ class DiagnosisMixin {
       else if (item.reason === "state_missing" && broken) hint = t("hint_integration");
       else if (["state_missing", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
       if (item.duplicate_of) hint = t("hint_duplicate");
+      if (stable?.info) {
+        cause = `${t("cause_unstable", { level: t(stable.info.level === "flapping" ? "relFlapping" : "relUnstable") })} ${cause}`;
+        if (tone === "ok") tone = stable.info.level === "flapping" ? "red" : "warn";
+        if (!hint) hint = t("hint_unstable");
+      }
       if (brokenMembers.length) {
         cause = `${t("cause_group_broken", { count: brokenMembers.length })} ${cause}`;
         hint = t("hint_group_broken");
@@ -2829,6 +2841,12 @@ class DiagnosisMixin {
       const row = this.reliabilityRow(item);
       if (row && row.availability !== null && row.availability !== undefined) facts.push([this.t("relFactAvail", { days: this.reliability.window_days }), `${this.formatNumber(row.availability)} %<small>${this.t("relEntities", { n: row.entities })}${row.shared_outages ? ` · ${this.t(row.shared_outages === 1 ? "relSharedOne" : "relShared", { n: row.shared_outages, longest: this.relDuration(row.longest_outage) })}` : ""}</small>`]);
     }
+    if (item.object_type === "entity") {
+      const stable = this.stabilityOf(item);
+      if (stable?.missing) facts.push([this.t("stability"), this.t("stabilityMissing")]);
+      else if (stable?.info) facts.push([this.t("stability"), `<span class="pill ${stable.info.level === "flapping" ? "red" : "warn"}">${this.t(stable.info.level === "flapping" ? "relFlapping" : "relUnstable")}</span>${this.unstableLines(stable.info, stable.r.window_days).map(line => `<small>${line}</small>`).join("")}`]);
+      else if (stable) facts.push([this.t("stability"), `${this.t("stabilityOk")}<small>${this.t(stable.r.window_days === 1 ? "relWindow1" : "relWindow7")}</small>`]);
+    }
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
   }
@@ -2916,6 +2934,7 @@ class DiagnosisMixin {
     const key = this.objectKey(item);
     if (["automation", "script"].includes(item.object_type)) this.ensureRuns();
     if (item.object_type === "config_entry") this.ensureReliability();
+    if (item.object_type === "entity") this.ensureStability();
     const tabs = this.detailTabs(item, key);
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
@@ -3402,13 +3421,38 @@ class ReliabilityMixin {
     return `<div class="stack"><div class="panel">${head}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>${this.unstableCard(r)}</div>`;
   }
 
-  unstableRow(item, days) {
-    const tone = item.level === "flapping" ? "red" : "warn";
-    const lines = [`${this.esc(item.entity_id)}${item.entry_title ? ` · ${this.esc(item.entry_title)}` : ""}`,
-      this.t("relEpisodes", { n: item.episodes, days, rate: this.formatNumber(item.per_day), total: this.relDuration(item.total_seconds), mean: this.relDuration(item.mean_seconds) })];
+  // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
+  unstableLines(item, days) {
+    const lines = [this.t("relEpisodes", { n: item.episodes, days, rate: this.formatNumber(item.per_day), total: this.relDuration(item.total_seconds), mean: this.relDuration(item.mean_seconds) })];
     if (item.pattern_hour !== null && item.pattern_hour !== undefined) lines.push(this.t("relPattern", { from: String(item.pattern_hour).padStart(2, "0"), to: String((item.pattern_hour + 2) % 24).padStart(2, "0") }));
     if (item.used) lines.push(this.t("relFollowers", { n: item.used }));
+    return lines;
+  }
+
+  unstableRow(item, days) {
+    const tone = item.level === "flapping" ? "red" : "warn";
+    const lines = [`${this.esc(item.entity_id)}${item.entry_title ? ` · ${this.esc(item.entry_title)}` : ""}`, ...this.unstableLines(item, days)];
     return `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:swap-vertical"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}</span><span class="pill ${tone}">${this.t(item.level === "flapping" ? "relFlapping" : "relUnstable")}</span></button>`;
+  }
+
+  // The stability of an entity for its detail page, from numbers that already exist: it never starts the recorder query.
+  ensureStability() {
+    if (this._stabRequested === this.relWindow || this.reliability?.available) return;
+    this._stabRequested = this.relWindow;
+    setTimeout(async () => {
+      try { this.stability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, cached_only: true }); } catch (_) { return; }
+      if (this.selected?.object_type === "entity") this.render();
+    }, 0);
+  }
+
+  // null: unknown; { missing }: never calculated; { info: null }: calculated, stable; { info }: unstable or flapping.
+  stabilityOf(item) {
+    const r = this.reliability?.available && !this.reliability.busy ? this.reliability : this.stability;
+    if (!r || !r.available) return null;
+    if (r.missing) return { missing: true };
+    const map = r.unstable?.entities;
+    if (!map) return null; // a reply kept by an older version
+    return { r, info: map[item.object_id] || null };
   }
 
   unstableCard(r) {

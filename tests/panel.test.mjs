@@ -2662,6 +2662,23 @@ test("the load view, the policies and the exposure view have a search box once t
   assert.ok(el.exposureView().includes("No matches for these filters."));
 });
 
+test("an entity's details name flapping or instability from the calculated numbers, and say when none exist", () => {
+  const { el } = panel("en");
+  const lamp = { object_type: "entity", object_id: "sensor.w", name: "W", status: "active", state: "5", reason: "state_available", disabled_by: null };
+  el.data = { ...DATA, objects: [...DATA.objects, lamp] };
+  el._stabRequested = 7;
+  assert.ok(!el.factsCard(lamp, "entity:sensor.w").includes("Stability"), "nothing before any numbers exist");
+  el.stability = { available: true, missing: true };
+  assert.ok(el.factsCard(lamp, "entity:sensor.w").includes("Not calculated yet"));
+  const info = { level: "flapping", episodes: 416, per_day: 416, total_seconds: 39600, mean_seconds: 120, pattern_hour: null, used: 2 };
+  el.stability = { available: true, window_days: 1, entries: [], unstable: { items: [], total: 1, entities: { "sensor.w": info } } };
+  const facts = el.factsCard(lamp, "entity:sensor.w"), card = el.diagnosisCard(lamp);
+  assert.ok(facts.includes("flapping") && facts.includes("416 failures"), facts);
+  assert.ok(card.includes("Stability") && card.includes("keeps failing") && card.includes("flapping"), "the diagnosis no longer looks fine");
+  el.stability = { ...el.stability, unstable: { items: [], total: 0, entities: {} } };
+  assert.ok(el.factsCard(lamp, "entity:sensor.w").includes("Stable in the period"));
+});
+
 test("the runtime state shows its unit, but not for special states or entities without one", () => {
   const { el } = panel("en");
   const html = state => {

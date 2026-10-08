@@ -44,6 +44,11 @@ class DiagnosisMixin {
       else if (state === "unknown") rows.push(this.check(t("runtimeState"), "violet", state, t("unknown")));
       else rows.push(this.check(t("runtimeState"), "ok", item.unit ? `${state} ${item.unit}` : state, t("available")));
 
+      const stable = this.stabilityOf(item);
+      if (stable?.info) {
+        const flap = stable.info.level === "flapping";
+        rows.push(this.check(t("stability"), flap ? "red" : "warn", this.unstableLines(stable.info, stable.r.window_days)[0], t(flap ? "relFlapping" : "relUnstable")));
+      }
       const broken = integ?.broken ? { state: t(`cs_${integ.state}`) } : null;
       switch (item.reason) {
         case "state_available": cause = t("cause_ok"); break;
@@ -65,6 +70,11 @@ class DiagnosisMixin {
       else if (item.reason === "state_missing" && broken) hint = t("hint_integration");
       else if (["state_missing", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
       if (item.duplicate_of) hint = t("hint_duplicate");
+      if (stable?.info) {
+        cause = `${t("cause_unstable", { level: t(stable.info.level === "flapping" ? "relFlapping" : "relUnstable") })} ${cause}`;
+        if (tone === "ok") tone = stable.info.level === "flapping" ? "red" : "warn";
+        if (!hint) hint = t("hint_unstable");
+      }
       if (brokenMembers.length) {
         cause = `${t("cause_group_broken", { count: brokenMembers.length })} ${cause}`;
         hint = t("hint_group_broken");
@@ -214,6 +224,12 @@ class DiagnosisMixin {
       const row = this.reliabilityRow(item);
       if (row && row.availability !== null && row.availability !== undefined) facts.push([this.t("relFactAvail", { days: this.reliability.window_days }), `${this.formatNumber(row.availability)} %<small>${this.t("relEntities", { n: row.entities })}${row.shared_outages ? ` · ${this.t(row.shared_outages === 1 ? "relSharedOne" : "relShared", { n: row.shared_outages, longest: this.relDuration(row.longest_outage) })}` : ""}</small>`]);
     }
+    if (item.object_type === "entity") {
+      const stable = this.stabilityOf(item);
+      if (stable?.missing) facts.push([this.t("stability"), this.t("stabilityMissing")]);
+      else if (stable?.info) facts.push([this.t("stability"), `<span class="pill ${stable.info.level === "flapping" ? "red" : "warn"}">${this.t(stable.info.level === "flapping" ? "relFlapping" : "relUnstable")}</span>${this.unstableLines(stable.info, stable.r.window_days).map(line => `<small>${line}</small>`).join("")}`]);
+      else if (stable) facts.push([this.t("stability"), `${this.t("stabilityOk")}<small>${this.t(stable.r.window_days === 1 ? "relWindow1" : "relWindow7")}</small>`]);
+    }
     const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
   }
@@ -301,6 +317,7 @@ class DiagnosisMixin {
     const key = this.objectKey(item);
     if (["automation", "script"].includes(item.object_type)) this.ensureRuns();
     if (item.object_type === "config_entry") this.ensureReliability();
+    if (item.object_type === "entity") this.ensureStability();
     const tabs = this.detailTabs(item, key);
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);

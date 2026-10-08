@@ -38,6 +38,7 @@ PATTERN_SHARE = 0.6
 PATTERN_MIN_DAYS = 3
 PATTERN_MIN_WINDOW_DAYS = 6
 UNSTABLE_LIMIT = 30
+STABILITY_LIMIT = 500  # entities whose stability the detail pages can name
 THRESHOLDS = {
     "shared_share_percent": SHARED_SHARE,
     "shared_min_entities": SHARED_MIN_ENTITIES,
@@ -364,7 +365,13 @@ def flapping(
     items.sort(key=lambda i: (-i["_rank"], i["entity_id"]))
     for entry in items:
         del entry["_rank"]
-    return {"items": items[:UNSTABLE_LIMIT], "total": len(items), "excluded": excluded}
+    kept = ("level", "episodes", "per_day", "total_seconds", "mean_seconds", "pattern_hour", "used")
+    return {
+        "items": items[:UNSTABLE_LIMIT],
+        "total": len(items),
+        "excluded": excluded,
+        "entities": {i["entity_id"]: {k: i[k] for k in kept} for i in items[:STABILITY_LIMIT]},
+    }
 
 
 async def entry_info(hass: HomeAssistant) -> dict[str, dict[str, Any]]:
@@ -404,6 +411,7 @@ async def reliability(
     refresh: bool = False,
     compare: bool = False,
     store: ReplyStore | None = None,
+    cached_only: bool = False,
 ) -> ReliabilityResult | dict[str, Any]:
     """Availability and shared outages per config entry for the last day or week.
 
@@ -414,6 +422,18 @@ async def reliability(
         return {"available": False, "entries": []}
     now = time.time()
     key = reply_key(window_days, compare)
+    if cached_only:
+        # Only what was calculated before, however old: a detail page never starts the recorder query.
+        held = kept_reply(store, key, now, CACHE_SECONDS)
+        if held is None:
+            return {
+                "available": True,
+                "busy": False,
+                "missing": True,
+                "entries": [],
+                "window_days": window_days,
+            }
+        return held
     kept = None if refresh else kept_reply(store, key, now, CACHE_SECONDS)
     if kept is not None:
         # An old reply is handed out at once; the caller asks again with ``refresh`` for new numbers.

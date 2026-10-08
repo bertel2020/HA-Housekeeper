@@ -342,6 +342,7 @@ async def test_the_recorder_result_carries_the_unstable_entities(
         "items": [],
         "total": 0,
         "excluded": {"ignored": 0, "disabled": 0, "permanent": 0},
+        "entities": {},
     }
     assert "outage_periods" not in result
     assert result["entries"][0]["shared_outages"] == 5
@@ -474,3 +475,40 @@ async def test_the_last_reply_is_kept_and_an_old_one_is_marked_stale(
     assert old["stale"] is True and old["age_seconds"] >= 3600
     renewed = await reliability(hass, snapshot, store=again, refresh=True)
     assert renewed["stale"] is False and renewed["cached"] is False
+
+
+def test_every_unstable_entity_is_named_by_id_not_only_the_listed_ones() -> None:
+    names = {f"s{n:02d}": episodes(4 + n % 3) for n in range(40)}
+    result = flap(names)
+    assert len(result["items"]) == 30 and result["total"] == 40
+    assert set(result["entities"]) == set(names), (
+        "the map covers all of them, the list only the worst"
+    )
+    one = result["entities"]["s00"]
+    assert set(one) == {
+        "level",
+        "episodes",
+        "per_day",
+        "total_seconds",
+        "mean_seconds",
+        "pattern_hour",
+        "used",
+    }
+    assert flap({"a": episodes(2)})["entities"] == {}
+
+
+async def test_cached_only_never_starts_a_query_and_hands_out_what_exists(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    from custom_components.ha_housekeeper.const import DOMAIN
+
+    store = ReplyStore(hass)
+    snapshot = snapshot_for(entry="x")
+    nothing = await reliability(hass, snapshot, store=store, cached_only=True)
+    assert nothing["missing"] is True and nothing["entries"] == []
+    assert "query_cache" not in hass.data.get(DOMAIN, {}), "no query ran"
+    store.keep(
+        "reliability:7:0", {"available": True, "entries": [], "computed_at": 1.0, "window_days": 7}
+    )
+    old = await reliability(hass, snapshot, store=store, cached_only=True)
+    assert old["stale"] is True and old["cached"] is True and "missing" not in old

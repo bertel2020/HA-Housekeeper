@@ -118,13 +118,38 @@ class ReliabilityMixin {
     return `<div class="stack"><div class="panel">${head}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>${this.unstableCard(r)}</div>`;
   }
 
-  unstableRow(item, days) {
-    const tone = item.level === "flapping" ? "red" : "warn";
-    const lines = [`${this.esc(item.entity_id)}${item.entry_title ? ` · ${this.esc(item.entry_title)}` : ""}`,
-      this.t("relEpisodes", { n: item.episodes, days, rate: this.formatNumber(item.per_day), total: this.relDuration(item.total_seconds), mean: this.relDuration(item.mean_seconds) })];
+  // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
+  unstableLines(item, days) {
+    const lines = [this.t("relEpisodes", { n: item.episodes, days, rate: this.formatNumber(item.per_day), total: this.relDuration(item.total_seconds), mean: this.relDuration(item.mean_seconds) })];
     if (item.pattern_hour !== null && item.pattern_hour !== undefined) lines.push(this.t("relPattern", { from: String(item.pattern_hour).padStart(2, "0"), to: String((item.pattern_hour + 2) % 24).padStart(2, "0") }));
     if (item.used) lines.push(this.t("relFollowers", { n: item.used }));
+    return lines;
+  }
+
+  unstableRow(item, days) {
+    const tone = item.level === "flapping" ? "red" : "warn";
+    const lines = [`${this.esc(item.entity_id)}${item.entry_title ? ` · ${this.esc(item.entry_title)}` : ""}`, ...this.unstableLines(item, days)];
     return `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:swap-vertical"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}</span><span class="pill ${tone}">${this.t(item.level === "flapping" ? "relFlapping" : "relUnstable")}</span></button>`;
+  }
+
+  // The stability of an entity for its detail page, from numbers that already exist: it never starts the recorder query.
+  ensureStability() {
+    if (this._stabRequested === this.relWindow || this.reliability?.available) return;
+    this._stabRequested = this.relWindow;
+    setTimeout(async () => {
+      try { this.stability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, cached_only: true }); } catch (_) { return; }
+      if (this.selected?.object_type === "entity") this.render();
+    }, 0);
+  }
+
+  // null: unknown; { missing }: never calculated; { info: null }: calculated, stable; { info }: unstable or flapping.
+  stabilityOf(item) {
+    const r = this.reliability?.available && !this.reliability.busy ? this.reliability : this.stability;
+    if (!r || !r.available) return null;
+    if (r.missing) return { missing: true };
+    const map = r.unstable?.entities;
+    if (!map) return null; // a reply kept by an older version
+    return { r, info: map[item.object_id] || null };
   }
 
   unstableCard(r) {
