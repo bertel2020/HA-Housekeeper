@@ -63,7 +63,7 @@ class RunsMixin {
   runsTable(rows) {
     const pg = this.paginate("runsall", rows);
     const body = pg.rows.map(row => `<tr data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"><td><strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span></td><td data-label="${this.esc(this.t("runsColRuns"))}">${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}</td><td data-label="${this.esc(this.t("runsColErrors"))}">${this.formatNumber(row.errors)}</td><td data-label="${this.esc(this.t("runsColConditions"))}">${this.formatNumber(row.conditions)}</td><td data-label="${this.esc(this.t("runsColDuration"))}">${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}</td><td data-label="${this.esc(this.t("runsColTrend"))}">${this.runsTrend(row)}</td></tr>`).join("");
-    return `<div class="tablewrap"><table><thead><tr><th>${this.t("runsColName")}</th><th>${this.t("runsColRuns")}</th><th>${this.t("runsColErrors")}</th><th>${this.t("runsColConditions")}</th><th>${this.t("runsColDuration")}</th><th>${this.t("runsColTrend")}</th></tr></thead><tbody>${body}</tbody></table></div>${pg.footer}`;
+    return `<div class="tablewrap runs"><table><thead><tr><th>${this.t("runsColName")}</th><th>${this.t("runsColRuns")}</th><th>${this.t("runsColErrors")}</th><th>${this.t("runsColConditions")}</th><th>${this.t("runsColDuration")}</th><th>${this.t("runsColTrend")}</th></tr></thead><tbody>${body}</tbody></table></div>${pg.footer}`;
   }
 
   // The numbers of one automation or script for its detail page; only when runs were counted for it.

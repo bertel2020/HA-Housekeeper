@@ -372,8 +372,13 @@ async def reliability(
     *,
     window_days: int = 7,
     refresh: bool = False,
+    compare: bool = False,
 ) -> dict[str, Any]:
-    """Availability and shared outages per config entry for the last day or week."""
+    """Availability and shared outages per config entry for the last day or week.
+
+    With ``compare`` the period just before is read as well (a second query) and each row carries
+    the availability of that period and the difference in percentage points.
+    """
     if not recorder_ready(hass):
         return {"available": False, "entries": []}
     now = time.time()
@@ -414,11 +419,35 @@ async def reliability(
     )
     for item in unstable["items"]:
         item["entry_title"] = (entries.get(item["entry_id"]) or {}).get("title")
+    comparison = {"requested": compare, "available": False}
+    if compare:
+        before = await cached_query(
+            hass,
+            f"reliability:{window_days}:before",
+            CACHE_SECONDS,
+            lambda: query_runs(hass, now - 2 * window_days * DAY, now - window_days * DAY),
+            refresh=refresh,
+        )
+        if not before.busy:
+            earlier = {
+                row["entry_id"]: row["availability"]
+                for row in compute(before.raw, entities, entries)["entries"]
+            }
+            for row in result["entries"]:
+                old = earlier.get(row["entry_id"])
+                row["previous_availability"] = old
+                row["delta"] = (
+                    round(row["availability"] - old, 2)
+                    if old is not None and row["availability"] is not None
+                    else None
+                )
+            comparison["available"] = True
     return {
         "available": True,
         "busy": False,
         "cached": found.cached,
         "unstable": unstable,
         "thresholds": THRESHOLDS,
+        "comparison": comparison,
         **result,
     }

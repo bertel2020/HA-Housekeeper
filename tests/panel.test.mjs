@@ -2652,3 +2652,20 @@ test("the info card shows how much space each stored file takes", () => {
   assert.ok(html.includes("2 KB") || html.includes("2.0 KB") || html.includes("2 kB"));
   assert.ok(html.includes("1 MB") || html.includes("1.0 MB"));
 });
+
+test("the reliability comparison asks for the period before and shows the difference in words", async () => {
+  const { el, shadow } = panel("en");
+  const calls = [];
+  const row = { entry_id: "e", title: "Hue", domain: "hue", state: "loaded", entities: 3, permanent: 0, availability: 99, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null, previous_availability: 95.5, delta: 3.5 };
+  el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/reliability")) calls.push(msg); return { available: true, busy: false, window_days: 7, entries: [row, { ...row, entry_id: "f", title: "Zigbee", previous_availability: null, delta: null }], unstable: { items: [], total: 0 }, comparison: { requested: true, available: true }, coverage: { known: 3, with_data: 3, observed_share: 100 } }; } };
+  el.data = DATA; el.view = "reliability";
+  el.relCompare = true;
+  await el.loadReliability();
+  assert.equal(calls.at(-1).compare, true);
+  const html = el.reliabilityView();
+  assert.ok(html.includes("+3.5 percentage points against the period before (95.5 %)"));
+  assert.ok(html.includes("no data for the period before") && html.includes('data-rel-compare'));
+  el.relCompare = false;
+  await el.loadReliability();
+  assert.ok(!("compare" in calls.at(-1)));
+});

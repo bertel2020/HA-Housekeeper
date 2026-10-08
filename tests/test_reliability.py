@@ -189,6 +189,16 @@ async def test_the_recorder_gives_the_unavailable_time(
     again = await reliability(hass, snapshot)
     assert again["cached"] is True
 
+    plain = await reliability(hass, snapshot, window_days=1)
+    assert plain["comparison"] == {"requested": False, "available": False}
+    assert "delta" not in plain["entries"][0]
+    # The day before had the hour of outage; the last day had none: up by the missing hour of 24.
+    compared = await reliability(hass, snapshot, window_days=1, compare=True)
+    assert compared["comparison"] == {"requested": True, "available": True}
+    row = compared["entries"][0]
+    assert row["previous_availability"] == round(100 * (1 - 1 / 24), 2)
+    assert row["delta"] == round(100 - row["previous_availability"], 2)
+
 
 async def test_a_second_query_does_not_start_while_one_runs(
     recorder_mock, hass: HomeAssistant

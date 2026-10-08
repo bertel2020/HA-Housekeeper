@@ -14,7 +14,7 @@ Object.assign(TEXT.de, {
   dbAdvice_missing_hours: "Meist war die Entity zeitweise nicht verfügbar. Bei vielen Reihen zugleich war der Recorder nicht aktiv.",
   dbAdvice_statistics_issues: "Entwicklerwerkzeuge → Statistiken bietet an, die Einheit zu korrigieren oder die Reihe zu löschen. Vorher ein Backup anlegen.",
   dbAdvice_recorder_gap: "Prüfe das Protokoll auf Recorder-Fehler (Datenbank gesperrt, Platte voll) und sichere die Datenbank.",
-  dbFootnote: "Gemessen wird nur lesend. Die Größe der Datenbank wird jeden Tag notiert (nur die Zahl), daraus entsteht das Wachstum. Eine Lücke ist ein Zeitraum von mindestens 10 Minuten ohne einen einzigen Eintrag in den Zuständen der letzten 7 Tage; endet sie, wo Home Assistant nach seinem eigenen Protokoll stand, gilt sie als Neustart. Fehlende Stunden zählen ab 6 in den letzten 30 Tagen. Housekeeper repariert nichts und löscht nichts.",
+  dbFootnote: "Gemessen wird nur lesend. Die Größe der Datenbank wird jeden Tag notiert (nur die Zahl), daraus entsteht das Wachstum. Eine Lücke ist ein Zeitraum von mindestens {gap} Minuten ohne einen einzigen Eintrag in den Zuständen der letzten {gapDays} Tage; endet sie, wo Home Assistant nach seinem eigenen Protokoll stand, gilt sie als Neustart. Fehlende Stunden zählen ab {missing} in den letzten {missingDays} Tagen. Housekeeper repariert nichts und löscht nichts.",
   todoDbProblem: "Datenbank: Problem",
 });
 Object.assign(TEXT.en, {
@@ -32,6 +32,6 @@ Object.assign(TEXT.en, {
   dbAdvice_missing_hours: "Usually the entity was unavailable for a while. With many series at once, the recorder was not active.",
   dbAdvice_statistics_issues: "Developer tools → Statistics offers to fix the unit or delete the series. Create a backup first.",
   dbAdvice_recorder_gap: "Check the log for recorder errors (database locked, disk full) and back up the database.",
-  dbFootnote: "Only reads. The size of the database is noted once a day (just the number); the growth comes from that. A gap is a stretch of at least 10 minutes without a single entry in the states of the last 7 days; if it ends where Home Assistant was down according to its own log, it counts as a restart. Missing hours count from 6 in the last 30 days. Housekeeper repairs nothing and deletes nothing.",
+  dbFootnote: "Only reads. The size of the database is noted once a day (just the number); the growth comes from that. A gap is a stretch of at least {gap} minutes without a single entry in the states of the last {gapDays} days; if it ends where Home Assistant was down according to its own log, it counts as a restart. Missing hours count from {missing} in the last {missingDays} days. Housekeeper repairs nothing and deletes nothing.",
   todoDbProblem: "Database: problem",
 });
