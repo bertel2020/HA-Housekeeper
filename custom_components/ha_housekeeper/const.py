@@ -41,4 +41,6 @@ OPTION_LIMITS: Final = {
 # While Home Assistant is still starting, entities of slow integrations have no state yet.
 # Scans in this window are preliminary: they change no stored observations, issues or history.
 WARMUP_SECONDS: Final = 300
+# Version of the WebSocket reply contract; raise it when a field is renamed or removed.
+API_SCHEMA: Final = 1
 SIGNAL_SCAN_COMPLETE: Final = f"{DOMAIN}_scan_complete"

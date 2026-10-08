@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.data_entry_flow import FlowResultType  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
 
-from custom_components.ha_housekeeper.const import DOMAIN  # noqa: E402
+from custom_components.ha_housekeeper.const import API_SCHEMA, DOMAIN  # noqa: E402
 from custom_components.ha_housekeeper.inventory import (  # noqa: E402
     InventoryScanner,
     _device_config_entry_ids,
@@ -792,3 +792,42 @@ async def test_manual_scans_are_refused_while_a_plan_runs(
     scanner.cleanup.status["running"] = False
     await client.send_json_auto_id({"type": "ha_housekeeper/scan"})
     assert (await client.receive_json())["success"] is True
+
+
+async def test_replies_carry_the_api_schema_version(hass: HomeAssistant, hass_ws_client) -> None:
+    """Panel replies are marked with the contract version; cached data stays untouched."""
+    registry = er.async_get(hass)
+    orphan = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="s-1", suggested_object_id="old_sensor"
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+
+    async def reply(message: dict) -> dict:
+        await client.send_json_auto_id(message)
+        response = await client.receive_json()
+        assert response["success"], response
+        return response["result"]
+
+    plan = await reply(
+        {
+            "type": "ha_housekeeper/plan_create",
+            "actions": [{"kind": "disable_entity", "object_id": orphan.entity_id}],
+        }
+    )
+    results = {
+        "inventory": await reply({"type": "ha_housekeeper/inventory"}),
+        "status": await reply({"type": "ha_housekeeper/status"}),
+        "plan_create": plan,
+        "plan_list": await reply({"type": "ha_housekeeper/plan_list"}),
+        "plan_detail": await reply(
+            {"type": "ha_housekeeper/plan_detail", "plan_id": plan["plan_id"]}
+        ),
+        "plan_status": await reply(
+            {"type": "ha_housekeeper/plan_status", "plan_id": plan["plan_id"]}
+        ),
+        "recorder_costs": await reply({"type": "ha_housekeeper/recorder_costs"}),
+    }
+    for name, result in results.items():
+        assert result["schema"] == API_SCHEMA, name
+    assert "schema" not in scanner.snapshot

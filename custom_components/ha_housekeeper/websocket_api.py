@@ -25,7 +25,7 @@ from .cleanup import (
     registry_fingerprint,
 )
 from .cleanup_exec import CleanupError, entity_restorable
-from .const import DOMAIN, OPTION_LIMITS
+from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
 from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
@@ -35,6 +35,15 @@ from .references import preview_replacement
 def _scanner(hass: HomeAssistant) -> InventoryScanner | None:
     """Return the configured scanner, or None while the entry is not loaded."""
     return hass.data.get(DOMAIN, {}).get("scanner")
+
+
+def _versioned(result: dict[str, Any]) -> dict[str, Any]:
+    """Mark a reply with the version of the API contract.
+
+    Fields may be added without a new version; renaming or removing one needs ``API_SCHEMA`` to
+    be raised. A copy is sent so cached snapshots never carry the marker.
+    """
+    return {**result, "schema": API_SCHEMA}
 
 
 async def _send_inventory_result(
@@ -59,7 +68,7 @@ async def _send_inventory_result(
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
-    connection.send_result(msg["id"], result)
+    connection.send_result(msg["id"], _versioned(result))
 
 
 @websocket_api.require_admin
@@ -99,7 +108,7 @@ def websocket_status(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    connection.send_result(msg["id"], scanner.status)
+    connection.send_result(msg["id"], _versioned(scanner.status))
 
 
 @websocket_api.require_admin
@@ -281,7 +290,7 @@ async def websocket_plan_create(
         meter_data=meter_data,
     )
     scanner.journal.add(plan)
-    connection.send_result(msg["id"], public_plan(plan))
+    connection.send_result(msg["id"], _versioned(public_plan(plan)))
 
 
 @websocket_api.require_admin
@@ -297,7 +306,9 @@ def websocket_plan_list(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    connection.send_result(msg["id"], {"plans": [plan_summary(p) for p in scanner.journal.plans]})
+    connection.send_result(
+        msg["id"], _versioned({"plans": [plan_summary(p) for p in scanner.journal.plans]})
+    )
 
 
 @websocket_api.require_admin
@@ -316,7 +327,7 @@ def websocket_plan_detail(
     if scanner is None or plan is None:
         connection.send_error(msg["id"], "not_found", "Plan not found")
         return
-    connection.send_result(msg["id"], public_plan(plan))
+    connection.send_result(msg["id"], _versioned(public_plan(plan)))
 
 
 @websocket_api.require_admin
@@ -434,7 +445,8 @@ def websocket_plan_status(
         connection.send_error(msg["id"], "not_found", "Plan not found")
         return
     connection.send_result(
-        msg["id"], {"progress": scanner.cleanup.status, "plan": public_plan(plan)}
+        msg["id"],
+        _versioned({"progress": scanner.cleanup.status, "plan": public_plan(plan)}),
     )
 
 
@@ -486,7 +498,7 @@ async def websocket_recorder_costs(
     except Exception as err:
         connection.send_error(msg["id"], "recorder_failed", f"{type(err).__name__}: {err}")
         return
-    connection.send_result(msg["id"], result)
+    connection.send_result(msg["id"], _versioned(result))
 
 
 @websocket_api.require_admin
