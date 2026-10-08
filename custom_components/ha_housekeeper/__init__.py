@@ -147,11 +147,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(async_track_time_interval(hass, _heartbeat, timedelta(minutes=5)))
 
     async def _collect_runs(_: Any) -> None:
+        # Each collector on its own: one that fails must neither stop the other nor disturb Home Assistant.
         try:
             await scanner.runs.async_collect()
-            await sample_size(hass, scanner.events)
-        except Exception:  # A failing collector must never disturb Home Assistant.
+        except Exception:
             _LOGGER.exception("Collecting automation runs failed")
+        try:
+            await sample_size(hass, scanner.events)
+        except Exception:
+            _LOGGER.exception("Noting the database size failed")
 
     entry.async_on_unload(async_track_time_interval(hass, _collect_runs, timedelta(minutes=15)))
 
