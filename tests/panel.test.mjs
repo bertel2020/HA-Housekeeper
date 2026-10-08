@@ -2590,6 +2590,78 @@ test("slow recorder views ask again by themselves while another calculation hold
   assert.equal(timers.filter(([, ms]) => ms === 8000).length <= 13, true, "the retries are limited");
 });
 
+test("the runs view searches and filters the table and the list of what stands out, and sorts by column", () => {
+  const { el } = panel("en");
+  el.data = DATA; el.runs = RUNS; el.view = "runs"; el._runsRequested = true;
+  assert.ok(!el.runsView().includes('data-lq="runs"'), "a short list needs no search box");
+  const st = el.lvState("runs", "runs", "desc");
+  st.q = "nacht";
+  let html = el.runsView();
+  assert.ok(html.includes('data-lq="runs"'), "the box stays while a text is set");
+  assert.ok(html.includes("script.nacht") && !html.includes("automation.heizung") && !html.includes("Flur"), "table and attention list are cut");
+  st.q = "zzz";
+  assert.ok(el.runsView().includes("No matches for these filters."));
+  st.q = ""; st.f = { type: "script" };
+  html = el.runsView();
+  assert.ok(html.includes("script.nacht") && !html.includes("automation.heizung"));
+  st.f = { outcome: "errors" };
+  html = el.runsView();
+  assert.ok(html.includes("script.nacht") && html.includes("automation.flur") && !html.includes("automation.heizung"), "only runs with errors");
+  st.f = {}; st.sort = "errors"; st.dir = "desc";
+  html = el.runsView();
+  assert.ok(html.indexOf("automation.flur") < html.indexOf("script.nacht") && html.indexOf("script.nacht") < html.indexOf("automation.heizung"));
+  assert.ok(html.includes('data-lsort="runs|errors|desc"'));
+});
+
+test("reliability and the unstable entities can be searched and filtered", () => {
+  const { el } = panel("en");
+  el.data = DATA; el.view = "reliability"; el._relRequested = 7;
+  const entries = Array.from({ length: 7 }, (_, i) => ({ ...RELIABILITY.entries[1], entry_id: `x${i}`, title: `Box ${i}`, domain: i === 3 ? "zha" : "hue", availability: 99 - i, shared_outages: i === 3 ? 2 : 0, reauth: i === 5, state: i === 6 ? "setup_retry" : "loaded" }));
+  const unstable = { total: 7, excluded: {}, items: Array.from({ length: 7 }, (_, i) => ({ entity_id: `sensor.u${i}`, name: `Flatter ${i}`, entry_title: "Hue", level: "unstable", episodes: 3, per_day: 1, total_seconds: 60, mean_seconds: 20, used: 0, pattern_hour: null })) };
+  el.reliability = { ...RELIABILITY, entries, unstable, coverage: undefined };
+  let html = el.reliabilityView();
+  assert.ok(html.includes('data-lq="relentries"') && html.includes('data-lq="relunstable"'), "both lists get a box");
+  assert.ok(html.indexOf("Box 6") < html.indexOf("Box 0"), "worst availability first");
+  el.lvState("relentries", "avail", "asc").f = { state: "outages" };
+  html = el.reliabilityView();
+  assert.ok(html.includes("Box 3") && !html.includes("Box 0"));
+  el.lv.relentries.f = { state: "reauth" };
+  assert.ok(el.reliabilityView().includes("Box 5") && !el.reliabilityView().includes("Box 3"));
+  el.lv.relentries.f = { state: "notloaded" };
+  assert.ok(el.reliabilityView().includes("Box 6") && !el.reliabilityView().includes("Box 5"));
+  el.lv.relentries.f = {}; el.lv.relentries.q = "zha";
+  assert.ok(el.reliabilityView().includes("Box 3") && !el.reliabilityView().includes("Box 0"));
+  el.lv.relentries.q = ""; el.lvState("relunstable", "", "asc").q = "flatter 4";
+  html = el.reliabilityView();
+  assert.ok(html.includes("sensor.u4") && !html.includes("sensor.u2"));
+});
+
+test("the load view, the policies and the exposure view have a search box once they are long enough", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el._stormsRequested = 1; el._exposureRequested = true;
+  const entities = Array.from({ length: 7 }, (_, i) => ({ entity_id: `sensor.e${i}`, name: `Laut ${i}`, rows: 10 - i, per_day: 10, no_new_state: 0, attr_bytes: null, peak_hour: null }));
+  el.storms = { ...STORMS, entities };
+  assert.ok(el.stormsView().includes('data-lq="stormentities"'));
+  el.lvState("stormentities", "", "asc").q = "laut 5";
+  let html = el.stormsView();
+  assert.ok(html.includes("sensor.e5") && !html.includes("sensor.e2"));
+  const items = Array.from({ length: 12 }, (_, i) => ({ key: `policy.entity_area|light.l${i}|`, object_type: "entity", object_id: `light.l${i}`, name: `Lampe ${i}`, ignored: false }));
+  el.policies = { available: true, enabled: 1, violations: 12, prefixes: {}, rules: [{ id: "entity_area", enabled: true, count: 12, ignored: 0, items }] };
+  el._policiesRequested = true;
+  html = el.policiesView();
+  assert.ok(html.includes('data-lq="policies"') && !html.includes("Lampe 10"), "ten rows without a search");
+  el.lvState("policies", "", "asc").q = "lampe 11";
+  html = el.policiesView();
+  assert.ok(html.includes("Lampe 11") && !html.includes("Lampe 3"));
+  el.exposure = { ...EXPO, findings: [{ kind: "alias_duplicate", level: "warn", assistant: "conversation", alias: "Küche", count: 6, items: Array.from({ length: 6 }, (_, i) => ({ entity_id: `light.k${i}`, name: `Küche ${i}` })) }, EXPO.findings[0]] };
+  assert.ok(el.exposureView().includes('data-lq="exposure"'));
+  el.lvState("exposure", "", "asc").q = "küche 2";
+  html = el.exposureView();
+  assert.ok(html.includes("light.k2") && !html.includes("light.k4") && !html.includes("Door"), "only findings with a matching entity");
+  el.lv.exposure.q = "nothing like this";
+  assert.ok(el.exposureView().includes("No matches for these filters."));
+});
+
 test("the runtime state shows its unit, but not for special states or entities without one", () => {
   const { el } = panel("en");
   const html = state => {

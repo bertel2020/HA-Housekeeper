@@ -57,8 +57,10 @@ class PoliciesMixin {
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
     if (!rule.enabled) return head;
     const editor = rule.id === "naming_scheme" ? this.polPrefixEditor() : "";
-    const visible = rule.items.filter(i => this.policyShowHidden || !i.ignored);
-    const shown = visible.slice(0, 10);
+    const q = (this.lv.policies?.q || "").trim().toLowerCase();
+    const matches = i => !q || [i.name, i.object_id, ...(i.also || [])].join(" ").toLowerCase().includes(q);
+    const visible = rule.items.filter(i => (this.policyShowHidden || !i.ignored) && matches(i));
+    const shown = visible.slice(0, q ? 50 : 10);
     const more = visible.length > shown.length ? `<p class="factnote">${this.t("polMore", { n: this.formatNumber(visible.length - shown.length) })}</p>` : "";
     const hidden = rule.ignored ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(rule.ignored) })}</p>` : "";
     return head + editor + shown.map(i => this.polItemRow(i)).join("") + more + hidden;
@@ -73,6 +75,9 @@ class PoliciesMixin {
     if (this.policiesError) return `<div class="panel">${head}<div class="error">${this.esc(this.policiesError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("polLoading")}</div>`;
     const none = r.enabled ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`;
-    return `<div class="panel">${head}${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${none}${this.howCounted("polFootnote")}</div>`;
+    const total = r.rules.reduce((n, rule) => n + (rule.enabled ? rule.items.length : 0), 0);
+    this.lvState("policies", "", "asc");
+    const bar = total >= 6 || this.lv.policies.q ? this.listBar("policies", { sorts: [] }) : "";
+    return `<div class="panel">${head}${bar}${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${none}${this.howCounted("polFootnote")}</div>`;
   }
 }

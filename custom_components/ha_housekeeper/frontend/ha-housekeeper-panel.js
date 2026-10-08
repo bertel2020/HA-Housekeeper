@@ -708,7 +708,7 @@ Object.assign(TEXT.de, {
   reliability: "Zuverlässigkeit", reliabilitySubtitle: "Wie verfügbar die Entities jeder Integration waren und wann sie gemeinsam ausfielen. Liest nur den Recorder.",
   relTitle: "Integrationen nach Verfügbarkeit", relHint: "Schlechteste zuerst. Gerechnet aus den Zuständen im Recorder",
   relWindow1: "24 Stunden", relWindow7: "7 Tage", relRefresh: "Neu berechnen", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
-  relTab: "Zuverlässigkeit", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entities mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entity dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
+  relTab: "Zuverlässigkeit", relAllStates: "Alle Zustände", relOnlyOutages: "Mit gemeinsamen Ausfällen", relOnlyReauth: "Neue Anmeldung nötig", relOnlyNotLoaded: "Nicht geladen", relSortAvail: "Verfügbarkeit", relSortOutages: "Ausfälle", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entities mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entity dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
   relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
   relBusy: "Eine andere Berechnung läuft noch. Housekeeper fragt automatisch erneut an.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
   relEntities: "{n} Entities", relPermanent: "{n} dauerhaft ausgefallen, nicht eingerechnet",
@@ -727,7 +727,7 @@ Object.assign(TEXT.en, {
   reliability: "Reliability", reliabilitySubtitle: "How available each integration's entities were and when they failed together. Only reads the recorder.",
   relTitle: "Integrations by availability", relHint: "Worst first. Calculated from the states in the recorder",
   relWindow1: "24 hours", relWindow7: "7 days", relRefresh: "Recalculate", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
-  relTab: "Reliability", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
+  relTab: "Reliability", relAllStates: "All states", relOnlyOutages: "With shared outages", relOnlyReauth: "Re-authentication open", relOnlyNotLoaded: "Not loaded", relSortAvail: "Availability", relSortOutages: "Outages", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
   relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
   relBusy: "Another calculation is still running. Housekeeper asks again by itself.", relEmpty: "There are no integration states in this period.",
   relEntities: "{n} entities", relPermanent: "{n} down all the time, not counted",
@@ -748,7 +748,7 @@ Object.assign(TEXT.de, {
   runs: "Automationen", runsHeading: "Automationen im Betrieb", runsSubtitle: "Wie oft Automationen und Skripte laufen, scheitern oder ohne Wirkung enden. Gezählt aus den Läufen, die Home Assistant kurz vorhält.",
   runsTitle: "Auffällig", runsHint: "Letzte 7 Tage. Ein fehlerfreier Lauf heißt nicht, dass die Automation ihren Zweck erfüllt",
   runsSince: "Gezählt seit {date}; ältere Läufe sind in Home Assistant nicht mehr vorhanden.", runsRefresh: "Neu zählen",
-  runsLoading: "Die Läufe werden gezählt …", runsNone: "Nichts Auffälliges in den gezählten Läufen.", runsFactNone: "Noch keine Läufe gezählt", runsNoData: "Noch keine Läufe gezählt. Der Zähler liest alle 15 Minuten.",
+  runsLoading: "Die Läufe werden gezählt …", runsNone: "Nichts Auffälliges in den gezählten Läufen.", runsFactNone: "Noch keine Läufe gezählt", runsAllOutcomes: "Alle Läufe", runsOnlyErrors: "Mit Fehlern", runsOnlyFlagged: "Mit Auffälligkeit", runsNoData: "Noch keine Läufe gezählt. Der Zähler liest alle 15 Minuten.",
   runsAll: "Alle gezählten Läufe", runsColName: "Name", runsColRuns: "Läufe", runsColErrors: "Fehler", runsColConditions: "Bedingung", runsColDuration: "Dauer Ø / max", runsColTrend: "7 Tage",
   runsCoverageFull: "Letzte {days} Tage · alle Zahlen vollständig, soweit Home Assistant die Läufe noch kannte.", runsCoverageLower: "Letzte {days} Tage · bei {n} Einträgen nur „mindestens“: der Trace-Speicher war voll, Läufe können fehlen.",
   rfHint_failing: "Prüfe die Ablaufverfolgung der Automation an der genannten Stelle.", rfHint_overlap: "Modus oder maximale Läufe anpassen oder die Auslöser entflechten.", rfHint_never_ok: "Ein Schritt oder eine Bedingung verhindert jeden Erfolg; die Ablaufverfolgung zeigt wo.", rfHint_no_effect: "Die Bedingung stoppt fast jeden Lauf; prüfe, ob sie noch passt oder der Auslöser zu breit ist.", rfHint_burst: "Prüfe, was die Automation so oft auslöst.", rfHint_long_run: "Prüfe Wartezeiten und Aktionen, die lange dauern.", rfHint_after_update: "Prüfe die Änderungen der neuen Version.", rfHint_long_wait: "Ein Neustart verwirft die Wartezeit; erwäge einen Zeitplan oder Auslöser statt Warten.", rfHint_wait_no_timeout: "Setze ein Zeitlimit, damit ein Lauf nicht ewig hängt.", rfHint_continue_on_error: "Fehler werden still übergangen; prüfe, ob das gewollt ist.",
@@ -768,7 +768,7 @@ Object.assign(TEXT.en, {
   runs: "Automations", runsHeading: "Automations in operation", runsSubtitle: "How often automations and scripts run, fail or end without effect. Counted from the runs Home Assistant keeps for a short time.",
   runsTitle: "Needs a look", runsHint: "Last 7 days. A run without an error does not mean the automation does its job",
   runsSince: "Counted since {date}; older runs are no longer in Home Assistant.", runsRefresh: "Count again",
-  runsLoading: "Counting the runs …", runsNone: "Nothing stands out in the counted runs.", runsFactNone: "No runs counted yet", runsNoData: "No runs counted yet. The counter reads every 15 minutes.",
+  runsLoading: "Counting the runs …", runsNone: "Nothing stands out in the counted runs.", runsFactNone: "No runs counted yet", runsAllOutcomes: "All runs", runsOnlyErrors: "With errors", runsOnlyFlagged: "Flagged", runsNoData: "No runs counted yet. The counter reads every 15 minutes.",
   runsAll: "All counted runs", runsColName: "Name", runsColRuns: "Runs", runsColErrors: "Errors", runsColConditions: "Condition", runsColDuration: "Duration avg / max", runsColTrend: "7 days",
   runsCoverageFull: "Last {days} days · all numbers complete as far as Home Assistant still knew the runs.", runsCoverageLower: "Last {days} days · “at least” for {n} entries: the trace store was full, runs may be missing.",
   rfHint_failing: "Check the automation's trace at the named step.", rfHint_overlap: "Adjust the mode or max runs, or untangle the triggers.", rfHint_never_ok: "A step or condition prevents every success; the trace shows where.", rfHint_no_effect: "The condition stops almost every run; check whether it still fits or the trigger is too broad.", rfHint_burst: "Check what fires the automation so often.", rfHint_long_run: "Check waits and actions that take long.", rfHint_after_update: "Check the changes of the new version.", rfHint_long_wait: "A restart discards the wait; consider a schedule or trigger instead of waiting.", rfHint_wait_no_timeout: "Set a timeout so a run cannot hang forever.", rfHint_continue_on_error: "Errors are passed over silently; check whether that is intended.",
@@ -1214,6 +1214,13 @@ class ListsMixin {
       return order * sign || ids.compare(String(tie(a.it)), String(tie(b.it)));
     });
     return rows.map(row => row.it);
+  }
+
+  // A search box over a list that keeps its own order. The box shows from `min` items on, or while a text is set.
+  searchList(id, items, text, min = 6) {
+    const st = this.lvState(id, "", "asc"), q = st.q.trim().toLowerCase();
+    const rows = q ? items.filter(item => text(item).toLowerCase().includes(q)) : items;
+    return { rows, bar: items.length >= min || st.q ? this.listBar(id, { sorts: [] }) : "", none: q && !rows.length ? `<div class="emptymsg">${this.t("noMatches")}</div>` : "" };
   }
 
   listBar(id, { sorts, filters = [] }) {
@@ -3317,6 +3324,14 @@ class ReliabilityMixin {
     return this.t("relMinutes", { n: Math.max(1, Math.round(seconds / 60)) });
   }
 
+  relSorts() {
+    return [
+      { key: "avail", label: "relSortAvail", dir: "asc", get: e => e.availability },
+      { key: "title", label: "sortName", dir: "asc", get: e => e.title },
+      { key: "outages", label: "relSortOutages", dir: "desc", get: e => e.shared_outages },
+    ];
+  }
+
   relRowBody(item) {
     const percent = item.availability;
     const tone = percent === null ? "mute" : percent >= 99.5 ? "ok" : percent >= 95 ? "warn" : "red";
@@ -3375,8 +3390,16 @@ class ReliabilityMixin {
     const th = r.thresholds || {};
     const cov = r.coverage;
     const coverage = cov && cov.observed_share !== null && cov.observed_share !== undefined ? this.coverageNote(this.t("relCoverage", { days: r.window_days, withData: this.formatNumber(cov.with_data), known: this.formatNumber(cov.known), share: cov.observed_share })) : "";
-    const pg = this.paginate("relentries", r.entries);
-    return `<div class="stack"><div class="panel">${head}${coverage}${loading}${pg.rows.map(item => this.relRow(item)).join("")}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>${this.unstableCard(r)}</div>`;
+    this.lvState("relentries", "avail", "asc");
+    const entries = this.refine("relentries", r.entries, { text: e => [e.title, e.domain].join(" "), sorts: this.relSorts(), tie: e => e.title, filters: {
+      state: (e, v) => v === "outages" ? e.shared_outages > 0 : v === "reauth" ? e.reauth : e.state && e.state !== "loaded",
+    } });
+    const bar = r.entries.length > 5 || this.lv.relentries.q ? this.listBar("relentries", { sorts: this.relSorts(), filters: [
+      { name: "state", all: this.t("relAllStates"), options: [["outages", this.t("relOnlyOutages")], ["reauth", this.t("relOnlyReauth")], ["notloaded", this.t("relOnlyNotLoaded")]] },
+    ] }) : "";
+    const pg = this.paginate("relentries", entries);
+    const list = entries.length ? pg.rows.map(item => this.relRow(item)).join("") : `<div class="emptymsg">${this.t("noMatches")}</div>`;
+    return `<div class="stack"><div class="panel">${head}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>${this.unstableCard(r)}</div>`;
   }
 
   unstableRow(item, days) {
@@ -3394,8 +3417,9 @@ class ReliabilityMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("relUnstableTitle")}</h2><p>${this.t("relUnstableHint")}</p></div></div>${r.coverage ? this.coverageNote(this.t("relUnstableCoverage", { days: r.window_days, withData: this.formatNumber(r.coverage.with_data) }) + ` ${this.excludedText(u.excluded)}`.trimEnd()) : ""}`;
     if (!u.items.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("relUnstableNone")}</div></div>`;
     const more = u.total > u.items.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: u.items.length, total: u.total })}</p>` : "";
-    const pg = this.paginate("relunstable", u.items);
-    return `<div class="panel">${head}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}${this.howCounted("relUnstableFootnote", { episodes: th.unstable_min_episodes ?? 3, rate: this.formatNumber(th.unstable_per_day ?? 0.5), flap: this.formatNumber(th.flapping_per_day ?? 1.5) })}</div>`;
+    const found = this.searchList("relunstable", u.items, item => [item.name, item.entity_id, item.entry_title].join(" "));
+    const pg = this.paginate("relunstable", found.rows);
+    return `<div class="panel">${head}${found.bar}${found.none}${pg.rows.map(item => this.unstableRow(item, r.window_days)).join("")}${pg.footer}${more}${this.howCounted("relUnstableFootnote", { episodes: th.unstable_min_episodes ?? 3, rate: this.formatNumber(th.unstable_per_day ?? 0.5), flap: this.formatNumber(th.flapping_per_day ?? 1.5) })}</div>`;
   }
 }
 
@@ -3461,10 +3485,46 @@ class RunsMixin {
     return `<span class="spark" role="img" aria-label="${this.esc(this.t("runsTrendLabel", { values: row.per_day.join(", ") }))}">${bars}</span>`;
   }
 
+  runsSorts() {
+    return [
+      { key: "name", label: "runsColName", dir: "asc", get: r => r.name },
+      { key: "runs", label: "runsColRuns", dir: "desc", get: r => r.runs },
+      { key: "errors", label: "runsColErrors", dir: "desc", get: r => r.errors },
+      { key: "conditions", label: "runsColConditions", dir: "desc", get: r => r.conditions },
+      { key: "duration", label: "runsColDuration", dir: "desc", get: r => r.mean_ms },
+    ];
+  }
+
+  // Search text and the two filters of the runs view; they cut the table and the list of what stands out alike.
+  runsMatch(row) {
+    const st = this.lv.runs, q = st.q.trim().toLowerCase();
+    if (q && ![row.name, row.entity_id].join(" ").toLowerCase().includes(q)) return false;
+    if (st.f.type && row.object_type !== st.f.type) return false;
+    if (st.f.outcome === "errors" && !row.errors) return false;
+    if (st.f.outcome === "flagged" && !row.findings.length) return false;
+    return true;
+  }
+
+  runsBar() {
+    return this.listBar("runs", { sorts: this.runsSorts(), filters: [
+      { name: "type", all: this.t("allTypes"), options: [["automation", this.t("automation")], ["script", this.t("script")]] },
+      { name: "outcome", all: this.t("runsAllOutcomes"), options: [["errors", this.t("runsOnlyErrors")], ["flagged", this.t("runsOnlyFlagged")]] },
+    ] });
+  }
+
   runsTable(rows) {
+    this.lvState("runs", "runs", "desc");
     const pg = this.paginate("runsall", rows);
-    const body = pg.rows.map(row => `<tr data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"><td><strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span></td><td data-label="${this.esc(this.t("runsColRuns"))}">${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}</td><td data-label="${this.esc(this.t("runsColErrors"))}">${this.formatNumber(row.errors)}</td><td data-label="${this.esc(this.t("runsColConditions"))}">${this.formatNumber(row.conditions)}</td><td data-label="${this.esc(this.t("runsColDuration"))}">${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}</td><td data-label="${this.esc(this.t("runsColTrend"))}">${this.runsTrend(row)}</td></tr>`).join("");
-    return `<div class="tablewrap runs"><table><thead><tr><th>${this.t("runsColName")}</th><th>${this.t("runsColRuns")}</th><th>${this.t("runsColErrors")}</th><th>${this.t("runsColConditions")}</th><th>${this.t("runsColDuration")}</th><th>${this.t("runsColTrend")}</th></tr></thead><tbody>${body}</tbody></table></div>${pg.footer}`;
+    const columns = [
+      { key: "name", label: "runsColName", dir: "asc", cell: row => `<strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span>` },
+      { key: "runs", label: "runsColRuns", dir: "desc", cell: row => `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}` },
+      { key: "errors", label: "runsColErrors", dir: "desc", cell: row => this.formatNumber(row.errors) },
+      { key: "conditions", label: "runsColConditions", dir: "desc", cell: row => this.formatNumber(row.conditions) },
+      { key: "duration", label: "runsColDuration", dir: "desc", cell: row => `${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}` },
+      { key: "trend", label: "runsColTrend", sortable: false, cell: row => this.runsTrend(row) },
+    ];
+    const table = this.listTable("runs", columns, pg.rows, { cls: "runs", rowAttrs: row => `data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"` });
+    return `${table}${pg.footer}`;
   }
 
   // The numbers of one automation or script for its detail page; only when runs were counted for it.
@@ -3488,15 +3548,18 @@ class RunsMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("runsTitle")}</h2><p>${this.t("runsHint")}${since}</p></div><div class="actions"><button class="btn" data-runs-refresh ${this.runsLoading ? "disabled" : ""}>${this.t("runsRefresh")}</button></div></div>`;
     if (this.runsError) return `<div class="panel">${head}<div class="error">${this.esc(this.runsError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("runsLoading")}</div>`;
+    this.lvState("runs", "runs", "desc");
     const lower = r.items.filter(row => row.lower_bound).length;
     const coverage = this.coverageNote(this.t(lower ? "runsCoverageLower" : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }) + ` ${this.excludedText(r.excluded)}`.trimEnd());
-    const flagged = r.items.filter(row => row.findings.length);
-    const counted = r.items.filter(row => row.runs);
+    const flagged = r.items.filter(row => row.findings.length && this.runsMatch(row));
+    const everyCounted = r.items.filter(row => row.runs);
+    const counted = this.refine("runs", everyCounted.filter(row => this.runsMatch(row)), { text: row => [row.name, row.entity_id].join(" "), sorts: this.runsSorts(), tie: row => row.entity_id });
+    const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar() : "";
     const flaggedPage = this.paginate("runsflag", flagged);
-    const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
+    const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(this.lv.runs.q || this.lv.runs.f.type || this.lv.runs.f.outcome ? "noMatches" : everyCounted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
-    const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}${this.howCounted("runsFootnote")}</div>` : "";
-    return `<div class="stack"><div class="panel">${head}${coverage}${attention}</div>${all}</div>`;
+    const all = everyCounted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${counted.length ? this.runsTable(counted) : `<div class="emptymsg">${this.t("noMatches")}</div>`}${more}${this.howCounted("runsFootnote")}</div>` : "";
+    return `<div class="stack"><div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
   }
 }
 
@@ -3574,12 +3637,15 @@ class StormsMixin {
     if (!r.available) return `<div class="panel">${head}<p class="factnote">${this.t("relNoRecorder")}</p></div>`;
     if (r.busy) return `<div class="panel">${head}${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div>`;
     const loading = this.stormsLoading ? `<p class="factnote">${this.t("stormLoading")}</p>` : "";
-    const findingPage = this.paginate("stormfind", r.findings);
-    const attention = r.findings.length ? findingPage.rows.map(f => this.stormFindingRow(f)).join("") + findingPage.footer : `<div class="emptymsg">${this.t("stormNone")}</div>`;
+    const foundFindings = this.searchList("stormfind", r.findings, f => [f.name, f.entity_id, f.title, f.event_type].join(" "));
+    const findingPage = this.paginate("stormfind", foundFindings.rows);
+    const attention = r.findings.length ? foundFindings.bar + foundFindings.none + findingPage.rows.map(f => this.stormFindingRow(f)).join("") + findingPage.footer : `<div class="emptymsg">${this.t("stormNone")}</div>`;
     const summary = `<p class="factnote">${this.t("stormSummary", { rows: this.formatNumber(r.total_rows), perDay: this.formatNumber(r.per_day), entities: this.formatNumber(r.entity_count), events: this.formatNumber(r.event_total) })}</p>`;
-    const entityPage = this.paginate("stormentities", r.entities);
-    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${entityPage.rows.map(item => this.stormEntityRow(item)).join("")}${entityPage.footer}</div>` : "";
-    const shares = r.integrations.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormShares")}</h2><p>${this.t("stormSharesHint")}</p></div></div>${r.integrations.map(item => this.stormShareRow(item)).join("")}</div>` : "";
+    const foundEntities = this.searchList("stormentities", r.entities, item => [item.name, item.entity_id].join(" "));
+    const entityPage = this.paginate("stormentities", foundEntities.rows);
+    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${foundEntities.bar}${foundEntities.none}${entityPage.rows.map(item => this.stormEntityRow(item)).join("")}${entityPage.footer}</div>` : "";
+    const foundShares = this.searchList("stormshares", r.integrations, item => [item.title, item.domain].join(" "));
+    const shares = r.integrations.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormShares")}</h2><p>${this.t("stormSharesHint")}</p></div></div>${foundShares.bar}${foundShares.none}${foundShares.rows.map(item => this.stormShareRow(item)).join("")}</div>` : "";
     const events = r.events.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormEvents")}</h2><p>${this.t("stormEventsHint")}</p></div></div>${r.events.map(e => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:flash-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.type)}</strong></span><span class="pill mute">${this.formatNumber(e.count)}</span></div>`).join("")}${this.howCounted("stormFootnote")}</div>` : "";
     const left = this.excludedText(r.excluded);
     return `<div class="stack"><div class="panel">${head}${loading}${attention}${summary}${left ? `<p class="factnote">${left}</p>` : ""}</div>${table}${shares}${events}</div>`;
@@ -3684,9 +3750,12 @@ class ExposureMixin {
     const tone = f.level === "warn" ? "warn" : "mute";
     const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:shield-search"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small><small>${this.t(`expoAdvice_${f.kind}`)}</small></span>${pill}</div>`;
-    const shown = (f.items || []).slice(0, 10);
+    const q = (this.lv.exposure?.q || "").trim().toLowerCase();
+    const matching = (f.items || []).filter(item => !q || [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q));
+    const shown = matching.slice(0, q ? 50 : 10);
     const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
-    const more = f.count > shown.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - shown.length) })}</p>` : "";
+    const left = q ? matching.length - shown.length : f.count - shown.length;
+    const more = left > 0 ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(left) })}</p>` : "";
     return head + rows + more;
   }
 
@@ -3697,8 +3766,13 @@ class ExposureMixin {
     if (this.exposureError) return `<div class="panel">${head}<div class="error">${this.esc(this.exposureError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("expoLoading")}</div>`;
     const sources = r.assistants.map(a => this.expoAssistantRow(a)).join("") + r.bridges.map(b => this.expoBridgeRow(b)).join("");
-    const findings = r.findings.length ? r.findings.map(f => this.expoFindingRows(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
-    return `<div class="panel">${head}${sources}${findings}${this.howCounted("expoFootnote")}</div>`;
+    this.lvState("exposure", "", "asc");
+    const q = this.lv.exposure.q.trim().toLowerCase();
+    const itemCount = r.findings.reduce((n, f) => n + (f.items || []).length, 0);
+    const bar = itemCount >= 6 || q ? this.listBar("exposure", { sorts: [] }) : "";
+    const shownFindings = q ? r.findings.filter(f => (f.items || []).some(item => [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q))) : r.findings;
+    const findings = shownFindings.length ? shownFindings.map(f => this.expoFindingRows(f)).join("") : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
+    return `<div class="panel">${head}${sources}${bar}${findings}${this.howCounted("expoFootnote")}</div>`;
   }
 }
 
@@ -3832,8 +3906,10 @@ class PoliciesMixin {
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
     if (!rule.enabled) return head;
     const editor = rule.id === "naming_scheme" ? this.polPrefixEditor() : "";
-    const visible = rule.items.filter(i => this.policyShowHidden || !i.ignored);
-    const shown = visible.slice(0, 10);
+    const q = (this.lv.policies?.q || "").trim().toLowerCase();
+    const matches = i => !q || [i.name, i.object_id, ...(i.also || [])].join(" ").toLowerCase().includes(q);
+    const visible = rule.items.filter(i => (this.policyShowHidden || !i.ignored) && matches(i));
+    const shown = visible.slice(0, q ? 50 : 10);
     const more = visible.length > shown.length ? `<p class="factnote">${this.t("polMore", { n: this.formatNumber(visible.length - shown.length) })}</p>` : "";
     const hidden = rule.ignored ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(rule.ignored) })}</p>` : "";
     return head + editor + shown.map(i => this.polItemRow(i)).join("") + more + hidden;
@@ -3848,7 +3924,10 @@ class PoliciesMixin {
     if (this.policiesError) return `<div class="panel">${head}<div class="error">${this.esc(this.policiesError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("polLoading")}</div>`;
     const none = r.enabled ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`;
-    return `<div class="panel">${head}${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${none}${this.howCounted("polFootnote")}</div>`;
+    const total = r.rules.reduce((n, rule) => n + (rule.enabled ? rule.items.length : 0), 0);
+    this.lvState("policies", "", "asc");
+    const bar = total >= 6 || this.lv.policies.q ? this.listBar("policies", { sorts: [] }) : "";
+    return `<div class="panel">${head}${bar}${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${none}${this.howCounted("polFootnote")}</div>`;
   }
 }
 

@@ -40,9 +40,12 @@ class ExposureMixin {
     const tone = f.level === "warn" ? "warn" : "mute";
     const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:shield-search"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small><small>${this.t(`expoAdvice_${f.kind}`)}</small></span>${pill}</div>`;
-    const shown = (f.items || []).slice(0, 10);
+    const q = (this.lv.exposure?.q || "").trim().toLowerCase();
+    const matching = (f.items || []).filter(item => !q || [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q));
+    const shown = matching.slice(0, q ? 50 : 10);
     const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
-    const more = f.count > shown.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - shown.length) })}</p>` : "";
+    const left = q ? matching.length - shown.length : f.count - shown.length;
+    const more = left > 0 ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(left) })}</p>` : "";
     return head + rows + more;
   }
 
@@ -53,7 +56,12 @@ class ExposureMixin {
     if (this.exposureError) return `<div class="panel">${head}<div class="error">${this.esc(this.exposureError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("expoLoading")}</div>`;
     const sources = r.assistants.map(a => this.expoAssistantRow(a)).join("") + r.bridges.map(b => this.expoBridgeRow(b)).join("");
-    const findings = r.findings.length ? r.findings.map(f => this.expoFindingRows(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
-    return `<div class="panel">${head}${sources}${findings}${this.howCounted("expoFootnote")}</div>`;
+    this.lvState("exposure", "", "asc");
+    const q = this.lv.exposure.q.trim().toLowerCase();
+    const itemCount = r.findings.reduce((n, f) => n + (f.items || []).length, 0);
+    const bar = itemCount >= 6 || q ? this.listBar("exposure", { sorts: [] }) : "";
+    const shownFindings = q ? r.findings.filter(f => (f.items || []).some(item => [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q))) : r.findings;
+    const findings = shownFindings.length ? shownFindings.map(f => this.expoFindingRows(f)).join("") : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
+    return `<div class="panel">${head}${sources}${bar}${findings}${this.howCounted("expoFootnote")}</div>`;
   }
 }

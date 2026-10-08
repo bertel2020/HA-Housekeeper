@@ -35,6 +35,13 @@ class ListsMixin {
     return rows.map(row => row.it);
   }
 
+  // A search box over a list that keeps its own order. The box shows from `min` items on, or while a text is set.
+  searchList(id, items, text, min = 6) {
+    const st = this.lvState(id, "", "asc"), q = st.q.trim().toLowerCase();
+    const rows = q ? items.filter(item => text(item).toLowerCase().includes(q)) : items;
+    return { rows, bar: items.length >= min || st.q ? this.listBar(id, { sorts: [] }) : "", none: q && !rows.length ? `<div class="emptymsg">${this.t("noMatches")}</div>` : "" };
+  }
+
   listBar(id, { sorts, filters = [] }) {
     const st = this.lv[id];
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));

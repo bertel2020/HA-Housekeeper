@@ -60,10 +60,46 @@ class RunsMixin {
     return `<span class="spark" role="img" aria-label="${this.esc(this.t("runsTrendLabel", { values: row.per_day.join(", ") }))}">${bars}</span>`;
   }
 
+  runsSorts() {
+    return [
+      { key: "name", label: "runsColName", dir: "asc", get: r => r.name },
+      { key: "runs", label: "runsColRuns", dir: "desc", get: r => r.runs },
+      { key: "errors", label: "runsColErrors", dir: "desc", get: r => r.errors },
+      { key: "conditions", label: "runsColConditions", dir: "desc", get: r => r.conditions },
+      { key: "duration", label: "runsColDuration", dir: "desc", get: r => r.mean_ms },
+    ];
+  }
+
+  // Search text and the two filters of the runs view; they cut the table and the list of what stands out alike.
+  runsMatch(row) {
+    const st = this.lv.runs, q = st.q.trim().toLowerCase();
+    if (q && ![row.name, row.entity_id].join(" ").toLowerCase().includes(q)) return false;
+    if (st.f.type && row.object_type !== st.f.type) return false;
+    if (st.f.outcome === "errors" && !row.errors) return false;
+    if (st.f.outcome === "flagged" && !row.findings.length) return false;
+    return true;
+  }
+
+  runsBar() {
+    return this.listBar("runs", { sorts: this.runsSorts(), filters: [
+      { name: "type", all: this.t("allTypes"), options: [["automation", this.t("automation")], ["script", this.t("script")]] },
+      { name: "outcome", all: this.t("runsAllOutcomes"), options: [["errors", this.t("runsOnlyErrors")], ["flagged", this.t("runsOnlyFlagged")]] },
+    ] });
+  }
+
   runsTable(rows) {
+    this.lvState("runs", "runs", "desc");
     const pg = this.paginate("runsall", rows);
-    const body = pg.rows.map(row => `<tr data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"><td><strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span></td><td data-label="${this.esc(this.t("runsColRuns"))}">${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}</td><td data-label="${this.esc(this.t("runsColErrors"))}">${this.formatNumber(row.errors)}</td><td data-label="${this.esc(this.t("runsColConditions"))}">${this.formatNumber(row.conditions)}</td><td data-label="${this.esc(this.t("runsColDuration"))}">${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}</td><td data-label="${this.esc(this.t("runsColTrend"))}">${this.runsTrend(row)}</td></tr>`).join("");
-    return `<div class="tablewrap runs"><table><thead><tr><th>${this.t("runsColName")}</th><th>${this.t("runsColRuns")}</th><th>${this.t("runsColErrors")}</th><th>${this.t("runsColConditions")}</th><th>${this.t("runsColDuration")}</th><th>${this.t("runsColTrend")}</th></tr></thead><tbody>${body}</tbody></table></div>${pg.footer}`;
+    const columns = [
+      { key: "name", label: "runsColName", dir: "asc", cell: row => `<strong>${this.esc(row.name)}</strong><span class="id">${this.esc(row.entity_id)}</span>` },
+      { key: "runs", label: "runsColRuns", dir: "desc", cell: row => `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}` },
+      { key: "errors", label: "runsColErrors", dir: "desc", cell: row => this.formatNumber(row.errors) },
+      { key: "conditions", label: "runsColConditions", dir: "desc", cell: row => this.formatNumber(row.conditions) },
+      { key: "duration", label: "runsColDuration", dir: "desc", cell: row => `${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}` },
+      { key: "trend", label: "runsColTrend", sortable: false, cell: row => this.runsTrend(row) },
+    ];
+    const table = this.listTable("runs", columns, pg.rows, { cls: "runs", rowAttrs: row => `data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"` });
+    return `${table}${pg.footer}`;
   }
 
   // The numbers of one automation or script for its detail page; only when runs were counted for it.
@@ -87,14 +123,17 @@ class RunsMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("runsTitle")}</h2><p>${this.t("runsHint")}${since}</p></div><div class="actions"><button class="btn" data-runs-refresh ${this.runsLoading ? "disabled" : ""}>${this.t("runsRefresh")}</button></div></div>`;
     if (this.runsError) return `<div class="panel">${head}<div class="error">${this.esc(this.runsError)}</div></div>`;
     if (!r) return `<div class="panel">${head}${this.skeleton("runsLoading")}</div>`;
+    this.lvState("runs", "runs", "desc");
     const lower = r.items.filter(row => row.lower_bound).length;
     const coverage = this.coverageNote(this.t(lower ? "runsCoverageLower" : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }) + ` ${this.excludedText(r.excluded)}`.trimEnd());
-    const flagged = r.items.filter(row => row.findings.length);
-    const counted = r.items.filter(row => row.runs);
+    const flagged = r.items.filter(row => row.findings.length && this.runsMatch(row));
+    const everyCounted = r.items.filter(row => row.runs);
+    const counted = this.refine("runs", everyCounted.filter(row => this.runsMatch(row)), { text: row => [row.name, row.entity_id].join(" "), sorts: this.runsSorts(), tie: row => row.entity_id });
+    const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar() : "";
     const flaggedPage = this.paginate("runsflag", flagged);
-    const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(counted.length ? "runsNone" : "runsNoData")}</div>`;
+    const attention = flagged.length ? flaggedPage.rows.map(row => this.runsAttentionRow(row)).join("") + flaggedPage.footer : `<div class="emptymsg">${this.t(this.lv.runs.q || this.lv.runs.f.type || this.lv.runs.f.outcome ? "noMatches" : everyCounted.length ? "runsNone" : "runsNoData")}</div>`;
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
-    const all = counted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${this.runsTable(counted)}${more}${this.howCounted("runsFootnote")}</div>` : "";
-    return `<div class="stack"><div class="panel">${head}${coverage}${attention}</div>${all}</div>`;
+    const all = everyCounted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${counted.length ? this.runsTable(counted) : `<div class="emptymsg">${this.t("noMatches")}</div>`}${more}${this.howCounted("runsFootnote")}</div>` : "";
+    return `<div class="stack"><div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
   }
 }
