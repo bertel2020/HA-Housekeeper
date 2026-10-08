@@ -214,30 +214,42 @@ def evaluate_storms(
     findings: list[dict[str, Any]] = []
     for row in rows_list:
         entity_id = row["entity_id"]
-        base = {"entity_id": entity_id, "name": row["name"], "window_days": days}
-        chain = None
-
-        def add(kind: str, **numbers: Any) -> None:
-            nonlocal chain
-            if chain is None:
-                chain = followers(edges, f"entity:{entity_id}")
-            findings.append({**base, "kind": kind, "followers": chain, **numbers})
+        found: list[dict[str, Any]] = []
 
         peak = row["peak_hour"] or 0
         if peak >= STORM_PEAK_ROWS or row["per_day"] >= STORM_ROWS_PER_DAY:
-            add("storm", per_day=row["per_day"], peak_hour=peak, rows=row["rows"])
+            found.append(
+                dict(kind="storm", per_day=row["per_day"], peak_hour=peak, rows=row["rows"])
+            )
         day_rows = counts[entity_id].get("day_rows", 0)
         if (
             row["attr_bytes"] is not None
             and row["attr_bytes"] >= FLOOD_ATTR_BYTES
             and day_rows >= FLOOD_MIN_ROWS_PER_DAY
         ):
-            add("attribute_flood", per_day=day_rows, attr_bytes=row["attr_bytes"])
+            found.append(
+                dict(kind="attribute_flood", per_day=day_rows, attr_bytes=row["attr_bytes"])
+            )
         if (
             row["no_new_state"] >= NO_NEW_STATE_SHARE
             and row["per_day"] >= NO_NEW_STATE_MIN_ROWS_PER_DAY
         ):
-            add("no_new_state", per_day=row["per_day"], share=round(100 * row["no_new_state"]))
+            found.append(
+                dict(
+                    kind="no_new_state",
+                    per_day=row["per_day"],
+                    share=round(100 * row["no_new_state"]),
+                )
+            )
+        if found:
+            chain = followers(edges, f"entity:{entity_id}")
+            base = {
+                "entity_id": entity_id,
+                "name": row["name"],
+                "window_days": days,
+                "followers": chain,
+            }
+            findings.extend({**base, **item} for item in found)
     for group in integrations:
         if group["load_share"] >= SHARE_PERCENT and group["per_day"] >= SHARE_MIN_ROWS_PER_DAY:
             findings.append(
