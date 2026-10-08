@@ -30,10 +30,9 @@ class OverviewMixin {
       const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
       items.push({ key: "stale", tone: "warn", icon: "mdi:clock-alert-outline", text: stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age }), scan: true });
     }
-    const backup = (this.preflight?.checks || []).find(c => c.check === "backup");
-    if (backup && backup.level !== "ok") {
-      items.push({ key: "backup", tone: backup.level === "red" ? "red" : "warn", icon: "mdi:backup-restore", label: "actBackup", hint: backup.level === "red" ? "actBackupNone" : "actBackupOutdated", view: "maintenance" });
-    }
+    // Only real problems are listed; notes such as "emergency kit not confirmed" stay on the Maintenance card.
+    const problems = this.backup?.available && this.backup.overall === "problem" ? this.backup.checks.filter(c => c.level === "problem") : [];
+    if (problems.length) items.push({ key: "backup", tone: "red", icon: "mdi:backup-restore", label: "todoBackupProblem", hintText: problems.map(c => this.t(`bh_${c.id}`)).join(", "), view: "maintenance" });
     const limit = m.quarantine_days ?? 14;
     const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
     if (ready) items.push({ key: "quarantine", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
@@ -43,7 +42,7 @@ class OverviewMixin {
   todoCard() {
     const items = this.todoItems();
     const row = it => {
-      const inner = `<span class="tile ${it.tone}"><ha-icon icon="${it.icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(it.text || this.t(it.label))}</strong>${it.hint ? `<small>${this.esc(this.t(it.hint))}</small>` : ""}</span>`;
+      const inner = `<span class="tile ${it.tone}"><ha-icon icon="${it.icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(it.text || this.t(it.label))}</strong>${it.hint || it.hintText ? `<small>${this.esc(it.hintText || this.t(it.hint))}</small>` : ""}</span>`;
       if (it.scan) return `<div class="row todo" data-todo="${it.key}">${inner}<button class="btn" data-action="scan">${this.t("scan")}</button></div>`;
       const target = `data-jump="${it.view}"${it.filter !== undefined ? ` data-filter="${it.filter}"` : ""}${it.type ? ` data-type="${it.type}"` : ""}${it.status ? ` data-status="${it.status}"` : ""}`;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${it.count !== undefined ? `<span class="pill ${it.tone}">${this.formatNumber(it.count)}</span>` : ""}</button>`;
@@ -97,6 +96,7 @@ class OverviewMixin {
     const order = ["active", "unknown", "unavailable", "orphaned", "disabled", "empty", "problem"].filter(s => counts[s]);
     const total = Math.max(1, m.object_count);
     this.ensureTrend();
+    this.ensureBackup();
     return `${this.todoCard()}<div class="summary">
       <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>

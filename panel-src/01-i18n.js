@@ -43,7 +43,7 @@ const TEXT = {
     actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
     actIntegrations: "Integrationen mit Problem", actIntegrationsHint: "Einträge, die nicht geladen sind oder Fehler melden",
     actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem",
-    actBackup: "Backup prüfen", actBackupHint: "Der Update-Preflight meldet ein Backup-Problem", actBackupOutdated: "Das letzte Backup ist älter als 48 Stunden oder nicht abrufbar.", actBackupNone: "Es ist kein aktuelles Backup eingerichtet.",
+   
     actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
     trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
     sortedBySure: "Nach Sicherheit der Diagnose sortiert", allFindings: "Alle Befunde",
@@ -222,7 +222,7 @@ const TEXT = {
     actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
     actIntegrations: "Integrations with a problem", actIntegrationsHint: "Entries that are not loaded or report errors",
     actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem",
-    actBackup: "Check the backup", actBackupHint: "The update preflight reports a backup problem", actBackupOutdated: "The latest backup is older than 48 hours or cannot be read.", actBackupNone: "No current backup is set up.",
+   
     actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
     trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
     sortedBySure: "Sorted by diagnosis confidence", allFindings: "All findings",

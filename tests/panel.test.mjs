@@ -1591,21 +1591,22 @@ test("the overview starts with what needs doing, most urgent first", () => {
     quarantine: [{ object_id: "sensor.old", object_type: "entity", since: new Date(Date.now() - 20 * 864e5).toISOString() }, { object_id: "sensor.fresh", object_type: "entity", since: now }],
   };
   el.trend = TREND;
-  el.preflight = { checks: [{ check: "backup", level: "warn" }] };
+  el.backup = { available: true, overall: "problem", checks: [{ id: "newest", level: "problem" }, { id: "emergency_kit", level: "note" }, { id: "last_run", level: "problem" }] };
   const keys = el.todoItems().map(i => i.key);
   assert.equal(JSON.stringify(keys), JSON.stringify(["integrations", "critical", "stale", "backup", "quarantine"]));
   const byKey = Object.fromEntries(el.todoItems().map(i => [i.key, i]));
   assert.equal(byKey.integrations.count, 1);
   assert.equal(byKey.critical.count, 2, "hidden findings and other classes do not count");
   assert.equal(byKey.quarantine.count, 1, "only entries past the quarantine period");
-  assert.equal(byKey.backup.tone, "warn");
+  assert.equal(byKey.backup.tone, "red");
+  assert.equal(byKey.backup.hintText, "Latest backup, Last automatic run", "only the problems are named, not the notes");
 
   el.view = "overview"; el.render();
   const html = shadow.innerHTML;
   assert.ok(html.indexOf("What needs doing now?") < html.indexOf('class="summary"'), "the list comes before the statistics");
   assert.ok(html.indexOf('data-todo="integrations"') < html.indexOf('data-todo="critical"') && html.indexOf('data-todo="critical"') < html.indexOf('data-todo="stale"'));
   assert.ok(html.includes('data-jump="inventory" data-type="config_entry" data-status="problem"'));
-  assert.ok(html.indexOf('class="summary"') < html.indexOf('class="ring'), "the health ring moved behind the statistics");
+  assert.ok(html.indexOf('class="summary"') < html.indexOf('class="ring') && html.indexOf('class="ring') < html.indexOf('data-jump="inventory" data-status'), "the health card is the first card of the statistics row");
 });
 
 test("without anything to do the list says so, and rows without data are left out", () => {
@@ -1614,12 +1615,34 @@ test("without anything to do the list says so, and rows without data are left ou
   assert.equal(el.todoItems().length, 0);
   el.view = "overview"; el.render();
   assert.ok(shadow.innerHTML.includes("Nothing to do. Last scan:"));
-  el.preflight = { checks: [{ check: "backup", level: "ok" }] };
-  assert.equal(el.todoItems().length, 0, "a healthy backup is no item");
-  el.preflight = { checks: [{ check: "backup", level: "red" }] };
+  el.backup = { available: true, overall: "note", checks: [{ id: "emergency_kit", level: "note" }] };
+  assert.equal(el.todoItems().length, 0, "notes are no item");
+  el.backup = { available: true, overall: "problem", checks: [{ id: "newest", level: "problem" }] };
   assert.equal(el.todoItems()[0].tone, "red");
-  el.preflight = null;
-  assert.equal(el.todoItems().length, 0, "no preflight loaded: no backup row");
+  el.backup = { available: false, checks: [], overall: "unknown" };
+  assert.equal(el.todoItems().length, 0, "no backup component: no row");
+  el.backup = null;
+  assert.equal(el.todoItems().length, 0, "nothing loaded yet: no backup row");
+});
+
+test("the overview loads the backup report without a visit to Maintenance, once per scan", async () => {
+  const queue = [];
+  const { el, shadow } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg.type); return msg.type.endsWith("backup_health") ? { available: true, overall: "problem", checks: [{ id: "newest", level: "problem", values: {} }], backups: [] } : TREND; };
+  const drain = async () => { while (queue.length) await queue.shift()(); };
+  const asked = () => calls.filter(c => c.endsWith("backup_health")).length;
+  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: "2026-10-08T10:00:00+00:00", scan_interval_hours: 24 } };
+  el.view = "overview";
+  el.ensureBackup(); el.ensureBackup(); el.render(); el.render();
+  await drain();
+  assert.equal(asked(), 1, "asked once for the same scan, however often the view is drawn");
+  assert.ok(shadow.innerHTML.includes('data-todo="backup"') && shadow.innerHTML.includes("Latest backup"));
+  el.render(); await drain();
+  assert.equal(asked(), 1);
+  el.data = { ...el.data, meta: { ...el.data.meta, scanned_at: "2026-10-08T11:00:00+00:00" } };
+  el.render(); await drain();
+  assert.equal(asked(), 2, "a new scan asks again");
 });
 
 test("the trend is fetched once per data set and summarised with signs and text", async () => {

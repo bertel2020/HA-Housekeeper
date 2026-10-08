@@ -45,7 +45,7 @@ const TEXT = {
     actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
     actIntegrations: "Integrationen mit Problem", actIntegrationsHint: "Einträge, die nicht geladen sind oder Fehler melden",
     actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem",
-    actBackup: "Backup prüfen", actBackupHint: "Der Update-Preflight meldet ein Backup-Problem", actBackupOutdated: "Das letzte Backup ist älter als 48 Stunden oder nicht abrufbar.", actBackupNone: "Es ist kein aktuelles Backup eingerichtet.",
+   
     actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
     trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
     sortedBySure: "Nach Sicherheit der Diagnose sortiert", allFindings: "Alle Befunde",
@@ -224,7 +224,7 @@ const TEXT = {
     actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
     actIntegrations: "Integrations with a problem", actIntegrationsHint: "Entries that are not loaded or report errors",
     actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem",
-    actBackup: "Check the backup", actBackupHint: "The update preflight reports a backup problem", actBackupOutdated: "The latest backup is older than 48 hours or cannot be read.", actBackupNone: "No current backup is set up.",
+   
     actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
     trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
     sortedBySure: "Sorted by diagnosis confidence", allFindings: "All findings",
@@ -639,7 +639,7 @@ Object.assign(TEXT.de, {
   bhAttestDate: "Datum", bhAttestSave: "Als erledigt speichern", bhAttestClear: "Zurücknehmen",
   bhListTitle: "Letzte Backups", bhColDate: "Datum", bhColSize: "Größe", bhColTargets: "Ziele", bhColProtected: "Verschlüsselt", bhYes: "Ja", bhNo: "Nein",
   bhGuideTitle: "So testest du eine Wiederherstellung", bhGuideSteps: "1. Eine Test-Instanz oder eine zweite Installation bereitstellen (nie zuerst die Hauptinstanz). 2. Dort ein aktuelles Backup einspielen: Einstellungen → System → Backups → Backup hochladen oder bei der Einrichtung wiederherstellen. 3. Prüfen, ob Integrationen, Automationen und Dashboards da sind. 4. Hier das Datum des Tests speichern. Housekeeper führt selbst nie eine Wiederherstellung aus.",
-  todoBackupProblem: "Backup-Schutz: Problem", todoBackupProblemHint: "Das letzte Backup ist zu alt oder ein Lauf ist fehlgeschlagen",
+  todoBackupProblem: "Backup-Schutz: Problem",
 });
 Object.assign(TEXT.en, {
   backupTitle: "Backup protection", backupHint: "Is the backup strategy sound, not only: is there a backup? Housekeeper only reads and starts nothing.",
@@ -664,7 +664,7 @@ Object.assign(TEXT.en, {
   bhAttestDate: "Date", bhAttestSave: "Save as done", bhAttestClear: "Take back",
   bhListTitle: "Latest backups", bhColDate: "Date", bhColSize: "Size", bhColTargets: "Targets", bhColProtected: "Encrypted", bhYes: "Yes", bhNo: "No",
   bhGuideTitle: "How to test a restore", bhGuideSteps: "1. Set up a test instance or a second installation (never the main instance first). 2. Restore a recent backup there: Settings → System → Backups → upload a backup, or restore during setup. 3. Check that integrations, automations and dashboards are there. 4. Save the date of the test here. Housekeeper never performs a restore itself.",
-  todoBackupProblem: "Backup protection: problem", todoBackupProblemHint: "The latest backup is too old or a run failed",
+  todoBackupProblem: "Backup protection: problem",
 });
 
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -941,10 +941,9 @@ class OverviewMixin {
       const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
       items.push({ key: "stale", tone: "warn", icon: "mdi:clock-alert-outline", text: stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age }), scan: true });
     }
-    const backup = (this.preflight?.checks || []).find(c => c.check === "backup");
-    if (backup && backup.level !== "ok") {
-      items.push({ key: "backup", tone: backup.level === "red" ? "red" : "warn", icon: "mdi:backup-restore", label: "actBackup", hint: backup.level === "red" ? "actBackupNone" : "actBackupOutdated", view: "maintenance" });
-    }
+    // Only real problems are listed; notes such as "emergency kit not confirmed" stay on the Maintenance card.
+    const problems = this.backup?.available && this.backup.overall === "problem" ? this.backup.checks.filter(c => c.level === "problem") : [];
+    if (problems.length) items.push({ key: "backup", tone: "red", icon: "mdi:backup-restore", label: "todoBackupProblem", hintText: problems.map(c => this.t(`bh_${c.id}`)).join(", "), view: "maintenance" });
     const limit = m.quarantine_days ?? 14;
     const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
     if (ready) items.push({ key: "quarantine", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
@@ -954,7 +953,7 @@ class OverviewMixin {
   todoCard() {
     const items = this.todoItems();
     const row = it => {
-      const inner = `<span class="tile ${it.tone}"><ha-icon icon="${it.icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(it.text || this.t(it.label))}</strong>${it.hint ? `<small>${this.esc(this.t(it.hint))}</small>` : ""}</span>`;
+      const inner = `<span class="tile ${it.tone}"><ha-icon icon="${it.icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(it.text || this.t(it.label))}</strong>${it.hint || it.hintText ? `<small>${this.esc(it.hintText || this.t(it.hint))}</small>` : ""}</span>`;
       if (it.scan) return `<div class="row todo" data-todo="${it.key}">${inner}<button class="btn" data-action="scan">${this.t("scan")}</button></div>`;
       const target = `data-jump="${it.view}"${it.filter !== undefined ? ` data-filter="${it.filter}"` : ""}${it.type ? ` data-type="${it.type}"` : ""}${it.status ? ` data-status="${it.status}"` : ""}`;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${it.count !== undefined ? `<span class="pill ${it.tone}">${this.formatNumber(it.count)}</span>` : ""}</button>`;
@@ -1008,6 +1007,7 @@ class OverviewMixin {
     const order = ["active", "unknown", "unavailable", "orphaned", "disabled", "empty", "problem"].filter(s => counts[s]);
     const total = Math.max(1, m.object_count);
     this.ensureTrend();
+    this.ensureBackup();
     return `${this.todoCard()}<div class="summary">
       <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
