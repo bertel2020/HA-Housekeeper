@@ -34,6 +34,7 @@ from .const import (
     IGNORE_LABEL,
     QUARANTINE_DAYS,
     SIGNAL_SCAN_COMPLETE,
+    WARMUP_SECONDS,
 )
 from .dashboard_analysis import (
     HELPER_DOMAINS,
@@ -457,6 +458,7 @@ class InventoryScanner:
         self.preflight = PreflightStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
+        self._booting = False
         self._warmup_until: float | None = None
         self._recorder_available = False
         self._lock = asyncio.Lock()
@@ -486,13 +488,20 @@ class InventoryScanner:
         await self.journal.async_load()
         await self.preflight.async_load()
 
+    def begin_boot(self) -> None:
+        """Home Assistant is still booting: scans are preliminary until the warm-up is over."""
+        self._booting = True
+
     def begin_warmup(self, seconds: float) -> None:
-        """Treat scans as preliminary for the next ``seconds`` (Home Assistant just started)."""
+        """Home Assistant just started: scans stay preliminary for the next ``seconds``."""
+        self._booting = False
         self._warmup_until = time.monotonic() + seconds
 
     @property
     def warmup_seconds_left(self) -> int:
         """Seconds until scans count again, 0 when the warm-up is over."""
+        if self._booting:
+            return WARMUP_SECONDS
         if self._warmup_until is None:
             return 0
         return max(0, round(self._warmup_until - time.monotonic()))
@@ -500,7 +509,7 @@ class InventoryScanner:
     @property
     def warming_up(self) -> bool:
         """Whether entity states may still be missing because Home Assistant is starting."""
-        return self.warmup_seconds_left > 0
+        return self._booting or self.warmup_seconds_left > 0
 
     async def async_scan(self) -> dict[str, Any]:
         """Scan registries and states. Concurrent callers share serialized work."""

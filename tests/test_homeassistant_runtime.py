@@ -720,12 +720,31 @@ async def test_a_boot_scan_is_followed_by_a_final_scan(hass: HomeAssistant) -> N
     await hass.async_block_till_done(wait_background_tasks=True)
     scanner = hass.data[DOMAIN]["scanner"]
     assert scanner.snapshot is None  # nothing scans before Home Assistant has started
+    assert scanner.warming_up and scanner.warmup_seconds_left == WARMUP_SECONDS
+
+    # The panel can ask for the inventory long before "started"; that scan must not count either.
+    early = await scanner.async_get_snapshot()
+    assert early["meta"]["preliminary"] is True
+    assert scanner.observations.since("entity:sensor.early", "orphaned") is None
 
     await hass.async_start()
     await hass.async_block_till_done(wait_background_tasks=True)
     assert scanner.snapshot["meta"]["preliminary"] is True
 
+    assert scanner.warming_up and 0 < scanner.warmup_seconds_left <= WARMUP_SECONDS
     scanner._warmup_until = 0.0
     async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=WARMUP_SECONDS + 10))
     await hass.async_block_till_done(wait_background_tasks=True)
+    assert scanner.snapshot["meta"]["preliminary"] is False
+
+
+async def test_a_set_up_after_the_start_has_no_warmup(hass: HomeAssistant) -> None:
+    """Reloading the integration on a running Home Assistant scans normally."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    scanner = hass.data[DOMAIN]["scanner"]
+    assert not scanner.warming_up
     assert scanner.snapshot["meta"]["preliminary"] is False

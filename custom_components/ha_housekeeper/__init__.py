@@ -64,6 +64,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up HA Housekeeper from a config entry."""
     scanner = InventoryScanner(hass)
+    # Home Assistant reports "started" while slow integrations are still adding entities, so scans
+    # during the boot (also ones the panel triggers early) and shortly after it are preliminary.
+    booting = hass.state is not CoreState.running
+    if booting:
+        scanner.begin_boot()
     scanner.min_unavailable_days = entry.options.get(
         CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS
     )
@@ -105,10 +110,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Scanning while Home Assistant is still starting would classify entities of
     # integrations that have not finished loading as orphaned and persist that.
-    # Home Assistant reports "started" while slow integrations are still adding entities, so the
-    # first scan after a boot is preliminary and a final one follows once things have settled.
-    booting = hass.state is not CoreState.running
-
+    # A final scan follows once the warm-up after "started" is over.
     @callback
     def _final_scan(_: Any) -> None:
         entry.async_create_background_task(
