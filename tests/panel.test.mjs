@@ -2338,3 +2338,18 @@ test("the changes view says why there is no comparison yet and offers to set a c
   html = shadow.innerHTML;
   assert.ok(html.includes("only one saved scan") && html.includes("every 12 hours") && !html.includes("was preliminary"));
 });
+
+test("an orphaned statistic names likely successors by domain, unit and name, and explains what to do", () => {
+  const { el, shadow } = panel("en");
+  const entity = (id, unit, status = "active") => ({ object_type: "entity", object_id: id, name: id, status, unit });
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true },
+    objects: [entity("sensor.wohnzimmer_energie_neu", "kWh"), entity("sensor.wohnzimmer_energie_zaehler", "Wh"), entity("sensor.garten_feuchte", "%"), entity("sensor.wohnzimmer_energie_alt2", "kWh", "disabled"), entity("light.wohnzimmer_energie", "kWh")],
+    orphaned_statistics: [{ statistic_id: "sensor.wohnzimmer_energie", unit: "kWh", has_sum: true, has_mean: false, in_energy: false }, { statistic_id: "sensor.garage_tuer", unit: "", has_sum: false, has_mean: true, in_energy: false }] };
+  el.view = "unreferenced"; el.unrefTab = "statistics";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Possible successors:") && html.includes('data-object="entity:sensor.wohnzimmer_energie_neu"'));
+  assert.ok(!html.includes("energie_zaehler") && !html.includes("energie_alt2") && !html.includes('data-object="entity:light.'), "other unit, disabled and other domain are not suggested");
+  assert.equal(html.split("Possible successors:").length - 1, 1, "no suggestion without a similar name");
+  assert.ok(html.includes("Meter change (continue statistics)") && html.includes("Developer tools → Statistics"));
+});

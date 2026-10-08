@@ -28,6 +28,29 @@ class UnusedMixin {
     return `<div class="chips">${chip("entities", this.t("unreferencedEntities"), this.unreferencedRows().length)}${chip("statistics", this.t("orphanStats"), stats.length)}</div>`;
   }
 
+  // Active entities that look like what an orphaned statistic became after a rename: same domain, same unit, similar name.
+  statSuccessors(orphan) {
+    const [domain, name = ""] = orphan.statistic_id.split(".");
+    const words = new Set(name.split("_").filter(Boolean));
+    const found = [];
+    for (const o of this.data.objects) {
+      if (o.object_type !== "entity" || o.status !== "active" || o.object_id === orphan.statistic_id || !o.object_id.startsWith(`${domain}.`)) continue;
+      if (orphan.unit && o.unit !== orphan.unit) continue;
+      const other = new Set(o.object_id.split(".")[1].split("_").filter(Boolean));
+      const shared = [...words].filter(w => other.has(w)).length;
+      const score = shared / (words.size + other.size - shared || 1);
+      if (score >= 0.5) found.push({ item: o, score });
+    }
+    return found.sort((a, b) => b.score - a.score || a.item.object_id.localeCompare(b.item.object_id)).slice(0, 2).map(f => f.item);
+  }
+
+  statSuccessorLine(orphan) {
+    const successors = this.statSuccessors(orphan);
+    if (!successors.length) return "";
+    const links = successors.map(s => `<button class="linklike" data-object="entity:${this.esc(s.object_id)}">${this.esc(s.object_id)}</button>`).join(", ");
+    return `<small>${this.t("statSuccessors")} ${links}</small>`;
+  }
+
   orphanStatsView() {
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
@@ -40,7 +63,7 @@ class UnusedMixin {
     const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
     const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
-    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small></span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
   }

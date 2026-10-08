@@ -67,7 +67,7 @@ const TEXT = {
     impactLimits: "Nicht geprüft: automatisch erzeugte Dashboards, die Zustandshistorie im Recorder und externe Systeme.",
     changes: "Änderungen", changesSubtitle: "Was sich seit einem früheren Scan verändert hat.", compareWith: "Vergleichen mit", previousScan: "Letzter Scan davor",
     historyTitle: "Verlauf der Scans", historyHint: "Je Tag bleibt der letzte Scan {days} Tage erhalten. Ein Klick wählt ihn als Vergleichsbasis.", historyBuilding: "Der Verlauf baut sich auf: Housekeeper speichert den letzten Scan jedes Tages {days} Tage lang (einstellbar unter Einstellungen). Weitere Vergleichspunkte erscheinen mit jedem neuen Tag.", currentScan: "Aktueller Scan", storedScan: "Gespeicherter Scan", historyCounts: "{objects} Objekte · {findings} Befunde", optHistoryDays: "Scan-Verlauf aufbewahren (Tage)",
-    noBaseline: "Noch kein früherer Scan vorhanden. Nach dem nächsten Scan erscheint hier der Vergleich.", noChanges: "Keine Änderungen seit diesem Scan.",
+    noChanges: "Keine Änderungen seit diesem Scan.",
     statusChanges: "Statuswechsel", newFindings: "Neue Befunde", resolvedFindings: "Behobene Befunde", newObjects: "Neue Objekte", removedObjects: "Entfernte Objekte",
     worsened: "Verschlechtert", changedLabel: "Geändert", improved: "Verbessert", gone: "Nicht mehr vorhanden", comparedWith: "Vergleich mit dem Scan vom",
     possible_duplicate: "Mögliches Duplikat", unused: "Ungenutzt", duplicateOf: "Mögliches Duplikat von", lastTriggered: "Zuletzt ausgelöst", never: "Nie",
@@ -117,7 +117,7 @@ const TEXT = {
     longTermStats: "Langzeitstatistik", yes: "Ja", no: "Nein", statsNote: "Für diese Entity gibt es Langzeitstatistiken im Recorder. Sie blieben nach einem Entfernen bestehen, gehörten dann aber zu keiner Entity mehr.",
     energyDashboard: "Energie-Dashboard",
     orphanStats: "Verwaiste Statistiken", unreferencedEntities: "Entities", noOrphanStats: "Keine verwaisten Statistiken.", noRecorder: "Der Recorder ist nicht verfügbar; es gibt keine Statistiken zu prüfen.",
-    orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt. Housekeeper löscht nichts. Entfernen lässt sich so etwas in Home Assistant unter Entwicklerwerkzeuge → Statistiken.",
+   
     kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
     warmupBanner: "Home Assistant startet noch. Die Befunde sind vorläufig und werden nach dem Start neu erhoben; Aufräumen ist bis dahin gesperrt.",
     err_warming_up: "Home Assistant startet noch. Bitte in wenigen Minuten erneut versuchen.",
@@ -246,7 +246,7 @@ const TEXT = {
     impactLimits: "Not checked: auto-generated dashboards, the state history in the recorder, and external systems.",
     changes: "Changes", changesSubtitle: "What changed since an earlier scan.", compareWith: "Compare with", previousScan: "Previous scan",
     historyTitle: "Scan history", historyHint: "The last scan of each day is kept for {days} days. Click one to use it as the comparison base.", historyBuilding: "The history is building up: Housekeeper keeps the last scan of each day for {days} days (adjustable in Settings). More comparison points appear with each new day.", currentScan: "Current scan", storedScan: "Stored scan", historyCounts: "{objects} objects · {findings} findings", optHistoryDays: "Keep scan history for (days)",
-    noBaseline: "No earlier scan yet. The comparison appears after the next scan.", noChanges: "No changes since this scan.",
+    noChanges: "No changes since this scan.",
     statusChanges: "Status changes", newFindings: "New findings", resolvedFindings: "Resolved findings", newObjects: "New objects", removedObjects: "Removed objects",
     worsened: "Worse", changedLabel: "Changed", improved: "Better", gone: "No longer present", comparedWith: "Compared with the scan from",
     possible_duplicate: "Possible duplicate", unused: "Unused", duplicateOf: "Possible duplicate of", lastTriggered: "Last triggered", never: "Never",
@@ -296,7 +296,7 @@ const TEXT = {
     longTermStats: "Long-term statistics", yes: "Yes", no: "No", statsNote: "This entity has long-term statistics in the recorder. They would remain after a removal but belong to no entity any more.",
     energyDashboard: "Energy dashboard",
     orphanStats: "Orphaned statistics", unreferencedEntities: "Entities", noOrphanStats: "No orphaned statistics.", noRecorder: "The recorder is not available; there are no statistics to check.",
-    orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity. Housekeeper deletes nothing. In Home Assistant such statistics can be removed under Developer tools → Statistics.",
+   
     kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
     warmupBanner: "Home Assistant is still starting. The findings are preliminary and will be collected again after startup; cleanup is locked until then.",
     err_warming_up: "Home Assistant is still starting. Please try again in a few minutes.",
@@ -449,6 +449,7 @@ const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
 
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
+  statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entity umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger sind Vermutungen aus Name und Einheit.",
   noBaselinePreliminary: "Der letzte Scan war vorläufig, weil Home Assistant gerade gestartet ist. Vorläufige Scans werden nicht gespeichert. Scanne in ein paar Minuten erneut, dann gibt es einen ersten Vergleichspunkt.", noBaselineOneScan: "Es gibt erst einen gespeicherten Scan. Ein Vergleich braucht zwei: Scanne nach Änderungen an deiner Installation erneut oder warte auf den automatischen Scan (alle {hours} Stunden). Jeder Scan wird als Vergleichspunkt gespeichert.", scanPoint: "Jetzt scannen und Vergleichspunkt setzen",
   releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
   kindDisableDevice: "Gerät deaktivieren (Quarantäne, umkehrbar)", kindRemoveDevice: "Gerät entfernen (nach Quarantäne, mit Backup)",
@@ -475,6 +476,7 @@ Object.assign(TEXT.de, {
   recurringTitle: "Wiederkehrende Geräte", recurringHint: "Diese Geräte hat Housekeeper vergessen, doch die Integration hat sie wieder angelegt. Deaktivieren ist hier meist sinnvoller; oft muss das Gerät am Quellsystem (Hub, App, Cloud) entfernt werden.", recurringSince: "vergessen am {date} · Integration: {domains}",
 });
 Object.assign(TEXT.en, {
+  statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are guesses from name and unit.",
   noBaselinePreliminary: "The last scan was preliminary because Home Assistant has just started. Preliminary scans are not saved. Scan again in a few minutes to get a first comparison point.", noBaselineOneScan: "There is only one saved scan so far. A comparison needs two: scan again after changing your installation or wait for the automatic scan (every {hours} hours). Every scan is saved as a comparison point.", scanPoint: "Scan now and set a comparison point",
   releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",
   kindDisableDevice: "Disable device (quarantine, reversible)", kindRemoveDevice: "Remove device (after quarantine, with backup)",
@@ -2048,6 +2050,29 @@ class UnusedMixin {
     return `<div class="chips">${chip("entities", this.t("unreferencedEntities"), this.unreferencedRows().length)}${chip("statistics", this.t("orphanStats"), stats.length)}</div>`;
   }
 
+  // Active entities that look like what an orphaned statistic became after a rename: same domain, same unit, similar name.
+  statSuccessors(orphan) {
+    const [domain, name = ""] = orphan.statistic_id.split(".");
+    const words = new Set(name.split("_").filter(Boolean));
+    const found = [];
+    for (const o of this.data.objects) {
+      if (o.object_type !== "entity" || o.status !== "active" || o.object_id === orphan.statistic_id || !o.object_id.startsWith(`${domain}.`)) continue;
+      if (orphan.unit && o.unit !== orphan.unit) continue;
+      const other = new Set(o.object_id.split(".")[1].split("_").filter(Boolean));
+      const shared = [...words].filter(w => other.has(w)).length;
+      const score = shared / (words.size + other.size - shared || 1);
+      if (score >= 0.5) found.push({ item: o, score });
+    }
+    return found.sort((a, b) => b.score - a.score || a.item.object_id.localeCompare(b.item.object_id)).slice(0, 2).map(f => f.item);
+  }
+
+  statSuccessorLine(orphan) {
+    const successors = this.statSuccessors(orphan);
+    if (!successors.length) return "";
+    const links = successors.map(s => `<button class="linklike" data-object="entity:${this.esc(s.object_id)}">${this.esc(s.object_id)}</button>`).join(", ");
+    return `<small>${this.t("statSuccessors")} ${links}</small>`;
+  }
+
   orphanStatsView() {
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
@@ -2060,7 +2085,7 @@ class UnusedMixin {
     const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
     const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
-    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small></span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
   }
