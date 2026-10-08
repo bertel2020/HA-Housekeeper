@@ -141,7 +141,8 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload the integration."""
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    frontend.async_remove_panel(hass, PANEL_URL)
-    hass.data[DOMAIN].pop("scanner", None)
-    async_clear_issues(hass)
+    if unloaded:
+        frontend.async_remove_panel(hass, PANEL_URL)
+        hass.data[DOMAIN].pop("scanner", None)
+        async_clear_issues(hass)
     return unloaded

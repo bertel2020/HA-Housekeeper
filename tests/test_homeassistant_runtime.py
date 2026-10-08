@@ -576,3 +576,23 @@ async def test_orphaned_statistics_are_listed_without_becoming_findings(
     assert [o["statistic_id"] for o in snapshot["orphaned_statistics"]] == ["sensor.gone"]
     assert snapshot["meta"]["orphaned_statistics"] == 1
     assert snapshot["findings"] == []
+
+
+async def test_a_refused_unload_keeps_the_runtime_objects(hass: HomeAssistant) -> None:
+    """If the platforms stay loaded, the panel and the scanner must stay as well."""
+    from unittest.mock import patch
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done()
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+
+    with patch.object(hass.config_entries, "async_unload_platforms", return_value=False):
+        from custom_components.ha_housekeeper import async_unload_entry
+
+        assert await async_unload_entry(hass, entry) is False
+
+    assert "scanner" in hass.data[DOMAIN]
+    assert "ha-housekeeper" in hass.data["frontend_panels"]
