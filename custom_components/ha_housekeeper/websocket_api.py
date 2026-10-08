@@ -32,8 +32,11 @@ from .inventory import InventoryScanner
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
 from .references import preview_replacement
+from .reliability import WINDOWS as RELIABILITY_WINDOWS
+from .reliability import reliability
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
+RELIABILITY_TIMEOUT = 120  # seconds; the recorder query is slow on a large database
 
 
 def _scanner(hass: HomeAssistant) -> InventoryScanner | None:
@@ -561,6 +564,37 @@ async def websocket_preflight_save(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/reliability",
+        vol.Optional("window_days", default=7): vol.In(RELIABILITY_WINDOWS),
+        vol.Optional("refresh", default=False): bool,
+    }
+)
+@websocket_api.async_response
+async def websocket_reliability(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Availability and shared outages per config entry. Read-only; kept for five minutes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            result = await reliability(
+                hass, snapshot, window_days=msg["window_days"], refresh=msg["refresh"]
+            )
+    except Exception as err:
+        connection.send_error(msg["id"], "reliability_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/backup_health"})
 @websocket_api.async_response
 async def websocket_backup_health(
@@ -647,4 +681,5 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_preflight)
     websocket_api.async_register_command(hass, websocket_preflight_save)
     websocket_api.async_register_command(hass, websocket_backup_health)
+    websocket_api.async_register_command(hass, websocket_reliability)
     websocket_api.async_register_command(hass, websocket_backup_attest)

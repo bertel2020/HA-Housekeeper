@@ -828,6 +828,7 @@ async def test_replies_carry_the_api_schema_version(hass: HomeAssistant, hass_ws
         ),
         "recorder_costs": await reply({"type": "ha_housekeeper/recorder_costs"}),
         "backup_health": await reply({"type": "ha_housekeeper/backup_health"}),
+        "reliability": await reply({"type": "ha_housekeeper/reliability"}),
     }
     for name, result in results.items():
         assert result["schema"] == API_SCHEMA, name
@@ -896,8 +897,23 @@ async def test_backup_commands_are_refused_for_non_admins(
     for message in (
         {"type": "ha_housekeeper/backup_health"},
         {"type": "ha_housekeeper/backup_attest", "kind": "restore_test"},
+        {"type": "ha_housekeeper/reliability"},
     ):
         await client.send_json_auto_id(message)
         reply = await client.receive_json()
         assert reply["success"] is False and reply["error"]["code"] == "unauthorized", message
     assert scanner.attest.record["restore_test"] is None
+
+
+async def test_reliability_over_the_websocket_validates_the_window(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    _, client = await _ws_setup(hass, hass_ws_client)
+    for window in (1, 7):
+        await client.send_json_auto_id(
+            {"type": "ha_housekeeper/reliability", "window_days": window}
+        )
+        reply = await client.receive_json()
+        assert reply["success"] and reply["result"]["available"] is False
+    await client.send_json_auto_id({"type": "ha_housekeeper/reliability", "window_days": 3})
+    assert (await client.receive_json())["success"] is False
