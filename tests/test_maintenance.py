@@ -179,3 +179,105 @@ async def test_preflight_ignores_persisted_issues_that_are_not_active(hass: Home
     registry.issues[("demo", "stale_issue")] = dataclasses.replace(stale, active=False)
 
     assert [r["issue_id"] for r in maintenance._repairs(hass)] == ["active_issue"]
+
+
+def _raw(states, recent=None, **extra):
+    raw = {
+        "total_states": sum(count for _, count, _, _ in states),
+        "first": 0,
+        "last": DAY * 30,
+        "states": states,
+        "statistics_total": 0,
+        "statistics": [],
+        "size_bytes": 1,
+        "keep_days": 31,
+        "recorded": None,
+        **extra,
+    }
+    if recent is not None:
+        raw["recent"] = recent
+    return raw
+
+
+DAY = 86400
+
+
+def test_an_exclusion_is_suggested_for_the_current_rate_not_the_history() -> None:
+    raw = _raw(
+        [
+            ("sensor.was_noisy", 500_000, 0, DAY * 30),  # an old burst: 16,000 a day on average
+            ("sensor.is_noisy", 200_000, 0, DAY * 30),
+            ("sensor.only_now", 900, DAY * 29, DAY * 30),  # small overall, loud today
+        ],
+        recent={
+            "sensor.was_noisy": (6, 2),
+            "sensor.is_noisy": (8_000, 1_200),
+            "sensor.only_now": (900, 900),
+        },
+    )
+    result = rank_costs(
+        raw, snapshot_with("sensor.was_noisy", "sensor.is_noisy", "sensor.only_now")
+    )
+    by_id = {e["entity_id"]: e for e in result["entities"]}
+    was = by_id["sensor.was_noisy"]
+    assert was["per_day_avg"] > 16_000 and was["states_24h"] == 2 and was["states_7d"] == 6
+    assert (
+        was["suggest_exclude"] is False
+    )  # the burst is over: shown with its average, not suggested
+    assert by_id["sensor.is_noisy"]["suggest_exclude"] is True
+    assert by_id["sensor.is_noisy"]["per_day_7d"] == pytest.approx(1142.9, abs=0.1)
+    assert by_id["sensor.only_now"]["suggest_exclude"] is True
+
+
+def test_without_the_windows_the_average_still_decides() -> None:
+    raw = _raw([("sensor.old_caller", 3_000, 0, DAY * 3)])  # no "recent": an older caller
+    result = rank_costs(raw, snapshot_with("sensor.old_caller"))
+    assert result["entities"][0]["suggest_exclude"] is True
+    assert result["took_ms"] is None and result["cached"] is False
+
+
+async def test_costs_separate_the_windows_and_list_what_is_loud_now(
+    recorder_mock, hass: HomeAssistant, freezer
+) -> None:
+    from datetime import timedelta
+
+    from homeassistant.util import dt as dt_util
+
+    now = dt_util.utcnow()
+    for age, count in ((timedelta(days=20), 12), (timedelta(days=3), 6)):
+        freezer.move_to(now - age)
+        for index in range(count):
+            hass.states.async_set("sensor.old_burst", f"{age}-{index}")
+    freezer.move_to(now)
+    for index in range(5):
+        hass.states.async_set("sensor.loud_now", str(index))
+    await async_wait_recording_done(hass)
+
+    result = await recorder_costs(
+        hass, snapshot_with("sensor.old_burst", "sensor.loud_now"), refresh=True
+    )
+    by_id = {e["entity_id"]: e for e in result["entities"]}
+    assert by_id["sensor.old_burst"]["states"] == 18
+    assert (
+        by_id["sensor.old_burst"]["states_7d"] == 6 and by_id["sensor.old_burst"]["states_24h"] == 0
+    )
+    assert (
+        by_id["sensor.loud_now"]["states_24h"] == 5 and by_id["sensor.loud_now"]["states_7d"] == 5
+    )
+    assert isinstance(result["took_ms"], int) and result["cached"] is False
+
+
+async def test_the_costs_are_kept_for_five_minutes_and_refresh_calculates_again(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    hass.states.async_set("sensor.chatty", "1")
+    await async_wait_recording_done(hass)
+    snapshot = snapshot_with("sensor.chatty")
+    first = await recorder_costs(hass, snapshot)
+    assert first["cached"] is False
+    hass.states.async_set("sensor.chatty", "2")
+    await async_wait_recording_done(hass)
+    second = await recorder_costs(hass, snapshot)
+    assert second["cached"] is True and second["total_states"] == first["total_states"]
+    third = await recorder_costs(hass, snapshot, refresh=True)
+    assert third["cached"] is False and third["total_states"] == first["total_states"] + 1

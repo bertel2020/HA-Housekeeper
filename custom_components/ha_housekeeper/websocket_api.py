@@ -466,7 +466,9 @@ async def websocket_plan_undo(
 
 
 @websocket_api.require_admin
-@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/recorder_costs"})
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/recorder_costs", vol.Optional("refresh", default=False): bool}
+)
 @websocket_api.async_response
 async def websocket_recorder_costs(
     hass: HomeAssistant,
@@ -480,7 +482,7 @@ async def websocket_recorder_costs(
         return
     try:
         snapshot = await scanner.async_get_snapshot()
-        result = await recorder_costs(hass, snapshot)
+        result = await recorder_costs(hass, snapshot, refresh=msg["refresh"])
     except Exception as err:
         connection.send_error(msg["id"], "recorder_failed", f"{type(err).__name__}: {err}")
         return

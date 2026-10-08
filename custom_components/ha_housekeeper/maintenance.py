@@ -7,6 +7,7 @@ and is the only thing that is written.
 from __future__ import annotations
 
 import os
+import time
 from datetime import UTC, datetime
 from typing import Any
 
@@ -15,12 +16,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
 
-from .const import PREFLIGHT_STORAGE_KEY, STORAGE_VERSION
+from .const import DOMAIN, PREFLIGHT_STORAGE_KEY, STORAGE_VERSION
 from .history import diff_checkpoints, make_checkpoint
 from .meter import recorder_ready
 
 COST_LIMIT = 40  # entities listed per ranking; totals stay exact
 SUGGEST_MIN_PER_DAY = 100  # states per day from which an unused entity is worth excluding
+COST_CACHE_SECONDS = 300  # the ranking is expensive on a large database, so it is kept briefly
+DAY = 86400
 BAD_ENTRY_STATES = {"setup_error", "setup_retry", "failed_unload", "migration_error"}
 
 
@@ -34,9 +37,11 @@ def _query_costs(hass: HomeAssistant, limit: int) -> dict[str, Any]:
         StatisticsMeta,
     )
     from homeassistant.components.recorder.util import session_scope
-    from sqlalchemy import func, select
+    from sqlalchemy import case, func, select
 
     instance = get_instance(hass)
+    started = time.monotonic()
+    now = time.time()
     with session_scope(hass=hass, read_only=True) as session:
         total, first, last = session.execute(
             select(
@@ -57,6 +62,36 @@ def _query_costs(hass: HomeAssistant, limit: int) -> dict[str, Any]:
             .order_by(func.count(States.state_id).desc())
             .limit(limit)
         ).all()
+        # One pass over the rows of the last 7 days gives both windows for every entity.
+        last_day = func.sum(case((States.last_updated_ts >= now - DAY, 1), else_=0))
+        recent = {
+            row[0]: (row[1], int(row[2] or 0))
+            for row in session.execute(
+                select(StatesMeta.entity_id, func.count(States.state_id), last_day)
+                .join(StatesMeta, States.metadata_id == StatesMeta.metadata_id)
+                .where(States.last_updated_ts >= now - 7 * DAY)
+                .group_by(States.metadata_id, StatesMeta.entity_id)
+            ).all()
+        }
+        # Entities that are noisy right now but small overall are listed too.
+        listed = {row[0] for row in states}
+        loud = sorted(recent, key=lambda entity_id: recent[entity_id][1], reverse=True)[:limit]
+        extra = [entity_id for entity_id in loud if entity_id not in listed]
+        if extra:
+            states = [
+                *states,
+                *session.execute(
+                    select(
+                        StatesMeta.entity_id,
+                        func.count(States.state_id),
+                        func.min(States.last_updated_ts),
+                        func.max(States.last_updated_ts),
+                    )
+                    .join(StatesMeta, States.metadata_id == StatesMeta.metadata_id)
+                    .where(StatesMeta.entity_id.in_(extra))
+                    .group_by(States.metadata_id, StatesMeta.entity_id)
+                ).all(),
+            ]
         stat_total = session.execute(select(func.count(Statistics.id))).scalar() or 0
         stat_rows = session.execute(
             select(StatisticsMeta.statistic_id, func.count(Statistics.id))
@@ -77,6 +112,8 @@ def _query_costs(hass: HomeAssistant, limit: int) -> dict[str, Any]:
         "first": first,
         "last": last,
         "states": [(row[0], row[1], row[2], row[3]) for row in states],
+        "recent": recent,
+        "took_ms": round((time.monotonic() - started) * 1000),
         "statistics_total": stat_total,
         "statistics": [(row[0], row[1]) for row in stat_rows],
         "size_bytes": size,
@@ -96,11 +133,16 @@ def rank_costs(raw: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
             used[edge["target"][7:]] = used.get(edge["target"][7:], 0) + 1
     total = raw["total_states"] or 0
     entity_filter = raw.get("recorded")
+    recent = raw.get("recent")
     items = []
     for entity_id, count, first, last in raw["states"]:
         span_days = max(((last or 0) - (first or 0)) / 86400, 1.0)
         item = entities.get(entity_id)
         per_day = round(count / span_days, 1)
+        week, day = (recent or {}).get(entity_id, (0, 0))
+        # The current rate decides what is worth excluding; the long-term average only informs.
+        # Without the windows (older callers) the average has to do.
+        current = float(day) if recent is not None else per_day
         uses = used.get(entity_id, 0)
         has_statistics = bool(item and item.get("has_statistics"))
         items.append(
@@ -109,6 +151,10 @@ def rank_costs(raw: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
                 "name": (item or {}).get("name") or entity_id,
                 "states": count,
                 "per_day": per_day,
+                "per_day_avg": per_day,
+                "states_24h": day,
+                "states_7d": week,
+                "per_day_7d": round(week / 7, 1),
                 "share": round(count / total * 100, 1) if total else 0.0,
                 "used": uses,
                 "has_statistics": has_statistics,
@@ -117,7 +163,7 @@ def rank_costs(raw: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
                 "suggest_exclude": item is not None
                 and uses == 0
                 and not has_statistics
-                and per_day >= SUGGEST_MIN_PER_DAY,
+                and current >= SUGGEST_MIN_PER_DAY,
             }
         )
     return {
@@ -127,6 +173,8 @@ def rank_costs(raw: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
         "last": raw["last"],
         "size_bytes": raw["size_bytes"],
         "keep_days": raw["keep_days"],
+        "took_ms": raw.get("took_ms"),
+        "cached": bool(raw.get("cached")),
         "statistics_total": raw["statistics_total"],
         "entities": items,
         "statistics": [
@@ -137,13 +185,23 @@ def rank_costs(raw: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-async def recorder_costs(hass: HomeAssistant, snapshot: dict[str, Any]) -> dict[str, Any]:
-    """The entities that fill the recorder database, with a hint where excluding is safe."""
+async def recorder_costs(
+    hass: HomeAssistant, snapshot: dict[str, Any], *, refresh: bool = False
+) -> dict[str, Any]:
+    """The entities that fill the recorder database, with a hint where excluding is safe.
+
+    The database counts are kept for a few minutes; ``refresh`` calculates them again.
+    """
     if not recorder_ready(hass):
         return {"available": False, "entities": [], "statistics": []}
     from homeassistant.components.recorder import get_instance
 
+    cache = hass.data.setdefault(DOMAIN, {})
+    kept = cache.get("costs_cache")
+    if not refresh and kept and time.monotonic() - kept[0] < COST_CACHE_SECONDS:
+        return rank_costs({**kept[1], "cached": True}, snapshot)
     raw = await get_instance(hass).async_add_executor_job(_query_costs, hass, COST_LIMIT)
+    cache["costs_cache"] = (time.monotonic(), raw)
     return rank_costs(raw, snapshot)
 
 
