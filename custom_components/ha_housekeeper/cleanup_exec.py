@@ -187,6 +187,7 @@ def _parameter_names(function: Any) -> set[str]:
 
 
 MAX_FILE_BACKUP = 512 * 1024  # larger files are not kept whole in the journal
+MAX_PLAN_SNAPSHOTS = 2 * 1024 * 1024  # whole-file copies per plan; further sources undo per item
 
 
 def _bytes_hash(data: bytes) -> str:
@@ -827,6 +828,12 @@ class CleanupRunner:
                 if not changes:
                     raise StepAbort("source_changed")
                 before, extra = await self._write_source(loaded, item, planned["hash"])
+                kept = sum(len(s.get("file_before") or "") for s in written)
+                if extra.get("file_before") is not None and (
+                    kept + len(extra["file_before"]) > MAX_PLAN_SNAPSHOTS
+                ):
+                    # Enough whole files in this plan: this source can still be put back per item.
+                    extra = {"file_snapshot_skipped": True}
                 # Registered at once: from here on the source is changed, so every failure path
                 # must be able to put it back, even if reading it again fails.
                 source = {

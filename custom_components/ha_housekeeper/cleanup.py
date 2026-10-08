@@ -40,7 +40,12 @@ REMOVABLE_STATUSES = frozenset({"orphaned", "unavailable", "unknown", "disabled"
 DISABLEABLE_STATUSES = frozenset({"orphaned", "unavailable", "unknown"})
 PLAN_MAX_AGE_HOURS = 24
 MAX_ACTIONS = 200
-MAX_PLANS = 50
+# Only previews that were never started are limited by number; they cannot be confirmed after
+# PLAN_MAX_AGE_HOURS anyway. Plans that ran are never dropped by position (their data is needed for
+# undo, restore and the start of the quarantine); when the journal grows too large the oldest ones
+# lose their whole-file copies instead.
+MAX_OPEN_PREVIEWS = 20
+JOURNAL_MAX_BYTES = 8 * 1024 * 1024
 SAVE_DELAY = 5
 
 
@@ -678,6 +683,7 @@ def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
         "executed": bool(plan.get("executed")),
         "run": bool(plan.get("run")),
         "summary": plan.get("summary"),
+        "file_snapshot_dropped": bool(plan.get("file_snapshot_dropped")),
     }
 
 
@@ -720,10 +726,45 @@ class JournalStore:
         return self._plans
 
     def add(self, plan: dict[str, Any]) -> None:
-        """Record a plan, keeping the newest ones."""
+        """Record a plan and trim the journal."""
         self._plans.insert(0, plan)
-        del self._plans[MAX_PLANS:]
+        self._trim()
         self._save()
+
+    @staticmethod
+    def _is_open_preview(plan: dict[str, Any]) -> bool:
+        return not plan.get("executed") and not plan.get("run")
+
+    def _trim(self) -> None:
+        """Limit the previews by number and the whole journal by size; never drop a plan that ran."""
+        previews = 0
+        kept = []
+        for plan in self._plans:
+            if self._is_open_preview(plan):
+                previews += 1
+                if previews > MAX_OPEN_PREVIEWS:
+                    continue
+            kept.append(plan)
+        self._plans[:] = kept
+        self._compact_to(JOURNAL_MAX_BYTES)
+
+    def _compact_to(self, limit: int) -> None:
+        """Drop the whole-file copies of the oldest plans until the journal fits the limit.
+
+        The entry level data (what each step changed and when) stays, so the quarantine and the
+        undo of single items keep working; only the byte-exact file undo is given up.
+        """
+        size = len(json.dumps(self._plans, default=str))
+        for plan in reversed(self._plans):
+            if size <= limit:
+                break
+            for action in plan.get("actions", []):
+                for source in (action.get("result") or {}).get("sources") or []:
+                    if isinstance(source, dict) and source.get("file_before") is not None:
+                        size -= len(json.dumps(source.pop("file_before"), default=str))
+                        source.pop("file_after_hash", None)
+                        source["file_snapshot_dropped"] = True
+                        plan["file_snapshot_dropped"] = True
 
     def get(self, plan_id: str) -> dict[str, Any] | None:
         """Return one plan by ID."""

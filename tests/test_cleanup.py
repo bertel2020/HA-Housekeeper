@@ -9,7 +9,8 @@ import pytest
 pytest.importorskip("homeassistant")
 
 from custom_components.ha_housekeeper.cleanup import (  # noqa: E402
-    MAX_PLANS,
+    JOURNAL_MAX_BYTES,
+    MAX_OPEN_PREVIEWS,
     build_plan,
     judge_action,
 )
@@ -96,18 +97,90 @@ def test_plan_summary_dedupes_and_never_executes() -> None:
     assert plan["events"][0]["type"] == "created"
 
 
-def test_journal_keeps_the_newest_plans_and_only_removes_dry_runs() -> None:
+def _journal():
     from custom_components.ha_housekeeper.cleanup import JournalStore
 
     journal = JournalStore.__new__(JournalStore)
     journal._plans = []
     journal._save = lambda: None
-    for number in range(MAX_PLANS + 5):
+    return journal
+
+
+def _executed_plan(plan_id: str, object_id: str = "sensor.a", file_before: str | None = None):
+    source = {"source": "automation:x", "before": "item", "state": "done"}
+    if file_before is not None:
+        source |= {"file_before": file_before, "file_after_hash": "abc"}
+    return {
+        "plan_id": plan_id,
+        "executed": True,
+        "run": {"started_at": "2026-09-01T00:00:00+00:00"},
+        "actions": [
+            {
+                "kind": "disable_entity",
+                "object_id": object_id,
+                "result": {"state": "done", "at": "2026-09-01T00:00:00+00:00", "sources": [source]},
+            }
+        ],
+    }
+
+
+def test_journal_limits_only_previews_and_removes_only_dry_runs() -> None:
+    journal = _journal()
+    for number in range(MAX_OPEN_PREVIEWS + 5):
         journal.add({"plan_id": str(number), "executed": False})
-    assert len(journal.plans) == MAX_PLANS and journal.plans[0]["plan_id"] == str(MAX_PLANS + 4)
+    assert len(journal.plans) == MAX_OPEN_PREVIEWS
+    assert journal.plans[0]["plan_id"] == str(MAX_OPEN_PREVIEWS + 4)
     journal.plans[0]["executed"] = True
     assert journal.remove(journal.plans[0]["plan_id"]) is False
     assert journal.remove(journal.plans[1]["plan_id"]) is True
+
+
+def test_new_previews_never_push_out_a_plan_that_ran() -> None:
+    from custom_components.ha_housekeeper.cleanup import quarantine_entries
+
+    journal = _journal()
+    journal.add(_executed_plan("ran"))
+    for number in range(MAX_OPEN_PREVIEWS * 3):
+        journal.add({"plan_id": f"preview-{number}", "executed": False})
+    ids = [plan["plan_id"] for plan in journal.plans]
+    assert "ran" in ids and len(ids) == MAX_OPEN_PREVIEWS + 1
+    live = [{"object_type": "entity", "object_id": "sensor.a", "disabled_by": "user"}]
+    assert [q["object_id"] for q in quarantine_entries(journal.plans, live)] == ["sensor.a"]
+
+
+def test_a_large_journal_gives_up_old_file_copies_but_not_the_plans() -> None:
+    journal = _journal()
+    big = "x" * 4_000
+    for number in range(4):
+        journal.add(_executed_plan(f"p{number}", f"sensor.s{number}", file_before=big))
+    journal._compact_to(9_000)  # four copies of 4 kB do not fit
+
+    by_id = {plan["plan_id"]: plan for plan in journal.plans}
+    assert set(by_id) == {"p0", "p1", "p2", "p3"}  # nothing is dropped
+    oldest = by_id["p0"]["actions"][0]["result"]
+    assert (
+        "file_before" not in oldest["sources"][0] and "file_after_hash" not in oldest["sources"][0]
+    )
+    assert (
+        oldest["sources"][0]["file_snapshot_dropped"] is True
+        and by_id["p0"]["file_snapshot_dropped"]
+    )
+    assert oldest["state"] == "done" and oldest["at"] and oldest["sources"][0]["before"] == "item"
+    assert (
+        by_id["p3"]["actions"][0]["result"]["sources"][0]["file_before"] == big
+    )  # newest keeps it
+    assert JOURNAL_MAX_BYTES >= 1024 * 1024  # the real limit is not tiny
+
+
+def test_add_compacts_when_the_journal_exceeds_its_limit(monkeypatch) -> None:
+    from custom_components.ha_housekeeper import cleanup
+
+    monkeypatch.setattr(cleanup, "JOURNAL_MAX_BYTES", 6_000)
+    journal = _journal()
+    for number in range(3):
+        journal.add(_executed_plan(f"p{number}", f"sensor.s{number}", file_before="y" * 4_000))
+    sources = [p["actions"][0]["result"]["sources"][0] for p in reversed(journal.plans)]
+    assert [s.get("file_snapshot_dropped", False) for s in sources] == [True, True, False]
 
 
 def test_quarantine_lists_only_entities_still_disabled_by_the_user() -> None:

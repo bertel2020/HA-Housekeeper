@@ -733,7 +733,15 @@ async def test_the_panel_never_receives_the_restore_data_of_a_plan(
         await client.send_json_auto_id({"type": "ha_housekeeper/plan_list"})
         listing = (await client.receive_json())["result"]["plans"]
         assert [p["plan_id"] for p in listing] == [plan["plan_id"]]
-        assert set(listing[0]) == {"plan_id", "created_at", "status", "executed", "run", "summary"}
+        assert set(listing[0]) == {
+            "plan_id",
+            "created_at",
+            "status",
+            "executed",
+            "run",
+            "summary",
+            "file_snapshot_dropped",
+        }
 
         for message in (
             {"type": "ha_housekeeper/plan_detail", "plan_id": plan["plan_id"]},
@@ -750,3 +758,41 @@ async def test_the_panel_never_receives_the_restore_data_of_a_plan(
 
     await client.send_json_auto_id({"type": "ha_housekeeper/plan_detail", "plan_id": "nope"})
     assert (await client.receive_json())["error"]["code"] == "not_found"
+
+
+async def test_a_plan_over_the_snapshot_limit_still_runs_and_undoes_per_item(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper import cleanup_exec
+
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED)
+    with state, backup, patch.object(cleanup_exec, "MAX_PLAN_SNAPSHOTS", 10):
+        plan = await make_reference_plan(scanner, hass)
+        await run(scanner, plan, [OLD])
+        source = plan["actions"][0]["result"]["sources"][0]
+        assert plan["status"] in {"executed", "verified"}
+        assert source["file_snapshot_skipped"] is True and "file_before" not in source
+        assert load_yaml(path)[0]["trigger"][0]["entity_id"] == NEW
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+    assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD  # the item is back
+    assert plan["actions"][0]["result"]["sources"][0]["restored_as"] == "item"
+
+
+async def test_undo_after_the_journal_gave_up_the_file_copy_puts_the_item_back(
+    hass: HomeAssistant,
+) -> None:
+    path, scanner, (state, backup) = await _replace_in_formatted_file(hass, FORMATTED)
+    with state, backup:
+        plan = await make_reference_plan(scanner, hass)
+        await run(scanner, plan, [OLD])
+        assert plan["actions"][0]["result"]["sources"][0]["file_before"]
+        scanner.journal._compact_to(0)  # the journal is "full": the whole-file copy goes
+        source = plan["actions"][0]["result"]["sources"][0]
+        assert "file_before" not in source and source["file_snapshot_dropped"] is True
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+    assert load_yaml(path)[0]["trigger"][0]["entity_id"] == OLD
+    assert plan["actions"][0]["result"]["sources"][0]["restored_as"] == "item"

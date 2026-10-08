@@ -798,6 +798,10 @@ test("the journal lists short entries and opening one fetches the plan", async (
   el.plan = null;
   el.render();
   assert.ok(shadow.innerHTML.includes('data-plan-open="p9"'));
+  assert.ok(!shadow.innerHTML.includes("file copy was dropped"));
+  el.journal = [{ ...el.journal[0], file_snapshot_dropped: true }];
+  el.render();
+  assert.ok(shadow.innerHTML.includes("file copy was dropped"));
   const asked = [];
   el._hass = { language: "en", callWS: async msg => { asked.push(msg); return { plan_id: "p9", created_at: "2026-10-07T10:00:00+00:00", status: "verified", executed: true, summary: { total: 1, ok: 1, review: 0, blocked: 0 },
     actions: [{ kind: "disable_entity", object_id: "sensor.a", name: "A", verdict: "ok", executable: true, reasons: [], used_by: [], result: { state: "done" } }] }; } };
