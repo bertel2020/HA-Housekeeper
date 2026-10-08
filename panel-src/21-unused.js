@@ -70,61 +70,96 @@ class UnusedMixin {
     setTimeout(() => this.loadOrphanLast(), 0);
   }
 
-  orphanLastLine(o) {
-    if (this.orphanLastLoading && !this.orphanLast) return `<small>${this.t("lastEntryLoading")}</small>`;
-    if (!this.orphanLast?.available) return "";
-    if (this.orphanLast.busy) return `<small>${this.t("lastEntryBusy")}</small>`;
-    const ts = this.orphanLast.last?.[o.statistic_id];
-    if (ts === null || ts === undefined) return `<small>${this.t("lastEntry")}: ${this.t("lastEntryNone")}</small>`;
-    const iso = new Date(ts * 1000).toISOString();
-    return `<small>${this.t("lastEntry")}: ${this.esc(this.formatDate(iso))} · ${this.esc(this.relTime(iso))}</small>`;
-  }
-
   orphanStatsView() {
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
     const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
+    const lastOf = o => this.orphanLast?.last?.[o.statistic_id];
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
+      { key: "kind", label: "sortKind", dir: "asc", get: o => this.t(kind(o)) },
       { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
-      { key: "last", label: "sortLastEntry", dir: "desc", get: o => this.orphanLast?.last?.[o.statistic_id] },
+      { key: "last", label: "sortLastEntry", dir: "desc", get: lastOf },
     ];
     this.ensureOrphanLast();
     const kinds = [...new Set(all.map(kind))];
-    const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
-    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
+    const units = [...new Set(all.map(o => o.unit).filter(Boolean))].sort();
+    const AGES = [30, 365, 730];
+    const bar = this.listBar("orphanstats", { sorts, filters: [
+      { name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) },
+      { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
+      { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
+    ] });
+    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: {
+      kind: (o, v) => kind(o) === v, unit: (o, v) => o.unit === v,
+      age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
+    }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
-    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.orphanLastLine(o)}${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const lastCell = o => {
+      if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">…</span>`;
+      if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
+      const ts = lastOf(o);
+      if (ts === null || ts === undefined) return `<span class="muted">${this.orphanLast?.available ? this.t("lastEntryNone") : "–"}</span>`;
+      return this.ageCell(new Date(ts * 1000).toISOString());
+    };
+    const columns = [
+      { key: "id", label: "utStatId", dir: "asc", cell: o => `<strong>${this.esc(o.statistic_id)}</strong>${this.statSuccessorLine(o)}` },
+      { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
+      { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
+      { key: "last", label: "utLast", dir: "desc", cell: lastCell },
+      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
+    ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
+    const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${table}${pg.footer}</div>`;
   }
 
   unreferencedView() {
     if (this.unrefTab === "statistics") return this.orphanStatsView();
     const all = this.unreferencedRows();
-    this.lvState("unreferenced", "id", "asc");
-    const domains = [...new Set(all.map(o => o.object_id.split(".")[0]))].sort();
-    const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
+    this.lvState("unreferenced", "name", "asc");
+    const domainOf = o => o.object_id.split(".")[0];
+    const deviceName = o => (o.device_id ? this.findObject(`device:${o.device_id}`)?.name : "") || "";
+    const ts = v => (v ? Date.parse(v) || null : null);
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.object_id },
       { key: "name", label: "sortName", dir: "asc", get: o => o.name },
+      { key: "domain", label: "sortDomain", dir: "asc", get: domainOf },
+      { key: "device", label: "sortDevice", dir: "asc", get: deviceName },
       { key: "area", label: "sortArea", dir: "asc", get: o => this.areaName(o) },
+      { key: "platform", label: "sortIntegration", dir: "asc", get: o => o.platform },
+      { key: "changed", label: "sortChanged", dir: "desc", get: o => ts(o.last_changed) },
+      { key: "reported", label: "sortReported", dir: "desc", get: o => ts(o.last_reported || o.last_updated) },
+      { key: "since", label: "sortSince", dir: "asc", get: o => ts(o.status_since) },
+      { key: "stats", label: "sortStats", dir: "desc", get: o => (o.has_statistics ? 1 : 0) },
     ];
+    const domains = [...new Set(all.map(domainOf))].sort();
+    const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
+    const platforms = [...new Set(all.map(o => o.platform).filter(Boolean))].sort();
     const bar = this.listBar("unreferenced", { sorts, filters: [
-      { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => o.object_id.startsWith(`${d}.`)).length})`]) },
+      { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => domainOf(o) === d).length})`]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
+      { name: "platform", all: this.t("allIntegrations"), options: platforms.map(p => [p, p]) },
     ] });
     const rows = this.refine("unreferenced", all, {
-      text: o => [o.name, o.object_id, this.areaName(o)].join(" "),
-      filters: { domain: (o, v) => o.object_id.startsWith(`${v}.`), area: (o, v) => this.areaName(o) === v }, sorts, tie: o => o.object_id,
+      text: o => [o.name, o.object_id, this.areaName(o), deviceName(o), o.platform].join(" "),
+      filters: { domain: (o, v) => domainOf(o) === v, area: (o, v) => this.areaName(o) === v, platform: (o, v) => o.platform === v }, sorts, tie: o => o.object_id,
     });
     const pg = this.paginate("unreferenced", rows);
-    const row = item => {
-      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
-      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
-      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile mute"><ha-icon icon="mdi:link-variant-off"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([item.object_id, device?.name, area?.name].filter(Boolean).join(" · "))}</small></span></button>`;
-    };
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`}${pg.footer}</div>`;
+    const dash = `<span class="muted">–</span>`;
+    const columns = [
+      { key: "name", label: "utName", dir: "asc", cell: o => `<strong>${this.esc(o.name)}</strong><span class="id">${this.esc(o.object_id)}</span>` },
+      { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
+      { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
+      { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },
+      { key: "platform", label: "utIntegration", cell: o => this.esc(o.platform || "") || dash },
+      { key: "changed", label: "utChanged", dir: "desc", cell: o => this.ageCell(o.last_changed) },
+      { key: "reported", label: "utReported", dir: "desc", cell: o => this.ageCell(o.last_reported || o.last_updated) },
+      { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
+      { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
+    ];
+    const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`;
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div>`;
   }
 
   batterySorts() {

@@ -791,26 +791,79 @@ test("orphaned statistics show their last entry and sort by it, oldest or newest
   el.view = "unreferenced"; el.unrefTab = "statistics";
   el.render();
   const loading = el.loadOrphanLast();
-  assert.ok(shadow.innerHTML.includes("Reading the last entry"));
+  assert.ok(shadow.innerHTML.includes("<span class=\"muted\">…</span>"), "the column says it is loading");
   await loading;
   assert.deepEqual(calls, ["ha_housekeeper/statistics_last"]);
   const order = () => [...shadow.innerHTML.matchAll(/<strong>(sensor\.[abc])<\/strong>/g)].map(m => m[1]);
   el.lv.orphanstats.sort = "last"; el.lv.orphanstats.dir = "desc";
   el.render();
   assert.deepEqual(order(), ["sensor.b", "sensor.a", "sensor.c"]); // newest first, no entry last
-  assert.ok(shadow.innerHTML.includes("Last entry: ") && shadow.innerHTML.includes("no entry found") && shadow.innerHTML.includes("days ago"));
+  assert.ok(shadow.innerHTML.includes("Last entry") && shadow.innerHTML.includes("no entry found") && shadow.innerHTML.includes("days ago"));
   el.lv.orphanstats.dir = "asc";
   el.render();
   assert.deepEqual(order(), ["sensor.a", "sensor.b", "sensor.c"]); // oldest first, no entry still last
   // A busy recorder shows a note and is not asked in a loop; opening the tab again retries.
   el._hass.callWS = async msg => { calls.push(msg.type); return { available: true, busy: true, last: {} }; };
   await el.loadOrphanLast();
-  assert.ok(shadow.innerHTML.includes("recorder is busy"));
+  assert.ok(shadow.innerHTML.includes("Recorder busy"));
   const before = calls.length;
   el.render();
   assert.equal(calls.length, before);
   el.retryOrphanLast();
   assert.equal(el._orphanLastRequested, false);
+});
+
+test("unused entities are a table with columns that sort and filters for domain, area and integration", () => {
+  const { el, shadow } = panel("en");
+  const day = 864e5, iso = ms => new Date(Date.now() - ms).toISOString();
+  const ent = (id, extra = {}) => ({ object_type: "entity", object_id: id, name: id, status: "active", platform: "hue", device_id: null, area_id: null, ...extra });
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, edges: [], findings: [], orphaned_statistics: [], objects: [
+    { object_type: "area", object_id: "kitchen", name: "Kitchen", status: "active" },
+    ent("light.a", { platform: "hue", area_id: "kitchen", last_changed: iso(3 * day), last_reported: iso(60000), status_since: iso(10 * day), has_statistics: true }),
+    ent("sensor.b", { platform: "zha", last_changed: iso(30 * day), last_reported: iso(2 * day) }),
+    ent("switch.c", { platform: "hue" }),
+  ] };
+  el.view = "unreferenced"; el.unrefTab = "entities";
+  el.render();
+  let html = shadow.innerHTML;
+  for (const head of ["Name", "Domain", "Device", "Area", "Integration", "Last change", "Last report", "Observed since", "Statistics"]) assert.ok(html.includes(`>${head}`), head);
+  assert.ok(html.includes("data-lsort=\"unreferenced|changed|desc\"") && html.includes('aria-sort="ascending"'));
+  assert.ok(html.includes("3 days ago") && html.includes("30 days ago") && html.includes("Kitchen"));
+  const order = () => [...shadow.innerHTML.matchAll(/<span class="id">([a-z_.]+)<\/span>/g)].map(m => m[1]);
+  assert.equal(JSON.stringify(order()), JSON.stringify(["light.a", "sensor.b", "switch.c"]));
+  el.lv.unreferenced.sort = "changed"; el.lv.unreferenced.dir = "desc"; el.render();
+  assert.equal(JSON.stringify(order()), JSON.stringify(["light.a", "sensor.b", "switch.c"]), "newest first, unknown last");
+  el.lv.unreferenced.dir = "asc"; el.render();
+  assert.equal(JSON.stringify(order()), JSON.stringify(["sensor.b", "light.a", "switch.c"]), "oldest first, unknown still last");
+  el.lv.unreferenced.f.platform = "zha"; el.render();
+  assert.equal(JSON.stringify(order()), JSON.stringify(["sensor.b"]));
+  el.lv.unreferenced.f.platform = ""; el.lv.unreferenced.q = "kitchen"; el.render();
+  assert.equal(JSON.stringify(order()), JSON.stringify(["light.a"]), "the search covers the area");
+  assert.ok(shadow.innerHTML.includes("data-object=\"entity:light.a\""), "a row opens the entity");
+});
+
+test("orphaned statistics are a table that filters by unit and by the age of the last entry", () => {
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  const now = Date.now() / 1000, day = 86400;
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [], edges: [], findings: [], orphaned_statistics: [
+    { statistic_id: "sensor.new", unit: "kWh", has_sum: true, has_mean: false, in_energy: false },
+    { statistic_id: "sensor.old", unit: "°C", has_sum: false, has_mean: true, in_energy: false },
+    { statistic_id: "sensor.dead", unit: "°C", has_sum: false, has_mean: true, in_energy: false },
+  ] };
+  el.orphanLast = { available: true, busy: false, last: { "sensor.new": now - 5 * day, "sensor.old": now - 400 * day, "sensor.dead": now - 900 * day } };
+  el._orphanLastRequested = true;
+  el.view = "unreferenced"; el.unrefTab = "statistics"; el.render();
+  const ids = () => [...shadow.innerHTML.matchAll(/<strong>(sensor\.[a-z]+)<\/strong>/g)].map(m => m[1]);
+  let html = shadow.innerHTML;
+  for (const head of ["Statistic ID", "Kind", "Unit", "Last entry", "Energy dashboard"]) assert.ok(html.includes(`>${head}`), head);
+  assert.equal(JSON.stringify(ids()), JSON.stringify(["sensor.dead", "sensor.new", "sensor.old"]));
+  el.lv.orphanstats.f.age = "365"; el.render();
+  assert.equal(JSON.stringify(ids()), JSON.stringify(["sensor.dead", "sensor.old"]), "older than a year");
+  el.lv.orphanstats.f.age = "730"; el.render();
+  assert.equal(JSON.stringify(ids()), JSON.stringify(["sensor.dead"]));
+  el.lv.orphanstats.f.age = ""; el.lv.orphanstats.f.unit = "kWh"; el.render();
+  assert.equal(JSON.stringify(ids()), JSON.stringify(["sensor.new"]));
+  assert.ok(!shadow.innerHTML.includes('data-object="'), "statistics rows do not open anything");
 });
 
 test("changes can be searched and filtered by object type", () => {

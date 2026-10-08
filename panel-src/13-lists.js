@@ -44,6 +44,28 @@ class ListsMixin {
     return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}</div>`;
   }
 
+  // A sortable table for a list built with lvState/refine: header buttons set sort and direction, the phone shows cards.
+  // columns: [{ key, label, cell(item) -> html, sortable, dir }]; rowAttrs(item) adds attributes to the row.
+  listTable(id, columns, rows, { rowAttrs = () => "", cls = "" } = {}) {
+    const st = this.lv[id];
+    const head = columns.map(c => {
+      const on = st.sort === c.key;
+      const inner = c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
+      return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${inner}</th>`;
+    }).join("");
+    const body = rows.map(item => {
+      const attrs = rowAttrs(item);
+      return `<tr ${attrs}>${columns.map((c, i) => `<td${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("")}</tr>`;
+    }).join("");
+    return `<div class="tablewrap lt ${cls}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.
+  ageCell(iso) {
+    if (!iso) return `<span class="muted">–</span>`;
+    return `<span title="${this.esc(this.formatDate(iso))}">${this.esc(this.relTime(iso))}</span>`;
+  }
+
   // Saved list views: search text, filters and sort under a name, kept in this browser only.
   viewsStore() {
     if (this._views) return this._views;

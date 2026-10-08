@@ -1,7 +1,11 @@
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
   changesFiltered: "Der Filter blendet alle {n} Einträge dieses Abschnitts aus.",
-  lastEntry: "Letzter Eintrag", lastEntryNone: "kein Eintrag gefunden", lastEntryLoading: "Letzter Eintrag wird gelesen …", lastEntryBusy: "Der Recorder ist gerade beschäftigt, der letzte Eintrag fehlt noch.", sortLastEntry: "Letzter Eintrag",
+  lastEntry: "Letzter Eintrag", lastEntryNone: "kein Eintrag gefunden", sortLastEntry: "Letzter Eintrag",
+  utName: "Name", utDomain: "Domain", utDevice: "Gerät", utArea: "Bereich", utIntegration: "Integration", utChanged: "Letzte Änderung", utReported: "Letzte Meldung", utSince: "Beobachtet seit", utStats: "Statistik",
+  utStatId: "Statistik-ID", utKind: "Art", utUnit: "Einheit", utLast: "Letzter Eintrag", utEnergy: "Energie-Dashboard",
+  sortKind: "Art", sortDomain: "Domain", sortDevice: "Gerät", sortIntegration: "Integration", sortChanged: "Letzte Änderung", sortReported: "Letzte Meldung", sortStats: "Statistik",
+  allUnits: "Alle Einheiten", allAges: "Letzter Eintrag: jeder", allIntegrations: "Alle Integrationen", statAge30: "Letzter Eintrag älter als 30 Tage", statAge365: "Letzter Eintrag älter als 1 Jahr", statAge730: "Letzter Eintrag älter als 2 Jahre", lastEntryBusyShort: "Recorder beschäftigt",
   statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entity umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger sind Vermutungen aus Name und Einheit.",
   noBaselinePreliminary: "Der letzte Scan war vorläufig, weil Home Assistant gerade gestartet ist. Vorläufige Scans werden nicht gespeichert. Scanne in ein paar Minuten erneut, dann gibt es einen ersten Vergleichspunkt.", noBaselineOneScan: "Es gibt erst einen gespeicherten Scan. Ein Vergleich braucht zwei: Scanne nach Änderungen an deiner Installation erneut oder warte auf den automatischen Scan (alle {hours} Stunden). Jeder Scan wird als Vergleichspunkt gespeichert.", scanPoint: "Jetzt scannen und Vergleichspunkt setzen",
   releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
@@ -30,7 +34,11 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   changesFiltered: "The filter hides all {n} entries of this section.",
-  lastEntry: "Last entry", lastEntryNone: "no entry found", lastEntryLoading: "Reading the last entry …", lastEntryBusy: "The recorder is busy, the last entry is still missing.", sortLastEntry: "Last entry",
+  lastEntry: "Last entry", lastEntryNone: "no entry found", sortLastEntry: "Last entry",
+  utName: "Name", utDomain: "Domain", utDevice: "Device", utArea: "Area", utIntegration: "Integration", utChanged: "Last change", utReported: "Last report", utSince: "Observed since", utStats: "Statistics",
+  utStatId: "Statistic ID", utKind: "Kind", utUnit: "Unit", utLast: "Last entry", utEnergy: "Energy dashboard",
+  sortKind: "Kind", sortDomain: "Domain", sortDevice: "Device", sortIntegration: "Integration", sortChanged: "Last change", sortReported: "Last report", sortStats: "Statistics",
+  allUnits: "All units", allAges: "Last entry: any", allIntegrations: "All integrations", statAge30: "Last entry older than 30 days", statAge365: "Last entry older than 1 year", statAge730: "Last entry older than 2 years", lastEntryBusyShort: "Recorder busy",
   statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are guesses from name and unit.",
   noBaselinePreliminary: "The last scan was preliminary because Home Assistant has just started. Preliminary scans are not saved. Scan again in a few minutes to get a first comparison point.", noBaselineOneScan: "There is only one saved scan so far. A comparison needs two: scan again after changing your installation or wait for the automatic scan (every {hours} hours). Every scan is saved as a comparison point.", scanPoint: "Scan now and set a comparison point",
   releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",

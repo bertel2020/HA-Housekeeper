@@ -461,7 +461,11 @@ const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
   changesFiltered: "Der Filter blendet alle {n} Einträge dieses Abschnitts aus.",
-  lastEntry: "Letzter Eintrag", lastEntryNone: "kein Eintrag gefunden", lastEntryLoading: "Letzter Eintrag wird gelesen …", lastEntryBusy: "Der Recorder ist gerade beschäftigt, der letzte Eintrag fehlt noch.", sortLastEntry: "Letzter Eintrag",
+  lastEntry: "Letzter Eintrag", lastEntryNone: "kein Eintrag gefunden", sortLastEntry: "Letzter Eintrag",
+  utName: "Name", utDomain: "Domain", utDevice: "Gerät", utArea: "Bereich", utIntegration: "Integration", utChanged: "Letzte Änderung", utReported: "Letzte Meldung", utSince: "Beobachtet seit", utStats: "Statistik",
+  utStatId: "Statistik-ID", utKind: "Art", utUnit: "Einheit", utLast: "Letzter Eintrag", utEnergy: "Energie-Dashboard",
+  sortKind: "Art", sortDomain: "Domain", sortDevice: "Gerät", sortIntegration: "Integration", sortChanged: "Letzte Änderung", sortReported: "Letzte Meldung", sortStats: "Statistik",
+  allUnits: "Alle Einheiten", allAges: "Letzter Eintrag: jeder", allIntegrations: "Alle Integrationen", statAge30: "Letzter Eintrag älter als 30 Tage", statAge365: "Letzter Eintrag älter als 1 Jahr", statAge730: "Letzter Eintrag älter als 2 Jahre", lastEntryBusyShort: "Recorder beschäftigt",
   statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entity mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entity umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger sind Vermutungen aus Name und Einheit.",
   noBaselinePreliminary: "Der letzte Scan war vorläufig, weil Home Assistant gerade gestartet ist. Vorläufige Scans werden nicht gespeichert. Scanne in ein paar Minuten erneut, dann gibt es einen ersten Vergleichspunkt.", noBaselineOneScan: "Es gibt erst einen gespeicherten Scan. Ein Vergleich braucht zwei: Scanne nach Änderungen an deiner Installation erneut oder warte auf den automatischen Scan (alle {hours} Stunden). Jeder Scan wird als Vergleichspunkt gespeichert.", scanPoint: "Jetzt scannen und Vergleichspunkt setzen",
   releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
@@ -490,7 +494,11 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   changesFiltered: "The filter hides all {n} entries of this section.",
-  lastEntry: "Last entry", lastEntryNone: "no entry found", lastEntryLoading: "Reading the last entry …", lastEntryBusy: "The recorder is busy, the last entry is still missing.", sortLastEntry: "Last entry",
+  lastEntry: "Last entry", lastEntryNone: "no entry found", sortLastEntry: "Last entry",
+  utName: "Name", utDomain: "Domain", utDevice: "Device", utArea: "Area", utIntegration: "Integration", utChanged: "Last change", utReported: "Last report", utSince: "Observed since", utStats: "Statistics",
+  utStatId: "Statistic ID", utKind: "Kind", utUnit: "Unit", utLast: "Last entry", utEnergy: "Energy dashboard",
+  sortKind: "Kind", sortDomain: "Domain", sortDevice: "Device", sortIntegration: "Integration", sortChanged: "Last change", sortReported: "Last report", sortStats: "Statistics",
+  allUnits: "All units", allAges: "Last entry: any", allIntegrations: "All integrations", statAge30: "Last entry older than 30 days", statAge365: "Last entry older than 1 year", statAge730: "Last entry older than 2 years", lastEntryBusyShort: "Recorder busy",
   statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are guesses from name and unit.",
   noBaselinePreliminary: "The last scan was preliminary because Home Assistant has just started. Preliminary scans are not saved. Scan again in a few minutes to get a first comparison point.", noBaselineOneScan: "There is only one saved scan so far. A comparison needs two: scan again after changing your installation or wait for the automatic scan (every {hours} hours). Every scan is saved as a comparison point.", scanPoint: "Scan now and set a comparison point",
   releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",
@@ -1050,7 +1058,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.policyswitch{width:20px;height:20px;accent-color:var(--hk-blue);flex:none;cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tablewrap.lt .muted{color:var(--hk-muted)}.policyswitch{width:20px;height:20px;accent-color:var(--hk-blue);flex:none;cursor:pointer}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
@@ -1096,7 +1104,7 @@ class StylesMixin {
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:calc(11px*var(--hk-fs,1))/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:calc(12px*var(--hk-fs,1));margin:12px 0 6px;color:var(--hk-muted)}
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
-      @media(max-width:860px){.top{flex-wrap:wrap;gap:8px;padding:8px 12px}.navtoggle{display:inline-flex}.topnav{display:none;flex:1 1 100%;flex-direction:column;align-items:stretch;gap:0;padding-bottom:8px}.top.open .topnav{display:flex}.navmenu{display:block}.navmenu>.menubtn{display:none}.navpop{display:grid;position:static;min-width:0;padding:0;border:0;box-shadow:none;background:transparent}.navhead{display:block}.nav{width:100%;min-height:44px;border-bottom:0;border-radius:8px}.nav.active{box-shadow:none;background:linear-gradient(var(--hk-blue),var(--hk-blue)) left top/3px 100% no-repeat,color-mix(in srgb,var(--hk-blue) 8%,transparent)}.navend{margin:0;display:block}.navend .nav{width:100%}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.runs tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.tablewrap.runs td{display:block;margin:0}.tablewrap.runs td:first-child,.tablewrap.runs td:last-child{grid-column:1/-1}.tablewrap.runs td[data-label]::before{display:block;margin-bottom:1px}.tablewrap.inv td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
+      @media(max-width:860px){.top{flex-wrap:wrap;gap:8px;padding:8px 12px}.navtoggle{display:inline-flex}.topnav{display:none;flex:1 1 100%;flex-direction:column;align-items:stretch;gap:0;padding-bottom:8px}.top.open .topnav{display:flex}.navmenu{display:block}.navmenu>.menubtn{display:none}.navpop{display:grid;position:static;min-width:0;padding:0;border:0;box-shadow:none;background:transparent}.navhead{display:block}.nav{width:100%;min-height:44px;border-bottom:0;border-radius:8px}.nav.active{box-shadow:none;background:linear-gradient(var(--hk-blue),var(--hk-blue)) left top/3px 100% no-repeat,color-mix(in srgb,var(--hk-blue) 8%,transparent)}.navend{margin:0;display:block}.navend .nav{width:100%}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.tablewrap.lt td:not(:first-child){white-space:normal}.tablewrap.lt td{display:block;margin:0}.tablewrap.lt td:first-child{grid-column:1/-1}.tablewrap.lt td[data-label]::before{display:block;margin-bottom:1px}.tablewrap.lt td:first-child{min-width:0}.tablewrap.runs tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.tablewrap.runs td{display:block;margin:0}.tablewrap.runs td:first-child,.tablewrap.runs td:last-child{grid-column:1/-1}.tablewrap.runs td[data-label]::before{display:block;margin-bottom:1px}.tablewrap.inv td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       @media(max-width:520px){.summary{grid-template-columns:1fr 1fr}.summary>.card:has(.ring){grid-column:1/-1}.summary>.card{min-height:0;padding:12px}}
       /* Fixed sidebar: it stays in view while long content scrolls; Settings sits at the visible bottom edge. */
       /* Equal-width tiles on the overview and the changes view. */
@@ -1205,6 +1213,28 @@ class ListsMixin {
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}</option>`).join("");
     const desc = st.dir === "desc";
     return `<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}</div>`;
+  }
+
+  // A sortable table for a list built with lvState/refine: header buttons set sort and direction, the phone shows cards.
+  // columns: [{ key, label, cell(item) -> html, sortable, dir }]; rowAttrs(item) adds attributes to the row.
+  listTable(id, columns, rows, { rowAttrs = () => "", cls = "" } = {}) {
+    const st = this.lv[id];
+    const head = columns.map(c => {
+      const on = st.sort === c.key;
+      const inner = c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
+      return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${inner}</th>`;
+    }).join("");
+    const body = rows.map(item => {
+      const attrs = rowAttrs(item);
+      return `<tr ${attrs}>${columns.map((c, i) => `<td${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("")}</tr>`;
+    }).join("");
+    return `<div class="tablewrap lt ${cls}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.
+  ageCell(iso) {
+    if (!iso) return `<span class="muted">–</span>`;
+    return `<span title="${this.esc(this.formatDate(iso))}">${this.esc(this.relTime(iso))}</span>`;
   }
 
   // Saved list views: search text, filters and sort under a name, kept in this browser only.
@@ -2441,61 +2471,96 @@ class UnusedMixin {
     setTimeout(() => this.loadOrphanLast(), 0);
   }
 
-  orphanLastLine(o) {
-    if (this.orphanLastLoading && !this.orphanLast) return `<small>${this.t("lastEntryLoading")}</small>`;
-    if (!this.orphanLast?.available) return "";
-    if (this.orphanLast.busy) return `<small>${this.t("lastEntryBusy")}</small>`;
-    const ts = this.orphanLast.last?.[o.statistic_id];
-    if (ts === null || ts === undefined) return `<small>${this.t("lastEntry")}: ${this.t("lastEntryNone")}</small>`;
-    const iso = new Date(ts * 1000).toISOString();
-    return `<small>${this.t("lastEntry")}: ${this.esc(this.formatDate(iso))} · ${this.esc(this.relTime(iso))}</small>`;
-  }
-
   orphanStatsView() {
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
     const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
+    const lastOf = o => this.orphanLast?.last?.[o.statistic_id];
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
+      { key: "kind", label: "sortKind", dir: "asc", get: o => this.t(kind(o)) },
       { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
-      { key: "last", label: "sortLastEntry", dir: "desc", get: o => this.orphanLast?.last?.[o.statistic_id] },
+      { key: "last", label: "sortLastEntry", dir: "desc", get: lastOf },
     ];
     this.ensureOrphanLast();
     const kinds = [...new Set(all.map(kind))];
-    const bar = this.listBar("orphanstats", { sorts, filters: [{ name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) }] });
-    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: { kind: (o, v) => kind(o) === v }, sorts, tie: o => o.statistic_id });
+    const units = [...new Set(all.map(o => o.unit).filter(Boolean))].sort();
+    const AGES = [30, 365, 730];
+    const bar = this.listBar("orphanstats", { sorts, filters: [
+      { name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) },
+      { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
+      { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
+    ] });
+    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: {
+      kind: (o, v) => kind(o) === v, unit: (o, v) => o.unit === v,
+      age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
+    }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
-    const row = o => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(o.statistic_id)}</strong><small>${this.esc([this.t(kind(o)), o.unit].filter(Boolean).join(" · "))}</small>${this.orphanLastLine(o)}${this.statSuccessorLine(o)}</span>${o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : ""}</div>`;
+    const lastCell = o => {
+      if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">…</span>`;
+      if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
+      const ts = lastOf(o);
+      if (ts === null || ts === undefined) return `<span class="muted">${this.orphanLast?.available ? this.t("lastEntryNone") : "–"}</span>`;
+      return this.ageCell(new Date(ts * 1000).toISOString());
+    };
+    const columns = [
+      { key: "id", label: "utStatId", dir: "asc", cell: o => `<strong>${this.esc(o.statistic_id)}</strong>${this.statSuccessorLine(o)}` },
+      { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
+      { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
+      { key: "last", label: "utLast", dir: "desc", cell: lastCell },
+      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
+    ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`}${pg.footer}</div>`;
+    const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${table}${pg.footer}</div>`;
   }
 
   unreferencedView() {
     if (this.unrefTab === "statistics") return this.orphanStatsView();
     const all = this.unreferencedRows();
-    this.lvState("unreferenced", "id", "asc");
-    const domains = [...new Set(all.map(o => o.object_id.split(".")[0]))].sort();
-    const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
+    this.lvState("unreferenced", "name", "asc");
+    const domainOf = o => o.object_id.split(".")[0];
+    const deviceName = o => (o.device_id ? this.findObject(`device:${o.device_id}`)?.name : "") || "";
+    const ts = v => (v ? Date.parse(v) || null : null);
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.object_id },
       { key: "name", label: "sortName", dir: "asc", get: o => o.name },
+      { key: "domain", label: "sortDomain", dir: "asc", get: domainOf },
+      { key: "device", label: "sortDevice", dir: "asc", get: deviceName },
       { key: "area", label: "sortArea", dir: "asc", get: o => this.areaName(o) },
+      { key: "platform", label: "sortIntegration", dir: "asc", get: o => o.platform },
+      { key: "changed", label: "sortChanged", dir: "desc", get: o => ts(o.last_changed) },
+      { key: "reported", label: "sortReported", dir: "desc", get: o => ts(o.last_reported || o.last_updated) },
+      { key: "since", label: "sortSince", dir: "asc", get: o => ts(o.status_since) },
+      { key: "stats", label: "sortStats", dir: "desc", get: o => (o.has_statistics ? 1 : 0) },
     ];
+    const domains = [...new Set(all.map(domainOf))].sort();
+    const areas = [...new Set(all.map(o => this.areaName(o)).filter(Boolean))].sort();
+    const platforms = [...new Set(all.map(o => o.platform).filter(Boolean))].sort();
     const bar = this.listBar("unreferenced", { sorts, filters: [
-      { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => o.object_id.startsWith(`${d}.`)).length})`]) },
+      { name: "domain", all: this.t("allDomains"), options: domains.map(d => [d, `${d} (${all.filter(o => domainOf(o) === d).length})`]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
+      { name: "platform", all: this.t("allIntegrations"), options: platforms.map(p => [p, p]) },
     ] });
     const rows = this.refine("unreferenced", all, {
-      text: o => [o.name, o.object_id, this.areaName(o)].join(" "),
-      filters: { domain: (o, v) => o.object_id.startsWith(`${v}.`), area: (o, v) => this.areaName(o) === v }, sorts, tie: o => o.object_id,
+      text: o => [o.name, o.object_id, this.areaName(o), deviceName(o), o.platform].join(" "),
+      filters: { domain: (o, v) => domainOf(o) === v, area: (o, v) => this.areaName(o) === v, platform: (o, v) => o.platform === v }, sorts, tie: o => o.object_id,
     });
     const pg = this.paginate("unreferenced", rows);
-    const row = item => {
-      const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
-      const area = this.findObject(`area:${item.area_id || device?.area_id}`);
-      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile mute"><ha-icon icon="mdi:link-variant-off"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([item.object_id, device?.name, area?.name].filter(Boolean).join(" · "))}</small></span></button>`;
-    };
-    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${rows.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`}${pg.footer}</div>`;
+    const dash = `<span class="muted">–</span>`;
+    const columns = [
+      { key: "name", label: "utName", dir: "asc", cell: o => `<strong>${this.esc(o.name)}</strong><span class="id">${this.esc(o.object_id)}</span>` },
+      { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
+      { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
+      { key: "area", label: "utArea", cell: o => this.esc(this.areaName(o)) || dash },
+      { key: "platform", label: "utIntegration", cell: o => this.esc(o.platform || "") || dash },
+      { key: "changed", label: "utChanged", dir: "desc", cell: o => this.ageCell(o.last_changed) },
+      { key: "reported", label: "utReported", dir: "desc", cell: o => this.ageCell(o.last_reported || o.last_updated) },
+      { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
+      { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
+    ];
+    const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`;
+    return `<div class="panel">${this.unrefTabs()}<p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div>`;
   }
 
   batterySorts() {
@@ -4313,6 +4378,11 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-lview-delete]").forEach(el => el.onclick = () => this.deleteView(el.dataset.lviewDelete));
     root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-lsort]").forEach(el => el.onclick = () => {
+      const [id, key, dir] = el.dataset.lsort.split("|"), st = this.lv[id];
+      if (st.sort === key) st.dir = st.dir === "desc" ? "asc" : "desc"; else { st.sort = key; st.dir = dir; }
+      this.pages = {}; this.render();
+    });
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); });
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });

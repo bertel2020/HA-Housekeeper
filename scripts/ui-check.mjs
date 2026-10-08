@@ -61,6 +61,9 @@ function showcase(objects) {
   const data = makeLoadFixture(objects);
   data.meta.scanned_at = new Date().toISOString();
   data.meta.scan_interval_hours = 24;
+  data.orphaned_statistics = [["sensor.e2m_proxon_fwt_meter_energy", "kWh", true, false], ["sensor.fritz_box_7530_download_geschwindigkeit", "KiB/s", false, true], ["sensor.fritz_box_7530_upload_geschwindigkeit_2", "KiB/s", false, true], ["sensor.eltako_gw1_weather_station_illuminance", "lx", false, true]]
+    .map(([statistic_id, unit, has_sum, has_mean], i) => ({ statistic_id, unit, has_sum, has_mean, in_energy: i === 0 }));
+  data.meta.recorder_available = true;
   data.meta.database = { dialect: "sqlite", db_bytes: 3 * 1024 ** 3, wal_bytes: 24 * 1024 ** 2, per_day: 18 * 1024 ** 2, samples: 30 };
   data.objects.push({ object_type: "config_entry", object_id: "ce-hue", name: "Philips Hue", domain: "hue", integration_name: "Philips Hue", status: "problem", state: "setup_error", error: "Cannot connect", source: "user", status_since: data.meta.scanned_at });
   data.meta.object_count = data.objects.length;
@@ -123,6 +126,7 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
           { kind: "duplicates", level: "problem", groups: 7, capped: false, series: [{ statistic_id: "sensor.a", name: "Energie Haus", groups: 5 }] },
           { kind: "recorder_gap", level: "problem", gaps: 2, longest_seconds: 7200, latest: [{ start: 1790000000, end: 1790007200, seconds: 7200, cause: "recorder" }] },
           { kind: "wal_large", level: "hint", wal_bytes: 3221225472, db_bytes: 11811160064 }] };
+      if (t.endsWith("/statistics_last")) { const now = Date.now() / 1000; return { available: true, busy: false, last: { "sensor.e2m_proxon_fwt_meter_energy": now - 1038 * 86400, "sensor.fritz_box_7530_download_geschwindigkeit": now - 1033 * 86400, "sensor.fritz_box_7530_upload_geschwindigkeit_2": now - 30 * 86400, "sensor.eltako_gw1_weather_station_illuminance": null } }; }
       if (t.endsWith("/policies")) return { available: true, schema: 1, enabled: 2, violations: 3, rules: [
         { id: "entity_area", enabled: true, count: 2, ignored: 1, items: [{ object_type: "entity", object_id: "light.flur", name: "Flurlicht", key: "policy.entity_area|light.flur|", ignored: false, by: null }, { object_type: "entity", object_id: "sensor.keller", name: "Keller Temperatur", key: "policy.entity_area|sensor.keller|", ignored: false, by: null }, { object_type: "entity", object_id: "switch.alt", name: "Alter Schalter", key: "policy.entity_area|switch.alt|", ignored: true, by: "user" }] },
         { id: "device_area", enabled: false, count: 0, ignored: 0, items: [] },
