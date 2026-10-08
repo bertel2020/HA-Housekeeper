@@ -412,6 +412,7 @@ class HAHousekeeperPanel extends HTMLElement {
         root.querySelector(label ? `[data-menu="${label}"]` : "[data-navtoggle]")?.focus?.();
       });
     }
+    root.querySelectorAll("[data-scan-point]").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {

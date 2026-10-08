@@ -280,7 +280,7 @@ test("changes view handles missing baseline, empty diff and loading", () => {
   el.view = "changes";
   el.compare = { available: false, baselines: [] };
   el.render();
-  assert.ok(shadow.innerHTML.includes("No earlier scan yet"));
+  assert.ok(shadow.innerHTML.includes("only one saved scan"));
   const empty = { ...COMPARE };
   for (const k of ["status_changes", "new_findings", "resolved_findings", "new_objects", "removed_objects"]) empty[k] = { total: 0, items: [] };
   el.compare = empty;
@@ -2323,4 +2323,18 @@ test("a quarantined entity's detail page offers to take it out of quarantine", (
   el.selected = entity; el.view = "detail"; el.detailTab = "overview";
   el.render();
   assert.ok(shadow.innerHTML.includes('data-release="entity:sensor.q"'));
+});
+
+test("the changes view says why there is no comparison yet and offers to set a comparison point", () => {
+  const { el, shadow } = panel("en");
+  el.view = "changes";
+  el.compare = { available: false, baselines: [], retention_days: 30 };
+  el.data = { ...DATA, meta: { ...DATA.meta, preliminary: true } };
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("The last scan was preliminary") && html.includes("data-scan-point") && html.includes("Scan now and set a comparison point"));
+  el.data = { ...DATA, meta: { ...DATA.meta, preliminary: false, scan_interval_hours: 12 } };
+  el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("only one saved scan") && html.includes("every 12 hours") && !html.includes("was preliminary"));
 });
