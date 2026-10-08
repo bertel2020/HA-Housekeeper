@@ -2,13 +2,13 @@
 
 Home Assistant forgets when it was updated or restarted, and it holds only a handful of traces per
 automation. This small store keeps those facts so later views can show them: version changes,
-restarts and daily counters. It holds ids, versions, times and numbers only, never names of people,
+restarts and plan runs. It holds ids, versions, times and numbers only, never names of people,
 variables, payloads or error texts.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -18,7 +18,6 @@ from .const import EVENTS_STORAGE_KEY, STORAGE_VERSION
 
 SAVE_DELAY = 300  # seconds; coalesces writes, Home Assistant flushes the store when it stops
 MAX_EVENTS = 5000
-RETENTION_DAYS = 400
 EVENT_KINDS = ("ha_version", "entry_version", "start", "plan")
 LIST_LIMIT = 200  # events sent to the panel
 
@@ -62,12 +61,11 @@ def detect(
 
 
 class EventLog:
-    """Persistent, bounded log of events and daily counters."""
+    """Persistent, bounded log of events."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, EVENTS_STORAGE_KEY)
         self.events: list[dict[str, Any]] = []
-        self.daily: dict[str, dict[str, int]] = {}
         self.versions: dict[str, Any] = {}
         self.heartbeat: str | None = None
 
@@ -82,13 +80,6 @@ class EventLog:
                 for e in events
                 if isinstance(e, dict) and e.get("kind") in EVENT_KINDS and _parse(e.get("at"))
             ][-MAX_EVENTS:]
-        daily = data.get("daily")
-        if isinstance(daily, dict):
-            for day, counters in daily.items():
-                if isinstance(counters, dict) and _parse(day):
-                    self.daily[day] = {
-                        k: v for k, v in counters.items() if isinstance(v, int) and v >= 0
-                    }
         versions = data.get("versions")
         if isinstance(versions, dict):
             self.versions = versions
@@ -101,7 +92,6 @@ class EventLog:
     def _data(self) -> dict[str, Any]:
         return {
             "events": self.events,
-            "daily": self.daily,
             "versions": self.versions,
             "heartbeat": self.heartbeat,
         }
@@ -133,15 +123,6 @@ class EventLog:
             self.events.append(event)
         del self.events[:-MAX_EVENTS]
         self.versions = {"ha": ha_version, "entries": dict(custom_versions)}
-        self._save()
-
-    def count(self, day: str, key: str, amount: int = 1) -> None:
-        """Add to a daily counter; days older than the retention fall out."""
-        counters = self.daily.setdefault(day, {})
-        counters[key] = counters.get(key, 0) + amount
-        cutoff = (datetime.now(UTC) - timedelta(days=RETENTION_DAYS)).date().isoformat()
-        for old in [d for d in self.daily if d < cutoff]:
-            del self.daily[old]
         self._save()
 
     def recent(self, limit: int = LIST_LIMIT) -> list[dict[str, Any]]:

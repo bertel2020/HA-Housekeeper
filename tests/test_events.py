@@ -65,28 +65,17 @@ async def test_the_log_is_capped_and_newest_come_first(hass: HomeAssistant) -> N
         log.record("invented", NOW)
 
 
-async def test_daily_counters_drop_days_beyond_the_retention(hass: HomeAssistant) -> None:
-    log = EventLog(hass)
-    log.daily["2020-01-01"] = {"runs": 3}
-    today = datetime.now(UTC).date().isoformat()
-    log.count(today, "runs")
-    log.count(today, "runs", 2)
-    assert log.daily == {today: {"runs": 3}}
-
-
 async def test_the_store_survives_a_restart_and_drops_bad_entries(
     hass: HomeAssistant, hass_storage
 ) -> None:
     log = EventLog(hass)
     log.record("start", NOW)
     log.observe("2026.10.0", {"hacs": "2.0"}, NOW)
-    log.count("2026-10-08", "runs", 4)
     log.beat(NOW)
     await log._store.async_save(log._data())
     again = EventLog(hass)
     await again.async_load()
     assert again.events == log.events
-    assert again.daily == {"2026-10-08": {"runs": 4}}
     assert again.versions == {"ha": "2026.10.0", "entries": {"hacs": "2.0"}}
     assert again.heartbeat == NOW.isoformat()
 
@@ -98,14 +87,12 @@ async def test_the_store_survives_a_restart_and_drops_bad_entries(
                 {"kind": "x", "at": NOW.isoformat()},
                 5,
             ],
-            "daily": {"2026-10-08": {"runs": -1, "ok": "x", "fine": 2}, "bad": {"runs": 1}},
             "heartbeat": "nope",
         },
     }
     broken = EventLog(hass)
     await broken.async_load()
     assert broken.events == []
-    assert broken.daily == {"2026-10-08": {"fine": 2}}
     assert broken.heartbeat is None
 
 

@@ -145,6 +145,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(async_track_time_interval(hass, _heartbeat, timedelta(minutes=5)))
 
+    async def _collect_runs(_: Any) -> None:
+        try:
+            await scanner.runs.async_collect()
+        except Exception:  # A failing collector must never disturb Home Assistant.
+            _LOGGER.exception("Collecting automation runs failed")
+
+    entry.async_on_unload(async_track_time_interval(hass, _collect_runs, timedelta(minutes=15)))
+
     # Regular scans keep the comparison history, findings and hints current.
     interval_hours = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)
     if interval_hours > 0:

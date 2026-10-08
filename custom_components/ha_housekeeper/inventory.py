@@ -57,6 +57,7 @@ from .ignored import IgnoreStore
 from .issues import async_sync_issues
 from .maintenance import PreflightStore
 from .observations import ObservationStore
+from .runs import RunStore
 
 # Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
 ENERGY_KEYS = frozenset(
@@ -460,6 +461,7 @@ class InventoryScanner:
         self.preflight = PreflightStore(hass)
         self.attest = AttestStore(hass)
         self.events = EventLog(hass)
+        self.runs = RunStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
         self._booting = False
@@ -493,6 +495,7 @@ class InventoryScanner:
         await self.preflight.async_load()
         await self.attest.async_load()
         await self.events.async_load()
+        await self.runs.async_load()
 
     def begin_boot(self) -> None:
         """Home Assistant is still booting: scans are preliminary until the warm-up is over."""

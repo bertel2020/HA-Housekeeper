@@ -5,7 +5,8 @@
     "lovelace",
     "recorder",
     "energy",
-    "backup"
+    "backup",
+    "trace"
   ],
   "codeowners": [
     "@bertel2020"
