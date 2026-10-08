@@ -1,5 +1,108 @@
 # Changelog
 
+## 0.13.0 - 2026-10-08
+
+Richtlinien für die Pflege, Tabellen für Nicht verwendet, schnellere
+Recorder-Ansichten und ein Zurück an den Stellen, an denen man tiefer
+einsteigt. Automatisiert gegen Home Assistant 2026.8.3, 2026.9.4 und
+2026.10.0b4 getestet (513 Python- und 177 Panel-Tests). Alles Neue liest nur;
+es wird nichts geändert oder gelöscht.
+
+### Neu
+
+- **Richtlinien (Menü Pflegen):** Sieben Regeln lassen sich einzeln einschalten
+  (alle zunächst aus): Entity ohne Bereich, Gerät ohne Bereich, Automation ohne
+  Beschreibung, Batterie-Entity ohne Gerät, doppelter Anzeigename je Domain,
+  Automation ohne Label und ein Namensschema (Präfix je Domain, höchstens zehn).
+  Verstöße sind keine Befunde: Sie zählen nicht in Gesundheit, Befunden,
+  Reparaturhinweisen oder Sensoren. Ausgeblendet wird mit dem Label
+  `housekeeper_ignore` oder über die Ignorierliste.
+- **Nicht verwendet als Tabellen:** Entities und verwaiste Statistiken lassen
+  sich filtern und nach Spalten sortieren (zum Beispiel Gerät, Bereich,
+  Integration, letzte Änderung, letzte Meldung, letzter Statistik-Eintrag,
+  Einheit); auf dem Handy erscheinen sie als Karten.
+- **Läufe in den Eckdaten:** Die Detailseite einer Automation oder eines
+  Skripts zeigt Läufe, Fehler, nicht erfüllte Bedingungen, Dauer (Ø und
+  längste) und die 7-Tage-Balken.
+- **Zuverlässigkeit:** Jede Integration in der Liste lässt sich öffnen. Ihre
+  Detailseite hat einen Reiter **Zuverlässigkeit** mit den Entities, die
+  ausgefallen waren (die schlechtesten zuerst), und eine Zeile Verfügbarkeit in
+  den Eckdaten.
+- **Zurück:** Der Graph geht Knoten für Knoten zurück und zuletzt zur Seite,
+  von der er geöffnet wurde. Detailseiten öffnen beim Zurück den Reiter, den
+  man verlassen hat, Listen springen an die alte Stelle, und nach einem Sprung
+  über einen Link steht über der Überschrift „Zurück zu …“.
+
+### Geändert
+
+- **Menü:** „Nicht verwendet“ und „Batterien“ stehen jetzt in der Gruppe
+  Pflegen (Aufräumen, Nicht verwendet, Batterien, Richtlinien, Freigaben,
+  Wartung); die Gruppe „Spezialansichten“ entfällt.
+- **Zuverlässigkeit, Last und Datenbank:** Housekeeper merkt sich das letzte
+  Ergebnis (auch nach einem Neustart, neue Datei `ha_housekeeper.replies` in
+  `.storage`). Die Ansichten öffnen sofort mit „Stand: vor …“ und rechnen im
+  Hintergrund neu. Alle 30 Minuten rechnet Housekeeper die Zeiträume neu, die
+  schon einmal geöffnet wurden, nacheinander mit Pause; sie lesen nur den
+  Recorder. Das erste Öffnen nach dem Update dauert noch so lange wie bisher.
+- **Belegter Recorder:** Läuft schon eine andere Berechnung, fragt das Panel bis
+  zu zwölfmal von selbst erneut an und zeigt einen Platzhalter, statt zum Klick
+  auf „Neu berechnen“ aufzufordern.
+
+### Behoben
+
+- **Panelkopf:** Buttons in Kartenköpfen (zum Beispiel beim Update-Preflight)
+  stehen in einer ausgerichteten Zeile, auf dem Handy untereinander in voller
+  Breite.
+
+### English
+
+Quality policies for upkeep, tables for Not used, faster recorder views and a
+back button where you drill down. Automatically tested against Home Assistant
+2026.8.3, 2026.9.4 and 2026.10.0b4 (513 Python and 177 panel tests).
+Everything new only reads; nothing is changed or deleted.
+
+#### New
+
+- **Policies (Maintain menu):** seven rules can be switched on one by one (all
+  off at first): entity without an area, device without an area, automation
+  without a description, battery entity without a device, duplicate display
+  name per domain, automation without a label and a naming scheme (a prefix per
+  domain, at most ten). Violations are not findings: they do not count in
+  health, findings, repair hints or sensors. Hide them with the label
+  `housekeeper_ignore` or through the ignore list.
+- **Not used as tables:** entities and orphaned statistics can be filtered and
+  sorted by column (for example device, area, integration, last change, last
+  report, last statistics entry, unit); on a phone they appear as cards.
+- **Runs in the key facts:** the detail page of an automation or script shows
+  runs, errors, unmet conditions, duration (mean and longest) and the 7-day
+  bars.
+- **Reliability:** every integration in the list opens. Its detail page has a
+  **Reliability** tab with the entities that were down (the worst first) and an
+  availability line in the key facts.
+- **Back:** the graph goes back node by node and finally to the page it was
+  opened from. Detail pages reopen the tab you left, lists jump back to the old
+  spot, and after a jump through a link the heading shows “Back to …”.
+
+#### Changed
+
+- **Menu:** “Not used” and “Batteries” are now in the Maintain group (Clean up,
+  Not used, Batteries, Policies, Exposure, Maintenance); the “Special views”
+  group is gone.
+- **Reliability, load and database:** Housekeeper remembers the last result
+  (also across a restart, new file `ha_housekeeper.replies` in `.storage`). The
+  views open at once with “As of …” and recalculate in the background. Every 30
+  minutes Housekeeper recalculates the windows that were opened once, one after
+  the other with a pause; they only read the recorder. The first open after the
+  update takes as long as before.
+- **Busy recorder:** if another calculation is already running, the panel asks
+  again by itself up to twelve times and shows a placeholder instead of asking
+  you to click “Recalculate”.
+
+#### Fixed
+
+- **Panel head:** buttons in card headers (for example in the update preflight)
+  stay in one aligned row, one below the other at full width on a phone.
+
 ## 0.12.0 - 2026-10-08
 
 Die Ansicht Recorder, Suche und Ansichten, eine neu geordnete Übersicht und
