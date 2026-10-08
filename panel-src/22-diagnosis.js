@@ -307,6 +307,7 @@ class DiagnosisMixin {
     const tabs = [["overview", "tabOverview"], ["relations", "tabRelations", this.edgesTo(key).length + this.edgesFrom(key).length], ["technical", "tabTechnical"]];
     if (item.attributes && Object.keys(item.attributes).length) tabs.push(["attributes", "tabAttributes"]);
     if (["automation", "script"].includes(item.object_type) && (item.actions?.length || item.triggers?.length)) tabs.push(["flow", "flowTab"]);
+    if (item.object_type === "device") tabs.push(["life", "lifeTab"]);
     if (this.runsRow(item)) tabs.push(["runs", "runsTab"]);
     if (this.reliabilityRow(item)) tabs.push(["reliability", "relTab"]);
     return tabs;
@@ -319,6 +320,7 @@ class DiagnosisMixin {
     if (["automation", "script"].includes(item.object_type)) this.ensureRuns();
     if (item.object_type === "config_entry") this.ensureReliability();
     if (item.object_type === "entity") this.ensureStability();
+    if (item.object_type === "device") this.ensureLifecycle(item.object_id);
     this.ensureCorrelations();
     const tabs = this.detailTabs(item, key);
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
@@ -338,6 +340,7 @@ class DiagnosisMixin {
   detailPanel(tab, item, key) {
     if (tab === "relations") return `<div class="stack">${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
     if (tab === "flow") return this.flowCard(item, key);
+    if (tab === "life") return this.lifeCard(item);
     if (tab === "runs") return this.runsDetailCard(this.runsRow(item));
     if (tab === "reliability") return this.reliabilityDetailCard(this.reliabilityRow(item));
     if (tab === "attributes") {

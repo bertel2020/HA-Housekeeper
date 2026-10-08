@@ -32,6 +32,7 @@ from .correlation import correlate
 from .db_health import db_health
 from .exposure import exposure
 from .inventory import InventoryScanner
+from .lifecycle import removed_devices, timeline
 from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
 from .policies import RULES as POLICY_RULES
@@ -871,6 +872,73 @@ async def websocket_automation_runs(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/lifecycle", vol.Optional("device_id"): str}
+)
+@websocket_api.async_response
+async def websocket_lifecycle(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """The life of one device (steps, state, note), or without a device the removed devices."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    plans = scanner.journal.plans
+    if "device_id" not in msg:
+        removed = [
+            {**d, "note": (scanner.lifecycle.notes.get(d["object_id"]) or {}).get("text")}
+            for d in removed_devices(plans)
+        ]
+        connection.send_result(msg["id"], _versioned({"removed": removed}))
+        return
+    snapshot = await scanner.async_get_snapshot()
+    device = next(
+        (
+            i
+            for i in snapshot["objects"]
+            if i["object_type"] == "device" and i["object_id"] == msg["device_id"]
+        ),
+        None,
+    )
+    if device is None:
+        connection.send_error(msg["id"], "not_found", "Unknown device")
+        return
+    result = timeline(device, snapshot, plans, scanner.replies)
+    result["note"] = scanner.lifecycle.notes.get(msg["device_id"])
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/lifecycle_note",
+        vol.Required("device_id"): str,
+        vol.Required("text"): str,
+    }
+)
+@callback
+def websocket_lifecycle_note(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Set or clear the note of a device. Only Housekeeper's own store changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        scanner.lifecycle.set_note(msg["device_id"], msg["text"], datetime.now(UTC).isoformat())
+    except ValueError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    connection.send_result(msg["id"], {"note": scanner.lifecycle.notes.get(msg["device_id"])})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/correlations"})
 @websocket_api.async_response
 async def websocket_correlations(
@@ -982,6 +1050,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_set_policy_limit)
     websocket_api.async_register_command(hass, websocket_exposure)
     websocket_api.async_register_command(hass, websocket_backup_attest)
+    websocket_api.async_register_command(hass, websocket_lifecycle)
+    websocket_api.async_register_command(hass, websocket_lifecycle_note)
     websocket_api.async_register_command(hass, websocket_correlations)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_automation_runs)

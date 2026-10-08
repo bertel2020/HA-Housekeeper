@@ -20,6 +20,7 @@ REPLIES_STORAGE_KEY: Final = f"{DOMAIN}.replies"
 ATTEST_STORAGE_KEY: Final = f"{DOMAIN}.attest"
 EVENTS_STORAGE_KEY: Final = f"{DOMAIN}.events"
 RUNS_STORAGE_KEY: Final = f"{DOMAIN}.runs"
+LIFECYCLE_STORAGE_KEY: Final = f"{DOMAIN}.lifecycle"
 STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = "min_unavailable_days"

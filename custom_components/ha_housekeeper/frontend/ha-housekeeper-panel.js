@@ -1813,6 +1813,20 @@ class ChangesMixin {
   }
 }
 
+// Texts for the device history and the list of removed devices; merged into TEXT.
+Object.assign(TEXT.de, {
+  lifeTab: "Verlauf", lifeHint: "Was sich aus der Geräte-Registry, dem Journal und der Zuverlässigkeit über dieses Gerät sagen lässt.", lifeNow: "Jetzt", lifeNone: "Noch keine Schritte bekannt.",
+  life_discovered: "Entdeckt", life_quarantine: "In Quarantäne", life_disabled: "Durch einen Plan deaktiviert", life_removed: "Durch einen Plan entfernt", life_replaced: "Ersetzung: {from} → {to}", lifeForgotten: "Durch einen Plan vergessen",
+  lifeNote: "Notiz (zum Beispiel Grund der Stilllegung, höchstens 200 Zeichen)", lifeNotePlaceholder: "Nur für dich, bleibt in Housekeeper", lifeNoteSave: "Notiz speichern",
+  lifeRemovedTab: "Entfernte Geräte", lifeRemovedTitle: "Entfernte Geräte", lifeRemovedHint: "Geräte, die ein Plan von Housekeeper entfernt oder vergessen hat, nach dem Journal.", lifeRemovedNone: "Housekeeper hat noch kein Gerät entfernt.",
+});
+Object.assign(TEXT.en, {
+  lifeTab: "History", lifeHint: "What the device registry, the journal and the reliability say about this device.", lifeNow: "Now", lifeNone: "No steps known yet.",
+  life_discovered: "Discovered", life_quarantine: "In quarantine", life_disabled: "Disabled by a plan", life_removed: "Removed by a plan", life_replaced: "Replacement: {from} → {to}", lifeForgotten: "Forgotten by a plan",
+  lifeNote: "Note (for example why it was retired, 200 characters at most)", lifeNotePlaceholder: "Only for you, stays in Housekeeper", lifeNoteSave: "Save note",
+  lifeRemovedTab: "Removed devices", lifeRemovedTitle: "Removed devices", lifeRemovedHint: "Devices that a Housekeeper plan removed or forgot, from the journal.", lifeRemovedNone: "Housekeeper has not removed a device yet.",
+});
+
 // SettingsMixin: methods of the panel element, mixed into the class in 99-register.js.
 class SettingsMixin {
   infoText() {
@@ -3101,6 +3115,7 @@ class DiagnosisMixin {
     const tabs = [["overview", "tabOverview"], ["relations", "tabRelations", this.edgesTo(key).length + this.edgesFrom(key).length], ["technical", "tabTechnical"]];
     if (item.attributes && Object.keys(item.attributes).length) tabs.push(["attributes", "tabAttributes"]);
     if (["automation", "script"].includes(item.object_type) && (item.actions?.length || item.triggers?.length)) tabs.push(["flow", "flowTab"]);
+    if (item.object_type === "device") tabs.push(["life", "lifeTab"]);
     if (this.runsRow(item)) tabs.push(["runs", "runsTab"]);
     if (this.reliabilityRow(item)) tabs.push(["reliability", "relTab"]);
     return tabs;
@@ -3113,6 +3128,7 @@ class DiagnosisMixin {
     if (["automation", "script"].includes(item.object_type)) this.ensureRuns();
     if (item.object_type === "config_entry") this.ensureReliability();
     if (item.object_type === "entity") this.ensureStability();
+    if (item.object_type === "device") this.ensureLifecycle(item.object_id);
     this.ensureCorrelations();
     const tabs = this.detailTabs(item, key);
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
@@ -3132,6 +3148,7 @@ class DiagnosisMixin {
   detailPanel(tab, item, key) {
     if (tab === "relations") return `<div class="stack">${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
     if (tab === "flow") return this.flowCard(item, key);
+    if (tab === "life") return this.lifeCard(item);
     if (tab === "runs") return this.runsDetailCard(this.runsRow(item));
     if (tab === "reliability") return this.reliabilityDetailCard(this.reliabilityRow(item));
     if (tab === "attributes") {
@@ -3406,9 +3423,10 @@ class MaintenanceMixin {
     const tabs = [
       { id: "backup", label: this.t("backupTitle"), tone: backupTone },
       { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
+      { id: "devices", label: this.t("lifeRemovedTab"), count: this.removed ? this.removed.length : null },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : this.backupCard()}</div>`;
+    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : this.backupCard()}</div>`;
   }
 }
 
@@ -4533,6 +4551,64 @@ class CorrelationMixin {
   }
 }
 
+// LifecycleMixin: the "Verlauf" tab of a device and the list of removed devices in Maintenance; mixed in by 99-register.js.
+// The steps come from the device registry, the journal and the last reliability numbers; the note is the person's own text.
+class LifecycleMixin {
+  async loadLifecycle(deviceId) {
+    try { (this.life ||= new Map()).set(deviceId, await this._hass.callWS({ type: "ha_housekeeper/lifecycle", device_id: deviceId })); }
+    catch (_) { (this.life ||= new Map()).set(deviceId, { steps: [], note: null, error: true }); }
+    if (this.selected?.object_id === deviceId) this.render();
+  }
+
+  ensureLifecycle(deviceId) {
+    this.life ||= new Map();
+    if (this.life.has(deviceId) || (this._lifeAsked ||= new Set()).has(deviceId)) return;
+    this._lifeAsked.add(deviceId);
+    setTimeout(() => this.loadLifecycle(deviceId), 0);
+  }
+
+  async saveLifeNote(deviceId, text) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/lifecycle_note", device_id: deviceId, text }); }
+    catch (err) { this.lifeError = err?.message || String(err); }
+    this._lifeAsked?.delete(deviceId); this.life?.delete(deviceId);
+    this._removedRequested = false; this.removed = null;
+    this.ensureLifecycle(deviceId); this.render();
+  }
+
+  lifeStepText(step) {
+    return this.t(`life_${step.kind}`, { from: this.esc(step.from ?? ""), to: this.esc(step.to ?? "") });
+  }
+
+  lifeCard(item) {
+    const life = this.life?.get(item.object_id);
+    const head = `<div class="panelhead"><div><h2>${this.t("lifeTab")}</h2><p>${this.t("lifeHint")}</p></div></div>`;
+    if (!life) return `<section class="panel">${head}${this.skeleton("loading")}</section>`;
+    const state = [this.statusLabel(item.status), life.unstable ? this.t(life.unstable === "flapping" ? "relFlapping" : "relUnstable") : ""].filter(Boolean).join(" · ");
+    const rows = life.steps.map(s => `<div class="row rel"><span class="tile ${s.kind === "removed" ? "red" : s.kind === "quarantine" || s.kind === "disabled" ? "warn" : "mute"}"><ha-icon icon="${{ discovered: "mdi:magnify", quarantine: "mdi:timer-sand", disabled: "mdi:power-plug-off-outline", removed: "mdi:delete-outline", replaced: "mdi:swap-horizontal" }[s.kind] || "mdi:circle-small"}"></ha-icon></span><span class="row-text"><strong>${this.lifeStepText(s)}</strong><small>${this.esc(this.formatDate(s.at))}</small></span></div>`).join("");
+    const now = `<div class="row rel"><span class="tile ${life.unstable ? "warn" : "ok"}"><ha-icon icon="mdi:flag-outline"></ha-icon></span><span class="row-text"><strong>${this.t("lifeNow")}</strong><small>${this.esc(state)}</small></span></div>`;
+    const note = `<div class="pad"><label for="lifeNote">${this.t("lifeNote")}</label><textarea id="lifeNote" rows="2" maxlength="200" data-life-note="${this.esc(item.object_id)}" placeholder="${this.esc(this.t("lifeNotePlaceholder"))}">${this.esc(life.note?.text || "")}</textarea><div class="actions"><button class="btn" data-life-save="${this.esc(item.object_id)}">${this.t("lifeNoteSave")}</button></div>${this.lifeError ? `<div class="error">${this.esc(this.lifeError)}</div>` : ""}</div>`;
+    return `<section class="panel">${head}${rows || `<p class="factnote">${this.t("lifeNone")}</p>`}${now}${note}</section>`;
+  }
+
+  // Devices that a plan removed or forgot; they no longer exist, so the journal is the only source.
+  ensureRemoved() {
+    if (this._removedRequested) return;
+    this._removedRequested = true;
+    setTimeout(async () => {
+      try { this.removed = (await this._hass.callWS({ type: "ha_housekeeper/lifecycle" })).removed || []; } catch (_) { this.removed = []; }
+      this.render();
+    }, 0);
+  }
+
+  removedCard() {
+    this.ensureRemoved();
+    const head = `<div class="panelhead"><div><h2>${this.t("lifeRemovedTitle")}</h2><p>${this.t("lifeRemovedHint")}</p></div></div>`;
+    if (!this.removed) return `<div class="panel">${head}${this.skeleton("loading")}</div>`;
+    const rows = this.removed.map(d => `<div class="row rel"><span class="tile red"><ha-icon icon="mdi:delete-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(d.name || d.object_id)}</strong><small>${this.esc(this.t(d.kind === "forget_device" ? "lifeForgotten" : "life_removed"))} · ${this.esc(this.formatDate(d.at))}${d.note ? ` · ${this.esc(d.note)}` : ""}</small></span></div>`).join("");
+    return `<div class="panel">${head}${rows || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("lifeRemovedNone")}</div>`}</div>`;
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -5124,6 +5200,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-col-open]").forEach(el => el.onclick = () => { this._colOpen = this._colOpen === el.dataset.colOpen ? "" : el.dataset.colOpen; this.render(); });
     root.querySelectorAll("[data-col]").forEach(el => el.onchange = () => { const [id, key] = el.dataset.col.split("|"); this.toggleCol(id, key); });
     root.querySelectorAll("[data-export-list]").forEach(el => el.onclick = () => this.exportList(el.dataset.exportList));
+    root.querySelectorAll("[data-life-save]").forEach(el => el.onclick = () => this.saveLifeNote(el.dataset.lifeSave, root.querySelector("#lifeNote")?.value || ""));
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
@@ -5281,7 +5358,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

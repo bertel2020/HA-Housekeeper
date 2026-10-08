@@ -57,6 +57,7 @@ from .hygiene import (
 )
 from .ignored import IgnoreStore
 from .issues import async_sync_issues
+from .lifecycle import LifecycleStore
 from .maintenance import PreflightStore
 from .observations import ObservationStore
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
@@ -499,6 +500,7 @@ class InventoryScanner:
         self.preflight = PreflightStore(hass)
         self.attest = AttestStore(hass)
         self.events = EventLog(hass)
+        self.lifecycle = LifecycleStore(hass)
         self.runs = RunStore(hass)
         self.cleanup = CleanupRunner(hass, self)
         self.paused = False
@@ -535,6 +537,7 @@ class InventoryScanner:
         await self.preflight.async_load()
         await self.attest.async_load()
         await self.events.async_load()
+        await self.lifecycle.async_load()
         await self.runs.async_load()
 
     def begin_boot(self) -> None:

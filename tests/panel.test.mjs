@@ -3263,3 +3263,17 @@ test("findings that began with an update get a line, a tile and a filter", () =>
   assert.deepEqual(el.visibleFindings().map(f => f.key), ["k1"]);
   assert.ok(el.findingsView().includes('data-finding-after="1"') && el.corrGroupsCard().includes("Update of hue"));
 });
+
+test("a device has a history tab with its steps and note; removed devices are listed in Maintenance", () => {
+  const { el } = panel("en");
+  el.data = DATA;
+  const device = { object_type: "device", object_id: "d1", name: "Hub", status: "active" };
+  assert.ok(el.detailTabs(device, "device:d1").some(([id]) => id === "life"));
+  el.life = new Map([["d1", { steps: [{ kind: "discovered", at: "2026-01-01T00:00:00+00:00" }, { kind: "replaced", at: "2026-02-01T00:00:00+00:00", from: "light.old", to: "light.new" }], unstable: "flapping", note: { text: "kept <b>", at: "x" } }]]);
+  const html = el.lifeCard(device);
+  assert.ok(html.includes("Discovered") && html.includes("light.old → light.new") && html.includes("flapping") && html.includes("kept &lt;b&gt;") && !html.includes("<b>kept"));
+  el._removedRequested = true;
+  el.removed = [{ object_id: "d9", name: "Old hub", kind: "remove_device", at: "2026-03-01T00:00:00+00:00", note: "retired" }];
+  const list = el.removedCard();
+  assert.ok(list.includes("Old hub") && list.includes("Removed by a plan") && list.includes("retired"));
+});

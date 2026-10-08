@@ -140,8 +140,9 @@ class MaintenanceMixin {
     const tabs = [
       { id: "backup", label: this.t("backupTitle"), tone: backupTone },
       { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
+      { id: "devices", label: this.t("lifeRemovedTab"), count: this.removed ? this.removed.length : null },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : this.backupCard()}</div>`;
+    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : this.backupCard()}</div>`;
   }
 }
