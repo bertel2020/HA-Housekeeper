@@ -1,5 +1,101 @@
 # Changelog
 
+## 0.18.0 - 2026-10-09
+
+Housekeeper schreibt jetzt mehr, aber immer im selben Rahmen: Vorschau, Bestätigung,
+Backup, Prüfung danach, Journal, Rückgängig und Nachkontrolle. Neu sind ein
+Schutzmodus, der auf dem Server begrenzt, was Pläne ändern dürfen, ein
+experimenteller Refactoring-Assistent für Automationen (Standard aus) und viele
+Diagnosen rund um Automationen. Automatisiert getestet (634 Python- und 146
+Panel-Tests), aber **noch nicht auf einer echten Instanz**: die schreibenden
+Funktionen bitte zuerst an etwas Unwichtigem ausprobieren.
+
+### Neu
+
+- **Schutzmodus** (Einstellungen → Scan): von „nur lesen“ bis „voller
+  Wartungsmodus“. Der Server prüft ihn beim Bestätigen, Starten und
+  Rückgängigmachen. Standard bleibt „voll“, wie bisher.
+- **Refactoring von Automationen** (experimentell, Standard aus): Beschreibung
+  ergänzen, identische Auslöser entfernen, Timeouts für Warteschritte setzen,
+  Modus und Grenze ändern. Geprüft mit der Konfigurationsprüfung von Home
+  Assistant, mit Backup, Rückgängig und Nachkontrolle der folgenden Läufe.
+- **Geräte austauschen:** Der Assistent schlägt Paare alter und neuer Entitäten
+  vor, du bestätigst jedes einzeln. Pläne zeigen den erwarteten Endzustand, es
+  gibt einen anonymisierbaren Prüfbericht, und 24 Stunden nach einer Änderung
+  meldet die Nachkontrolle, ob etwas neu kaputtging.
+- **Recorder-Daten beim Entfernen:** Beim Entfernen wählst du, ob Statistik oder
+  auch der Verlauf gelöscht wird. Pläne nennen die genauen Zeilenzahlen. Nicht
+  umkehrbar, daher immer einzeln bestätigt.
+- **Pläne zusammenführen:** Offene Vorschauen lassen sich zu einem Plan vereinen;
+  Widersprüche werden gemeldet.
+- **Automationen:** Erfolgskriterien (Zielzustand oder „Dienst wurde
+  aufgerufen“), Abdeckung von Auslösern und Zweigen, Vergleich zweier Läufe,
+  ein Testlauf ohne Ausführung und eine Bewertung in getrennten Dimensionen.
+- **Batterien:** Prognose, wann die Grenze erreicht wird, mit Gruppen zum
+  gemeinsamen Wechsel, und eigene Wartungserinnerungen (Filter, Entkalken).
+- **Ereignisse** für eigene Automationen, etwa bei kritischem Befund, überfälligem
+  Backup oder abgelaufener Quarantäne.
+- **Neue Richtlinien:** Statistik (Einheit, Zustandsklasse) und Dashboards
+  (Navigation, doppelte Karten, Größe u. a.). Dazu fehlgeschlagene
+  Einrichtungen je Integration in der Zuverlässigkeit.
+
+### Geändert
+
+- Die Übersicht zeigt „N / 100 gesund“ und eine Sicherheitszeile mit letztem
+  Backup, letzter Änderung und Rückgängig-Status.
+- Gemeinsame Ursachen, Freigaben und Aufräumen sind in einklappbare Bereiche
+  gegliedert; der Aufräumen-Bereich hat Reiter.
+- Das Löschen verwaister Statistiken und das Neuladen im Wartungsfenster laufen
+  im selben Rahmen wie alle Pläne (ein Schreib-Slot, Schutzmodus, Journal).
+
+### English
+
+Housekeeper now writes more, but always in the same frame: preview,
+confirmation, backup, check afterwards, journal, undo and follow-up. New are a
+protection mode that limits on the server what plans may change, an experimental
+refactoring assistant for automations (off by default) and many automation
+diagnostics. Automatically tested (634 Python and 146 panel tests), but **not yet
+on a real instance**: please try the writing functions on something unimportant
+first.
+
+#### New
+
+- **Protection mode** (Settings → Scan): from “read only” to “full maintenance”.
+  The server checks it when confirming, starting and undoing. The default stays
+  “full”, as before.
+- **Refactoring of automations** (experimental, off by default): add a
+  description, remove identical triggers, set timeouts for waiting steps, change
+  mode and limit. Checked with Home Assistant’s configuration validation, with
+  backup, undo and follow-up of the following runs.
+- **Replacing devices:** the assistant suggests pairs of old and new entities and
+  you confirm each one. Plans show the expected end state, there is an
+  anonymizable audit report, and 24 hours after a change the follow-up reports
+  whether something newly broke.
+- **Recorder data on removal:** when removing you choose whether statistics or
+  also the history are deleted. Plans name the exact row counts. Not reversible,
+  so always confirmed one by one.
+- **Merge plans:** open previews can be merged into one plan; conflicts are
+  reported.
+- **Automations:** success criteria (target state or “service was called”),
+  coverage of triggers and branches, comparison of two runs, a dry run without
+  executing, and an assessment in separate dimensions.
+- **Batteries:** a forecast of when the limit is reached, with groups for changing
+  them together, and your own maintenance reminders (filter, descaling).
+- **Events** for your own automations, for example on a critical finding, an
+  overdue backup or an expired quarantine.
+- **New policies:** statistics (unit, state class) and dashboards (navigation,
+  doubled cards, size and more). Also failed setups per integration in
+  Reliability.
+
+#### Changed
+
+- The overview shows “N / 100 healthy” and a safety line with the last backup,
+  the last change and the undo status.
+- Common causes, exposure and cleanup are split into collapsible sections; the
+  cleanup area has tabs.
+- Deleting orphaned statistics and reloading in the maintenance window run in the
+  same frame as all plans (one write slot, protection mode, journal).
+
 ## 0.17.0 - 2026-10-09
 
 Housekeeper sagt jetzt, was am dringendsten ist und woran es liegt: Befunde haben
