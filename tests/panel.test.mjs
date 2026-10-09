@@ -2692,6 +2692,9 @@ test("a plan shows its follow-up, expected end state and audit report; a regress
   assert.ok(follow.includes("Regression") && follow.includes("2 new findings") && follow.includes("broken reference: automation.x"));
   const sim = el.simulationBlock(plan);
   assert.ok(sim.includes("3 entities removed (1 devices)") && sim.includes("4 references replaced (Light: 4)") && sim.includes("1 certain uses remain") && sim.includes("2 uncertain or manual uses remain") && sim.includes("1 statistics likely orphaned") && sim.includes("Limits:"));
+  const counted = el.simulationBlock({ ...plan, simulation: { ...plan.simulation, rows_counted: true, purge_rows: 1234, history_rows_kept: 56 } });
+  assert.ok(counted.includes("recorder rows will be removed") && counted.includes("56 history rows stay"));
+  assert.ok(!sim.includes("recorder rows"), "no numbers without a count");
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { filename: "housekeeper-plan-p1.md", anonymized: !msg.anonymize === false, markdown: "# Audit report" }; } };
   await el.loadReport("p1");

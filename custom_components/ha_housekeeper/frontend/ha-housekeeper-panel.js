@@ -5532,6 +5532,7 @@ Object.assign(TEXT.de, {
   fu_class_broken_reference: "defekte Referenz", fu_class_unavailable: "nicht verfügbar", fu_class_recurring: "Gerät kehrt wieder",
   actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Bereinigungsplan sind neue Probleme aufgetreten.",
   reportButton: "Prüfbericht", reportNames: "Mit Klarnamen (nicht anonymisiert)", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
+  simPurgeRows: "{count} Zeilen im Recorder werden entfernt (Datei schrumpft erst nach einem Repack)", simKeptRows: "{count} Zeilen Verlauf bleiben im Recorder, bis er sie bereinigt",
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
   simRemoved: "{count} Entitäten entfernt ({devices} Geräte)", simDisabled: "{count} Entitäten deaktiviert ({devices} Geräte)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Zählerwechsel",
   simCertain: "{count} sichere Verwendungen bleiben bestehen", simUncertain: "{count} unsichere oder manuelle Verwendungen bleiben bestehen", simOrphaned: "{count} Statistiken voraussichtlich verwaist", simBlocked: "{count} Aktionen laufen nicht",
@@ -5551,6 +5552,7 @@ Object.assign(TEXT.en, {
   fu_class_broken_reference: "broken reference", fu_class_unavailable: "unavailable", fu_class_recurring: "device came back",
   actFollowup: "Follow-up reports new findings", actFollowupHint: "New problems appeared after a cleanup plan.",
   reportButton: "Audit report", reportNames: "With real names (not anonymized)", reportDownload: "Download", reportCopy: "Copy", reportCopied: "Copied", reportFailed: "Report not created: {reason}", reportAnonymous: "IDs and names are replaced by placeholders.",
+  simPurgeRows: "{count} recorder rows will be removed (the file only shrinks after a repack)", simKeptRows: "{count} history rows stay in the recorder until it cleans them up",
   simTitle: "Expected end state", simPurged: "{count} statistics will be deleted (reversible only from the backup)",
   simRemoved: "{count} entities removed ({devices} devices)", simDisabled: "{count} entities disabled ({devices} devices)", simReplaced: "{count} references replaced", simMeters: "{count} meter switches",
   simCertain: "{count} certain uses remain", simUncertain: "{count} uncertain or manual uses remain", simOrphaned: "{count} statistics likely orphaned", simBlocked: "{count} actions will not run",
@@ -5696,6 +5698,7 @@ class ExchangeMixin {
     if (s.purged) lines.push(this.t("simPurged", { count: s.purged }));
     lines.push(this.t("simCertain", { count: s.remaining_certain }), this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
+    if (s.rows_counted) { if (s.purge_rows) lines.push(this.t("simPurgeRows", { count: this.formatNumber(s.purge_rows) })); if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); }
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
     return `<details class="rowdetails" ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary>${lines.map(l => `<small style="display:block">${this.esc(l)}</small>`).join("")}<small style="display:block;opacity:.8">${this.t("simLimits")}</small></details>`;
   }

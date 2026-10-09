@@ -22,9 +22,11 @@ from .cleanup import (
     METER_KINDS,
     METER_MODES,
     REFERENCE_KINDS,
+    attach_history,
     build_plan,
     device_fingerprint,
     device_support,
+    history_ids,
     plan_summary,
     public_plan,
     registry_fingerprint,
@@ -53,6 +55,7 @@ from .policies import RULES as POLICY_RULES
 from .policies import policies
 from .quality import build as build_quality
 from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
+from .recorder_purge import count_history
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
@@ -352,6 +355,7 @@ async def websocket_plan_create(
         meter_data=meter_data,
         statistic_exists=statistic_exists,
     )
+    await _add_history(hass, snapshot, plan)
     scanner.journal.add(plan)
     connection.send_result(msg["id"], _versioned(public_plan(plan)))
 
@@ -1070,6 +1074,15 @@ def websocket_criteria_set(
     connection.send_result(msg["id"], _versioned({**result, "limits": CRITERIA_LIMITS}))
 
 
+async def _add_history(hass: HomeAssistant, snapshot: dict[str, Any], plan: dict[str, Any]) -> None:
+    """Count the recorder rows a plan is about, so the end state can name them (exact, no sizes)."""
+    ids = history_ids(plan)
+    if ids and snapshot["meta"].get("recorder_available"):
+        rows = await count_history(hass, ids)
+        if rows is not None:
+            attach_history(plan, rows)
+
+
 async def _snapshot_or_error(
     scanner: Any, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
 ) -> dict[str, Any] | None:
@@ -1509,6 +1522,7 @@ async def websocket_purge_statistics(
             registry.async_get(sid) is not None or hass.states.get(sid) is not None
         ),
     )
+    await _add_history(hass, scanner.snapshot, plan)
     scanner.journal.add(plan)
     legacy = {"entity_exists": "exists"}
     result: dict[str, Any] = {

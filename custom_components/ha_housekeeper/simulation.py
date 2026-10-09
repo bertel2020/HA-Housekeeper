@@ -27,6 +27,8 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     uncertain: set[tuple[str, str]] = set()
     statistics: set[str] = set()
     manual = 0
+    purge_rows = kept_rows = 0
+    counted = False
     for action in runnable:
         kind, object_id = action["kind"], action["object_id"]
         entities = action.get("entities") or [object_id]
@@ -38,8 +40,16 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
             devices["disabled"] += kind == "disable_device"
         if kind in REMOVING and action.get("has_statistics"):
             statistics.add(object_id)
+        history = action.get("history")
+        counted = counted or history is not None
         if kind == "purge_statistics":
             purged.add(object_id)
+            if history:
+                purge_rows += history["statistics"] + (
+                    history["states"] if action.get("states") else 0
+                )
+        elif kind in REMOVING and history:
+            kept_rows += history["statistics"] + history["states"]
         if kind == "migrate_meter":
             meters += 1
         if kind == "replace_references":
@@ -73,4 +83,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
         "statistics_orphaned": sorted(statistics)[:SHOWN],
         "statistics_orphaned_count": len(statistics),
         "blocked": len(actions) - len(runnable),
+        "rows_counted": counted,
+        "purge_rows": purge_rows,
+        "history_rows_kept": kept_rows,
     }

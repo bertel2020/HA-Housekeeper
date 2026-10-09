@@ -66,3 +66,51 @@ async def delete_statistics(
         [{"id": sid, "reason": "still_there"} for sid in statistic_ids if sid in left],
         None,
     )
+
+
+HISTORY_IDS = 500  # IDs counted in one plan; the rest are simply not counted
+
+
+def _count_history(hass: HomeAssistant, ids: list[str]) -> dict[str, dict[str, int]]:
+    """Blocking: state rows and statistics rows (long and short term) per entity or statistic ID."""
+    from homeassistant.components.recorder.db_schema import (
+        States,
+        StatesMeta,
+        Statistics,
+        StatisticsMeta,
+        StatisticsShortTerm,
+    )
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import func, select
+
+    rows = {i: {"states": 0, "statistics": 0} for i in ids}
+    with session_scope(hass=hass, read_only=True) as session:
+        for entity_id, count in session.execute(
+            select(StatesMeta.entity_id, func.count(States.state_id))
+            .join(StatesMeta, States.metadata_id == StatesMeta.metadata_id)
+            .where(StatesMeta.entity_id.in_(ids))
+            .group_by(StatesMeta.entity_id)
+        ).all():
+            rows[entity_id]["states"] = int(count)
+        for table in (Statistics, StatisticsShortTerm):
+            for statistic_id, count in session.execute(
+                select(StatisticsMeta.statistic_id, func.count(table.id))
+                .join(StatisticsMeta, table.metadata_id == StatisticsMeta.id)
+                .where(StatisticsMeta.statistic_id.in_(ids))
+                .group_by(StatisticsMeta.statistic_id)
+            ).all():
+                rows[statistic_id]["statistics"] += int(count)
+    return rows
+
+
+async def count_history(hass: HomeAssistant, ids: list[str]) -> dict[str, dict[str, int]] | None:
+    """Exact row counts the recorder holds for ``ids``; None when they cannot be counted."""
+    from homeassistant.components.recorder import get_instance
+
+    wanted = list(dict.fromkeys(ids))[:HISTORY_IDS]
+    if not wanted:
+        return {}
+    try:
+        return await get_instance(hass).async_add_executor_job(_count_history, hass, wanted)
+    except Exception:  # noqa: BLE001 - the plan is complete without the numbers
+        return None

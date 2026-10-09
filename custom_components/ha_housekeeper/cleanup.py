@@ -743,6 +743,28 @@ def build_plan(
     }
 
 
+def history_ids(plan: dict[str, Any]) -> list[str]:
+    """The entity or statistic IDs whose recorder rows a plan is about."""
+    ids: list[str] = []
+    for action in plan["actions"]:
+        if action["kind"] in PURGE_KINDS or action["kind"] == "remove_entity":
+            ids.append(action["object_id"])
+        elif action["kind"] in {"remove_device", "forget_device"}:
+            ids.extend(action.get("entities") or [])
+    return ids
+
+
+def attach_history(plan: dict[str, Any], rows: dict[str, dict[str, int]]) -> None:
+    """Add the recorder row counts to the actions and work the simulation out again."""
+    for action in plan["actions"]:
+        ids = history_ids({"actions": [action]})
+        if ids and all(i in rows for i in ids):
+            action["history"] = {
+                key: sum(rows[i][key] for i in ids) for key in ("states", "statistics")
+            }
+    plan["simulation"] = simulate(plan["actions"])
+
+
 # Fields that only the server needs to undo a step. They can be large (a whole config file) and are
 # never sent to the panel.
 INTERNAL_RESULT_KEYS = frozenset({"restore"})

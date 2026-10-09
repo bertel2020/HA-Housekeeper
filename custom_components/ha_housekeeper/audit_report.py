@@ -39,6 +39,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "remaining_uncertain": "Verbleibende unsichere Verwendungen",
         "orphaned": "Voraussichtlich verwaiste Statistiken",
         "blocked": "Nicht ausführbare Aktionen",
+        "purge_rows": "Zeilen im Recorder, die der Purge entfernt",
+        "history_rows_kept": "Zeilen Verlauf, die im Recorder bleiben, bis er sie bereinigt",
         "limits": "Grenzen: Verweise in Vorlagen und außerhalb von Home Assistant sind nicht"
         " sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
         "state": "Zustand",
@@ -74,6 +76,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "remaining_uncertain": "Uncertain uses remaining",
         "orphaned": "Statistics likely to be orphaned",
         "blocked": "Actions that cannot run",
+        "purge_rows": "Recorder rows the purge removes",
+        "history_rows_kept": "History rows that stay in the recorder until it cleans them up",
         "limits": "Limits: references inside templates and outside Home Assistant cannot be"
         " checked for certain; saved storage is not estimated.",
         "state": "State",
@@ -142,6 +146,11 @@ def build_report(plan: dict[str, Any], *, anonymize: bool = True, lang: str = "e
         lines += [f"## {t['simulation']}", ""]
         for key in ("removed", "disabled", "replaced", "remaining_certain", "remaining_uncertain"):
             lines.append(f"- {t[key]}: {simulation.get(key, 0)}")
+        if simulation.get("rows_counted"):
+            lines += [
+                f"- {t['purge_rows']}: {simulation.get('purge_rows', 0)}",
+                f"- {t['history_rows_kept']}: {simulation.get('history_rows_kept', 0)}",
+            ]
         lines += [
             f"- {t['orphaned']}: {simulation.get('statistics_orphaned_count', 0)}",
             f"- {t['blocked']}: {simulation.get('blocked', 0)}",

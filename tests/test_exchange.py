@@ -179,3 +179,30 @@ def test_followup_only_counts_findings_about_what_the_plan_touched() -> None:
     mine = {**other, "key": "y", "object_id": "automation.a", "affected_object": "sensor.old"}
     assert followup.check([plan], {"findings": [other, mine], "recurring_devices": []}, NOW)
     assert plan["followup"]["new_count"] == 1
+
+
+def test_recorder_rows_are_named_in_the_end_state_and_the_report() -> None:
+    from custom_components.ha_housekeeper.cleanup import attach_history
+
+    plan = _plan()
+    plan["actions"].append(
+        {
+            "kind": "purge_statistics",
+            "object_id": "sensor.gone",
+            "executable": True,
+            "verdict": "review",
+            "states": True,
+        }
+    )
+    assert plan["simulation"]["rows_counted"] is False
+    rows = {
+        "sensor.a": {"states": 10, "statistics": 5},
+        "sensor.b": {"states": 1, "statistics": 0},
+        "sensor.gone": {"states": 100, "statistics": 20},
+    }
+    attach_history(plan, rows)
+    sim = plan["simulation"]
+    assert sim["rows_counted"] and sim["purge_rows"] == 120 and sim["history_rows_kept"] == 16
+    assert "120" in build_report(plan, lang="en") and "16" in build_report(plan, lang="en")
+    attach_history(plan, {"sensor.a": rows["sensor.a"]})  # ids without a count stay uncounted
+    assert plan["simulation"]["history_rows_kept"] == 16
