@@ -43,6 +43,13 @@ _OUTCOME = {
 }
 
 
+def run_key(obj: dict[str, Any]) -> str:
+    """Key of an automation or script in the run store (automations by their unique id)."""
+    if obj["object_type"] == "automation" and obj.get("automation_id"):
+        return f"automation.{obj['automation_id']}"
+    return obj["object_id"]
+
+
 def _parse(value: Any) -> datetime | None:
     """Trace times are datetimes in memory and ISO strings once restored from disk."""
     if isinstance(value, datetime):

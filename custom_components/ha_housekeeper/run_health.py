@@ -12,6 +12,7 @@ import statistics
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
+from . import conflicts
 from .const import IGNORE_LABEL
 from .payloads import RunsResult
 from .runs import (
@@ -25,6 +26,7 @@ from .runs import (
     MAXED,
     OK,
     RUNS,
+    run_key,
 )
 
 WINDOW_DAYS = 7
@@ -68,6 +70,7 @@ THRESHOLDS = {
     "after_update_min_runs": UPDATE_MIN_RUNS,
     "after_update_min_increase": UPDATE_MIN_INCREASE,
     "after_update_min_errors": UPDATE_MIN_ERRORS,
+    **{f"conflicts_{name}": value for name, value in conflicts.THRESHOLDS.items()},
 }
 
 _CLOCK = re.compile(r"^\s*(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)\s*$")
@@ -268,12 +271,7 @@ def evaluate(
             left_out += 1
             continue
         entity_id = obj["object_id"]
-        key = (
-            f"automation.{obj['automation_id']}"
-            if obj["object_type"] == "automation" and obj.get("automation_id")
-            else entity_id
-        )
-        stored = items.get(key) or {}
+        stored = items.get(run_key(obj)) or {}
         days = stored.get("days") or {}
         window = _span(days, today, 0, WINDOW_DAYS - 1)
         baseline = _span(days, today, WINDOW_DAYS, WINDOW_DAYS + BASELINE_DAYS - 1)
@@ -371,10 +369,22 @@ async def report(scanner: Any) -> RunsResult:
         if item["object_type"] == "entity" and IGNORE_LABEL in (item.get("labels") or [])
     }
     actions = {}
+    autos = []
     for obj in snapshot["objects"]:
         if obj["object_type"] in ("automation", "script"):
             details = scanner.get_details(obj["object_type"], obj["object_id"]) or {}
             actions[obj["object_id"]] = details.get("actions")
+            if obj["object_type"] == "automation" and obj["object_id"] not in ignored:
+                autos.append(
+                    {
+                        **{k: obj.get(k) for k in ("name", "status", "source")},
+                        "entity_id": obj["object_id"],
+                        "run_key": run_key(obj),
+                        "triggers": details.get("triggers"),
+                        "conditions": details.get("conditions"),
+                        "actions": details.get("actions"),
+                    }
+                )
     updates = [e for e in scanner.events.events if e["kind"] in ("ha_version", "entry_version")]
     result = evaluate(
         scanner.runs.items,
@@ -385,4 +395,10 @@ async def report(scanner: Any) -> RunsResult:
         datetime.now(UTC),
         scanner.runs.since,
     )
-    return {**result, "thresholds": THRESHOLDS}
+    found = conflicts.find(
+        [a for a in autos if a["source"] != "state_fallback"],
+        snapshot["edges"],
+        scanner.runs.items,
+        datetime.now(UTC).date(),
+    )
+    return {**result, "conflicts": found, "thresholds": THRESHOLDS}

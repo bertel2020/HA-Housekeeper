@@ -60,6 +60,25 @@ class RunsMixin {
     return `<span class="spark" role="img" aria-label="${this.esc(this.t("runsTrendLabel", { values: row.per_day.join(", ") }))}">${bars}</span>`;
   }
 
+  // Possible conflicts and loops between automations; only shown when the check found something.
+  conflictRow(c) {
+    const names = c.automations.map(a => `<b>${this.esc(a.name)}</b>`);
+    const links = c.automations.map(a => `<button class="link" data-object="${this.esc(`automation:${a.entity_id}`)}">${this.esc(a.name)}</button>`).join(" · ");
+    const text = c.kind === "opposing"
+      ? this.t("cfOpposing", { first: names[0], second: names[1], entity: `<code>${this.esc(c.entity_id)}</code>`, a: this.esc(c.commands[0]), b: this.esc(c.commands[1]) }) + " " + this.t(`cfWhy_${c.reason}`, { detail: this.esc(c.detail) })
+      : this.t("cfLoop", { chain: names.join(", "), path: c.entities.map(e => `<code>${this.esc(e)}</code>`).join(" → ") });
+    const seen = c.stage === "static" ? this.t("cfStatic") : this.t(c.kind === "loop" ? "cfSeenLoop" : "cfSeen", { n: c.days, min: this.runs?.thresholds?.conflicts_loop_min_runs_per_day ?? 20 });
+    const tone = c.stage === "confirmed" ? "warn" : "mute";
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="${c.kind === "loop" ? "mdi:sync-alert" : "mdi:swap-horizontal"}"></ha-icon></span><span class="row-text"><small class="fline"><span class="pill ${tone}">${this.t(`cfStage_${c.stage}`)}</span><span class="fnum">${text}</span></small><small>${seen}</small><small>${links}</small><small class="fnote">${this.t(`cfHint_${c.kind}`)}</small></span></div>`;
+  }
+
+  conflictsPanel(r) {
+    const c = r.conflicts;
+    if (!c) return "";
+    const rows = c.items.length ? c.items.map(item => this.conflictRow(item)).join("") : `<div class="emptymsg">${this.t("cfNone")}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("cfTitle")}</h2><p>${this.t("cfHint")}</p></div></div>${rows}</div>`;
+  }
+
   runsSorts() {
     return [
       { key: "name", label: "runsColName", dir: "asc", get: r => r.name },
@@ -144,6 +163,6 @@ class RunsMixin {
       { label: this.t("runsSumFlagged"), value: this.formatNumber(allFlagged), tone: allFlagged ? "warn" : "ok" },
       { label: this.t("runsSumNeverOk"), value: this.formatNumber(neverOk), tone: neverOk ? "red" : "ok" },
     ]);
-    return `<div class="stack">${tiles}<div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
+    return `<div class="stack">${tiles}<div class="panel">${head}${coverage}${bar}${attention}</div>${this.conflictsPanel(r)}${all}</div>`;
   }
 }

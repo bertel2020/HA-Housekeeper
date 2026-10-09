@@ -773,6 +773,12 @@ Object.assign(TEXT.de, {
   rfAfterUpdate: "Fehlerquote {after} % nach dem Update ({what}) statt {before} % davor. Zeitlich zusammen, nicht als Ursache bewiesen.", rfWhatHa: "Home Assistant {to}", rfWhatEntry: "{domain} {to}",
   rfLongWait: "Enthält eine Wartezeit von {duration}; sie geht bei einem Neustart verloren.", rfWaitNoTimeout: "{n} Warteschritt(e) ohne Timeout; sie gehen bei einem Neustart verloren.",
   rfContinue: "{n} Schritt(e) mit „continue_on_error“; Fehler bleiben dort unsichtbar.",
+  cfTitle: "Konflikte und Schleifen", cfHint: "Aus den Konfigurationen und den Tageszahlen der Läufe. Das ist eine Vermutung, kein Beweis: Housekeeper führt nichts aus.", cfNone: "Keine möglichen Konflikte oder Schleifen gefunden.",
+  cfStage_static: "möglich", cfStage_observed: "beobachtet", cfStage_confirmed: "wiederholt",
+  cfOpposing: "{first} und {second} steuern {entity} gegensätzlich ({a} gegen {b}).", cfLoop: "{chain} führen im Kreis über {path} zurück zum Anfang.",
+  cfWhy_trigger: "Beide reagieren auf {detail} und können gemeinsam auslösen.", cfWhy_window: "Beide dürfen im Zeitfenster {detail} laufen.",
+  cfSeen: "An {n} von 7 Tagen liefen alle beteiligten Automationen. Gezählt wird je Tag, die Reihenfolge der Läufe ist nicht bekannt.", cfSeenLoop: "An {n} von 7 Tagen lief jede beteiligte Automation mindestens {min}-mal. Gezählt wird je Tag.",
+  cfStatic: "Nur die Konfiguration erlaubt es; es gibt noch keine passenden Läufe.", cfHint_opposing: "Prüfe Bedingungen und Zeiten, damit nur eine Automation gewinnt, oder lege beide Befehle in eine Automation.", cfHint_loop: "Prüfe die Filter der Auslöser (zum Beispiel „auf“) oder eine Bedingung, die den Kreis unterbricht.",
 });
 Object.assign(TEXT.en, {
   runsSumRuns: "Counted runs", runsSumOf: "of {n} automations and scripts", runsSumShare: "{n} % of the runs", runsSumFlagged: "Flagged", runsSumNeverOk: "Never successful",
@@ -794,6 +800,12 @@ Object.assign(TEXT.en, {
   rfAfterUpdate: "Error rate {after} % after the update ({what}) instead of {before} % before. Close in time, not proven as the cause.", rfWhatHa: "Home Assistant {to}", rfWhatEntry: "{domain} {to}",
   rfLongWait: "Contains a wait of {duration}; it is lost on a restart.", rfWaitNoTimeout: "{n} wait step(s) without a timeout; they are lost on a restart.",
   rfContinue: "{n} step(s) with “continue_on_error”; errors stay invisible there.",
+  cfTitle: "Conflicts and loops", cfHint: "From the configurations and the daily numbers of the runs. This is a guess, not proof: Housekeeper runs nothing.", cfNone: "No possible conflicts or loops found.",
+  cfStage_static: "possible", cfStage_observed: "observed", cfStage_confirmed: "repeated",
+  cfOpposing: "{first} and {second} control {entity} in opposite ways ({a} against {b}).", cfLoop: "{chain} lead around in a circle via {path} back to the start.",
+  cfWhy_trigger: "Both react to {detail} and can fire together.", cfWhy_window: "Both may run in the time window {detail}.",
+  cfSeen: "On {n} of 7 days all involved automations ran. Counting is per day, the order of the runs is not known.", cfSeenLoop: "On {n} of 7 days every involved automation ran at least {min} times. Counting is per day.",
+  cfStatic: "Only the configuration allows it; there are no matching runs yet.", cfHint_opposing: "Check conditions and times so only one automation wins, or put both commands into one automation.", cfHint_loop: "Check the trigger filters (for example “to”) or a condition that breaks the circle.",
 });
 
 // Texts for the settings page; merged into TEXT.
@@ -4070,6 +4082,25 @@ class RunsMixin {
     return `<span class="spark" role="img" aria-label="${this.esc(this.t("runsTrendLabel", { values: row.per_day.join(", ") }))}">${bars}</span>`;
   }
 
+  // Possible conflicts and loops between automations; only shown when the check found something.
+  conflictRow(c) {
+    const names = c.automations.map(a => `<b>${this.esc(a.name)}</b>`);
+    const links = c.automations.map(a => `<button class="link" data-object="${this.esc(`automation:${a.entity_id}`)}">${this.esc(a.name)}</button>`).join(" · ");
+    const text = c.kind === "opposing"
+      ? this.t("cfOpposing", { first: names[0], second: names[1], entity: `<code>${this.esc(c.entity_id)}</code>`, a: this.esc(c.commands[0]), b: this.esc(c.commands[1]) }) + " " + this.t(`cfWhy_${c.reason}`, { detail: this.esc(c.detail) })
+      : this.t("cfLoop", { chain: names.join(", "), path: c.entities.map(e => `<code>${this.esc(e)}</code>`).join(" → ") });
+    const seen = c.stage === "static" ? this.t("cfStatic") : this.t(c.kind === "loop" ? "cfSeenLoop" : "cfSeen", { n: c.days, min: this.runs?.thresholds?.conflicts_loop_min_runs_per_day ?? 20 });
+    const tone = c.stage === "confirmed" ? "warn" : "mute";
+    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="${c.kind === "loop" ? "mdi:sync-alert" : "mdi:swap-horizontal"}"></ha-icon></span><span class="row-text"><small class="fline"><span class="pill ${tone}">${this.t(`cfStage_${c.stage}`)}</span><span class="fnum">${text}</span></small><small>${seen}</small><small>${links}</small><small class="fnote">${this.t(`cfHint_${c.kind}`)}</small></span></div>`;
+  }
+
+  conflictsPanel(r) {
+    const c = r.conflicts;
+    if (!c) return "";
+    const rows = c.items.length ? c.items.map(item => this.conflictRow(item)).join("") : `<div class="emptymsg">${this.t("cfNone")}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("cfTitle")}</h2><p>${this.t("cfHint")}</p></div></div>${rows}</div>`;
+  }
+
   runsSorts() {
     return [
       { key: "name", label: "runsColName", dir: "asc", get: r => r.name },
@@ -4154,7 +4185,7 @@ class RunsMixin {
       { label: this.t("runsSumFlagged"), value: this.formatNumber(allFlagged), tone: allFlagged ? "warn" : "ok" },
       { label: this.t("runsSumNeverOk"), value: this.formatNumber(neverOk), tone: neverOk ? "red" : "ok" },
     ]);
-    return `<div class="stack">${tiles}<div class="panel">${head}${coverage}${bar}${attention}</div>${all}</div>`;
+    return `<div class="stack">${tiles}<div class="panel">${head}${coverage}${bar}${attention}</div>${this.conflictsPanel(r)}${all}</div>`;
   }
 }
 

@@ -1985,6 +1985,16 @@ test("the runs view loads once per visit and counts again on request", async () 
   assert.equal(calls.length, 2);
 });
 
+test("conflicts and loops show their stage and escape names", () => {
+  const { el } = panel("en");
+  const html = el.conflictsPanel({ conflicts: { items: [
+    { kind: "opposing", stage: "confirmed", days: 3, entity_id: "light.hall", automations: [{ entity_id: "automation.on", name: "On <i>x</i>" }, { entity_id: "automation.off", name: "Off" }], commands: ["light.turn_on", "light.turn_off"], reason: "trigger", detail: "sensor.door" },
+    { kind: "loop", stage: "static", days: 0, entities: ["sensor.x", "sensor.y"], automations: [{ entity_id: "automation.a", name: "A" }] }] } });
+  assert.ok(html.includes("repeated") && html.includes("possible") && html.includes("sensor.x</code> → <code>sensor.y"));
+  assert.ok(!html.includes("<i>x</i>") && html.includes('data-object="automation:automation.on"'));
+  assert.equal(el.conflictsPanel({}), "");
+});
+
 test("the graph goes back one node at a time, then to the page it was opened from", () => {
   const { el, shadow } = panel("en");
   const a = { object_type: "entity", object_id: "sensor.a", name: "Alpha", status: "active" };
