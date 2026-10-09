@@ -1,5 +1,51 @@
 # Changelog
 
+## 1.0.3 - 2026-10-09
+
+Bedienung und Lesbarkeit. Automatisiert getestet, aber **noch nicht auf einer echten
+Instanz**.
+
+### Neu
+
+- **Klares Ergebnis nach einem Plan:** Ein Band zeigt grün, gelb oder rot, wie es ausging
+  und ob Rückgängig geht. Der Plan wartet jetzt die Prüfung ab, statt auf „Ausgeführt“
+  stehen zu bleiben.
+- **Verwaiste Statistiken:** Spalten „Erster Eintrag“ und „Datensätze“, Checkbox im
+  Listenkopf, „Nur Ausgewählte zeigen“.
+- **Bestätigung:** ein Haken für alle zu prüfenden Einträge statt einem pro Zeile;
+  abgebrochene Pläne lassen sich wiederholen; der Prüfbericht lässt sich einklappen.
+- **Bedienung:** Shift-Klick wählt Bereiche, Kopierknopf an IDs, „Filter zurücksetzen“,
+  Tasten `/` und `Esc`, Pfeiltasten in Listen, kurze Meldungen, „Seit deinem letzten
+  Besuch“ auf der Übersicht, „Nur lesen“/„Kann ändern“ pro Seite.
+- Knöpfe nach Wirkung abgestuft, Löschen ist rot.
+
+### Geändert
+
+- Schmale Bildschirme: Schrittleiste des Assistenten und Erinnerungen passen jetzt.
+- Doppelte Kachelzeile bei „Verwaiste Statistiken“ entfernt.
+
+### English
+
+Usability and readability. Automatically tested, but **not yet on a real instance**.
+
+#### New
+
+- **Clear result after a plan:** a band shows green, amber or red, how it went and
+  whether undo works. The plan now waits for the check instead of staying on "Executed".
+- **Orphaned statistics:** columns "First entry" and "Records", a checkbox in the list
+  header, "Show selected only".
+- **Confirmation:** one tick for all entries to review instead of one per row; aborted
+  plans can be repeated; the audit report can be folded.
+- **Handling:** Shift-click selects ranges, copy button on IDs, "Reset filters", keys `/`
+  and `Esc`, arrow keys in lists, short messages, "Since your last visit" on the overview,
+  "Read only"/"Can change" per page.
+- Buttons weighted by effect, deleting is red.
+
+#### Changed
+
+- Narrow screens: the assistant's step bar and reminders now fit.
+- Duplicate tile row removed from "Orphaned statistics".
+
 ## 1.0.2 - 2026-10-09
 
 Neue Navigation mit Kacheln und einige Korrekturen. Automatisiert getestet, aber
