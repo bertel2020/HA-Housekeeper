@@ -1630,7 +1630,7 @@ test("blueprints tab, notification switch, diagnostics without names and the wee
   el._blueprintsRequested = true;
   el.render();
   assert.ok(shadow.innerHTML.includes("a/gone.yaml") && shadow.innerHTML.includes("Idle") && shadow.innerHTML.includes("data-bp-refresh"));
-  el.view = "settings"; el.settingsTab = "scan";
+  el.view = "settings"; el.settingsTab = "notify";
   el.data = { ...DATA, meta: { ...DATA.meta, notify: true } };
   el.render();
   assert.ok(/data-notify checked/.test(shadow.innerHTML));
@@ -3018,7 +3018,9 @@ test("the repair view offers its tasks as tiles; one opens its assistant and the
   el.render();
   let html = shadow.innerHTML;
   for (const kind of ["repair_counter", "migrate_meter", "replace_references", "exchange_device"]) assert.ok(html.includes(`data-repair-task="${kind}"`), kind);
-  assert.ok(!html.includes("data-cleanup-kind"));
+  assert.ok(!html.includes("data-cleanup-kind") && html.includes("not checked"));
+  el.counterScan = { available: true, items: [], checked: 3 }; el.render();
+  assert.ok(shadow.innerHTML.includes("none found"));
   el.repairTask = "migrate_meter"; el.cleanupKind = "migrate_meter"; el.render();
   html = shadow.innerHTML;
   assert.ok(html.includes("data-repair-back") && html.includes("data-meter-old") && !html.includes("data-repair-task="));
@@ -3037,4 +3039,24 @@ test("the overview starts with task tiles; a missed goal is a to-do row, not a c
   el.data = { ...DATA, objects: [], findings: [], regressions: [], criteria_alerts: [] };
   el.goals = { met: 3, missed: 0, goals: [] };
   assert.deepEqual([el.health().percent, el.health().tone], [100, "ok"]);
+});
+
+test("detail, maintenance and settings offer their options as tiles that open one thing", () => {
+  const { el, shadow } = panel("en");
+  const sensor = { object_type: "entity", object_id: "sensor.water", name: "Water", status: "active", has_statistics: true };
+  const dev = { object_type: "device", object_id: "dev1", name: "Lamp", status: "active" };
+  el.data = { ...DATA, objects: [...DATA.objects, sensor, dev], findings: [] };
+  const entity = el.actionsCard(sensor, "entity:sensor.water");
+  assert.ok(entity.includes('data-act-repair="sensor.water"') && entity.includes('data-act-meter="sensor.water"') && entity.includes("What would you like to do?"));
+  assert.ok(el.actionsCard(dev, "device:dev1").includes('data-act-exchange="dev1"'));
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return { error: null, kind: "counter", unit: "m³", table: "long_term", points: [] }; } };
+  el.repairValues("sensor.water");
+  assert.equal(el.view, "repair"); assert.equal(el.repairTask, "repair_counter"); assert.equal(el.counterId, "sensor.water");
+  assert.equal(sent.at(-1).type, "ha_housekeeper/range_series");
+  el.view = "maintenance"; el.render();
+  for (const id of ["backup", "preflight", "blueprints", "devices", "window", "goals"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
+  el.view = "settings"; el.settingsTab = "protection"; el.render();
+  for (const id of ["look", "protection", "scan", "notify", "goals", "hidden", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
+  assert.ok(shadow.innerHTML.includes("data-protection") && !shadow.innerHTML.includes("data-notify"));
 });

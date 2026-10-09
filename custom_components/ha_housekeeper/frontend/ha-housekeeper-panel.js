@@ -1175,7 +1175,7 @@ class StylesMixin {
       h1{font-size:calc(28px*var(--hk-fs,1));letter-spacing:-.015em}.eyebrow{font-weight:700}
       .nav em{font-weight:600}.nav.active em{color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 6%,transparent)}
       .panelhead>div:first-child{flex:1 1 0;min-width:0}.panelhead>.actions{flex:0 0 auto;flex-wrap:nowrap;justify-content:flex-end;align-items:center}.panelhead>.actions .btn{white-space:nowrap}@media(max-width:640px){.panelhead:has(>.actions){flex-wrap:wrap}.panelhead>.actions{flex:1 1 100%;flex-wrap:wrap;justify-content:stretch}.panelhead>.actions .btn{flex:1 1 auto}}.panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
-      .taskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}.taskcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);padding:14px;cursor:pointer;color:var(--hk-text);font:inherit}.taskcard:hover{background:var(--hk-soft)}.taskcard ha-icon{--mdc-icon-size:22px;color:var(--hk-blue)}.taskcard strong{font-size:calc(14px*var(--hk-fs,1));font-weight:600}.taskcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.45}.repairhead{font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin:10px 0 6px}
+      .taskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}.taskcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);padding:14px;cursor:pointer;color:var(--hk-text);font:inherit}.taskcard:hover,.taskcard.on{background:var(--hk-soft)}.taskcard.on{border-color:var(--hk-blue)}.compactgrid{padding:0 0 14px}.compactgrid .taskcard{padding:12px}.taskcard ha-icon{--mdc-icon-size:22px;color:var(--hk-blue)}.taskcard strong{font-size:calc(14px*var(--hk-fs,1));font-weight:600}.taskcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.45}.repairhead{font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin:10px 0 6px}
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
@@ -1703,10 +1703,10 @@ class OverviewMixin {
       ["batteries", "mdi:battery-alert-variant-outline", "batteries", this.lowBatteries().length, "batteries"],
       ["possible_duplicate", "mdi:content-duplicate", "findingsNav", open.filter(f => f.classification === "possible_duplicate").length, "possible_duplicate"],
       ["unused", "mdi:sleep", "findingsNav", open.filter(f => f.classification === "unused").length, "unused"],
-      ["unreferenced", "mdi:link-variant-off", "unreferenced", this.unreferencedRows().length, undefined],
+      ["unreferenced", "mdi:link-variant-off", "cleanup", this.unreferencedRows().length, undefined],
       ["quarantine", "mdi:archive-clock-outline", "cleanup", (this.data.quarantine || []).length, undefined],
     ];
-    const rows = items.map(([label, icon, view, count, filter]) => `<button class="row" data-jump="${view}"${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
+    const rows = items.map(([label, icon, view, count, filter]) => `<button class="row" data-jump="${view}"${label === "unreferenced" ? ' data-jump-tab="unused"' : ""}${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("hintsTitle")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
   }
 
@@ -2115,9 +2115,19 @@ class SettingsMixin {
   }
 
   // The tab ids of the settings page, in display order.
+  // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
     const hidden = (this.data?.findings || []).filter(f => f.ignored).length;
-    return [["look", "setTabLook"], ["scan", "setTabScan"], ["hidden", "setTabHidden", hidden], ["info", "setTabInfo"]];
+    const m = this.data?.meta || {}, missed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
+    return [
+      ["look", "mdi:palette-outline", "setTabLook", "setHintLook", ""],
+      ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`safeMode_${m.protection || "full"}`), (m.protection || "full") === "full" ? "ok" : "warn"],
+      ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
+      ["notify", "mdi:bell-outline", "setTabNotify", "setHintNotify", this.t(m.notify ? "setOn" : "setOff"), m.notify ? "ok" : "mute"],
+      ["goals", "mdi:target", "setTabGoals", "setHintGoals", missed ? this.t("tilesMissed", { count: missed }) : "", "red"],
+      ["hidden", "mdi:eye-off-outline", "setTabHidden", "setHintHidden", hidden ? this.formatNumber(hidden) : "", "mute"],
+      ["info", "mdi:information-outline", "setTabInfo", "setHintInfo", ""],
+    ];
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.
@@ -2220,9 +2230,9 @@ class SettingsMixin {
   settingsView() {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
-    const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-set-${id}" aria-selected="${id === tab}" aria-controls="hk-setpanel" tabindex="${id === tab ? 0 : -1}" data-set-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.protectionCard()}${this.scanCard()}${this.goalsCard()}${this.notifyCard()}${this.eventsCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
-    return `${this.settingsBand()}<div class="tabs" role="tablist" aria-label="${this.esc(this.t("settings"))}">${tablist}</div><div role="tabpanel" id="hk-setpanel" aria-labelledby="hk-set-${tab}" tabindex="0">${body}</div>`;
+    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
+    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, protection: () => this.protectionCard(), scan: () => `${this.scanCard()}${this.eventsCard()}`, notify: () => this.notifyCard(), goals: () => this.goalsCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    return `${this.settingsBand()}<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
   async saveOptions() {
@@ -2741,8 +2751,10 @@ class CleanupMixin {
       const label = REPAIR_TASKS.find(([kind]) => kind === task)[2];
       body = `<button class="btn quiet" data-repair-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("repairBack")}</button><h2 class="repairhead">${this.t(label)}</h2>${card}`;
     } else {
-      const found = this.counterScan?.items?.length || 0;
-      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${kind === "repair_counter" && found ? ` <span class="pill warn">${this.t("repairFound", { count: found })}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
+      const scan = this.counterScan, found = scan?.items?.length || 0;
+      // Without a scan there is nothing to count: the tile says so instead of showing nothing (no scan runs by itself).
+      const state = kind => kind !== "repair_counter" ? "" : !scan?.available ? ` <span class="pill mute">${this.t("repairNotChecked")}</span>` : found ? ` <span class="pill warn">${this.t("repairFound", { count: found })}</span>` : ` <span class="pill ok">${this.t("repairNoneFound")}</span>`;
+      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${state(kind)}</strong><small>${this.t(hint)}</small></button>`).join("");
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("repairTitle")}</h2><p>${this.t("repairHint")}</p></div></div><div class="taskgrid">${tiles}</div></div>`;
     }
     return `<div class="stack">${this.planHeader()}${body}</div>`;
@@ -3965,21 +3977,20 @@ class MaintenanceMixin {
     const updates = pf?.state?.pending_updates?.length || 0;
     const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
     const pfTone = !pf ? "mute" : pfRed ? "red" : pfWarn ? "warn" : "ok";
-    const tiles = this.sumTiles([
-      { label: this.t("backupTitle"), value: !this.backup?.available ? "–" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), sub: this.backup?.available ? this.t("mtChecks", { n: checks.length }) : "", tone: backupTone, tab: "maintenance|backup" },
-      { label: this.t("pf_updates"), value: pf ? this.formatNumber(updates) : "–", tone: !pf ? "mute" : updates ? "warn" : "ok", tab: "maintenance|preflight" },
-      { label: this.t("mtPreflight"), value: !pf ? "–" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone, tab: "maintenance|preflight" },
-      { label: this.t("mtRecord"), value: !pf ? "–" : pf.record ? this.relTime(pf.record.at) : this.t("mtNoRecord"), sub: pf?.record ? this.esc(pf.record.ha_version) : "", tone: "mute", tab: "maintenance|preflight" },
-    ]);
+    const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
+    this.ensureGoals();
+    const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", label: this.t("backupTitle"), tone: backupTone },
-      { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
-      { id: "devices", label: this.t("lifeRemovedTab"), count: this.removed ? this.removed.length : null },
-      { id: "blueprints", label: this.t("bpTab"), count: this.blueprintsCount(), tone: this.blueprints && (this.blueprints.missing || this.blueprints.broken) ? "warn" : undefined },
-      { id: "window", label: this.t("winTab") },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupTitle"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
+      { id: "preflight", icon: "mdi:rocket-launch-outline", label: this.t("preflightTitle"), hint: "maintHintPreflight", pill: !pf ? "" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone },
+      { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
+      { id: "devices", icon: "mdi:devices", label: this.t("lifeRemovedTab"), hint: "maintHintDevices", pill: this.removed?.length ? this.formatNumber(this.removed.length) : "", tone: "mute" },
+      { id: "window", icon: "mdi:calendar-clock-outline", label: this.t("winTab"), hint: "maintHintWindow", pill: "", tone: "mute" },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
+    const grid = `<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("maintenance"))}">${tabs.map(tab => `<button class="taskcard${tab.id === open ? " on" : ""}" aria-pressed="${tab.id === open}" data-view-tab="maintenance|${tab.id}"><ha-icon icon="${tab.icon}"></ha-icon><strong>${tab.label}${tab.pill ? ` <span class="pill ${tab.tone}">${this.esc(tab.pill)}</span>` : ""}</strong><small>${this.t(tab.hint)}</small></button>`).join("")}</div>`;
+    return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
   }
 }
 
@@ -5631,7 +5642,7 @@ class GoalsMixin {
   }
 
   bindGoals(root) {
-    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { this.settingsTab = "scan"; this.noteJump?.("settings"); this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { this.settingsTab = "goals"; this.noteJump?.("settings"); this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-goal-open]").forEach(el => el.onclick = () => this.openGoal(el.dataset.goalOpen));
     root.querySelectorAll("[data-goal-cancel]").forEach(el => el.onclick = () => { this.goalForm = null; this.render(); });
     root.querySelectorAll("[data-goal-form]").forEach(form => {
@@ -7007,13 +7018,19 @@ class DetailActionsMixin {
 
   fixButtons(item, key) {
     const open = this.data.findings.filter(f => !f.ignored && this.findingKey(f) === key);
-    const btn = (attr, icon, label) => `<button class="btn" ${attr}><ha-icon icon="${icon}"></ha-icon>${label}</button>`;
-    const out = this.missingEntities(key).map(id => btn(`data-act-replace="${this.esc(id)}"`, "mdi:swap-horizontal", `${this.t("actReplace")} ${this.esc(id)}`));
+    const tile = (attr, icon, label, hint) => `<button class="taskcard" ${attr}><ha-icon icon="${icon}"></ha-icon><strong>${label}</strong><small>${this.t(hint)}</small></button>`;
+    const out = this.missingEntities(key).map(id => tile(`data-act-replace="${this.esc(id)}"`, "mdi:swap-horizontal", `${this.t("actReplace")} ${this.esc(id)}`, "actHintReplace"));
     const broken = open.some(f => f.classification === "broken_reference");
     if (item.object_type === "entity" && open.some(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification))) {
-      out.push(btn(`data-act-replace="${this.esc(item.object_id)}"`, "mdi:swap-horizontal", this.t("actReplaceThis")));
-      if (item.status !== "disabled") out.push(btn(`data-act-disable="${this.esc(item.object_id)}"`, "mdi:cancel", this.t("actDisable")));
+      out.push(tile(`data-act-replace="${this.esc(item.object_id)}"`, "mdi:swap-horizontal", this.t("actReplaceThis"), "actHintReplace"));
+      if (item.status !== "disabled") out.push(tile(`data-act-disable="${this.esc(item.object_id)}"`, "mdi:cancel", this.t("actDisable"), "actHintDisable"));
     }
+    // A sensor with long-term statistics can have wrong values repaired or be swapped for a new meter.
+    if (item.object_type === "entity" && item.has_statistics && item.object_id.startsWith("sensor.")) {
+      out.push(tile(`data-act-repair="${this.esc(item.object_id)}"`, "mdi:chart-line", this.t("actRepairValues"), "actHintRepair"));
+      out.push(tile(`data-act-meter="${this.esc(item.object_id)}"`, "mdi:gauge", this.t("actMeter"), "actHintMeter"));
+    }
+    if (item.object_type === "device") out.push(tile(`data-act-exchange="${this.esc(item.object_id)}"`, "mdi:devices", this.t("actExchange"), "actHintExchange"));
     return { buttons: out.join(""), broken };
   }
 
@@ -7031,7 +7048,7 @@ class DetailActionsMixin {
     const { buttons, broken } = this.fixButtons(item, key);
     const label = this.labelForm(item);
     if (!rows && !buttons && !label) return "";
-    const fix = buttons || label ? `<div class="pad"><small class="factnote">${this.t("actPreviewOnly")}</small>${buttons ? `<div class="actions">${buttons}</div>` : ""}${label}${broken ? `<small class="factnote">${this.t("actEditInHa")}</small>` : ""}</div>` : "";
+    const fix = buttons || label ? `<div class="pad"><small class="factnote">${this.t("actPreviewOnly")}</small>${buttons ? `<div class="taskgrid compactgrid">${buttons}</div>` : ""}${label}${broken ? `<small class="factnote">${this.t("actEditInHa")}</small>` : ""}</div>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("actionsTitle")}</h2></div>${rows}${fix}</section>`;
   }
 
@@ -7054,7 +7071,17 @@ class DetailActionsMixin {
     this.render();
   }
 
+  // Opens the repair assistant on the readings of this sensor: at the range a scan found, else at the last seven days.
+  repairValues(id) {
+    this.startCleanup("repair_counter", () => { this.counterId = id; this.counterRangeReq = null; });
+    const suggest = (this.counterScan?.items || []).find(i => i.statistic_id === id)?.findings?.[0]?.suggest;
+    if (suggest) this.takeRange(id, suggest.from, suggest.to); else this.loadRangeSeries();
+  }
+
   bindDetailActions(root) {
+    root.querySelectorAll("[data-act-repair]").forEach(el => el.onclick = () => this.repairValues(el.dataset.actRepair));
+    root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
+    root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = ""; }));
     root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
@@ -7062,18 +7089,23 @@ class DetailActionsMixin {
   }
 }
 Object.assign(TEXT.de, {
-  actionsTitle: "Was du tun kannst", actReplace: "Ersetzen:", actReplaceThis: "Durch andere Entität ersetzen", actDisable: "Deaktivieren planen",
-  actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie unter Aufräumen bestätigst.",
+  actionsTitle: "Was möchtest du tun?", actReplace: "Ersetzen:", actReplaceThis: "Durch andere Entität ersetzen", actDisable: "Deaktivieren planen",
+  actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie bestätigst.",
   actEditInHa: "Eine einzelne Referenz entfernt Housekeeper nicht selbst. Öffne die Automation in Home Assistant und bearbeite sie dort.",
 });
 Object.assign(TEXT.en, {
-  actionsTitle: "What you can do", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable",
-  actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it under Cleanup.",
+  actionsTitle: "What would you like to do?", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable",
+  actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it.",
   actEditInHa: "Housekeeper does not remove a single reference itself. Open the automation in Home Assistant and edit it there.",
 });
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  setTabProtection: "Sicherheit", setTabNotify: "Benachrichtigungen", setTabGoals: "Wartungsziele", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Schutzmodus: was Housekeeper ändern darf.", setHintScan: "Wann und wie oft geprüft wird, und Grenzwerte.", setHintNotify: "Meldung bei neuen kaputten Referenzen.", setHintGoals: "Eigene Grenzen für „in Ordnung“.", setHintHidden: "Befunde, die du ausgeblendet hast.", setHintInfo: "Version, Diagnose und Support.",
+  setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
+  maintHintBackup: "Backups prüfen und schützen.", maintHintPreflight: "Vor einem Update auf Probleme prüfen.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintDevices: "Entfernte Geräte ansehen.", maintHintWindow: "Zeitraum für Wartung und Neustarts.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
+  actRepairValues: "Werte reparieren", actHintRepair: "Falsche Werte im Verlauf und in der Statistik ersetzen.", actMeter: "Zähler wechseln", actHintMeter: "Die Statistik bei einem neuen Zähler fortführen.", actExchange: "Gerät austauschen", actHintExchange: "Durch ein neues Gerät ersetzen und alles übernehmen.",
+  actHintReplace: "Überall durch eine andere Entität ersetzen.", actHintDisable: "Erst deaktivieren; nach der Wartezeit entfernen.",
   navGroupActions: "Aktionen",
   tilesTitle: "Was möchtest du tun?", tilesCleanupHint: "Verwaiste Entitäten und Geräte deaktivieren oder entfernen.", tilesRepairHint: "Sensorfehler, Zähler, Verweise und Geräte in Ordnung bringen.", tilesMaintenanceHint: "Backups, Update-Preflight, Blueprints und Wartungsziele.", tilesFindingsHint: "Alle Auffälligkeiten durchgehen und entscheiden.",
   tilesReady: "{count} bereit", tilesMissed: "{count} Ziele verfehlt", tilesOpen: "{count} offen",
@@ -7082,13 +7114,18 @@ Object.assign(TEXT.de, {
   repair: "Reparieren", repairSubtitle: "Dinge in Ordnung bringen, die bleiben sollen. Housekeeper zeigt erst eine Vorschau; geschrieben wird erst nach deiner Bestätigung.",
   journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt.",
   cleanupTabEntities: "Entitäten", cleanupTabDevices: "Geräte",
-  repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde",
+  repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde", repairNotChecked: "nicht geprüft", repairNoneFound: "keine Funde",
   repairTaskCounter: "Sensorfehler bereinigen", repairTaskCounterHint: "Falsche Werte in Zählern und Messwerten korrigieren, zum Beispiel ein Zähler, der kurz sinkt, oder ein Ausschlag auf 85 °C.",
   repairTaskMeter: "Zähler wechseln", repairTaskMeterHint: "Die Statistik eines alten Zählers beim neuen fortführen.",
   repairTaskReplace: "Verweise ersetzen", repairTaskReplaceHint: "Eine Entität überall durch eine andere ersetzen (Automationen, Dashboards, Energie).",
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  setTabProtection: "Safety", setTabNotify: "Notifications", setTabGoals: "Maintenance goals", setHintLook: "Language, density and appearance.", setHintProtection: "Protection mode: what Housekeeper may change.", setHintScan: "When and how often it checks, and limits.", setHintNotify: "A message for new broken references.", setHintGoals: "Your own limits for what in order means.", setHintHidden: "Findings you have hidden.", setHintInfo: "Version, diagnostics and support.",
+  setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",
+  maintHintBackup: "Check and protect backups.", maintHintPreflight: "Check for problems before an update.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintDevices: "Look at removed devices.", maintHintWindow: "A period for maintenance and restarts.", maintHintGoals: "Your own limits for what in order means.",
+  actRepairValues: "Repair values", actHintRepair: "Replace wrong values in the history and the statistics.", actMeter: "Replace the meter", actHintMeter: "Carry the statistics on with a new meter.", actExchange: "Exchange the device", actHintExchange: "Replace it with a new device and carry everything over.",
+  actHintReplace: "Replace it with another entity everywhere.", actHintDisable: "Disable first; remove after the waiting time.",
   navGroupActions: "Actions",
   tilesTitle: "What would you like to do?", tilesCleanupHint: "Disable or remove orphaned entities and devices.", tilesRepairHint: "Fix sensor errors, meters, references and devices.", tilesMaintenanceHint: "Backups, update preflight, blueprints and maintenance goals.", tilesFindingsHint: "Go through every finding and decide.",
   tilesReady: "{count} ready", tilesMissed: "{count} goals missed", tilesOpen: "{count} open",
@@ -7097,7 +7134,7 @@ Object.assign(TEXT.en, {
   repair: "Repair", repairSubtitle: "Fix things that are meant to stay. Housekeeper shows a preview first; nothing is written until you confirm.",
   journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone.",
   cleanupTabEntities: "Entities", cleanupTabDevices: "Devices",
-  repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found",
+  repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found", repairNotChecked: "not checked", repairNoneFound: "none found",
   repairTaskCounter: "Repair sensor errors", repairTaskCounterHint: "Correct wrong values in counters and measurements, for example a counter that briefly falls, or a spike to 85 °C.",
   repairTaskMeter: "Replace a meter", repairTaskMeterHint: "Carry the statistics of an old meter on with the new one.",
   repairTaskReplace: "Replace references", repairTaskReplaceHint: "Replace one entity with another everywhere (automations, dashboards, energy).",
@@ -7737,13 +7774,14 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
-      if (el.dataset.safeKey === "mode") this.settingsTab = "scan";
+      if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
       this.render();
     });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
+      if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       if (el.dataset.filter !== undefined) this.findingFilter = el.dataset.filter;
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();

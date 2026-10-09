@@ -11,9 +11,19 @@ class SettingsMixin {
   }
 
   // The tab ids of the settings page, in display order.
+  // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
     const hidden = (this.data?.findings || []).filter(f => f.ignored).length;
-    return [["look", "setTabLook"], ["scan", "setTabScan"], ["hidden", "setTabHidden", hidden], ["info", "setTabInfo"]];
+    const m = this.data?.meta || {}, missed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
+    return [
+      ["look", "mdi:palette-outline", "setTabLook", "setHintLook", ""],
+      ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`safeMode_${m.protection || "full"}`), (m.protection || "full") === "full" ? "ok" : "warn"],
+      ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
+      ["notify", "mdi:bell-outline", "setTabNotify", "setHintNotify", this.t(m.notify ? "setOn" : "setOff"), m.notify ? "ok" : "mute"],
+      ["goals", "mdi:target", "setTabGoals", "setHintGoals", missed ? this.t("tilesMissed", { count: missed }) : "", "red"],
+      ["hidden", "mdi:eye-off-outline", "setTabHidden", "setHintHidden", hidden ? this.formatNumber(hidden) : "", "mute"],
+      ["info", "mdi:information-outline", "setTabInfo", "setHintInfo", ""],
+    ];
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.
@@ -116,9 +126,9 @@ class SettingsMixin {
   settingsView() {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
-    const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-set-${id}" aria-selected="${id === tab}" aria-controls="hk-setpanel" tabindex="${id === tab ? 0 : -1}" data-set-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.protectionCard()}${this.scanCard()}${this.goalsCard()}${this.notifyCard()}${this.eventsCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
-    return `${this.settingsBand()}<div class="tabs" role="tablist" aria-label="${this.esc(this.t("settings"))}">${tablist}</div><div role="tabpanel" id="hk-setpanel" aria-labelledby="hk-set-${tab}" tabindex="0">${body}</div>`;
+    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
+    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, protection: () => this.protectionCard(), scan: () => `${this.scanCard()}${this.eventsCard()}`, notify: () => this.notifyCard(), goals: () => this.goalsCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    return `${this.settingsBand()}<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
   async saveOptions() {

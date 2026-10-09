@@ -131,20 +131,19 @@ class MaintenanceMixin {
     const updates = pf?.state?.pending_updates?.length || 0;
     const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
     const pfTone = !pf ? "mute" : pfRed ? "red" : pfWarn ? "warn" : "ok";
-    const tiles = this.sumTiles([
-      { label: this.t("backupTitle"), value: !this.backup?.available ? "–" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), sub: this.backup?.available ? this.t("mtChecks", { n: checks.length }) : "", tone: backupTone, tab: "maintenance|backup" },
-      { label: this.t("pf_updates"), value: pf ? this.formatNumber(updates) : "–", tone: !pf ? "mute" : updates ? "warn" : "ok", tab: "maintenance|preflight" },
-      { label: this.t("mtPreflight"), value: !pf ? "–" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone, tab: "maintenance|preflight" },
-      { label: this.t("mtRecord"), value: !pf ? "–" : pf.record ? this.relTime(pf.record.at) : this.t("mtNoRecord"), sub: pf?.record ? this.esc(pf.record.ha_version) : "", tone: "mute", tab: "maintenance|preflight" },
-    ]);
+    const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
+    this.ensureGoals();
+    const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", label: this.t("backupTitle"), tone: backupTone },
-      { id: "preflight", label: this.t("preflightTitle"), tone: pfTone },
-      { id: "devices", label: this.t("lifeRemovedTab"), count: this.removed ? this.removed.length : null },
-      { id: "blueprints", label: this.t("bpTab"), count: this.blueprintsCount(), tone: this.blueprints && (this.blueprints.missing || this.blueprints.broken) ? "warn" : undefined },
-      { id: "window", label: this.t("winTab") },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupTitle"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
+      { id: "preflight", icon: "mdi:rocket-launch-outline", label: this.t("preflightTitle"), hint: "maintHintPreflight", pill: !pf ? "" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone },
+      { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
+      { id: "devices", icon: "mdi:devices", label: this.t("lifeRemovedTab"), hint: "maintHintDevices", pill: this.removed?.length ? this.formatNumber(this.removed.length) : "", tone: "mute" },
+      { id: "window", icon: "mdi:calendar-clock-outline", label: this.t("winTab"), hint: "maintHintWindow", pill: "", tone: "mute" },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    return `<div class="stack">${tiles}${this.viewTabBar("maintenance", tabs, open)}${open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
+    const grid = `<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("maintenance"))}">${tabs.map(tab => `<button class="taskcard${tab.id === open ? " on" : ""}" aria-pressed="${tab.id === open}" data-view-tab="maintenance|${tab.id}"><ha-icon icon="${tab.icon}"></ha-icon><strong>${tab.label}${tab.pill ? ` <span class="pill ${tab.tone}">${this.esc(tab.pill)}</span>` : ""}</strong><small>${this.t(tab.hint)}</small></button>`).join("")}</div>`;
+    return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
   }
 }

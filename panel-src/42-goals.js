@@ -93,7 +93,7 @@ class GoalsMixin {
   }
 
   bindGoals(root) {
-    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { this.settingsTab = "scan"; this.noteJump?.("settings"); this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { this.settingsTab = "goals"; this.noteJump?.("settings"); this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-goal-open]").forEach(el => el.onclick = () => this.openGoal(el.dataset.goalOpen));
     root.querySelectorAll("[data-goal-cancel]").forEach(el => el.onclick = () => { this.goalForm = null; this.render(); });
     root.querySelectorAll("[data-goal-form]").forEach(form => {

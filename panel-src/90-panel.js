@@ -631,13 +631,14 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
-      if (el.dataset.safeKey === "mode") this.settingsTab = "scan";
+      if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
       this.render();
     });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
+      if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       if (el.dataset.filter !== undefined) this.findingFilter = el.dataset.filter;
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.pages = {}; }
       this.render();

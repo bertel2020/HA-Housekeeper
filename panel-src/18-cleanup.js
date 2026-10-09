@@ -497,8 +497,10 @@ class CleanupMixin {
       const label = REPAIR_TASKS.find(([kind]) => kind === task)[2];
       body = `<button class="btn quiet" data-repair-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("repairBack")}</button><h2 class="repairhead">${this.t(label)}</h2>${card}`;
     } else {
-      const found = this.counterScan?.items?.length || 0;
-      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${kind === "repair_counter" && found ? ` <span class="pill warn">${this.t("repairFound", { count: found })}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
+      const scan = this.counterScan, found = scan?.items?.length || 0;
+      // Without a scan there is nothing to count: the tile says so instead of showing nothing (no scan runs by itself).
+      const state = kind => kind !== "repair_counter" ? "" : !scan?.available ? ` <span class="pill mute">${this.t("repairNotChecked")}</span>` : found ? ` <span class="pill warn">${this.t("repairFound", { count: found })}</span>` : ` <span class="pill ok">${this.t("repairNoneFound")}</span>`;
+      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${state(kind)}</strong><small>${this.t(hint)}</small></button>`).join("");
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("repairTitle")}</h2><p>${this.t("repairHint")}</p></div></div><div class="taskgrid">${tiles}</div></div>`;
     }
     return `<div class="stack">${this.planHeader()}${body}</div>`;

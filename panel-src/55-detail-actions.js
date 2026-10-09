@@ -9,13 +9,19 @@ class DetailActionsMixin {
 
   fixButtons(item, key) {
     const open = this.data.findings.filter(f => !f.ignored && this.findingKey(f) === key);
-    const btn = (attr, icon, label) => `<button class="btn" ${attr}><ha-icon icon="${icon}"></ha-icon>${label}</button>`;
-    const out = this.missingEntities(key).map(id => btn(`data-act-replace="${this.esc(id)}"`, "mdi:swap-horizontal", `${this.t("actReplace")} ${this.esc(id)}`));
+    const tile = (attr, icon, label, hint) => `<button class="taskcard" ${attr}><ha-icon icon="${icon}"></ha-icon><strong>${label}</strong><small>${this.t(hint)}</small></button>`;
+    const out = this.missingEntities(key).map(id => tile(`data-act-replace="${this.esc(id)}"`, "mdi:swap-horizontal", `${this.t("actReplace")} ${this.esc(id)}`, "actHintReplace"));
     const broken = open.some(f => f.classification === "broken_reference");
     if (item.object_type === "entity" && open.some(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification))) {
-      out.push(btn(`data-act-replace="${this.esc(item.object_id)}"`, "mdi:swap-horizontal", this.t("actReplaceThis")));
-      if (item.status !== "disabled") out.push(btn(`data-act-disable="${this.esc(item.object_id)}"`, "mdi:cancel", this.t("actDisable")));
+      out.push(tile(`data-act-replace="${this.esc(item.object_id)}"`, "mdi:swap-horizontal", this.t("actReplaceThis"), "actHintReplace"));
+      if (item.status !== "disabled") out.push(tile(`data-act-disable="${this.esc(item.object_id)}"`, "mdi:cancel", this.t("actDisable"), "actHintDisable"));
     }
+    // A sensor with long-term statistics can have wrong values repaired or be swapped for a new meter.
+    if (item.object_type === "entity" && item.has_statistics && item.object_id.startsWith("sensor.")) {
+      out.push(tile(`data-act-repair="${this.esc(item.object_id)}"`, "mdi:chart-line", this.t("actRepairValues"), "actHintRepair"));
+      out.push(tile(`data-act-meter="${this.esc(item.object_id)}"`, "mdi:gauge", this.t("actMeter"), "actHintMeter"));
+    }
+    if (item.object_type === "device") out.push(tile(`data-act-exchange="${this.esc(item.object_id)}"`, "mdi:devices", this.t("actExchange"), "actHintExchange"));
     return { buttons: out.join(""), broken };
   }
 
@@ -33,7 +39,7 @@ class DetailActionsMixin {
     const { buttons, broken } = this.fixButtons(item, key);
     const label = this.labelForm(item);
     if (!rows && !buttons && !label) return "";
-    const fix = buttons || label ? `<div class="pad"><small class="factnote">${this.t("actPreviewOnly")}</small>${buttons ? `<div class="actions">${buttons}</div>` : ""}${label}${broken ? `<small class="factnote">${this.t("actEditInHa")}</small>` : ""}</div>` : "";
+    const fix = buttons || label ? `<div class="pad"><small class="factnote">${this.t("actPreviewOnly")}</small>${buttons ? `<div class="taskgrid compactgrid">${buttons}</div>` : ""}${label}${broken ? `<small class="factnote">${this.t("actEditInHa")}</small>` : ""}</div>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("actionsTitle")}</h2></div>${rows}${fix}</section>`;
   }
 
@@ -56,7 +62,17 @@ class DetailActionsMixin {
     this.render();
   }
 
+  // Opens the repair assistant on the readings of this sensor: at the range a scan found, else at the last seven days.
+  repairValues(id) {
+    this.startCleanup("repair_counter", () => { this.counterId = id; this.counterRangeReq = null; });
+    const suggest = (this.counterScan?.items || []).find(i => i.statistic_id === id)?.findings?.[0]?.suggest;
+    if (suggest) this.takeRange(id, suggest.from, suggest.to); else this.loadRangeSeries();
+  }
+
   bindDetailActions(root) {
+    root.querySelectorAll("[data-act-repair]").forEach(el => el.onclick = () => this.repairValues(el.dataset.actRepair));
+    root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
+    root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = ""; }));
     root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
@@ -64,12 +80,12 @@ class DetailActionsMixin {
   }
 }
 Object.assign(TEXT.de, {
-  actionsTitle: "Was du tun kannst", actReplace: "Ersetzen:", actReplaceThis: "Durch andere Entität ersetzen", actDisable: "Deaktivieren planen",
-  actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie unter Aufräumen bestätigst.",
+  actionsTitle: "Was möchtest du tun?", actReplace: "Ersetzen:", actReplaceThis: "Durch andere Entität ersetzen", actDisable: "Deaktivieren planen",
+  actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie bestätigst.",
   actEditInHa: "Eine einzelne Referenz entfernt Housekeeper nicht selbst. Öffne die Automation in Home Assistant und bearbeite sie dort.",
 });
 Object.assign(TEXT.en, {
-  actionsTitle: "What you can do", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable",
-  actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it under Cleanup.",
+  actionsTitle: "What would you like to do?", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable",
+  actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it.",
   actEditInHa: "Housekeeper does not remove a single reference itself. Open the automation in Home Assistant and edit it there.",
 });
