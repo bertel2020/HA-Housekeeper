@@ -318,3 +318,53 @@ def test_dry_run_calls_after_an_unknown_condition_or_a_stop_are_not_certain() ->
     assert [c["certain"] for c in result["calls"]] == [True, False, False]
     result = dry_run([], [], [call, {"stop": "x"}, call], ctx)
     assert len(result["calls"]) == 1
+
+
+def test_call_criteria_are_validated_and_old_ones_stay_state_criteria() -> None:
+    clean = validate([{"type": "call", "service": "notify.phone", "within": 5}, _criterion()])
+    assert clean[0]["type"] == "call" and clean[0]["service"] == "notify.phone"
+    assert clean[0]["hold"] == 0 and clean[1]["type"] == "state"
+    for bad in (
+        {"type": "call", "within": 5},
+        {"type": "call", "service": "phone", "within": 5},
+        {"type": "other", "within": 5},
+    ):
+        with pytest.raises(ValueError):
+            validate([bad])
+
+
+async def test_a_call_criterion_counts_only_calls_of_its_own_run(hass: HomeAssistant) -> None:
+    from homeassistant.core import Context
+
+    store = CriteriaStore(hass)
+    unsub = async_listen(hass, store)
+    store.set(
+        AUTO,
+        [
+            {"type": "call", "service": "notify.phone", "within": 5},
+            {"type": "call", "service": "script.night", "within": 5},
+        ],
+    )
+    run = Context()
+    hass.bus.async_fire("automation_triggered", {"entity_id": AUTO}, context=run)
+    await hass.async_block_till_done()
+    assert store.watching
+    foreign = {"domain": "notify", "service": "phone"}
+    hass.bus.async_fire("call_service", foreign, context=Context())  # another source
+    hass.bus.async_fire(
+        "script_started", {"entity_id": "script.night"}, context=Context(parent_id=run.id)
+    )
+    await hass.async_block_till_done()
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=6))
+    await hass.async_block_till_done()
+    assert store.stats(AUTO, dt_util.utcnow().date()) == {"ok": 1, "missed": 1}
+    assert not store.watching, "nothing stays open"
+    hass.bus.async_fire("automation_triggered", {"entity_id": AUTO}, context=run)
+    await hass.async_block_till_done()
+    hass.bus.async_fire("call_service", foreign, context=Context(id=run.id))
+    await hass.async_block_till_done()
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=12))
+    await hass.async_block_till_done()
+    assert store.stats(AUTO, dt_util.utcnow().date()) == {"ok": 2, "missed": 2}
+    store.cancel_all()
+    unsub()

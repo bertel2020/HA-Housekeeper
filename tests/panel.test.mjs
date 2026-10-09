@@ -2741,6 +2741,12 @@ test("automation diagnostics: quality dimensions, criteria, coverage, comparison
   const set = calls.find(c => c.type === "ha_housekeeper/criteria_set");
   assert.deepEqual(set.criteria, [{ targets: [{ entity_id: "light.hall", state: "on" }], within: 5, hold: 0 }]);
   assert.ok(el.criteriaCard("automation.hall").includes("2 reached, 1 missed"));
+  el.editCriteria("automation.hall");
+  el.diag.draft = [{ type: "call", service: " notify.phone ", within: "8" }];
+  assert.ok(el.criteriaForm().includes('data-crit-service="0"') && !el.criteriaForm().includes("data-crit-hold"));
+  calls.length = 0;
+  await el.saveCriteria();
+  assert.deepEqual(calls.find(c => c.type === "ha_housekeeper/criteria_set").criteria, [{ type: "call", service: "notify.phone", within: 8 }]);
   el.diag.compare.a = "r1"; el.diag.compare.b = "r2";
   await el.runCompare();
   const lines = el.compareLines(el.diag.compare.result);

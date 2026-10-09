@@ -11,6 +11,8 @@ Object.assign(TEXT.de, {
   dr_failing: "Viele Fehler", dr_never_ok: "Nie erfolgreich", dr_overlap: "Läufe überschneiden sich", dr_burst: "Ungewöhnlich oft", dr_long_run: "Ungewöhnlich lange Läufe", dr_after_update: "Mehr Fehler seit einem Update", dr_long_wait: "Lange Wartezeit", dr_wait_no_timeout: "Warten ohne Timeout",
   diagOpen: "Details", diagClose: "Schließen", diagFor: "Diagnose: {name}",
   critTitle: "Erfolgskriterien", critHint: "Du legst fest, was die Automation erreichen soll. Nach jeder Auslösung wird einmal nach der Frist geprüft. Gespeichert werden nur Zähler.",
+  critType: "Art", critTypeState: "Zielzustand", critTypeCall: "Dienst aufgerufen", critService: "Dienst", critCallLine: "ruft {service} auf",
+  critCallHint: "Erreicht, wenn genau dieser Lauf der Automation den Dienst aufruft (Benachrichtigung oder Skript). Aufrufe aus anderen Quellen zählen nie.",
   critNone: "Kein Kriterium definiert.", critEdit: "Bearbeiten", critAdd: "Kriterium hinzufügen", critAddTarget: "Ziel hinzufügen", critRemove: "Entfernen", critSave: "Speichern", critCancel: "Abbrechen",
   critEntity: "Entität", critState: "Sollzustand", critWithin: "Frist (Sekunden)", critHold: "Mindestdauer (Sekunden)", critStats: "{ok} erreicht, {missed} verfehlt in 7 Tagen", critSaved: "Gespeichert.", critFailed: "Nicht gespeichert: {reason}",
   actCriteria: "Ziele von Automationen verfehlt", actCriteriaHint: "Mindestens eine Automation verfehlt ihr Erfolgskriterium immer wieder.",
@@ -27,6 +29,8 @@ Object.assign(TEXT.en, {
   dr_failing: "Many errors", dr_never_ok: "Never succeeds", dr_overlap: "Runs overlap", dr_burst: "Unusually often", dr_long_run: "Unusually long runs", dr_after_update: "More errors since an update", dr_long_wait: "Long wait", dr_wait_no_timeout: "Waiting without a timeout",
   diagOpen: "Details", diagClose: "Close", diagFor: "Diagnosis: {name}",
   critTitle: "Success criteria", critHint: "You define what the automation should achieve. After every trigger, one check is made after the time limit. Only counters are kept.",
+  critType: "Kind", critTypeState: "Target state", critTypeCall: "Service called", critService: "Service", critCallLine: "calls {service}",
+  critCallHint: "Reached when exactly this run of the automation calls the service (a notification or a script). Calls from other sources never count.",
   critNone: "No criterion defined.", critEdit: "Edit", critAdd: "Add criterion", critAddTarget: "Add target", critRemove: "Remove", critSave: "Save", critCancel: "Cancel",
   critEntity: "Entity", critState: "Expected state", critWithin: "Time limit (seconds)", critHold: "Hold for (seconds)", critStats: "{ok} reached, {missed} missed in 7 days", critSaved: "Saved.", critFailed: "Not saved: {reason}",
   actCriteria: "Automation goals missed", actCriteriaHint: "At least one automation misses its success criterion again and again.",
@@ -118,10 +122,13 @@ class DiagnosticsMixin {
 
   criteriaForm() {
     const draft = this.diagState().draft;
-    const crit = draft.map((c, i) => `<div class="pad polform" data-crit="${i}">${c.targets.map((t, j) => `<div class="setrow"><input type="text" data-crit-entity="${i}:${j}" value="${this.esc(t.entity_id)}" placeholder="light.hall" aria-label="${this.esc(this.t("critEntity"))}" style="max-width:260px"><input type="text" data-crit-state="${i}:${j}" value="${this.esc(t.state)}" placeholder="on" aria-label="${this.esc(this.t("critState"))}" style="max-width:140px">${c.targets.length > 1 ? `<button class="btn quiet" data-crit-del-target="${i}:${j}">${this.t("critRemove")}</button>` : ""}</div>`).join("")}
+    const typeSelect = (c, i) => `<label>${this.t("critType")} <select data-crit-type="${i}"><option value="state" ${c.type === "call" ? "" : "selected"}>${this.t("critTypeState")}</option><option value="call" ${c.type === "call" ? "selected" : ""}>${this.t("critTypeCall")}</option></select></label>`;
+    const callBody = (c, i) => `<div class="setrow"><input type="text" data-crit-service="${i}" value="${this.esc(c.service || "")}" placeholder="notify.mobile_app_phone" aria-label="${this.esc(this.t("critService"))}" style="max-width:300px"></div><small>${this.t("critCallHint")}</small>`;
+    const stateBody = (c, i) => `${c.targets.map((t, j) => `<div class="setrow"><input type="text" data-crit-entity="${i}:${j}" value="${this.esc(t.entity_id)}" placeholder="light.hall" aria-label="${this.esc(this.t("critEntity"))}" style="max-width:260px"><input type="text" data-crit-state="${i}:${j}" value="${this.esc(t.state)}" placeholder="on" aria-label="${this.esc(this.t("critState"))}" style="max-width:140px">${c.targets.length > 1 ? `<button class="btn quiet" data-crit-del-target="${i}:${j}">${this.t("critRemove")}</button>` : ""}</div>`).join("")}
       <button class="btn quiet" data-crit-add-target="${i}">${this.t("critAddTarget")}</button>
+      <label>${this.t("critHold")} <input type="number" min="0" max="300" data-crit-hold="${i}" value="${this.esc(String(c.hold))}"></label>`;
+    const crit = draft.map((c, i) => `<div class="pad polform" data-crit="${i}">${typeSelect(c, i)}${c.type === "call" ? callBody(c, i) : stateBody(c, i)}
       <label>${this.t("critWithin")} <input type="number" min="1" max="300" data-crit-within="${i}" value="${this.esc(String(c.within))}"></label>
-      <label>${this.t("critHold")} <input type="number" min="0" max="300" data-crit-hold="${i}" value="${this.esc(String(c.hold))}"></label>
       <button class="btn quiet" data-crit-del="${i}">${this.t("critRemove")}</button></div>`).join("");
     return `${crit}<div class="pad" style="display:flex;gap:8px"><button class="btn" data-crit-add>${this.t("critAdd")}</button><button class="btn primary" data-crit-save>${this.t("critSave")}</button><button class="btn quiet" data-crit-cancel>${this.t("critCancel")}</button></div>`;
   }
@@ -135,7 +142,7 @@ class DiagnosticsMixin {
 
   async saveCriteria() {
     const d = this.diagState();
-    const criteria = d.draft.map(c => ({ ...(c.id ? { id: c.id } : {}), targets: c.targets.map(t => ({ entity_id: t.entity_id.trim(), state: t.state.trim() })), within: Number.parseInt(c.within, 10), hold: Number.parseInt(c.hold || 0, 10) }));
+    const criteria = d.draft.map(c => c.type === "call" ? { ...(c.id ? { id: c.id } : {}), type: "call", service: (c.service || "").trim(), within: Number.parseInt(c.within, 10) } : ({ ...(c.id ? { id: c.id } : {}), targets: c.targets.map(t => ({ entity_id: t.entity_id.trim(), state: t.state.trim() })), within: Number.parseInt(c.within, 10), hold: Number.parseInt(c.hold || 0, 10) }));
     try {
       d.criteria[d.sel] = await this._hass.callWS({ type: "ha_housekeeper/criteria_set", entity_id: d.sel, criteria });
       d.draft = null; d.message = this.t("critSaved");
@@ -160,6 +167,8 @@ class DiagnosticsMixin {
     root.querySelectorAll("[data-crit-del-target]").forEach(el => el.onclick = () => { const [i, j] = at(el.dataset.critDelTarget); d().draft[i].targets.splice(j, 1); this.render(); });
     root.querySelectorAll("[data-crit-entity]").forEach(el => el.oninput = () => { const [i, j] = at(el.dataset.critEntity); d().draft[i].targets[j].entity_id = el.value; });
     root.querySelectorAll("[data-crit-state]").forEach(el => el.oninput = () => { const [i, j] = at(el.dataset.critState); d().draft[i].targets[j].state = el.value; });
+    root.querySelectorAll("[data-crit-type]").forEach(el => el.onchange = () => { const c = d().draft[Number(el.dataset.critType)]; c.type = el.value; if (c.type === "state" && !c.targets?.length) c.targets = [{ entity_id: "", state: "" }]; this.render(); });
+    root.querySelectorAll("[data-crit-service]").forEach(el => el.oninput = () => { d().draft[Number(el.dataset.critService)].service = el.value; });
     root.querySelectorAll("[data-crit-within]").forEach(el => el.oninput = () => { d().draft[Number(el.dataset.critWithin)].within = el.value; });
     root.querySelectorAll("[data-crit-hold]").forEach(el => el.oninput = () => { d().draft[Number(el.dataset.critHold)].hold = el.value; });
   }
