@@ -33,6 +33,7 @@ from .cleanup import (
     REPAIR_KINDS,
     attach_history,
     build_plan,
+    counter_key,
     device_fingerprint,
     device_support,
     history_ids,
@@ -328,9 +329,14 @@ async def _plan_from_requests(
     counter_data = {}
     for action in requests:
         if action["kind"] in REPAIR_KINDS:
-            key = (action["object_id"], action.get("mode") or "hold")
+            key = counter_key(action)
             if key not in counter_data:
-                counter_data[key] = await counter_repair.prepare(hass, *key)
+                counter_data[key] = await counter_repair.prepare(
+                    hass,
+                    key[0],
+                    key[1],
+                    rng=action.get("range") if action["kind"] == "repair_range" else None,
+                )
 
     label_data = {}
     for action in requests:
@@ -386,7 +392,12 @@ async def _plan_from_requests(
                     vol.Required("kind"): vol.In(sorted(ACTION_KINDS)),
                     vol.Required("object_id"): str,
                     vol.Optional("target"): str,
-                    vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.MODES)),
+                    vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.RANGE_MODES)),
+                    vol.Optional("range"): {
+                        vol.Required("from"): vol.Coerce(float),
+                        vol.Required("to"): vol.Coerce(float),
+                        vol.Optional("fixed"): vol.Coerce(float),
+                    },
                     vol.Optional("states"): bool,
                     vol.Optional("recorder"): vol.In(RECORDER_CHOICES),
                     vol.Optional("fix"): vol.In(refactor_module.FIXES),

@@ -616,7 +616,11 @@ class CleanupRunner:
         """Write the repair; the overwritten values go into the result, so it can be undone."""
         written = await self._recorder_write(
             lambda: counter_repair.apply(
-                self.hass, action["object_id"], action["mode"], action["fingerprint"]
+                self.hass,
+                action["object_id"],
+                action["mode"],
+                action["fingerprint"],
+                rng=action.get("range"),
             )
         )
         if written.get("error"):
@@ -1149,7 +1153,9 @@ class CleanupRunner:
         if kind in REPAIR_KINDS:
             if not recorder_ready(self.hass):
                 return "no_recorder"
-            found = await counter_repair.prepare(self.hass, object_id, action.get("mode") or "hold")
+            found = await counter_repair.prepare(
+                self.hass, object_id, action.get("mode") or "hold", rng=action.get("range")
+            )
             if found.get("error") or action.get("fingerprint") != found["fingerprint"]:
                 return "counter_changed"
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
@@ -1291,7 +1297,9 @@ class CleanupRunner:
                 ok = entry is not None and action["target"] in entry.labels
                 checks.append({"check": "labelled", "object_id": object_id, "ok": ok})
             elif kind in REPAIR_KINDS:
-                found = await counter_repair.prepare(self.hass, object_id, action["mode"])
+                found = await counter_repair.prepare(
+                    self.hass, object_id, action["mode"], rng=action.get("range")
+                )
                 ok = found.get("error") == "nothing_found"
                 checks.append({"check": "counter_clean", "object_id": object_id, "ok": ok})
             elif kind in REFACTOR_KINDS:

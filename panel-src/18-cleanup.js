@@ -78,7 +78,7 @@ class CleanupMixin {
     if (executable.some(a => a.kind === "purge_statistics")) return this.t("purgeWord");
     if (executable.some(a => REMOVAL_KINDS.includes(a.kind))) return this.t("confirmWordRemove");
     if (executable.some(a => a.kind === "migrate_meter")) return this.t("confirmWordMeter");
-    if (executable.some(a => a.kind === "repair_counter")) return this.t("confirmWordRepair");
+    if (executable.some(a => REPAIR_KINDS.includes(a.kind))) return this.t("confirmWordRepair");
     if (executable.some(a => a.kind === "replace_references" || a.kind === "refactor_automation")) return this.t("confirmWordReplace");
     return this.t("confirmWord");
   }
@@ -88,7 +88,7 @@ class CleanupMixin {
     const devices = executable.some(a => DEVICE_KINDS.includes(a.kind));
     const key = executable.some(a => a.kind === "purge_statistics") ? "confirmedSummaryPurge" : executable.some(a => REMOVAL_KINDS.includes(a.kind)) ? (devices ? "confirmedSummaryDeviceRemove" : "confirmedSummaryRemove")
       : executable.some(a => a.kind === "migrate_meter") ? "confirmedSummaryMeter"
-      : executable.some(a => a.kind === "repair_counter") ? "confirmedSummaryRepair"
+      : executable.some(a => REPAIR_KINDS.includes(a.kind)) ? "confirmedSummaryRepair"
       : executable.some(a => a.kind === "add_label") ? "confirmedSummaryLabel"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
@@ -169,7 +169,7 @@ class CleanupMixin {
     try {
       const actions = this.cleanupKind === "replace_references" ? [{ kind: "replace_references", object_id: this.replOld, target: this.replNew }]
         : this.cleanupKind === "migrate_meter" ? [{ kind: "migrate_meter", object_id: this.meterOld, target: this.meterNew, mode: this.meterMode }]
-        : this.cleanupKind === "repair_counter" ? [{ kind: "repair_counter", object_id: this.counterSel, mode: this.counterMode || "hold" }]
+        : this.cleanupKind === "repair_counter" ? [this.counterRangeReq ? { kind: "repair_range", object_id: this.counterSel, mode: this.counterRangeReq.mode, range: this.counterRangeReq.range } : { kind: "repair_counter", object_id: this.counterSel, mode: this.counterMode || "hold" }]
         : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.cleanupRecorder && this.cleanupRecorder !== "keep" ? { recorder: this.cleanupRecorder } : {}) }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
@@ -317,10 +317,10 @@ class CleanupMixin {
       const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && a.kind === "repair_counter" ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && a.kind === "purge_statistics" ? "result_purged" : `result_${result.state}`)}</span>` : "";
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && a.kind === "purge_statistics" ? "result_purged" : `result_${result.state}`)}</span>` : "";
       const sub0 = a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = sub0 + (a.recorder ? ` · ${this.t(`recChoice_${a.recorder}`)}` : "");
-      const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : a.kind === "repair_counter" ? this.counterDetail(a) : "";
+      const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
       const undo = result?.state === "done" ? `<button class="btn" data-undo-one="${this.esc(a.object_id)}">${this.t("undoOne")}</button>` : "";

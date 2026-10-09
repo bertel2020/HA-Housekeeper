@@ -20,7 +20,7 @@ DEFAULT_MODE = "full"
 QUARANTINE_KINDS = frozenset({"disable_entity", "disable_device"})
 IRREVERSIBLE_KINDS = frozenset({"purge_statistics"})
 # Rewrites rows of the recorder database: only in the mode that allows anything.
-RECORDER_WRITE_KINDS = frozenset({"repair_counter"})
+RECORDER_WRITE_KINDS = frozenset({"repair_counter", "repair_range"})
 
 
 def allows(mode: str, action: dict[str, Any]) -> bool:

@@ -2927,7 +2927,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   el.data = stepCData().data; el.journal = []; el.view = "cleanup"; el.cleanupKind = "repair_counter";
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("counter_scan") ? found : { ...REPAIR_PLAN }; } };
   el.render();
-  assert.ok(shadow.innerHTML.includes("Repair counter glitches") && shadow.innerHTML.includes("data-counter-scan"));
+  assert.ok(shadow.innerHTML.includes("Find and repair counter glitches") && shadow.innerHTML.includes("data-counter-scan") && shadow.innerHTML.includes("data-range-pick"));
   await el.loadCounterScan(true);
   assert.ok(shadow.innerHTML.includes("sensor.water") && shadow.innerHTML.includes("data-counter-pick"));
   el.counterSel = "sensor.water"; el.counterMode = "interpolate";
@@ -2937,6 +2937,17 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("<polyline") && html.includes("5-minute rows") && html.includes("REPAIR"));
+  // A range picked by hand becomes a repair_range request with seconds since 1970.
+  el.counterId = "sensor.water"; el.rangeFrom = "2026-10-01T10:00"; el.rangeTo = "2026-10-01T12:00"; el.rangeMode = "fixed"; el.rangeFixed = "91,7";
+  el.pickRange(shadow);
+  await new Promise(r => setTimeout(r, 0));
+  const range = sent.at(-1).actions[0];
+  assert.equal(range.kind, "repair_range"); assert.equal(range.mode, "fixed"); assert.equal(range.range.fixed, 91.7);
+  assert.equal(range.range.to - range.range.from, 7200);
+  const action = { ...REPAIR_PLAN.actions[0], kind: "repair_range", mode: "hold", counter: { kind: "measurement", unit: "°C", range: { from: 1788220800, to: 1788224400 }, bracket: [1788220000, 20, 1788225000, 21], available: { states: 4, short_term: 0, long_term: 2 },
+    counts: { states: 2, short_term: 0, long_term: 1, estimated_long_term: 1, tail_short_term: 0, tail_long_term: 0 }, detail: { states: [[1788221000, "85", "20"]], short_term: { cols: ["mean", "min", "max"], rows: [], tails: [] }, long_term: { cols: ["mean", "min", "max"], rows: [[1788220800, [85, 20, 85], [20, 20, 20]]], tails: [] } }, series: [] } };
+  const html2 = el.rangeDetail(action);
+  assert.ok(html2.includes("Hourly rows") && html2.includes("no longer there") && html2.includes("estimate") && html2.includes("85 / 20 / 85"));
 });
 
 const REPAIR_PLAN = {

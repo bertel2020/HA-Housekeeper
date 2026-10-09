@@ -36,6 +36,9 @@ SCAN_DAYS = 365
 SCAN_IDS = 400
 CACHE_SECONDS = 300
 MODES = ("hold", "interpolate")
+RANGE_MODES = ("hold", "interpolate", "fixed")
+RANGE_MAX_SPAN = 31 * 86400  # seconds; a longer range is refused
+RANGE_LOOKBACK = 7 * 86400  # rows loaded before the range, to find the good reading in front of it
 SLOT = {"short_term": 300, "long_term": 3600}
 REF = {"short_term": 0, "long_term": 3300}  # where in its slot a row's state was last read
 PREVIEW_POINTS = 120
@@ -182,6 +185,8 @@ def analyse(
 
 
 def fixed_value(finding: dict[str, Any], ts: float, mode: str) -> float:
+    if mode == "fixed":
+        return finding["fixed"]
     b_ts, gb, a_ts, ga = finding["bracket"]
     if mode == "interpolate" and a_ts > b_ts:
         share = min(1.0, max(0.0, (ts - b_ts) / (a_ts - b_ts)))
@@ -232,7 +237,7 @@ def stats_changes(
             state = row["state"]
             tol = tolerance(b["state"], e["state"])
             if not (b["state"] - tol <= state <= e["state"] + tol):
-                state = fixed_value(finding, ts, mode)
+                state = min(max(fixed_value(finding, ts, mode), b["state"]), e["state"])
             total = (b["sum"] - shift) + (state - b["state"])
             new[row["id"]] = {"state": state, "sum": total}
         offset = (e["sum"] - b["sum"]) - (e["state"] - b["state"])
@@ -250,7 +255,7 @@ def stats_changes(
         if by_id[row_id].get("state") != values["state"]
         or abs((by_id[row_id].get("sum") or 0.0) - values["sum"]) > EPS
     ]
-    return {"rows": changed, "tails": tails, "skipped": skipped}
+    return {"cols": ["state", "sum"], "rows": changed, "tails": tails, "skipped": skipped}
 
 
 def state_changes(
@@ -369,6 +374,180 @@ def public_finding(finding: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# -- a range the person picked ---------------------------------------------------------------
+
+
+def range_bracket(
+    sources: list[list[tuple[float, float]]], start: float, end: float
+) -> list[float] | None:
+    """The last good reading before and the first after the range, from the finest source with both."""
+    for points in sources:
+        before = [p for p in points if p[0] < start]
+        after = [p for p in points if p[0] > end]
+        if before and after:
+            return [before[-1][0], before[-1][1], after[0][0], after[0][1]]
+    return None
+
+
+def _same_all(old: list[float | None], new: list[float | None]) -> bool:
+    return all(
+        (a is None and b is None)
+        or (a is not None and b is not None and abs(a - b) <= max(1e-9, 1e-9 * max(abs(a), abs(b))))
+        for a, b in zip(old, new, strict=True)
+    )
+
+
+def measurement_changes(
+    short_rows: list[dict[str, Any]],
+    long_rows: list[dict[str, Any]],
+    state_rows: list[dict[str, Any]],
+    finding: dict[str, Any],
+    mode: str,
+) -> dict[str, Any]:
+    """Replace the readings of a measurement inside the range.
+
+    The 5-minute rows get the replacement value. An hourly row is rebuilt from its (corrected)
+    5-minute rows; where those are gone it gets the replacement value instead and is counted as an
+    estimate, because its mean, minimum and maximum cannot be recomputed.
+    """
+    start, end = finding["bad_first"], finding["bad_last"]
+    cols = ["mean", "min", "max"]
+    new_short: dict[int, list[float | None]] = {}
+    short_block: list[dict[str, Any]] = []
+    for row in short_rows:
+        if row["ts"] + SLOT["short_term"] <= start or row["ts"] > end or row.get("mean") is None:
+            continue
+        value = fixed_value(finding, row["ts"] + SLOT["short_term"] / 2, mode)
+        new_short[row["id"]] = [value, value, value]
+        old = [row["mean"], row["min"], row["max"]]
+        if not _same_all(old, new_short[row["id"]]):
+            short_block.append({"id": row["id"], "old": old, "new": new_short[row["id"]]})
+    current: dict[int, list[float | None]] = {
+        row["id"]: new_short.get(row["id"], [row["mean"], row["min"], row["max"]])
+        for row in short_rows
+    }
+    long_block: list[dict[str, Any]] = []
+    estimated = 0
+    for row in long_rows:
+        if row["ts"] + SLOT["long_term"] <= start or row["ts"] > end or row.get("mean") is None:
+            continue
+        inside = [
+            current[r["id"]]
+            for r in short_rows
+            if row["ts"] <= r["ts"] < row["ts"] + SLOT["long_term"]
+            and current[r["id"]][0] is not None
+        ]
+        if len(inside) >= SLOT["long_term"] // SLOT["short_term"] - 2:
+            means = [v[0] for v in inside]
+            lows = [v[1] for v in inside if v[1] is not None]
+            highs = [v[2] for v in inside if v[2] is not None]
+            new = [sum(means) / len(means), min(lows or means), max(highs or means)]
+        else:
+            value = fixed_value(finding, row["ts"] + SLOT["long_term"] / 2, mode)
+            new = [value, value, value]
+            estimated += 1
+        old = [row["mean"], row["min"], row["max"]]
+        if not _same_all(old, new):
+            long_block.append({"id": row["id"], "old": old, "new": new})
+    states = []
+    for row in state_rows:
+        try:
+            number = float(row["state"])
+        except (TypeError, ValueError):
+            continue
+        value = fixed_value(finding, row["ts"], mode)
+        if abs(number - value) > max(1e-9, 1e-9 * abs(number)):
+            states.append({"id": row["id"], "old": row["state"], "new": fmt(value)})
+    block = {"cols": cols, "tails": [], "skipped": []}
+    changes = {
+        "states": states,
+        "short_term": {**block, "rows": short_block},
+        "long_term": {**block, "rows": long_block},
+    }
+    changes["counts"] = {
+        "states": len(states),
+        "short_term": len(short_block),
+        "long_term": len(long_block),
+        "tail_short_term": 0,
+        "tail_long_term": 0,
+        "estimated_long_term": estimated,
+    }
+    return changes
+
+
+def range_detail(
+    changes: dict[str, Any],
+    state_rows: list[dict[str, Any]],
+    short_rows: list[dict[str, Any]],
+    long_rows: list[dict[str, Any]],
+    limit: int = 60,
+) -> dict[str, Any]:
+    """The first rows of every table with the time, the old and the new value."""
+    times = {
+        "states": {r["id"]: r["ts"] for r in state_rows},
+        "short_term": {r["id"]: r["ts"] for r in short_rows},
+        "long_term": {r["id"]: r["ts"] for r in long_rows},
+    }
+    detail: dict[str, Any] = {
+        "states": [
+            [times["states"].get(r["id"]), r["old"], r["new"]] for r in changes["states"][:limit]
+        ]
+    }
+    for table in ("short_term", "long_term"):
+        block = changes[table]
+        detail[table] = {
+            "cols": block["cols"],
+            "rows": [
+                [times[table].get(r["id"]), r["old"], r["new"]] for r in block["rows"][:limit]
+            ],
+            "tails": [{"from": t["from"], "offset": t["offset"]} for t in block["tails"]],
+        }
+    return detail
+
+
+def range_series(
+    finding: dict[str, Any],
+    changes: dict[str, Any],
+    state_rows: list[dict[str, Any]],
+    short_rows: list[dict[str, Any]],
+    long_rows: list[dict[str, Any]],
+    counter: bool,
+) -> list[list[float]]:
+    """``[ts, original, repaired]`` around the range from the finest table that has rows there."""
+    start, end = finding["bad_first"], finding["bad_last"]
+    pad = max((end - start) / 2, 3 * 3600)
+    key = "state" if counter else "mean"
+    new_state = {r["id"]: r["new"] for r in changes["states"]}
+    points: list[list[float]] = []
+    for row in state_rows:
+        try:
+            number = float(row["state"])
+        except (TypeError, ValueError):
+            continue
+        points.append([row["ts"], number, float(new_state.get(row["id"], row["state"]))])
+    if len(points) >= 3 and finding.get("bracket"):
+        b_ts, gb, a_ts, ga = finding["bracket"]
+        points = [[b_ts, gb, gb], *points, [a_ts, ga, ga]]
+    if len(points) < 3:
+        for table, rows in (("short_term", short_rows), ("long_term", long_rows)):
+            new = {r["id"]: r["new"] for r in changes[table]["rows"]}
+            window = [
+                r for r in rows if r.get(key) is not None and start - pad <= r["ts"] <= end + pad
+            ]
+            if len(window) >= 3:
+                points = [
+                    [
+                        r["ts"] + SLOT[table] / 2,
+                        r[key],
+                        new[r["id"]][0] if r["id"] in new else r[key],
+                    ]
+                    for r in window
+                ]
+                break
+    step = max(1, len(points) // PREVIEW_POINTS)
+    return points[::step]
+
+
 # -- recorder --------------------------------------------------------------------------------
 
 
@@ -413,22 +592,30 @@ def _models() -> dict[str, Any]:
     }
 
 
-def _load_stats(session: Any, table: str, meta_id: int, since: float | None) -> list[dict]:
+def _load_stats(
+    session: Any, table: str, meta_id: int, since: float | None, measure: bool = False
+) -> list[dict]:
     from sqlalchemy import select
 
     model = _models()[table]
-    query = select(model.id, model.start_ts, model.state, model.sum).where(
-        model.metadata_id == meta_id
-    )
+    columns = [model.id, model.start_ts, model.state, model.sum]
+    if measure:
+        columns += [model.mean, model.min, model.max]
+    query = select(*columns).where(model.metadata_id == meta_id)
     if since is not None:
         query = query.where(model.start_ts >= since)
-    return [
-        {"id": row.id, "ts": row.start_ts, "state": row.state, "sum": row.sum}
-        for row in session.execute(query.order_by(model.start_ts)).all()
-    ]
+    rows = []
+    for row in session.execute(query.order_by(model.start_ts)).all():
+        item = {"id": row.id, "ts": row.start_ts, "state": row.state, "sum": row.sum}
+        if measure:
+            item.update(mean=row.mean, min=row.min, max=row.max)
+        rows.append(item)
+    return rows
 
 
-def _load_states(session: Any, entity_id: str, start: float, end: float) -> list[dict]:
+def _load_states(
+    session: Any, entity_id: str, start: float, end: float, limit: int | None = None
+) -> list[dict]:
     from sqlalchemy import select
 
     models = _models()
@@ -440,6 +627,8 @@ def _load_states(session: Any, entity_id: str, start: float, end: float) -> list
         .where(states.last_updated_ts > start, states.last_updated_ts < end)
         .order_by(states.last_updated_ts)
     )
+    if limit:
+        query = query.limit(limit)
     return [
         {"id": row.state_id, "state": row.state, "ts": row.last_updated_ts}
         for row in session.execute(query).all()
@@ -459,6 +648,180 @@ def _meta(session: Any, statistic_id: str) -> tuple[int, str | None] | None:
     if row is None or not row.has_sum or row.source != "recorder":
         return None
     return row.id, row.unit_of_measurement
+
+
+def _meta_any(session: Any, statistic_id: str) -> tuple[int, str | None, bool, bool] | None:
+    """Metadata ID, unit and whether it holds a sum or an arithmetic mean, for a recorder statistic.
+
+    A circular mean (an angle such as the wind direction) cannot be rebuilt by averaging: refused.
+    """
+    from sqlalchemy import select
+
+    meta = _models()["meta"]
+    kind = getattr(meta, "mean_type", None)
+    columns = [meta.id, meta.unit_of_measurement, meta.has_sum, meta.has_mean, meta.source]
+    row = session.execute(
+        select(*columns, *([kind] if kind is not None else [])).where(
+            meta.statistic_id == statistic_id
+        )
+    ).first()
+    if row is None or row.source != "recorder":
+        return None
+    mean_type = int(row.mean_type) if kind is not None and row.mean_type is not None else None
+    has_mean = bool(row.has_mean) if mean_type is None else mean_type == 1
+    if not (row.has_sum or has_mean):
+        return None
+    return row.id, row.unit_of_measurement, bool(row.has_sum), has_mean
+
+
+def _state_edge(
+    session: Any, entity_id: str, ts: float, before: bool
+) -> tuple[float, float] | None:
+    """The nearest numeric raw reading before or after ``ts`` as ``(time, value)``."""
+    from sqlalchemy import select
+
+    models = _models()
+    states, meta = models["states"], models["states_meta"]
+    query = (
+        select(states.state, states.last_updated_ts)
+        .join(meta, states.metadata_id == meta.metadata_id)
+        .where(meta.entity_id == entity_id)
+    )
+    if before:
+        query = query.where(states.last_updated_ts < ts).order_by(states.last_updated_ts.desc())
+    else:
+        query = query.where(states.last_updated_ts > ts).order_by(states.last_updated_ts)
+    for row in session.execute(query.limit(20)).all():
+        try:
+            return row.last_updated_ts, float(row.state)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _prepare_range(
+    session: Any, statistic_id: str, mode: str, rng: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    """What cleaning one range of a counter or a measurement would change."""
+    import time
+
+    start, end = float(rng["from"]), float(rng["to"])
+    fixed = rng.get("fixed") if mode == "fixed" else None
+    info = _meta_any(session, statistic_id)
+    if info is None:
+        return {"error": "no_range_statistics"}, None
+    meta_id, unit, counter, _ = info
+    if (
+        not start < end
+        or end - start > RANGE_MAX_SPAN
+        or end > time.time() + 60
+        or (mode == "fixed" and fixed is None)
+    ):
+        return {"error": "bad_range"}, None
+    measure = not counter
+    since = start - RANGE_LOOKBACK
+    short_rows = _load_stats(session, "short_term", meta_id, since, measure)
+    long_rows = _load_stats(session, "long_term", meta_id, since, measure)
+    state_rows = _load_states(session, statistic_id, start - 1e-6, end + 1e-6, MAX_ROWS + 1)
+    sources: list[list[tuple[float, float]]] = []
+    before = _state_edge(session, statistic_id, start, True)
+    after = _state_edge(session, statistic_id, end, False)
+    if before and after:
+        sources.append([before, after])
+    for table, rows in (("short_term", short_rows), ("long_term", long_rows)):
+        if counter:
+            sources.append(ref_points(rows, table))
+        else:
+            sources.append(
+                [
+                    (r["ts"] + SLOT[table] / 2, r["mean"])
+                    for r in rows
+                    if r.get("mean") is not None
+                    and (r["ts"] + SLOT[table] <= start or r["ts"] > end)
+                ]
+            )
+    bracket = range_bracket(sources, start, end)
+    values = []
+    for row in state_rows:
+        try:
+            values.append(float(row["state"]))
+        except (TypeError, ValueError):
+            continue
+    finding: dict[str, Any] = {
+        "start": bracket[0] if bracket else start,
+        "end": bracket[2] if bracket else end,
+        "lo": bracket[1] if bracket else None,
+        "hi": bracket[3] if bracket else None,
+        "bad_first": start,
+        "bad_last": end,
+        "low": min(values) if values else None,
+        "high": max(values) if values else None,
+        "count": {},
+        "bracket": bracket,
+        "fixed": fixed,
+    }
+    base: dict[str, Any] = {
+        "kind": "counter" if counter else "measurement",
+        "unit": unit,
+        "mode": mode,
+        "range": {"from": start, "to": end, "fixed": fixed},
+        "bracket": bracket,
+        "findings": [],
+    }
+    if bracket is None and (counter or mode != "fixed"):
+        return {**base, "error": "no_bracket"}, None
+    if counter and bracket[1] > bracket[3] + tolerance(bracket[1], bracket[3]):
+        return {**base, "error": "bracket_not_good"}, None
+    if counter and mode == "fixed":
+        tol = tolerance(bracket[1], bracket[3])
+        if not bracket[1] - tol <= fixed <= bracket[3] + tol:
+            return {**base, "error": "fixed_outside"}, None
+    if counter:
+        changes = build_changes([finding], short_rows, long_rows, state_rows, mode)
+    else:
+        changes = measurement_changes(short_rows, long_rows, state_rows, finding, mode)
+    counts = changes["counts"]
+    total = sum(counts[t] for t in ("states", "short_term", "long_term"))
+    checksum = round(
+        sum(
+            v
+            for block in (changes["short_term"]["rows"], changes["long_term"]["rows"])
+            for row in block
+            for v in row["old"]
+            if v is not None
+        ),
+        6,
+    )
+    available = {
+        "states": len(state_rows),
+        "short_term": sum(
+            1 for r in short_rows if r["ts"] + SLOT["short_term"] > start and r["ts"] <= end
+        ),
+        "long_term": sum(
+            1 for r in long_rows if r["ts"] + SLOT["long_term"] > start and r["ts"] <= end
+        ),
+    }
+    error = None
+    if len(state_rows) > MAX_ROWS or total > MAX_ROWS:
+        error = "too_many_rows"
+    elif total == 0:
+        error = "nothing_found"
+    shape = [round(start), round(end), mode, fixed, sorted(counts.items()), checksum]
+    result = {
+        **base,
+        "low": finding["low"],
+        "high": finding["high"],
+        "available": available,
+        "counts": counts,
+        "skipped": {
+            t: changes[t]["skipped"] for t in ("short_term", "long_term") if changes[t]["skipped"]
+        },
+        "detail": range_detail(changes, state_rows, short_rows, long_rows),
+        "series": range_series(finding, changes, state_rows, short_rows, long_rows, counter),
+        "fingerprint": hashlib.sha256(json.dumps(shape).encode()).hexdigest()[:16],
+        "error": error,
+    }
+    return result, {"meta_id": meta_id, "changes": changes, "counter": counter}
 
 
 def _gather(
@@ -519,12 +882,18 @@ def scan_blocking(
 
 
 def prepare_blocking(
-    hass: HomeAssistant, statistic_id: str, mode: str, max_span: float
+    hass: HomeAssistant,
+    statistic_id: str,
+    mode: str,
+    max_span: float,
+    rng: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Blocking: what a repair of this counter would change, without writing anything."""
     from homeassistant.components.recorder.util import session_scope
 
     with session_scope(hass=hass, read_only=True) as session:
+        if rng:
+            return _prepare_range(session, statistic_id, mode, rng)[0]
         return _prepare(session, statistic_id, mode, max_span)[0]
 
 
@@ -566,7 +935,12 @@ def _prepare(
 
 
 def apply_blocking(
-    instance: Any, statistic_id: str, mode: str, max_span: float, expected: str
+    instance: Any,
+    statistic_id: str,
+    mode: str,
+    max_span: float,
+    expected: str,
+    rng: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """In the recorder thread: check the preview still holds, write, read back, return the undo."""
     from homeassistant.components.recorder.util import session_scope
@@ -574,7 +948,10 @@ def apply_blocking(
 
     models = _models()
     with session_scope(session=instance.get_session()) as session:
-        preview, data = _prepare(session, statistic_id, mode, max_span)
+        if rng:
+            preview, data = _prepare_range(session, statistic_id, mode, rng)
+        else:
+            preview, data = _prepare(session, statistic_id, mode, max_span)
         if data is None or preview.get("error"):
             return {"error": preview.get("error") or "nothing_found"}
         if preview["fingerprint"] != expected:
@@ -598,12 +975,13 @@ def apply_blocking(
                 session.execute(
                     update(model),
                     [
-                        {"id": row["id"], "state": row["new"][0], "sum": row["new"][1]}
+                        {"id": row["id"], **dict(zip(block["cols"], row["new"], strict=True))}
                         for row in block["rows"]
                     ],
                 )
             session.flush()
             written["tables"][table] = {
+                "cols": block["cols"],
                 "rows": block["rows"],
                 "tails": [
                     {
@@ -622,8 +1000,15 @@ def apply_blocking(
             )
         written["states"] = changes["states"]
         # Read it back before committing: what the series says now must be clean.
-        after = _gather(session, statistic_id, None, max_span)
-        if after is None or after["findings"]:
+        if rng:
+            session.flush()
+            clean = (
+                _prepare_range(session, statistic_id, mode, rng)[0].get("error") == "nothing_found"
+            )
+        else:
+            after = _gather(session, statistic_id, None, max_span)
+            clean = after is not None and not after["findings"]
+        if not clean:
             session.rollback()
             return {"error": "verify_failed"}
         written["counts"] = changes["counts"]
@@ -642,21 +1027,22 @@ def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
         for table in ("short_term", "long_term"):
             model = models[table]
             block = written["tables"].get(table) or {}
+            cols = block.get("cols") or ["state", "sum"]
             ids = [row["id"] for row in block.get("rows", [])]
             current = {}
             if ids:
                 current = {
-                    r.id: (r.state, r.sum)
+                    r[0]: tuple(r[1:])
                     for r in session.execute(
-                        select(model.id, model.state, model.sum).where(model.id.in_(ids))
+                        select(model.id, *[getattr(model, c) for c in cols]).where(
+                            model.id.in_(ids)
+                        )
                     ).all()
                 }
             for row in block.get("rows", []):
                 now = current.get(row["id"])
-                if (
-                    now is None
-                    or not _same(now[0], row["new"][0])
-                    or not _same(now[1], row["new"][1])
+                if now is None or not all(
+                    _same(a, b) for a, b in zip(now, row["new"], strict=True)
                 ):
                     return "conflict_changed"
             for tail in block.get("tails", []):
@@ -676,7 +1062,7 @@ def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
             }
             if any(current_states.get(row["id"]) != row["new"] for row in states):
                 return "conflict_changed"
-        meta = _meta(session, written["statistic_id"])
+        meta = _meta_any(session, written["statistic_id"])
         if meta is None:
             return "conflict_gone"
         for table in ("short_term", "long_term"):
@@ -693,10 +1079,11 @@ def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
                     .values(sum=model.sum + tail["offset"])
                 )
             if block.get("rows"):
+                cols = block.get("cols") or ["state", "sum"]
                 session.execute(
                     update(model),
                     [
-                        {"id": row["id"], "state": row["old"][0], "sum": row["old"][1]}
+                        {"id": row["id"], **dict(zip(cols, row["old"], strict=True))}
                         for row in block["rows"]
                     ],
                 )
@@ -751,17 +1138,25 @@ async def run_in_recorder(hass: HomeAssistant, work: Callable[[Any], Any]) -> An
 
 
 async def prepare(
-    hass: HomeAssistant, statistic_id: str, mode: str = "hold", max_span: float = MAX_SPAN
+    hass: HomeAssistant,
+    statistic_id: str,
+    mode: str = "hold",
+    max_span: float = MAX_SPAN,
+    rng: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """What a repair of this counter would change; ``error`` says why it cannot run."""
+    """What a repair of this counter would change; ``error`` says why it cannot run.
+
+    With ``rng`` (``from``, ``to``, optionally ``fixed``) the range is cleaned that the person
+    picked, for a counter or a measurement, instead of what the detection found.
+    """
     from homeassistant.components.recorder import get_instance
 
-    if mode not in MODES:
+    if mode not in (RANGE_MODES if rng else MODES):
         return {"error": "nothing_to_do", "findings": []}
     if not schema_ok():
         return {"error": "schema_unknown", "findings": []}
     return await get_instance(hass).async_add_executor_job(
-        prepare_blocking, hass, statistic_id, mode, max_span
+        prepare_blocking, hass, statistic_id, mode, max_span, rng
     )
 
 
@@ -771,12 +1166,14 @@ async def apply(
     mode: str,
     expected: str,
     max_span: float = MAX_SPAN,
+    rng: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write the repair in the recorder thread; ``error`` is set when nothing was written."""
     if not schema_ok():
         return {"error": "schema_unknown"}
     return await run_in_recorder(
-        hass, lambda instance: apply_blocking(instance, statistic_id, mode, max_span, expected)
+        hass,
+        lambda instance: apply_blocking(instance, statistic_id, mode, max_span, expected, rng),
     )
 
 

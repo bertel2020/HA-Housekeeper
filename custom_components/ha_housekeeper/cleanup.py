@@ -29,7 +29,7 @@ REFERENCE_KINDS = frozenset({"replace_references"})
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
-REPAIR_KINDS = frozenset({"repair_counter"})
+REPAIR_KINDS = frozenset({"repair_counter", "repair_range"})
 LABEL_KINDS = frozenset({"add_label"})  # adds one existing label to an entity; Home Assistant only
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
@@ -58,6 +58,7 @@ BACKUP_KINDS = frozenset(
         "purge_statistics",
         "refactor_automation",
         "repair_counter",
+        "repair_range",
     }
 )
 # Kinds that remove something: they get the strongest confirmation word.
@@ -305,6 +306,11 @@ BLOCKING_REASONS = frozenset(
         "stats_nothing_to_import",
         "no_recorder",
         "no_counter_statistics",
+        "no_range_statistics",
+        "bad_range",
+        "no_bracket",
+        "bracket_not_good",
+        "fixed_outside",
         "label_missing",
         "already_labelled",
         "nothing_found",
@@ -583,8 +589,25 @@ def judge_purge_action(
     return action
 
 
+def counter_key(request: dict[str, Any]) -> tuple[Any, ...]:
+    """Identifies the preview of a repair request: the sensor, the mode and the picked range."""
+    rng = request.get("range") or {}
+    return (
+        request["object_id"],
+        request.get("mode") or "hold",
+        rng.get("from"),
+        rng.get("to"),
+        rng.get("fixed"),
+    )
+
+
 def judge_counter_action(
-    object_id: str, objects: dict[str, dict[str, Any]], counter: dict[str, Any], recorder: bool
+    object_id: str,
+    objects: dict[str, dict[str, Any]],
+    counter: dict[str, Any],
+    recorder: bool,
+    kind: str = "repair_counter",
+    rng: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Judge repairing the wrong readings of one counter in the recorder tables.
 
@@ -593,11 +616,12 @@ def judge_counter_action(
     the journal, so the repair can be undone as long as the rows are still as it left them.
     """
     action: dict[str, Any] = {
-        "kind": "repair_counter",
+        "kind": kind,
         "object_id": object_id,
         "object_type": "entity",
         "name": (objects.get(object_id) or {}).get("name") or object_id,
         "mode": counter.get("mode") or "hold",
+        **({"range": rng} if rng else {}),
         "verdict": "blocked",
         "reasons": [],
         "used_by": [],
@@ -851,11 +875,18 @@ def build_plan(
             action["fingerprint"] = info.get("fingerprint")
         elif kind in REPAIR_KINDS:
             mode = request.get("mode") or "hold"
+            rng = request.get("range") if kind == "repair_range" else None
             counter = (counter_data or {}).get(
-                (object_id, mode), {"error": "no_counter_statistics"}
+                counter_key({**request, "range": rng}),
+                {"error": "bad_range" if kind == "repair_range" else "no_counter_statistics"},
             )
             action = judge_counter_action(
-                object_id, objects, counter, bool(snapshot["meta"].get("recorder_available"))
+                object_id,
+                objects,
+                counter,
+                bool(snapshot["meta"].get("recorder_available")),
+                kind,
+                rng,
             )
             action["fingerprint"] = counter.get("fingerprint")
         elif kind in REFACTOR_KINDS:
@@ -961,8 +992,10 @@ def merge_requests(
             request = {"kind": action["kind"], "object_id": action["object_id"]}
             if action.get("target"):
                 request["target"] = action["target"]
-            if action["kind"] in METER_KINDS and action.get("mode"):
+            if action["kind"] in METER_KINDS | REPAIR_KINDS and action.get("mode"):
                 request["mode"] = action["mode"]
+            if action.get("range"):
+                request["range"] = action["range"]
             if action["kind"] in PURGE_KINDS:
                 request["states"] = bool(action.get("states"))
             if action.get("recorder"):

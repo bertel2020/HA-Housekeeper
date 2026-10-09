@@ -60,7 +60,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
                 kept_rows += history["statistics"] + history["states"]
         if kind == "migrate_meter":
             meters += 1
-        if kind == "repair_counter":
+        if kind in ("repair_counter", "repair_range"):
             repaired += 1
         if kind == "replace_references":
             for source in action.get("sources") or []:

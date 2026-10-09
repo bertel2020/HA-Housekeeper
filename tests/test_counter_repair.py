@@ -306,7 +306,7 @@ async def test_the_repair_writes_all_three_tables_verifies_and_can_be_undone(
         snapshot,
         [{"kind": "repair_counter", "object_id": SENSOR, "mode": "hold"}],
         datetime.now(UTC),
-        counter_data={(SENSOR, "hold"): found},
+        counter_data={(SENSOR, "hold", None, None, None): found},
     )
     scanner.journal.add(plan)
     action = plan["actions"][0]
@@ -339,7 +339,9 @@ async def test_the_repair_writes_all_three_tables_verifies_and_can_be_undone(
         [{"kind": "repair_counter", "object_id": SENSOR, "mode": "interpolate"}],
         datetime.now(UTC),
         counter_data={
-            (SENSOR, "interpolate"): await counter_repair.prepare(hass, SENSOR, "interpolate")
+            (SENSOR, "interpolate", None, None, None): await counter_repair.prepare(
+                hass, SENSOR, "interpolate"
+            )
         },
     )
     scanner.journal.add(again)
@@ -350,3 +352,209 @@ async def test_the_repair_writes_all_three_tables_verifies_and_can_be_undone(
     assert (await scanner.cleanup.undo(again["plan_id"], None))["results"][0][
         "outcome"
     ] == "conflict_changed"
+
+
+def test_a_measurement_range_rebuilds_the_hours_from_the_corrected_five_minute_rows() -> None:
+    from custom_components.ha_housekeeper.counter_repair import measurement_changes
+
+    def row(i, ts, mean, low=None, high=None):
+        return {"id": i, "ts": ts, "mean": mean, "min": low or mean, "max": high or mean}
+
+    # Two hours: the first has 12 five-minute rows with a spike, the second has none left.
+    short = [row(i, START + i * 300, 85.0 if 3 <= i < 6 else 20.0) for i in range(12)]
+    long_rows = [row(100, START, 25.0, 20.0, 85.0), row(101, START + HOUR, 90.0, 85.0, 95.0)]
+    finding = {
+        "bad_first": START + 900,
+        "bad_last": START + 1799,
+        "bracket": [START + 600, 20.0, START + HOUR + 7200, 24.0],
+        "fixed": None,
+    }
+    changes = measurement_changes(short, long_rows, [], finding, "hold")
+    assert [r["id"] for r in changes["short_term"]["rows"]] == [3, 4, 5]
+    hour = changes["long_term"]["rows"]
+    assert [r["id"] for r in hour] == [100] and hour[0]["new"] == [20.0, 20.0, 20.0]
+    assert changes["counts"]["estimated_long_term"] == 0
+
+    # The second hour is partly inside the range and has no 5-minute rows: it is an estimate.
+    finding["bad_last"] = START + HOUR + 600
+    changes = measurement_changes(short, long_rows, [], finding, "hold")
+    assert changes["counts"]["estimated_long_term"] == 1
+    assert [r["id"] for r in changes["long_term"]["rows"]] == [100, 101]
+    assert changes["long_term"]["rows"][1]["new"] == [20.0, 20.0, 20.0]
+
+
+async def test_a_picked_counter_range_is_cleaned_in_all_tables_and_undone(
+    recorder_mock, hass
+) -> None:
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.models import StatisticMeanType
+    from homeassistant.components.recorder.statistics import async_import_statistics
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    from custom_components.ha_housekeeper import counter_repair
+
+    clean, glitchy = water()
+    sums = ha_sums(glitchy)
+    async_import_statistics(
+        hass,
+        {
+            "mean_type": StatisticMeanType.NONE,
+            "has_sum": True,
+            "name": None,
+            "source": "recorder",
+            "statistic_id": SENSOR,
+            "unit_class": "volume",
+            "unit_of_measurement": "m³",
+        },
+        [
+            {"start": BASE + timedelta(hours=i), "state": glitchy[i], "sum": sums[i]}
+            for i in range(len(glitchy))
+        ],
+    )
+    await async_wait_recording_done(hass)
+    instance = get_instance(hass)
+    await instance.async_add_executor_job(_seed, hass, clean, glitchy)
+    before = await instance.async_add_executor_job(_dump, hass)
+
+    rng = {
+        "from": (BASE + timedelta(hours=19, minutes=58)).timestamp(),
+        "to": (BASE + timedelta(hours=29, minutes=58)).timestamp(),
+    }
+    found = await counter_repair.prepare(hass, SENSOR, "hold", rng=rng)
+    assert found["error"] is None and found["kind"] == "counter"
+    assert found["counts"]["states"] == 3 and found["counts"]["long_term"] == 10
+    assert found["available"]["long_term"] == 11 and found["detail"]["states"]
+
+    # A fixed value must not break the order of the counter.
+    low = await counter_repair.prepare(hass, SENSOR, "fixed", rng={**rng, "fixed": 10.0})
+    assert low["error"] == "fixed_outside"
+    # A range that stops short of any good reading after it is refused, never guessed.
+    late = {**rng, "to": (BASE + timedelta(hours=60)).timestamp()}
+    assert (await counter_repair.prepare(hass, SENSOR, "hold", rng=late))["error"] == "no_bracket"
+
+    written = await counter_repair.apply(hass, SENSOR, "hold", found["fingerprint"], rng=rng)
+    assert not written.get("error"), written
+    held = [clean[19] if 20 <= i < 30 else v for i, v in enumerate(clean)]
+    after = await instance.async_add_executor_job(_dump, hass)
+    assert [s for s, _ in after["long"]] == pytest.approx(held)
+    assert [m for _, m in after["long"]] == pytest.approx(ha_sums(held))
+    assert [float(s) for s in after["states"]] == pytest.approx(
+        [clean[18]] + [clean[18]] * 3 + [91.9]
+    )
+    assert (await counter_repair.prepare(hass, SENSOR, "hold", rng=rng))["error"] == "nothing_found"
+
+    assert await counter_repair.undo(hass, written) == "undone"
+    assert await instance.async_add_executor_job(_dump, hass) == before
+
+
+def _seed_measurement(hass) -> None:
+    """Blocking: five-minute rows with a spike for a measurement that has hourly rows already."""
+    from homeassistant.components.recorder.db_schema import StatisticsMeta, StatisticsShortTerm
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import select
+
+    with session_scope(hass=hass) as session:
+        meta_id = session.execute(
+            select(StatisticsMeta.id).where(StatisticsMeta.statistic_id == TEMPERATURE)
+        ).scalar_one()
+        for i in range(48 * 12):
+            value = 85.0 if 120 <= i < 126 else 20.0 + (i % 12) * 0.01
+            session.add(
+                StatisticsShortTerm(
+                    metadata_id=meta_id,
+                    start_ts=(BASE + timedelta(minutes=5 * i)).timestamp(),
+                    mean=value,
+                    min=value,
+                    max=value,
+                )
+            )
+
+
+def _dump_measurement(hass) -> dict:
+    from homeassistant.components.recorder.db_schema import Statistics, StatisticsShortTerm
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import select
+
+    with session_scope(hass=hass, read_only=True) as session:
+        return {
+            "short": [
+                (r.mean, r.min, r.max)
+                for r in session.execute(
+                    select(
+                        StatisticsShortTerm.mean, StatisticsShortTerm.min, StatisticsShortTerm.max
+                    ).order_by(StatisticsShortTerm.start_ts)
+                )
+            ],
+            "long": [
+                (r.mean, r.min, r.max)
+                for r in session.execute(
+                    select(Statistics.mean, Statistics.min, Statistics.max).order_by(
+                        Statistics.start_ts
+                    )
+                )
+            ],
+        }
+
+
+TEMPERATURE = "sensor.boiler_temperature"
+
+
+async def test_a_picked_measurement_range_is_replaced_and_undone(recorder_mock, hass) -> None:
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.models import StatisticMeanType
+    from homeassistant.components.recorder.statistics import async_import_statistics
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    from custom_components.ha_housekeeper import counter_repair
+
+    async_import_statistics(
+        hass,
+        {
+            "mean_type": StatisticMeanType.ARITHMETIC,
+            "has_sum": False,
+            "name": None,
+            "source": "recorder",
+            "statistic_id": TEMPERATURE,
+            "unit_class": "temperature",
+            "unit_of_measurement": "°C",
+        },
+        [
+            {
+                "start": BASE + timedelta(hours=i),
+                "mean": 85.0 if i == 10 else 20.0,
+                "min": 20.0,
+                "max": 85.0 if i == 10 else 20.1,
+            }
+            for i in range(48)
+        ],
+    )
+    await async_wait_recording_done(hass)
+    instance = get_instance(hass)
+    await instance.async_add_executor_job(_seed_measurement, hass)
+    before = await instance.async_add_executor_job(_dump_measurement, hass)
+
+    rng = {
+        "from": (BASE + timedelta(hours=10)).timestamp(),
+        "to": (BASE + timedelta(hours=10, minutes=29)).timestamp(),
+    }
+    found = await counter_repair.prepare(hass, TEMPERATURE, "interpolate", rng=rng)
+    assert found["error"] is None and found["kind"] == "measurement", found
+    assert found["counts"]["short_term"] == 6 and found["counts"]["long_term"] == 1
+    assert found["counts"]["estimated_long_term"] == 0
+
+    written = await counter_repair.apply(
+        hass, TEMPERATURE, "interpolate", found["fingerprint"], rng=rng
+    )
+    assert not written.get("error"), written
+    after = await instance.async_add_executor_job(_dump_measurement, hass)
+    assert max(m for _, _, m in after["short"]) < 21
+    assert max(m for _, _, m in after["long"]) < 21
+    assert (await counter_repair.prepare(hass, TEMPERATURE, "interpolate", rng=rng))["error"] == (
+        "nothing_found"
+    )
+    assert await counter_repair.undo(hass, written) == "undone"
+    assert await instance.async_add_executor_job(_dump_measurement, hass) == before
