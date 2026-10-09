@@ -160,8 +160,17 @@ class HAHousekeeperPanel extends HTMLElement {
     // Preliminary data: fetch the final scan once the backend's warm-up is over.
     if (this.data?.meta?.preliminary) {
       const wait = ((Number(this.data.meta.warmup_seconds_left) || 0) + 20) * 1000;
-      this._warmupTimer = window.setTimeout(() => this.load(), wait);
+      this.retryWarmup(wait);
     }
+  }
+
+  // Asks again until the final scan has replaced the preliminary one; a busy panel or a failed request tries again later.
+  retryWarmup(wait) {
+    if (this._warmupTimer) window.clearTimeout(this._warmupTimer);
+    this._warmupTimer = window.setTimeout(() => {
+      if (!this._hass || this.busy) { this.retryWarmup(15000); return; }
+      this.load().then(() => { if (this.data?.meta?.preliminary || this.error) this.retryWarmup(20000); });
+    }, wait);
   }
 
   async updateScanStatus() {

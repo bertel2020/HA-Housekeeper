@@ -39,15 +39,15 @@ class SettingsMixin {
     const p = this.prefs, dark = this.isDark();
     const tile = (pref, value, label, inner) => `<button class="tilebtn" data-pref="${pref}|${value}" aria-pressed="${String(p[pref]) === String(value)}">${inner}<span>${label}</span></button>`;
     const mini = scheme => {
-      const c = SCHEMES[scheme][dark ? "dark" : "light"];
-      return `<span class="mini" aria-hidden="true" style="background:${c.bg};border-color:${c.border}"><i style="background:${c.surface}"></i><i style="background:${c.surface}"></i><b style="background:${c.accent}"></b></span>`;
+      const c = SCHEMES[scheme][dark ? "dark" : "light"], bar = (w, col) => `<i style="width:${w}%;background:${col}"></i>`;
+      return `<span class="schemeprev" aria-hidden="true" style="background:${c.bg};border-color:${c.border}"><span class="sp-card" style="background:${c.surface};border-color:${c.border}"><b style="background:${c.accent}"></b>${bar(60, c.text)}${bar(35, c.muted)}</span><span class="sp-row"><em style="background:${c.positive}"></em><em style="background:${c.warning}"></em><em style="background:${c.danger}"></em><u style="background:${c.accent}"></u></span></span>`;
     };
     const schemes = [["standard", "schemeStandard"], ["housekeeper", "schemeHousekeeper"], ["modern", "schemeModern"]].map(([id, key]) => tile("scheme", id, this.t(key), mini(id))).join("");
     const modes = [["auto", "modeAuto", "mdi:theme-light-dark"], ["light", "modeLight", "mdi:white-balance-sunny"], ["dark", "modeDark", "mdi:weather-night"]].map(([id, key, icon]) => tile("mode", id, this.t(key), `<ha-icon icon="${icon}"></ha-icon>`)).join("");
     const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("setLanguage")}</h2><p>${this.t("setLanguageHint")}</p></div></div>
       ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ["de", "Deutsch"], ["en", "English"]]))}
-      <div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles">${schemes}</div>
+      <div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles schemetiles">${schemes}</div>
       <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div>
       <div class="panelhead"><h2>${this.t("setReadability")}</h2></div>
       ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
@@ -128,9 +128,9 @@ class SettingsMixin {
   settingsView() {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
-    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${pill ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
+    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${pill ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${pill ? `<span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</span><small>${this.t(hint)}</small></button>`).join("");
     const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, protection: () => this.protectionCard(), scan: () => `${this.scanCard()}${this.eventsCard()}`, notify: () => this.notifyCard(), goals: () => this.goalsCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
-    return `${this.settingsBand()}<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
+    return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
   async saveOptions() {
