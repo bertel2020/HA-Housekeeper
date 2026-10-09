@@ -134,7 +134,24 @@ class FindingsMixin {
     const n = this.findSel.size;
     this._findPage = pageRows.map(f => f.key);
     if (!pageRows.length && !n) return "";
-    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns"><button class="btn" data-fsel-state="known" ${n ? "" : "disabled"}>${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed" ${n ? "" : "disabled"}>${this.t("fselSnooze")}</button><button class="btn" data-fsel-state="label" ${n ? "" : "disabled"}>${this.t("fselLabel")}</button><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div></div>${this.bulkForm()}`;
+    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide ${n ? "" : "disabled"}><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known" ${n ? "" : "disabled"}>${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed" ${n ? "" : "disabled"}>${this.t("fselSnooze")}</button><button class="btn" data-fsel-state="label" ${n ? "" : "disabled"}>${this.t("fselLabel")}</button><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div>`}</div>${this.bulkForm()}`;
+  }
+
+  // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
+  async unhideSelectedFindings() {
+    const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && f.ignored && f.ignored_by === "user"));
+    let done = 0;
+    try {
+      for (const key of keys) {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false });
+        const finding = this.data.findings.find(f => f.key === key);
+        if (finding) { finding.ignored = false; finding.ignored_by = null; finding.ignore_info = null; done += 1; }
+      }
+      this._rev++;
+    } catch (err) { this.error = err?.message || String(err); }
+    this.findSel.clear();
+    this.render();
+    this.toast(this.t("findUnhidden", { n: done }));
   }
 
   async hideSelectedFindings() {

@@ -1,5 +1,6 @@
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  findUnhide: "Wieder einblenden", findUnhidden: "{n} Befunde wieder eingeblendet",
   firstScan: "Der erste Scan läuft: {percent} %", groupOpen: "{count} offen", readOnly: "Nur lesen", canChange: "Kann ändern", readOnlyHint: "Diese Seite ändert nichts.", canChangeHint: "Von hier aus lassen sich Pläne erstellen und ausführen. Geändert wird erst nach deiner Bestätigung.",
   outcomeUndoYes: "Rückgängig ist möglich, solange sich die Objekte nicht geändert haben.", outcomeUndoBackup: "Nur per Backup rückgängig.", outcomeUndoMixed: "Teils rückgängig machbar, teils nur per Backup.",
   backupFailHint: "Prüfe unter Einstellungen → System → Backups, ob ein Backup-Ziel erreichbar ist, und lies das Protokoll unter Einstellungen → System → Protokolle.", previewReady: "Vorschau erstellt", toast_verified: "Plan abgeschlossen und geprüft", toast_executed: "Plan ausgeführt", toast_partial: "Plan nur teilweise ausgeführt", toast_aborted: "Plan abgebrochen",
@@ -36,6 +37,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  findUnhide: "Show again", findUnhidden: "{n} findings shown again",
   firstScan: "The first scan is running: {percent} %", groupOpen: "{count} open", readOnly: "Read only", canChange: "Can change", readOnlyHint: "This page changes nothing.", canChangeHint: "Plans can be created and run from here. Nothing changes before you confirm.",
   outcomeUndoYes: "Undo is possible as long as the objects have not changed.", outcomeUndoBackup: "Undo only from the backup.", outcomeUndoMixed: "Partly undoable, partly only from the backup.",
   backupFailHint: "Check under Settings → System → Backups that a backup location is reachable, and read the log under Settings → System → Logs.", previewReady: "Preview created", toast_verified: "Plan completed and verified", toast_executed: "Plan executed", toast_partial: "Plan only partly executed", toast_aborted: "Plan aborted",

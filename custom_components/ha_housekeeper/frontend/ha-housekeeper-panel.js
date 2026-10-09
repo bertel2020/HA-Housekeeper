@@ -1952,7 +1952,24 @@ class FindingsMixin {
     const n = this.findSel.size;
     this._findPage = pageRows.map(f => f.key);
     if (!pageRows.length && !n) return "";
-    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns"><button class="btn" data-fsel-state="known" ${n ? "" : "disabled"}>${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed" ${n ? "" : "disabled"}>${this.t("fselSnooze")}</button><button class="btn" data-fsel-state="label" ${n ? "" : "disabled"}>${this.t("fselLabel")}</button><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div></div>${this.bulkForm()}`;
+    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide ${n ? "" : "disabled"}><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known" ${n ? "" : "disabled"}>${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed" ${n ? "" : "disabled"}>${this.t("fselSnooze")}</button><button class="btn" data-fsel-state="label" ${n ? "" : "disabled"}>${this.t("fselLabel")}</button><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div>`}</div>${this.bulkForm()}`;
+  }
+
+  // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
+  async unhideSelectedFindings() {
+    const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && f.ignored && f.ignored_by === "user"));
+    let done = 0;
+    try {
+      for (const key of keys) {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false });
+        const finding = this.data.findings.find(f => f.key === key);
+        if (finding) { finding.ignored = false; finding.ignored_by = null; finding.ignore_info = null; done += 1; }
+      }
+      this._rev++;
+    } catch (err) { this.error = err?.message || String(err); }
+    this.findSel.clear();
+    this.render();
+    this.toast(this.t("findUnhidden", { n: done }));
   }
 
   async hideSelectedFindings() {
@@ -7314,6 +7331,7 @@ Object.assign(TEXT.en, {
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  findUnhide: "Wieder einblenden", findUnhidden: "{n} Befunde wieder eingeblendet",
   firstScan: "Der erste Scan läuft: {percent} %", groupOpen: "{count} offen", readOnly: "Nur lesen", canChange: "Kann ändern", readOnlyHint: "Diese Seite ändert nichts.", canChangeHint: "Von hier aus lassen sich Pläne erstellen und ausführen. Geändert wird erst nach deiner Bestätigung.",
   outcomeUndoYes: "Rückgängig ist möglich, solange sich die Objekte nicht geändert haben.", outcomeUndoBackup: "Nur per Backup rückgängig.", outcomeUndoMixed: "Teils rückgängig machbar, teils nur per Backup.",
   backupFailHint: "Prüfe unter Einstellungen → System → Backups, ob ein Backup-Ziel erreichbar ist, und lies das Protokoll unter Einstellungen → System → Protokolle.", previewReady: "Vorschau erstellt", toast_verified: "Plan abgeschlossen und geprüft", toast_executed: "Plan ausgeführt", toast_partial: "Plan nur teilweise ausgeführt", toast_aborted: "Plan abgebrochen",
@@ -7350,6 +7368,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  findUnhide: "Show again", findUnhidden: "{n} findings shown again",
   firstScan: "The first scan is running: {percent} %", groupOpen: "{count} open", readOnly: "Read only", canChange: "Can change", readOnlyHint: "This page changes nothing.", canChangeHint: "Plans can be created and run from here. Nothing changes before you confirm.",
   outcomeUndoYes: "Undo is possible as long as the objects have not changed.", outcomeUndoBackup: "Undo only from the backup.", outcomeUndoMixed: "Partly undoable, partly only from the backup.",
   backupFailHint: "Check under Settings → System → Backups that a backup location is reachable, and read the log under Settings → System → Logs.", previewReady: "Preview created", toast_verified: "Plan completed and verified", toast_executed: "Plan executed", toast_partial: "Plan only partly executed", toast_aborted: "Plan aborted",
@@ -8250,6 +8269,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); ev.preventDefault(); try { await navigator.clipboard.writeText(el.dataset.copy); el.classList.add("done"); el.title = this.t("copiedShort"); this.toast(this.t("copiedShort")); setTimeout(() => { el.classList.remove("done"); el.title = this.t("copyId"); }, 1500); } catch (_) { /* no clipboard in this context */ } });
     root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
+    root.querySelector("[data-fsel-unhide]")?.addEventListener("click", () => this.unhideSelectedFindings());
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { this.pickRange("sel", el.dataset.sel, el.checked, this.cleanupSel, this._cleanupVisible); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
