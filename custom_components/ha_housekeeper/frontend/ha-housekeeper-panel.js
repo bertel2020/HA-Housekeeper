@@ -376,7 +376,7 @@ const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 
 const PREFS_KEY = "ha_housekeeper.prefs";
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list" };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], history_days: [1, 365] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
@@ -962,6 +962,7 @@ class ThemeMixin {
     if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
+    if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
     return prefs;
   }
 
@@ -2149,7 +2150,9 @@ class SettingsMixin {
     const schemes = [["standard", "schemeStandard"], ["housekeeper", "schemeHousekeeper"], ["modern", "schemeModern"]].map(([id, key]) => tile("scheme", id, this.t(key), mini(id))).join("");
     const modes = [["auto", "modeAuto", "mdi:theme-light-dark"], ["light", "modeLight", "mdi:white-balance-sunny"], ["dark", "modeDark", "mdi:weather-night"]].map(([id, key, icon]) => tile("mode", id, this.t(key), `<ha-icon icon="${icon}"></ha-icon>`)).join("");
     const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
-    return `<section class="panel"><div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles">${schemes}</div>
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("setLanguage")}</h2><p>${this.t("setLanguageHint")}</p></div></div>
+      ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ["de", "Deutsch"], ["en", "English"]]))}
+      <div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles">${schemes}</div>
       <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div>
       <div class="panelhead"><h2>${this.t("setReadability")}</h2></div>
       ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
@@ -7101,6 +7104,7 @@ Object.assign(TEXT.en, {
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
   setTabProtection: "Sicherheit", setTabNotify: "Benachrichtigungen", setTabGoals: "Wartungsziele", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Schutzmodus: was Housekeeper ändern darf.", setHintScan: "Wann und wie oft geprüft wird, und Grenzwerte.", setHintNotify: "Meldung bei neuen kaputten Referenzen.", setHintGoals: "Eigene Grenzen für „in Ordnung“.", setHintHidden: "Befunde, die du ausgeblendet hast.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
   maintHintBackup: "Backups prüfen und schützen.", maintHintPreflight: "Vor einem Update auf Probleme prüfen.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintDevices: "Entfernte Geräte ansehen.", maintHintWindow: "Zeitraum für Wartung und Neustarts.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
@@ -7121,6 +7125,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
   setTabProtection: "Safety", setTabNotify: "Notifications", setTabGoals: "Maintenance goals", setHintLook: "Language, density and appearance.", setHintProtection: "Protection mode: what Housekeeper may change.", setHintScan: "When and how often it checks, and limits.", setHintNotify: "A message for new broken references.", setHintGoals: "Your own limits for what in order means.", setHintHidden: "Findings you have hidden.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",
   maintHintBackup: "Check and protect backups.", maintHintPreflight: "Check for problems before an update.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintDevices: "Look at removed devices.", maintHintWindow: "A period for maintenance and restarts.", maintHintGoals: "Your own limits for what in order means.",
@@ -7257,7 +7262,11 @@ class HAHousekeeperPanel extends HTMLElement {
     head.appendChild(style);
   }
 
-  get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
+  get lang() {
+    const chosen = this.prefs?.language;
+    if (chosen === "de" || chosen === "en") return chosen;
+    return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+  }
 
   t(key, vars) {
     const text = TEXT[this.lang][key] || TEXT.en[key] || key;

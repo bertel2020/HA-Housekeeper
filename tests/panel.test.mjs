@@ -505,7 +505,7 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
   const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope", graphMode: "cube" }) }) }).el;
-  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list" }));
+  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" }));
 });
 
 test("the start view preference applies unless a deep link says otherwise", () => {
@@ -3060,3 +3060,16 @@ test("detail, maintenance and settings offer their options as tiles that open on
   for (const id of ["look", "protection", "scan", "notify", "goals", "hidden", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
   assert.ok(shadow.innerHTML.includes("data-protection") && !shadow.innerHTML.includes("data-notify"));
 });
+
+test("the language can be set by hand, saved with the preferences, and falls back to Home Assistant", () => {
+  const { el, shadow } = panel("en");
+  assert.equal(el.lang, "en");
+  el.setPref("language", "de");
+  assert.equal(el.lang, "de"); assert.equal(el.t("settings"), TEXT_DE_SETTINGS);
+  assert.equal(el.sanitizePrefs({ language: "fr" }).language, "auto");
+  el.setPref("language", "auto");
+  assert.equal(el.lang, "en");
+  el.view = "settings"; el.settingsTab = "look"; el.render();
+  assert.ok(shadow.innerHTML.includes('data-pref="language|de"') && shadow.innerHTML.includes('data-pref="language|auto"'));
+});
+const TEXT_DE_SETTINGS = "Einstellungen";

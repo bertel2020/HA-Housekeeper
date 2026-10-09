@@ -114,7 +114,11 @@ class HAHousekeeperPanel extends HTMLElement {
     head.appendChild(style);
   }
 
-  get lang() { return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en"; }
+  get lang() {
+    const chosen = this.prefs?.language;
+    if (chosen === "de" || chosen === "en") return chosen;
+    return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+  }
 
   t(key, vars) {
     const text = TEXT[this.lang][key] || TEXT.en[key] || key;
