@@ -256,6 +256,17 @@ Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende 
 
 Die Versionshinweise auf Deutsch und Englisch stehen in [CHANGELOG.md](CHANGELOG.md).
 
+## Haftungsausschluss
+
+HA Housekeeper ist ein privat entwickeltes, kostenloses Open-Source-Projekt und wird
+ohne Gewährleistung oder Garantie bereitgestellt. Die Nutzung erfolgt auf eigene
+Verantwortung; insbesondere kann keine Garantie für einen fehlerfreien Betrieb sowie
+für die Richtigkeit, Vollständigkeit, Verfügbarkeit oder den dauerhaften Erhalt von
+Konfiguration und Daten übernommen werden. **Housekeeper kann Einträge, Dateien und
+Statistiken in deiner Home-Assistant-Installation ändern oder entfernen. Lege daher
+vor jedem Aufräumen ein Home-Assistant-Backup an und erstelle regelmäßig unabhängige
+Backups, auch außerhalb des Home-Assistant-Systems.**
+
 ## Lizenz
 
 Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).

@@ -256,6 +256,16 @@ The first scan establishes the initial observation timestamps. Later scans prese
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes in English and German.
 
+## Disclaimer
+
+HA Housekeeper is a privately developed, free open-source project and is provided
+without warranty or guarantee. Use is at your own risk; in particular, no guarantee
+can be given for error-free operation or for the correctness, completeness,
+availability or lasting preservation of configuration and data. **Housekeeper can
+change or remove entries, files and statistics in your Home Assistant installation.
+Therefore make a Home Assistant backup before every cleanup and make independent
+backups regularly, also outside the Home Assistant system.**
+
 ## License
 
 This project is released under the [MIT License](LICENSE).
