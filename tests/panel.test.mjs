@@ -2348,15 +2348,15 @@ test("the search opens the chosen object and closes; the keyboard moves through 
 
 test("a list view can be saved under a name, applied again, overwritten and deleted", () => {
   const storage = fakeStorage({});
-  let answer = "Kaputte Sensoren";
-  const { el } = panel("en", { localStorage: storage, prompt: () => answer });
+  const { el } = panel("en", { localStorage: storage });
+  const save = name => { el.saveView("inv"); assert.ok(el.viewsControl("inv").includes("data-lview-form")); el.commitView("inv", name); };
   const read = () => JSON.parse(storage.getItem("ha_housekeeper.views"));
   el.data = DATA;
   const st = el.lvState("inv", "name", "asc");
   assert.equal(el.viewsControl("inv"), "", "nothing to save and nothing saved: no control");
   st.q = "sensor"; st.f = { status: "orphaned", type: "" };
   assert.ok(el.viewsControl("inv").includes("data-lview-save"));
-  el.saveView("inv");
+  save("Kaputte Sensoren");
   assert.equal(read().inv[0].name, "Kaputte Sensoren");
   assert.equal(JSON.stringify(read().inv[0].f), JSON.stringify({ status: "orphaned" }), "empty filters are not stored");
   st.q = ""; st.f = {}; st.sort = "status"; st.dir = "desc";
@@ -2364,23 +2364,24 @@ test("a list view can be saved under a name, applied again, overwritten and dele
   assert.equal(st.q, "sensor"); assert.equal(st.f.status, "orphaned"); assert.equal(st.sort, "name"); assert.equal(st.dir, "asc");
   const bar = el.viewsControl("inv");
   assert.ok(bar.includes("data-lview=") && bar.includes("data-lview-delete") && bar.includes("selected"));
-  st.q = "neu"; el.saveView("inv");
+  st.q = "neu"; save("Kaputte Sensoren");
   assert.equal(read().inv.length, 1, "the same name overwrites");
-  answer = "";
-  el.saveView("inv");
+  save("  ");
   assert.equal(read().inv.length, 1, "no name, no view");
+  el.cancelView("inv");
+  assert.ok(!el.viewsControl("inv").includes("data-lview-form"), "cancel closes the form");
   el.deleteView("inv");
   assert.equal(read().inv.length, 0);
 });
 
 test("saved views from a broken browser store are ignored and a failing write does not crash", () => {
   const broken = JSON.stringify({ inv: [1, { name: 5 }, { name: "ok", q: "", f: { a: "b", c: 3 }, sort: "name", dir: "up" }, { name: "ok", q: "x", f: { a: "b", c: 3 }, sort: "name", dir: "asc" }], other: "x" });
-  const { el } = panel("en", { localStorage: { getItem: () => broken, setItem() { throw new Error("full"); } }, prompt: () => "neu" });
+  const { el } = panel("en", { localStorage: { getItem: () => broken, setItem() { throw new Error("full"); } } });
   el.data = DATA;
   const views = el.viewsStore();
   assert.equal(views.inv.length, 1); assert.equal(JSON.stringify(views.inv[0].f), JSON.stringify({ a: "b" })); assert.ok(!views.other);
   const st = el.lvState("inv", "name", "asc"); st.q = "z";
-  el.saveView("inv");
+  el.saveView("inv"); el.commitView("inv", "neu");
   assert.equal(views.inv.length, 2);
 });
 
@@ -2487,4 +2488,25 @@ test("missing statistics hours say what all series lack, name the periods and li
   const extra = el.dbFindingExtra(f);
   assert.ok(extra.includes("The recorder was not running") && extra.includes("B &lt;i&gt;") && !extra.includes("<i>"));
   assert.ok(el.dbFindingExtra({ kind: "growth" }) === "");
+});
+
+test("the browser's back button steps back inside the panel, one history entry in front of it", () => {
+  const calls = [];
+  const win = { location: { pathname: "/ha-housekeeper", href: "/ha-housekeeper", search: "" }, history: { state: null, pushState: () => calls.push("push"), back: () => calls.push("back"), replaceState() {} } };
+  const { el } = panel("en", { window: win });
+  el._basePath = "/ha-housekeeper";
+  el.view = "inventory";
+  el.syncGuard();
+  assert.deepEqual(calls, [], "nothing to go back to: no entry");
+  el.selected = DATA.objects[0];
+  el.syncGuard(); el.syncGuard();
+  assert.deepEqual(calls, ["push"], "one entry while there is a way back");
+  el.onPopState();
+  assert.equal(el.selected, null, "back leaves the detail page");
+  assert.equal(el._guard, false);
+  el.selected = DATA.objects[0]; el.syncGuard();
+  el.selected = null; el.syncGuard();
+  assert.deepEqual(calls, ["push", "push", "back"], "own back button: the spare entry is removed");
+  el.onPopState();
+  assert.equal(el.view, "inventory", "that pop is ignored");
 });

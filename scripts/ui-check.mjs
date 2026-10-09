@@ -1,7 +1,8 @@
 // Looks at the panel in a real browser: screenshots of the main views at desktop, tablet and phone
 // size in light and dark, and optionally an accessibility scan with axe-core.
 //
-//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--axe] [--serve]
+//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--axe] [--serve] [--fail-fast]
+//   (a failing Chrome run is reported with its view, size and scheme; the other runs continue and the exit code is 1)
 //
 // Needs Google Chrome (CHROME=/path, the macOS default path, or google-chrome/chromium on PATH).
 // --axe also needs axe-core: `npm install --no-save axe-core@4.10.2` in the repository, or
@@ -213,12 +214,21 @@ function serve(data) {
   });
 }
 
-// Each Chrome run gets its own profile so that several can run side by side.
+// Each Chrome run gets its own profile so that several can run side by side. A job that fails is
+// reported with its view, size and scheme and the others carry on (--fail-fast stops at the first).
 async function pool(jobs, size, worker) {
-  const queue = [...jobs], results = [];
+  const queue = [...jobs], results = [], errors = [];
   await Promise.all(Array.from({ length: size }, async () => {
-    for (let job = queue.shift(); job; job = queue.shift()) results.push(await worker(job));
+    for (let job = queue.shift(); job; job = queue.shift()) {
+      try { results.push(await worker(job)); } catch (err) {
+        const where = `${job.view}/${job.viewport}/${job.scheme}`;
+        console.error(`failed: ${where}: ${err.message}`);
+        errors.push(where);
+        if (flag("fail-fast")) queue.length = 0;
+      }
+    }
   }));
+  if (errors.length) failed = true;
   return results;
 }
 
@@ -230,6 +240,7 @@ const windowSize = ([w, h]) => [Math.max(w, NARROW), h];
 
 const chromeArgs = (profile, w, h) => ["--headless=new", "--disable-gpu", "--hide-scrollbars", "--no-first-run", "--no-default-browser-check", `--user-data-dir=${profile}`, `--window-size=${w},${h}`, "--virtual-time-budget=3000"];
 
+let failed = false;
 const out = path.resolve(arg("out", path.join(os.tmpdir(), "ha-housekeeper-ui-check")));
 const views = (arg("views", Object.keys(VIEWS).join(","))).split(",").filter(v => VIEWS[v]);
 const viewports = (arg("viewports", Object.keys(VIEWPORTS).join(","))).split(",").filter(v => VIEWPORTS[v]);
@@ -241,7 +252,6 @@ if (flag("serve")) { // for looking at the page in any browser; Ctrl-C ends it
   await new Promise(() => {});
 }
 const root_profile = fs.mkdtempSync(path.join(os.tmpdir(), "hk-chrome-"));
-let failed = false;
 const jobsParallel = Number(arg("jobs", 3));
 let counter = 0;
 const withProfile = async fn => {

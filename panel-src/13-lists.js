@@ -179,6 +179,9 @@ class ListsMixin {
     const dirty = Boolean(st.q.trim()) || Object.values(st.f).some(Boolean);
     if (!saved.length && !dirty) return "";
     const select = saved.length ? `<select data-lview="${id}" aria-label="${this.esc(this.t("viewsLabel"))}"><option value="">${this.t("viewsNone")}</option>${saved.map(v => `<option value="${this.esc(v.name)}" ${st.view === v.name ? "selected" : ""}>${this.esc(v.name)}</option>`).join("")}</select>` : "";
+    if (this.viewNaming === id) {
+      return `<form class="viewgroup" data-lview-form="${id}"><input data-lview-name="${id}" maxlength="40" autocomplete="off" value="${this.esc(this.viewDraft)}" aria-label="${this.esc(this.t("viewName"))}" placeholder="${this.esc(this.t("viewName"))}"><button type="submit" class="btn">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-lview-cancel="${id}">${this.t("cancelRun")}</button></form>`;
+    }
     const save = dirty ? `<button type="button" class="btn quiet" data-lview-save="${id}">${this.t("viewSave")}</button>` : "";
     const remove = st.view && saved.some(v => v.name === st.view) ? `<button type="button" class="btn quiet" data-lview-delete="${id}">${this.t("viewDelete")}</button>` : "";
     return `<span class="viewgroup">${select}${save}${remove}</span>`;
@@ -191,15 +194,28 @@ class ListsMixin {
     this.pages = {}; this.render();
   }
 
+  // Naming a view happens in a small inline form (name, save, cancel), not in a browser prompt.
   saveView(id) {
-    const st = this.lv[id];
-    const name = String(globalThis.prompt?.(this.t("viewName"), st.view || "") || "").trim().slice(0, 40);
+    this.viewNaming = id; this.viewDraft = this.lv[id].view || "";
+    this.render();
+    this.shadowRoot?.querySelector?.(`[data-lview-name="${id}"]`)?.focus?.();
+  }
+
+  cancelView(id) {
+    this.viewNaming = null;
+    this.render();
+    this.shadowRoot?.querySelector?.(`[data-lview-save="${id}"]`)?.focus?.();
+  }
+
+  commitView(id, text) {
+    const st = this.lv[id], name = String(text || "").trim().slice(0, 40);
     if (!name) return;
     const store = this.viewsStore(), list = (store[id] ||= []);
     const view = { name, q: st.q, f: Object.fromEntries(Object.entries(st.f).filter(([, v]) => v)), sort: st.sort, dir: st.dir };
     const at = list.findIndex(v => v.name === name);
     if (at >= 0) list[at] = view; else if (list.length < VIEWS_LIMIT) list.push(view); else list[list.length - 1] = view;
-    st.view = name; this.persistViews(); this.render();
+    st.view = name; this.viewNaming = null; this.persistViews(); this.render();
+    this.shadowRoot?.querySelector?.(`[data-lview-save="${id}"]`)?.focus?.();
   }
 
   deleteView(id) {

@@ -1398,6 +1398,9 @@ class ListsMixin {
     const dirty = Boolean(st.q.trim()) || Object.values(st.f).some(Boolean);
     if (!saved.length && !dirty) return "";
     const select = saved.length ? `<select data-lview="${id}" aria-label="${this.esc(this.t("viewsLabel"))}"><option value="">${this.t("viewsNone")}</option>${saved.map(v => `<option value="${this.esc(v.name)}" ${st.view === v.name ? "selected" : ""}>${this.esc(v.name)}</option>`).join("")}</select>` : "";
+    if (this.viewNaming === id) {
+      return `<form class="viewgroup" data-lview-form="${id}"><input data-lview-name="${id}" maxlength="40" autocomplete="off" value="${this.esc(this.viewDraft)}" aria-label="${this.esc(this.t("viewName"))}" placeholder="${this.esc(this.t("viewName"))}"><button type="submit" class="btn">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-lview-cancel="${id}">${this.t("cancelRun")}</button></form>`;
+    }
     const save = dirty ? `<button type="button" class="btn quiet" data-lview-save="${id}">${this.t("viewSave")}</button>` : "";
     const remove = st.view && saved.some(v => v.name === st.view) ? `<button type="button" class="btn quiet" data-lview-delete="${id}">${this.t("viewDelete")}</button>` : "";
     return `<span class="viewgroup">${select}${save}${remove}</span>`;
@@ -1410,15 +1413,28 @@ class ListsMixin {
     this.pages = {}; this.render();
   }
 
+  // Naming a view happens in a small inline form (name, save, cancel), not in a browser prompt.
   saveView(id) {
-    const st = this.lv[id];
-    const name = String(globalThis.prompt?.(this.t("viewName"), st.view || "") || "").trim().slice(0, 40);
+    this.viewNaming = id; this.viewDraft = this.lv[id].view || "";
+    this.render();
+    this.shadowRoot?.querySelector?.(`[data-lview-name="${id}"]`)?.focus?.();
+  }
+
+  cancelView(id) {
+    this.viewNaming = null;
+    this.render();
+    this.shadowRoot?.querySelector?.(`[data-lview-save="${id}"]`)?.focus?.();
+  }
+
+  commitView(id, text) {
+    const st = this.lv[id], name = String(text || "").trim().slice(0, 40);
     if (!name) return;
     const store = this.viewsStore(), list = (store[id] ||= []);
     const view = { name, q: st.q, f: Object.fromEntries(Object.entries(st.f).filter(([, v]) => v)), sort: st.sort, dir: st.dir };
     const at = list.findIndex(v => v.name === name);
     if (at >= 0) list[at] = view; else if (list.length < VIEWS_LIMIT) list.push(view); else list[list.length - 1] = view;
-    st.view = name; this.persistViews(); this.render();
+    st.view = name; this.viewNaming = null; this.persistViews(); this.render();
+    this.shadowRoot?.querySelector?.(`[data-lview-save="${id}"]`)?.focus?.();
   }
 
   deleteView(id) {
@@ -5168,9 +5184,45 @@ class HAHousekeeperPanel extends HTMLElement {
   get hass() { return this._hass; }
 
   connectedCallback() {
+    this._gone = false;
     this._basePath = typeof window === "undefined" ? null : window.location.pathname;
+    this._onPop = () => this.onPopState();
+    window.addEventListener?.("popstate", this._onPop);
     this.installFonts();
     this.render();
+  }
+
+  // Timers and late answers must not touch a panel that HA has taken out of the page.
+  disconnectedCallback() {
+    this._gone = true;
+    window.removeEventListener?.("popstate", this._onPop);
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer"]) {
+      if (this[name]) globalThis.clearTimeout?.(this[name]);
+      this[name] = null;
+    }
+  }
+
+  // The browser's back button steps back inside the panel. One history entry is kept in front of
+  // the panel's own back steps while there is somewhere to go back to.
+  canGoBack() {
+    return Boolean(this.view === "graph" ? this.graphTrail?.length || this.graphOrigin : this.selected || this.viewTrail?.length);
+  }
+
+  onPopState() {
+    if (this._ignorePop) { this._ignorePop = false; return; }
+    this._guard = false;
+    if (this._gone || window.location.pathname !== this._basePath || !this.canGoBack()) return;
+    if (this.view === "graph") this.graphBack();
+    else if (this.selected) this.goBack();
+    else this.viewBack();
+  }
+
+  syncGuard() {
+    if (typeof window === "undefined" || !window.history || window.location.pathname !== this._basePath) return;
+    try {
+      if (this.canGoBack() && !this._guard) { window.history.pushState(window.history.state, "", window.location.href); this._guard = true; }
+      else if (!this.canGoBack() && this._guard) { this._guard = false; this._ignorePop = true; window.history.back(); }
+    } catch (_) { /* no history access: the panel's own back buttons still work */ }
   }
 
   installFonts() {
@@ -5496,7 +5548,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.restoreFocus(focus);
     this.bind();
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
-    if (this.data) this.syncUrl();
+    if (this.data) { this.syncGuard(); this.syncUrl(); }
   }
 
   // Deep links: /ha-housekeeper?view=findingsNav&filter=orphaned or ?object=entity:sensor.x
@@ -5879,6 +5931,15 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-lview]").forEach(el => el.onchange = () => this.applyView(el.dataset.lview, el.value));
     root.querySelectorAll("[data-lview-save]").forEach(el => el.onclick = () => this.saveView(el.dataset.lviewSave));
+    root.querySelectorAll("[data-lview-form]").forEach(form => form.onsubmit = ev => {
+      ev.preventDefault();
+      this.commitView(form.dataset.lviewForm, form.querySelector("[data-lview-name]")?.value);
+    });
+    root.querySelectorAll("[data-lview-name]").forEach(el => {
+      el.oninput = () => { this.viewDraft = el.value; };
+      el.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.cancelView(el.dataset.lviewName); } };
+    });
+    root.querySelectorAll("[data-lview-cancel]").forEach(el => el.onclick = () => this.cancelView(el.dataset.lviewCancel));
     root.querySelectorAll("[data-lview-delete]").forEach(el => el.onclick = () => this.deleteView(el.dataset.lviewDelete));
     root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.persistLv(id); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.persistLv(el.dataset.ls); this.pages = {}; this.render(); });

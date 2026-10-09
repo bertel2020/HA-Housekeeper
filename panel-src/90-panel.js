@@ -64,9 +64,45 @@ class HAHousekeeperPanel extends HTMLElement {
   get hass() { return this._hass; }
 
   connectedCallback() {
+    this._gone = false;
     this._basePath = typeof window === "undefined" ? null : window.location.pathname;
+    this._onPop = () => this.onPopState();
+    window.addEventListener?.("popstate", this._onPop);
     this.installFonts();
     this.render();
+  }
+
+  // Timers and late answers must not touch a panel that HA has taken out of the page.
+  disconnectedCallback() {
+    this._gone = true;
+    window.removeEventListener?.("popstate", this._onPop);
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer"]) {
+      if (this[name]) globalThis.clearTimeout?.(this[name]);
+      this[name] = null;
+    }
+  }
+
+  // The browser's back button steps back inside the panel. One history entry is kept in front of
+  // the panel's own back steps while there is somewhere to go back to.
+  canGoBack() {
+    return Boolean(this.view === "graph" ? this.graphTrail?.length || this.graphOrigin : this.selected || this.viewTrail?.length);
+  }
+
+  onPopState() {
+    if (this._ignorePop) { this._ignorePop = false; return; }
+    this._guard = false;
+    if (this._gone || window.location.pathname !== this._basePath || !this.canGoBack()) return;
+    if (this.view === "graph") this.graphBack();
+    else if (this.selected) this.goBack();
+    else this.viewBack();
+  }
+
+  syncGuard() {
+    if (typeof window === "undefined" || !window.history || window.location.pathname !== this._basePath) return;
+    try {
+      if (this.canGoBack() && !this._guard) { window.history.pushState(window.history.state, "", window.location.href); this._guard = true; }
+      else if (!this.canGoBack() && this._guard) { this._guard = false; this._ignorePop = true; window.history.back(); }
+    } catch (_) { /* no history access: the panel's own back buttons still work */ }
   }
 
   installFonts() {
@@ -392,7 +428,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.restoreFocus(focus);
     this.bind();
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
-    if (this.data) this.syncUrl();
+    if (this.data) { this.syncGuard(); this.syncUrl(); }
   }
 
   // Deep links: /ha-housekeeper?view=findingsNav&filter=orphaned or ?object=entity:sensor.x
@@ -775,6 +811,15 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-lview]").forEach(el => el.onchange = () => this.applyView(el.dataset.lview, el.value));
     root.querySelectorAll("[data-lview-save]").forEach(el => el.onclick = () => this.saveView(el.dataset.lviewSave));
+    root.querySelectorAll("[data-lview-form]").forEach(form => form.onsubmit = ev => {
+      ev.preventDefault();
+      this.commitView(form.dataset.lviewForm, form.querySelector("[data-lview-name]")?.value);
+    });
+    root.querySelectorAll("[data-lview-name]").forEach(el => {
+      el.oninput = () => { this.viewDraft = el.value; };
+      el.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.cancelView(el.dataset.lviewName); } };
+    });
+    root.querySelectorAll("[data-lview-cancel]").forEach(el => el.onclick = () => this.cancelView(el.dataset.lviewCancel));
     root.querySelectorAll("[data-lview-delete]").forEach(el => el.onclick = () => this.deleteView(el.dataset.lviewDelete));
     root.querySelectorAll("[data-lf]").forEach(el => el.onchange = () => { const [id, name] = el.dataset.lf.split("|"); this.lv[id].f[name] = el.value; this.persistLv(id); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ls]").forEach(el => el.onchange = () => { const st = this.lv[el.dataset.ls]; st.sort = el.value; st.dir = this.lvDirs[el.dataset.ls][el.value] || "asc"; this.persistLv(el.dataset.ls); this.pages = {}; this.render(); });
