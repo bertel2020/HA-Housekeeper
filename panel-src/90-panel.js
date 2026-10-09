@@ -152,6 +152,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.busy = false; this.render();
     }
     if (this.view === "changes" && this.data) this.loadCompare();
+    if (this.data) this.ensureSafetyData();
     // Preliminary data: fetch the final scan once the backend's warm-up is over.
     if (this.data?.meta?.preliminary) {
       const wait = ((Number(this.data.meta.warmup_seconds_left) || 0) + 20) * 1000;
@@ -421,7 +422,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const shell = `<div class="shell${this.dense ? " dense" : ""}">${this.topbar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.dense ? " dense" : ""}">${this.topbar()}${this.safetyBar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
@@ -624,6 +625,11 @@ class HAHousekeeperPanel extends HTMLElement {
       };
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
+    root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
+      this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
+      if (this.view === "cleanup") this.viewTab = { ...this.viewTab, cleanup: "journal" };
+      this.render();
+    });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};

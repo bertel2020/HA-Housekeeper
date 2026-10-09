@@ -1053,6 +1053,10 @@ class StylesMixin {
       *{box-sizing:border-box} button,input,select{font:inherit;color:inherit} button{cursor:pointer} h1,h2,h3,h4,p{margin:0}
       ha-icon{--mdc-icon-size:20px}
       .shell{min-height:100vh;display:block}
+      .safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
+      .safeitem{display:inline-flex;align-items:center;gap:6px;padding:2px 0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+      .safeitem:hover{color:var(--hk-text)}.safeitem .dot{width:8px;height:8px;border-radius:50%;background:var(--hk-muted)}.safeitem .dot.ok{background:var(--hk-green,#2e7d32)}.safeitem .dot.warn{background:var(--hk-amber,#b26a00)}.safeitem .dot.red{background:var(--hk-red,#c62828)}
+      @media(max-width:860px){.safebar{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;padding:6px 12px}}
       .top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:22px;padding:0 clamp(16px,2.4vw,32px);min-height:calc(60px*var(--hk-fs,1));border-bottom:1px solid var(--hk-border);background:var(--hk-surface)}
       .brand{display:flex;align-items:center;gap:10px;flex:none}.brandmark{width:34px;height:34px;display:grid;place-items:center;flex:none}.brandmark img{width:34px;height:34px;object-fit:contain}.brandmark ha-icon{display:none}.brandmark.nologo{border-radius:10px;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brandmark.nologo ha-icon{display:block}.brand strong{font-weight:600;font-size:calc(17px*var(--hk-fs,1));white-space:nowrap}
       .topnav{flex:1;min-width:0;display:flex;align-items:stretch;align-self:stretch;gap:2px}.navmenu{position:relative;display:flex;align-items:stretch}.navend{margin-left:auto;display:flex;align-items:stretch;gap:8px}.quick{position:relative;display:flex;align-items:center;align-self:center}.quick>ha-icon{position:absolute;left:8px;--mdc-icon-size:18px;color:var(--hk-muted);pointer-events:none}.quick input{width:150px;max-width:100%;min-height:36px;padding:0 10px 0 32px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.quick input:focus{outline:2px solid var(--hk-blue);outline-offset:0}.quicklist{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:min(380px,90vw);max-height:60vh;overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.quicklist li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}.quicklist li.on,.quicklist li:hover{background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.quicklist li.none{display:block;color:var(--hk-muted);cursor:default}.quicklist .row-text{min-width:0}.quicklist small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.quick{display:flex;margin:6px 0}.quick input{width:100%}.navend{flex-direction:column;align-items:stretch}}.navhead{display:none;padding:10px 12px 2px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}
@@ -1603,7 +1607,7 @@ class OverviewMixin {
     this.ensureTrend();
     this.ensureBackup();
     return `<div class="summary">
-      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
+      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span><span class="card-text"><small>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)}</small><strong>${this.t("healthScore", { percent: health.percent })}</strong><em>${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
       ${this.todoCard()}${this.goalsCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
@@ -5389,10 +5393,21 @@ class CausesMixin {
     return [...why, ...used, c.impact && c.impact !== "none" ? this.t(`impact_${c.impact}`) : ""].filter(Boolean).join(" · ");
   }
 
+  // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
+  causeCounts(c) {
+    const parts = [this.t("causeN_entity", { n: this.formatNumber(c.follower_count) }), ...["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeN_${k}`, { n: c.consumers[k] }))];
+    return this.t("causeCounts", { parts: parts.join(", ") });
+  }
+
   causesCard() {
     const causes = this.causeList();
     if (!causes.length) return "";
-    const rows = causes.map(c => `<button class="row" data-object="${this.esc(`${c.object_type}:${c.object_id}`)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(this.causeLine(c))}</small></span><span class="pill red">${this.t("causeFollowers", { n: this.formatNumber(c.follower_count) })}</span></button>`).join("");
+    const followers = id => (this.data.findings || []).filter(f => f.cause_id === id && !f.ignored);
+    const rows = causes.map(c => {
+      const head = { tone: "red", title: this.esc(this.t(`cause_${c.kind}`, { name: c.name })), sub: [this.causeCounts(c), this.causeLine(c)].filter(Boolean).join(" · "), pill: this.t("causeFollowers", { n: this.formatNumber(c.follower_count) }) };
+      const body = `<button class="row" data-object="${this.esc(`${c.object_type}:${c.object_id}`)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(c.name)}</strong></span></button>${followers(c.id).slice(0, 20).map(f => this.findingRow(f)).join("")}`;
+      return this.fold(`cause_${c.id}`, head, body, false);
+    }).join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("causesTitle")}</h2><p>${this.t("causesSub")}</p></div></div>${rows}</div>`;
   }
 
@@ -6188,6 +6203,55 @@ class RefactorMixin {
   }
 }
 
+// SafetyMixin: the thin status line under the navigation that says how safe the writing parts are.
+class SafetyMixin {
+  ensureSafetyData() {
+    if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
+    this.ensureBackup();
+  }
+
+  // Each item is [key, tone, text, target view]; running work comes first, nothing is invented when data is missing.
+  safetyItems() {
+    const items = [], plans = this.journal || [];
+    const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
+    if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "cleanup"]);
+    if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
+    const last = plans.find(p => p.finished_at);
+    if (last) {
+      items.push(["last", "mute", this.t("safeLast", { when: this.formatDate(last.finished_at) }), "cleanup"]);
+      items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "cleanup"]);
+    }
+    const watching = plans.filter(p => p.followup === "watching").length;
+    if (watching) items.push(["watch", "warn", this.t("safeWatching", { n: watching }), "cleanup"]);
+    const regress = plans.filter(p => p.followup === "regression").length;
+    if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "cleanup"]);
+    return items;
+  }
+
+  safetyBar() {
+    if (!this.data) return "";
+    const items = this.safetyItems();
+    if (!items.length) return "";
+    return `<div class="safebar" role="region" aria-label="${this.esc(this.t("safeLabel"))}">${items.map(([key, tone, text, view]) => `<button class="safeitem ${tone}" data-safe="${view}" data-safe-key="${key}"><span class="dot ${tone}" aria-hidden="true"></span>${this.esc(text)}</button>`).join("")}</div>`;
+  }
+}
+Object.assign(TEXT.de, {
+  safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
+  safeLast: "Letzte Änderung: {when}", safeUndo: "Rückgängig möglich", safeNoUndo: "Rückgängig nicht mehr möglich, nur Backup-Restore",
+  safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Nachbeobachtung läuft", safeRegression: "{n} Rückfall nach Änderung",
+  healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
+  healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
+  causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards",
+});
+Object.assign(TEXT.en, {
+  safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
+  safeLast: "Last change: {when}", safeUndo: "Undo available", safeNoUndo: "Undo no longer possible, backup restore only",
+  safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} follow-up running", safeRegression: "{n} regression after a change",
+  healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
+  healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
+  causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",
+});
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -6342,6 +6406,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.busy = false; this.render();
     }
     if (this.view === "changes" && this.data) this.loadCompare();
+    if (this.data) this.ensureSafetyData();
     // Preliminary data: fetch the final scan once the backend's warm-up is over.
     if (this.data?.meta?.preliminary) {
       const wait = ((Number(this.data.meta.warmup_seconds_left) || 0) + 20) * 1000;
@@ -6611,7 +6676,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const shell = `<div class="shell${this.dense ? " dense" : ""}">${this.topbar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.dense ? " dense" : ""}">${this.topbar()}${this.safetyBar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
@@ -6814,6 +6879,11 @@ class HAHousekeeperPanel extends HTMLElement {
       };
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
+    root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
+      this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
+      if (this.view === "cleanup") this.viewTab = { ...this.viewTab, cleanup: "journal" };
+      this.render();
+    });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
@@ -7048,7 +7118,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

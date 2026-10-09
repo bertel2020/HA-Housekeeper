@@ -2818,3 +2818,22 @@ test("automation diagnostics: quality dimensions, criteria, coverage, comparison
   el.data = { ...DATA, criteria_alerts: [{ entity_id: "automation.hall", ok: 1, missed: 4 }] };
   assert.ok(el.todoItems().some(item => item.key === "criteria" && item.count === 1));
 });
+
+test("the health card names the score and the count; the safety line shows backup, last change, undo and follow-ups; a cause folds its follow-ups", () => {
+  const { el, shadow } = panel("en");
+  el.view = "overview";
+  el.backup = { available: true, checks: [{ id: "newest", level: "ok", values: { age_hours: 5 } }] };
+  el.journal = [
+    { plan_id: "a", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: true, followup: "watching" },
+    { plan_id: "b", status: "verified", finished_at: "2026-10-01T10:00:00+00:00", undoable: false, followup: "regression" },
+  ];
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("/ 100 healthy"));
+  assert.ok(html.includes("of 3 rated objects affected"));
+  assert.ok(html.includes("Last backup: 5 h ago") && html.includes("Undo available") && html.includes("1 follow-up running") && html.includes("1 regression after a change"));
+  el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
+  assert.ok(el.safetyBar().includes("backup restore only"));
+  el.data = { ...DATA, causes: [{ id: "integration_down:x", kind: "integration_down", object_type: "config_entry", object_id: "x", name: "Zigbee", follower_count: 47, consumers: { automation: 12, dashboard: 2 } }] };
+  assert.ok(el.causesCard().includes("47 entities, 12 automations, 2 dashboards affected"));
+});

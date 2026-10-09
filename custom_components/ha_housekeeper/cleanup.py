@@ -889,6 +889,9 @@ def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
         "status": plan.get("status"),
         "executed": bool(plan.get("executed")),
         "run": bool(plan.get("run")),
+        "finished_at": (plan.get("run") or {}).get("finished_at"),
+        "undoable": not plan.get("file_snapshot_dropped")
+        and any((a.get("result") or {}).get("state") == "done" for a in plan.get("actions", [])),
         "summary": plan.get("summary"),
         "file_snapshot_dropped": bool(plan.get("file_snapshot_dropped")),
         "followup": (plan.get("followup") or {}).get("state"),
