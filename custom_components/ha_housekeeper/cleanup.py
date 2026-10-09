@@ -743,6 +743,45 @@ def build_plan(
     }
 
 
+MAX_MERGE = 10
+
+
+def merge_requests(
+    plans: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, str]], int]:
+    """The requests of several plans as one list, in the order of the plans.
+
+    The same request twice counts once (the third value). A plan knows each object only once, so
+    the same object asked for in a different way is a conflict: it is listed and left out, never
+    decided for the person.
+    """
+    requests: dict[str, dict[str, Any]] = {}
+    conflicts: dict[str, dict[str, str]] = {}
+    dropped = 0
+    for plan in plans:
+        for action in plan["actions"]:
+            request = {"kind": action["kind"], "object_id": action["object_id"]}
+            if action.get("target"):
+                request["target"] = action["target"]
+            if action["kind"] in METER_KINDS and action.get("mode"):
+                request["mode"] = action["mode"]
+            if action["kind"] in PURGE_KINDS:
+                request["states"] = bool(action.get("states"))
+            known = requests.get(request["object_id"])
+            if known is None:
+                if request["object_id"] not in conflicts:
+                    requests[request["object_id"]] = request
+            elif known == request:
+                dropped += 1
+            else:
+                conflicts[request["object_id"]] = {
+                    "object_id": request["object_id"],
+                    "kinds": sorted({known["kind"], request["kind"]}),
+                }
+                del requests[request["object_id"]]
+    return list(requests.values()), list(conflicts.values()), dropped
+
+
 def history_ids(plan: dict[str, Any]) -> list[str]:
     """The entity or statistic IDs whose recorder rows a plan is about."""
     ids: list[str] = []

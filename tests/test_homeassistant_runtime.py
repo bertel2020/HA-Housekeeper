@@ -1231,3 +1231,52 @@ async def test_diagnostics_commands_answer_for_known_and_unknown_automations(
             {"type": f"ha_housekeeper/{command}", "entity_id": "automation.none"}
         )
         assert (await client.receive_json())["error"]["code"] == "not_found"
+
+
+async def test_open_previews_merge_into_one_plan_and_conflicts_are_reported(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """Merging rebuilds one plan from the requests; sources go, conflicts are listed, nothing runs."""
+    registry = er.async_get(hass)
+    one = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="m-1", suggested_object_id="one"
+    )
+    two = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="m-2", suggested_object_id="two"
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+
+    async def create(*actions):
+        await client.send_json_auto_id(
+            {"type": "ha_housekeeper/plan_create", "actions": list(actions)}
+        )
+        return (await client.receive_json())["result"]
+
+    first = await create(
+        {"kind": "disable_entity", "object_id": one.entity_id},
+        {"kind": "disable_entity", "object_id": two.entity_id},
+    )
+    second = await create(
+        {"kind": "disable_entity", "object_id": one.entity_id},
+        {"kind": "remove_entity", "object_id": two.entity_id},
+    )
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/plan_merge", "plan_ids": [first["plan_id"], second["plan_id"]]}
+    )
+    result = (await client.receive_json())["result"]
+    assert result["dropped"] == 1 and result["conflicts"][0]["object_id"] == two.entity_id
+    assert [a["object_id"] for a in result["plan"]["actions"]] == [one.entity_id]
+    assert result["merged"] == [first["plan_id"], second["plan_id"]]
+    assert {p["plan_id"] for p in scanner.journal.plans} == {result["plan"]["plan_id"]}
+    assert registry.async_get(one.entity_id).disabled_by is None  # nothing was changed
+
+    scanner.journal.get(result["plan"]["plan_id"])["executed"] = True
+    other = await create({"kind": "disable_entity", "object_id": two.entity_id})
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/plan_merge",
+            "plan_ids": [other["plan_id"], result["plan"]["plan_id"]],
+        }
+    )
+    assert (await client.receive_json())["error"]["code"] == "plan_not_open"

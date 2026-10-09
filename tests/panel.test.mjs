@@ -2180,6 +2180,25 @@ test("polish: the to-do list groups by urgency, the cleanup view has tabs, the q
   assert.ok(el.qualityView().includes("No automation with a problem or note."));
 });
 
+test("open previews can be selected and merged into one plan; a ran plan cannot", async () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  el.view = "cleanup"; el.viewTab = { cleanup: "journal" };
+  const short = (id, extra = {}) => ({ plan_id: id, created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
+  el.journal = [short("a"), short("b"), short("c", { executed: true, status: "verified" })];
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan: { ...short("n"), actions: [] }, merged: msg.plan_ids, conflicts: [{ object_id: "sensor.x", kinds: ["remove_entity", "replace_references"] }], dropped: 0 }; } };
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-merge-sel="a"') && shadow.innerHTML.includes('data-merge-sel="b"') && !shadow.innerHTML.includes('data-merge-sel="c"'));
+  assert.ok(/data-merge disabled/.test(shadow.innerHTML), "needs two");
+  el.mergeSel = new Set(["a", "b"]);
+  await el.mergePlans();
+  assert.equal(JSON.stringify(calls[0].plan_ids), '["a","b"]');
+  assert.equal(el.plan.plan_id, "n");
+  assert.equal(JSON.stringify(el.journal.map(p => p.plan_id)), '["n","c"]');
+  assert.ok(el.mergeNote.includes("1 objects were left out") && el.mergeNote.includes("sensor.x"));
+});
+
 test("an object leaves quarantine after a question, through the undo of just that object", async () => {
   const { el, shadow } = panel("en");
   const item = id => ({ object_type: "entity", object_id: id, name: id.toUpperCase(), status: "disabled" });

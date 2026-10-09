@@ -19,6 +19,7 @@ from .blueprints import async_blueprints
 from .cleanup import (
     ACTION_KINDS,
     MAX_ACTIONS,
+    MAX_MERGE,
     METER_KINDS,
     METER_MODES,
     REFERENCE_KINDS,
@@ -27,6 +28,7 @@ from .cleanup import (
     device_fingerprint,
     device_support,
     history_ids,
+    merge_requests,
     plan_summary,
     public_plan,
     registry_fingerprint,
@@ -275,6 +277,57 @@ def websocket_set_options(
     connection.send_result(msg["id"], {"options": options})
 
 
+async def _plan_from_requests(
+    hass: HomeAssistant, snapshot: dict[str, Any], requests: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Judge ``requests`` against the snapshot and the live registries: a plan, not yet journaled."""
+    registry = er.async_get(hass)
+
+    def fingerprint(object_id: str) -> str | None:
+        entry = registry.async_get(object_id)
+        return registry_fingerprint(entry) if entry else None
+
+    def restorable(object_id: str) -> bool | None:
+        return entity_restorable(hass, registry.async_get(object_id))
+
+    devices = dr.async_get(hass)
+
+    def device_info(device_id: str) -> tuple[str | None, dict[str, Any]]:
+        entry = devices.async_get(device_id)
+        return (device_fingerprint(entry), device_support(hass, entry)) if entry else (None, {})
+
+    reference_data = {}
+    for action in requests:
+        if action["kind"] in REFERENCE_KINDS and action.get("target"):
+            pair = (action["object_id"], action["target"])
+            if pair not in reference_data and pair[0] != pair[1]:
+                reference_data[pair] = await preview_replacement(hass, snapshot, *pair)
+
+    meter_data = {}
+    for action in requests:
+        if action["kind"] in METER_KINDS and action.get("target"):
+            key = (action["object_id"], action["target"], action.get("mode") or "both")
+            if key not in meter_data and key[0] != key[1]:
+                meter_data[key] = await prepare_meter(hass, key[0], key[1], key[2])
+
+    def statistic_exists(statistic_id: str) -> bool:
+        return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
+
+    plan = build_plan(
+        snapshot,
+        requests,
+        datetime.now(UTC),
+        fingerprint,
+        restorable,
+        device_info=device_info,
+        reference_data=reference_data,
+        meter_data=meter_data,
+        statistic_exists=statistic_exists,
+    )
+    await _add_history(hass, snapshot, plan)
+    return plan
+
+
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
@@ -312,52 +365,68 @@ async def websocket_plan_create(
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
-    registry = er.async_get(hass)
-
-    def fingerprint(object_id: str) -> str | None:
-        entry = registry.async_get(object_id)
-        return registry_fingerprint(entry) if entry else None
-
-    def restorable(object_id: str) -> bool | None:
-        return entity_restorable(hass, registry.async_get(object_id))
-
-    devices = dr.async_get(hass)
-
-    def device_info(device_id: str) -> tuple[str | None, dict[str, Any]]:
-        entry = devices.async_get(device_id)
-        return (device_fingerprint(entry), device_support(hass, entry)) if entry else (None, {})
-
-    reference_data = {}
-    for action in msg["actions"]:
-        if action["kind"] in REFERENCE_KINDS and action.get("target"):
-            pair = (action["object_id"], action["target"])
-            if pair not in reference_data and pair[0] != pair[1]:
-                reference_data[pair] = await preview_replacement(hass, snapshot, *pair)
-
-    meter_data = {}
-    for action in msg["actions"]:
-        if action["kind"] in METER_KINDS and action.get("target"):
-            key = (action["object_id"], action["target"], action.get("mode") or "both")
-            if key not in meter_data and key[0] != key[1]:
-                meter_data[key] = await prepare_meter(hass, key[0], key[1], key[2])
-
-    def statistic_exists(statistic_id: str) -> bool:
-        return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
-
-    plan = build_plan(
-        snapshot,
-        msg["actions"],
-        datetime.now(UTC),
-        fingerprint,
-        restorable,
-        device_info=device_info,
-        reference_data=reference_data,
-        meter_data=meter_data,
-        statistic_exists=statistic_exists,
-    )
-    await _add_history(hass, snapshot, plan)
+    plan = await _plan_from_requests(hass, snapshot, msg["actions"])
     scanner.journal.add(plan)
     connection.send_result(msg["id"], _versioned(public_plan(plan)))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/plan_merge",
+        vol.Required("plan_ids"): vol.All([str], vol.Length(min=2, max=MAX_MERGE)),
+    }
+)
+@websocket_api.async_response
+async def websocket_plan_merge(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Build one new plan from several open previews and drop those previews. Executes nothing."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    if scanner.warming_up:
+        connection.send_error(msg["id"], "warming_up", "Home Assistant is still starting")
+        return
+    ids = list(dict.fromkeys(msg["plan_ids"]))
+    plans = [scanner.journal.get(i) for i in ids]
+    if len(ids) < 2 or any(p is None for p in plans):
+        connection.send_error(msg["id"], "not_found", "Two or more known plans are needed")
+        return
+    if any(p.get("executed") or p.get("run") for p in plans):
+        connection.send_error(msg["id"], "plan_not_open", "Only open previews can be merged")
+        return
+    requests, conflicts, dropped = merge_requests(plans)
+    if not requests:
+        connection.send_error(msg["id"], "nothing_to_merge", "Nothing is left after the conflicts")
+        return
+    if len(requests) > MAX_ACTIONS:
+        connection.send_error(msg["id"], "too_many", f"At most {MAX_ACTIONS} actions in one plan")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    plan = await _plan_from_requests(hass, snapshot, requests)
+    plan["events"].append({"at": datetime.now(UTC).isoformat(), "type": "merged", "plans": ids})
+    scanner.journal.add(plan)
+    for plan_id in ids:
+        scanner.journal.remove(plan_id)
+    connection.send_result(
+        msg["id"],
+        _versioned(
+            {
+                "plan": public_plan(plan),
+                "merged": ids,
+                "conflicts": conflicts,
+                "dropped": dropped,
+            }
+        ),
+    )
 
 
 @websocket_api.require_admin
@@ -1770,6 +1839,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_ignore)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
+    websocket_api.async_register_command(hass, websocket_plan_merge)
     websocket_api.async_register_command(hass, websocket_plan_list)
     websocket_api.async_register_command(hass, websocket_plan_detail)
     websocket_api.async_register_command(hass, websocket_plan_delete)
