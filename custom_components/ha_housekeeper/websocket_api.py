@@ -15,7 +15,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import label_registry as lr
 from homeassistant.util import dt as dt_util
 
-from . import battery_trend, counter_repair
+from . import battery_trend, battery_voltage, counter_repair
 from . import refactor as refactor_module
 from .audit_report import build_report
 from .backup_health import ATTEST_KINDS, backup_health
@@ -1524,7 +1524,16 @@ async def websocket_battery_trend(
         and o["object_id"].startswith("sensor.")
         and o.get("status") == "active"
         and o.get("has_statistics")
+        and o.get("unit") in (None, "", "%")
     }
+    volts = {
+        o["object_id"]: o
+        for o in snapshot["objects"]
+        if o["object_type"] == "entity"
+        and o.get("has_statistics")
+        and battery_voltage.is_voltage_battery(o)
+    }
+    wanted = sorted({*names, *volts})
     now = time.time()
     try:
         async with asyncio.timeout(RELIABILITY_TIMEOUT):
@@ -1533,7 +1542,7 @@ async def websocket_battery_trend(
                 "battery_trend",
                 600,
                 lambda: battery_trend.read_series(
-                    hass, sorted(names), now - battery_trend.WINDOW_DAYS * 86400, now
+                    hass, wanted, now - battery_trend.WINDOW_DAYS * 86400, now
                 ),
                 refresh=msg["refresh"],
             )
@@ -1545,8 +1554,15 @@ async def websocket_battery_trend(
             msg["id"], _versioned({"available": True, "busy": True, "rows": [], "groups": []})
         )
         return
-    result = battery_trend.build(found.raw, names, limit)
-    connection.send_result(msg["id"], _versioned({"available": True, "busy": False, **result}))
+    result = battery_trend.build({k: v for k, v in found.raw.items() if k in names}, names, limit)
+    voltage = battery_voltage.build(
+        {k: v for k, v in found.raw.items() if k in volts},
+        {k: o["name"] for k, o in volts.items()},
+        {k: battery_voltage.UNITS[o["unit"]] for k, o in volts.items()},
+    )
+    connection.send_result(
+        msg["id"], _versioned({"available": True, "busy": False, **result, "voltage": voltage})
+    )
 
 
 @websocket_api.require_admin

@@ -3152,7 +3152,7 @@ class UnusedMixin {
       if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active") continue;
       const domain = o.object_id.split(".")[0];
       if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
-      else if (domain === "sensor" && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
+      else if (domain === "sensor" && (!o.unit || o.unit === "%") && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
     }
     const limit = this.data.meta.low_battery_percent ?? 20;
     rows.forEach(r => { r.low = r.low || (r.level !== null && r.level <= limit); });
@@ -3401,7 +3401,7 @@ class UnusedMixin {
       return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
     };
     const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
-    return `<div class="stack">${chips}${this.batteryTrendCard()}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>${this.remindersCard()}</div>`;
+    return `<div class="stack">${chips}${this.batteryTrendCard()}${this.batteryVoltageCard()}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>${this.remindersCard()}</div>`;
   }
 }
 
@@ -6539,6 +6539,20 @@ class BatteryCareMixin {
     return `<div class="panel">${head}${groups}${body}${more}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
   }
 
+  // Batteries that report volts: the type is guessed from the full voltage, the limit comes from the type.
+  batteryVoltageCard() {
+    const v = this.batteryTrend?.voltage;
+    if (!v || (!v.rows.length && !v.unknown)) return "";
+    const volt = n => `${Number(n).toLocaleString(this.lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} V`;
+    const row = r => {
+      const tone = r.state === "low" ? "red" : r.days_left !== null && r.days_left <= 30 ? "warn" : "ok";
+      const when = r.state === "low" ? this.t("btLow") : r.days_left !== null ? this.t("btIn", { n: r.days_left }) : this.t("bvStable");
+      return `<button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.t("bvLine", { now: volt(r.level), kind: this.t(`bvType_${r.type}`), limit: volt(r.limit) })}</small></span><span class="pill ${tone}">${when}</span></button>`;
+    };
+    const head = `<div class="panelhead"><div><h2>${this.t("bvTitle")}</h2><p>${this.t("bvHint")}</p></div></div>`;
+    return `<div class="panel">${head}${v.rows.map(row).join("")}<p class="factnote">${this.t("bvNote", { unknown: this.formatNumber(v.unknown) })}</p></div>`;
+  }
+
   reminderRow(r) {
     const tone = { due: "red", soon: "warn", ok: "ok" }[r.state];
     const when = r.state === "due" ? this.t("remOverdue", { n: Math.abs(r.days_left) }) : this.t("remIn", { n: r.days_left });
@@ -6571,6 +6585,9 @@ class BatteryCareMixin {
   }
 }
 Object.assign(TEXT.de, {
+  bvTitle: "Batterien mit Spannung", bvHint: "Sensoren, die Volt statt Prozent melden. Housekeeper schätzt den Typ aus der höchsten Spannung der letzten Wochen und nimmt dessen Grenze.", bvStable: "stabil",
+  bvLine: "Jetzt {now} · erkannt als {kind} · Grenze {limit}", bvNote: "Der Typ ist eine Schätzung; liegt er falsch, ist auch die Grenze falsch. Ohne Angabe: {unknown} (zu wenige Tage oder eine Spannung, die zu keinem Typ passt).",
+  bvType_cell15: "Einzelzelle 1,5 V (AA/AAA, Alkaline oder NiMH)", bvType_coin3: "3-V-Zelle (z. B. CR2032 oder 2 × AA)", bvType_lithium: "Lithium-Ionen-Zelle", bvType_cells3: "3 Zellen in Reihe (4,5 V)", bvType_cells4: "4 Zellen in Reihe (6 V)", bvType_block9: "9-V-Block", bvType_lead12: "12-V-Akku",
   btTitle: "Batterieprognose", btHint: "Wann eine Batterie voraussichtlich die Grenze erreicht, aus dem Verlauf der letzten fünf Wochen. Eine Schätzung, keine Zusage.", btLoading: "Prognose wird berechnet …", btNoRecorder: "Ohne Recorder gibt es keine Prognose.",
   btNone: "Keine Batterie fällt erkennbar auf die Grenze zu.", btIn: "in etwa {n} Tagen", btLow: "schon unter der Grenze", btLevel: "Jetzt {n} %, fällt um {slope} Prozentpunkte pro Tag", btMore: "{n} weitere nicht gezeigt.",
   btGroup: "{n} Batterien erreichen die Grenze in {from} bis {to} Tagen: gemeinsam wechseln.", btNote: "Nur Batteriesensoren mit Langzeitstatistik. Ohne Prognose: {unknown} (zu wenige Tage, stabil oder steigend). Nach einem Wechsel zählt nur der Verlauf danach.",
@@ -6582,6 +6599,9 @@ Object.assign(TEXT.de, {
   event_reminder_due: "Wartungserinnerung fällig",
 });
 Object.assign(TEXT.en, {
+  bvTitle: "Batteries in volts", bvHint: "Sensors that report volts instead of percent. Housekeeper guesses the type from the highest voltage of the last weeks and uses its limit.", bvStable: "stable",
+  bvLine: "Now {now} · recognised as {kind} · limit {limit}", bvNote: "The type is a guess; if it is wrong, so is the limit. Without a result: {unknown} (too few days or a voltage that fits no type).",
+  bvType_cell15: "single 1.5 V cell (AA/AAA, alkaline or NiMH)", bvType_coin3: "3 V cell (e.g. CR2032 or 2 × AA)", bvType_lithium: "lithium-ion cell", bvType_cells3: "3 cells in series (4.5 V)", bvType_cells4: "4 cells in series (6 V)", bvType_block9: "9 V block", bvType_lead12: "12 V battery",
   btTitle: "Battery forecast", btHint: "When a battery will probably reach the limit, from the last five weeks. An estimate, not a promise.", btLoading: "Calculating the forecast …", btNoRecorder: "There is no forecast without a recorder.",
   btNone: "No battery is visibly heading for the limit.", btIn: "in about {n} days", btLow: "already below the limit", btLevel: "Now {n} %, falling {slope} points per day", btMore: "{n} more not shown.",
   btGroup: "{n} batteries reach the limit in {from} to {to} days: change them together.", btNote: "Only battery sensors with long-term statistics. No forecast for {unknown} (too few days, stable or rising). After a change only the time since counts.",

@@ -112,6 +112,8 @@ def test_battery_levels_and_low_flags() -> None:
 
     assert battery_level(entities[2]) == (85.5, False)
     assert battery_level(entities[3]) == (None, False)
+    volts = {**_battery("sensor.cell", "3.2"), "unit": "V"}  # volts are no percentage
+    assert battery_level(volts) == (None, False) and low_battery_ids([volts], 20) == []
     assert low_battery_ids(entities, 20) == ["sensor.low", "sensor.edge", "binary_sensor.low_flag"]
 
 

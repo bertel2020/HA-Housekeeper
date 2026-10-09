@@ -135,7 +135,8 @@ def orphan_statistics(
 def battery_level(item: dict[str, Any]) -> tuple[float | None, bool]:
     """Return (percent, is_low_flag) for a working battery entity, else (None, False).
 
-    Battery sensors report a percentage; battery binary sensors report ``on`` when low.
+    Battery sensors report a percentage; battery binary sensors report ``on`` when low. A sensor
+    with another unit (volts, for example) is not a percentage and is judged by ``battery_voltage``.
     """
     if item.get("device_class") != "battery" or item.get("status") != "active":
         return None, False
@@ -143,6 +144,8 @@ def battery_level(item: dict[str, Any]) -> tuple[float | None, bool]:
     if domain == "binary_sensor":
         return None, item.get("state") == "on"
     if domain == "sensor":
+        if item.get("unit") not in (None, "", "%"):
+            return None, False
         try:
             return float(item["state"]), False
         except (TypeError, ValueError):

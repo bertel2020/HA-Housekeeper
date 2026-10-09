@@ -22,11 +22,19 @@ GROUP_DAYS = 14
 MAX_ROWS = 200
 
 
-def estimate(points: list[tuple[float, float]], limit: float) -> dict[str, Any] | None:
-    """``points`` are (time, mean percent) per day, oldest first. None when too little is known."""
+def estimate(
+    points: list[tuple[float, float]],
+    limit: float,
+    jump: float = REPLACED_JUMP,
+    flat: float = FLAT,
+) -> dict[str, Any] | None:
+    """``points`` are (time, daily mean) oldest first, in percent unless ``jump`` and ``flat`` are scaled.
+
+    None when too little is known.
+    """
     start = 0
     for index in range(1, len(points)):
-        if points[index][1] - points[index - 1][1] >= REPLACED_JUMP:
+        if points[index][1] - points[index - 1][1] >= jump:
             start = index
     points = points[start:]
     if len(points) < MIN_POINTS:
@@ -40,10 +48,11 @@ def estimate(points: list[tuple[float, float]], limit: float) -> dict[str, Any] 
         return None
     slope = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys, strict=True)) / spread
     level = ys[-1]
-    base = {"level": round(level, 1), "slope": round(slope, 3), "points": n}
+    digits = 1 if jump >= 1 else 3
+    base = {"level": round(level, digits), "slope": round(slope, 4), "points": n}
     if level <= limit:
         return {**base, "state": "low", "days_left": 0}
-    if slope > -FLAT:
+    if slope > -flat:
         return {**base, "state": "stable", "days_left": None}
     days = (level - limit) / -slope
     if days > FAR:

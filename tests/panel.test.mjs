@@ -3086,3 +3086,12 @@ test("the sensor field lists matching sensors with statistics while typing and t
   assert.equal(el.counterId, "sensor.water_temp"); assert.equal(el._picker.open, false);
 });
 const TEXT_DE_SETTINGS = "Einstellungen";
+test("batteries in volts are not read as percent and get their own card with the guessed type", () => {
+  const { el } = panel("en");
+  const bat = (id, unit, state) => ({ object_type: "entity", object_id: id, name: id, status: "active", device_class: "battery", unit, state });
+  el.data = { ...DATA, objects: [bat("sensor.pct", "%", "15"), bat("sensor.volt", "V", "3.1")] };
+  assert.equal(el.batteryRows().map(r => r.item.object_id).join(), "sensor.pct");
+  el.batteryTrend = { available: true, busy: false, rows: [], groups: [], unknown: 0, voltage: { unknown: 1, rows: [{ entity_id: "sensor.volt", name: "Coin", type: "coin3", limit: 2.5, level: 2.86, state: "falling", days_left: 24 }] } };
+  const html = el.batteryVoltageCard();
+  assert.ok(html.includes("2.86 V") && html.includes("3 V cell") && html.includes("2.50 V") && html.includes("in about 24 days"));
+});

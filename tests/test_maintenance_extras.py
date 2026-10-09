@@ -90,3 +90,28 @@ async def test_a_failing_entry_counts_once_per_episode_and_old_ones_are_dropped(
     )  # outside the week, still failing
     history.record({"e1": "loaded"}, NOW + timedelta(days=70))  # older than 60 days: gone
     assert history.summary("e1", NOW + timedelta(days=70)) is None
+
+
+def test_voltage_batteries_are_judged_by_the_guessed_type_not_by_a_percent_limit() -> None:
+    from custom_components.ha_housekeeper import battery_voltage as bv
+
+    assert bv.guess_type(3.1) == ("coin3", 2.5) and bv.guess_type(1.6) == ("cell15", 1.1)
+    assert bv.guess_type(2.0) is None
+    series = {
+        "sensor.coin": days([3.0 - 0.01 * i for i in range(12)]),  # falls 0.01 V a day, now 2.89
+        "sensor.flat": days([3.0] * 12),
+        "sensor.empty": days([2.6 - 0.02 * i for i in range(12)]),
+        "sensor.mv": days([3000 - 10 * i for i in range(12)]),  # the same, in millivolts
+    }
+    result = bv.build(series, {}, {"sensor.mv": 0.001})
+    rows = {r["entity_id"]: r for r in result["rows"]}
+    assert rows["sensor.coin"]["state"] == "falling" and rows["sensor.coin"]["days_left"] == 39
+    assert rows["sensor.mv"]["days_left"] == 39 and rows["sensor.flat"]["state"] == "stable"
+    assert (
+        rows["sensor.empty"]["state"] == "low" and result["rows"][0]["entity_id"] == "sensor.empty"
+    )
+    named = {"object_id": "sensor.x_battery_voltage", "status": "active", "unit": "V"}
+    assert bv.is_voltage_battery({**named, "device_class": "voltage", "name": "Battery Voltage"})
+    mains = {**named, "object_id": "sensor.x_mains", "device_class": "voltage", "name": "Mains"}
+    assert not bv.is_voltage_battery(mains)
+    assert not bv.is_voltage_battery({**named, "device_class": "battery", "unit": "%"})
