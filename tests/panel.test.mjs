@@ -2837,3 +2837,19 @@ test("the health card names the score and the count; the safety line shows backu
   el.data = { ...DATA, causes: [{ id: "integration_down:x", kind: "integration_down", object_type: "config_entry", object_id: "x", name: "Zigbee", follower_count: 47, consumers: { automation: 12, dashboard: 2 } }] };
   assert.ok(el.causesCard().includes("47 entities, 12 automations, 2 dashboards affected"));
 });
+
+test("removing offers the recorder choice and sends it with the plan only when it is not 'keep'", async () => {
+  const calls = [];
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true } };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan_id: "p", actions: [], status: "dry_run" }; } };
+  el.cleanupKind = "remove_entity"; el.cleanupSel = new Set(["sensor.b"]);
+  assert.ok(el.recorderChoice(true).includes("Delete statistics and history"));
+  assert.equal(el.recorderChoice(false), "");
+  await el.createPlan();
+  const created = () => calls.filter(c => c.type === "ha_housekeeper/plan_create");
+  assert.equal(JSON.stringify(created()[0].actions), JSON.stringify([{ kind: "remove_entity", object_id: "sensor.b" }]));
+  el.cleanupRecorder = "statistics";
+  await el.createPlan();
+  assert.equal(created()[1].actions[0].recorder, "statistics");
+});

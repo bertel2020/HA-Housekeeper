@@ -23,6 +23,44 @@ def test_a_purge_action_needs_an_orphan_without_entity_and_is_always_a_review() 
         assert action["verdict"] == "blocked" and reason in action["reasons"]
 
 
+def test_the_recorder_choice_of_a_removal_is_a_review_and_blocked_for_energy_or_no_recorder() -> (
+    None
+):
+    from custom_components.ha_housekeeper.cleanup import apply_recorder_choice
+    from custom_components.ha_housekeeper.simulation import simulate
+
+    def action(used_by=()):
+        return {
+            "kind": "remove_entity",
+            "object_id": "sensor.a",
+            "reasons": [],
+            "used_by": list(used_by),
+        }
+
+    kept = action()
+    apply_recorder_choice(kept, "keep", True)
+    assert "recorder" not in kept and kept["reasons"] == []
+    chosen = action()
+    apply_recorder_choice(chosen, "states", True)
+    assert chosen["verdict"] == "review" and chosen["reasons"] == ["irreversible", "with_states"]
+    energy = action([{"source": "dashboard:energy", "confidence": "certain"}])
+    apply_recorder_choice(energy, "statistics", True)
+    assert energy["verdict"] == "blocked" and "in_energy" in energy["reasons"]
+    none = action()
+    apply_recorder_choice(none, "statistics", False)
+    assert none["verdict"] == "blocked" and "no_recorder" in none["reasons"]
+
+    chosen.update(executable=True, history={"states": 5, "statistics": 3}, has_statistics=True)
+    stats = {**chosen, "recorder": "statistics"}
+    assert simulate([chosen])["purge_rows"] == 8
+    sim = simulate([stats])
+    assert (
+        sim["purge_rows"] == 3
+        and sim["history_rows_kept"] == 5
+        and sim["statistics_orphaned_count"] == 0
+    )
+
+
 def _recorder(monkeypatch: pytest.MonkeyPatch):
     """A recorder that only records what is cleared; returns the ``hass`` stand-in and that list."""
     from types import SimpleNamespace

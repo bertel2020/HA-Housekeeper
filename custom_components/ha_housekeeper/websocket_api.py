@@ -23,6 +23,7 @@ from .cleanup import (
     MAX_MERGE,
     METER_KINDS,
     METER_MODES,
+    RECORDER_CHOICES,
     REFACTOR_KINDS,
     REFERENCE_KINDS,
     attach_history,
@@ -358,6 +359,7 @@ async def _plan_from_requests(
                     vol.Optional("target"): str,
                     vol.Optional("mode"): vol.In(METER_MODES),
                     vol.Optional("states"): bool,
+                    vol.Optional("recorder"): vol.In(RECORDER_CHOICES),
                     vol.Optional("fix"): vol.In(refactor_module.FIXES),
                     vol.Optional("values"): {
                         vol.Optional("description"): vol.All(

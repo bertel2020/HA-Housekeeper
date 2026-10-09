@@ -36,9 +36,15 @@ def orphan(hass: HomeAssistant, name: str):
 
 
 async def make_plan(
-    scanner: InventoryScanner, hass: HomeAssistant, *entity_ids: str, kind="disable_entity"
+    scanner: InventoryScanner,
+    hass: HomeAssistant,
+    *entity_ids: str,
+    kind="disable_entity",
+    recorder=None,
 ):
     snapshot = await scanner.async_scan()
+    if recorder:
+        snapshot["meta"]["recorder_available"] = True
     registry = er.async_get(hass)
 
     def fingerprint(object_id: str):
@@ -47,7 +53,10 @@ async def make_plan(
 
     plan = build_plan(
         snapshot,
-        [{"kind": kind, "object_id": e} for e in entity_ids],
+        [
+            {"kind": kind, "object_id": e, **({"recorder": recorder} if recorder else {})}
+            for e in entity_ids
+        ],
         datetime.now(UTC),
         fingerprint,
         lambda object_id: entity_restorable(hass, registry.async_get(object_id)),
@@ -323,6 +332,39 @@ async def test_removal_waits_for_a_backup_removes_and_can_be_restored(hass: Home
     assert restored.disabled_by is er.RegistryEntryDisabler.USER  # back in quarantine, not active
     assert plan["status"] == "undone"
     assert [q["object_id"] for q in scanner.snapshot["quarantine"]] == [entry.entity_id]
+
+
+async def test_a_removal_can_delete_the_recorder_data_and_says_it_cannot_be_undone(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    scanner = await make_scanner(hass)
+    entry, _ = await quarantined_entity(hass, scanner, "retired")
+    manager, _ = fake_backup()
+    delete = AsyncMock(return_value=([entry.entity_id], [], None))
+
+    with (
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+        patch("custom_components.ha_housekeeper.cleanup_exec.delete_statistics", delete),
+    ):
+        plan = await make_plan(
+            scanner, hass, entry.entity_id, kind="remove_entity", recorder="states"
+        )
+        action = plan["actions"][0]
+        assert action["verdict"] == "review" and {"irreversible", "with_states"} <= set(
+            action["reasons"]
+        )
+        await run(scanner, plan, [entry.entity_id])
+
+    delete.assert_awaited_once()
+    assert delete.await_args.args[1] == [entry.entity_id] and delete.await_args.kwargs == {
+        "states": True
+    }
+    assert er.async_get(hass).async_get(entry.entity_id) is None
+    result = plan["actions"][0]["result"]
+    assert result["purge"] == {"state": "done", "states": True} and result["irreversible"] is True
+    assert "statistics_purged" in [e["type"] for e in plan["events"]]
 
 
 async def test_removal_needs_a_finished_quarantine(hass: HomeAssistant) -> None:

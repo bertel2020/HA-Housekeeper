@@ -484,6 +484,8 @@ class CleanupRunner:
                 return
             action["result"] = {"state": "done", "at": _now().isoformat(), **result}
             _event(plan, event, object_id=object_id)
+            if action.get("recorder"):
+                action["result"].update(await self._purge_after_removal(plan, action))
             plan["executed"] = True
             self.status["done"] = index + 1
             self.scanner.journal.save()
@@ -532,6 +534,26 @@ class CleanupRunner:
         if kind in REFACTOR_KINDS:
             return await self._refactor_automation(action), "automation_refactored"
         return await self._replace_references(action), "references_replaced"
+
+    async def _purge_after_removal(self, plan: dict[str, Any], action: dict[str, Any]) -> dict:
+        """Delete the recorder data of a removed entity or device as the person chose.
+
+        The removal stays done when this fails: it can be undone, the deleted data cannot. The
+        outcome is noted in the result either way.
+        """
+        ids = action.get("entities") or [action["object_id"]]
+        states = action["recorder"] == "states"
+        removed, left, error = await delete_statistics(self.hass, ids, states=states)
+        reason = error or (left[0]["reason"] if left else None)
+        if reason:
+            _event(plan, "purge_failed", object_id=action["object_id"], reason=reason)
+            return {"purge": {"state": "failed", "reason": reason}}
+        self.scanner.replies.clear()
+        self.scanner.events.record(
+            "purge", _now(), requested=len(ids), removed=len(removed), skipped=0, states=states
+        )
+        _event(plan, "statistics_purged", object_id=action["object_id"])
+        return {"purge": {"state": "done", "states": states}, "irreversible": True}
 
     async def _purge_statistics(self, action: dict[str, Any]) -> dict[str, Any]:
         """Delete the statistics of one orphaned ID; it is only noted, never undone."""

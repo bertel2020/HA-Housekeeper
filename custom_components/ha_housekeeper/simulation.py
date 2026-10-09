@@ -38,7 +38,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
         elif kind in DISABLING:
             disabled.update(entities)
             devices["disabled"] += kind == "disable_device"
-        if kind in REMOVING and action.get("has_statistics"):
+        if kind in REMOVING and action.get("has_statistics") and not action.get("recorder"):
             statistics.add(object_id)
         history = action.get("history")
         counted = counted or history is not None
@@ -49,7 +49,14 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
                     history["states"] if action.get("states") else 0
                 )
         elif kind in REMOVING and history:
-            kept_rows += history["statistics"] + history["states"]
+            choice = action.get("recorder")
+            if choice:
+                purge_rows += history["statistics"] + (
+                    history["states"] if choice == "states" else 0
+                )
+                kept_rows += 0 if choice == "states" else history["states"]
+            else:
+                kept_rows += history["statistics"] + history["states"]
         if kind == "migrate_meter":
             meters += 1
         if kind == "replace_references":

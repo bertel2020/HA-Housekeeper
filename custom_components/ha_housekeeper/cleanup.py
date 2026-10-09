@@ -29,6 +29,9 @@ REFERENCE_KINDS = frozenset({"replace_references"})
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
+REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
+# What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
+RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})
 ACTION_KINDS = (
     ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS | METER_KINDS | PURGE_KINDS | REFACTOR_KINDS
@@ -503,6 +506,26 @@ def judge_refactor_action(
     return action
 
 
+def apply_recorder_choice(action: dict[str, Any], choice: str, recorder: bool) -> None:
+    """Add the person's choice to delete recorder data after a removal, and judge it again.
+
+    The deletion cannot be undone except from the backup, so a plan that may run is ``review``.
+    It is blocked without a recorder and for an entity the Energy dashboard uses.
+    """
+    if choice == "keep":
+        return
+    action["recorder"] = choice
+    reasons = action["reasons"]
+    if not recorder:
+        reasons.append("no_recorder")
+    elif any(use["source"] == "dashboard:energy" for use in action["used_by"]):
+        reasons.append("in_energy")
+    reasons.append("irreversible")
+    if choice == "states":
+        reasons.append("with_states")
+    _verdict(action)
+
+
 def judge_purge_action(
     statistic_id: str,
     orphans: dict[str, dict[str, Any]],
@@ -781,6 +804,12 @@ def build_plan(
                 now,
             )
             action["fingerprint"] = fingerprint(object_id) if fingerprint else None
+        if kind in REMOVAL_KINDS:
+            apply_recorder_choice(
+                action,
+                request.get("recorder") or "keep",
+                bool(snapshot["meta"].get("recorder_available")),
+            )
         action["executable"] = kind in EXECUTABLE_KINDS and action["verdict"] != "blocked"
         actions.append(action)
     counts = {
@@ -836,6 +865,8 @@ def merge_requests(
                 request["mode"] = action["mode"]
             if action["kind"] in PURGE_KINDS:
                 request["states"] = bool(action.get("states"))
+            if action.get("recorder"):
+                request["recorder"] = action["recorder"]
             if action["kind"] in REFACTOR_KINDS:
                 request["fix"], request["values"] = action["fix"], action.get("values") or {}
             known = requests.get(request["object_id"])
