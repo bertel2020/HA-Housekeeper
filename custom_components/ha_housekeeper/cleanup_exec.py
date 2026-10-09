@@ -61,6 +61,7 @@ from . import counter_repair, followup
 from . import refactor as refactor_module
 from .cleanup import (
     BACKUP_KINDS,
+    DATABASE_KINDS,
     DEVICE_KINDS,
     EXECUTABLE_KINDS,
     LABEL_KINDS,
@@ -391,8 +392,9 @@ class CleanupRunner:
         journal.save()
         try:
             by_id = {action["object_id"]: action for action in plan["actions"]}
-            if any(by_id[object_id]["kind"] in BACKUP_KINDS for object_id in object_ids):
-                await self._backup(plan)
+            kinds = {by_id[object_id]["kind"] for object_id in object_ids}
+            if kinds & BACKUP_KINDS:
+                await self._backup(plan, with_database=bool(kinds & DATABASE_KINDS))
             if plan["status"] == "running":
                 await self._execute(plan, object_ids)
         except Exception as err:  # Never leave the plan in "running".
@@ -410,11 +412,14 @@ class CleanupRunner:
             }
             journal.save()
 
-    async def _backup(self, plan: dict[str, Any]) -> None:
-        """Create a Home Assistant backup with the user's own backup settings and wait for it.
+    async def _backup(self, plan: dict[str, Any], with_database: bool = True) -> None:
+        """Create a Home Assistant backup and wait for it: Home Assistant only, no apps or folders.
 
-        ``async_create_automatic_backup`` returns only after the backup has finished and raises if
-        it failed, so reaching the next line means the backup exists.
+        The backup keeps the agents and the password of the user's automatic backup settings, but
+        holds only the Home Assistant configuration, plus the database when the plan writes into
+        it. It is a manual backup (no retention, not counted as the regular one). The call returns
+        only after the backup has finished and raises if it failed, so reaching the next line
+        means the backup exists.
         """
         self.status["phase"] = "backup"
         plan["status"] = "backup"
@@ -426,19 +431,34 @@ class CleanupRunner:
         except Exception:
             self._backup_failed(plan, "backup_unavailable")
             return
-        if not manager.config.data.create_backup.agent_ids:
+        settings = manager.config.data.create_backup
+        if not settings.agent_ids:
             self._backup_failed(plan, "no_backup_agent")
             return
         _event(plan, "backup_started")
         try:
             async with asyncio.timeout(BACKUP_TIMEOUT):
-                created = await manager.async_create_automatic_backup()
+                created = await manager.async_create_backup(
+                    agent_ids=list(settings.agent_ids),
+                    extra_metadata={
+                        "housekeeper": True,
+                        "housekeeper_scope": "database" if with_database else "config",
+                    },
+                    include_addons=None,
+                    include_all_addons=False,
+                    include_database=with_database,
+                    include_folders=None,
+                    include_homeassistant=True,
+                    name=f"Housekeeper {plan['plan_id'][:8]}",
+                    password=getattr(settings, "password", None),
+                )
         except Exception as err:
             self._backup_failed(plan, "backup_failed", error=f"{type(err).__name__}: {err}")
             return
         plan["backup"] = {
             "job_id": getattr(created, "backup_job_id", None),
             "at": _now().isoformat(),
+            "scope": "database" if with_database else "config",
         }
         _event(plan, "backup_done", job_id=plan["backup"]["job_id"])
         plan["status"] = "running"

@@ -1140,7 +1140,7 @@ async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
     scanner.snapshot["orphaned_statistics"] = [{"statistic_id": "sensor.gone", "in_energy": False}]
     gate = asyncio.Event()
 
-    async def slow_backup(plan):
+    async def slow_backup(plan, with_database=True):
         plan["status"] = "backup"
         await gate.wait()
         plan["backup"] = {"job_id": "j1", "at": "2026-10-09T10:00:00+00:00"}

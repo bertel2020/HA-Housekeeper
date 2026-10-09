@@ -61,6 +61,8 @@ BACKUP_KINDS = frozenset(
         "repair_range",
     }
 )
+# Kinds that write into the recorder database: their backup contains it, all others get one without.
+DATABASE_KINDS = frozenset({"repair_counter", "repair_range", "purge_statistics", "migrate_meter"})
 # Kinds that remove something: they get the strongest confirmation word.
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 QUARANTINE_KINDS = {"disable_entity": "entity", "disable_device": "device"}

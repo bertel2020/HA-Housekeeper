@@ -298,6 +298,7 @@ async def test_the_collector_reads_the_manager_without_leaking_names_or_secrets(
         "failed_agents",
         "protected",
         "automatic",
+        "partial",
     }
     report = evaluate(collected, NOW, ATTEST, [])
     assert report["available"] is True and report["checks"][0]["id"] == "setup"

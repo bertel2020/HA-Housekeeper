@@ -277,9 +277,11 @@ def fake_backup(agent_ids=("backup.local",), error=None):
     )
     manager = SimpleNamespace(
         config=SimpleNamespace(
-            data=SimpleNamespace(create_backup=SimpleNamespace(agent_ids=list(agent_ids)))
+            data=SimpleNamespace(
+                create_backup=SimpleNamespace(agent_ids=list(agent_ids), password=None)
+            )
         ),
-        async_create_automatic_backup=create,
+        async_create_backup=create,
     )
     return manager, create
 
@@ -316,6 +318,10 @@ async def test_removal_waits_for_a_backup_removes_and_can_be_restored(hass: Home
 
     registry = er.async_get(hass)
     create.assert_awaited_once()
+    asked = create.await_args.kwargs
+    assert asked["include_homeassistant"] and not asked["include_database"]
+    assert not asked["include_all_addons"] and asked["include_folders"] is None
+    assert plan["backup"]["scope"] == "config"
     assert registry.async_get(entry.entity_id) is None
     assert plan["status"] == "verified" and plan["backup"]["job_id"] == "job-1"
     types = [e["type"] for e in plan["events"]]

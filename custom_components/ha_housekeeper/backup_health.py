@@ -98,6 +98,11 @@ async def collect(hass: HomeAssistant) -> dict[str, Any]:
                         getattr(status, "protected", False) for status in agents.values()
                     ),
                     "automatic": getattr(backup, "with_automatic_settings", None),
+                    # Housekeeper's own safety copy before a plan: configuration only, no regular backup.
+                    "partial": (getattr(backup, "extra_metadata", None) or {}).get(
+                        "housekeeper_scope"
+                    )
+                    == "config",
                 }
             )
     except Exception:
@@ -274,8 +279,11 @@ def evaluate(
     if backups is None:
         checks.append(_check("newest", "unknown"))
         listing: list[dict[str, Any]] = []
+        everything: list[dict[str, Any]] = []
     else:
-        listing = sorted(backups, key=lambda item: item["date"] or "", reverse=True)
+        everything = sorted(backups, key=lambda item: item["date"] or "", reverse=True)
+        # The safety copies before a plan say nothing about the backup strategy.
+        listing = [item for item in everything if not item.get("partial")]
         newest = listing[0] if listing and listing[0]["date"] else None
         checks.append(_newest_check(config, listing, now))
         checks.append(_last_run_check(config, newest, state.get("agent_errors") or []))
@@ -285,7 +293,7 @@ def evaluate(
         checks.append(_encryption_check(config, newest))
     checks.append(_attest_check("emergency_kit", attest.get("emergency_kit"), now, None))
     checks.append(_attest_check("restore_test", attest.get("restore_test"), now, RESTORE_TEST_DAYS))
-    if backups is not None and (plan_check := _plans_check(plans, listing)):
+    if backups is not None and (plan_check := _plans_check(plans, everything)):
         checks.append(plan_check)
     overall = max((item["level"] for item in checks), key=_SEVERITY.__getitem__, default="unknown")
     counts = {level: sum(1 for item in checks if item["level"] == level) for level in _SEVERITY}

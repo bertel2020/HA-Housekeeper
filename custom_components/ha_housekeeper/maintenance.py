@@ -244,7 +244,13 @@ async def _backup_state(hass: HomeAssistant) -> dict[str, Any]:
     }
     try:
         backups, _ = await manager.async_get_backups()
-        dates = [b.date for b in backups.values() if getattr(b, "date", None)]
+        dates = [
+            b.date
+            for b in backups.values()
+            if getattr(b, "date", None)
+            # Housekeeper's own configuration-only copy before a plan is not the regular backup.
+            and (getattr(b, "extra_metadata", None) or {}).get("housekeeper_scope") != "config"
+        ]
         if dates:
             newest = max(dates)
             result["newest"] = newest
