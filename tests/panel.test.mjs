@@ -2767,7 +2767,7 @@ test("a plan shows its follow-up, expected end state and audit report; a regress
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { filename: "housekeeper-plan-p1.md", anonymized: !msg.anonymize === false, markdown: "# Audit report" }; } };
   await el.loadReport("p1");
-  assert.equal(calls[0].anonymize, true);
+  assert.equal(calls[0].anonymize, false);
   assert.ok(el.reportBlock(plan).includes("# Audit report") && el.reportBlock(plan).includes("data-report-download"));
   el.data = { objects: [], quarantine: [], findings: [], edges: [], meta: {}, regressions: [{ plan_id: "p1", at: "2026-10-09T10:00:00+00:00", new_count: 2 }] };
   assert.ok(el.todoItems().some(item => item.key === "followup" && item.count === 1));

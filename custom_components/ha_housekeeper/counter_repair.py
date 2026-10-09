@@ -380,7 +380,13 @@ def _tail_rows(rows: list[dict[str, Any]], tails: list[dict[str, Any]]) -> int:
 
 
 def fingerprint(findings: list[dict[str, Any]], counts: dict[str, int], mode: str) -> str:
-    """Changes when the data under the preview changed."""
+    """Changes when the data under the preview changed.
+
+    The ``tail_*`` counts are left out: a running counter gets a new row every few minutes, and
+    the backup before a plan takes minutes, so they would differ almost every time. The tail is
+    read afresh when the plan writes, and it is shifted as a whole, so a longer tail is harmless.
+    """
+    counts = {name: value for name, value in counts.items() if not name.startswith("tail_")}
     shape = [
         [
             round(f["start"]),

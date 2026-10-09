@@ -36,7 +36,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
-    this.ex = null; this.report = null; this.reportClear = false; this.reportMessage = "";
+    this.ex = null; this.report = null; this.reportClear = true; this.reportMessage = "";
     this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.policies = null; this.policiesLoading = false; this.policiesError = ""; this._policiesRequested = false; this.policyShowHidden = false; this.orphanLast = null; this.orphanLastLoading = false; this._orphanLastRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costSort = "recent"; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
     this.confirmation = null;
@@ -149,7 +149,9 @@ class HAHousekeeperPanel extends HTMLElement {
       this.compare = null;
       this.applyUrl();
     } catch (err) {
-      this.error = err?.message || String(err);
+      this.error = this.errText(err);
+      // A plan that is running or a Home Assistant that is still starting only delays the first picture: ask again.
+      if (["cleanup_busy", "warming_up"].includes(err?.code)) this.retryWarmup(10000);
     } finally {
       if (progressTimer) window.clearInterval(progressTimer);
       this.scanStatus = null;

@@ -12,7 +12,7 @@ Object.assign(TEXT.de, {
   fu_watching: "Beobachtet", fu_clean: "Sauber", fu_regression: "Rückfall", fu_stopped: "Beendet",
   fu_class_broken_reference: "defekte Referenz", fu_class_unavailable: "nicht verfügbar", fu_class_recurring: "Gerät kehrt wieder",
   actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Bereinigungsplan sind neue Probleme aufgetreten.",
-  reportButton: "Prüfbericht", reportNames: "Mit Klarnamen (nicht anonymisiert)", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
+  reportButton: "Prüfbericht", reportNames: "Echte Namen und IDs verwenden", reportNamesHint: "Ohne Haken ersetzen Platzhalter alle Namen und IDs. So kannst du den Bericht teilen, ohne etwas preiszugeben.", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
   simPurgeRows: "{count} Zeilen im Recorder werden entfernt (Datei schrumpft erst nach einem Repack)", simKeptRows: "{count} Zeilen Verlauf bleiben im Recorder, bis er sie bereinigt",
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
   simRemoved: "{count} Entitäten entfernt ({devices} Geräte)", simDisabled: "{count} Entitäten deaktiviert ({devices} Geräte)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Zählerwechsel",
@@ -32,7 +32,7 @@ Object.assign(TEXT.en, {
   fu_watching: "Watching", fu_clean: "Clean", fu_regression: "Regression", fu_stopped: "Ended",
   fu_class_broken_reference: "broken reference", fu_class_unavailable: "unavailable", fu_class_recurring: "device came back",
   actFollowup: "Follow-up reports new findings", actFollowupHint: "New problems appeared after a cleanup plan.",
-  reportButton: "Audit report", reportNames: "With real names (not anonymized)", reportDownload: "Download", reportCopy: "Copy", reportCopied: "Copied", reportFailed: "Report not created: {reason}", reportAnonymous: "IDs and names are replaced by placeholders.",
+  reportButton: "Audit report", reportNames: "Use real names and IDs", reportNamesHint: "Without the tick, placeholders replace all names and IDs, so you can share the report without giving anything away.", reportDownload: "Download", reportCopy: "Copy", reportCopied: "Copied", reportFailed: "Report not created: {reason}", reportAnonymous: "IDs and names are replaced by placeholders.",
   simPurgeRows: "{count} recorder rows will be removed (the file only shrinks after a repack)", simKeptRows: "{count} history rows stay in the recorder until it cleans them up",
   simTitle: "Expected end state", simPurged: "{count} statistics will be deleted (reversible only from the backup)",
   simRemoved: "{count} entities removed ({devices} devices)", simDisabled: "{count} entities disabled ({devices} devices)", simReplaced: "{count} references replaced", simMeters: "{count} meter switches",
@@ -163,7 +163,7 @@ class ExchangeMixin {
   reportBlock(plan) {
     const shown = this.report?.plan_id === plan.plan_id ? this.report : null;
     const body = shown ? `<div class="reportbox"><div class="reporthead"><strong><ha-icon icon="mdi:file-document-outline"></ha-icon>${this.t("reportTitle")}</strong><span class="reportbtns"><button class="btn accent" data-report-copy><ha-icon icon="mdi:content-copy"></ha-icon>${this.t("reportCopy")}</button><button class="btn accent" data-report-download><ha-icon icon="mdi:download"></ha-icon>${this.t("reportDownload")}</button></span></div><pre class="reportpre">${this.esc(shown.markdown)}</pre>${shown.anonymized || this.reportMessage ? `<p class="reportnote">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</p>` : ""}</div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
-    return `<div class="setrow planfoot"><label class="factnote" style="margin:0;display:flex;gap:8px;align-items:center"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}>${this.t("reportNames")}</label><button class="btn accent" data-report="${this.esc(plan.plan_id)}"><ha-icon icon="mdi:file-document-outline"></ha-icon>${this.t("reportButton")}</button></div>${body}`;
+    return `<div class="setrow planfoot"><label class="factnote reportopt"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}><span><strong>${this.t("reportNames")}</strong><small>${this.t("reportNamesHint")}</small></span></label><button class="btn accent" data-report="${this.esc(plan.plan_id)}"><ha-icon icon="mdi:file-document-outline"></ha-icon>${this.t("reportButton")}</button></div>${body}`;
   }
 
   // -- end state simulation ---------------------------------------------------------------
