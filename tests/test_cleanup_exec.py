@@ -501,3 +501,33 @@ async def test_removal_over_the_websocket_reports_backup_progress(
         assert (await client.receive_json())["result"] == {"started": True}
         await scanner.cleanup._task
     assert er.async_get(hass).async_get(entry.entity_id) is None
+
+
+async def test_the_protection_mode_limits_confirming_starting_and_undoing(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper.cleanup_exec import CleanupError
+
+    entry = orphan(hass, "old_sensor")
+    scanner = await make_scanner(hass)
+    plan = await make_plan(scanner, hass, entry.entity_id)
+
+    scanner.protection.mode = "read_only"
+    with pytest.raises(CleanupError, match="protection_mode"):
+        scanner.cleanup.confirm(plan["plan_id"], [], "user-1")
+
+    scanner.protection.mode = "quarantine"  # disabling is the one thing allowed
+    confirmation = scanner.cleanup.confirm(plan["plan_id"], [], "user-1")
+    scanner.protection.mode = "read_only"  # lowered after confirming: the start refuses
+    with pytest.raises(CleanupError, match="protection_mode"):
+        scanner.cleanup.start(plan["plan_id"], confirmation["token"], "user-1")
+
+    scanner.protection.mode = "quarantine"
+    plan = await make_plan(scanner, hass, entry.entity_id)
+    await run(scanner, plan)
+    assert plan["actions"][0]["result"]["state"] == "done"
+    scanner.protection.mode = "read_only"
+    with pytest.raises(CleanupError, match="protection_mode"):
+        await scanner.cleanup.undo(plan["plan_id"], None)
+    scanner.protection.mode = "quarantine"
+    assert (await scanner.cleanup.undo(plan["plan_id"], None))["results"][0]["outcome"] == "undone"

@@ -59,6 +59,7 @@ from .marks import OBJECT_TYPES as MARK_TYPES
 from .meter import prepare_meter
 from .policies import RULES as POLICY_RULES
 from .policies import policies
+from .protection import MODES as PROTECTION_MODES
 from .quality import build as build_quality
 from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
 from .recorder_purge import count_history
@@ -1362,6 +1363,30 @@ def websocket_refactor_set(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/protection_set",
+        vol.Required("mode"): vol.In(PROTECTION_MODES),
+    }
+)
+@callback
+def websocket_protection_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Set the protection mode: what plans may change, checked on the server."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    scanner.protection.set_mode(msg["mode"])
+    if scanner._snapshot is not None:
+        scanner._snapshot["meta"]["protection"] = scanner.protection.mode
+    connection.send_result(msg["id"], {"mode": scanner.protection.mode})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/automation_dry_run",
         vol.Required("entity_id"): str,
         vol.Optional("states", default={}): vol.All(
@@ -1978,3 +2003,4 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_automation_dry_run)
     websocket_api.async_register_command(hass, websocket_refactor_proposals)
     websocket_api.async_register_command(hass, websocket_refactor_set)
+    websocket_api.async_register_command(hass, websocket_protection_set)

@@ -135,3 +135,65 @@ def test_recorder_rules_wait_for_numbers_and_judge_them() -> None:
     big = {"keep_days": 60, "db_bytes": 3 * 1024**3}
     assert ids(run([], "recorder_retention", db=big)) == ["recorder"]
     assert ids(run([], "recorder_retention", db={"keep_days": 10, "db_bytes": 3 * 1024**3})) == []
+
+
+def test_statistics_and_dashboard_rules() -> None:
+    from custom_components.ha_housekeeper.dashboard_analysis import dashboard_health
+    from custom_components.ha_housekeeper.hygiene import statistic_continuity
+
+    entities = [
+        obj("entity", "sensor.e", status="active", unit="kWh", state_class="measurement"),
+        obj("entity", "sensor.t", status="active", unit="°C", state_class="measurement"),
+    ]
+    stats = [
+        {
+            "statistic_id": "sensor.e",
+            "statistics_unit_of_measurement": "m³",
+            "unit_class": None,
+            "has_sum": True,
+        },
+        {
+            "statistic_id": "sensor.t",
+            "statistics_unit_of_measurement": "°F",
+            "unit_class": "temperature",
+            "has_sum": False,
+        },
+    ]
+    issues = statistic_continuity(stats, entities)
+    assert [(i["object_id"], i["kind"]) for i in issues] == [
+        ("sensor.e", "unit"),
+        ("sensor.e", "class"),
+    ]  # °F → °C converts
+
+    config = {
+        "views": [
+            {
+                "path": "home",
+                "cards": [
+                    {"type": "custom:fancy-card", "navigation_path": "/lovelace/missing"},
+                    {"type": "custom:fancy-card", "navigation_path": "/lovelace/home"},
+                    {"type": "custom:fancy-card", "navigation_path": "/lovelace/missing"},
+                ],
+            }
+        ]
+    }
+    health = dashboard_health(config, {"lovelace": {"0", "home"}}, 0)
+    assert health["cards"] == 3 and health["doubles"] == 1 and health["custom"] == ["fancy-card"]
+    assert health["broken_navigation"] == ["/lovelace/missing"]
+    dash = obj("dashboard", "lovelace", health=health, references=[{"object_id": "light.off"}])
+    off = obj("entity", "light.off", status="disabled")
+    for rule in (
+        "dashboard_navigation",
+        "dashboard_duplicate_cards",
+        "dashboard_custom_cards",
+        "dashboard_disabled_entities",
+    ):
+        assert ids(run([dash, off], rule)) == ["lovelace"], rule
+    assert ids(run([dash], "dashboard_size")) == []
+    snap = {"objects": entities, "edges": [], "statistic_issues": issues}
+    unit = next(
+        r
+        for r in evaluate(snap, {"statistics_unit"}, set(), set())["rules"]
+        if r["id"] == "statistics_unit"
+    )
+    assert ids(unit) == ["sensor.e"] and unit["items"][0]["also"] == ["m³ → kWh"]

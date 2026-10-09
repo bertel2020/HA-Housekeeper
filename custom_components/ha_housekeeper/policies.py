@@ -47,6 +47,13 @@ RULES = (
     "battery_no_automation",
     "recorder_unused",
     "recorder_retention",
+    "statistics_unit",
+    "statistics_class",
+    "dashboard_navigation",
+    "dashboard_disabled_entities",
+    "dashboard_duplicate_cards",
+    "dashboard_size",
+    "dashboard_custom_cards",
 )
 # Rules that wait for numbers the Recorder views keep; they never start a recorder query themselves.
 NEEDS_LOAD = ("state_rate", "recorder_unused")
@@ -259,6 +266,7 @@ def evaluate(
     devices = {i["object_id"]: i for i in by_type.get("device", [])}
     automations = by_type.get("automation", [])
     scripts = by_type.get("script", [])
+    dashboards = by_type.get("dashboard", [])
     labels_of = automation_labels or {}
     used = rules_more.referenced(snapshot.get("edges", []))
     exposed = extra.get("exposed") or {}
@@ -284,6 +292,19 @@ def evaluate(
         ),
         "recorder_unused": lambda: rules_more.recorder_unused(entities, rates or {}, used),
         "recorder_retention": lambda: rules_more.recorder_retention(extra.get("db") or {}),
+        "statistics_unit": lambda: rules_more.statistics_issue(
+            "unit", snapshot.get("statistic_issues") or [], entities
+        ),
+        "statistics_class": lambda: rules_more.statistics_issue(
+            "class", snapshot.get("statistic_issues") or [], entities
+        ),
+        "dashboard_navigation": lambda: rules_more.dashboard_navigation(dashboards),
+        "dashboard_disabled_entities": lambda: rules_more.dashboard_disabled_entities(
+            dashboards, entities
+        ),
+        "dashboard_duplicate_cards": lambda: rules_more.dashboard_duplicate_cards(dashboards),
+        "dashboard_size": lambda: rules_more.dashboard_size(dashboards),
+        "dashboard_custom_cards": lambda: rules_more.dashboard_custom_cards(dashboards),
         "entity_area": lambda: _entity_area(entities, devices),
         "device_area": lambda: _device_area(devices),
         "automation_description": lambda: _automation_description(by_type.get("automation", [])),

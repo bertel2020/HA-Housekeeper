@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Mapping
 from typing import Any
@@ -95,3 +96,73 @@ def extract_helper_references(
 ) -> list[dict[str, str]]:
     """Return the entities a helper config entry is built on."""
     return extract_entity_references(options, known_entities, HELPER_KEYS, "REFERENCES")
+
+
+CARD_LISTS = ("cards", "card", "elements")
+LISTED = 20
+BUILTIN_PANELS = frozenset({"lovelace"})
+
+
+def view_keys(view: Any, index: int) -> set[str]:
+    keys = {str(index)}
+    if isinstance(view, Mapping) and view.get("path"):
+        keys.add(str(view["path"]))
+    return keys
+
+
+def dashboard_health(
+    config: Mapping[str, Any] | None,
+    views_of: Mapping[str, set[str]],
+    resources: int | None,
+) -> dict[str, Any]:
+    """Structure facts of one dashboard: cards, doubled cards, custom card types, broken navigation.
+
+    ``views_of`` maps the URL path of every dashboard Housekeeper read to the views it has (the
+    default dashboard is ``lovelace``). A navigation target counts as broken only inside a
+    dashboard that was read and only for its view; links to other panels are never judged.
+    ``resources`` is the number of registered dashboard resources, ``None`` when unknown.
+    """
+    cards = 0
+    doubles = 0
+    custom: set[str] = set()
+    targets: list[str] = []
+
+    def walk(value: Any, key: str | None) -> None:
+        nonlocal cards, doubles
+        if isinstance(value, Mapping):
+            if key in CARD_LISTS and isinstance(value.get("type"), str):
+                cards += 1
+                if value["type"].startswith("custom:"):
+                    custom.add(value["type"][7:])
+            for child_key, child in value.items():
+                if child_key == "navigation_path" and isinstance(child, str):
+                    targets.append(child)
+                walk(child, str(child_key))
+        elif isinstance(value, list):
+            if key in CARD_LISTS:
+                seen: set[str] = set()
+                for child in value:
+                    if isinstance(child, Mapping):
+                        try:
+                            dump = json.dumps(child, sort_keys=True, default=str)
+                        except (TypeError, ValueError):
+                            continue
+                        doubles += dump in seen
+                        seen.add(dump)
+            for child in value:
+                walk(child, key)
+
+    walk(config or {}, None)
+    broken: list[str] = []
+    for target in targets:
+        parts = target.split("#")[0].split("?")[0].strip("/").split("/")
+        dash, view = parts[0], parts[1] if len(parts) > 1 else ""
+        if dash in views_of and view and view not in views_of[dash]:
+            broken.append(target)
+    return {
+        "cards": cards,
+        "doubles": doubles,
+        "custom": sorted(custom)[:LISTED],
+        "resources": resources,
+        "broken_navigation": sorted(set(broken))[:LISTED],
+    }

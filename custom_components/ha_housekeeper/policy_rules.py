@@ -24,6 +24,8 @@ TRIGGER_LIMIT = 10  # triggers from which an automation is hard to maintain
 RECORDER_MIN_PER_DAY = 200  # state changes per day from which an unused entity is worth a hint
 RETENTION_DAYS = 30
 RETENTION_BYTES = 2 * 1024**3
+DASHBOARD_CARDS = 200  # cards from which one dashboard is slow to load and hard to keep
+LISTED = 20
 SWITCHABLE = ("switch", "light", "fan", "input_boolean", "humidifier")
 ERROR_HANDLING_KEYS = ("continue_on_error", "on_error")
 BRANCHING_KEYS = ("choose", "if", "condition", "wait_template", "wait_for_trigger")
@@ -267,3 +269,60 @@ def recorder_retention(db: dict[str, Any]):
             "keep_days": days,
             "db_bytes": size,
         }
+
+
+def statistics_issue(kind: str, issues: list[dict[str, Any]], entities: dict[str, dict[str, Any]]):
+    """Entities whose statistics changed their ``unit`` or their state ``class`` (see hygiene)."""
+    for issue in issues:
+        item = entities.get(issue["object_id"])
+        if item is not None and issue["kind"] == kind:
+            yield {**item, "also": [f"{issue['was']} → {issue['now']}"]}
+
+
+def dashboard_navigation(dashboards: list[dict[str, Any]]):
+    """Buttons that open a view of a dashboard that has no such view."""
+    for item in dashboards:
+        broken = (item.get("health") or {}).get("broken_navigation")
+        if broken:
+            yield {**item, "also": broken}
+
+
+def dashboard_disabled_entities(
+    dashboards: list[dict[str, Any]], entities: dict[str, dict[str, Any]]
+):
+    """Dashboards that show entities which are disabled."""
+    for item in dashboards:
+        shown = sorted(
+            {
+                ref["object_id"]
+                for ref in item.get("references") or []
+                if (entities.get(ref["object_id"]) or {}).get("status") == "disabled"
+            }
+        )
+        if shown:
+            yield {**item, "also": shown[:LISTED]}
+
+
+def dashboard_duplicate_cards(dashboards: list[dict[str, Any]]):
+    for item in dashboards:
+        doubles = (item.get("health") or {}).get("doubles") or 0
+        if doubles:
+            yield {**item, "also": [str(doubles)]}
+
+
+def dashboard_size(dashboards: list[dict[str, Any]]):
+    for item in dashboards:
+        cards = (item.get("health") or {}).get("cards") or 0
+        if cards > DASHBOARD_CARDS:
+            yield {**item, "also": [str(cards)]}
+
+
+def dashboard_custom_cards(dashboards: list[dict[str, Any]]):
+    """Custom cards although no dashboard resource is registered at all.
+
+    Whether a given card is loaded cannot be told from the server, so only this sure case counts.
+    """
+    for item in dashboards:
+        health = item.get("health") or {}
+        if health.get("custom") and health.get("resources") == 0:
+            yield {**item, "also": health["custom"]}

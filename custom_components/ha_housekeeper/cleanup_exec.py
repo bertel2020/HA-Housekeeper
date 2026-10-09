@@ -71,6 +71,7 @@ from .cleanup import (
 )
 from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 from .meter import analyse, prepare_meter, read_series, recorder_ready
+from .protection import allows, allows_undo
 from .recorder_purge import delete_statistics, statistics_left
 from .references import (
     ENERGY_PARTS,
@@ -304,6 +305,7 @@ class CleanupRunner:
                 needs_ack.append(action["object_id"])
         if not selected:
             raise CleanupError("nothing_to_do")
+        self._check_mode(plan, selected)
         token = secrets.token_urlsafe(16)
         self._tokens[plan_id] = (token, _now() + TOKEN_TTL, selected)
         plan["confirmed"] = {"at": _now().isoformat(), "user_id": user_id, "object_ids": selected}
@@ -345,6 +347,7 @@ class CleanupRunner:
             raise CleanupError("bad_token")
         if plan["status"] != "dry_run" or plan.get("run"):
             raise CleanupError("plan_not_open")
+        self._check_mode(plan, saved[2])
         try:
             acquire_write(self.hass, "plan")
         except WriteBusy as busy:
@@ -1292,10 +1295,25 @@ class CleanupRunner:
             checks.append({"check": "meter_statistics", "object_id": object_id, "ok": ok})
         return checks
 
+    def _check_mode(self, plan: dict[str, Any], object_ids: list[str]) -> None:
+        """Refuse what the protection mode does not allow (checked again when the run starts)."""
+        mode = self.scanner.protection.mode
+        wanted = set(object_ids)
+        if not all(allows(mode, a) for a in plan["actions"] if a["object_id"] in wanted):
+            raise CleanupError("protection_mode")
+
     async def undo(self, plan_id: str, object_ids: list[str] | None) -> dict[str, Any]:
         """Revert steps that are still exactly as Housekeeper left them."""
         if self.running:
             raise CleanupError("busy")
+        done = [
+            a
+            for a in self._plan(plan_id)["actions"]
+            if (a.get("result") or {}).get("state") == "done"
+            and (object_ids is None or a["object_id"] in object_ids)
+        ]
+        if not allows_undo(self.scanner.protection.mode, done):
+            raise CleanupError("protection_mode")
         try:
             acquire_write(self.hass, "undo")
         except WriteBusy as busy:

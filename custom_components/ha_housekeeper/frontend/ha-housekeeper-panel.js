@@ -2168,7 +2168,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
     const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-set-${id}" aria-selected="${id === tab}" aria-controls="hk-setpanel" tabindex="${id === tab ? 0 : -1}" data-set-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.scanCard()}${this.notifyCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.protectionCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="tabs" role="tablist" aria-label="${this.esc(this.t("settings"))}">${tablist}</div><div role="tabpanel" id="hk-setpanel" aria-labelledby="hk-set-${tab}" tabindex="0">${body}</div>`;
   }
 
@@ -6232,6 +6232,8 @@ class SafetyMixin {
   // Each item is [key, tone, text, target view]; running work comes first, nothing is invented when data is missing.
   safetyItems() {
     const items = [], plans = this.journal || [];
+    const mode = this.data?.meta?.protection || "full";
+    if (mode !== "full") items.push(["mode", "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "cleanup"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
@@ -6245,6 +6247,22 @@ class SafetyMixin {
     const regress = plans.filter(p => p.followup === "regression").length;
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "cleanup"]);
     return items;
+  }
+
+  // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
+  protectionCard() {
+    const mode = this.data?.meta?.protection || "full";
+    const options = ["read_only", "quarantine", "confirmed", "full"].map(m => `<option value="${m}" ${m === mode ? "selected" : ""}>${this.t(`mode_${m}`)}</option>`).join("");
+    const events = ["critical_finding", "backup_overdue", "quarantine_expired", "followup_regression", "integration_down"].map(e => `<li><code>ha_housekeeper_${e}</code> · ${this.t(`event_${e}`)}</li>`).join("");
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("modeTitle")}</h2><p>${this.t("modeHint")}</p></div></div>
+      <div class="row"><span class="tile ${mode === "full" ? "mute" : "warn"}"><ha-icon icon="mdi:shield-lock-outline"></ha-icon></span><span class="row-text"><strong>${this.t("modeLabel")}</strong><small>${this.t(`modeText_${mode}`)}</small></span><select data-protection aria-label="${this.esc(this.t("modeLabel"))}">${options}</select></div></section>
+      <section class="panel"><div class="panelhead"><div><h2>${this.t("eventsTitle")}</h2><p>${this.t("eventsHint")}</p></div></div><ul class="factnote" style="margin:0;padding:10px 16px 14px 32px">${events}</ul></section>`;
+  }
+
+  async setProtection(mode) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/protection_set", mode }); this.data.meta.protection = mode; }
+    catch (err) { this.error = err?.message || String(err); }
+    this.render();
   }
 
   safetyBar() {
@@ -6269,6 +6287,44 @@ Object.assign(TEXT.en, {
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",
+});
+Object.assign(TEXT.de, {
+  safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne unumkehrbare Löschungen",
+  modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Ansichten bleiben immer erlaubt.", modeLabel: "Was Housekeeper ändern darf",
+  mode_read_only: "1 · Nur lesen", mode_quarantine: "2 · Quarantäne erlaubt", mode_confirmed: "3 · Bestätigte Änderungen mit Backup", mode_full: "4 · Voller Wartungsmodus",
+  modeText_read_only: "Nichts wird geändert, auch kein Rückgängig.", modeText_quarantine: "Nur Deaktivieren (und dessen Rückgängig) ist erlaubt.", modeText_confirmed: "Alles mit Einzelbestätigung und Backup außer unumkehrbarem Löschen von Recorder-Daten.", modeText_full: "Alles, wie bisher.",
+  err_protection_mode: "Der Schutzmodus erlaubt das nicht. Ändere ihn unter Einstellungen → Scan.",
+  eventsTitle: "Ereignisse für eigene Automationen", eventsHint: "Housekeeper löst nach einem Scan für jede neue Lage ein Ereignis auf dem Home-Assistant-Bus aus (einmal je Lage, beim ersten Mal still). Es verlässt nichts Home Assistant.",
+  event_critical_finding: "neuer Befund mit hoher Auswirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen (Ursache mit Folgebefunden)",
+});
+Object.assign(TEXT.en, {
+  safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
+  modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and every view stay allowed.", modeLabel: "What Housekeeper may change",
+  mode_read_only: "1 · Read only", mode_quarantine: "2 · Quarantine allowed", mode_confirmed: "3 · Confirmed changes with backup", mode_full: "4 · Full maintenance",
+  modeText_read_only: "Nothing is changed, not even an undo.", modeText_quarantine: "Only disabling (and undoing it) is allowed.", modeText_confirmed: "Everything with one-by-one confirmation and backup except irreversible deletion of recorder data.", modeText_full: "Everything, as before.",
+  err_protection_mode: "The protection mode does not allow this. Change it under Settings → Scan.",
+  eventsTitle: "Events for your own automations", eventsHint: "After a scan Housekeeper fires an event on the Home Assistant bus for each new situation (once per situation, silent the first time). Nothing leaves Home Assistant.",
+  event_critical_finding: "new finding with high impact", event_backup_overdue: "backup overdue", event_quarantine_expired: "quarantine expired", event_followup_regression: "follow-up: regression", event_integration_down: "integration not loaded (cause with follow-up findings)",
+});
+
+// Texts for the statistics and dashboard policy rules; merged into TEXT.
+Object.assign(TEXT.de, {
+  polRule_statistics_unit: "Statistik: Einheit passt nicht mehr", polDesc_statistics_unit: "Die Einheit der Entität weicht von der Einheit der Langzeitstatistik ab, und der Recorder kann sie nicht umrechnen. Neue Werte passen dann nicht zu den alten. Nur Metadaten werden gelesen.", polAlso_statistics_unit: "Statistik → Entität: {ids}",
+  polRule_statistics_class: "Statistik: Zustandsklasse passt nicht mehr", polDesc_statistics_class: "Die Zustandsklasse der Entität (Messwert oder Zähler) passt nicht zu den gespeicherten Statistikdaten. Verläufe lassen sich dann nicht zusammen auswerten. Nur Metadaten werden gelesen; Sprünge und Rücksetzer in den Werten prüft Housekeeper nicht.", polAlso_statistics_class: "Statistik → Entität: {ids}",
+  polRule_dashboard_navigation: "Dashboard: Navigation führt ins Leere", polDesc_dashboard_navigation: "Eine Karte öffnet eine Ansicht, die es im gelesenen Dashboard nicht gibt. Links zu anderen Bereichen von Home Assistant werden nicht beurteilt.", polAlso_dashboard_navigation: "Ziele: {ids}",
+  polRule_dashboard_disabled_entities: "Dashboard zeigt deaktivierte Entitäten", polDesc_dashboard_disabled_entities: "Das Dashboard enthält Karten für Entitäten, die deaktiviert sind.", polAlso_dashboard_disabled_entities: "Deaktiviert: {ids}",
+  polRule_dashboard_duplicate_cards: "Dashboard: doppelte Karten", polDesc_dashboard_duplicate_cards: "Dieselbe Karte mit gleicher Einstellung steht mehrmals in derselben Liste.", polAlso_dashboard_duplicate_cards: "Doppelte Karten: {ids}",
+  polRule_dashboard_size: "Sehr großes Dashboard", polDesc_dashboard_size: "Mehr als 200 Karten laden langsam und sind schwer zu pflegen.", polAlso_dashboard_size: "{ids} Karten",
+  polRule_dashboard_custom_cards: "Dashboard: Custom-Karten ohne Ressource", polDesc_dashboard_custom_cards: "Das Dashboard nutzt Custom-Karten, aber es ist keine Dashboard-Ressource eingetragen. Ob eine einzelne Karte geladen ist, lässt sich von hier nicht sagen; nur dieser sichere Fall zählt.", polAlso_dashboard_custom_cards: "Karten: {ids}",
+});
+Object.assign(TEXT.en, {
+  polRule_statistics_unit: "Statistics: unit no longer fits", polDesc_statistics_unit: "The unit of the entity differs from the unit of its long-term statistics and the recorder cannot convert it. New values then do not fit the old ones. Only metadata is read.", polAlso_statistics_unit: "Statistics → entity: {ids}",
+  polRule_statistics_class: "Statistics: state class no longer fits", polDesc_statistics_class: "The state class of the entity (measurement or total) does not match the stored statistics. Histories cannot be read together. Only metadata is read; jumps and resets in the values are not checked.", polAlso_statistics_class: "Statistics → entity: {ids}",
+  polRule_dashboard_navigation: "Dashboard: navigation leads nowhere", polDesc_dashboard_navigation: "A card opens a view that the dashboard that was read does not have. Links to other parts of Home Assistant are not judged.", polAlso_dashboard_navigation: "Targets: {ids}",
+  polRule_dashboard_disabled_entities: "Dashboard shows disabled entities", polDesc_dashboard_disabled_entities: "The dashboard holds cards for entities that are disabled.", polAlso_dashboard_disabled_entities: "Disabled: {ids}",
+  polRule_dashboard_duplicate_cards: "Dashboard: doubled cards", polDesc_dashboard_duplicate_cards: "The same card with the same settings appears more than once in the same list.", polAlso_dashboard_duplicate_cards: "Doubled cards: {ids}",
+  polRule_dashboard_size: "Very large dashboard", polDesc_dashboard_size: "More than 200 cards load slowly and are hard to keep.", polAlso_dashboard_size: "{ids} cards",
+  polRule_dashboard_custom_cards: "Dashboard: custom cards without a resource", polDesc_dashboard_custom_cards: "The dashboard uses custom cards but no dashboard resource is registered. Whether a single card is loaded cannot be told from here; only this sure case counts.", polAlso_dashboard_custom_cards: "Cards: {ids}",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -6996,6 +7052,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
+    root.querySelector("[data-protection]")?.addEventListener("change", ev => this.setProtection(ev.target.value));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
       try { await this._hass.callWS({ type: "ha_housekeeper/notify_set", enabled: ev.target.checked }); this.data.meta.notify = ev.target.checked; }
       catch (err) { this.error = err?.message || String(err); }

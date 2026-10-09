@@ -2853,3 +2853,17 @@ test("removing offers the recorder choice and sends it with the plan only when i
   await el.createPlan();
   assert.equal(created()[1].actions[0].recorder, "statistics");
 });
+
+test("the protection mode shows in the safety line and the settings, and is set through the server", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, protection: "read_only" } };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return {}; } };
+  assert.ok(el.safetyBar().includes("Protection mode: read only"));
+  assert.ok(el.protectionCard().includes("ha_housekeeper_backup_overdue") && el.protectionCard().includes('value="read_only" selected'));
+  await el.setProtection("full");
+  assert.equal(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/protection_set")), JSON.stringify({ type: "ha_housekeeper/protection_set", mode: "full" }));
+  assert.equal(el.data.meta.protection, "full");
+  assert.ok(!el.safetyBar().includes("Protection mode"));
+  void shadow;
+});

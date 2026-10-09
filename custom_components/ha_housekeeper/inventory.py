@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from collections import Counter
 from datetime import UTC, datetime, timedelta
@@ -25,7 +26,7 @@ from .automation_analysis import (
     summarize_automation_config,
     summarize_script_config,
 )
-from .backup_health import AttestStore
+from .backup_health import AttestStore, backup_health
 from .causes import apply_causes
 from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
@@ -44,9 +45,11 @@ from .coverage import CoverageStore
 from .criteria import CriteriaStore
 from .dashboard_analysis import (
     HELPER_DOMAINS,
+    dashboard_health,
     extract_dashboard_references,
     extract_entity_references,
     extract_helper_references,
+    view_keys,
 )
 from .db_health import database_summary
 from .events import EventLog
@@ -59,6 +62,7 @@ from .hygiene import (
     low_battery_ids,
     mark_duplicates,
     orphan_statistics,
+    statistic_continuity,
 )
 from .ignored import IgnoreStore
 from .impact import apply_impact
@@ -70,10 +74,15 @@ from .notify import NotifyStore, async_announce
 from .observations import ObservationStore
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
 from .policies import PolicyStore
+from .protection import ProtectionStore
 from .queries import ReplyStore
 from .refactor import RefactorStore
 from .runs import RunStore
+from .signals import SignalStore, situations
+from .signals import fire as signal_fire
 from .window import WindowStore
+
+_LOGGER = logging.getLogger(__name__)
 
 # Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
 ENERGY_KEYS = frozenset(
@@ -516,6 +525,8 @@ class InventoryScanner:
         self.criteria = CriteriaStore(hass)
         self.coverage = CoverageStore(hass)
         self.refactor = RefactorStore(hass)
+        self.protection = ProtectionStore(hass)
+        self.signals = SignalStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -560,6 +571,8 @@ class InventoryScanner:
         await self.criteria.async_load()
         await self.coverage.async_load()
         await self.refactor.async_load()
+        await self.protection.async_load()
+        await self.signals.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()
@@ -611,6 +624,9 @@ class InventoryScanner:
                         self.journal.plans, datetime.now(UTC)
                     )
                     snapshot["criteria_alerts"] = self.criteria.alerts(datetime.now(UTC).date())
+                    self.hass.async_create_background_task(
+                        self._announce(snapshot), "HA Housekeeper events"
+                    )
                 async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
@@ -621,6 +637,22 @@ class InventoryScanner:
                     last_error=f"{type(err).__name__}: {err}",
                 )
                 raise
+
+    async def _announce(self, snapshot: dict[str, Any]) -> None:
+        """Fire the events for situations that are new since the last scan."""
+        backup = None
+        try:
+            async with asyncio.timeout(20):
+                backup = await backup_health(self.hass, self.attest, self.journal.plans)
+        except Exception:  # noqa: BLE001 - without the backup report only that event is skipped
+            backup = None
+        try:
+            found = situations(snapshot, self.journal.plans, backup, datetime.now(UTC))
+            # Unknown is not "overdue", and a missing report must not end that situation either.
+            unknown = ("backup:",) if backup is None else ()
+            signal_fire(self.hass, self.signals.fresh(found, unknown))
+        except Exception:  # noqa: BLE001 - events never break a scan
+            _LOGGER.debug("Events failed", exc_info=True)
 
     def _observe_versions(self, snapshot: dict[str, Any]) -> None:
         custom = {
@@ -749,6 +781,7 @@ class InventoryScanner:
         statistic_ids = {item["statistic_id"] for item in statistics}
         for item in entities:
             item["has_statistics"] = item["object_id"] in statistic_ids
+        statistic_issues = statistic_continuity(statistics, entities)
         mark_duplicates(entities)
 
         edges = (
@@ -821,6 +854,7 @@ class InventoryScanner:
                 "ignore_label": IGNORE_LABEL,
                 "version": self.version,
                 "notify": self.notify.enabled,
+                "protection": self.protection.mode,
                 "recorder_available": self._recorder_available,
                 "orphaned_statistics": len(orphaned_statistics),
                 "quarantined": len(quarantine),
@@ -842,6 +876,7 @@ class InventoryScanner:
             "regressions": [],
             "criteria_alerts": [],
             "orphaned_statistics": orphaned_statistics,
+            "statistic_issues": statistic_issues,
             "quarantine": quarantine,
             "recurring_devices": recurring,
         }
@@ -1245,12 +1280,14 @@ class InventoryScanner:
         dashboards: list[dict[str, Any]] = []
         edges: list[dict[str, str]] = []
         findings: list[dict[str, Any]] = []
+        configs: dict[str, Any] = {}
         for url_path, dashboard in lovelace.dashboards.items():
             try:
                 config = await dashboard.async_load(False)
             except Exception:  # Auto-generated, missing or invalid dashboards have nothing to read.
                 continue
             object_id = url_path or "lovelace"
+            configs[object_id] = config
             references = extract_dashboard_references(config, existing["entity"])
             edges.extend(
                 {
@@ -1280,6 +1317,21 @@ class InventoryScanner:
                     "references": references,
                 }
             )
+        views_of = {
+            object_id: {
+                key
+                for index, view in enumerate(config.get("views") or [])
+                for key in view_keys(view, index)
+            }
+            for object_id, config in configs.items()
+            if isinstance(config.get("views"), list)
+        }
+        try:
+            resources: int | None = len(lovelace.resources.async_items())
+        except Exception:  # noqa: BLE001 - unknown resources only switch one check off
+            resources = None
+        for item in dashboards:
+            item["health"] = dashboard_health(configs[item["object_id"]], views_of, resources)
         return dashboards, edges, findings
 
     def _scene_inventory(

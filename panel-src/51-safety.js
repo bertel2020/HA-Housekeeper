@@ -8,6 +8,8 @@ class SafetyMixin {
   // Each item is [key, tone, text, target view]; running work comes first, nothing is invented when data is missing.
   safetyItems() {
     const items = [], plans = this.journal || [];
+    const mode = this.data?.meta?.protection || "full";
+    if (mode !== "full") items.push(["mode", "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "cleanup"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
@@ -21,6 +23,22 @@ class SafetyMixin {
     const regress = plans.filter(p => p.followup === "regression").length;
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "cleanup"]);
     return items;
+  }
+
+  // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
+  protectionCard() {
+    const mode = this.data?.meta?.protection || "full";
+    const options = ["read_only", "quarantine", "confirmed", "full"].map(m => `<option value="${m}" ${m === mode ? "selected" : ""}>${this.t(`mode_${m}`)}</option>`).join("");
+    const events = ["critical_finding", "backup_overdue", "quarantine_expired", "followup_regression", "integration_down"].map(e => `<li><code>ha_housekeeper_${e}</code> · ${this.t(`event_${e}`)}</li>`).join("");
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("modeTitle")}</h2><p>${this.t("modeHint")}</p></div></div>
+      <div class="row"><span class="tile ${mode === "full" ? "mute" : "warn"}"><ha-icon icon="mdi:shield-lock-outline"></ha-icon></span><span class="row-text"><strong>${this.t("modeLabel")}</strong><small>${this.t(`modeText_${mode}`)}</small></span><select data-protection aria-label="${this.esc(this.t("modeLabel"))}">${options}</select></div></section>
+      <section class="panel"><div class="panelhead"><div><h2>${this.t("eventsTitle")}</h2><p>${this.t("eventsHint")}</p></div></div><ul class="factnote" style="margin:0;padding:10px 16px 14px 32px">${events}</ul></section>`;
+  }
+
+  async setProtection(mode) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/protection_set", mode }); this.data.meta.protection = mode; }
+    catch (err) { this.error = err?.message || String(err); }
+    this.render();
   }
 
   safetyBar() {
@@ -45,4 +63,22 @@ Object.assign(TEXT.en, {
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",
+});
+Object.assign(TEXT.de, {
+  safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne unumkehrbare Löschungen",
+  modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Ansichten bleiben immer erlaubt.", modeLabel: "Was Housekeeper ändern darf",
+  mode_read_only: "1 · Nur lesen", mode_quarantine: "2 · Quarantäne erlaubt", mode_confirmed: "3 · Bestätigte Änderungen mit Backup", mode_full: "4 · Voller Wartungsmodus",
+  modeText_read_only: "Nichts wird geändert, auch kein Rückgängig.", modeText_quarantine: "Nur Deaktivieren (und dessen Rückgängig) ist erlaubt.", modeText_confirmed: "Alles mit Einzelbestätigung und Backup außer unumkehrbarem Löschen von Recorder-Daten.", modeText_full: "Alles, wie bisher.",
+  err_protection_mode: "Der Schutzmodus erlaubt das nicht. Ändere ihn unter Einstellungen → Scan.",
+  eventsTitle: "Ereignisse für eigene Automationen", eventsHint: "Housekeeper löst nach einem Scan für jede neue Lage ein Ereignis auf dem Home-Assistant-Bus aus (einmal je Lage, beim ersten Mal still). Es verlässt nichts Home Assistant.",
+  event_critical_finding: "neuer Befund mit hoher Auswirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen (Ursache mit Folgebefunden)",
+});
+Object.assign(TEXT.en, {
+  safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
+  modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and every view stay allowed.", modeLabel: "What Housekeeper may change",
+  mode_read_only: "1 · Read only", mode_quarantine: "2 · Quarantine allowed", mode_confirmed: "3 · Confirmed changes with backup", mode_full: "4 · Full maintenance",
+  modeText_read_only: "Nothing is changed, not even an undo.", modeText_quarantine: "Only disabling (and undoing it) is allowed.", modeText_confirmed: "Everything with one-by-one confirmation and backup except irreversible deletion of recorder data.", modeText_full: "Everything, as before.",
+  err_protection_mode: "The protection mode does not allow this. Change it under Settings → Scan.",
+  eventsTitle: "Events for your own automations", eventsHint: "After a scan Housekeeper fires an event on the Home Assistant bus for each new situation (once per situation, silent the first time). Nothing leaves Home Assistant.",
+  event_critical_finding: "new finding with high impact", event_backup_overdue: "backup overdue", event_quarantine_expired: "quarantine expired", event_followup_regression: "follow-up: regression", event_integration_down: "integration not loaded (cause with follow-up findings)",
 });

@@ -158,3 +158,47 @@ def low_battery_ids(entities: list[dict[str, Any]], threshold: int) -> list[str]
         if flagged or (level is not None and level <= threshold):
             low.append(item["object_id"])
     return low
+
+
+TOTAL_CLASSES = ("total", "total_increasing")
+CLASSES = ("measurement", *TOTAL_CLASSES)
+
+
+def statistic_continuity(
+    statistics: list[dict[str, Any]], entities: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Working entities whose long-term statistics no longer fit their unit or state class.
+
+    Only the recorder's metadata is read, never the values. A unit counts as changed only when the
+    recorder says the old unit cannot be converted into the new one (``unit_class`` is empty);
+    without that field nothing is judged. A state class counts as changed when the statistics
+    have a sum and the class is ``measurement``, or have none and the class is a total class.
+    """
+    meta = {s["statistic_id"]: s for s in statistics if s.get("source", "recorder") == "recorder"}
+    issues = []
+    for item in entities:
+        stat = meta.get(item["object_id"])
+        if stat is None or item.get("status") != "active":
+            continue
+        unit, stat_unit = item.get("unit"), stat.get("statistics_unit_of_measurement")
+        if (
+            unit
+            and stat_unit
+            and unit != stat_unit
+            and "unit_class" in stat
+            and not stat["unit_class"]
+        ):
+            issues.append(
+                {"object_id": item["object_id"], "kind": "unit", "was": stat_unit, "now": unit}
+            )
+        state_class = item.get("state_class")
+        if state_class in CLASSES and bool(stat.get("has_sum")) != (state_class in TOTAL_CLASSES):
+            issues.append(
+                {
+                    "object_id": item["object_id"],
+                    "kind": "class",
+                    "was": "total" if stat.get("has_sum") else "measurement",
+                    "now": state_class,
+                }
+            )
+    return issues[:MAX_ORPHANED_STATISTICS]
