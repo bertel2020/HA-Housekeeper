@@ -991,3 +991,38 @@ def test_timeouts_and_modes_are_set_exactly_where_asked() -> None:
     ):
         with pytest.raises(ValueError, match=reason):
             refactor.apply({**item, "mode": mode}, "set_mode", values)
+
+
+def test_refactoring_hints_name_device_triggers_long_delays_and_dead_branches() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    item = {
+        "id": "a",
+        "alias": "Hints",
+        "description": "d",
+        "trigger": [{"platform": "device", "device_id": "abc"}],
+        "action": [
+            {"delay": "00:30:00"},
+            {"delay": {"seconds": 20}},
+            {"delay": "{{ x }}"},
+            {
+                "choose": [
+                    {
+                        "conditions": [
+                            {"condition": "state", "entity_id": "x.gone", "state": "on"}
+                        ],
+                        "sequence": [{"delay": {"hours": 1}}],
+                    },
+                    {"conditions": [{"condition": "state", "entity_id": "x.here", "state": "on"}]},
+                ]
+            },
+        ],
+    }
+    found = {p["fix"]: p for p in refactor.propose(item, {"x.here"})}
+    assert found["hint_device_trigger"]["paths"] == ["trigger/0"]
+    assert found["hint_long_delay"]["paths"] == ["action/0", "action/3/choose/0/sequence/0"]
+    assert found["hint_long_delay"]["longest"] == 3600
+    assert found["hint_dead_branch"]["paths"] == ["action/3/choose/0"]
+    assert found["hint_dead_branch"]["entities"] == ["x.gone"]
+    assert "hint_dead_branch" not in {p["fix"] for p in refactor.propose(item)}
+    assert not set(found) & set(refactor.FIXES) - {"set_mode"}, "hints have no fix behind them"

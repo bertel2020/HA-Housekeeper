@@ -2945,3 +2945,27 @@ const REPAIR_PLAN = {
     counter: { unit: "m³", counts: { states: 3, short_term: 10, long_term: 10, tail_short_term: 40, tail_long_term: 30 }, skipped: {},
       findings: [{ bad_first: 1788220800, bad_last: 1788260800, low: 41.5, high: 41.5, good_before: 91.69, good_after: 91.8, series: [[1, 91, 91], [2, 41, 91], [3, 41, 91], [4, 91, 91]] }] } }],
 };
+
+test("refactoring hints are shown for reading, without a plan button", () => {
+  const { el } = panel("en");
+  el.diag = { quality: null, loading: false, error: "", sel: "automation.hall", criteria: {}, draft: null, message: "", detail: {} };
+  el.refactorState().by["automation.hall"] = { enabled: true, editable: true, proposals: [{ fix: "hint_long_delay", count: 1, paths: ["action/0"], longest: 1800 }, { fix: "hint_dead_branch", count: 1, paths: ["action/1/choose/0"], entities: ["x.gone"] }] };
+  const card = el.refactorCard("automation.hall");
+  assert.ok(card.includes("the longest 30 min (action/0)") && card.includes("x.gone") && card.includes("writes nothing here"));
+  assert.ok(!card.includes("data-refactor-plan"));
+});
+
+test("selected findings get a label through a plan that opens under Cleanup", async () => {
+  const calls = [];
+  const { el } = panel("en");
+  const base = DATA.findings[0];
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "label", object_id: "review", name: "Review" }], findings: [{ ...base, key: "k1", object_id: DATA.objects.find(o => o.object_type === "entity").object_id }] };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan_id: "p1", status: "dry_run", actions: [], summary: { total: 1, ok: 1, review: 0, blocked: 0 } }; } };
+  el.findSel = new Set(["k1"]);
+  el.bulk = { kind: "label", label: "review", reason: "", days: 30, error: "" };
+  assert.ok(el.bulkForm().includes('value="review"'));
+  await el.commitBulk();
+  const sent = calls.find(c => c.type === "ha_housekeeper/plan_create");
+  assert.equal(JSON.stringify(sent.actions.map(a => [a.kind, a.target])), JSON.stringify([["add_label", "review"]]));
+  assert.equal(el.view, "cleanup");
+});

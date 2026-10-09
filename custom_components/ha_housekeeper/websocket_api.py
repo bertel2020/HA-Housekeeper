@@ -12,6 +12,7 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import label_registry as lr
 from homeassistant.util import dt as dt_util
 
 from . import battery_trend, counter_repair
@@ -21,6 +22,7 @@ from .backup_health import ATTEST_KINDS, backup_health
 from .blueprints import async_blueprints
 from .cleanup import (
     ACTION_KINDS,
+    LABEL_KINDS,
     MAX_ACTIONS,
     MAX_MERGE,
     METER_KINDS,
@@ -330,6 +332,18 @@ async def _plan_from_requests(
             if key not in counter_data:
                 counter_data[key] = await counter_repair.prepare(hass, *key)
 
+    label_data = {}
+    for action in requests:
+        if action["kind"] in LABEL_KINDS:
+            entry = er.async_get(hass).async_get(action["object_id"])
+            label = lr.async_get(hass).async_get_label(action.get("target") or "")
+            label_data[(action["object_id"], action.get("target") or "")] = {
+                "exists": entry is not None,
+                "label": label.name if label else None,
+                "has": entry is not None and (action.get("target") or "") in entry.labels,
+                "fingerprint": registry_fingerprint(entry) if entry else None,
+            }
+
     def statistic_exists(statistic_id: str) -> bool:
         return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
 
@@ -356,6 +370,7 @@ async def _plan_from_requests(
         refactor_data=refactor_data,
         refactor_enabled=refactor_enabled,
         counter_data=counter_data,
+        label_data=label_data,
     )
     await _add_history(hass, snapshot, plan)
     return plan
@@ -1410,7 +1425,8 @@ async def websocket_refactor_proposals(
             result["reason"] = "blueprint"
         else:
             result["editable"] = True
-            result["proposals"] = refactor_module.propose(loaded["item"])
+            known = {o["object_id"] for o in snapshot["objects"] if o["object_type"] == "entity"}
+            result["proposals"] = refactor_module.propose(loaded["item"], known)
     except refactor_module.SourceError as err:
         result["reason"] = str(err)
     connection.send_result(msg["id"], _versioned(result))

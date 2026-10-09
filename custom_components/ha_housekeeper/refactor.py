@@ -28,6 +28,9 @@ DEFAULT_MAX = 10  # what Home Assistant uses for queued and parallel without a v
 TRIGGER_KEYS = ("triggers", "trigger")
 ACTION_KEYS = ("actions", "action")
 WAITS = ("wait_template", "wait_for_trigger")
+LONG_DELAY = 300  # seconds; a delay at least this long is lost when Home Assistant restarts
+# Hints name something worth a look but are never written: a change would alter what the automation does.
+HINTS = ("hint_device_trigger", "hint_long_delay", "hint_dead_branch")
 
 
 class RefactorStore:
@@ -100,14 +103,100 @@ def waits_without_timeout(item: dict[str, Any]) -> list[str]:
     ]
 
 
+def device_triggers(item: dict[str, Any]) -> list[str]:
+    """Paths of triggers that hang on a device id, which breaks when the device is added again."""
+    key = _trigger_key(item)
+    return [
+        f"{key}/{index}"
+        for index, trigger in enumerate(item[key] if key else [])
+        if isinstance(trigger, dict)
+        and (trigger.get("trigger") or trigger.get("platform")) == "device"
+    ]
+
+
+def delay_seconds(value: Any) -> int | None:
+    """The length of a ``delay`` in seconds; None where it is a template or cannot be read."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        if value.strip().isdigit():
+            return int(value)
+        parts = value.split(":")
+        if len(parts) in (2, 3) and all(part.replace(".", "", 1).isdigit() for part in parts):
+            numbers = [float(part) for part in parts]
+            while len(numbers) < 3:
+                numbers.insert(0, 0.0)
+            return int(numbers[0] * 3600 + numbers[1] * 60 + numbers[2])
+        return None
+    if isinstance(value, dict):
+        total = 0.0
+        for unit, factor in (("days", 86400), ("hours", 3600), ("minutes", 60), ("seconds", 1)):
+            part = value.get(unit, 0)
+            if isinstance(part, bool) or not isinstance(part, (int, float)):
+                if part in (0, None, "0"):
+                    continue
+                return None
+            total += part * factor
+        return int(total)
+    return None
+
+
+def long_delays(item: dict[str, Any]) -> list[tuple[str, int]]:
+    """Paths and lengths (seconds) of delays that do not survive a restart of Home Assistant."""
+    key = _action_key(item)
+    found = []
+    for path, step in _walk(item[key] if key else [], key or "action"):
+        seconds = delay_seconds(step["delay"]) if "delay" in step else None
+        if seconds is not None and seconds >= LONG_DELAY:
+            found.append((path, seconds))
+    return found
+
+
+def _condition_entities(conditions: Any) -> set[str]:
+    """Entities named by the plain state and numeric-state conditions of a list (all must hold)."""
+    found: set[str] = set()
+    for condition in conditions if isinstance(conditions, list) else [conditions]:
+        if not isinstance(condition, dict) or condition.get("condition") not in (
+            "state",
+            "numeric_state",
+        ):
+            continue
+        ids = condition.get("entity_id")
+        for entity_id in ids if isinstance(ids, list) else [ids]:
+            if isinstance(entity_id, str) and "{{" not in entity_id and "." in entity_id:
+                found.add(entity_id)
+    return found
+
+
+def dead_branches(item: dict[str, Any], known: set[str]) -> list[tuple[str, list[str]]]:
+    """``choose`` branches that can never apply because a condition names an entity that does not exist."""
+    key = _action_key(item)
+    found = []
+    for path, step in _walk(item[key] if key else [], key or "action"):
+        for number, option in enumerate(
+            step["choose"] if isinstance(step.get("choose"), list) else []
+        ):
+            if isinstance(option, dict):
+                missing = sorted(_condition_entities(option.get("conditions")) - known)
+                if missing:
+                    found.append((f"{path}/choose/{number}", missing))
+    return found
+
+
 def current_mode(item: dict[str, Any]) -> tuple[str, int | None]:
     """The mode of the automation and, for queued and parallel, its limit."""
     mode = item.get("mode") if item.get("mode") in MODES else "single"
     return mode, (item.get("max", DEFAULT_MAX) if mode in ("queued", "parallel") else None)
 
 
-def propose(item: dict[str, Any]) -> list[dict[str, Any]]:
-    """What could be improved in this configuration, without values the person has to give."""
+def propose(item: dict[str, Any], known: set[str] | None = None) -> list[dict[str, Any]]:
+    """What could be improved in this configuration, without values the person has to give.
+
+    ``known`` are the entity ids that exist; without them no branch is called dead. The ``hint_*``
+    entries are for reading only: there is no fix behind them.
+    """
     found: list[dict[str, Any]] = []
     if not str(item.get("description") or "").strip():
         found.append({"fix": "add_description"})
@@ -117,6 +206,26 @@ def propose(item: dict[str, Any]) -> list[dict[str, Any]]:
         found.append({"fix": "set_timeout", "count": len(waits), "paths": waits[:5]})
     mode, limit = current_mode(item)
     found.append({"fix": "set_mode", "mode": mode, "max": limit})
+    if devices := device_triggers(item):
+        found.append({"fix": "hint_device_trigger", "count": len(devices), "paths": devices[:5]})
+    if delays := long_delays(item):
+        found.append(
+            {
+                "fix": "hint_long_delay",
+                "count": len(delays),
+                "paths": [path for path, _ in delays[:5]],
+                "longest": max(seconds for _, seconds in delays),
+            }
+        )
+    if known and (dead := dead_branches(item, known)):
+        found.append(
+            {
+                "fix": "hint_dead_branch",
+                "count": len(dead),
+                "paths": [path for path, _ in dead[:5]],
+                "entities": sorted({e for _, missing in dead for e in missing})[:5],
+            }
+        )
     return found
 
 

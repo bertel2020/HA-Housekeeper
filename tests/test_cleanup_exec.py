@@ -531,3 +531,57 @@ async def test_the_protection_mode_limits_confirming_starting_and_undoing(
         await scanner.cleanup.undo(plan["plan_id"], None)
     scanner.protection.mode = "quarantine"
     assert (await scanner.cleanup.undo(plan["plan_id"], None))["results"][0]["outcome"] == "undone"
+
+
+async def test_adding_a_label_runs_is_verified_and_the_undo_keeps_other_labels(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers import label_registry as lr
+
+    registry = er.async_get(hass)
+    entry = orphan(hass, "tagged")
+    old = lr.async_get(hass).async_create("Old").label_id
+    new = lr.async_get(hass).async_create("Review").label_id
+    registry.async_update_entity(entry.entity_id, labels={old})
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    current = registry.async_get(entry.entity_id)
+    info = {
+        (entry.entity_id, new): {
+            "exists": True,
+            "label": "Review",
+            "has": False,
+            "fingerprint": registry_fingerprint(current),
+        },
+        (entry.entity_id, old): {"exists": True, "label": "Old", "has": True, "fingerprint": None},
+        (entry.entity_id, "gone"): {"exists": True, "label": None, "has": False},
+    }
+    verdicts = [
+        build_plan(
+            snapshot,
+            [{"kind": "add_label", "object_id": entry.entity_id, "target": label}],
+            datetime.now(UTC),
+            label_data=info,
+        )["actions"][0]
+        for label in (old, "gone")
+    ]
+    assert [(a["verdict"], a["reasons"]) for a in verdicts] == [
+        ("blocked", ["already_labelled"]),
+        ("blocked", ["label_missing"]),
+    ]
+    plan = build_plan(
+        snapshot,
+        [{"kind": "add_label", "object_id": entry.entity_id, "target": new}],
+        datetime.now(UTC),
+        label_data=info,
+    )
+    scanner.journal.add(plan)
+    assert plan["actions"][0]["verdict"] == "ok" and plan["actions"][0]["executable"] is True
+
+    await run(scanner, plan)
+    assert registry.async_get(entry.entity_id).labels == {old, new}
+    assert plan["status"] == "verified" and plan["verification"]["ok"] is True
+
+    result = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert result["results"] == [{"object_id": entry.entity_id, "outcome": "undone"}]
+    assert registry.async_get(entry.entity_id).labels == {old}

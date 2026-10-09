@@ -30,6 +30,7 @@ METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
 REPAIR_KINDS = frozenset({"repair_counter"})
+LABEL_KINDS = frozenset({"add_label"})  # adds one existing label to an entity; Home Assistant only
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
 RECORDER_CHOICES = ("keep", "statistics", "states")
@@ -42,6 +43,7 @@ ACTION_KINDS = (
     | PURGE_KINDS
     | REFACTOR_KINDS
     | REPAIR_KINDS
+    | LABEL_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
@@ -303,6 +305,8 @@ BLOCKING_REASONS = frozenset(
         "stats_nothing_to_import",
         "no_recorder",
         "no_counter_statistics",
+        "label_missing",
+        "already_labelled",
         "nothing_found",
         "too_many_rows",
         "schema_unknown",
@@ -613,6 +617,38 @@ def judge_counter_action(
     return action
 
 
+def judge_label_action(
+    object_id: str, label_id: str, name: str, info: dict[str, Any]
+) -> dict[str, Any]:
+    """Judge adding one existing label to one entity.
+
+    ``info`` says what the registries hold now: whether the entity is registered, the name of the
+    label (None if there is none) and whether the entity already carries it. Nothing else changes,
+    so a plan that is not blocked needs no further review.
+    """
+    action: dict[str, Any] = {
+        "kind": "add_label",
+        "object_id": object_id,
+        "object_type": "entity",
+        "name": name,
+        "target": label_id,
+        "label_name": info.get("label"),
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+    }
+    reasons = action["reasons"]
+    if not info.get("exists"):
+        reasons.append("not_found")
+    elif info.get("label") is None:
+        reasons.append("label_missing")
+    elif info.get("has"):
+        reasons.append("already_labelled")
+    _verdict(action)
+    return action
+
+
 def judge_meter_action(
     object_id: str,
     target: str | None,
@@ -758,6 +794,7 @@ def build_plan(
     refactor_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
     refactor_enabled: bool = False,
     counter_data: dict[tuple[str, str], dict[str, Any]] | None = None,
+    label_data: dict[tuple[str, str], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -806,6 +843,12 @@ def build_plan(
                 bool(snapshot["meta"].get("recorder_available")),
             )
             action["fingerprint"] = None
+        elif kind in LABEL_KINDS:
+            label_id = request.get("target") or ""
+            info = (label_data or {}).get((object_id, label_id), {})
+            name = (objects.get(object_id) or {}).get("name") or object_id
+            action = judge_label_action(object_id, label_id, name, info)
+            action["fingerprint"] = info.get("fingerprint")
         elif kind in REPAIR_KINDS:
             mode = request.get("mode") or "hold"
             counter = (counter_data or {}).get(

@@ -53,6 +53,7 @@ from homeassistant import loader
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import label_registry as lr
 from homeassistant.util.file import write_utf8_file_atomic
 from homeassistant.util.yaml import dump, parse_yaml
 
@@ -62,6 +63,7 @@ from .cleanup import (
     BACKUP_KINDS,
     DEVICE_KINDS,
     EXECUTABLE_KINDS,
+    LABEL_KINDS,
     METER_KINDS,
     PLAN_MAX_AGE_HOURS,
     PURGE_KINDS,
@@ -541,6 +543,17 @@ class CleanupRunner:
             return await self._migrate_meter(action), "meter_migrated"
         if kind in PURGE_KINDS:
             return await self._purge_statistics(action), "statistics_purged"
+        if kind in LABEL_KINDS:
+            registry = er.async_get(self.hass)
+            entry = registry.async_get(object_id)
+            updated = registry.async_update_entity(
+                object_id, labels=set(entry.labels) | {action["target"]}
+            )
+            return {
+                "before": registry_fingerprint(entry),
+                "after": registry_fingerprint(updated),
+                "label": action["target"],
+            }, "labeled"
         if kind in REPAIR_KINDS:
             return await self._repair_counter(action), "counter_repaired"
         if kind in REFACTOR_KINDS:
@@ -1121,6 +1134,18 @@ class CleanupRunner:
                 return "now_blocked"
             action["sources"] = [found["source"]]
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
+        if kind in LABEL_KINDS:
+            entry = er.async_get(self.hass).async_get(object_id)
+            if entry is None:
+                return "entity_gone"
+            if (
+                action.get("fingerprint") is None
+                or registry_fingerprint(entry) != action["fingerprint"]
+            ):
+                return "entity_changed"
+            if lr.async_get(self.hass).async_get_label(action["target"]) is None:
+                return "now_blocked"
+            return None
         if kind in REPAIR_KINDS:
             if not recorder_ready(self.hass):
                 return "no_recorder"
@@ -1261,6 +1286,10 @@ class CleanupRunner:
                     )
             elif kind in METER_KINDS:
                 checks.extend(await self._verify_meter(action))
+            elif kind in LABEL_KINDS:
+                entry = registry.async_get(object_id)
+                ok = entry is not None and action["target"] in entry.labels
+                checks.append({"check": "labelled", "object_id": object_id, "ok": ok})
             elif kind in REPAIR_KINDS:
                 found = await counter_repair.prepare(self.hass, object_id, action["mode"])
                 ok = found.get("error") == "nothing_found"
@@ -1396,6 +1425,8 @@ class CleanupRunner:
                 outcome = await self._undo_references(result)
             elif kind in METER_KINDS:
                 outcome = await self._undo_meter(result)
+            elif kind in LABEL_KINDS:
+                outcome = self._unlabel(registry, action["object_id"], result)
             elif kind in REPAIR_KINDS:
                 try:
                     outcome = await self._undo_counter(result)
@@ -1465,6 +1496,17 @@ class CleanupRunner:
         if registry_fingerprint(entry) != result["after"]:
             return "conflict_changed"
         registry.async_update_entity(object_id, disabled_by=None)
+        return "undone"
+
+    @staticmethod
+    def _unlabel(registry: Any, object_id: str, result: dict[str, Any]) -> str:
+        """Take the added label away again; the other labels of the entity stay as they are."""
+        entry = registry.async_get(object_id)
+        if entry is None:
+            return "conflict_gone"
+        if registry_fingerprint(entry) != result["after"]:
+            return "conflict_changed"
+        registry.async_update_entity(object_id, labels=set(entry.labels) - {result["label"]})
         return "undone"
 
     def _restore(self, registry: Any, object_id: str, data: dict[str, Any]) -> str:
