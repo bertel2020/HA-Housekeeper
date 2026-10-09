@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeping/main/custom_components/ha_housekeeper/brand/logo.png" alt="HA Housekeeper" width="160">
+  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeper/main/custom_components/ha_housekeeper/brand/logo.png" alt="HA Housekeeper" width="160">
 </p>
 
 <h1 align="center">HA Housekeeper</h1>
@@ -11,9 +11,9 @@
 <p align="center">
   <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
   <a href="https://www.home-assistant.io/"><img src="https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-18BCF2.svg?logo=home-assistant&logoColor=white" alt="Home Assistant"></a>
-  <a href="https://github.com/bertel2020/HA-Housekeeping/releases"><img src="https://img.shields.io/github/v/release/bertel2020/HA-Housekeeping?sort=semver&include_prereleases" alt="Release"></a>
-  <a href="https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml"><img src="https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/bertel2020/HA-Housekeeping" alt="License"></a>
+  <a href="https://github.com/bertel2020/HA-Housekeeper/releases"><img src="https://img.shields.io/github/v/release/bertel2020/HA-Housekeeper?sort=semver&include_prereleases" alt="Release"></a>
+  <a href="https://github.com/bertel2020/HA-Housekeeper/actions/workflows/validate.yml"><img src="https://github.com/bertel2020/HA-Housekeeper/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/bertel2020/HA-Housekeeper" alt="License"></a>
 </p>
 
 <p align="center">
@@ -54,7 +54,7 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 
 ### Via HACS (recommended)
 
-[![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
+[![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 [![Add HA Housekeeper to My Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
 
 1. Use the first button to open the Housekeeper repository in HACS.
@@ -65,7 +65,7 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 4. Then open **Housekeeper** in the sidebar while signed in as an administrator.
 
 If the first button does not work, add
-`https://github.com/bertel2020/HA-Housekeeping` in HACS under **Integrations →
+`https://github.com/bertel2020/HA-Housekeeper` in HACS under **Integrations →
 Custom repositories** with the category **Integration**.
 
 ### Manual
@@ -130,6 +130,9 @@ The **Changes** view compares the current state with the previous scan or with t
 
 - **Hide findings**: a finding can be hidden on the detail page (only in Housekeeper's own list, Home Assistant stays untouched). Alternatively the label `housekeeper_ignore` on an entity hides all of its findings. Hidden findings do not count in the overview, sensors, or repair hints and can be shown again with **Show hidden**. When hiding you choose the kind: **Hidden**, **Kept on purpose** (a reason is required) or **Remind me later**, optionally with a duration (7, 30, 90 or 365 days). When the time runs out the finding returns to the list, marked **Due again** and filterable. The reason and the time show in the list of hidden findings.
 - **Marks**: On the detail page (Relations tab) of a device or entity you tell Housekeeper what to expect: **Offline on purpose**, **Seasonal**, **Spare device**, **Being replaced** (with a target) or **Do not remove**, with a reason and optionally a review date (30, 90, 180 or 365 days). A mark hides “not available” on that object (on a device: on its entities), never a broken reference. **Do not remove** blocks every cleanup step on the object. After the review date the findings come back, marked as due. Marks live only in Housekeeper.
+- **Finding status**: Known (with a reason), Snoozed (with a date) and Hidden; New, In work (a plan is running or open) and Fixed lately are added automatically. The list filters by it, and the selection marks several findings as known or snoozes them at once. A possible duplicate offers “Not a duplicate”.
+- **What you can do**: On the detail page a card sums up what is possible for the object: decide findings, replace, plan a disable, add a label. Everything only opens a preview under Cleanup.
+- **Refactoring hints** (read only) for automations: device triggers, long delays and branches that can never apply. A refactoring assistant that rebuilds automations with a preview and an undo is experimental and off by default.
 - **Impact**: Every finding has an impact (**high**, **medium**, **low**, **none**) with the reasons behind it, for example “used by 3 active automations” or “controls 1 critical object”. Objects are critical when they carry the label `housekeeper_critical` (on an entity, device or area), or are locks, alarm panels, valves, sirens, garage doors and gates, or sensors for smoke, gas, carbon monoxide, water and safety. The findings list sorts by impact by default, then by certainty of the diagnosis, and can be filtered by it. There is no numeric score.
 - **Cleaning critical objects**: cleanup actions on critical objects (see Impact) ask for a separate confirmation per object, even when nothing else speaks against them. Policy violations can be hidden, kept (with a reason) or put off for later, like findings.
 - **Log of deleted statistics**: every deletion of orphaned recorder statistics is noted under Cleanup (time, who, backup, what was deleted and skipped). It cannot be undone, so it is only logged.

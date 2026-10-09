@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeping/main/custom_components/ha_housekeeper/brand/logo.png" alt="HA Housekeeper" width="160">
+  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeper/main/custom_components/ha_housekeeper/brand/logo.png" alt="HA Housekeeper" width="160">
 </p>
 
 <h1 align="center">HA Housekeeper</h1>
@@ -11,9 +11,9 @@
 <p align="center">
   <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
   <a href="https://www.home-assistant.io/"><img src="https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-18BCF2.svg?logo=home-assistant&logoColor=white" alt="Home Assistant"></a>
-  <a href="https://github.com/bertel2020/HA-Housekeeping/releases"><img src="https://img.shields.io/github/v/release/bertel2020/HA-Housekeeping?sort=semver&include_prereleases" alt="Release"></a>
-  <a href="https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml"><img src="https://github.com/bertel2020/HA-Housekeeping/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/bertel2020/HA-Housekeeping" alt="License"></a>
+  <a href="https://github.com/bertel2020/HA-Housekeeper/releases"><img src="https://img.shields.io/github/v/release/bertel2020/HA-Housekeeper?sort=semver&include_prereleases" alt="Release"></a>
+  <a href="https://github.com/bertel2020/HA-Housekeeper/actions/workflows/validate.yml"><img src="https://github.com/bertel2020/HA-Housekeeper/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/bertel2020/HA-Housekeeper" alt="License"></a>
 </p>
 
 <p align="center">
@@ -54,7 +54,7 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 
 ### Über HACS (empfohlen)
 
-[![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeping&category=integration)
+[![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 [![HA Housekeeper zu My Home Assistant hinzufügen](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=ha_housekeeper)
 
 1. Über den ersten Button das Housekeeper-Repository in HACS öffnen.
@@ -65,7 +65,7 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 4. Anschließend als Administrator **Housekeeper** in der Seitenleiste öffnen.
 
 Falls der erste Button nicht funktioniert, in HACS unter **Integrationen →
-Benutzerdefinierte Repositories** `https://github.com/bertel2020/HA-Housekeeping`
+Benutzerdefinierte Repositories** `https://github.com/bertel2020/HA-Housekeeper`
 als Kategorie **Integration** eintragen.
 
 ### Manuell
@@ -129,7 +129,10 @@ Die Ansicht **Änderungen** vergleicht den aktuellen Stand mit dem Scan davor od
 ### Weitere Ansichten und Quellen
 
 - **Befunde ausblenden**: Ein Befund lässt sich auf der Detailseite ausblenden (nur in Housekeepers eigener Liste, Home Assistant bleibt unverändert). Alternativ blendet das Label `housekeeper_ignore` an einer Entität alle ihre Befunde aus. Ausgeblendete Befunde zählen nicht in Übersicht, Sensoren und Reparaturhinweisen und lassen sich über **Ausgeblendete anzeigen** wieder einblenden. Beim Ausblenden wählst du die Art: **Ausgeblendet**, **Bewusst behalten** (mit Pflicht-Begründung) oder **Später erinnern**, optional mit Dauer (7, 30, 90 oder 365 Tage). Läuft die Frist ab, erscheint der Befund wieder in der Liste, markiert als **Wiedervorlage fällig** und filterbar. Begründung und Frist stehen in der Liste der ausgeblendeten Befunde.
+- **Status der Befunde**: Bekannt (mit Begründung), Zurückgestellt (mit Frist) und Ausgeblendet; automatisch kommen Neu, In Arbeit (ein Plan läuft oder liegt vor) und Zuletzt behoben dazu. Die Liste filtert danach, die Sammelauswahl markiert mehrere Befunde auf einmal als bekannt oder stellt sie zurück. Bei einem möglichen Duplikat gibt es „Ist kein Duplikat“.
 - **Vermerke**: Auf der Detailseite (Reiter Beziehungen) eines Geräts oder einer Entität sagst du Housekeeper, was zu erwarten ist: **Absichtlich offline**, **Saisonal**, **Reservegerät**, **Wird ersetzt** (mit Ziel) oder **Nicht entfernen**, mit Begründung und optional einem Prüfdatum (30, 90, 180 oder 365 Tage). Ein Vermerk blendet „nicht verfügbar“ bei diesem Objekt aus (bei einem Gerät: bei seinen Entitäten), nie eine kaputte Referenz. **Nicht entfernen** sperrt alle Bereinigungsschritte für das Objekt. Nach dem Prüfdatum erscheinen die Befunde wieder, markiert als fällig. Vermerke liegen nur in Housekeeper.
+- **Was du tun kannst**: Auf der Detailseite fasst eine Karte zusammen, was zum Objekt möglich ist: Befunde entscheiden, ersetzen, Deaktivieren planen, ein Label ergänzen. Alles öffnet nur eine Vorschau unter Aufräumen.
+- **Refactoring-Hinweise** (nur lesen) für Automationen: Geräte-Trigger, lange Verzögerungen und Zweige, die nie zutreffen können. Ein Refactoring-Assistent, der Automationen mit Vorschau und Rückgängig umbaut, ist experimentell und standardmäßig aus.
 - **Auswirkung**: Jeder Befund hat eine Auswirkung (**hoch**, **mittel**, **gering**, **keine**) mit den Gründen dahinter, zum Beispiel „von 3 aktiven Automationen genutzt“ oder „steuert 1 kritisches Objekt“. Kritisch sind Objekte mit dem Label `housekeeper_critical` (an Entität, Gerät oder Bereich) sowie Schlösser, Alarmanlagen, Ventile, Sirenen, Garagentore und Tore und Sensoren für Rauch, Gas, Kohlenmonoxid, Wasser und Sicherheit. Die Befundliste sortiert standardmäßig nach Auswirkung, dann nach Sicherheit der Diagnose, und lässt sich danach filtern. Es gibt keinen Zahlenwert.
 - **Kritische Objekte bereinigen**: Aktionen im Aufräumen auf kritischen Objekten (siehe Auswirkung) verlangen eine eigene Bestätigung pro Objekt, auch wenn sonst nichts dagegen spricht. Richtlinien-Verstöße lassen sich wie Befunde ausblenden, behalten (mit Begründung) oder auf Wiedervorlage legen.
 - **Protokoll gelöschter Statistiken**: Jedes Löschen verwaister Recorder-Statistiken wird im Aufräumen vermerkt (Zeit, wer, Backup, was gelöscht und übersprungen wurde). Es lässt sich nicht umkehren, deshalb steht es nur im Protokoll.
