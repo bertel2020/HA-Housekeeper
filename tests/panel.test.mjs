@@ -293,13 +293,16 @@ test("the status counts affected objects once, only of the base types, and not h
   const finding = (rule, id, extra = {}) => ({ rule_id: rule, object_id: id, classification: "orphaned", confidence: 0.9, evidence: [], ...extra });
   const base = { ...DATA, objects };
   el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.duplicate", "sensor.s0"), finding("entity.unavailable", "sensor.s0")] };
-  assert.deepEqual([el.health().affected, el.health().base, el.health().percent], [1, 8, 88]); // one object, three findings
+  assert.deepEqual([el.health().affected, el.health().base, el.health().percent], [1, 8, 87]); // one object, three findings; rounded down
   el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.state_missing", "sensor.s1", { ignored: true })] };
   assert.equal(el.health().affected, 1); // hidden findings do not count
   el.data = { ...base, findings: [finding("dashboard.missing_entity", "dash")] };
   assert.equal(el.health().affected, 0); // other object types are listed but not part of the ring
   el.data = { ...DATA, objects: [], findings: [finding("entity.state_missing", "sensor.s0")] };
   assert.equal(el.health().percent, 100); // empty base
+  const many = Array.from({ length: 1000 }, (_, i) => entity(`sensor.m${i}`));
+  el.data = { ...DATA, objects: many, findings: [finding("entity.state_missing", "sensor.m0")] };
+  assert.equal(el.health().percent, 99, "one in a thousand never reads as 100");
   assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("scripts and scenes"));
 });
 
@@ -309,7 +312,7 @@ test("hidden findings are excluded from counts, lists and export unless shown", 
   el.data = { ...DATA, findings };
   assert.equal(el.sortedFindings().length, 1);
   assert.equal(el.sortedFindings(true).length, 2);
-  assert.equal(el.health().percent, 67);
+  assert.equal(el.health().percent, 66);
   el.exportFindings("json");
   assert.equal(JSON.parse(downloads[0].text).findings.length, 1);
   el.findingStatus = "all";
@@ -1876,8 +1879,11 @@ test("the whole confirmation flow works end to end against a scripted backend", 
   assert.ok(snapshots.some(s => s.live.includes("Backup running")) && snapshots.some(s => s.scanDisabled), "screen readers and the scan button follow the run");
   assert.equal(JSON.stringify(sent.filter(type => type !== "plan_list").slice(0, 7)), JSON.stringify(["plan_create", "plan_confirm", "plan_execute", "plan_status", "plan_status", "plan_status", "inventory"]));
   assert.ok(shadow.innerHTML.includes("data-undo-all") && shadow.innerHTML.includes("Created"), "undo and the backup record are offered");
+  el.undoAsk = "all"; el.render();
+  assert.ok(shadow.innerHTML.includes("data-undo-all-yes") && !shadow.innerHTML.includes("data-undo-all>"), "undo asks before it goes");
 
   await el.undoPlan();
+  assert.equal(el.undoAsk, null);
   assert.equal(el.plan.status, "undone");
   assert.ok(el.undoMessage.includes("sensor.old: restored"));
   assert.ok(!el.cleanupRunning());

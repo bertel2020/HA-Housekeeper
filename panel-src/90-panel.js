@@ -765,8 +765,11 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     root.querySelector("[data-plan-execute]")?.addEventListener("click", () => this.executePlan());
     root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());
-    root.querySelector("[data-undo-all]")?.addEventListener("click", () => this.undoPlan());
-    root.querySelectorAll("[data-undo-one]").forEach(el => el.onclick = () => this.undoPlan([el.dataset.undoOne]));
+    root.querySelector("[data-undo-all]")?.addEventListener("click", () => { this.undoAsk = "all"; this.render(); });
+    root.querySelector("[data-undo-all-yes]")?.addEventListener("click", () => this.undoPlan());
+    root.querySelectorAll("[data-undo-one]").forEach(el => el.onclick = () => { this.undoAsk = el.dataset.undoOne; this.render(); });
+    root.querySelectorAll("[data-undo-one-yes]").forEach(el => el.onclick = () => this.undoPlan([el.dataset.undoOneYes]));
+    root.querySelectorAll("[data-undo-no]").forEach(el => el.onclick = () => { this.undoAsk = null; this.render(); });
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });

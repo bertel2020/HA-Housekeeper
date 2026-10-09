@@ -23,14 +23,17 @@ class FindingsMixin {
     const base = objects.length;
     const known = new Set(objects.map(o => this.objectKey(o)));
     const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
-    const percent = base ? Math.max(0, Math.round(100 * (1 - affected.size / base))) : 100;
+    // Rounded down, so a few affected objects among thousands never read as 100.
+    const share = base ? Math.max(0, Math.floor(100 * (1 - affected.size / base))) : 100;
     // The status is the worse of two readings: the share of objects without a finding, and what the to-do list still asks for
     // (broken integrations, a missed goal, a problem with the backup or the database).
     const open = this.todoItems(), red = open.filter(i => i.tone === "red").length, tasks = open.length;
-    const byShare = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
+    const byShare = share >= 95 ? "ok" : share >= 80 ? "warn" : "red";
+    // The number takes the open tasks off the share: 4 points for each, 10 for an urgent one.
+    const percent = Math.max(0, share - open.reduce((sum, item) => sum + (item.tone === "red" ? 10 : 4), 0));
     const tone = red || byShare === "red" ? "red" : tasks || byShare === "warn" ? "warn" : "ok";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label, affected: affected.size, base, tasks, red };
+    return { percent, share, tone, label, affected: affected.size, base, tasks, red };
   }
 
   findingRow(finding) {
