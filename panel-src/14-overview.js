@@ -94,7 +94,7 @@ class OverviewMixin {
     const urgent = items.filter(i => i.tone === "red"), later = items.filter(i => i.tone !== "red");
     const grouped = urgent.length && later.length;
     const body = items.length ? (grouped
-      ? `<h3 class="foldhd">${this.t("actNow")}</h3>${urgent.map(row).join("")}${this.fold("todo_later", { tone: "warn", title: this.t("actSoon"), pill: this.formatNumber(later.length) }, later.map(row).join(""), later.length <= 3)}`
+      ? `<h3 class="foldhd">${this.t("actNow")}</h3>${urgent.map(row).join("")}${this.fold("todo_later", { tone: "warn", title: this.t("actSoon"), pill: this.formatNumber(later.length) }, later.map(row).join(""), false)}`
       : items.map(row).join(""))
       : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
     return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}${this.goalsLine()}</section>`;

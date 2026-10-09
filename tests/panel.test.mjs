@@ -1402,7 +1402,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
   assert.equal(byKey.backup.tone, "red");
   assert.equal(byKey.backup.hintText, "Latest backup, Last automatic run", "only the problems are named, not the notes");
 
-  el.view = "overview"; el.render();
+  el.view = "overview"; el.folds = { todo_later: true }; el.render();
   const html = shadow.innerHTML;
   assert.ok(html.indexOf("What needs doing now?") > html.indexOf('class="summary"'), "the list comes after the key figures");
   assert.ok(html.indexOf('data-todo="integrations"') < html.indexOf('data-todo="critical"') && html.indexOf('data-todo="critical"') < html.indexOf('data-todo="stale"'));
