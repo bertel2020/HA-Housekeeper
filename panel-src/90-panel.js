@@ -784,6 +784,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-undo-one]").forEach(el => el.onclick = () => { this.undoAsk = el.dataset.undoOne; this.render(); });
     root.querySelectorAll("[data-undo-one-yes]").forEach(el => el.onclick = () => this.undoPlan([el.dataset.undoOneYes]));
     root.querySelectorAll("[data-undo-no]").forEach(el => el.onclick = () => { this.undoAsk = null; this.render(); });
+    root.querySelectorAll("[data-plan-repeat]").forEach(el => el.addEventListener("click", () => this.repeatPlan([this.plan, ...(this.journal || [])].find(x => x?.plan_id === el.dataset.planRepeat))));
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });

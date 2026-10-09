@@ -117,7 +117,7 @@ class ExchangeMixin {
     root.querySelectorAll("[data-ex-target]").forEach(el => el.onchange = () => { const id = el.dataset.exTarget; ex().choices[id] = { ...(ex().choices[id] || {}), target: el.value }; this.render(); });
     root.querySelectorAll("[data-ex-how]").forEach(el => el.onchange = () => { const id = el.dataset.exHow; ex().choices[id] = { ...(ex().choices[id] || {}), how: el.value }; this.render(); });
     root.querySelector("[data-ex-disable]")?.addEventListener("click", () => { this.cleanupKind = "disable_device"; this.cleanupSel = new Set([ex().oldDev]); this.view = "cleanup"; (this.viewTab ||= {}).cleanup = "devices"; this.render(); });
-    root.querySelectorAll("[data-report]").forEach(el => el.onclick = () => this.loadReport(el.dataset.report));
+    root.querySelectorAll("[data-report]").forEach(el => el.onclick = () => { if (this.report?.plan_id === el.dataset.report) { this.report = null; this.reportMessage = ""; this.render(); } else this.loadReport(el.dataset.report); });
     root.querySelector("[data-report-names]")?.addEventListener("change", e => { this.reportClear = e.target.checked; if (this.report) this.loadReport(this.report.plan_id); else this.render(); });
     root.querySelector("[data-report-download]")?.addEventListener("click", () => this.downloadReport());
     root.querySelector("[data-report-copy]")?.addEventListener("click", () => this.copyReport());
@@ -163,7 +163,7 @@ class ExchangeMixin {
   reportBlock(plan) {
     const shown = this.report?.plan_id === plan.plan_id ? this.report : null;
     const body = shown ? `<div class="reportbox"><div class="reporthead"><strong><ha-icon icon="mdi:file-document-outline"></ha-icon>${this.t("reportTitle")}</strong><span class="reportbtns"><button class="btn accent" data-report-copy><ha-icon icon="mdi:content-copy"></ha-icon>${this.t("reportCopy")}</button><button class="btn accent" data-report-download><ha-icon icon="mdi:download"></ha-icon>${this.t("reportDownload")}</button></span></div><pre class="reportpre">${this.esc(shown.markdown)}</pre>${shown.anonymized || this.reportMessage ? `<p class="reportnote">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</p>` : ""}</div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
-    return `<div class="setrow planfoot"><label class="factnote reportopt"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}><span><strong>${this.t("reportNames")}</strong><small>${this.t("reportNamesHint")}</small></span></label><button class="btn accent" data-report="${this.esc(plan.plan_id)}"><ha-icon icon="mdi:file-document-outline"></ha-icon>${this.t("reportButton")}</button></div>${body}`;
+    return `<div class="setrow planfoot"><label class="factnote reportopt"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}><span><strong>${this.t("reportNames")}</strong><small>${this.t("reportNamesHint")}</small></span></label><button class="btn accent" data-report="${this.esc(plan.plan_id)}"><ha-icon icon="mdi:${shown ? "chevron-up" : "file-document-outline"}"></ha-icon>${this.t("reportButton")}</button></div>${body}`;
   }
 
   // -- end state simulation ---------------------------------------------------------------

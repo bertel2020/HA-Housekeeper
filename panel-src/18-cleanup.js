@@ -170,6 +170,23 @@ class CleanupMixin {
     this.cleanupBusy = false; this.render();
   }
 
+  // Creates a fresh preview with the same objects as an earlier plan, for example one that was aborted.
+  async repeatPlan(plan) {
+    this.cleanupBusy = true; this.cleanupError = ""; this.render();
+    try {
+      const actions = plan.actions.map(a => {
+        const r = { kind: a.kind, object_id: a.object_id };
+        for (const key of ["target", "mode", "range", "recorder", "fix", "values"]) if (a[key]) r[key] = a[key];
+        if (a.kind === "purge_statistics") r.states = Boolean(a.states);
+        return r;
+      });
+      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+      this.journal = [fresh, ...(this.journal || [])];
+    } catch (err) { this.cleanupError = this.errText(err); }
+    this.cleanupBusy = false; this.render();
+  }
+
   errText(err) {
     const key = `err_${err?.code}`;
     return TEXT[this.lang][key] ? this.t(key) : (err?.message || String(err));
@@ -331,6 +348,7 @@ class CleanupMixin {
     else if (open && !conf) control = `<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
     else if (open && conf) control = `<div class="setrow planfoot"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn primary" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
+    else if (plan.status === "aborted") control = `<div class="setrow planfoot"><small style="margin:0">${this.t("repeatHint")}</small><button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
     else if (plan.actions.some(a => a.result?.state === "done")) control = this.undoAsk === "all"
       ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`

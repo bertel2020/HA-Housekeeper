@@ -1,5 +1,6 @@
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  repeatPlan: "Plan wiederholen", repeatHint: "Es wurde nichts geändert. Das erstellt eine neue Vorschau mit denselben Objekten.",
   planResultDone: "Plan", undoYes: "Ja, rückgängig machen", undoAskOne: "Diese Änderung zurücksetzen?", undoAskAll: "Alles rückgängig machen?",
   undoAskAllHint: "Housekeeper stellt zurück, was dieser Plan geändert hat, soweit es unverändert ist.", undoAllHint: "Housekeeper kann zurückstellen, was dieser Plan geändert hat, solange es unverändert ist.", reportTitle: "Prüfbericht",
   statusTasks: "{count} Aufgaben warten auf dich", statusAllGood: "Alles in Ordnung",
@@ -27,6 +28,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  repeatPlan: "Repeat plan", repeatHint: "Nothing was changed. This creates a new preview with the same objects.",
   planResultDone: "Plan", undoYes: "Yes, undo", undoAskOne: "Undo this change?", undoAskAll: "Undo everything?",
   undoAskAllHint: "Housekeeper puts back what this plan changed, as far as it is still unchanged.", undoAllHint: "Housekeeper can put back what this plan changed, as long as it is unchanged.", reportTitle: "Audit report",
   statusTasks: "{count} tasks are waiting for you", statusAllGood: "All good",

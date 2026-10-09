@@ -2465,6 +2465,23 @@ class CleanupMixin {
     this.cleanupBusy = false; this.render();
   }
 
+  // Creates a fresh preview with the same objects as an earlier plan, for example one that was aborted.
+  async repeatPlan(plan) {
+    this.cleanupBusy = true; this.cleanupError = ""; this.render();
+    try {
+      const actions = plan.actions.map(a => {
+        const r = { kind: a.kind, object_id: a.object_id };
+        for (const key of ["target", "mode", "range", "recorder", "fix", "values"]) if (a[key]) r[key] = a[key];
+        if (a.kind === "purge_statistics") r.states = Boolean(a.states);
+        return r;
+      });
+      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+      this.journal = [fresh, ...(this.journal || [])];
+    } catch (err) { this.cleanupError = this.errText(err); }
+    this.cleanupBusy = false; this.render();
+  }
+
   errText(err) {
     const key = `err_${err?.code}`;
     return TEXT[this.lang][key] ? this.t(key) : (err?.message || String(err));
@@ -2626,6 +2643,7 @@ class CleanupMixin {
     else if (open && !conf) control = `<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
     else if (open && conf) control = `<div class="setrow planfoot"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn primary" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
+    else if (plan.status === "aborted") control = `<div class="setrow planfoot"><small style="margin:0">${this.t("repeatHint")}</small><button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
     else if (plan.actions.some(a => a.result?.state === "done")) control = this.undoAsk === "all"
       ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`
@@ -5841,7 +5859,7 @@ class ExchangeMixin {
     root.querySelectorAll("[data-ex-target]").forEach(el => el.onchange = () => { const id = el.dataset.exTarget; ex().choices[id] = { ...(ex().choices[id] || {}), target: el.value }; this.render(); });
     root.querySelectorAll("[data-ex-how]").forEach(el => el.onchange = () => { const id = el.dataset.exHow; ex().choices[id] = { ...(ex().choices[id] || {}), how: el.value }; this.render(); });
     root.querySelector("[data-ex-disable]")?.addEventListener("click", () => { this.cleanupKind = "disable_device"; this.cleanupSel = new Set([ex().oldDev]); this.view = "cleanup"; (this.viewTab ||= {}).cleanup = "devices"; this.render(); });
-    root.querySelectorAll("[data-report]").forEach(el => el.onclick = () => this.loadReport(el.dataset.report));
+    root.querySelectorAll("[data-report]").forEach(el => el.onclick = () => { if (this.report?.plan_id === el.dataset.report) { this.report = null; this.reportMessage = ""; this.render(); } else this.loadReport(el.dataset.report); });
     root.querySelector("[data-report-names]")?.addEventListener("change", e => { this.reportClear = e.target.checked; if (this.report) this.loadReport(this.report.plan_id); else this.render(); });
     root.querySelector("[data-report-download]")?.addEventListener("click", () => this.downloadReport());
     root.querySelector("[data-report-copy]")?.addEventListener("click", () => this.copyReport());
@@ -5887,7 +5905,7 @@ class ExchangeMixin {
   reportBlock(plan) {
     const shown = this.report?.plan_id === plan.plan_id ? this.report : null;
     const body = shown ? `<div class="reportbox"><div class="reporthead"><strong><ha-icon icon="mdi:file-document-outline"></ha-icon>${this.t("reportTitle")}</strong><span class="reportbtns"><button class="btn accent" data-report-copy><ha-icon icon="mdi:content-copy"></ha-icon>${this.t("reportCopy")}</button><button class="btn accent" data-report-download><ha-icon icon="mdi:download"></ha-icon>${this.t("reportDownload")}</button></span></div><pre class="reportpre">${this.esc(shown.markdown)}</pre>${shown.anonymized || this.reportMessage ? `<p class="reportnote">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</p>` : ""}</div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
-    return `<div class="setrow planfoot"><label class="factnote reportopt"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}><span><strong>${this.t("reportNames")}</strong><small>${this.t("reportNamesHint")}</small></span></label><button class="btn accent" data-report="${this.esc(plan.plan_id)}"><ha-icon icon="mdi:file-document-outline"></ha-icon>${this.t("reportButton")}</button></div>${body}`;
+    return `<div class="setrow planfoot"><label class="factnote reportopt"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}><span><strong>${this.t("reportNames")}</strong><small>${this.t("reportNamesHint")}</small></span></label><button class="btn accent" data-report="${this.esc(plan.plan_id)}"><ha-icon icon="mdi:${shown ? "chevron-up" : "file-document-outline"}"></ha-icon>${this.t("reportButton")}</button></div>${body}`;
   }
 
   // -- end state simulation ---------------------------------------------------------------
@@ -7191,6 +7209,7 @@ Object.assign(TEXT.en, {
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  repeatPlan: "Plan wiederholen", repeatHint: "Es wurde nichts geändert. Das erstellt eine neue Vorschau mit denselben Objekten.",
   planResultDone: "Plan", undoYes: "Ja, rückgängig machen", undoAskOne: "Diese Änderung zurücksetzen?", undoAskAll: "Alles rückgängig machen?",
   undoAskAllHint: "Housekeeper stellt zurück, was dieser Plan geändert hat, soweit es unverändert ist.", undoAllHint: "Housekeeper kann zurückstellen, was dieser Plan geändert hat, solange es unverändert ist.", reportTitle: "Prüfbericht",
   statusTasks: "{count} Aufgaben warten auf dich", statusAllGood: "Alles in Ordnung",
@@ -7218,6 +7237,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  repeatPlan: "Repeat plan", repeatHint: "Nothing was changed. This creates a new preview with the same objects.",
   planResultDone: "Plan", undoYes: "Yes, undo", undoAskOne: "Undo this change?", undoAskAll: "Undo everything?",
   undoAskAllHint: "Housekeeper puts back what this plan changed, as far as it is still unchanged.", undoAllHint: "Housekeeper can put back what this plan changed, as long as it is unchanged.", reportTitle: "Audit report",
   statusTasks: "{count} tasks are waiting for you", statusAllGood: "All good",
@@ -8103,6 +8123,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-undo-one]").forEach(el => el.onclick = () => { this.undoAsk = el.dataset.undoOne; this.render(); });
     root.querySelectorAll("[data-undo-one-yes]").forEach(el => el.onclick = () => this.undoPlan([el.dataset.undoOneYes]));
     root.querySelectorAll("[data-undo-no]").forEach(el => el.onclick = () => { this.undoAsk = null; this.render(); });
+    root.querySelectorAll("[data-plan-repeat]").forEach(el => el.addEventListener("click", () => this.repeatPlan([this.plan, ...(this.journal || [])].find(x => x?.plan_id === el.dataset.planRepeat))));
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
