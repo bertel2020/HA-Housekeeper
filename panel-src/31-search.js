@@ -3,19 +3,26 @@ const QUICK_TYPES = ["entity", "device", "config_entry", "automation", "script"]
 const QUICK_LIMIT = 12;
 
 class SearchMixin {
-  quickResults() {
-    const terms = this.quickQuery.toLowerCase().split(/\s+/).filter(Boolean);
-    if (!this.data || this.quickQuery.trim().length < 2) return [];
+  // The one object search: every word must occur in the name, the id, the integration, the maker or the model; names that
+  // start with the first word come first. The top bar, the dependency path and the sensor fields all use it.
+  searchObjects(query, { types = QUICK_TYPES, limit = QUICK_LIMIT, filter = null } = {}) {
+    const terms = String(query).toLowerCase().split(/\s+/).filter(Boolean);
+    if (!this.data || !terms.length) return [];
     const found = [];
     for (const item of this.data.objects) {
-      if (!QUICK_TYPES.includes(item.object_type)) continue;
+      if ((types && !types.includes(item.object_type)) || (filter && !filter(item))) continue;
       const name = String(item.name || "").toLowerCase();
       const hay = `${name} ${String(item.object_id).toLowerCase()} ${String(item.platform || item.domain || "").toLowerCase()} ${String(item.manufacturer || "").toLowerCase()} ${String(item.model || "").toLowerCase()}`;
       if (!terms.every(term => hay.includes(term))) continue;
       found.push({ item, rank: name.startsWith(terms[0]) ? 0 : name.includes(terms[0]) ? 1 : 2 });
     }
-    found.sort((a, b) => a.rank - b.rank || QUICK_TYPES.indexOf(a.item.object_type) - QUICK_TYPES.indexOf(b.item.object_type) || String(a.item.name).localeCompare(String(b.item.name)));
-    return found.slice(0, QUICK_LIMIT).map(entry => entry.item);
+    const order = types || QUICK_TYPES;
+    found.sort((a, b) => a.rank - b.rank || order.indexOf(a.item.object_type) - order.indexOf(b.item.object_type) || String(a.item.name).localeCompare(String(b.item.name)));
+    return found.slice(0, limit).map(entry => entry.item);
+  }
+
+  quickResults() {
+    return this.quickQuery.trim().length < 2 ? [] : this.searchObjects(this.quickQuery);
   }
 
   quickSearchBox() {

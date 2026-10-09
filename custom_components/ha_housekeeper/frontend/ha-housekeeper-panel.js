@@ -1160,7 +1160,7 @@ class StylesMixin {
       .finding{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.finding strong{display:block;font-weight:600}.planfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}.planfoot>:first-child{flex:1 1 280px;min-width:0}.planfoot>.factnote{border:0;padding:0}.planfoot>.btn,.planfoot>span,.planfoot>div:last-child{flex:0 0 auto}.simbox{margin:12px 16px;padding:12px 16px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft)}.simbox summary{cursor:pointer;font-weight:600;font-size:calc(13px*var(--hk-fs,1))}.simlist{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:calc(13px*var(--hk-fs,1))}.simlist li{position:relative;padding-left:18px}.simlist li:before{content:"";position:absolute;left:4px;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--hk-blue)}.simlimits{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.step{align-items:center}.fmeta{display:flex!important;flex-wrap:wrap;align-items:center;gap:4px 8px}.nw{white-space:nowrap}
       .finding:has(.polform){flex-wrap:wrap}.finding .polform{flex:1 1 100%;display:grid;grid-template-columns:minmax(150px,200px) minmax(180px,1fr) minmax(130px,170px) auto auto;gap:8px;align-items:center}.finding .polform .error{grid-column:1/-1}.finding .polform input,.finding .polform select{min-height:40px;box-sizing:border-box}@media(max-width:860px){.finding .polform{grid-template-columns:1fr 1fr}.finding .polform input{grid-column:1/-1}}
       .labelbox{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(160px,220px) auto;gap:12px 14px;align-items:center;margin-top:12px;padding:14px 16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-soft)}.labelbox .labeltext strong{display:block;font-weight:600}.labelbox .labeltext small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.labelbox select{min-height:40px;box-sizing:border-box}@media(max-width:860px){.labelbox{grid-template-columns:auto minmax(0,1fr)}.labelbox select,.labelbox .btn{grid-column:1/-1}}
-      .picker{position:relative;max-width:360px;width:100%}.picker input{width:100%;box-sizing:border-box}.picker .quicklist{left:0;right:auto;width:100%}
+      .picker{position:relative;max-width:360px;width:100%}.search .picker{max-width:none}.picker input{width:100%;box-sizing:border-box}.picker .quicklist{left:0;right:auto;width:100%}
       .fbtns{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);gap:8px;flex:0 0 auto}.fbtns .btn{min-height:44px;padding:8px 12px;text-align:center;line-height:1.2;border-color:color-mix(in srgb,var(--hk-blue) 40%,var(--hk-border));background:color-mix(in srgb,var(--hk-blue) 7%,var(--hk-surface));box-shadow:var(--hk-sh1)}.fbtns .btn:disabled{opacity:.5;box-shadow:none}.toolbar .fbtns{grid-auto-columns:minmax(120px,1fr)}.fbtns .btn ha-icon{color:var(--hk-blue);flex:none}.fbtns .btn:hover{background:color-mix(in srgb,var(--hk-blue) 14%,var(--hk-surface));box-shadow:var(--hk-sh2)}@media(max-width:860px){.finding{flex-wrap:wrap}.fbtns{flex:1 1 100%;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}.finding small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.row.dim .tile{opacity:.55}.row.dim strong{font-weight:500}
       .kv{display:grid;grid-template-columns:155px 1fr;gap:8px 14px;font-size:calc(13px*var(--hk-fs,1))}.kv dt{color:var(--hk-muted)}.kv dd{margin:0;overflow-wrap:anywhere}
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:calc(11px*var(--hk-fs,1))/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
@@ -2908,9 +2908,7 @@ class InventoryMixin {
   }
 
   graph() {
-    const q = this.graphQuery.trim().toLowerCase();
-    const hits = q ? this.data.objects.filter(o => [o.name, o.object_id].join(" ").toLowerCase().includes(q)).slice(0, 40) : [];
-    const search = `<div class="panel" style="margin-bottom:14px"><div class="search"><input id="graphQuery" type="search" value="${this.esc(this.graphQuery)}" placeholder="${this.t("searchObject")}"></div>${hits.length ? `<div class="hits">${hits.map(o => `<button class="hit" data-graph="${this.esc(this.objectKey(o))}">${this.tile(o.object_type)}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.t(o.object_type)} · ${this.esc(o.object_id)}</small></span></button>`).join("")}</div>` : ""}</div>`;
+    const search = `<div class="panel" style="margin-bottom:14px;overflow:visible"><div class="search">${this.pickerBox("graph", this.t("searchObject"), 'id="graphQuery"')}</div></div>`;
     if (!this.graphSelected) {
       return `${search}<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:graph-outline"></ha-icon>${this.t("graphHint")}</div></div>`;
     }
@@ -4823,19 +4821,26 @@ const QUICK_TYPES = ["entity", "device", "config_entry", "automation", "script"]
 const QUICK_LIMIT = 12;
 
 class SearchMixin {
-  quickResults() {
-    const terms = this.quickQuery.toLowerCase().split(/\s+/).filter(Boolean);
-    if (!this.data || this.quickQuery.trim().length < 2) return [];
+  // The one object search: every word must occur in the name, the id, the integration, the maker or the model; names that
+  // start with the first word come first. The top bar, the dependency path and the sensor fields all use it.
+  searchObjects(query, { types = QUICK_TYPES, limit = QUICK_LIMIT, filter = null } = {}) {
+    const terms = String(query).toLowerCase().split(/\s+/).filter(Boolean);
+    if (!this.data || !terms.length) return [];
     const found = [];
     for (const item of this.data.objects) {
-      if (!QUICK_TYPES.includes(item.object_type)) continue;
+      if ((types && !types.includes(item.object_type)) || (filter && !filter(item))) continue;
       const name = String(item.name || "").toLowerCase();
       const hay = `${name} ${String(item.object_id).toLowerCase()} ${String(item.platform || item.domain || "").toLowerCase()} ${String(item.manufacturer || "").toLowerCase()} ${String(item.model || "").toLowerCase()}`;
       if (!terms.every(term => hay.includes(term))) continue;
       found.push({ item, rank: name.startsWith(terms[0]) ? 0 : name.includes(terms[0]) ? 1 : 2 });
     }
-    found.sort((a, b) => a.rank - b.rank || QUICK_TYPES.indexOf(a.item.object_type) - QUICK_TYPES.indexOf(b.item.object_type) || String(a.item.name).localeCompare(String(b.item.name)));
-    return found.slice(0, QUICK_LIMIT).map(entry => entry.item);
+    const order = types || QUICK_TYPES;
+    found.sort((a, b) => a.rank - b.rank || order.indexOf(a.item.object_type) - order.indexOf(b.item.object_type) || String(a.item.name).localeCompare(String(b.item.name)));
+    return found.slice(0, limit).map(entry => entry.item);
+  }
+
+  quickResults() {
+    return this.quickQuery.trim().length < 2 ? [] : this.searchObjects(this.quickQuery);
   }
 
   quickSearchBox() {
@@ -7219,42 +7224,44 @@ Object.assign(TEXT.en, {
   repairTaskExchange: "Exchange a device", repairTaskExchangeHint: "Replace a broken device with a new one and carry everything over.",
 });
 
-// PickerMixin: a text field for an entity id that shows matching entities while typing, like the search in the top bar.
-// A field is described by its name: where its value lives and which entities it may offer.
+// PickerMixin: a text field that lists matching objects while typing, like the search in the top bar. A field is
+// described by its name: where its text lives, which objects it may offer and what picking one does.
 class PickerMixin {
   pickerDef(name) {
     return {
-      counter: { get: () => this.counterId || "", set: v => { this.counterId = v; }, filter: o => o.has_statistics && o.object_id.startsWith("sensor.") },
+      counter: {
+        get: () => this.counterId || "", set: v => { this.counterId = v; }, min: 1, types: ["entity"],
+        filter: o => o.has_statistics && o.object_id.startsWith("sensor."), pick: o => { this.counterId = o.object_id; },
+      },
+      graph: {
+        get: () => this.graphQuery, set: v => { this.graphQuery = v; }, min: 2, types: null, limit: 15,
+        pick: o => { this.noteGraphStep(o); this.graphSelected = o; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; },
+      },
     }[name];
   }
 
   pickerResults(name) {
-    const def = this.pickerDef(name), q = def ? String(def.get()).trim().toLowerCase() : "";
-    if (!q || !this.data) return [];
-    const terms = q.split(/\s+/), found = [];
-    for (const o of this.data.objects) {
-      if (o.object_type !== "entity" || !def.filter(o)) continue;
-      const id = o.object_id.toLowerCase(), label = String(o.name || "").toLowerCase();
-      if (!terms.every(term => id.includes(term) || label.includes(term))) continue;
-      found.push({ o, rank: id.startsWith(q) || label.startsWith(q) ? 0 : 1 });
-    }
-    found.sort((a, b) => a.rank - b.rank || a.o.object_id.localeCompare(b.o.object_id));
-    return found.slice(0, QUICK_LIMIT).map(entry => entry.o);
+    const def = this.pickerDef(name), q = def ? String(def.get()).trim() : "";
+    if (!def || q.length < def.min) return [];
+    return this.searchObjects(q, { types: def.types, limit: def.limit || QUICK_LIMIT, filter: def.filter });
   }
 
   // The input plus, while it is open, the list of matches. `attrs` carries the field's own data attribute.
   pickerBox(name, placeholder, attrs = "") {
-    const def = this.pickerDef(name), value = def.get(), open = this._picker?.name === name && this._picker.open && String(value).trim();
+    const def = this.pickerDef(name), value = def.get();
+    const open = this._picker?.name === name && this._picker.open && String(value).trim().length >= def.min;
     const results = open ? this.pickerResults(name) : [];
     const active = Math.min(this._picker?.index || 0, Math.max(results.length - 1, 0));
+    const sub = o => (def.types?.length === 1 ? o.object_id : `${this.t(o.object_type)} · ${o.object_id}`);
     const list = open ? `<ul class="quicklist" id="picker-${name}" role="listbox" aria-label="${this.esc(this.t("quickLabel"))}">${results.length
-      ? results.map((o, i) => `<li role="option" id="picker-${name}-${i}" aria-selected="${i === active}" data-picker-item="${this.esc(o.object_id)}" data-picker-name="${name}" class="${i === active ? "on" : ""}">${this.tile("entity")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}</small></span></li>`).join("")
+      ? results.map((o, i) => `<li role="option" id="picker-${name}-${i}" aria-selected="${i === active}" data-picker-item="${this.esc(this.objectKey(o))}" data-picker-name="${name}" class="${i === active ? "on" : ""}">${this.tile(o.object_type)}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(sub(o))}</small></span></li>`).join("")
       : `<li class="none">${this.t("quickNone")}</li>`}</ul>` : "";
     return `<div class="picker"><input type="text" data-picker="${name}" ${attrs} value="${this.esc(value)}" placeholder="${this.esc(placeholder)}" autocomplete="off" role="combobox" aria-expanded="${Boolean(open)}" aria-controls="picker-${name}" aria-autocomplete="list" ${open && results.length ? `aria-activedescendant="picker-${name}-${active}"` : ""}>${list}</div>`;
   }
 
-  pickerPick(name, id) {
-    this.pickerDef(name).set(id);
+  pickerPick(name, key) {
+    const obj = this.findObject(key);
+    if (obj) this.pickerDef(name).pick(obj);
     this._picker = { name, open: false, index: 0 };
     this.render();
   }
@@ -7271,7 +7278,7 @@ class PickerMixin {
           this.render();
         } else if (ev.key === "Enter" && results.length) {
           ev.preventDefault();
-          this.pickerPick(name, results[Math.min(this._picker.index, results.length - 1)].object_id);
+          this.pickerPick(name, this.objectKey(results[Math.min(this._picker.index, results.length - 1)]));
         } else if (ev.key === "Escape" && this._picker?.open) {
           ev.stopPropagation();
           this._picker.open = false; this.render();
@@ -7994,7 +8001,6 @@ class HAHousekeeperPanel extends HTMLElement {
       if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };
     };
     searchField("#query", v => { this.query = v; this.pages = {}; });
-    searchField("#graphQuery", v => { this.graphQuery = v; });
     root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
     const tf = root.querySelector("#typeFilter"); if (tf) tf.onchange = () => { this.typeFilter = tf.value; this.pages = {}; this.render(); };

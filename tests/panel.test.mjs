@@ -3081,9 +3081,15 @@ test("the sensor field lists matching sensors with statistics while typing and t
   el.counterId = "water"; el._picker = { name: "counter", open: true, index: 0 };
   assert.equal(el.pickerResults("counter").map(o => o.object_id).join(), "sensor.water_meter,sensor.water_temp");
   const html = el.pickerBox("counter", "sensor.x", "data-counter-id");
-  assert.ok(html.includes('data-picker-item="sensor.water_meter"') && !html.includes("water_off") && !html.includes("light.water"));
-  el.pickerPick("counter", "sensor.water_temp");
+  assert.ok(html.includes('data-picker-item="entity:sensor.water_meter"') && !html.includes("water_off") && !html.includes("light.water"));
+  el.pickerPick("counter", "entity:sensor.water_temp");
   assert.equal(el.counterId, "sensor.water_temp"); assert.equal(el._picker.open, false);
+  // the dependency path uses the same search for every kind of object and opens the picked one
+  el.data = { ...el.data, objects: [...el.data.objects, { object_type: "device", object_id: "d1", name: "Water pump", status: "active" }] };
+  el.graphQuery = "water pump";
+  assert.equal(el.pickerResults("graph").map(o => o.object_id).join(), "d1");
+  el.noteGraphStep = () => {}; el.pickerPick("graph", "device:d1");
+  assert.equal(el.graphSelected.object_id, "d1"); assert.equal(el.graphQuery, "");
 });
 const TEXT_DE_SETTINGS = "Einstellungen";
 test("batteries in volts are not read as percent and get their own card with the guessed type", () => {
