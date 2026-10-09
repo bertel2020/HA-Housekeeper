@@ -1835,6 +1835,7 @@ class FindingsMixin {
       const msg = { type: "ha_housekeeper/ignore", finding_key: d.key, ignored: true, kind: d.kind, reason: d.reason.trim() };
       if (Number(d.days)) msg.days = Number(d.days);
       await this._hass.callWS(msg);
+      if (d.key.startsWith("policy.")) { this.decide = null; await this.loadPolicies(); return; }  // a policy violation is no finding
       const finding = this.data.findings.find(f => f.key === d.key);
       if (finding) {
         const until = msg.days ? new Date(Date.now() + msg.days * 864e5).toISOString() : null;
@@ -1861,12 +1862,12 @@ class FindingsMixin {
 Object.assign(TEXT.de, {
   corrAfter: "Zeitlich zusammen mit: {what} ({when})", corrTile: "Nach Update neu", corrTileSub: "begannen zusammen mit einem Update", corrTitle: "Zeitlich zusammen mit Updates und Neustarts",
   corrHint: "Befunde, die zur selben Zeit begannen wie ein Update, ein Neustart oder ein Bereinigungsplan. Das ist ein zeitlicher Zusammenhang, keine Ursache.",
-  corr_ha_version: "Home-Assistant-Update {from} → {to}", corr_entry_version: "Update von {domain} {from} → {to}", corr_start: "Neustart von Home Assistant", corr_plan: "Bereinigungsplan ausgeführt", corrCount: "{n} Befunde",
+  corr_ha_version: "Home-Assistant-Update {from} → {to}", corr_entry_version: "Update von {domain} {from} → {to}", corr_start: "Neustart von Home Assistant", corr_plan: "Bereinigungsplan ausgeführt", corr_purge: "Statistiken gelöscht", corrCount: "{n} Befunde",
 });
 Object.assign(TEXT.en, {
   corrAfter: "At about the same time as: {what} ({when})", corrTile: "New after update", corrTileSub: "began together with an update", corrTitle: "At about the same time as updates and restarts",
   corrHint: "Findings that began at the same time as an update, a restart or a cleanup plan. This is a link in time, not a cause.",
-  corr_ha_version: "Home Assistant update {from} → {to}", corr_entry_version: "Update of {domain} {from} → {to}", corr_start: "Home Assistant restart", corr_plan: "Cleanup plan run", corrCount: "{n} findings",
+  corr_ha_version: "Home Assistant update {from} → {to}", corr_entry_version: "Update of {domain} {from} → {to}", corr_start: "Home Assistant restart", corr_plan: "Cleanup plan run", corr_purge: "Statistics deleted", corrCount: "{n} findings",
 });
 
 // ChangesMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -4704,8 +4705,13 @@ class PoliciesMixin {
 
   polItemRow(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : "polHiddenLabel")}</span>` : "";
-    const button = item.by === "label" ? "" : `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "polShow" : "polHide")}</button>`;
-    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}</span>${pill}${button}</div>`;
+    const due = item.resurfaced ? `<span class="pill warn">${this.t("dueLabel")}</span>` : "";
+    const button = item.by === "label" ? ""
+      : item.ignored ? `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="0">${this.t("polShow")}</button>`
+      : `<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
+    const decision = item.ignored && item.by === "user" ? `<small>${this.esc(this.decisionLabel(item))}</small>` : "";
+    const form = this.decide?.key === item.key ? this.decideForm(item) : "";
+    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}${decision}</span>${due}${pill}${button}</div>${form}`;
   }
 
   // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
@@ -4965,7 +4971,7 @@ class CorrelationMixin {
     if (!groups.length) return "";
     const rows = groups.map(g => {
       const names = g.keys.slice(0, 6).map(k => { const f = this.data.findings.find(x => x.key === k); return f ? (this.findObject(this.findingKey(f))?.name || f.object_id) : ""; }).filter(Boolean).map(n => this.esc(n)).join(", ");
-      return `<div class="row rel"><span class="tile ${g.only_group ? "mute" : "warn"}"><ha-icon icon="${g.kind === "start" ? "mdi:restart" : g.kind === "plan" ? "mdi:broom" : "mdi:package-up"}"></ha-icon></span><span class="row-text"><strong>${this.corrText(g)}</strong><small>${this.esc(this.formatDate(g.at))}${names ? ` · ${names}` : ""}</small></span><span class="pill ${g.only_group ? "mute" : "warn"}">${this.t("corrCount", { n: this.formatNumber(g.total) })}</span></div>`;
+      return `<div class="row rel"><span class="tile ${g.only_group ? "mute" : "warn"}"><ha-icon icon="${g.kind === "start" ? "mdi:restart" : g.kind === "plan" ? "mdi:broom" : g.kind === "purge" ? "mdi:database-remove" : "mdi:package-up"}"></ha-icon></span><span class="row-text"><strong>${this.corrText(g)}</strong><small>${this.esc(this.formatDate(g.at))}${names ? ` · ${names}` : ""}</small></span><span class="pill ${g.only_group ? "mute" : "warn"}">${this.t("corrCount", { n: this.formatNumber(g.total) })}</span></div>`;
     }).join("");
     return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("corrTitle")}</h2><p>${this.t("corrHint")}</p></div></div>${rows}</section>`;
   }
@@ -5279,11 +5285,13 @@ class MarksMixin {
 Object.assign(TEXT.de, {
   sortImpact: "Auswirkung", allImpacts: "Alle Auswirkungen", impact_high: "Hohe Auswirkung", impact_medium: "Mittlere Auswirkung", impact_low: "Geringe Auswirkung", impact_none: "Keine Auswirkung",
   impactFact_critical: "kritisch: {why}", impactFact_target_critical: "fehlendes Ziel {id} ist kritisch", impactFact_controls_critical: "steuert {n} kritische Objekte", impactFact_used_by_active: "von {n} aktiven Automationen oder Skripten genutzt", impactFact_on_dashboards: "auf {n} Dashboards", impactFact_many_dependents: "{n} Abhängige", impactFact_runs_active: "läuft aktiv", impactFact_runs_inactive: "ist deaktiviert",
+  reason_critical_object: "Kritisches Objekt (Schloss, Alarm, Wasser- oder Rauchmelder, Label housekeeper_critical): bitte einzeln bestätigen.",
   impactWhy_label: "Label", impactWhy_device_label: "Label am Gerät", impactWhy_area_label: "Label am Bereich", impactWhy_kind: "Art des Objekts",
 });
 Object.assign(TEXT.en, {
   sortImpact: "Impact", allImpacts: "All impacts", impact_high: "High impact", impact_medium: "Medium impact", impact_low: "Low impact", impact_none: "No impact",
   impactFact_critical: "critical: {why}", impactFact_target_critical: "the missing target {id} is critical", impactFact_controls_critical: "controls {n} critical objects", impactFact_used_by_active: "used by {n} active automations or scripts", impactFact_on_dashboards: "on {n} dashboards", impactFact_many_dependents: "{n} dependents", impactFact_runs_active: "runs actively", impactFact_runs_inactive: "is disabled",
+  reason_critical_object: "Critical object (lock, alarm, water or smoke sensor, label housekeeper_critical): confirm it on its own.",
   impactWhy_label: "label", impactWhy_device_label: "label on the device", impactWhy_area_label: "label on the area", impactWhy_kind: "kind of object",
 });
 

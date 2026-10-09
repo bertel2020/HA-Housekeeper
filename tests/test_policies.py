@@ -311,3 +311,16 @@ async def test_the_state_rate_rule_waits_for_numbers_and_counts_from_the_limit(
     again = PolicyStore(hass)
     await again.async_load()
     assert again.limit == 250
+
+
+def test_a_violation_carries_its_decision_and_whether_it_is_due() -> None:
+    objects = [entity("light.a"), entity("light.b"), device()]
+    key = policy_key("entity_area", "light.a")
+    info = {"kind": "keep", "reason": "Reserve", "until": None}
+    extra = {"decisions": {key: info}, "due": {policy_key("entity_area", "light.b")}}
+    result = evaluate(
+        {"objects": objects}, {"entity_area"}, {key}, set(), None, {}, None, 5000, extra
+    )
+    items = {i["object_id"]: i for i in result["rules"][0]["items"]}
+    assert items["light.a"]["ignore_info"] == info and not items["light.a"]["resurfaced"]
+    assert items["light.b"]["ignored"] is False and items["light.b"]["resurfaced"] is True

@@ -121,6 +121,12 @@ class ReplyStore:
         self.replies[key] = reply
         self._store.async_delay_save(lambda: {"replies": self.replies}, REPLY_SAVE_DELAY)
 
+    def clear(self) -> None:
+        """Forget every kept reply; the views compute them again on their next visit."""
+        if self.replies:
+            self.replies = {}
+            self._store.async_delay_save(lambda: {"replies": self.replies}, REPLY_SAVE_DELAY)
+
 
 def kept_reply(
     store: ReplyStore | None, key: str, now: float, ttl: float, *, stale: bool | None = None

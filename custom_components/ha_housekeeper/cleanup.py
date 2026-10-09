@@ -342,6 +342,8 @@ def judge_device_action(
     reasons = action["reasons"]
     if device.get("marked_keep") or any(item.get("marked_keep") for item in members):
         reasons.append("marked_keep")
+    if device.get("critical") or any(item.get("critical") for item in members):
+        reasons.append("critical_object")
     if any(item["status"] not in DISABLEABLE_STATUSES | {"disabled"} for item in members):
         reasons.append("device_has_working_entities")
     if device.get("device_kind") == "child":
@@ -554,6 +556,8 @@ def judge_entity_action(
         reasons.append("ignored_by_label")
     if item.get("marked_keep"):
         reasons.append("marked_keep")
+    if item.get("critical"):
+        reasons.append("critical_object")
     if kind == "remove_entity":
         _quarantine_reasons(action, reasons, (quarantine or {}).get(object_id), now)
         action["restorable"] = restorable

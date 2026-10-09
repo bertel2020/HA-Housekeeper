@@ -88,3 +88,17 @@ def test_many_dependents_are_high_on_their_own() -> None:
         "high",
         ["on_dashboards", "many_dependents"],
     )
+
+
+def test_cleanup_asks_for_a_separate_confirmation_for_critical_objects() -> None:
+    from custom_components.ha_housekeeper.cleanup import judge_action
+
+    objects = [_entity("lock.front"), _entity("sensor.plain")]
+    apply_impact(objects, [], [])
+    entities = {o["object_id"]: o for o in objects}
+    assert (
+        entities["lock.front"]["critical"] == "kind" and "critical" not in entities["sensor.plain"]
+    )
+    critical = judge_action("disable_entity", "lock.front", entities, [])
+    assert critical["verdict"] == "review" and "critical_object" in critical["reasons"]
+    assert judge_action("disable_entity", "sensor.plain", entities, [])["verdict"] == "ok"

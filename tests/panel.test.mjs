@@ -741,7 +741,8 @@ test("policies: rules switch, violations list with hide buttons, hidden ones are
   assert.ok(/data-policy-toggle="entity_area"[^>]*checked/.test(html) && !/data-policy-toggle="device_area"[^>]*checked/.test(html));
   el.viewTab = {}; el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
   assert.ok(html.includes("light.c") && html.includes("hidden by label") && html.includes(">Show<"));
-  assert.equal((html.match(/data-policy-ignore=/g) || []).length, 3, "no button for what the label hides");
+  assert.equal((html.match(/data-policy-ignore=/g) || []).length, 1, "only the user's own decision can be undone");
+  assert.equal((html.match(/data-decide-open=/g) || []).length, 2, "the others ask what to do; the label hides one");
   await el.changePolicy({ type: "ha_housekeeper/set_policy", rule: "device_area", enabled: true });
   assert.equal(JSON.stringify(calls.map(c => c.type)), JSON.stringify(["ha_housekeeper/policies", "ha_housekeeper/set_policy", "ha_housekeeper/policies"]));
   el.policies = { available: true, enabled: 0, violations: 0, rules: [{ id: "entity_area", enabled: false, count: 0, ignored: 0, items: [] }] };
@@ -2575,4 +2576,23 @@ test("follow-up findings of a cause stay folded until asked for, and the export 
   el.showFollowers = true;
   assert.equal(el.collapseFollowers(el.visibleFindings()).length, 3);
   assert.equal(el.todoItems().some(i => i.key === "causes"), true);
+});
+
+test("a policy violation takes the same decisions as a finding and reloads the rules", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  const key = "policy.entity_area|light.a|";
+  const rules = items => ({ available: true, enabled: 1, violations: 1, rules: [{ id: "entity_area", enabled: true, count: 1, ignored: 0, items }] });
+  const open = { object_type: "entity", object_id: "light.a", name: "light.a", key, ignored: false, by: null, resurfaced: true };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return rules([{ ...open, ignored: true, by: "user", resurfaced: false, ignore_info: { kind: "keep", reason: "Reserve", until: null } }]); } };
+  el.policies = rules([open]);
+  el.view = "policies";
+  el.openDecide(key);
+  assert.ok(shadow.innerHTML.includes("data-decide-form") && shadow.innerHTML.includes("Due again"));
+  el.decide.kind = "keep"; el.decide.reason = "Reserve";
+  await el.commitDecide();
+  assert.equal(calls[0].kind, "keep");
+  assert.equal(calls[1].type, "ha_housekeeper/policies");
+  el.policyShowHidden = true; el.render();
+  assert.ok(shadow.innerHTML.includes("Reserve") && el.decide === null);
 });

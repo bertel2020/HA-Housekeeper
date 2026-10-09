@@ -326,6 +326,8 @@ def evaluate(
                     "key": key,
                     "ignored": bool(hidden),
                     "by": "label" if item["object_id"] in labelled else "user" if hidden else None,
+                    "ignore_info": (extra.get("decisions") or {}).get(key),
+                    "resurfaced": key in (extra.get("due") or ()),
                     **{
                         k: item[k]
                         for k in ("also", "expected", "rate", "keep_days", "db_bytes")
@@ -388,6 +390,13 @@ def policies(
         for item in snapshot["objects"]
         if ignored.is_ignored(policy_key(rule, item["object_id"]))
     }
+    due = {
+        policy_key(rule, item["object_id"])
+        for rule in RULES
+        for item in snapshot["objects"]
+        if ignored.is_due(policy_key(rule, item["object_id"]))
+    }
+    decisions = {key: ignored.info(key) for key in keys}
     return evaluate(
         snapshot,
         store.enabled,
@@ -397,7 +406,11 @@ def policies(
         store.prefixes,
         stored_rates(replies),
         store.limit,
-        _extra(hass, snapshot, store, registry, replies, battery_percent),
+        {
+            **_extra(hass, snapshot, store, registry, replies, battery_percent),
+            "decisions": decisions,
+            "due": due,
+        },
     )
 
 

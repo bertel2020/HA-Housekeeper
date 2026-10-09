@@ -211,3 +211,19 @@ async def test_a_history_with_bad_content_still_records_and_compares(
         {**snapshot, "meta": {**snapshot["meta"], "scanned_at": "2026-10-09T10:00:00+00:00"}}
     )
     assert isinstance(history.baselines(), list)
+
+
+async def test_replies_can_be_cleared_and_the_event_log_takes_a_purge(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    replies = ReplyStore(hass)
+    await replies.async_load()
+    replies.keep("storms:1", {"computed_at": 5})
+    replies.clear()
+    await flush(hass)
+    again = ReplyStore(hass)
+    await again.async_load()
+    assert again.replies == {}
+    log = EventLog(hass)
+    log.record("purge", datetime.now(UTC), removed=2, skipped=0)
+    assert log.events[-1]["kind"] == "purge"

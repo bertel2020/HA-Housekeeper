@@ -63,6 +63,10 @@ def apply_impact(
         for o in objects
         if o["object_type"] == "entity" and (reason := critical_reason(o, devices, areas))
     }
+    for o in objects:  # cleanup asks for a separate confirmation of critical objects
+        o.pop("critical", None)
+        if o["object_type"] == "entity" and o["object_id"] in critical:
+            o["critical"] = critical[o["object_id"]]
     users: dict[str, list[str]] = {}
     controls: dict[str, list[str]] = {}
     for edge in edges:

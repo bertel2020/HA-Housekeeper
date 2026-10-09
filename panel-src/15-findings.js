@@ -184,6 +184,7 @@ class FindingsMixin {
       const msg = { type: "ha_housekeeper/ignore", finding_key: d.key, ignored: true, kind: d.kind, reason: d.reason.trim() };
       if (Number(d.days)) msg.days = Number(d.days);
       await this._hass.callWS(msg);
+      if (d.key.startsWith("policy.")) { this.decide = null; await this.loadPolicies(); return; }  // a policy violation is no finding
       const finding = this.data.findings.find(f => f.key === d.key);
       if (finding) {
         const until = msg.days ? new Date(Date.now() + msg.days * 864e5).toISOString() : null;

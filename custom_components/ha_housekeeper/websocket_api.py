@@ -1094,14 +1094,26 @@ async def websocket_purge_statistics(
     if not scanner.snapshot or not scanner.snapshot["meta"].get("recorder_available"):
         connection.send_error(msg["id"], "no_recorder", "The recorder is not available")
         return
+    now = datetime.now(UTC)
     try:
         result = await purge_orphans(
             hass, scanner.snapshot, msg["statistic_ids"], states=msg["states"]
         )
     except Exception as err:
+        scanner.events.record("purge", now, requested=len(msg["statistic_ids"]), failed=True)
         connection.send_error(msg["id"], "purge_failed", f"{type(err).__name__}: {err}")
         return
+    if result["backup"] or result["removed"]:  # a record of what was deleted: counts, no names
+        scanner.events.record(
+            "purge",
+            now,
+            requested=len(msg["statistic_ids"]),
+            removed=len(result["removed"]),
+            skipped=len(result["skipped"]),
+            states=bool(result["states"]),
+        )
     if result["removed"]:
+        scanner.replies.clear()  # views built on the recorder answered before the purge
         hass.async_create_task(scanner.async_scan())
     connection.send_result(msg["id"], _versioned(result))
 
