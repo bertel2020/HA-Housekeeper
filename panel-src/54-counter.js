@@ -162,7 +162,7 @@ class CounterMixin {
       <div class="setrow"><div><label>${this.t("rangeTo")}</label></div><input type="datetime-local" data-range-to value="${stamp(this.rangeTo)}" style="max-width:260px"></div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-range-mode style="max-width:460px">${["hold", "interpolate", "fixed"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`rangeMode_${m}`)}</option>`).join("")}</select></div>
       ${mode === "fixed" ? `<div class="setrow"><div><label>${this.t("rangeFixed")}</label></div><input type="text" inputmode="decimal" data-range-fixed value="${stamp(this.rangeFixed)}" style="max-width:160px"></div>` : ""}
-      <div class="setrow planfoot"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button></div>`;
+      <div class="setrow planfoot"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("rangePreview")}</button></div>`;
   }
 
   counterCard() {
@@ -183,7 +183,7 @@ class CounterMixin {
           return `<small style="display:block">${this.esc(measure ? this.t("spikeFound", { range: this.counterRange(f), extreme: n3(extreme), good: n3(f.good_before), unit: item.unit || "" }) : this.t("counterFound", { range: this.counterRange(f), low: n3(f.low), good: n3(f.good_before), unit: item.unit || "" }))}</small>`;
         }).join("");
         const action = measure ? `<button class="btn primary" data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}">${this.t("rangeTake")}</button>`
-          : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button>`;
+          : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterFix")}</button>`;
         return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.statistic_id)}</small>${lines}</span>${action}</div>`;
       }).join("");
       body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}<button class="btn" data-counter-scan>${this.t("counterRescan")}</button></div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
@@ -213,7 +213,7 @@ Object.assign(TEXT.de, {
   counterEntity: "Nur diesen Sensor prüfen", counterEntityHint: "Leer lassen, um alle Zähler und Messwerte mit Statistik zu prüfen (letztes Jahr).", counterMode: "Womit werden falsche Werte ersetzt?",
   counterMode_hold: "Letzter guter Wert (empfohlen)", counterMode_interpolate: "Gerade Linie zum nächsten guten Wert",
   counterScan: "Sensoren prüfen", counterScanning: "Wird geprüft …", counterScanNote: "Liest nur. Bei vielen Zählern kann das einen Moment dauern.", counterNoRecorder: "Ohne Recorder gibt es nichts zu prüfen.",
-  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen",
+  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen", counterFix: "Diesen Fund bereinigen", rangePreview: "Zeitraum bereinigen",
   counterFound: "{range}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", counterFinding: "{range}: Werte zwischen {low} und {high} {unit}; gute Werte davor {before} und danach {after} {unit}.",
   counterRows: "Geändert werden {states} Verlaufswerte, {short} 5-Minuten-Werte und {long} Stundenwerte; die Summe wird in {tail} späteren Statistikzeilen berichtigt.",
   counterSkipped: "{table}: {count} Fund(e) nicht reparierbar (keine guten Werte davor oder danach).", counterTable_short_term: "5-Minuten-Werte", counterTable_long_term: "Stundenwerte",
@@ -233,7 +233,7 @@ Object.assign(TEXT.en, {
   counterEntity: "Check this sensor only", counterEntityHint: "Leave empty to check every counter and measurement with statistics (last year).", counterMode: "What replaces the wrong values?",
   counterMode_hold: "Last good value (recommended)", counterMode_interpolate: "Straight line to the next good value",
   counterScan: "Check sensors", counterScanning: "Checking …", counterScanNote: "Only reads. With many counters this can take a moment.", counterNoRecorder: "There is nothing to check without a recorder.",
-  counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview",
+  counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview", counterFix: "Clean up this finding", rangePreview: "Clean up this range",
   counterFound: "{range}: lowest value {low} {unit} instead of about {good} {unit}", counterFinding: "{range}: values between {low} and {high} {unit}; good values before {before} and after {after} {unit}.",
   counterRows: "{states} history values, {short} 5-minute rows and {long} hourly rows change; the sum is corrected in {tail} later statistics rows.",
   counterSkipped: "{table}: {count} finding(s) cannot be repaired (no good values before or after).", counterTable_short_term: "5-minute rows", counterTable_long_term: "Hourly rows",

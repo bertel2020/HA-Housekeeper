@@ -126,7 +126,7 @@ const TEXT = {
     cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts, bis du einen Plan ausdrücklich bestätigst. Deaktivieren ist umkehrbar und lässt Historie und Statistiken unberührt; Entfernen geht erst nach der Quarantäne und mit Backup.",
     reason_already_disabled: "Die Entität ist bereits deaktiviert.",
     skippedUnacknowledged: "{count} zu prüfende Einträge ohne ausdrückliche Bestätigung werden übersprungen.",
-    confirmPlan: "Bestätigen …", confirmPlanTitle: "Plan bestätigen", acknowledgeReview: "Zu prüfen – ausdrücklich bestätigen:", confirmedSummary: "{count} Entitäten werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange die Entität unverändert bleibt.",
+    confirmPlan: "Bestätigen …", confirmPlanTitle: "Plan bestätigen", acknowledgeReview: "Ich habe das geprüft und will es trotzdem ausführen", confirmedSummary: "{count} Entitäten werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange die Entität unverändert bleibt.",
     confirmTypeWord: "Zur Bestätigung „{word}“ eintippen:", confirmWord: "DEAKTIVIEREN", runNow: "Jetzt ausführen", cancelRun: "Abbrechen", notExecutableYet: "Entfernen ist noch nicht ausführbar; diese Vorschau dient nur der Prüfung.",
     running: "Läuft …", progressOf: "{done} von {total}", undoAll: "Alles rückgängig machen", undoOne: "Rückgängig", tokenExpired: "Die Bestätigung ist abgelaufen. Bitte erneut bestätigen.", nothingExecutable: "Keine ausführbaren Aktionen in diesem Plan.",
     plan_status_dry_run: "Vorschau", plan_status_running: "Läuft", plan_status_executed: "Ausgeführt", plan_status_verified: "Ausgeführt und geprüft", plan_status_partial: "Teilweise ausgeführt", plan_status_aborted: "Abgebrochen", plan_status_undone: "Rückgängig gemacht", plan_status_partially_undone: "Teilweise rückgängig",
@@ -305,7 +305,7 @@ const TEXT = {
     cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing until you explicitly confirm a plan. Disabling is reversible and leaves history and statistics untouched; removal only works after the quarantine and with a backup.",
     reason_already_disabled: "The entity is already disabled.",
     skippedUnacknowledged: "{count} entries to review without explicit confirmation will be skipped.",
-    confirmPlan: "Confirm …", confirmPlanTitle: "Confirm plan", acknowledgeReview: "To review – confirm explicitly:", confirmedSummary: "{count} entities will be disabled (quarantine). This is reversible at any time while the entity stays unchanged.",
+    confirmPlan: "Confirm …", confirmPlanTitle: "Confirm plan", acknowledgeReview: "I have checked this and want to run it anyway", confirmedSummary: "{count} entities will be disabled (quarantine). This is reversible at any time while the entity stays unchanged.",
     confirmTypeWord: "Type “{word}” to confirm:", confirmWord: "DISABLE", runNow: "Run now", cancelRun: "Cancel", notExecutableYet: "Removal cannot be executed yet; this preview is for checking only.",
     running: "Running …", progressOf: "{done} of {total}", undoAll: "Undo all", undoOne: "Undo", tokenExpired: "The confirmation expired. Please confirm again.", nothingExecutable: "No executable actions in this plan.",
     plan_status_dry_run: "Preview", plan_status_running: "Running", plan_status_executed: "Executed", plan_status_verified: "Executed and verified", plan_status_partial: "Partially executed", plan_status_aborted: "Aborted", plan_status_undone: "Undone", plan_status_partially_undone: "Partially undone",
@@ -1102,7 +1102,7 @@ class StylesMixin {
       .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}
       .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
-      .row{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:12px 16px;border:0;border-bottom:1px solid var(--hk-border);background:transparent;color:inherit;text-align:left}.row:last-child{border-bottom:0}.row:hover{background:var(--hk-soft)}
+      .row{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr);grid-auto-flow:column;grid-auto-columns:auto;align-items:center;gap:12px;padding:12px 16px;border:0;border-bottom:1px solid var(--hk-border);background:transparent;color:inherit;text-align:left}.row:last-child{border-bottom:0}.row:hover{background:var(--hk-soft)}
       .row .tile{width:34px;height:34px}.row-text{min-width:0;display:grid;gap:2px}.row-text strong{overflow:hidden;font-size:calc(13px*var(--hk-fs,1));font-weight:600;text-overflow:ellipsis;white-space:nowrap}.row-text small{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));text-overflow:ellipsis;white-space:nowrap}.date{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}
       .pill{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:3px 9px;border-radius:99px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;white-space:nowrap;color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 13%,transparent)}
       .pill.ok{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.pill.warn{color:color-mix(in srgb,var(--hk-amber) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-amber) 16%,transparent)}.pill.red{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.pill.mute{color:color-mix(in srgb,var(--hk-gray) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-gray) 16%,transparent)}.pill.violet{color:color-mix(in srgb,var(--hk-violet) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
@@ -2617,7 +2617,7 @@ class CleanupMixin {
       const sub = sub0 + (a.recorder ? ` · ${this.t(`recChoice_${a.recorder}`)}` : "");
       const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
-      const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:6px 0 0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
+      const ack = open && a.verdict === "review" && a.executable ? `<label class="factnote" style="padding:8px 0 0;display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" data-ack="${this.esc(a.object_id)}" ${this.ack.has(a.object_id) ? "checked" : ""}>${this.t("acknowledgeReview")}</label>` : "";
       const undo = result?.state !== "done" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
@@ -6794,7 +6794,7 @@ class CounterMixin {
       <div class="setrow"><div><label>${this.t("rangeTo")}</label></div><input type="datetime-local" data-range-to value="${stamp(this.rangeTo)}" style="max-width:260px"></div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-range-mode style="max-width:460px">${["hold", "interpolate", "fixed"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`rangeMode_${m}`)}</option>`).join("")}</select></div>
       ${mode === "fixed" ? `<div class="setrow"><div><label>${this.t("rangeFixed")}</label></div><input type="text" inputmode="decimal" data-range-fixed value="${stamp(this.rangeFixed)}" style="max-width:160px"></div>` : ""}
-      <div class="setrow planfoot"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button></div>`;
+      <div class="setrow planfoot"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("rangePreview")}</button></div>`;
   }
 
   counterCard() {
@@ -6815,7 +6815,7 @@ class CounterMixin {
           return `<small style="display:block">${this.esc(measure ? this.t("spikeFound", { range: this.counterRange(f), extreme: n3(extreme), good: n3(f.good_before), unit: item.unit || "" }) : this.t("counterFound", { range: this.counterRange(f), low: n3(f.low), good: n3(f.good_before), unit: item.unit || "" }))}</small>`;
         }).join("");
         const action = measure ? `<button class="btn primary" data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}">${this.t("rangeTake")}</button>`
-          : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button>`;
+          : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterFix")}</button>`;
         return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.statistic_id)}</small>${lines}</span>${action}</div>`;
       }).join("");
       body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}<button class="btn" data-counter-scan>${this.t("counterRescan")}</button></div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
@@ -6845,7 +6845,7 @@ Object.assign(TEXT.de, {
   counterEntity: "Nur diesen Sensor prüfen", counterEntityHint: "Leer lassen, um alle Zähler und Messwerte mit Statistik zu prüfen (letztes Jahr).", counterMode: "Womit werden falsche Werte ersetzt?",
   counterMode_hold: "Letzter guter Wert (empfohlen)", counterMode_interpolate: "Gerade Linie zum nächsten guten Wert",
   counterScan: "Sensoren prüfen", counterScanning: "Wird geprüft …", counterScanNote: "Liest nur. Bei vielen Zählern kann das einen Moment dauern.", counterNoRecorder: "Ohne Recorder gibt es nichts zu prüfen.",
-  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen",
+  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen", counterFix: "Diesen Fund bereinigen", rangePreview: "Zeitraum bereinigen",
   counterFound: "{range}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", counterFinding: "{range}: Werte zwischen {low} und {high} {unit}; gute Werte davor {before} und danach {after} {unit}.",
   counterRows: "Geändert werden {states} Verlaufswerte, {short} 5-Minuten-Werte und {long} Stundenwerte; die Summe wird in {tail} späteren Statistikzeilen berichtigt.",
   counterSkipped: "{table}: {count} Fund(e) nicht reparierbar (keine guten Werte davor oder danach).", counterTable_short_term: "5-Minuten-Werte", counterTable_long_term: "Stundenwerte",
@@ -6865,7 +6865,7 @@ Object.assign(TEXT.en, {
   counterEntity: "Check this sensor only", counterEntityHint: "Leave empty to check every counter and measurement with statistics (last year).", counterMode: "What replaces the wrong values?",
   counterMode_hold: "Last good value (recommended)", counterMode_interpolate: "Straight line to the next good value",
   counterScan: "Check sensors", counterScanning: "Checking …", counterScanNote: "Only reads. With many counters this can take a moment.", counterNoRecorder: "There is nothing to check without a recorder.",
-  counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview",
+  counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview", counterFix: "Clean up this finding", rangePreview: "Clean up this range",
   counterFound: "{range}: lowest value {low} {unit} instead of about {good} {unit}", counterFinding: "{range}: values between {low} and {high} {unit}; good values before {before} and after {after} {unit}.",
   counterRows: "{states} history values, {short} 5-minute rows and {long} hourly rows change; the sum is corrected in {tail} later statistics rows.",
   counterSkipped: "{table}: {count} finding(s) cannot be repaired (no good values before or after).", counterTable_short_term: "5-minute rows", counterTable_long_term: "Hourly rows",
