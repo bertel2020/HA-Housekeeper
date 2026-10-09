@@ -209,6 +209,8 @@ def build_report(plan: dict[str, Any], *, anonymize: bool = True, lang: str = "e
     for event in plan.get("events", []):
         extra = event.get("object_id")
         lines.append(
-            f"- {event['at']} {event['type']}" + (f" {ref('entity', extra)}" if extra else "")
+            f"- {event['at']} {event['type']}"
+            + (f" {ref('entity', extra)}" if extra else "")
+            + (f" ({event['reason']})" if event.get("reason") else "")
         )
     return "\n".join(lines) + "\n"

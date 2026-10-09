@@ -266,7 +266,7 @@ async def test_websocket_flow_requires_confirmation_and_reports_status(
 # ---- step B: removal after quarantine, with a verified backup ------------------------------
 
 
-def fake_backup(agent_ids=("backup.local",), error=None):
+def fake_backup(agent_ids=("backup.local",), error=None, full_ok=False):
     from types import SimpleNamespace
     from unittest.mock import AsyncMock
 
@@ -282,6 +282,11 @@ def fake_backup(agent_ids=("backup.local",), error=None):
             )
         ),
         async_create_backup=create,
+        async_create_automatic_backup=(
+            AsyncMock(side_effect=error)
+            if error and not full_ok
+            else AsyncMock(return_value=SimpleNamespace(backup_job_id="job-full"))
+        ),
     )
     return manager, create
 
@@ -307,6 +312,18 @@ async def run_removal(scanner, hass, entity_id, manager, acknowledged=()):
         plan = await make_plan(scanner, hass, entity_id, kind="remove_entity")
         await run(scanner, plan, acknowledged)
     return plan
+
+
+async def test_a_refused_small_backup_falls_back_to_the_full_one(hass: HomeAssistant) -> None:
+    scanner = await make_scanner(hass)
+    entry, _ = await quarantined_entity(hass, scanner, "fallback")
+    manager, _ = fake_backup(error=RuntimeError("not on this installation"), full_ok=True)
+
+    plan = await run_removal(scanner, hass, entry.entity_id, manager)
+
+    assert plan["status"] == "verified" and plan["backup"]["scope"] == "full"
+    assert plan["backup"]["job_id"] == "job-full"
+    assert "backup_small_failed" in [event["type"] for event in plan["events"]]
 
 
 async def test_removal_waits_for_a_backup_removes_and_can_be_restored(hass: HomeAssistant) -> None:

@@ -1660,7 +1660,7 @@ test("orphaned statistics are selected and turned into a purge plan, which asks 
   el._hass = { language: "en", callWS: async msg => { asked.push(msg); return { plan_id: "p9", status: "dry_run", actions: [], summary: {} }; } };
   el.load = async () => {};
   await el.purgeRun();
-  assert.equal(JSON.stringify(asked[0]), JSON.stringify({ type: "ha_housekeeper/plan_create", actions: [{ kind: "purge_statistics", object_id: "sensor.old_power", states: false }] }));
+  assert.equal(JSON.stringify(asked[0]), JSON.stringify({ type: "ha_housekeeper/plan_create", actions: [{ kind: "purge_statistics", object_id: "sensor.old_power", states: true }] }));
   assert.equal(el.purgeSel.size, 0);
   assert.equal(el.view, "cleanup");
   assert.equal(el.plan.plan_id, "p9");

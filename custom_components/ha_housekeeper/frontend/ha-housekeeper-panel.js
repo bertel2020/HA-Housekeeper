@@ -2561,7 +2561,7 @@ class CleanupMixin {
     steps.push(open && !confirming ? (executable.length ? { id: "stepAnalysis", state: "current" } : { id: "stepAnalysis", state: "failed", note: this.t("stepAnalysisBlocked") }) : { id: "stepAnalysis", state: "done" });
     steps.push({ id: "stepConfirm", state: open ? (confirming ? "current" : "todo") : "done" });
     if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
-    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: this.t(`abort_${backupFailure}`) });
+    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error)].join(" · ") });
     else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
     else if (open) steps.push({ id: "stepBackup", state: "todo" });
     else {
@@ -7351,7 +7351,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.findSel = new Set();
-    this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = false; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
+    this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = true; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
