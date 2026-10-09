@@ -1,5 +1,61 @@
 # Changelog
 
+## 0.20.0 - 2026-10-09
+
+Die Oberfläche ist neu geordnet: Aufräumen, Reparieren und Journal sind getrennt,
+die Übersicht zeigt einen echten Status und Aufgabenkacheln. Automatisiert getestet
+(650 Python- und Panel-Tests), aber **noch nicht auf einer echten Instanz** und
+nicht in jedem Farbschema und auf schmalen Bildschirmen angesehen.
+
+### Neu
+
+- **Reparieren** als eigener Bereich mit Kacheln (Zähler, Sensorfehler, Zählerwechsel
+  und mehr) und einer Schrittleiste in den Assistenten. Bereiche von Messwerten
+  lassen sich jetzt auch bereinigen; Spitzen in Messwerten werden als Vorschlag
+  gefunden.
+- **Gerät austauschen:** zu jeder alten Entität passende neue Kandidaten mit
+  Gründen, nichts vorausgewählt.
+- **Detailseite:** Karte „Was du tun kannst“ (Befunde entscheiden, ersetzen,
+  deaktivieren planen, Label ergänzen), dazu Kacheln in Wartung und Einstellungen.
+- **Spracheinstellung** in den Einstellungen (automatisch, Deutsch, English).
+
+### Geändert
+
+- **Übersicht:** Statuskopf mit Ring und Kennzahlen, Aufgabenkacheln mit
+  Zustandsstreifen, verfehlte Wartungsziele als Aufgaben. Der Status zählt offene
+  Aufgaben mit.
+- **Menü:** Übersicht, Befunde, Aufräumen und Reparieren direkt, dazu die Gruppen
+  Pflegen, Betrieb und Erkunden.
+- **Optik:** Schatten und Tiefe, leere Zustände mit Symbol und Knopf, breitere
+  Verläufe mit Gitter, Skelett beim Laden.
+
+### English
+
+The interface is reorganised: Cleanup, Repair and Journal are separate, and the
+overview shows a real status and task tiles. Automatically tested (650 Python and
+panel tests), but **not yet on a real instance** and not checked in every colour
+scheme or on narrow screens.
+
+#### New
+
+- **Repair** as its own area with tiles (counters, sensor errors, meter swaps and
+  more) and a step bar in the assistants. Ranges of measurements can be cleaned too;
+  spikes in measurements are found as a suggestion.
+- **Replace a device:** matching new candidates for every old entity, with reasons,
+  nothing preselected.
+- **Detail page:** a card “What you can do” (decide findings, replace, plan a
+  disable, add a label), plus tiles in Maintenance and Settings.
+- **Language setting** in the settings (automatic, German, English).
+
+#### Changed
+
+- **Overview:** status header with a ring and figures, task tiles with a state
+  stripe, missed maintenance goals as tasks. The status counts open tasks.
+- **Menu:** Overview, Findings, Cleanup and Repair directly, plus the groups
+  Maintain, Operation and Explore.
+- **Look:** shadows and depth, empty states with an icon and a button, wider charts
+  with a grid, a skeleton while loading.
+
 ## 0.19.0 - 2026-10-09
 
 Befunde bekommen einen Status, der Schutzmodus ist immer sichtbar, und Housekeeper
