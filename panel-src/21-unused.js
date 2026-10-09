@@ -23,6 +23,7 @@ class UnusedMixin {
   }
 
   unrefTabs() {
+    if (this._embedUnref) return "";
     const stats = this.data.orphaned_statistics || [];
     const tabs = [{ id: "entities", label: this.t("unreferencedEntities"), count: this.unreferencedRows().length }, { id: "statistics", label: this.t("orphanStats"), count: stats.length }];
     return this.viewTabBar("unreferenced", tabs, this.unrefTab === "statistics" ? "statistics" : "entities");

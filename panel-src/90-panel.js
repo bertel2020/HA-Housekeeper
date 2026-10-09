@@ -439,7 +439,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._urlApplied = true;
     const params = new URLSearchParams(window.location.search);
     const view = params.get("view") === "storms" ? "recorder" : params.get("view"); // the load view moved into "Recorder"
-    if (view && NAV.some(([name]) => name === view)) this.view = view;
+    if (view && (view === "unreferenced" || NAV.some(([name]) => name === view))) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
     this._pendingTab = params.get("tab");
@@ -526,6 +526,8 @@ class HAHousekeeperPanel extends HTMLElement {
       graph: [this.t("pathTitle"), this.t("pathSubtitle")],
       settings: [this.t("settings"), this.t("settingsSubtitle")],
       cleanup: [this.t("cleanup"), this.t("cleanupSubtitle")],
+      repair: [this.t("repair"), this.t("repairSubtitle")],
+      journal: [this.t("journal"), this.t("journalSubtitle")],
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
@@ -555,6 +557,8 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "batteries") return this.batteriesView();
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
+    if (this.view === "repair") return this.repairView();
+    if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
     if (this.view === "recorder") return this.recorderView();
@@ -628,7 +632,6 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "scan";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
-      if (this.view === "cleanup") this.viewTab = { ...this.viewTab, cleanup: "journal" };
       this.render();
     });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
@@ -725,7 +728,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
-    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
     root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
@@ -744,6 +747,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
     const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
+    root.querySelectorAll("[data-repair-task]").forEach(el => el.onclick = () => { this.repairTask = el.dataset.repairTask; this.cleanupKind = this.repairTask; this.cleanupSel = new Set(); this.plan = null; this.render(); });
+    root.querySelector("[data-repair-back]")?.addEventListener("click", () => { this.repairTask = null; this.render(); });
     root.querySelectorAll("[data-ack]").forEach(el => el.onchange = () => { el.checked ? this.ack.add(el.dataset.ack) : this.ack.delete(el.dataset.ack); this.render(); });
     root.querySelector("[data-plan-confirm]")?.addEventListener("click", () => this.confirmPlan());
     const word = root.querySelector("[data-confirm-word]");

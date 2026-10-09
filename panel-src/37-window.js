@@ -33,7 +33,7 @@ class WindowMixin {
     if (name === "next") return this.windowSet({ action: "advance", step: arg });
     if (name === "skip") return this.windowSet({ action: "advance", step: arg, skip: true });
     if (name === "baseline") { await this.loadPreflight("save"); return this.windowSet({ action: "advance", step: "baseline" }); }
-    if (name === "plan") { this.noteJump("cleanup"); this.view = "cleanup"; await this.openPlan(arg); return; }
+    if (name === "plan") { this.noteJump("journal"); this.view = "journal"; await this.openPlan(arg); return; }
     if (name === "targets" || name === "reload") {
       try { this.winTargets = (await this._hass.callWS({ type: "ha_housekeeper/window_reload", execute: name === "reload" })).targets; }
       catch (err) { this.winError = err?.message || String(err); }

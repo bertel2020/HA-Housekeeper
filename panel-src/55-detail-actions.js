@@ -42,7 +42,7 @@ class DetailActionsMixin {
     this.noteJump?.("cleanup");
     this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
     if (this.lv.cleanup) this.lv.cleanup.f = {};
-    this.view = "cleanup"; this.pages = {}; this.selected = null;
+    this.view = viewForKind(kind); (this.viewTab ||= {}).cleanup = DEVICE_KINDS.includes(kind) ? "devices" : "entities"; this.repairTask = this.view === "repair" ? kind : null; this.pages = {}; this.selected = null;
     this.render();
   }
 

@@ -11,17 +11,17 @@ class SafetyMixin {
     const mode = this.data?.meta?.protection || "full";
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
-    if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "cleanup"]);
+    if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
     if (last) {
-      items.push(["last", "mute", this.t("safeLast", { when: this.formatDate(last.finished_at) }), "cleanup"]);
-      items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "cleanup"]);
+      items.push(["last", "mute", this.t("safeLast", { when: this.formatDate(last.finished_at) }), "journal"]);
+      items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "journal"]);
     }
     const watching = plans.filter(p => p.followup === "watching").length;
-    if (watching) items.push(["watch", "warn", this.t("safeWatching", { n: watching }), "cleanup"]);
+    if (watching) items.push(["watch", "warn", this.t("safeWatching", { n: watching }), "journal"]);
     const regress = plans.filter(p => p.followup === "regression").length;
-    if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "cleanup"]);
+    if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
     return items;
   }
 

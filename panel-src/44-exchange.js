@@ -116,7 +116,7 @@ class ExchangeMixin {
     root.querySelector("[data-ex-create]")?.addEventListener("click", () => this.createExchangePlan());
     root.querySelectorAll("[data-ex-target]").forEach(el => el.onchange = () => { const id = el.dataset.exTarget; ex().choices[id] = { ...(ex().choices[id] || {}), target: el.value }; this.render(); });
     root.querySelectorAll("[data-ex-how]").forEach(el => el.onchange = () => { const id = el.dataset.exHow; ex().choices[id] = { ...(ex().choices[id] || {}), how: el.value }; this.render(); });
-    root.querySelector("[data-ex-disable]")?.addEventListener("click", () => { this.cleanupKind = "disable_device"; this.cleanupSel = new Set([ex().oldDev]); this.render(); });
+    root.querySelector("[data-ex-disable]")?.addEventListener("click", () => { this.cleanupKind = "disable_device"; this.cleanupSel = new Set([ex().oldDev]); this.view = "cleanup"; (this.viewTab ||= {}).cleanup = "devices"; this.render(); });
     root.querySelectorAll("[data-report]").forEach(el => el.onclick = () => this.loadReport(el.dataset.report));
     root.querySelector("[data-report-names]")?.addEventListener("change", e => { this.reportClear = e.target.checked; if (this.report) this.loadReport(this.report.plan_id); else this.render(); });
     root.querySelector("[data-report-download]")?.addEventListener("click", () => this.downloadReport());

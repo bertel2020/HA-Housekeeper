@@ -26,7 +26,7 @@ class OverviewMixin {
     const causes = this.causeList().length;
     if (causes) items.push({ key: "causes", tone: "red", icon: "mdi:source-branch", label: "actCauses", hint: "actCausesHint", count: causes, view: "findingsNav", filter: "" });
     const regressions = (this.data.regressions || []).length;
-    if (regressions) items.push({ key: "followup", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "cleanup" });
+    if (regressions) items.push({ key: "followup", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "journal" });
     const due = (this.data.reminders || []).filter(r => r.state === "due").length;
     if (due) items.push({ key: "reminders", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, view: "batteries" });
     const missed = (this.data.criteria_alerts || []).length;
@@ -46,7 +46,34 @@ class OverviewMixin {
     const limit = m.quarantine_days ?? 14;
     const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
     if (ready) items.push({ key: "quarantine", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
+    this.ensureGoals();
+    for (const g of (this.goals?.goals || []).filter(x => x.state === "missed")) {
+      items.push({ key: `goal_${g.id}`, tone: "warn", icon: "mdi:target", text: this.t("goalMissedTitle", { goal: this.t(`goal_${g.id}`) }), hintText: `${this.goalNow(g)} · ${this.t("goalLimit", { limit: this.goalAmount(g, g.limit) })}`, view: GOAL_VIEWS[g.id] });
+    }
     return items;
+  }
+
+  // The tasks the person can start from here; a count says where something waits.
+  actionTiles() {
+    const limit = this.data.meta.quarantine_days ?? 14;
+    const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
+    const missed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
+    const found = this.counterScan?.items?.length || 0;
+    const open = this.data.findings.filter(f => !f.ignored).length;
+    const tile = (view, icon, label, hint, pill, tone) => `<button class="taskcard" data-jump="${view}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`;
+    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-tiles"><div class="panelhead"><div><h2 id="hk-tiles">${this.t("tilesTitle")}</h2></div></div><div class="taskgrid">${[
+      tile("cleanup", "mdi:broom", "cleanup", "tilesCleanupHint", ready ? this.t("tilesReady", { count: this.formatNumber(ready) }) : "", "warn"),
+      tile("repair", "mdi:tools", "repair", "tilesRepairHint", found ? this.t("repairFound", { count: this.formatNumber(found) }) : "", "warn"),
+      tile("maintenance", "mdi:wrench-clock", "maintenance", "tilesMaintenanceHint", missed ? this.t("tilesMissed", { count: this.formatNumber(missed) }) : "", "red"),
+      tile("findingsNav", "mdi:alert-outline", "findingsNav", "tilesFindingsHint", open ? this.t("tilesOpen", { count: this.formatNumber(open) }) : "", "mute"),
+    ].join("")}</div></section>`;
+  }
+
+  // A line under the to-do list instead of a card of its own: how many goals are met, and where the limits are set.
+  goalsLine() {
+    const r = this.goals;
+    if (!r?.goals?.length) return "";
+    return `<div class="pad"><small>${this.t("goalsLine", { met: r.met, total: r.met + r.missed })} · <button class="link" data-goals-settings>${this.t("goalsAdjust")}</button></small></div>`;
   }
 
   todoCard() {
@@ -64,7 +91,7 @@ class OverviewMixin {
       ? `<h3 class="foldhd">${this.t("actNow")}</h3>${urgent.map(row).join("")}${this.fold("todo_later", { tone: "warn", title: this.t("actSoon"), pill: this.formatNumber(later.length) }, later.map(row).join(""), later.length <= 3)}`
       : items.map(row).join(""))
       : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
-    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}</section>`;
+    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}${this.goalsLine()}</section>`;
   }
 
   // The comparison with the previous scan is fetched once per data set; the overview shows it when it is there.
@@ -111,9 +138,9 @@ class OverviewMixin {
     this.ensureTrend();
     this.ensureBackup();
     return `<div class="summary">
-      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span><span class="card-text"><small>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)}</small><strong>${this.t("healthScore", { percent: health.percent })}</strong><em>${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</em></span></div>
+      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span><span class="card-text"><small>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)}</small><strong>${this.t("healthScore", { percent: health.percent })}</strong><em>${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t(health.tasks ? "healthTasks" : "healthNoTasks", { count: this.formatNumber(health.tasks) })}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
-      ${this.todoCard()}${this.goalsCard(true)}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
+      ${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
@@ -161,7 +188,7 @@ class OverviewMixin {
       ["quarantine", "mdi:archive-clock-outline", "cleanup", (this.data.quarantine || []).length, undefined],
     ];
     const rows = items.map(([label, icon, view, count, filter]) => `<button class="row" data-jump="${view}"${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanup")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("hintsTitle")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
   }
 
   integrationProblems() {

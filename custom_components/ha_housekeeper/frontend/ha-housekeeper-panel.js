@@ -425,6 +425,8 @@ const NAV = [
   ["inventory", "mdi:database-outline"],
   ["graph", "mdi:source-fork"],
   ["cleanup", "mdi:broom"],
+  ["repair", "mdi:tools"],
+  ["journal", "mdi:clipboard-text-clock-outline"],
   ["maintenance", "mdi:wrench-clock"],
   ["exposure", "mdi:shield-search"],
   ["policies", "mdi:clipboard-check-outline"],
@@ -432,7 +434,6 @@ const NAV = [
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
   ["batteries", "mdi:battery-alert-variant-outline"],
-  ["unreferenced", "mdi:link-variant-off"],
   ["settings", "mdi:cog-outline"],
 ];
 
@@ -441,10 +442,21 @@ const NAV_GROUPS = [
   ["navGroupOverview", ["overview", "findingsNav", "changes"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph"]],
-  ["navGroupMaintain", ["cleanup", "unreferenced", "batteries", "policies", "exposure", "maintenance"]],
+  ["navGroupMaintain", ["cleanup", "repair", "journal", "batteries", "policies", "exposure", "maintenance"]],
 ];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
-const NAV_ICONS = Object.fromEntries(NAV);
+const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
+
+// Cleanup removes what is no longer needed; everything else a plan can do repairs something that stays.
+const CLEANUP_KINDS = ["disable_entity", "remove_entity", "disable_device", "remove_device", "forget_device"];
+const REPAIR_TASKS = [
+  ["repair_counter", "mdi:chart-line", "repairTaskCounter", "repairTaskCounterHint"],
+  ["migrate_meter", "mdi:gauge", "repairTaskMeter", "repairTaskMeterHint"],
+  ["replace_references", "mdi:swap-horizontal", "repairTaskReplace", "repairTaskReplaceHint"],
+  ["exchange_device", "mdi:devices", "repairTaskExchange", "repairTaskExchangeHint"],
+];
+// The view in which the person finishes a plan of this kind.
+const viewForKind = kind => (["repair_counter", "repair_range", "migrate_meter", "replace_references", "exchange_device", "refactor_automation"].includes(kind) ? "repair" : "cleanup");
 
 // IBM Plex, shipped with the integration. A shadow root cannot declare fonts, so the rules go into the document once.
 const FONT_BASE = "/ha_housekeeper/fonts/";
@@ -1163,6 +1175,7 @@ class StylesMixin {
       h1{font-size:calc(28px*var(--hk-fs,1));letter-spacing:-.015em}.eyebrow{font-weight:700}
       .nav em{font-weight:600}.nav.active em{color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 6%,transparent)}
       .panelhead>div:first-child{flex:1 1 0;min-width:0}.panelhead>.actions{flex:0 0 auto;flex-wrap:nowrap;justify-content:flex-end;align-items:center}.panelhead>.actions .btn{white-space:nowrap}@media(max-width:640px){.panelhead:has(>.actions){flex-wrap:wrap}.panelhead>.actions{flex:1 1 100%;flex-wrap:wrap;justify-content:stretch}.panelhead>.actions .btn{flex:1 1 auto}}.panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
+      .taskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}.taskcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);padding:14px;cursor:pointer;color:var(--hk-text);font:inherit}.taskcard:hover{background:var(--hk-soft)}.taskcard ha-icon{--mdc-icon-size:22px;color:var(--hk-blue)}.taskcard strong{font-size:calc(14px*var(--hk-fs,1));font-weight:600}.taskcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.45}.repairhead{font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin:10px 0 6px}
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
@@ -1526,7 +1539,7 @@ class OverviewMixin {
     const causes = this.causeList().length;
     if (causes) items.push({ key: "causes", tone: "red", icon: "mdi:source-branch", label: "actCauses", hint: "actCausesHint", count: causes, view: "findingsNav", filter: "" });
     const regressions = (this.data.regressions || []).length;
-    if (regressions) items.push({ key: "followup", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "cleanup" });
+    if (regressions) items.push({ key: "followup", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "journal" });
     const due = (this.data.reminders || []).filter(r => r.state === "due").length;
     if (due) items.push({ key: "reminders", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, view: "batteries" });
     const missed = (this.data.criteria_alerts || []).length;
@@ -1546,7 +1559,34 @@ class OverviewMixin {
     const limit = m.quarantine_days ?? 14;
     const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
     if (ready) items.push({ key: "quarantine", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
+    this.ensureGoals();
+    for (const g of (this.goals?.goals || []).filter(x => x.state === "missed")) {
+      items.push({ key: `goal_${g.id}`, tone: "warn", icon: "mdi:target", text: this.t("goalMissedTitle", { goal: this.t(`goal_${g.id}`) }), hintText: `${this.goalNow(g)} · ${this.t("goalLimit", { limit: this.goalAmount(g, g.limit) })}`, view: GOAL_VIEWS[g.id] });
+    }
     return items;
+  }
+
+  // The tasks the person can start from here; a count says where something waits.
+  actionTiles() {
+    const limit = this.data.meta.quarantine_days ?? 14;
+    const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
+    const missed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
+    const found = this.counterScan?.items?.length || 0;
+    const open = this.data.findings.filter(f => !f.ignored).length;
+    const tile = (view, icon, label, hint, pill, tone) => `<button class="taskcard" data-jump="${view}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`;
+    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-tiles"><div class="panelhead"><div><h2 id="hk-tiles">${this.t("tilesTitle")}</h2></div></div><div class="taskgrid">${[
+      tile("cleanup", "mdi:broom", "cleanup", "tilesCleanupHint", ready ? this.t("tilesReady", { count: this.formatNumber(ready) }) : "", "warn"),
+      tile("repair", "mdi:tools", "repair", "tilesRepairHint", found ? this.t("repairFound", { count: this.formatNumber(found) }) : "", "warn"),
+      tile("maintenance", "mdi:wrench-clock", "maintenance", "tilesMaintenanceHint", missed ? this.t("tilesMissed", { count: this.formatNumber(missed) }) : "", "red"),
+      tile("findingsNav", "mdi:alert-outline", "findingsNav", "tilesFindingsHint", open ? this.t("tilesOpen", { count: this.formatNumber(open) }) : "", "mute"),
+    ].join("")}</div></section>`;
+  }
+
+  // A line under the to-do list instead of a card of its own: how many goals are met, and where the limits are set.
+  goalsLine() {
+    const r = this.goals;
+    if (!r?.goals?.length) return "";
+    return `<div class="pad"><small>${this.t("goalsLine", { met: r.met, total: r.met + r.missed })} · <button class="link" data-goals-settings>${this.t("goalsAdjust")}</button></small></div>`;
   }
 
   todoCard() {
@@ -1564,7 +1604,7 @@ class OverviewMixin {
       ? `<h3 class="foldhd">${this.t("actNow")}</h3>${urgent.map(row).join("")}${this.fold("todo_later", { tone: "warn", title: this.t("actSoon"), pill: this.formatNumber(later.length) }, later.map(row).join(""), later.length <= 3)}`
       : items.map(row).join(""))
       : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
-    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}</section>`;
+    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}${this.goalsLine()}</section>`;
   }
 
   // The comparison with the previous scan is fetched once per data set; the overview shows it when it is there.
@@ -1611,9 +1651,9 @@ class OverviewMixin {
     this.ensureTrend();
     this.ensureBackup();
     return `<div class="summary">
-      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span><span class="card-text"><small>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)}</small><strong>${this.t("healthScore", { percent: health.percent })}</strong><em>${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</em></span></div>
+      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span><span class="card-text"><small>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)}</small><strong>${this.t("healthScore", { percent: health.percent })}</strong><em>${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t(health.tasks ? "healthTasks" : "healthNoTasks", { count: this.formatNumber(health.tasks) })}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
-      ${this.todoCard()}${this.goalsCard(true)}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
+      ${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
@@ -1661,7 +1701,7 @@ class OverviewMixin {
       ["quarantine", "mdi:archive-clock-outline", "cleanup", (this.data.quarantine || []).length, undefined],
     ];
     const rows = items.map(([label, icon, view, count, filter]) => `<button class="row" data-jump="${view}"${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanup")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("hintsTitle")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
   }
 
   integrationProblems() {
@@ -1703,9 +1743,13 @@ class FindingsMixin {
     const known = new Set(objects.map(o => this.objectKey(o)));
     const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
     const percent = base ? Math.max(0, Math.round(100 * (1 - affected.size / base))) : 100;
-    const tone = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
+    // The status is the worse of two readings: the share of objects without a finding, and what the to-do list still asks for
+    // (broken integrations, a missed goal, a problem with the backup or the database).
+    const open = this.todoItems(), red = open.filter(i => i.tone === "red").length, tasks = open.length;
+    const byShare = percent >= 95 ? "ok" : percent >= 80 ? "warn" : "red";
+    const tone = red || byShare === "red" ? "red" : tasks || byShare === "warn" ? "warn" : "ok";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label, affected: affected.size, base };
+    return { percent, tone, label, affected: affected.size, base, tasks, red };
   }
 
   findingRow(finding) {
@@ -2538,9 +2582,11 @@ class CleanupMixin {
   }
 
   kindSelect() {
-    const kinds = [["disable_entity", "kindDisable"], ["remove_entity", "kindRemove"], ["disable_device", "kindDisableDevice"], ["remove_device", "kindRemoveDevice"], ["forget_device", "kindForgetDevice"], ["replace_references", "kindReplace"], ["migrate_meter", "kindMeter"], ["repair_counter", "kindCounter"], ["exchange_device", "kindExchange"]];
-    return `<select data-cleanup-kind aria-label="${this.t("actionKind")}">${kinds.map(([value, label]) => `<option value="${value}" ${this.cleanupKind === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select>`;
+    if (this.view !== "cleanup") return "";
+    const labels = { disable_entity: "kindDisable", remove_entity: "kindRemove", disable_device: "kindDisableDevice", remove_device: "kindRemoveDevice", forget_device: "kindForgetDevice" };
+    return `<select data-cleanup-kind aria-label="${this.t("actionKind")}">${(this._cleanupKinds || CLEANUP_KINDS).map(value => `<option value="${value}" ${this.cleanupKind === value ? "selected" : ""}>${this.t(labels[value])}</option>`).join("")}</select>`;
   }
+
 
   // Replace one entity by another in every configuration that names it exactly.
   entityUnit(id) { return this.findObject(`entity:${id}`)?.unit; }
@@ -2596,7 +2642,25 @@ class CleanupMixin {
   }
 
   cleanupView() {
-    if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
+    this.ensureJournal();
+    const purges = this.purges || [];
+    const tabs = [
+      { id: "entities", label: this.t("cleanupTabEntities") },
+      { id: "devices", label: this.t("cleanupTabDevices") },
+      { id: "unused", label: this.t("unreferenced"), count: this.unreferencedRows().length },
+      { id: "stats", label: this.t("orphanStats"), count: (this.data.orphaned_statistics || []).length },
+      ...(purges.length ? [{ id: "purges", label: this.t("cleanupTabPurges"), count: purges.length }] : []),
+    ];
+    const open = this.viewTabOf("cleanup", tabs, "entities");
+    if (["unused", "stats", "purges"].includes(open)) {
+      this.unrefTab = open === "stats" ? "statistics" : "entities";
+      this._embedUnref = true;
+      const body = open === "purges" ? this.purgeJournalCard() : this.unreferencedView();
+      this._embedUnref = false;
+      return `<div class="stack">${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${body}</div>`;
+    }
+    this._cleanupKinds = open === "devices" ? DEVICE_KINDS : ["disable_entity", "remove_entity"];
+    if (!this._cleanupKinds.includes(this.cleanupKind)) this.cleanupKind = this._cleanupKinds[0];
     this.lvState("cleanup", "name", "asc");
     const all = this.cleanupCandidates();
     const sorts = [
@@ -2630,13 +2694,6 @@ class CleanupMixin {
       <div class="toolbar">${this.kindSelect()}${this.recorderChoice(removal)}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
-    const assistant = this.cleanupKind === "exchange_device" ? this.exchangeCard() : this.cleanupKind === "replace_references" ? this.replaceCard() : this.cleanupKind === "migrate_meter" ? this.meterCard() : this.cleanupKind === "repair_counter" ? this.counterCard() : candidates;
-    const journalFound = this.searchList("journal", this.journal || [], plan => `${this.formatDate(plan.created_at)} ${this.t(`plan_status_${plan.status || "dry_run"}`)}`);
-    const journalPage = this.paginate("journal", journalFound.rows);
-    const journal = journalPage.rows.map(plan => `<div class="row">${this.mergeable(plan) ? `<input type="checkbox" data-merge-sel="${this.esc(plan.plan_id)}" ${this.mergeSel?.has(plan.plan_id) ? "checked" : ""} aria-label="${this.esc(this.t("mergeSelect"))}">` : ""}<span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
-      <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
-      <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div><div class="actions"><button class="btn" data-merge ${(this.mergeSel?.size || 0) >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: this.mergeSel?.size || 0 })}</button></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}<br><small>${this.t("journalEmptyNext")}</small></div>`}${journalPage.footer}</div>`;
     const tiles = this.sumTiles([
       { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
       removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
@@ -2644,16 +2701,45 @@ class CleanupMixin {
       { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
       { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
     ]);
-    const purges = this.purges || [];
-    const tabs = [
-      { id: "new", label: this.t("cleanupTabNew"), count: all.length },
-      { id: "journal", label: this.t("cleanupTabJournal"), count: (this.journal || []).length },
-      ...(purges.length ? [{ id: "purges", label: this.t("cleanupTabPurges"), count: purges.length }] : []),
-    ];
-    const open = this.viewTabOf("cleanup", tabs, "new");
-    const body = open === "journal" ? journalCard : open === "purges" ? this.purgeJournalCard() : `${this.quarantineCard()}${this.recurringCard()}${assistant}`;
-    return `<div class="stack">${tiles}<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
-      ${this.plan ? this.planCard(this.plan) : ""}${this.viewTabBar("cleanup", tabs, open)}${body}</div>`;
+    return `<div class="stack">${tiles}${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${this.quarantineCard()}${this.recurringCard()}${candidates}</div>`;
+  }
+
+  ensureJournal() {
+    if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
+  }
+
+  // The dry-run note, an error from the last request and the plan that is open, on top of every view that can finish one.
+  planHeader() {
+    return `<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>${this.plan ? this.planCard(this.plan) : ""}`;
+  }
+
+  // Every plan from Cleanup and Repair: what changed, what was checked, and what can be undone.
+  journalView() {
+    this.ensureJournal();
+    const journalFound = this.searchList("journal", this.journal || [], plan => `${this.formatDate(plan.created_at)} ${this.t(`plan_status_${plan.status || "dry_run"}`)}`);
+    const journalPage = this.paginate("journal", journalFound.rows);
+    const journal = journalPage.rows.map(plan => `<div class="row">${this.mergeable(plan) ? `<input type="checkbox" data-merge-sel="${this.esc(plan.plan_id)}" ${this.mergeSel?.has(plan.plan_id) ? "checked" : ""} aria-label="${this.esc(this.t("mergeSelect"))}">` : ""}<span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
+      <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
+      <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div><div class="actions"><button class="btn" data-merge ${(this.mergeSel?.size || 0) >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: this.mergeSel?.size || 0 })}</button></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}<br><small>${this.t("journalEmptyNext")}</small></div>`}${journalPage.footer}</div>`;
+    return `<div class="stack">${this.planHeader()}${journalCard}</div>`;
+  }
+
+  // Tasks that fix something that stays. A tile opens the assistant for one task; the plan is finished in the same view.
+  repairView() {
+    this.ensureJournal();
+    const task = REPAIR_TASKS.some(([kind]) => kind === this.repairTask) ? this.repairTask : null;
+    let body;
+    if (task) {
+      const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), repair_counter: () => this.counterCard() }[task]();
+      const label = REPAIR_TASKS.find(([kind]) => kind === task)[2];
+      body = `<button class="btn quiet" data-repair-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("repairBack")}</button><h2 class="repairhead">${this.t(label)}</h2>${card}`;
+    } else {
+      const found = this.counterScan?.items?.length || 0;
+      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${kind === "repair_counter" && found ? ` <span class="pill warn">${this.t("repairFound", { count: found })}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
+      body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("repairTitle")}</h2><p>${this.t("repairHint")}</p></div></div><div class="taskgrid">${tiles}</div></div>`;
+    }
+    return `<div class="stack">${this.planHeader()}${body}</div>`;
   }
 }
 
@@ -3024,6 +3110,7 @@ class UnusedMixin {
   }
 
   unrefTabs() {
+    if (this._embedUnref) return "";
     const stats = this.data.orphaned_statistics || [];
     const tabs = [{ id: "entities", label: this.t("unreferencedEntities"), count: this.unreferencedRows().length }, { id: "statistics", label: this.t("orphanStats"), count: stats.length }];
     return this.viewTabBar("unreferenced", tabs, this.unrefTab === "statistics" ? "statistics" : "entities");
@@ -5172,7 +5259,7 @@ class WindowMixin {
     if (name === "next") return this.windowSet({ action: "advance", step: arg });
     if (name === "skip") return this.windowSet({ action: "advance", step: arg, skip: true });
     if (name === "baseline") { await this.loadPreflight("save"); return this.windowSet({ action: "advance", step: "baseline" }); }
-    if (name === "plan") { this.noteJump("cleanup"); this.view = "cleanup"; await this.openPlan(arg); return; }
+    if (name === "plan") { this.noteJump("journal"); this.view = "journal"; await this.openPlan(arg); return; }
     if (name === "targets" || name === "reload") {
       try { this.winTargets = (await this._hass.callWS({ type: "ha_housekeeper/window_reload", execute: name === "reload" })).targets; }
       catch (err) { this.winError = err?.message || String(err); }
@@ -5690,7 +5777,7 @@ class ExchangeMixin {
     root.querySelector("[data-ex-create]")?.addEventListener("click", () => this.createExchangePlan());
     root.querySelectorAll("[data-ex-target]").forEach(el => el.onchange = () => { const id = el.dataset.exTarget; ex().choices[id] = { ...(ex().choices[id] || {}), target: el.value }; this.render(); });
     root.querySelectorAll("[data-ex-how]").forEach(el => el.onchange = () => { const id = el.dataset.exHow; ex().choices[id] = { ...(ex().choices[id] || {}), how: el.value }; this.render(); });
-    root.querySelector("[data-ex-disable]")?.addEventListener("click", () => { this.cleanupKind = "disable_device"; this.cleanupSel = new Set([ex().oldDev]); this.render(); });
+    root.querySelector("[data-ex-disable]")?.addEventListener("click", () => { this.cleanupKind = "disable_device"; this.cleanupSel = new Set([ex().oldDev]); this.view = "cleanup"; (this.viewTab ||= {}).cleanup = "devices"; this.render(); });
     root.querySelectorAll("[data-report]").forEach(el => el.onclick = () => this.loadReport(el.dataset.report));
     root.querySelector("[data-report-names]")?.addEventListener("change", e => { this.reportClear = e.target.checked; if (this.report) this.loadReport(this.report.plan_id); else this.render(); });
     root.querySelector("[data-report-download]")?.addEventListener("click", () => this.downloadReport());
@@ -6233,7 +6320,7 @@ class RefactorMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "refactor_automation", object_id: entityId, fix, values }] });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
-      this.noteJump?.("cleanup"); this.view = "cleanup"; this.pages = {};
+      this.noteJump?.("repair"); this.view = "repair"; this.repairTask = null; this.pages = {};
     } catch (err) { r.message = this.t("refactorFailed", { reason: err?.message || String(err) }); }
     this.render();
   }
@@ -6263,17 +6350,17 @@ class SafetyMixin {
     const mode = this.data?.meta?.protection || "full";
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
-    if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "cleanup"]);
+    if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
     if (last) {
-      items.push(["last", "mute", this.t("safeLast", { when: this.formatDate(last.finished_at) }), "cleanup"]);
-      items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "cleanup"]);
+      items.push(["last", "mute", this.t("safeLast", { when: this.formatDate(last.finished_at) }), "journal"]);
+      items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "journal"]);
     }
     const watching = plans.filter(p => p.followup === "watching").length;
-    if (watching) items.push(["watch", "warn", this.t("safeWatching", { n: watching }), "cleanup"]);
+    if (watching) items.push(["watch", "warn", this.t("safeWatching", { n: watching }), "journal"]);
     const regress = plans.filter(p => p.followup === "regression").length;
-    if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "cleanup"]);
+    if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
     return items;
   }
 
@@ -6947,7 +7034,7 @@ class DetailActionsMixin {
     this.noteJump?.("cleanup");
     this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
     if (this.lv.cleanup) this.lv.cleanup.f = {};
-    this.view = "cleanup"; this.pages = {}; this.selected = null;
+    this.view = viewForKind(kind); (this.viewTab ||= {}).cleanup = DEVICE_KINDS.includes(kind) ? "devices" : "entities"; this.repairTask = this.view === "repair" ? kind : null; this.pages = {}; this.selected = null;
     this.render();
   }
 
@@ -6977,6 +7064,36 @@ Object.assign(TEXT.en, {
   actionsTitle: "What you can do", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable",
   actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it under Cleanup.",
   actEditInHa: "Housekeeper does not remove a single reference itself. Open the automation in Home Assistant and edit it there.",
+});
+
+// Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
+Object.assign(TEXT.de, {
+  tilesTitle: "Was möchtest du tun?", tilesCleanupHint: "Verwaiste Entitäten und Geräte deaktivieren oder entfernen.", tilesRepairHint: "Sensorfehler, Zähler, Verweise und Geräte in Ordnung bringen.", tilesMaintenanceHint: "Backups, Update-Preflight, Blueprints und Wartungsziele.", tilesFindingsHint: "Alle Auffälligkeiten durchgehen und entscheiden.",
+  tilesReady: "{count} bereit", tilesMissed: "{count} Ziele verfehlt", tilesOpen: "{count} offen",
+  goalMissedTitle: "{goal}: Ziel verfehlt", goalsLine: "Wartungsziele: {met} von {total} erfüllt", hintsTitle: "Hinweise",
+  healthScore: "{percent} % der Objekte ohne Befund", healthTasks: "{count} Aufgaben offen", healthNoTasks: "keine offenen Aufgaben", healthTip: "{affected} von {base} bewerteten Objekten sind betroffen; gezählt werden Objekte, nicht einzelne Befunde. Der Status ist so gut wie der schlechtere von zwei Werten: der Anteil der Objekte ohne Befund und die offenen Aufgaben (kaputte Integrationen, verfehlte Wartungsziele, Backup- oder Datenbankprobleme). Ausgeblendete Befunde zählen nicht.",
+  repair: "Reparieren", repairSubtitle: "Dinge in Ordnung bringen, die bleiben sollen. Housekeeper zeigt erst eine Vorschau; geschrieben wird erst nach deiner Bestätigung.",
+  journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt.",
+  cleanupTabEntities: "Entitäten", cleanupTabDevices: "Geräte",
+  repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde",
+  repairTaskCounter: "Sensorfehler bereinigen", repairTaskCounterHint: "Falsche Werte in Zählern und Messwerten korrigieren, zum Beispiel ein Zähler, der kurz sinkt, oder ein Ausschlag auf 85 °C.",
+  repairTaskMeter: "Zähler wechseln", repairTaskMeterHint: "Die Statistik eines alten Zählers beim neuen fortführen.",
+  repairTaskReplace: "Verweise ersetzen", repairTaskReplaceHint: "Eine Entität überall durch eine andere ersetzen (Automationen, Dashboards, Energie).",
+  repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
+});
+Object.assign(TEXT.en, {
+  tilesTitle: "What would you like to do?", tilesCleanupHint: "Disable or remove orphaned entities and devices.", tilesRepairHint: "Fix sensor errors, meters, references and devices.", tilesMaintenanceHint: "Backups, update preflight, blueprints and maintenance goals.", tilesFindingsHint: "Go through every finding and decide.",
+  tilesReady: "{count} ready", tilesMissed: "{count} goals missed", tilesOpen: "{count} open",
+  goalMissedTitle: "{goal}: goal missed", goalsLine: "Maintenance goals: {met} of {total} met", hintsTitle: "Hints",
+  healthScore: "{percent}% of objects without a finding", healthTasks: "{count} tasks open", healthNoTasks: "no open tasks", healthTip: "{affected} of {base} rated objects are affected; objects are counted, not single findings. The status is the worse of two readings: the share of objects without a finding, and the open tasks (broken integrations, missed maintenance goals, backup or database problems). Hidden findings do not count.",
+  repair: "Repair", repairSubtitle: "Fix things that are meant to stay. Housekeeper shows a preview first; nothing is written until you confirm.",
+  journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone.",
+  cleanupTabEntities: "Entities", cleanupTabDevices: "Devices",
+  repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found",
+  repairTaskCounter: "Repair sensor errors", repairTaskCounterHint: "Correct wrong values in counters and measurements, for example a counter that briefly falls, or a spike to 85 °C.",
+  repairTaskMeter: "Replace a meter", repairTaskMeterHint: "Carry the statistics of an old meter on with the new one.",
+  repairTaskReplace: "Replace references", repairTaskReplaceHint: "Replace one entity with another everywhere (automations, dashboards, energy).",
+  repairTaskExchange: "Exchange a device", repairTaskExchangeHint: "Replace a broken device with a new one and carry everything over.",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -7420,7 +7537,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._urlApplied = true;
     const params = new URLSearchParams(window.location.search);
     const view = params.get("view") === "storms" ? "recorder" : params.get("view"); // the load view moved into "Recorder"
-    if (view && NAV.some(([name]) => name === view)) this.view = view;
+    if (view && (view === "unreferenced" || NAV.some(([name]) => name === view))) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
     if (params.get("filter")) this.findingFilter = params.get("filter");
     this._pendingTab = params.get("tab");
@@ -7507,6 +7624,8 @@ class HAHousekeeperPanel extends HTMLElement {
       graph: [this.t("pathTitle"), this.t("pathSubtitle")],
       settings: [this.t("settings"), this.t("settingsSubtitle")],
       cleanup: [this.t("cleanup"), this.t("cleanupSubtitle")],
+      repair: [this.t("repair"), this.t("repairSubtitle")],
+      journal: [this.t("journal"), this.t("journalSubtitle")],
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
@@ -7536,6 +7655,8 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "batteries") return this.batteriesView();
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
+    if (this.view === "repair") return this.repairView();
+    if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
     if (this.view === "recorder") return this.recorderView();
@@ -7609,7 +7730,6 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "scan";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
-      if (this.view === "cleanup") this.viewTab = { ...this.viewTab, cleanup: "journal" };
       this.render();
     });
     root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
@@ -7706,7 +7826,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
-    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
     root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
@@ -7725,6 +7845,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
     const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
+    root.querySelectorAll("[data-repair-task]").forEach(el => el.onclick = () => { this.repairTask = el.dataset.repairTask; this.cleanupKind = this.repairTask; this.cleanupSel = new Set(); this.plan = null; this.render(); });
+    root.querySelector("[data-repair-back]")?.addEventListener("click", () => { this.repairTask = null; this.render(); });
     root.querySelectorAll("[data-ack]").forEach(el => el.onchange = () => { el.checked ? this.ack.add(el.dataset.ack) : this.ack.delete(el.dataset.ack); this.render(); });
     root.querySelector("[data-plan-confirm]")?.addEventListener("click", () => this.confirmPlan());
     const word = root.querySelector("[data-confirm-word]");

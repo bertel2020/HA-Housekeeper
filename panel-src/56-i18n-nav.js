@@ -1,0 +1,29 @@
+// Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
+Object.assign(TEXT.de, {
+  tilesTitle: "Was möchtest du tun?", tilesCleanupHint: "Verwaiste Entitäten und Geräte deaktivieren oder entfernen.", tilesRepairHint: "Sensorfehler, Zähler, Verweise und Geräte in Ordnung bringen.", tilesMaintenanceHint: "Backups, Update-Preflight, Blueprints und Wartungsziele.", tilesFindingsHint: "Alle Auffälligkeiten durchgehen und entscheiden.",
+  tilesReady: "{count} bereit", tilesMissed: "{count} Ziele verfehlt", tilesOpen: "{count} offen",
+  goalMissedTitle: "{goal}: Ziel verfehlt", goalsLine: "Wartungsziele: {met} von {total} erfüllt", hintsTitle: "Hinweise",
+  healthScore: "{percent} % der Objekte ohne Befund", healthTasks: "{count} Aufgaben offen", healthNoTasks: "keine offenen Aufgaben", healthTip: "{affected} von {base} bewerteten Objekten sind betroffen; gezählt werden Objekte, nicht einzelne Befunde. Der Status ist so gut wie der schlechtere von zwei Werten: der Anteil der Objekte ohne Befund und die offenen Aufgaben (kaputte Integrationen, verfehlte Wartungsziele, Backup- oder Datenbankprobleme). Ausgeblendete Befunde zählen nicht.",
+  repair: "Reparieren", repairSubtitle: "Dinge in Ordnung bringen, die bleiben sollen. Housekeeper zeigt erst eine Vorschau; geschrieben wird erst nach deiner Bestätigung.",
+  journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt.",
+  cleanupTabEntities: "Entitäten", cleanupTabDevices: "Geräte",
+  repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde",
+  repairTaskCounter: "Sensorfehler bereinigen", repairTaskCounterHint: "Falsche Werte in Zählern und Messwerten korrigieren, zum Beispiel ein Zähler, der kurz sinkt, oder ein Ausschlag auf 85 °C.",
+  repairTaskMeter: "Zähler wechseln", repairTaskMeterHint: "Die Statistik eines alten Zählers beim neuen fortführen.",
+  repairTaskReplace: "Verweise ersetzen", repairTaskReplaceHint: "Eine Entität überall durch eine andere ersetzen (Automationen, Dashboards, Energie).",
+  repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
+});
+Object.assign(TEXT.en, {
+  tilesTitle: "What would you like to do?", tilesCleanupHint: "Disable or remove orphaned entities and devices.", tilesRepairHint: "Fix sensor errors, meters, references and devices.", tilesMaintenanceHint: "Backups, update preflight, blueprints and maintenance goals.", tilesFindingsHint: "Go through every finding and decide.",
+  tilesReady: "{count} ready", tilesMissed: "{count} goals missed", tilesOpen: "{count} open",
+  goalMissedTitle: "{goal}: goal missed", goalsLine: "Maintenance goals: {met} of {total} met", hintsTitle: "Hints",
+  healthScore: "{percent}% of objects without a finding", healthTasks: "{count} tasks open", healthNoTasks: "no open tasks", healthTip: "{affected} of {base} rated objects are affected; objects are counted, not single findings. The status is the worse of two readings: the share of objects without a finding, and the open tasks (broken integrations, missed maintenance goals, backup or database problems). Hidden findings do not count.",
+  repair: "Repair", repairSubtitle: "Fix things that are meant to stay. Housekeeper shows a preview first; nothing is written until you confirm.",
+  journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone.",
+  cleanupTabEntities: "Entities", cleanupTabDevices: "Devices",
+  repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found",
+  repairTaskCounter: "Repair sensor errors", repairTaskCounterHint: "Correct wrong values in counters and measurements, for example a counter that briefly falls, or a spike to 85 °C.",
+  repairTaskMeter: "Replace a meter", repairTaskMeterHint: "Carry the statistics of an old meter on with the new one.",
+  repairTaskReplace: "Replace references", repairTaskReplaceHint: "Replace one entity with another everywhere (automations, dashboards, energy).",
+  repairTaskExchange: "Exchange a device", repairTaskExchangeHint: "Replace a broken device with a new one and carry everything over.",
+});

@@ -584,7 +584,7 @@ test("cleanup view lists candidates, creates a dry-run plan and shows the verdic
   await el.createPlan();
   const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "disable_entity", object_id: "sensor.old" }, { kind: "disable_entity", object_id: "sensor.used" }]));
-  el.viewTab = { cleanup: "journal" };
+  el.view = "journal";
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("2 checked: 1 with no known use, 0 to review, 1 blocked.") && html.includes("Blocked") && html.includes("Definitely in use"));
@@ -795,7 +795,7 @@ test("the journal lists short entries and opening one fetches the plan", async (
   el.view = "cleanup";
   el.journal = [{ plan_id: "p9", created_at: "2026-10-07T10:00:00+00:00", status: "verified", executed: true, run: true, summary: { total: 1, ok: 1, review: 0, blocked: 0 } }];
   el.plan = null;
-  el.viewTab = { cleanup: "journal" };
+  el.view = "journal";
   el.render();
   assert.ok(shadow.innerHTML.includes('data-plan-open="p9"'));
   assert.ok(!shadow.innerHTML.includes("file copy was dropped"));
@@ -965,7 +965,7 @@ const stepCData = () => {
 test("device candidates are the devices without working entities; removal lists quarantined devices", () => {
   const { el, shadow } = panel("en");
   const { data } = stepCData();
-  el.data = data; el.journal = []; el.view = "cleanup";
+  el.data = data; el.journal = []; el.view = "cleanup"; el.viewTab = { cleanup: "devices" };
   el.cleanupKind = "disable_device";
   el.render();
   let html = shadow.innerHTML;
@@ -976,13 +976,15 @@ test("device candidates are the devices without working entities; removal lists 
     html = shadow.innerHTML;
     assert.ok(html.includes('data-sel="d-q"') && html.includes("Devices in quarantine") && !html.includes('data-sel="d-dead"'), kind);
   }
-  for (const value of ["disable_device", "remove_device", "forget_device", "replace_references"]) assert.ok(html.includes(`value="${value}"`));
+  for (const value of ["disable_device", "remove_device", "forget_device"]) assert.ok(html.includes(`value="${value}"`));
+  assert.ok(!html.includes('value="disable_entity"'));
+  assert.ok(!html.includes('value="replace_references"'));
 });
 
 test("the replace assistant previews sources and sends the new entity with the plan", async () => {
   const { el, shadow } = panel("en");
   const { data } = stepCData();
-  el.data = data; el.journal = []; el.view = "cleanup"; el.cleanupKind = "replace_references";
+  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "replace_references"; el.cleanupKind = "replace_references";
   el.render();
   let html = shadow.innerHTML;
   assert.ok(html.includes("Replace references") && html.includes('<option value="sensor.old">') && html.includes("data-repl-old"));
@@ -1058,10 +1060,10 @@ test("the meter assistant offers the modes and sends the pair with the plan", as
   data.objects.push({ object_type: "entity", object_id: "sensor.meter_old", name: "Old meter", status: "unavailable", has_statistics: true, unit: "kWh" },
     { object_type: "entity", object_id: "sensor.meter_new", name: "New meter", status: "active", unit: "kWh" },
     { object_type: "entity", object_id: "sensor.other_unit", name: "Other", status: "active", unit: "W" });
-  el.data = data; el.journal = []; el.view = "cleanup"; el.cleanupKind = "migrate_meter";
+  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "migrate_meter"; el.cleanupKind = "migrate_meter";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Meter change") && html.includes("data-meter-old") && html.includes('<option value="sensor.meter_old">') && html.includes('value="migrate_meter"'));
+  assert.ok(html.includes("Meter change") && html.includes("data-meter-old") && html.includes('<option value="sensor.meter_old">'));
   assert.ok(html.includes("Continue statistics and take over the ID") && /data-plan-create\s+disabled/.test(html));
   el.meterOld = "sensor.meter_old"; el.meterNew = "sensor.meter_new"; el.meterMode = "statistics";
   el.render();
@@ -1076,7 +1078,7 @@ test("the meter assistant offers the modes and sends the pair with the plan", as
 test("a meter plan explains the copy, the shifted total and the ID move, and asks for MIGRATE", () => {
   const { el, shadow } = panel("en");
   const { data } = stepCData();
-  el.data = data; el.journal = []; el.view = "cleanup"; el.plan = METER_PLAN;
+  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "migrate_meter"; el.plan = METER_PLAN;
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("sensor.meter_old → sensor.meter_new") && html.includes("48 hourly values"));
@@ -1359,7 +1361,7 @@ test("the navigation groups every view once, with settings at the foot", () => {
   const menus = [...html.matchAll(/<div class="navmenu[^"]*"><button[^>]*data-menu="([^"]+)"/g)].map(m => m[1]);
   assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupOperation", "navGroupExplore", "navGroupMaintain"]), "three menus after the direct entries");
   assert.ok(html.includes('<nav class="topnav" id="topnav" aria-label="Main navigation">'));
-  const order = ["overview", "findingsNav", "changes", "inventory", "cleanup", "unreferenced", "batteries", "maintenance", "settings"].map(v => html.indexOf(`data-view="${v}"`));
+  const order = ["overview", "findingsNav", "changes", "inventory", "cleanup", "repair", "journal", "batteries", "maintenance", "settings"].map(v => html.indexOf(`data-view="${v}"`));
   assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), "views keep their order and settings comes last");
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1, "one current entry");
   assert.ok(/data-view="cleanup"\s+aria-current="page"/.test(html));
@@ -1691,7 +1693,7 @@ test("a long journal and long relation groups get a search box", () => {
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
   el.view = "cleanup";
   el.journal = Array.from({ length: 8 }, (_, i) => ({ plan_id: `p${i}`, created_at: `2026-10-0${i + 1}T10:00:00+00:00`, status: "verified", summary: { total: 1, ok: 1, review: 0, blocked: 0 } }));
-  el.viewTab = { cleanup: "journal" };
+  el.view = "journal";
   el.render();
   assert.ok(shadow.innerHTML.includes('data-lq="journal"'));
   el.lv.journal.q = "zzz";
@@ -2174,7 +2176,7 @@ test("polish: the to-do list groups by urgency, the cleanup view has tabs, the q
   assert.ok(card.includes("Now") && card.includes("Soon") && card.includes('data-fold="todo_later"'));
   el.view = "cleanup"; el.journal = []; el._journalRequested = true; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
   const html = el.cleanupView();
-  assert.ok(html.includes('data-view-tab="cleanup|new"') && html.includes('data-view-tab="cleanup|journal"') && html.includes('data-view-tab="cleanup|purges"'));
+  assert.ok(html.includes('data-view-tab="cleanup|entities"') && html.includes('data-view-tab="cleanup|devices"') && html.includes('data-view-tab="cleanup|unused"') && html.includes('data-view-tab="cleanup|stats"') && html.includes('data-view-tab="cleanup|purges"'));
   el.diag = { quality: { items: [{ entity_id: "automation.ok", name: "Fine", status: "on", worst: "ok", dimensions: Object.fromEntries(["integrity", "reliability", "effectiveness", "maintainability", "restart_safety", "efficiency", "conflicts"].map(id => [id, { level: "ok", reasons: [] }])) }] }, issuesOnly: true, criteria: {}, detail: {} };
   el._qualityRequested = true;
   assert.ok(el.qualityView().includes("No automation with a problem or note."));
@@ -2183,7 +2185,7 @@ test("polish: the to-do list groups by urgency, the cleanup view has tabs, the q
 test("open previews can be selected and merged into one plan; a ran plan cannot", async () => {
   const { el, shadow } = panel("en");
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
-  el.view = "cleanup"; el.viewTab = { cleanup: "journal" };
+  el.view = "journal";
   const short = (id, extra = {}) => ({ plan_id: id, created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
   el.journal = [short("a"), short("b"), short("c", { executed: true, status: "verified" })];
   const calls = [];
@@ -2220,7 +2222,7 @@ test("the improve block asks for the switch, offers fixes and turns one into a p
   await el.makeRefactorPlan("automation.hall", "add_description");
   const create = calls.find(c => c.type.endsWith("/plan_create"));
   assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "refactor_automation", object_id: "automation.hall", fix: "add_description", values: { description: "Warms the hall" } }]));
-  assert.equal(el.view, "cleanup");
+  assert.equal(el.view, "repair");
   assert.equal(el.plan.plan_id, "r1");
   enabled = true;
   el.refactor.by["automation.hall"] = { enabled: true, editable: true, proposals: [{ fix: "set_timeout", count: 2, paths: ["action/0", "action/2"] }, { fix: "set_mode", mode: "single", max: null }] };
@@ -2831,7 +2833,7 @@ test("the health card names the score and the count; the safety line shows backu
   ];
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes("/ 100 healthy"));
+  assert.ok(html.includes("% of objects without a finding") && html.includes("no open tasks"));
   assert.ok(html.includes("of 3 rated objects affected"));
   assert.ok(html.includes("Last backup: 5 h ago") && html.includes("Undo available") && html.includes("1 follow-up running") && html.includes("1 regression after a change"));
   el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
@@ -2926,7 +2928,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   const { el, shadow } = panel("en");
   const found = { available: true, busy: false, checked: 12, items: [{ statistic_id: "sensor.water", name: "Water", unit: "m³", findings: [{ bad_first: 1788220800, bad_last: 1788260800, low: 41.5, high: 41.5, good_before: 91.69, good_after: 91.8 }] }] };
   const sent = [];
-  el.data = stepCData().data; el.journal = []; el.view = "cleanup"; el.cleanupKind = "repair_counter";
+  el.data = stepCData().data; el.journal = []; el.view = "repair"; el.repairTask = "repair_counter"; el.cleanupKind = "repair_counter";
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("counter_scan") ? found : { ...REPAIR_PLAN }; } };
   el.render();
   assert.ok(shadow.innerHTML.includes("Find and repair counter glitches") && shadow.innerHTML.includes("data-counter-scan") && shadow.innerHTML.includes("data-range-pick"));
@@ -3003,7 +3005,35 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   const entity = el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a");
   assert.ok(entity.includes('data-act-disable="sensor.a"'));
   el.startCleanup("replace_references", () => { el.replOld = "sensor.gone"; });
-  assert.equal(el.view, "cleanup");
+  assert.equal(el.view, "repair");
+  assert.equal(el.repairTask, "replace_references");
   assert.equal(el.replOld, "sensor.gone");
   assert.ok(!el.detailPanel("relations", el.findObject("entity:sensor.a"), "entity:sensor.a").includes("data-decide-open"), "findings moved off the dependencies tab");
+});
+
+test("the repair view offers its tasks as tiles; one opens its assistant and the plan is finished there", () => {
+  const { el, shadow } = panel("en");
+  el.data = stepCData().data; el.journal = []; el.view = "repair"; el.repairTask = null;
+  el.render();
+  let html = shadow.innerHTML;
+  for (const kind of ["repair_counter", "migrate_meter", "replace_references", "exchange_device"]) assert.ok(html.includes(`data-repair-task="${kind}"`), kind);
+  assert.ok(!html.includes("data-cleanup-kind"));
+  el.repairTask = "migrate_meter"; el.cleanupKind = "migrate_meter"; el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("data-repair-back") && html.includes("data-meter-old") && !html.includes("data-repair-task="));
+});
+
+test("the overview starts with task tiles; a missed goal is a to-do row, not a card of its own", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, regressions: [], criteria_alerts: [] };
+  el.goals = { met: 2, missed: 1, goals: [{ id: "broken_references", state: "missed", value: 43, limit: 0, unit: "count", enabled: true, default: 0 }, { id: "backup_age", state: "met", value: 3, limit: 48, unit: "hours", enabled: true, default: 48 }] };
+  el._goalsRequested = true; el._goalsKey = el.data.meta.scanned_at || "";
+  const html = el.overview();
+  for (const view of ["cleanup", "repair", "maintenance", "findingsNav"]) assert.ok(html.includes(`class="taskcard" data-jump="${view}"`), view);
+  assert.ok(html.includes("Broken references: goal missed") && html.includes("Maintenance goals: 3 of 3 met".replace("3 of 3", "2 of 3")) && html.includes("data-goals-settings"));
+  assert.ok(!html.includes('aria-labelledby="hk-goals"') && html.includes("Housekeeping status"));
+  assert.ok(el.health().tasks >= 1 && el.health().tone !== "ok"); // a missed goal is an open task: the status is not "all good"
+  el.data = { ...DATA, objects: [], findings: [], regressions: [], criteria_alerts: [] };
+  el.goals = { met: 3, missed: 0, goals: [] };
+  assert.deepEqual([el.health().percent, el.health().tone], [100, "ok"]);
 });

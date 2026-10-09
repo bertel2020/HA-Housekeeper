@@ -62,6 +62,8 @@ const NAV = [
   ["inventory", "mdi:database-outline"],
   ["graph", "mdi:source-fork"],
   ["cleanup", "mdi:broom"],
+  ["repair", "mdi:tools"],
+  ["journal", "mdi:clipboard-text-clock-outline"],
   ["maintenance", "mdi:wrench-clock"],
   ["exposure", "mdi:shield-search"],
   ["policies", "mdi:clipboard-check-outline"],
@@ -69,7 +71,6 @@ const NAV = [
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
   ["batteries", "mdi:battery-alert-variant-outline"],
-  ["unreferenced", "mdi:link-variant-off"],
   ["settings", "mdi:cog-outline"],
 ];
 
@@ -78,10 +79,21 @@ const NAV_GROUPS = [
   ["navGroupOverview", ["overview", "findingsNav", "changes"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph"]],
-  ["navGroupMaintain", ["cleanup", "unreferenced", "batteries", "policies", "exposure", "maintenance"]],
+  ["navGroupMaintain", ["cleanup", "repair", "journal", "batteries", "policies", "exposure", "maintenance"]],
 ];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
-const NAV_ICONS = Object.fromEntries(NAV);
+const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
+
+// Cleanup removes what is no longer needed; everything else a plan can do repairs something that stays.
+const CLEANUP_KINDS = ["disable_entity", "remove_entity", "disable_device", "remove_device", "forget_device"];
+const REPAIR_TASKS = [
+  ["repair_counter", "mdi:chart-line", "repairTaskCounter", "repairTaskCounterHint"],
+  ["migrate_meter", "mdi:gauge", "repairTaskMeter", "repairTaskMeterHint"],
+  ["replace_references", "mdi:swap-horizontal", "repairTaskReplace", "repairTaskReplaceHint"],
+  ["exchange_device", "mdi:devices", "repairTaskExchange", "repairTaskExchangeHint"],
+];
+// The view in which the person finishes a plan of this kind.
+const viewForKind = kind => (["repair_counter", "repair_range", "migrate_meter", "replace_references", "exchange_device", "refactor_automation"].includes(kind) ? "repair" : "cleanup");
 
 // IBM Plex, shipped with the integration. A shadow root cannot declare fonts, so the rules go into the document once.
 const FONT_BASE = "/ha_housekeeper/fonts/";
