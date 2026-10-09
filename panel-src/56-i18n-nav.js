@@ -1,5 +1,6 @@
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  loadingShort: "lädt …", resetFilters: "Filter zurücksetzen", showSelectedOnly: "Nur Ausgewählte zeigen", showAll: "Alle zeigen", copyId: "Kopieren", copiedShort: "Kopiert",
   verdictIrreversible: "Nicht umkehrbar",
   acknowledgeAll: "Ich habe die {count} zu prüfenden Einträge gesehen und führe sie mit aus", acknowledgeAllHint: "Ohne Haken laufen nur die unbedenklichen Einträge; zu prüfende werden übersprungen.",
   outcomeDone: "Erfolgreich abgeschlossen: {done} von {total} erledigt, Prüfung bestanden.", outcomeVerifying: "Ausgeführt: {done} von {total} erledigt. Die Prüfung läuft noch …", outcomeCheckFailed: "{done} von {total} erledigt, aber die Prüfung hat etwas gefunden. Siehe unten.", outcomePartial: "Nur teilweise ausgeführt: {done} von {total} erledigt.", outcomeAborted: "Abgebrochen. Es wurde nichts geändert; der Grund steht unten.",
@@ -31,6 +32,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  loadingShort: "loading …", resetFilters: "Reset filters", showSelectedOnly: "Show selected only", showAll: "Show all", copyId: "Copy", copiedShort: "Copied",
   verdictIrreversible: "Not reversible",
   acknowledgeAll: "I have seen the {count} entries to review and run them too", acknowledgeAllHint: "Without the tick only the unproblematic entries run; entries to review are skipped.",
   outcomeDone: "Completed successfully: {done} of {total} done, check passed.", outcomeVerifying: "Executed: {done} of {total} done. The check is still running …", outcomeCheckFailed: "{done} of {total} done, but the check found something. See below.", outcomePartial: "Only partly executed: {done} of {total} done.", outcomeAborted: "Aborted. Nothing was changed; the reason is below.",

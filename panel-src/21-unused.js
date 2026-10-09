@@ -113,14 +113,15 @@ class UnusedMixin {
       { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
       { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
     ] });
-    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: {
+    const refined = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: {
       kind: (o, v) => kind(o) === v, unit: (o, v) => o.unit === v,
       age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
     }, sorts, tie: o => o.statistic_id });
+    const rows = this.selOnly?.orphanstats ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
     const pg = this.paginate("orphanstats", rows);
     this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
     const lastCell = o => {
-      if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">…</span>`;
+      if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">${this.t("loadingShort")}</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
       const ts = lastOf(o);
       if (ts === null || ts === undefined) return `<span class="muted">${this.orphanLast?.available ? this.t("lastEntryNone") : "–"}</span>`;
@@ -128,9 +129,9 @@ class UnusedMixin {
     };
     const firstCell = o => {
       const ts = firstOf(o);
-      return ts ? this.ageCell(new Date(ts * 1000).toISOString()) : `<span class="muted">${this.orphanLast?.busy || (this.orphanLastLoading && !this.orphanLast) ? "…" : "–"}</span>`;
+      return ts ? this.ageCell(new Date(ts * 1000).toISOString()) : `<span class="muted">${this.orphanLast?.busy || (this.orphanLastLoading && !this.orphanLast) ? this.t("loadingShort") : "–"}</span>`;
     };
-    const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">…</span>`; };
+    const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">${this.t("loadingShort")}</span>`; };
     const columns = [
       { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
@@ -140,7 +141,7 @@ class UnusedMixin {
       { key: "rows", label: "utRows", dir: "desc", cell: rowsCell },
       { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
     ];
-    const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
+    const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
   }
@@ -166,8 +167,8 @@ class UnusedMixin {
       <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
       <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
       <div class="setrow planfoot"><small style="margin:0">${this.t("purgePlanHint")}</small>
-      <button class="btn accent" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
-    return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn dangersoft" data-purge-open ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpen")}</button></div>${open}`;
+      <button class="btn accent" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")} (${n})</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
+    return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="toolgap"></span><button class="btn dangersoft" data-purge-open ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpen")}</button></div>${open}`;
   }
 
   async purgeRun() {
@@ -231,7 +232,7 @@ class UnusedMixin {
       { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
     ];
-    const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`;
+    const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     return `<div class="stack">${this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
   }
 

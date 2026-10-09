@@ -166,6 +166,7 @@ class CleanupMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
+      this._scrollPlan = true;
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -183,6 +184,7 @@ class CleanupMixin {
       const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [fresh, ...(this.journal || [])];
+      this._scrollPlan = true;
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -347,7 +349,7 @@ class CleanupMixin {
       const result = a.result;
       const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && a.kind === "purge_statistics" ? "result_purged" : `result_${result.state}`)}</span>` : "";
       const sub0 = a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
-      const sub = sub0 + (a.recorder ? ` · ${this.t(`recChoice_${a.recorder}`)}` : "");
+      const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
@@ -355,8 +357,8 @@ class CleanupMixin {
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${settled || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
-        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(sub)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
-        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable ? this.undoBadge(a) : ""}${result ? "" : `<span class="pill ${tone}">${this.t(a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
+        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc([sub, reasons, abort.replace(/^ · /, "")].filter(Boolean).join(" · "))}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable && (result || !(a.reasons || []).includes("irreversible")) ? this.undoBadge(a) : ""}${result ? "" : `<span class="pill ${tone}">${this.t(a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
     }).join("");
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
@@ -370,14 +372,14 @@ class CleanupMixin {
       control = `<div class="setrow planfoot">${reviewBox || `<small style="margin:0">${this.t("cleanupDryRun")}</small>`}<button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
     }
     else if (open && conf) control = `<div class="setrow planfoot"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn ${plan.actions.some(a => a.executable && (REMOVAL_KINDS.includes(a.kind) || a.kind === "purge_statistics")) ? "danger" : "primary"}" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn ${plan.actions.some(a => a.executable && (REMOVAL_KINDS.includes(a.kind) || a.kind === "purge_statistics")) ? "danger" : "primary"}" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")} (${conf.execute.length})</button></div></div>`;
     else if (plan.status === "aborted") control = `<div class="setrow planfoot"><small style="margin:0">${this.t("repeatHint")}</small><button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
     else if (plan.actions.some(a => a.result?.state === "done")) control = this.undoAsk === "all"
       ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`
       : `<div class="setrow planfoot"><small style="margin:0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<div class="checkrow"><b>${this.t("verification")}</b>${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div>` : "";
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
+    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
       ${this.planOutcome(plan)}${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
   }
 
@@ -487,7 +489,8 @@ class CleanupMixin {
       text: r => [r.item.name, r.item.object_id, r.item.platform, r.item.manufacturer, r.item.model].join(" "),
       filters: { classification: (r, v) => r.finding && r.finding.classification === v, readiness: (r, v) => (v === "ready") === ready(r) }, sorts, tie: r => r.item.object_id,
     });
-    const pg = this.paginate("cleanup", list);
+    const shownList = this.selOnly?.cleanup ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
+    const pg = this.paginate("cleanup", shownList);
     this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
     const row = r => {
       const { item, finding, quarantine } = r, left = quarantine ? limit - this.daysSince(quarantine.since) : 0;
@@ -498,9 +501,9 @@ class CleanupMixin {
     };
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
-      <div class="toolbar">${this.kindSelect()}${this.recorderChoice(removal)}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
+      <div class="toolbar">${this.kindSelect()}${this.recorderChoice(removal)}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("cleanup", n)}
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div>
-      ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
+      ${bar}${shownList.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
     const message = open === "quarantine" && this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
     return `<div class="stack">${this.planHeader()}${tiles}${typeSwitch}${open === "devices" ? this.recurringCard() : ""}${candidates}${message}</div>`;

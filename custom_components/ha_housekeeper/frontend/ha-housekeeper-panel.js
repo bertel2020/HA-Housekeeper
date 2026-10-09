@@ -1146,7 +1146,7 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
-      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}
+      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.copybtn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;padding:4px;border:1px solid var(--hk-border);border-radius:6px;background:var(--hk-surface);color:var(--hk-muted);cursor:pointer;opacity:0;--mdc-icon-size:14px}tr:hover .copybtn,.copybtn:focus-visible,.namecell:hover .copybtn{opacity:1}.copybtn.done{color:var(--hk-green);opacity:1}@media (hover:none){.copybtn{opacity:.7}}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
@@ -1334,6 +1334,26 @@ class ListsMixin {
     return rows.map(row => row.it);
   }
 
+  // "No matches" with a way out: clears search text and filters of that list.
+  noMatches(id) {
+    return `${this.t("noMatches")} <button class="btn quiet" data-lreset="${this.esc(id)}">${this.t("resetFilters")}</button>`;
+  }
+
+  // Shows only what is ticked in a list (the box is the proof before something is deleted).
+  selOnlyButton(id, count) {
+    const on = Boolean(this.selOnly?.[id]);
+    return `<button class="btn quiet" data-sel-only="${this.esc(id)}" aria-pressed="${on}" ${count || on ? "" : "disabled"}>${this.t(on ? "showAll" : "showSelectedOnly")}</button>`;
+  }
+
+  // A range of ticks with Shift-click: from the last ticked row to this one, within the shown page.
+  pickRange(key, id, checked, set, page) {
+    const last = this._lastPick?.[key], list = page || [];
+    const a = list.indexOf(last), b = list.indexOf(id);
+    const ids = this._shift && a >= 0 && b >= 0 && last !== id ? list.slice(Math.min(a, b), Math.max(a, b) + 1) : [id];
+    ids.forEach(x => (checked ? set.add(x) : set.delete(x)));
+    (this._lastPick ||= {})[key] = id;
+  }
+
   // A search box over a list that keeps its own order. The box shows from `min` items on, or while a text is set.
   searchList(id, items, text, min = 6) {
     const st = this.lvState(id, "", "asc"), q = st.q.trim().toLowerCase();
@@ -1424,7 +1444,7 @@ class ListsMixin {
   // Name over id for a table cell: both are cut at the column width and shown in full in the tooltip (see showTip).
   nameCell(name, id, tag = "div") {
     const sub = id || "";
-    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}</${tag}>`;
+    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}<button type="button" class="copybtn" data-copy="${this.esc(sub || name)}" title="${this.esc(this.t("copyId"))}" aria-label="${this.esc(this.t("copyId"))}"><ha-icon icon="mdi:content-copy"></ha-icon></button></${tag}>`;
   }
 
   // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.
@@ -1887,7 +1907,7 @@ class FindingsMixin {
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
     const followers = this.followerCount();
     return `<div class="stack">${tiles}${this.causesCard()}${this.fixedCard()}<div class="panel"><div class="chips">${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t(this.showFollowers ? "causeHide" : "causeShow")} (${followers})</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}${this.statusChips()}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
-      ${this.findSelBar(pg.rows)}${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
+      ${this.findSelBar(pg.rows)}${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}</div></div>`;
   }
 
   // The selection of findings: hide several at once, or export just those. Kept across pages until cleared.
@@ -2461,6 +2481,7 @@ class CleanupMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
+      this._scrollPlan = true;
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -2478,6 +2499,7 @@ class CleanupMixin {
       const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [fresh, ...(this.journal || [])];
+      this._scrollPlan = true;
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -2642,7 +2664,7 @@ class CleanupMixin {
       const result = a.result;
       const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && a.kind === "purge_statistics" ? "result_purged" : `result_${result.state}`)}</span>` : "";
       const sub0 = a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
-      const sub = sub0 + (a.recorder ? ` · ${this.t(`recChoice_${a.recorder}`)}` : "");
+      const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
@@ -2650,8 +2672,8 @@ class CleanupMixin {
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${settled || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
-        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(sub)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
-        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable ? this.undoBadge(a) : ""}${result ? "" : `<span class="pill ${tone}">${this.t(a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
+        <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc([sub, reasons, abort.replace(/^ · /, "")].filter(Boolean).join(" · "))}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable && (result || !(a.reasons || []).includes("irreversible")) ? this.undoBadge(a) : ""}${result ? "" : `<span class="pill ${tone}">${this.t(a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
     }).join("");
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
@@ -2665,14 +2687,14 @@ class CleanupMixin {
       control = `<div class="setrow planfoot">${reviewBox || `<small style="margin:0">${this.t("cleanupDryRun")}</small>`}<button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
     }
     else if (open && conf) control = `<div class="setrow planfoot"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn ${plan.actions.some(a => a.executable && (REMOVAL_KINDS.includes(a.kind) || a.kind === "purge_statistics")) ? "danger" : "primary"}" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn ${plan.actions.some(a => a.executable && (REMOVAL_KINDS.includes(a.kind) || a.kind === "purge_statistics")) ? "danger" : "primary"}" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")} (${conf.execute.length})</button></div></div>`;
     else if (plan.status === "aborted") control = `<div class="setrow planfoot"><small style="margin:0">${this.t("repeatHint")}</small><button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
     else if (plan.actions.some(a => a.result?.state === "done")) control = this.undoAsk === "all"
       ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`
       : `<div class="setrow planfoot"><small style="margin:0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<div class="checkrow"><b>${this.t("verification")}</b>${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div>` : "";
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
+    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
       ${this.planOutcome(plan)}${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
   }
 
@@ -2782,7 +2804,8 @@ class CleanupMixin {
       text: r => [r.item.name, r.item.object_id, r.item.platform, r.item.manufacturer, r.item.model].join(" "),
       filters: { classification: (r, v) => r.finding && r.finding.classification === v, readiness: (r, v) => (v === "ready") === ready(r) }, sorts, tie: r => r.item.object_id,
     });
-    const pg = this.paginate("cleanup", list);
+    const shownList = this.selOnly?.cleanup ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
+    const pg = this.paginate("cleanup", shownList);
     this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
     const row = r => {
       const { item, finding, quarantine } = r, left = quarantine ? limit - this.daysSince(quarantine.since) : 0;
@@ -2793,9 +2816,9 @@ class CleanupMixin {
     };
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
-      <div class="toolbar">${this.kindSelect()}${this.recorderChoice(removal)}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
+      <div class="toolbar">${this.kindSelect()}${this.recorderChoice(removal)}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("cleanup", n)}
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div>
-      ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
+      ${bar}${shownList.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
     const message = open === "quarantine" && this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
     return `<div class="stack">${this.planHeader()}${tiles}${typeSwitch}${open === "devices" ? this.recurringCard() : ""}${candidates}${message}</div>`;
@@ -3305,14 +3328,15 @@ class UnusedMixin {
       { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
       { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
     ] });
-    const rows = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: {
+    const refined = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: {
       kind: (o, v) => kind(o) === v, unit: (o, v) => o.unit === v,
       age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
     }, sorts, tie: o => o.statistic_id });
+    const rows = this.selOnly?.orphanstats ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
     const pg = this.paginate("orphanstats", rows);
     this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
     const lastCell = o => {
-      if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">…</span>`;
+      if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">${this.t("loadingShort")}</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
       const ts = lastOf(o);
       if (ts === null || ts === undefined) return `<span class="muted">${this.orphanLast?.available ? this.t("lastEntryNone") : "–"}</span>`;
@@ -3320,9 +3344,9 @@ class UnusedMixin {
     };
     const firstCell = o => {
       const ts = firstOf(o);
-      return ts ? this.ageCell(new Date(ts * 1000).toISOString()) : `<span class="muted">${this.orphanLast?.busy || (this.orphanLastLoading && !this.orphanLast) ? "…" : "–"}</span>`;
+      return ts ? this.ageCell(new Date(ts * 1000).toISOString()) : `<span class="muted">${this.orphanLast?.busy || (this.orphanLastLoading && !this.orphanLast) ? this.t("loadingShort") : "–"}</span>`;
     };
-    const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">…</span>`; };
+    const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">${this.t("loadingShort")}</span>`; };
     const columns = [
       { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
@@ -3332,7 +3356,7 @@ class UnusedMixin {
       { key: "rows", label: "utRows", dir: "desc", cell: rowsCell },
       { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
     ];
-    const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
+    const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
   }
@@ -3358,8 +3382,8 @@ class UnusedMixin {
       <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
       <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
       <div class="setrow planfoot"><small style="margin:0">${this.t("purgePlanHint")}</small>
-      <button class="btn accent" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
-    return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn dangersoft" data-purge-open ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpen")}</button></div>${open}`;
+      <button class="btn accent" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")} (${n})</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
+    return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="toolgap"></span><button class="btn dangersoft" data-purge-open ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpen")}</button></div>${open}`;
   }
 
   async purgeRun() {
@@ -3423,7 +3447,7 @@ class UnusedMixin {
       { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
     ];
-    const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${this.t(all.length ? "noMatches" : "noUnreferenced")}</div>`;
+    const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     return `<div class="stack">${this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
   }
 
@@ -7249,6 +7273,7 @@ Object.assign(TEXT.en, {
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  loadingShort: "lädt …", resetFilters: "Filter zurücksetzen", showSelectedOnly: "Nur Ausgewählte zeigen", showAll: "Alle zeigen", copyId: "Kopieren", copiedShort: "Kopiert",
   verdictIrreversible: "Nicht umkehrbar",
   acknowledgeAll: "Ich habe die {count} zu prüfenden Einträge gesehen und führe sie mit aus", acknowledgeAllHint: "Ohne Haken laufen nur die unbedenklichen Einträge; zu prüfende werden übersprungen.",
   outcomeDone: "Erfolgreich abgeschlossen: {done} von {total} erledigt, Prüfung bestanden.", outcomeVerifying: "Ausgeführt: {done} von {total} erledigt. Die Prüfung läuft noch …", outcomeCheckFailed: "{done} von {total} erledigt, aber die Prüfung hat etwas gefunden. Siehe unten.", outcomePartial: "Nur teilweise ausgeführt: {done} von {total} erledigt.", outcomeAborted: "Abgebrochen. Es wurde nichts geändert; der Grund steht unten.",
@@ -7280,6 +7305,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  loadingShort: "loading …", resetFilters: "Reset filters", showSelectedOnly: "Show selected only", showAll: "Show all", copyId: "Copy", copiedShort: "Copied",
   verdictIrreversible: "Not reversible",
   acknowledgeAll: "I have seen the {count} entries to review and run them too", acknowledgeAllHint: "Without the tick only the unproblematic entries run; entries to review are skipped.",
   outcomeDone: "Completed successfully: {done} of {total} done, check passed.", outcomeVerifying: "Executed: {done} of {total} done. The check is still running …", outcomeCheckFailed: "{done} of {total} done, but the check found something. See below.", outcomePartial: "Only partly executed: {done} of {total} done.", outcomeAborted: "Aborted. Nothing was changed; the reason is below.",
@@ -7829,6 +7855,7 @@ class HAHousekeeperPanel extends HTMLElement {
     else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
     this.restoreFocus(focus);
     this.bind();
+    if (this._scrollPlan) { this._scrollPlan = false; setTimeout(() => root.querySelector("[data-plan-card]")?.scrollIntoView?.({ block: "start", behavior: "smooth" }), 30); }
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) { this.syncGuard(); this.syncUrl(); }
   }
@@ -7994,6 +8021,17 @@ class HAHousekeeperPanel extends HTMLElement {
         if (!this.menuOpen || (ev.composedPath?.() || []).some(node => node.classList?.contains?.("navmenu"))) return;
         this.menuOpen = null; this.render();
       });
+      root.addEventListener("click", ev => { this._shift = ev.shiftKey; }, true);
+      root.addEventListener("keydown", ev => {
+        const typing = (ev.composedPath?.()[0]?.matches?.("input,select,textarea")) || ev.metaKey || ev.ctrlKey || ev.altKey;
+        if (ev.key === "/" && !typing) {
+          const box = root.querySelector("[data-lq]") || root.querySelector("[data-quick]");
+          if (box) { ev.preventDefault(); box.focus(); box.select?.(); }
+        } else if (ev.key === "Escape" && !this.menuOpen && !this.navOpen && !(ev.composedPath?.()[0]?.matches?.("input,select,textarea"))) {
+          if (this.selected) { ev.preventDefault(); this.goBack(); }
+          else if (this.plan && this.plan.status === "dry_run") { ev.preventDefault(); root.querySelector("[data-plan-close]")?.click(); }
+        }
+      });
       root.addEventListener("keydown", ev => {
         if (ev.key !== "Escape" || !(this.menuOpen || this.navOpen)) return;
         const label = this.menuOpen;
@@ -8142,11 +8180,14 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this.blueprints = null; this.render(); });
     root.querySelector("[data-weekly]")?.addEventListener("click", () => this.weeklyReport());
-    root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { el.checked ? this.findSel.add(el.dataset.fsel) : this.findSel.delete(el.dataset.fsel); this.render(); });
+    root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { this.pickRange("fsel", el.dataset.fsel, el.checked, this.findSel, this._findPage); this.render(); });
+    root.querySelectorAll("[data-sel-only]").forEach(el => el.onclick = () => { const id = el.dataset.selOnly; this.selOnly = { ...this.selOnly, [id]: !this.selOnly?.[id] }; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-lreset]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.lreset]; if (st) { st.q = ""; st.f = {}; this.persistLv(el.dataset.lreset); } this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); ev.preventDefault(); try { await navigator.clipboard.writeText(el.dataset.copy); el.classList.add("done"); el.title = this.t("copiedShort"); setTimeout(() => { el.classList.remove("done"); el.title = this.t("copyId"); }, 1500); } catch (_) { /* no clipboard in this context */ } });
     root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());
-    root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
+    root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { this.pickRange("sel", el.dataset.sel, el.checked, this.cleanupSel, this._cleanupVisible); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
@@ -8174,7 +8215,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
     root.querySelectorAll("[data-meter-pick]").forEach(el => el.onclick = () => { this.meterNew = el.dataset.meterPick; this.render(); });
-    root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { el.checked ? this.purgeSel.add(el.dataset.psel) : this.purgeSel.delete(el.dataset.psel); this.render(); });
+    root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRange("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-page]")?.addEventListener("click", () => { (this._purgePage || []).forEach(id => this.purgeSel.add(id)); this.render(); });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.purgeOpen = false; this.render(); });

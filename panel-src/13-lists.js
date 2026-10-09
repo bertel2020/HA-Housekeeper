@@ -55,6 +55,26 @@ class ListsMixin {
     return rows.map(row => row.it);
   }
 
+  // "No matches" with a way out: clears search text and filters of that list.
+  noMatches(id) {
+    return `${this.t("noMatches")} <button class="btn quiet" data-lreset="${this.esc(id)}">${this.t("resetFilters")}</button>`;
+  }
+
+  // Shows only what is ticked in a list (the box is the proof before something is deleted).
+  selOnlyButton(id, count) {
+    const on = Boolean(this.selOnly?.[id]);
+    return `<button class="btn quiet" data-sel-only="${this.esc(id)}" aria-pressed="${on}" ${count || on ? "" : "disabled"}>${this.t(on ? "showAll" : "showSelectedOnly")}</button>`;
+  }
+
+  // A range of ticks with Shift-click: from the last ticked row to this one, within the shown page.
+  pickRange(key, id, checked, set, page) {
+    const last = this._lastPick?.[key], list = page || [];
+    const a = list.indexOf(last), b = list.indexOf(id);
+    const ids = this._shift && a >= 0 && b >= 0 && last !== id ? list.slice(Math.min(a, b), Math.max(a, b) + 1) : [id];
+    ids.forEach(x => (checked ? set.add(x) : set.delete(x)));
+    (this._lastPick ||= {})[key] = id;
+  }
+
   // A search box over a list that keeps its own order. The box shows from `min` items on, or while a text is set.
   searchList(id, items, text, min = 6) {
     const st = this.lvState(id, "", "asc"), q = st.q.trim().toLowerCase();
@@ -145,7 +165,7 @@ class ListsMixin {
   // Name over id for a table cell: both are cut at the column width and shown in full in the tooltip (see showTip).
   nameCell(name, id, tag = "div") {
     const sub = id || "";
-    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}</${tag}>`;
+    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}<button type="button" class="copybtn" data-copy="${this.esc(sub || name)}" title="${this.esc(this.t("copyId"))}" aria-label="${this.esc(this.t("copyId"))}"><ha-icon icon="mdi:content-copy"></ha-icon></button></${tag}>`;
   }
 
   // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.

@@ -444,6 +444,7 @@ class HAHousekeeperPanel extends HTMLElement {
     else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
     this.restoreFocus(focus);
     this.bind();
+    if (this._scrollPlan) { this._scrollPlan = false; setTimeout(() => root.querySelector("[data-plan-card]")?.scrollIntoView?.({ block: "start", behavior: "smooth" }), 30); }
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) { this.syncGuard(); this.syncUrl(); }
   }
@@ -609,6 +610,17 @@ class HAHousekeeperPanel extends HTMLElement {
         if (!this.menuOpen || (ev.composedPath?.() || []).some(node => node.classList?.contains?.("navmenu"))) return;
         this.menuOpen = null; this.render();
       });
+      root.addEventListener("click", ev => { this._shift = ev.shiftKey; }, true);
+      root.addEventListener("keydown", ev => {
+        const typing = (ev.composedPath?.()[0]?.matches?.("input,select,textarea")) || ev.metaKey || ev.ctrlKey || ev.altKey;
+        if (ev.key === "/" && !typing) {
+          const box = root.querySelector("[data-lq]") || root.querySelector("[data-quick]");
+          if (box) { ev.preventDefault(); box.focus(); box.select?.(); }
+        } else if (ev.key === "Escape" && !this.menuOpen && !this.navOpen && !(ev.composedPath?.()[0]?.matches?.("input,select,textarea"))) {
+          if (this.selected) { ev.preventDefault(); this.goBack(); }
+          else if (this.plan && this.plan.status === "dry_run") { ev.preventDefault(); root.querySelector("[data-plan-close]")?.click(); }
+        }
+      });
       root.addEventListener("keydown", ev => {
         if (ev.key !== "Escape" || !(this.menuOpen || this.navOpen)) return;
         const label = this.menuOpen;
@@ -757,11 +769,14 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this.blueprints = null; this.render(); });
     root.querySelector("[data-weekly]")?.addEventListener("click", () => this.weeklyReport());
-    root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { el.checked ? this.findSel.add(el.dataset.fsel) : this.findSel.delete(el.dataset.fsel); this.render(); });
+    root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { this.pickRange("fsel", el.dataset.fsel, el.checked, this.findSel, this._findPage); this.render(); });
+    root.querySelectorAll("[data-sel-only]").forEach(el => el.onclick = () => { const id = el.dataset.selOnly; this.selOnly = { ...this.selOnly, [id]: !this.selOnly?.[id] }; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-lreset]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.lreset]; if (st) { st.q = ""; st.f = {}; this.persistLv(el.dataset.lreset); } this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); ev.preventDefault(); try { await navigator.clipboard.writeText(el.dataset.copy); el.classList.add("done"); el.title = this.t("copiedShort"); setTimeout(() => { el.classList.remove("done"); el.title = this.t("copyId"); }, 1500); } catch (_) { /* no clipboard in this context */ } });
     root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());
-    root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { el.checked ? this.cleanupSel.add(el.dataset.sel) : this.cleanupSel.delete(el.dataset.sel); this.render(); });
+    root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { this.pickRange("sel", el.dataset.sel, el.checked, this.cleanupSel, this._cleanupVisible); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
@@ -789,7 +804,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
     root.querySelectorAll("[data-meter-pick]").forEach(el => el.onclick = () => { this.meterNew = el.dataset.meterPick; this.render(); });
-    root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { el.checked ? this.purgeSel.add(el.dataset.psel) : this.purgeSel.delete(el.dataset.psel); this.render(); });
+    root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRange("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-page]")?.addEventListener("click", () => { (this._purgePage || []).forEach(id => this.purgeSel.add(id)); this.render(); });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.purgeOpen = false; this.render(); });

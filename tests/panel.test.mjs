@@ -631,7 +631,7 @@ test("orphaned statistics show their last entry and sort by it, oldest or newest
   el.view = "unreferenced"; el.unrefTab = "statistics";
   el.render();
   const loading = el.loadOrphanLast();
-  assert.ok(shadow.innerHTML.includes("<span class=\"muted\">…</span>"), "the column says it is loading");
+  assert.ok(shadow.innerHTML.includes("…</span>"), "the column says it is loading");
   await loading;
   assert.deepEqual(calls, ["ha_housekeeper/statistics_last"]);
   const order = () => [...shadow.innerHTML.matchAll(/<strong class="cut">(sensor\.[abc])<\/strong>/g)].map(m => m[1]);
