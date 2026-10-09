@@ -74,7 +74,7 @@ from .storms import storms
 from .trace_compare import compare as compare_traces
 from .trace_compare import list_runs as list_trace_runs
 from .window import SKIPPABLE, STEPS, WindowError, reload_targets
-from .writelock import write_holder
+from .writelock import WriteBusy, acquire_write, release_write, write_holder
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
 RUNS_TIMEOUT = 20
@@ -1854,13 +1854,41 @@ async def websocket_window_reload(
         if scanner.window.current() != "reload":
             connection.send_error(msg["id"], "invalid_format", "Not accepted: out of order")
             return
-        for target in targets:
-            try:
-                await hass.config_entries.async_reload(target["entry_id"])
-                target["ok"] = True
-            except Exception as err:
-                target["ok"] = False
-                target["error"] = type(err).__name__
+        # A reload changes the running system, so it follows the same rules as a plan: not while
+        # Home Assistant starts or another change runs, not in the read-only modes, and it is journaled.
+        if scanner.warming_up or scanner.cleanup.running or write_holder(hass):
+            connection.send_error(
+                msg["id"], "busy", "Home Assistant is starting or a change is running"
+            )
+            return
+        if PROTECTION_MODES.index(scanner.protection.mode) < 2:
+            connection.send_error(msg["id"], "protection_mode", "Cleanup: protection_mode")
+            return
+        try:
+            acquire_write(hass, "window")
+        except WriteBusy:
+            connection.send_error(msg["id"], "busy", "Another change is running")
+            return
+        try:
+            for target in targets:
+                try:
+                    await hass.config_entries.async_reload(target["entry_id"])
+                    target["ok"] = True
+                except Exception as err:
+                    target["ok"] = False
+                    target["error"] = type(err).__name__
+                plan["events"].append(
+                    {
+                        "at": datetime.now(UTC).isoformat(),
+                        "type": "integration_reloaded"
+                        if target["ok"]
+                        else "integration_reload_failed",
+                        "object_id": target["entry_id"],
+                    }
+                )
+            scanner.journal.save()
+        finally:
+            release_write(hass, "window")
     connection.send_result(msg["id"], _versioned({"targets": targets, "executed": msg["execute"]}))
 
 

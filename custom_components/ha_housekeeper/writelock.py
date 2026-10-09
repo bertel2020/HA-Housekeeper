@@ -1,4 +1,4 @@
-"""One slot for everything that changes Home Assistant: a plan, an undo, a recorder purge.
+"""One slot for everything that changes Home Assistant: a plan, an undo, a recorder purge, a reload from the maintenance window.
 
 The event loop runs one piece of code at a time, so checking and taking the slot in one step is
 enough; nobody waits. Whoever finds it taken gets ``WriteBusy`` at once and tells the person to
