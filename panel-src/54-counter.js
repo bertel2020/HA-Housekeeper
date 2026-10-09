@@ -90,10 +90,70 @@ class CounterMixin {
     this.createPlan();
   }
 
+  localStamp(sec) {
+    const d = new Date(sec * 1000), p = v => String(v).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  // Loads the readings the range is picked on; the window is the last N days or an explicit one.
+  async loadRangeSeries(win) {
+    const id = (this.counterId || "").trim();
+    if (!id) { this.cleanupError = this.t("rangeNeedInput"); this.render(); return; }
+    const now = Date.now() / 1000;
+    this.rangeWin = win || { from: now - (this.rangeDays || 7) * 86400, to: now };
+    this.rangeSeries = null; this.rangeSeriesError = ""; this.rangeSeriesLoading = true; this.render();
+    try {
+      const found = await this._hass.callWS({ type: "ha_housekeeper/range_series", statistic_id: id, from: this.rangeWin.from, to: this.rangeWin.to });
+      if (found.error) this.rangeSeriesError = this.t(`reason_${found.error}`); else this.rangeSeries = { ...found, id };
+    } catch (err) { this.rangeSeriesError = err?.message || String(err); }
+    this.rangeSeriesLoading = false; this.render();
+  }
+
+  // The readings with the picked range shaded and two sliders to move its ends.
+  rangeChart() {
+    const sr = this.rangeSeries, win = this.rangeWin;
+    if (this.rangeSeriesLoading) return `<p class="factnote">${this.t("counterScanning")}</p>`;
+    if (this.rangeSeriesError) return `<div class="error">${this.esc(this.rangeSeriesError)}</div>`;
+    if (!sr || !win || !sr.points.length) return sr ? `<p class="factnote">${this.t("rangeNoData")}</p>` : "";
+    const w = 360, h = 110, pad = 4, span = Math.max(1, win.to - win.from);
+    const ys = sr.points.map(p => p[1]), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const sx = t => pad + ((t - win.from) / span) * (w - 2 * pad), sy = y => h - pad - ((y - y0) / Math.max(1e-9, y1 - y0)) * (h - 2 * pad);
+    const line = sr.points.map(p => `${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`).join(" ");
+    const f = new Date(this.rangeFrom).getTime() / 1000, t = new Date(this.rangeTo).getTime() / 1000;
+    const has = f < t;
+    const slider = (name, value) => `<input type="range" min="0" max="1000" step="1" value="${Math.round(Math.min(1, Math.max(0, (value - win.from) / span)) * 1000)}" data-range-slide="${name}" aria-label="${this.esc(this.t(name === "from" ? "rangeFrom" : "rangeTo"))}" style="width:100%;max-width:${w}px;display:block">`;
+    return `<svg role="img" aria-label="${this.esc(this.t("rangeChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0"><rect data-range-band x="${has ? sx(Math.max(win.from, f)).toFixed(1) : 0}" width="${has ? Math.max(1, sx(Math.min(win.to, t)) - sx(Math.max(win.from, f))).toFixed(1) : 0}" y="0" height="${h}" fill="var(--hk-amber)" opacity=".25"/><polyline fill="none" stroke="var(--hk-blue, currentColor)" stroke-width="1.5" points="${line}"/></svg>
+      <small style="display:block;opacity:.8">${this.esc(this.formatDate(win.from * 1000))} – ${this.esc(this.formatDate(win.to * 1000))} · ${this.esc(this.t(`rangeTable_${sr.table}`))} · ${this.esc(this.formatNumber(Math.round(y0 * 100) / 100))} … ${this.esc(this.formatNumber(Math.round(y1 * 100) / 100))} ${this.esc(sr.unit || "")}</small>
+      ${slider("from", has ? f : win.from)}${slider("to", has ? t : win.to)}`;
+  }
+
+  // Moves one end of the range with its slider; the fields and the shaded band follow without a redraw.
+  slideRange(root, slider) {
+    const win = this.rangeWin; if (!win) return;
+    const at = el => win.from + (Number(el?.value ?? 0) / 1000) * (win.to - win.from);
+    let from = at(root.querySelector('[data-range-slide="from"]')), to = at(root.querySelector('[data-range-slide="to"]'));
+    if (from > to) { if (slider.dataset.rangeSlide === "from") from = to; else to = from; }
+    this.rangeFrom = this.localStamp(from); this.rangeTo = this.localStamp(to);
+    const setValue = (sel, v) => { const el = root.querySelector(sel); if (el) el.value = v; };
+    setValue("[data-range-from]", this.rangeFrom); setValue("[data-range-to]", this.rangeTo);
+    const band = root.querySelector("[data-range-band]"), span = Math.max(1, win.to - win.from), w = 360, pad = 4;
+    if (band) { band.setAttribute("x", (pad + ((from - win.from) / span) * (w - 2 * pad)).toFixed(1)); band.setAttribute("width", Math.max(1, ((to - from) / span) * (w - 2 * pad)).toFixed(1)); }
+  }
+
+  // A suggestion from the scan: the range is filled in and the readings around it are shown.
+  takeRange(id, from, to) {
+    this.counterId = id; this.counterRangeReq = null;
+    this.rangeFrom = this.localStamp(from); this.rangeTo = this.localStamp(to); this.rangeMode = "hold";
+    const pad = Math.max(2 * (to - from), 86400), now = Date.now() / 1000;
+    this.loadRangeSeries({ from: from - pad, to: Math.min(now, to + pad) });
+  }
+
   rangeForm() {
     const mode = this.rangeMode || "hold";
     const stamp = value => this.esc(value || "");
     return `<div class="panelhead" style="margin-top:12px"><div><h2>${this.t("rangeTitle")}</h2><p>${this.t("rangeHint")}</p></div></div>
+      <div class="setrow"><div><label>${this.t("rangeWindow")}</label><small>${this.t("rangeWindowHint")}</small></div><span style="display:flex;gap:8px;flex-wrap:wrap"><select data-range-days>${[1, 7, 30, 90, 365].map(d => `<option value="${d}" ${(this.rangeDays || 7) === d ? "selected" : ""}>${this.t("rangeDays", { days: d })}</option>`).join("")}</select><button class="btn" data-range-load ${this.rangeSeriesLoading ? "disabled" : ""}>${this.t("rangeLoad")}</button></span></div>
+      ${this.rangeChart()}
       <div class="setrow"><div><label>${this.t("rangeFrom")}</label></div><input type="datetime-local" data-range-from value="${stamp(this.rangeFrom)}" style="max-width:260px"></div>
       <div class="setrow"><div><label>${this.t("rangeTo")}</label></div><input type="datetime-local" data-range-to value="${stamp(this.rangeTo)}" style="max-width:260px"></div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-range-mode style="max-width:460px">${["hold", "interpolate", "fixed"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`rangeMode_${m}`)}</option>`).join("")}</select></div>
@@ -113,8 +173,14 @@ class CounterMixin {
     else if (s?.busy) body = `<p class="factnote">${this.t("relBusy")}</p>`;
     else if (s) {
       const items = s.items.map(item => {
-        const lines = item.findings.map(f => `<small style="display:block">${this.esc(this.t("counterFound", { range: this.counterRange(f), low: this.formatNumber(Math.round(f.low * 1000) / 1000), good: this.formatNumber(Math.round(f.good_before * 1000) / 1000), unit: item.unit || "" }))}</small>`).join("");
-        return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.statistic_id)}</small>${lines}</span><button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button></div>`;
+        const measure = item.kind === "measurement", n3 = v => this.formatNumber(Math.round(v * 1000) / 1000);
+        const lines = item.findings.map(f => {
+          const extreme = Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low;
+          return `<small style="display:block">${this.esc(measure ? this.t("spikeFound", { range: this.counterRange(f), extreme: n3(extreme), good: n3(f.good_before), unit: item.unit || "" }) : this.t("counterFound", { range: this.counterRange(f), low: n3(f.low), good: n3(f.good_before), unit: item.unit || "" }))}</small>`;
+        }).join("");
+        const action = measure ? `<button class="btn primary" data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}">${this.t("rangeTake")}</button>`
+          : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button>`;
+        return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.statistic_id)}</small>${lines}</span>${action}</div>`;
       }).join("");
       body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("counterNone")}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
     }
@@ -128,15 +194,20 @@ class CounterMixin {
     root.querySelectorAll("[data-counter-pick]").forEach(el => el.addEventListener("click", () => { this.counterSel = el.dataset.counterPick; this.counterRangeReq = null; this.createPlan(); }));
     root.querySelector("[data-range-mode]")?.addEventListener("change", () => { this.saveRange(root); this.render(); });
     root.querySelector("[data-range-pick]")?.addEventListener("click", () => this.pickRange(root));
+    root.querySelector("[data-range-days]")?.addEventListener("change", e => { this.rangeDays = Number(e.target.value); });
+    root.querySelector("[data-range-load]")?.addEventListener("click", () => { this.saveRange(root); this.counterId = (root.querySelector("[data-counter-id]")?.value || this.counterId || "").trim(); this.loadRangeSeries(); });
+    root.querySelectorAll("[data-range-from],[data-range-to]").forEach(el => el.addEventListener("change", () => { this.saveRange(root); this.render(); }));
+    root.querySelectorAll("[data-range-slide]").forEach(el => el.addEventListener("input", () => this.slideRange(root, el)));
+    root.querySelectorAll("[data-range-take]").forEach(el => el.addEventListener("click", () => this.takeRange(el.dataset.rangeTake, Number(el.dataset.takeFrom), Number(el.dataset.takeTo))));
   }
 }
 Object.assign(TEXT.de, {
   kindCounter: "Sensorfehler bereinigen (falsche Werte in Verlauf und Statistik, Zähler und Messwerte, mit Backup)",
-  counterTitle: "Zählerfehler finden und bereinigen", counterHint: "Ein Zähler darf nie sinken. Hat ein Sensor kurz einen falschen Wert geliefert (zum Beispiel ein Wasserzähler), zählt Home Assistant den Rücksprung als neuen Verbrauch. Housekeeper findet solche Ausreißer und ersetzt die falschen Werte im Verlauf, in den 5-Minuten-Werten und in den Stundenwerten; die verfälschte Summe wird neu berechnet. Ein Wert, der dauerhaft niedrig bleibt (Reset, Zählertausch), wird nie angefasst. Vor jedem Lauf entsteht ein Home-Assistant-Backup; die alten Werte bleiben im Journal und lassen sich zurückspielen, solange niemand die Zeilen danach geändert hat.",
-  counterEntity: "Nur diesen Zähler prüfen", counterEntityHint: "Leer lassen, um alle Zähler mit Summe zu prüfen (letztes Jahr).", counterMode: "Womit werden falsche Werte ersetzt?",
+  counterTitle: "Zählerfehler finden und bereinigen", counterHint: "Ein Zähler darf nie sinken. Hat ein Sensor kurz einen falschen Wert geliefert (zum Beispiel ein Wasserzähler), zählt Home Assistant den Rücksprung als neuen Verbrauch. Housekeeper findet solche Ausreißer (bei Messwerten wie einer Temperatur auch Ausschläge weit außerhalb des Üblichen, etwa 85 °C) und ersetzt die falschen Werte im Verlauf, in den 5-Minuten-Werten und in den Stundenwerten; die verfälschte Summe wird neu berechnet. Ein Wert, der dauerhaft niedrig bleibt (Reset, Zählertausch), wird nie angefasst. Vor jedem Lauf entsteht ein Home-Assistant-Backup; die alten Werte bleiben im Journal und lassen sich zurückspielen, solange niemand die Zeilen danach geändert hat.",
+  counterEntity: "Nur diesen Sensor prüfen", counterEntityHint: "Leer lassen, um alle Zähler und Messwerte mit Statistik zu prüfen (letztes Jahr).", counterMode: "Womit werden falsche Werte ersetzt?",
   counterMode_hold: "Letzter guter Wert (empfohlen)", counterMode_interpolate: "Gerade Linie zum nächsten guten Wert",
-  counterScan: "Zähler prüfen", counterScanning: "Wird geprüft …", counterScanNote: "Liest nur. Bei vielen Zählern kann das einen Moment dauern.", counterNoRecorder: "Ohne Recorder gibt es nichts zu prüfen.",
-  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Zähler geprüft.", counterPreview: "Vorschau erstellen",
+  counterScan: "Sensoren prüfen", counterScanning: "Wird geprüft …", counterScanNote: "Liest nur. Bei vielen Zählern kann das einen Moment dauern.", counterNoRecorder: "Ohne Recorder gibt es nichts zu prüfen.",
+  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen",
   counterFound: "{range}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", counterFinding: "{range}: Werte zwischen {low} und {high} {unit}; gute Werte davor {before} und danach {after} {unit}.",
   counterRows: "Geändert werden {states} Verlaufswerte, {short} 5-Minuten-Werte und {long} Stundenwerte; die Summe wird in {tail} späteren Statistikzeilen berichtigt.",
   counterSkipped: "{table}: {count} Fund(e) nicht reparierbar (keine guten Werte davor oder danach).", counterTable_short_term: "5-Minuten-Werte", counterTable_long_term: "Stundenwerte",
@@ -152,11 +223,11 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   kindCounter: "Repair sensor errors (wrong values in history and statistics, counters and measurements, with backup)",
-  counterTitle: "Find and repair counter glitches", counterHint: "A counter must never fall. If a sensor briefly reported a wrong value (a water meter, for example), Home Assistant counts the jump back as new consumption. Housekeeper finds such outliers and replaces the wrong values in the history, in the 5-minute rows and in the hourly rows; the spoiled sum is recalculated. A value that stays low for good (a reset, a replaced meter) is never touched. A Home Assistant backup is created before every run; the old values stay in the journal and can be put back as long as nobody changed the rows afterwards.",
-  counterEntity: "Check this counter only", counterEntityHint: "Leave empty to check every counter that has a sum (last year).", counterMode: "What replaces the wrong values?",
+  counterTitle: "Find and repair counter glitches", counterHint: "A counter must never fall. If a sensor briefly reported a wrong value (a water meter, for example), Home Assistant counts the jump back as new consumption. Housekeeper finds such outliers (for measurements such as a temperature also spikes far outside the usual range, say 85 °C) and replaces the wrong values in the history, in the 5-minute rows and in the hourly rows; the spoiled sum is recalculated. A value that stays low for good (a reset, a replaced meter) is never touched. A Home Assistant backup is created before every run; the old values stay in the journal and can be put back as long as nobody changed the rows afterwards.",
+  counterEntity: "Check this sensor only", counterEntityHint: "Leave empty to check every counter and measurement with statistics (last year).", counterMode: "What replaces the wrong values?",
   counterMode_hold: "Last good value (recommended)", counterMode_interpolate: "Straight line to the next good value",
-  counterScan: "Check counters", counterScanning: "Checking …", counterScanNote: "Only reads. With many counters this can take a moment.", counterNoRecorder: "There is nothing to check without a recorder.",
-  counterNone: "No outliers found.", counterChecked: "{count} counters checked.", counterPreview: "Create preview",
+  counterScan: "Check sensors", counterScanning: "Checking …", counterScanNote: "Only reads. With many counters this can take a moment.", counterNoRecorder: "There is nothing to check without a recorder.",
+  counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview",
   counterFound: "{range}: lowest value {low} {unit} instead of about {good} {unit}", counterFinding: "{range}: values between {low} and {high} {unit}; good values before {before} and after {after} {unit}.",
   counterRows: "{states} history values, {short} 5-minute rows and {long} hourly rows change; the sum is corrected in {tail} later statistics rows.",
   counterSkipped: "{table}: {count} finding(s) cannot be repaired (no good values before or after).", counterTable_short_term: "5-minute rows", counterTable_long_term: "Hourly rows",
@@ -199,4 +270,14 @@ Object.assign(TEXT.en, {
   reason_no_bracket: "There is no good value before or after the period; widen it or choose a fixed value.", reason_bracket_not_good: "The counter is lower after the period than before; that is a reset or a replaced meter, not a sensor error.",
   reason_fixed_outside: "The fixed value lies outside the good values before and after; a counter must not fall.",
   abort_no_range_statistics: "The statistics no longer exist.", abort_bad_range: "The period is no longer valid.", abort_no_bracket: "There is no good value before or after any more.", abort_bracket_not_good: "The counter is lower after the period than before.", abort_fixed_outside: "The fixed value lies outside the good values.",
+});
+Object.assign(TEXT.de, {
+  spikeFound: "{range}: Werte bis {extreme} {unit} statt etwa {good} {unit}", rangeTake: "Als Bereich übernehmen",
+  rangeWindow: "Verlauf ansehen", rangeWindowHint: "Zeigt die Werte, in denen du den Zeitraum mit den Reglern wählst.", rangeDays: "Letzte {days} Tage", rangeLoad: "Verlauf anzeigen",
+  rangeChartLabel: "Verlauf des Sensors mit dem gewählten Zeitraum", rangeNoData: "In diesem Fenster gibt es keine Werte.", rangeTable_short_term: "5-Minuten-Werte", rangeTable_long_term: "Stundenwerte",
+});
+Object.assign(TEXT.en, {
+  spikeFound: "{range}: values up to {extreme} {unit} instead of about {good} {unit}", rangeTake: "Use as range",
+  rangeWindow: "Show readings", rangeWindowHint: "Shows the values on which you pick the period with the sliders.", rangeDays: "Last {days} days", rangeLoad: "Show readings",
+  rangeChartLabel: "Readings of the sensor with the picked period", rangeNoData: "There are no values in this window.", rangeTable_short_term: "5-minute rows", rangeTable_long_term: "Hourly rows",
 });

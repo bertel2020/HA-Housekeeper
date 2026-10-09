@@ -351,6 +351,10 @@ async def test_the_repair_writes_all_three_tables_verifies_and_can_be_undone(
     written["tables"]["long_term"]["rows"][0]["new"][1] += 5
     assert (await scanner.cleanup.undo(again["plan_id"], None))["results"][0][
         "outcome"
+    ] == "conflict_partial"  # the changed row stays, every other row is put back
+    assert len(written["tables"]["long_term"]["rows"]) == 1
+    assert (await scanner.cleanup.undo(again["plan_id"], None))["results"][0][
+        "outcome"
     ] == "conflict_changed"
 
 
@@ -541,6 +545,9 @@ async def test_a_picked_measurement_range_is_replaced_and_undone(recorder_mock, 
         "from": (BASE + timedelta(hours=10)).timestamp(),
         "to": (BASE + timedelta(hours=10, minutes=29)).timestamp(),
     }
+    shown = await counter_repair.series(hass, TEMPERATURE, rng["from"] - 3600, rng["to"] + 3600)
+    assert shown["kind"] == "measurement" and shown["table"] == "short_term"
+    assert max(v for _, v in shown["points"]) == 85.0
     found = await counter_repair.prepare(hass, TEMPERATURE, "interpolate", rng=rng)
     assert found["error"] is None and found["kind"] == "measurement", found
     assert found["counts"]["short_term"] == 6 and found["counts"]["long_term"] == 1
@@ -558,3 +565,23 @@ async def test_a_picked_measurement_range_is_replaced_and_undone(recorder_mock, 
     )
     assert await counter_repair.undo(hass, written) == "undone"
     assert await instance.async_add_executor_job(_dump_measurement, hass) == before
+
+
+def test_spikes_are_found_only_far_outside_what_the_sensor_normally_reports() -> None:
+    from custom_components.ha_housekeeper.counter_repair import find_spikes, suggest_range
+
+    temp = [(i * 300.0, 20.0 + 0.1 * (i % 7)) for i in range(200)]
+    for i in (100, 101, 102):
+        temp[i] = (temp[i][0], 85.0)
+    runs = find_spikes(temp)
+    assert [(r["first"], r["last"], r["count"], r["high"]) for r in runs] == [
+        (30000.0, 30600.0, 3, 85.0)
+    ]
+    finding = {"bad_first": 30000.0, "bad_last": 30600.0, "count": {"short_term": 3}}
+    assert suggest_range(finding) == {"from": 29850.0, "to": 30749.0}
+    # a power sensor that pulses to its normal maximum, a value that stays high and a constant series
+    power = [(i * 300.0, 2000.0 if i % 10 < 3 else 0.0) for i in range(200)]
+    assert find_spikes(power) == []
+    stays = temp[:100] + [(t, 85.0) for t, _ in temp[100:]]
+    assert find_spikes(stays) == []
+    assert find_spikes([(i * 300.0, 5.0) for i in range(200)]) == []

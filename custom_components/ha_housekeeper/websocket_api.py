@@ -941,6 +941,38 @@ async def websocket_statistics_last(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/range_series",
+        vol.Required("statistic_id"): str,
+        vol.Required("from"): vol.Coerce(float),
+        vol.Required("to"): vol.Coerce(float),
+    }
+)
+@websocket_api.async_response
+async def websocket_range_series(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """The readings of one counter or measurement in a window, for picking a range. Read-only."""
+    start, end = msg["from"], msg["to"]
+    if not recorder_ready(hass):
+        connection.send_result(msg["id"], _versioned({"error": "no_recorder", "points": []}))
+        return
+    if not start < end <= start + counter_repair.SERIES_MAX_DAYS * 86400:
+        connection.send_error(msg["id"], "invalid_format", "invalid window")
+        return
+    try:
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            found = await counter_repair.series(hass, msg["statistic_id"], start, end)
+    except Exception as err:
+        connection.send_error(msg["id"], "range_series_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(found))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/counter_scan",
         vol.Optional("statistic_id"): str,
         vol.Optional("days", default=counter_repair.SCAN_DAYS): vol.All(
@@ -2206,6 +2238,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_db_health)
     websocket_api.async_register_command(hass, websocket_statistics_last)
     websocket_api.async_register_command(hass, websocket_counter_scan)
+    websocket_api.async_register_command(hass, websocket_range_series)
     websocket_api.async_register_command(hass, websocket_policies)
     websocket_api.async_register_command(hass, websocket_set_policy)
     websocket_api.async_register_command(hass, websocket_set_policy_prefix)

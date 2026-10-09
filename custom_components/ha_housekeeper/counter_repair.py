@@ -42,6 +42,12 @@ RANGE_LOOKBACK = 7 * 86400  # rows loaded before the range, to find the good rea
 SLOT = {"short_term": 300, "long_term": 3600}
 REF = {"short_term": 0, "long_term": 3300}  # where in its slot a row's state was last read
 PREVIEW_POINTS = 120
+SERIES_POINTS = 300
+SERIES_MAX_DAYS = 366
+SPIKE_FENCE = (
+    3.0  # spreads beyond the 1 % / 99 % readings; a spike must lie outside everything normal
+)
+SPIKE_MIN_POINTS = 30
 EPS = 1e-9
 
 
@@ -179,6 +185,67 @@ def analyse(
             "long_term": find_runs(ref_points(long_rows, "long_term"), max_span),
         }
     )
+
+
+def find_spikes(
+    points: list[tuple[float, float]], max_span: float = MAX_SPAN
+) -> list[dict[str, Any]]:
+    """Runs of a measurement far outside everything the sensor normally reports, that come back.
+
+    The band is the range between the 5 % and the 95 % reading, widened by ten times its
+    width on both sides, so a value inside what the sensor does now and then (a pulse of a power
+    sensor, rain) is never a spike. Like for counters, a run needs a reading inside the band on
+    both sides and must be over within ``max_span``; one that stays out (a defect, a new unit) is
+    left alone. A constant series has no band and is skipped.
+    """
+    if len(points) < SPIKE_MIN_POINTS:
+        return []
+    values = sorted(v for _, v in points)
+    last = len(values) - 1
+    q_low, q_high = values[round(0.05 * last)], values[round(0.95 * last)]
+    spread = q_high - q_low
+    if spread <= EPS:
+        return []
+    low, high = q_low - SPIKE_FENCE * spread, q_high + SPIKE_FENCE * spread
+    out = [not low <= v <= high for _, v in points]
+    runs: list[dict[str, Any]] = []
+    i = 0
+    while i < len(points):
+        if not out[i]:
+            i += 1
+            continue
+        j = i
+        while j + 1 < len(points) and out[j + 1]:
+            j += 1
+        if i > 0 and j + 1 < len(points) and points[j + 1][0] - points[i - 1][0] <= max_span:
+            bad = [v for _, v in points[i : j + 1]]
+            runs.append(
+                {
+                    "b_ts": points[i - 1][0],
+                    "a_ts": points[j + 1][0],
+                    "gb": points[i - 1][1],
+                    "ga": points[j + 1][1],
+                    "first": points[i][0],
+                    "last": points[j][0],
+                    "low": min(bad),
+                    "high": max(bad),
+                    "count": len(bad),
+                }
+            )
+        i = j + 1
+    return runs
+
+
+def mean_points(rows: list[dict[str, Any]], table: str) -> list[tuple[float, float]]:
+    return [
+        (row["ts"] + SLOT[table] / 2, row["mean"]) for row in rows if row.get("mean") is not None
+    ]
+
+
+def suggest_range(finding: dict[str, Any]) -> dict[str, float]:
+    """The period to clean for a finding: whole rows of the coarsest table that saw it."""
+    pad = SLOT["long_term"] / 2 if "long_term" in finding["count"] else SLOT["short_term"] / 2
+    return {"from": finding["bad_first"] - pad, "to": finding["bad_last"] + pad - 1}
 
 
 # -- changes ---------------------------------------------------------------------------------
@@ -842,10 +909,28 @@ def _gather(
     }
 
 
+def _gather_measure(
+    session: Any, statistic_id: str, since: float | None, max_span: float
+) -> dict[str, Any] | None:
+    info = _meta_any(session, statistic_id)
+    if info is None or info[2]:
+        return None
+    meta_id, unit = info[0], info[1]
+    short_rows = _load_stats(session, "short_term", meta_id, since, True)
+    long_rows = _load_stats(session, "long_term", meta_id, since, True)
+    findings = merge_runs(
+        {
+            "short_term": find_spikes(mean_points(short_rows, "short_term"), max_span),
+            "long_term": find_spikes(mean_points(long_rows, "long_term"), max_span),
+        }
+    )
+    return {"unit": unit, "findings": findings}
+
+
 def scan_blocking(
     hass: HomeAssistant, statistic_ids: list[str] | None, days: int | None, max_span: float
 ) -> dict[str, Any]:
-    """Blocking: the counters with glitches. Without ``statistic_ids`` every recorder counter."""
+    """Blocking: counters with glitches and measurements with spikes (statistics of the recorder)."""
     from datetime import UTC, datetime, timedelta
 
     from homeassistant.components.recorder.util import session_scope
@@ -860,13 +945,17 @@ def scan_blocking(
             statistic_ids = list(
                 session.execute(
                     select(meta.statistic_id)
-                    .where(meta.has_sum.is_(True), meta.source == "recorder")
+                    .where(meta.source == "recorder")
                     .order_by(meta.statistic_id)
-                    .limit(SCAN_IDS)
+                    .limit(SCAN_IDS * 2)
                 ).scalars()
             )
         for statistic_id in statistic_ids:
             data = _gather(session, statistic_id, since, max_span)
+            kind = "counter"
+            if data is None:
+                data = _gather_measure(session, statistic_id, since, max_span)
+                kind = "measurement"
             if data is None:
                 continue
             checked += 1
@@ -875,10 +964,52 @@ def scan_blocking(
                     {
                         "statistic_id": statistic_id,
                         "unit": data["unit"],
-                        "findings": [public_finding(f) for f in data["findings"]],
+                        "kind": kind,
+                        "findings": [
+                            {**public_finding(f), "suggest": suggest_range(f)}
+                            for f in data["findings"]
+                        ],
                     }
                 )
     return {"items": items, "checked": checked}
+
+
+def series_blocking(
+    hass: HomeAssistant, statistic_id: str, start: float, end: float
+) -> dict[str, Any]:
+    """Blocking: the readings of one sensor in a window, for the chart where a range is picked.
+
+    Five-minute rows when the window is short and they exist, otherwise the hourly rows.
+    """
+    from homeassistant.components.recorder.util import session_scope
+
+    with session_scope(hass=hass, read_only=True) as session:
+        info = _meta_any(session, statistic_id)
+        if info is None:
+            return {"error": "no_range_statistics", "points": []}
+        meta_id, unit, counter, _ = info
+        key = "state" if counter else "mean"
+        points: list[list[float]] = []
+        table = "long_term"
+        for table in ("short_term", "long_term"):
+            if table == "short_term" and end - start > 10 * 86400:
+                continue
+            rows = _load_stats(session, table, meta_id, start - SLOT[table], not counter)
+            points = [
+                [r["ts"] + SLOT[table] / 2, r[key]]
+                for r in rows
+                if r.get(key) is not None and r["ts"] <= end
+            ]
+            if len(points) >= 10:
+                break
+    step = max(1, len(points) // SERIES_POINTS)
+    return {
+        "error": None,
+        "kind": "counter" if counter else "measurement",
+        "unit": unit,
+        "table": table,
+        "points": points[::step],
+    }
 
 
 def prepare_blocking(
@@ -1017,58 +1148,51 @@ def apply_blocking(
 
 
 def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
-    """In the recorder thread: put the old values back if the rows are still as they were left."""
+    """In the recorder thread: put the old values back, row by row, where the row is still as left.
+
+    A row somebody changed afterwards is not touched. ``written`` loses what was put back, so a
+    second try only sees the rest. Result: ``undone``, ``conflict_partial`` (some rows put back,
+    some changed since), ``conflict_changed`` (nothing could be put back) or ``conflict_gone``.
+    """
     from homeassistant.components.recorder.util import session_scope
     from sqlalchemy import select, update
 
     models = _models()
+    restored = skipped = 0
+    remaining: dict[str, Any] = {"tables": {}}
     with session_scope(session=instance.get_session()) as session:
-        # First check everything, then change anything.
-        for table in ("short_term", "long_term"):
-            model = models[table]
-            block = written["tables"].get(table) or {}
-            cols = block.get("cols") or ["state", "sum"]
-            ids = [row["id"] for row in block.get("rows", [])]
-            current = {}
-            if ids:
-                current = {
-                    r[0]: tuple(r[1:])
-                    for r in session.execute(
-                        select(model.id, *[getattr(model, c) for c in cols]).where(
-                            model.id.in_(ids)
-                        )
-                    ).all()
-                }
-            for row in block.get("rows", []):
-                now = current.get(row["id"])
-                if now is None or not all(
-                    _same(a, b) for a, b in zip(now, row["new"], strict=True)
-                ):
-                    return "conflict_changed"
-            for tail in block.get("tails", []):
-                probe = session.execute(select(model.sum).where(model.id == tail["probe"])).scalar()
-                if probe is None or not _same(probe, tail["after"]):
-                    return "conflict_changed"
-        states = written.get("states") or []
-        if states:
-            ids = [row["id"] for row in states]
-            current_states = {
-                r.state_id: r.state
-                for r in session.execute(
-                    select(models["states"].state_id, models["states"].state).where(
-                        models["states"].state_id.in_(ids)
-                    )
-                ).all()
-            }
-            if any(current_states.get(row["id"]) != row["new"] for row in states):
-                return "conflict_changed"
         meta = _meta_any(session, written["statistic_id"])
         if meta is None:
             return "conflict_gone"
         for table in ("short_term", "long_term"):
             model = models[table]
             block = written["tables"].get(table) or {}
+            cols = block.get("cols") or ["state", "sum"]
+            rows = block.get("rows", [])
+            current = {}
+            if rows:
+                current = {
+                    r[0]: tuple(r[1:])
+                    for r in session.execute(
+                        select(model.id, *[getattr(model, c) for c in cols]).where(
+                            model.id.in_([row["id"] for row in rows])
+                        )
+                    ).all()
+                }
+            fine = [
+                row
+                for row in rows
+                if (now := current.get(row["id"])) is not None
+                and all(_same(a, b) for a, b in zip(now, row["new"], strict=True))
+            ]
+            kept = [row for row in rows if row not in fine]
+            tails_fine, tails_kept = [], []
             for tail in block.get("tails", []):
+                probe = session.execute(select(model.sum).where(model.id == tail["probe"])).scalar()
+                (
+                    tails_fine if probe is not None and _same(probe, tail["after"]) else tails_kept
+                ).append(tail)
+            for tail in tails_fine:
                 session.execute(
                     update(model)
                     .where(
@@ -1078,21 +1202,43 @@ def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
                     )
                     .values(sum=model.sum + tail["offset"])
                 )
-            if block.get("rows"):
-                cols = block.get("cols") or ["state", "sum"]
+            if fine:
                 session.execute(
                     update(model),
-                    [
-                        {"id": row["id"], **dict(zip(cols, row["old"], strict=True))}
-                        for row in block["rows"]
-                    ],
+                    [{"id": row["id"], **dict(zip(cols, row["old"], strict=True))} for row in fine],
                 )
+            restored += len(fine) + len(tails_fine)
+            skipped += len(kept) + len(tails_kept)
+            remaining["tables"][table] = {"cols": cols, "rows": kept, "tails": tails_kept}
+        states = written.get("states") or []
+        fine_states, kept_states = [], []
         if states:
-            session.execute(
-                update(models["states"]),
-                [{"state_id": row["id"], "state": row["old"]} for row in states],
-            )
-    return "undone"
+            model = models["states"]
+            current_states = {
+                r.state_id: r.state
+                for r in session.execute(
+                    select(model.state_id, model.state).where(
+                        model.state_id.in_([row["id"] for row in states])
+                    )
+                ).all()
+            }
+            for row in states:
+                (
+                    fine_states if current_states.get(row["id"]) == row["new"] else kept_states
+                ).append(row)
+            if fine_states:
+                session.execute(
+                    update(model),
+                    [{"state_id": row["id"], "state": row["old"]} for row in fine_states],
+                )
+        restored += len(fine_states)
+        skipped += len(kept_states)
+        remaining["states"] = kept_states
+    written["tables"] = remaining["tables"]
+    written["states"] = remaining["states"]
+    if not skipped:
+        return "undone"
+    return "conflict_partial" if restored else "conflict_changed"
 
 
 def _same(a: float | None, b: float | None) -> bool:
@@ -1157,6 +1303,18 @@ async def prepare(
         return {"error": "schema_unknown", "findings": []}
     return await get_instance(hass).async_add_executor_job(
         prepare_blocking, hass, statistic_id, mode, max_span, rng
+    )
+
+
+async def series(
+    hass: HomeAssistant, statistic_id: str, start: float, end: float
+) -> dict[str, Any]:
+    from homeassistant.components.recorder import get_instance
+
+    if not schema_ok():
+        return {"error": "schema_unknown", "points": []}
+    return await get_instance(hass).async_add_executor_job(
+        series_blocking, hass, statistic_id, start, end
     )
 
 

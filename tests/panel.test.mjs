@@ -2944,6 +2944,13 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   const range = sent.at(-1).actions[0];
   assert.equal(range.kind, "repair_range"); assert.equal(range.mode, "fixed"); assert.equal(range.range.fixed, 91.7);
   assert.equal(range.range.to - range.range.from, 7200);
+  // A spike found in a measurement fills the range and shows the readings with two sliders.
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return { error: null, kind: "measurement", unit: "°C", table: "short_term", points: Array.from({ length: 20 }, (_, i) => [1788200000 + i * 300, 20 + (i === 10 ? 65 : 0)]) }; } };
+  el.takeRange("sensor.boiler", 1788202900, 1788203300);
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(sent.at(-1).type, "ha_housekeeper/range_series");
+  assert.ok(shadow.innerHTML.includes('data-range-slide="from"') && shadow.innerHTML.includes("data-range-band"));
+  assert.equal(el.rangeFrom, el.localStamp(1788202900)); assert.equal(el.counterId, "sensor.boiler");
   const action = { ...REPAIR_PLAN.actions[0], kind: "repair_range", mode: "hold", counter: { kind: "measurement", unit: "°C", range: { from: 1788220800, to: 1788224400 }, bracket: [1788220000, 20, 1788225000, 21], available: { states: 4, short_term: 0, long_term: 2 },
     counts: { states: 2, short_term: 0, long_term: 1, estimated_long_term: 1, tail_short_term: 0, tail_long_term: 0 }, detail: { states: [[1788221000, "85", "20"]], short_term: { cols: ["mean", "min", "max"], rows: [], tails: [] }, long_term: { cols: ["mean", "min", "max"], rows: [[1788220800, [85, 20, 85], [20, 20, 20]]], tails: [] } }, series: [] } };
   const html2 = el.rangeDetail(action);
