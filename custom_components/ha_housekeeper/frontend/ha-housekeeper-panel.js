@@ -1086,7 +1086,7 @@ class StylesMixin {
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
       .howto{padding:6px 16px 10px}.howto summary{cursor:pointer;color:var(--hk-blue-text);font-weight:600;font-size:calc(12.5px*var(--hk-fs,1));padding:4px 0}.howto .factnote{margin:4px 0 0;padding:0}
       .setband{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:12px 16px;margin-bottom:14px}.setband .grow{flex:1}.bandbit{display:grid;gap:1px}.bandbit small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.bandbit b{font-size:calc(14px*var(--hk-fs,1))}
-      .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;padding:14px 16px}.tilebtn{display:grid;gap:8px;justify-items:start;align-content:start;padding:10px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);text-align:left;font-weight:600}.qtype{margin:0 0 12px}.cleantiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}.setpill{gap:6px;flex-wrap:wrap}.schemetiles{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.schemetiles .tilebtn{gap:10px;padding:12px}.schemeprev{display:grid;gap:8px;width:100%;box-sizing:border-box;padding:10px;border:1px solid;border-radius:10px}.sp-card{display:grid;grid-template-columns:18px 1fr;grid-template-rows:auto auto;gap:5px 8px;align-items:center;padding:8px;border:1px solid;border-radius:8px}.sp-card b{grid-row:1/3;width:18px;height:18px;border-radius:50%}.sp-card i{display:block;height:5px;border-radius:3px}.sp-row{display:flex;align-items:center;gap:6px}.sp-row em{width:10px;height:10px;border-radius:50%}.sp-row u{margin-left:auto;width:42px;height:14px;border-radius:7px}.tilebtn[aria-pressed=true]>span:last-child:before{content:"\\2713";margin-right:.4em;color:var(--hk-blue-text)}.tilebtn ha-icon{color:var(--hk-blue-text)}.tilebtn:hover{border-color:var(--hk-blue)}.tilebtn[aria-pressed=true]{border-color:var(--hk-blue-solid);box-shadow:0 0 0 2px color-mix(in srgb,var(--hk-blue) 35%,transparent)}
+      .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;padding:14px 16px}.tilebtn{display:grid;gap:8px;justify-items:start;align-content:start;padding:10px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);text-align:left;font-weight:600}.qtype{margin:0 0 12px}.navtiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}.taskgrid .taskcard.on{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));box-shadow:0 0 0 1px var(--hk-blue),var(--hk-sh2)}.taskgrid .taskcard.on strong{color:var(--hk-blue-text)}.taskgrid .taskcard.off{opacity:.6;cursor:default}.taskgrid .taskcard.off:hover{transform:none;box-shadow:var(--hk-sh1)}.setpill{gap:6px;flex-wrap:wrap}.schemetiles{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.schemetiles .tilebtn{gap:10px;padding:12px}.schemeprev{display:grid;gap:8px;width:100%;box-sizing:border-box;padding:10px;border:1px solid;border-radius:10px}.sp-card{display:grid;grid-template-columns:18px 1fr;grid-template-rows:auto auto;gap:5px 8px;align-items:center;padding:8px;border:1px solid;border-radius:8px}.sp-card b{grid-row:1/3;width:18px;height:18px;border-radius:50%}.sp-card i{display:block;height:5px;border-radius:3px}.sp-row{display:flex;align-items:center;gap:6px}.sp-row em{width:10px;height:10px;border-radius:50%}.sp-row u{margin-left:auto;width:42px;height:14px;border-radius:7px}.tilebtn[aria-pressed=true]>span:last-child:before{content:"\\2713";margin-right:.4em;color:var(--hk-blue-text)}.tilebtn ha-icon{color:var(--hk-blue-text)}.tilebtn:hover{border-color:var(--hk-blue)}.tilebtn[aria-pressed=true]{border-color:var(--hk-blue-solid);box-shadow:0 0 0 2px color-mix(in srgb,var(--hk-blue) 35%,transparent)}
       .mini{display:flex;gap:4px;width:100%;height:38px;padding:5px;border:1px solid;border-radius:8px}.mini i{flex:1;border-radius:4px}.mini b{width:16px;border-radius:4px}
       .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:14px 16px}.optcard{display:grid;gap:8px;align-content:start;padding:14px;border:1px solid var(--hk-border);border-radius:12px}.optcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.unitrow{display:flex;align-items:center;gap:8px}.unitrow input{width:110px}.savebar{border-bottom:0;border-top:1px solid var(--hk-border)}.quietreset{grid-template-columns:1fr auto}a.row{text-decoration:none}
       .sharebar{display:block;height:6px;border-radius:3px;background:var(--hk-soft);overflow:hidden;margin-top:4px}.sharebar i{display:block;height:100%;background:var(--hk-blue-solid)}
@@ -2329,8 +2329,7 @@ class CleanupMixin {
 
   // The tiles of the Cleanup view: one job each, with the number of things to do; the chosen one is marked.
   cleanupTiles(tabs, open) {
-    const tiles = tabs.map(t => `<button class="taskcard t-${t.count ? t.tone : "mute"}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`cleanup|${t.id}`)}"><ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill"><span class="pill ${t.count ? t.tone : "mute"}">${this.esc(this.formatNumber(t.count))}</span>${t.pill ? `<span class="pill ok">${this.esc(t.pill)}</span>` : ""}</span><small>${this.esc(t.hint)}</small></button>`).join("");
-    return `<div class="taskgrid compactgrid setgrid cleantiles" role="group" aria-label="${this.esc(this.t("cleanup"))}">${tiles}</div>`;
+    return this.navTiles("cleanup", tabs.map(t => ({ ...t, tone: t.count ? t.tone : "mute" })), open, this.t("cleanup"));
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them.
@@ -4038,7 +4037,7 @@ class MaintenanceMixin {
       { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    const grid = `<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("maintenance"))}">${tabs.map(tab => `<button class="taskcard t-${tab.pill ? tab.tone : "ok"}${tab.id === open ? " on" : ""}" aria-pressed="${tab.id === open}" data-view-tab="maintenance|${tab.id}"><ha-icon icon="${tab.icon}"></ha-icon><strong>${tab.label}${tab.pill ? ` <span class="pill ${tab.tone}">${this.esc(tab.pill)}</span>` : ""}</strong><small>${this.t(tab.hint)}</small></button>`).join("")}</div>`;
+    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok" })), open, this.t("maintenance"));
     return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
   }
 }
@@ -4263,21 +4262,16 @@ class ReliabilityMixin {
     const attention = r.entries.filter(e => e.reauth || (e.state && e.state !== "loaded")).length;
     const counted = r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.entities), 0);
     const overall = counted ? r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.availability * e.entities), 0) / counted : null;
-    const toneOf = value => (value === null ? "mute" : value >= 99.5 ? "ok" : value >= 95 ? "warn" : "red");
-    const tiles = this.sumTiles([
-      { label: this.t("relSumAvail"), value: overall === null ? "–" : `${this.formatNumber(Math.round(overall * 10) / 10)} %`, sub: this.t(r.window_days === 1 ? "relWindow1" : "relWindow7"), tone: toneOf(overall), tab: "reliability|integrations" },
-      { label: this.t("relSumOutages"), value: this.formatNumber(outages), sub: this.t("relSumOf", { n: this.formatNumber(r.entries.length) }), tone: outages ? "warn" : "ok", tab: "reliability|integrations" },
-      { label: this.t("relSumAttention"), value: this.formatNumber(attention), sub: this.t("relSumAttentionHint"), tone: attention ? "red" : "ok", tab: "reliability|integrations" },
-      { label: this.t("relSumUnstable"), value: this.formatNumber(u.total || 0), sub: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "", tone: flapping ? "red" : u.total ? "warn" : "ok", tab: "reliability|unstable" },
-    ]);
+    const availText = overall === null ? "–" : `${this.formatNumber(Math.round(overall * 10) / 10)} %`;
+    const odd = r.entries.filter(e => e.shared_outages > 0 || e.reauth || (e.state && e.state !== "loaded")).length;
     const tabs = [
-      { id: "integrations", label: this.t("relTabIntegrations"), count: r.entries.length, tone: outages || attention ? "warn" : "ok" },
-      { id: "unstable", label: this.t("relTabUnstable"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok" },
+      { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: this.t("relTileIntHint", { avail: availText, window: this.t(r.window_days === 1 ? "relWindow1" : "relWindow7") }), count: r.entries.length, tone: outages || attention ? "warn" : "ok", pill: odd ? this.t("relTilePill", { n: this.formatNumber(odd) }) : "", pillTone: attention ? "red" : "warn" },
+      { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: this.t("relTileUnstableHint"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok", pill: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "" },
     ];
     const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
     const intHead = `<div class="panelhead"><div><h2>${this.t("relTabIntegrations")}</h2><p>${this.t("relIntHint")}</p></div></div>`;
     const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${intHead}${coverage}${bar}${loading}${list}${pg.footer}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
-    return `<div class="stack"><div class="panel">${head}</div>${tiles}${this.viewTabBar("reliability", tabs, open)}${body}</div>`;
+    return `<div class="stack"><div class="panel">${head}</div>${this.navTiles("reliability", tabs, open, this.t("reliability"))}${body}</div>`;
   }
 
   // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
@@ -4479,10 +4473,13 @@ class RunsMixin {
 
   // Two tabs: the counted runs, and the quality of each automation (46-diagnostics.js).
   runsView() {
-    const tabs = [{ id: "runs", label: this.t("runsTabRuns") }, { id: "quality", label: this.t("qualityTab") }];
+    const tabs = [
+      { id: "runs", icon: "mdi:run-fast", label: this.t("runsTabRuns"), hint: this.t("runsTileRunsHint"), tone: "mute" },
+      { id: "quality", icon: "mdi:clipboard-pulse-outline", label: this.t("qualityTab"), hint: this.t("runsTileQualityHint"), tone: "mute" },
+    ];
     const open = this.viewTabOf("runs", tabs, "runs");
-    if (open === "quality") return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.qualityView()}</div>`;
-    return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.runsListView()}</div>`;
+    if (open === "quality") return `<div class="stack">${this.navTiles("runs", tabs, open, this.t("runs"))}${this.qualityView()}</div>`;
+    return `<div class="stack">${this.navTiles("runs", tabs, open, this.t("runs"))}${this.runsListView()}</div>`;
   }
 
   runsListView() {
@@ -4587,22 +4584,14 @@ class StormsMixin {
     const perDay = db?.growth?.known ? db.growth.per_day : meta?.per_day;
     const keep = db?.keep_days ?? meta?.keep_days, purge = db?.auto_purge ?? meta?.auto_purge;
     const loud = st?.entities?.[0], topCost = this.costs?.entities?.[0];
-    const tiles = this.sumTiles([
-      st && { label: this.t("recSumRows"), value: this.formatNumber(st.per_day), sub: this.t(this.stormsWindow === 1 ? "relWindow1" : "relWindow7"), tone: "mute", tab: "recorder|load" },
-      loud && { label: this.t("recSumLoudest"), value: this.esc(loud.name || loud.entity_id), sub: this.t("stormRows", { rows: this.formatNumber(loud.rows), perDay: this.formatNumber(loud.per_day) }), tone: "mute", tab: "recorder|load" },
-      topCost && { label: this.t("recSumCosts"), value: this.esc(topCost.name || topCost.entity_id), sub: this.t("recorderShare", { share: topCost.share }), tone: "mute", tab: "recorder|costs" },
-      bytes !== null && bytes !== undefined && { label: this.t("recSumDb"), value: this.formatBytes(bytes), sub: perDay !== null && perDay !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }) : "", tone: dbTone, tab: "recorder|db" },
-      keep && { label: this.t("dbOvKeep"), value: this.t("dbOvKeepDays", { n: this.formatNumber(keep) }), sub: purge === false ? this.t("recSumPurgeOff") : "", tone: purge === false ? "warn" : "mute", tab: "recorder|db" },
-      (st || db) && { label: this.t("recSumFindings"), value: this.formatNumber(stormFindings + dbFindings), tone: stormTone === "red" || dbTone === "red" ? "red" : stormFindings + dbFindings ? "warn" : "ok", tab: `recorder|${stormFindings || !dbFindings ? "load" : "db"}` },
-    ]);
     const tabs = [
-      { id: "load", label: this.t("stormTitle"), count: st ? stormFindings : null, tone: stormTone },
-      { id: "costs", label: this.t("recorderTitle") },
-      { id: "db", label: this.t("dbTitle"), count: db ? dbFindings : null, tone: dbTone },
+      { id: "load", icon: "mdi:chart-timeline-variant", label: this.t("stormTitle"), hint: st ? this.t("recTileLoadRows", { n: this.formatNumber(st.per_day), window: this.t(this.stormsWindow === 1 ? "relWindow1" : "relWindow7") }) : this.t("recTileLoadHint"), count: st ? stormFindings : null, tone: stormTone },
+      { id: "costs", icon: "mdi:database-search-outline", label: this.t("recorderTitle"), hint: topCost ? this.t("recTileCostsTop", { name: topCost.name || topCost.entity_id, share: topCost.share }) : this.t("recTileCostsHint"), tone: "mute" },
+      { id: "db", icon: "mdi:database-outline", label: this.t("dbTitle"), hint: bytes !== null && bytes !== undefined ? [this.formatBytes(bytes), perDay !== null && perDay !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }) : ""].filter(Boolean).join(" · ") : this.t("recTileDbHint"), count: db ? dbFindings : null, tone: dbTone, pill: purge === false ? this.t("recSumPurgeOff") : "", pillTone: "warn" },
     ];
     const open = this.viewTabOf("recorder", tabs, "load");
     const body = open === "costs" ? this.recorderCard() : open === "db" ? this.dbCard() : this.stormsView();
-    return `<div class="stack">${tiles}${this.viewTabBar("recorder", tabs, open)}${body}</div>`;
+    return `<div class="stack">${this.navTiles("recorder", tabs, open, this.t("recorder"))}${body}</div>`;
   }
 
   stormsView() {
@@ -4797,21 +4786,13 @@ class ExposureMixin {
     const sources = this.expoSources(r);
     const live = sources.filter(x => x.status === "ok");
     const warn = r.findings.filter(f => f.level === "warn").length;
-    const tiles = this.sumTiles([
-      { label: this.t("expoSumFindings"), value: this.formatNumber(r.findings.length), tone: warn ? "warn" : r.findings.length ? "mute" : "ok", tab: "exposure|findings" },
-      ...sources.map(x => ({
-        label: x.label,
-        value: x.status === "ok" ? this.formatNumber(x.count) : "–",
-        sub: x.status === "ok" ? this.t("expoSumEntities") : this.t(x.status === "inactive" ? "expoInactive" : "expoUnavailable"),
-        tone: x.status === "ok" ? "ok" : x.status === "inactive" ? "mute" : "warn",
-        tab: x.status === "ok" ? `exposure|${x.id}` : "",
-      })),
-    ]);
     const tabs = [
-      { id: "findings", label: this.t("expoTabFindings"), count: r.findings.length, tone: warn ? "warn" : "ok" },
-      ...live.map(x => ({ id: x.id, label: x.label, count: x.count })),
+      { id: "findings", icon: "mdi:shield-alert-outline", label: this.t("expoTabFindings"), hint: this.t("expoTileFindingsHint"), count: r.findings.length, tone: warn ? "warn" : "ok" },
+      ...sources.map(x => x.status === "ok"
+        ? { id: x.id, icon: "mdi:microphone-outline", label: x.label, hint: this.t("expoTileSourceHint", { n: this.formatNumber(x.count) }), count: x.count, tone: "ok" }
+        : { id: x.id, icon: "mdi:microphone-off", label: x.label, hint: this.t(x.status === "inactive" ? "expoInactive" : "expoUnavailable"), disabled: true }),
     ];
-    const open = this.viewTabOf("exposure", tabs, r.findings.length || !live.length ? "findings" : live[0].id);
+    const open = this.viewTabOf("exposure", tabs.filter(x => !x.disabled), r.findings.length || !live.length ? "findings" : live[0].id);
     let body;
     if (open === "findings") {
       this.lvState("exposure", "", "asc");
@@ -4822,7 +4803,7 @@ class ExposureMixin {
       const rows = shown.length ? this.expoSection("expoToCheck", shown.filter(f => f.level === "warn")) + this.expoSection("expoToNote", shown.filter(f => f.level !== "warn")) : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("expoTabFindings")}</h2><p>${this.t("expoFindingsHint")}</p></div></div>${bar}${rows}${this.howCounted("expoFootnote")}</div>`;
     } else body = this.expoSourceTab(r, sources.find(x => x.id === open));
-    return `<div class="stack"><div class="panel">${head}<p class="factnote">${this.t("expoIntro")}</p></div>${tiles}${this.viewTabBar("exposure", tabs, open)}${body}</div>`;
+    return `<div class="stack"><div class="panel">${head}<p class="factnote">${this.t("expoIntro")}</p></div>${this.navTiles("exposure", tabs, open, this.t("exposure"))}${body}</div>`;
   }
 }
 
@@ -5015,20 +4996,15 @@ class PoliciesMixin {
     const on = r.rules.filter(rule => rule.enabled);
     const violations = on.reduce((n, rule) => n + rule.count, 0);
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
-    const tiles = this.sumTiles([
-      { label: this.t("polSumRules"), value: `${this.formatNumber(on.length)}`, sub: this.t("relSumOf", { n: this.formatNumber(r.rules.length) }), tone: on.length ? "ok" : "mute", tab: "policies|rules" },
-      { label: this.t("polSumViolations"), value: this.formatNumber(violations), tone: !on.length ? "mute" : violations ? "warn" : "ok", tab: "policies|violations" },
-      hidden ? { label: this.t("polSumHidden"), value: this.formatNumber(hidden), tone: "mute", tab: "policies|violations" } : null,
-    ]);
     const tabs = [
-      { id: "rules", label: this.t("polTabRules"), count: r.rules.length },
-      { id: "violations", label: this.t("polTabViolations"), count: violations, tone: violations ? "warn" : "ok" },
+      { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: this.t("polTileRulesHint", { on: this.formatNumber(on.length) }), count: r.rules.length, tone: on.length ? "ok" : "mute" },
+      { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: violations, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute" },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
     const body = open === "rules"
       ? `<div class="panel">${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${on.length ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`}${this.howCounted("polFootnote")}</div>`
       : this.polViolations(r);
-    return `<div class="stack"><div class="panel">${head}</div>${tiles}${this.viewTabBar("policies", tabs, open)}${body}</div>`;
+    return `<div class="stack"><div class="panel">${head}</div>${this.navTiles("policies", tabs, open, this.t("policies"))}${body}</div>`;
   }
 }
 
@@ -5045,6 +5021,19 @@ class LayoutMixin {
       return t.tab ? `<button class="sumtile ${t.tone || "mute"}" data-view-tab="${this.esc(t.tab)}">${inner}</button>` : `<div class="sumtile ${t.tone || "mute"}">${inner}</div>`;
     }).join("");
     return cells ? `<div class="sumtiles" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
+  }
+
+  // Tiles that switch between the areas of one view: icon, title, number and a short hint; the open one is marked.
+  // tab: { id, icon, label, hint, count, tone, pill, pillTone, disabled }.
+  navTiles(view, tabs, open, label) {
+    const cells = tabs.map(t => {
+      const tone = t.tone || "mute", has = t.count !== undefined && t.count !== null;
+      const pills = `${has ? `<span class="pill ${tone}">${this.esc(this.formatNumber(t.count))}</span>` : ""}${t.pill ? `<span class="pill ${t.pillTone || tone}">${this.esc(t.pill)}</span>` : ""}`;
+      const inner = `<ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill">${pills}</span><small>${this.esc(t.hint || "")}</small>`;
+      if (t.disabled) return `<div class="taskcard t-mute off" aria-disabled="true">${inner}</div>`;
+      return `<button class="taskcard t-${tone}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`${view}|${t.id}`)}">${inner}</button>`;
+    }).join("");
+    return `<div class="taskgrid compactgrid setgrid navtiles" role="group" aria-label="${this.esc(label)}">${cells}</div>`;
   }
 
   // The tab that is open in a view: the chosen one if it exists, else the first one of `tabs` or `prefer`.
@@ -7220,6 +7209,7 @@ Object.assign(TEXT.de, {
   healthScore: "{percent} % der Objekte ohne Befund", healthTasks: "{count} Aufgaben offen", healthNoTasks: "keine offenen Aufgaben", healthTip: "{affected} von {base} bewerteten Objekten sind betroffen; gezählt werden Objekte, nicht einzelne Befunde. Der Status ist so gut wie der schlechtere von zwei Werten: der Anteil der Objekte ohne Befund und die offenen Aufgaben (kaputte Integrationen, verfehlte Wartungsziele, Backup- oder Datenbankprobleme). Ausgeblendete Befunde zählen nicht. Die Zahl im Ring ist der abgerundete Anteil ohne Befund, minus 4 Punkte je offener Aufgabe und 10 je dringender.",
   repair: "Reparieren", repairSubtitle: "Dinge in Ordnung bringen, die bleiben sollen. Housekeeper zeigt erst eine Vorschau; geschrieben wird erst nach deiner Bestätigung.",
   journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt.",
+ relTileIntHint: "Verfügbarkeit {avail} in {window}", relTilePill: "{n} auffällig", relTileUnstableHint: "Entitäten, die oft zwischen Zuständen wechseln", recTileLoadRows: "{n} Einträge pro Tag ({window})", recTileLoadHint: "Welche Entitäten den Recorder füllen", recTileCostsTop: "Größter Posten: {name} ({share} %)", recTileCostsHint: "Wer wie viel Platz belegt", recTileDbHint: "Größe, Wachstum und Aufbewahrung", polTileRulesHint: "{on} eingeschaltet", polTileViolationsHint: "Verstöße gegen eingeschaltete Regeln", polTileHidden: "{n} ausgeblendet", expoTileFindingsHint: "Was du prüfen oder wissen solltest", expoTileSourceHint: "{n} Entitäten freigegeben", runsTileRunsHint: "Gezählte Läufe von Automationen und Skripten", runsTileQualityHint: "Sieben Blickwinkel je Automation",
   cleanupTabEntities: "Entitäten deaktivieren", cleanupTabDevices: "Geräte deaktivieren", cleanupTabQuarantine: "Quarantäne und Entfernen", cleanupReadyCount: "{count} bereit", cleanupTileEntitiesHint: "Verwaist oder lange nicht verfügbar", cleanupTileDevicesHint: "Geräte ohne funktionierende Entität", cleanupTileQuarantineHint: "Frühestens nach {days} Tagen entfernbar", cleanupTileUnusedHint: "Entitäten ohne bekannte Verwendung", cleanupTileStatsHint: "Reste in der Datenbank löschen", cleanupTilePurgesHint: "Was schon gelöscht wurde", qTypeEntities: "Entitäten ({count})", qTypeDevices: "Geräte ({count})",
   repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde", repairNotChecked: "nicht geprüft", repairNoneFound: "keine Funde",
   repairTaskCounter: "Sensorfehler bereinigen", repairTaskCounterHint: "Falsche Werte in Zählern und Messwerten korrigieren, zum Beispiel ein Zähler, der kurz sinkt, oder ein Ausschlag auf 85 °C.",
@@ -7246,6 +7236,7 @@ Object.assign(TEXT.en, {
   healthScore: "{percent}% of objects without a finding", healthTasks: "{count} tasks open", healthNoTasks: "no open tasks", healthTip: "{affected} of {base} rated objects are affected; objects are counted, not single findings. The status is the worse of two readings: the share of objects without a finding, and the open tasks (broken integrations, missed maintenance goals, backup or database problems). Hidden findings do not count. The number in the ring is the share without a finding, rounded down, minus 4 points for each open task and 10 for an urgent one.",
   repair: "Repair", repairSubtitle: "Fix things that are meant to stay. Housekeeper shows a preview first; nothing is written until you confirm.",
   journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone.",
+ relTileIntHint: "Availability {avail} over {window}", relTilePill: "{n} need a look", relTileUnstableHint: "Entities that often change between states", recTileLoadRows: "{n} rows a day ({window})", recTileLoadHint: "Which entities fill the recorder", recTileCostsTop: "Biggest item: {name} ({share} %)", recTileCostsHint: "Who takes how much space", recTileDbHint: "Size, growth and retention", polTileRulesHint: "{on} switched on", polTileViolationsHint: "Violations of the rules that are on", polTileHidden: "{n} hidden", expoTileFindingsHint: "What you should check or know", expoTileSourceHint: "{n} entities exposed", runsTileRunsHint: "Counted runs of automations and scripts", runsTileQualityHint: "Seven views of each automation",
   cleanupTabEntities: "Disable entities", cleanupTabDevices: "Disable devices", cleanupTabQuarantine: "Quarantine and removal", cleanupReadyCount: "{count} ready", cleanupTileEntitiesHint: "Orphaned or unavailable for a long time", cleanupTileDevicesHint: "Devices without a working entity", cleanupTileQuarantineHint: "Removable after {days} days at the earliest", cleanupTileUnusedHint: "Entities with no known use", cleanupTileStatsHint: "Delete leftovers in the database", cleanupTilePurgesHint: "What has been deleted already", qTypeEntities: "Entities ({count})", qTypeDevices: "Devices ({count})",
   repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found", repairNotChecked: "not checked", repairNoneFound: "none found",
   repairTaskCounter: "Repair sensor errors", repairTaskCounterHint: "Correct wrong values in counters and measurements, for example a counter that briefly falls, or a spike to 85 °C.",

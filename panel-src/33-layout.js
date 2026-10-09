@@ -13,6 +13,19 @@ class LayoutMixin {
     return cells ? `<div class="sumtiles" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
   }
 
+  // Tiles that switch between the areas of one view: icon, title, number and a short hint; the open one is marked.
+  // tab: { id, icon, label, hint, count, tone, pill, pillTone, disabled }.
+  navTiles(view, tabs, open, label) {
+    const cells = tabs.map(t => {
+      const tone = t.tone || "mute", has = t.count !== undefined && t.count !== null;
+      const pills = `${has ? `<span class="pill ${tone}">${this.esc(this.formatNumber(t.count))}</span>` : ""}${t.pill ? `<span class="pill ${t.pillTone || tone}">${this.esc(t.pill)}</span>` : ""}`;
+      const inner = `<ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill">${pills}</span><small>${this.esc(t.hint || "")}</small>`;
+      if (t.disabled) return `<div class="taskcard t-mute off" aria-disabled="true">${inner}</div>`;
+      return `<button class="taskcard t-${tone}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`${view}|${t.id}`)}">${inner}</button>`;
+    }).join("");
+    return `<div class="taskgrid compactgrid setgrid navtiles" role="group" aria-label="${this.esc(label)}">${cells}</div>`;
+  }
+
   // The tab that is open in a view: the chosen one if it exists, else the first one of `tabs` or `prefer`.
   viewTabOf(view, tabs, prefer) {
     const chosen = (this.viewTab ||= {})[view];

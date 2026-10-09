@@ -80,21 +80,13 @@ class ExposureMixin {
     const sources = this.expoSources(r);
     const live = sources.filter(x => x.status === "ok");
     const warn = r.findings.filter(f => f.level === "warn").length;
-    const tiles = this.sumTiles([
-      { label: this.t("expoSumFindings"), value: this.formatNumber(r.findings.length), tone: warn ? "warn" : r.findings.length ? "mute" : "ok", tab: "exposure|findings" },
-      ...sources.map(x => ({
-        label: x.label,
-        value: x.status === "ok" ? this.formatNumber(x.count) : "–",
-        sub: x.status === "ok" ? this.t("expoSumEntities") : this.t(x.status === "inactive" ? "expoInactive" : "expoUnavailable"),
-        tone: x.status === "ok" ? "ok" : x.status === "inactive" ? "mute" : "warn",
-        tab: x.status === "ok" ? `exposure|${x.id}` : "",
-      })),
-    ]);
     const tabs = [
-      { id: "findings", label: this.t("expoTabFindings"), count: r.findings.length, tone: warn ? "warn" : "ok" },
-      ...live.map(x => ({ id: x.id, label: x.label, count: x.count })),
+      { id: "findings", icon: "mdi:shield-alert-outline", label: this.t("expoTabFindings"), hint: this.t("expoTileFindingsHint"), count: r.findings.length, tone: warn ? "warn" : "ok" },
+      ...sources.map(x => x.status === "ok"
+        ? { id: x.id, icon: "mdi:microphone-outline", label: x.label, hint: this.t("expoTileSourceHint", { n: this.formatNumber(x.count) }), count: x.count, tone: "ok" }
+        : { id: x.id, icon: "mdi:microphone-off", label: x.label, hint: this.t(x.status === "inactive" ? "expoInactive" : "expoUnavailable"), disabled: true }),
     ];
-    const open = this.viewTabOf("exposure", tabs, r.findings.length || !live.length ? "findings" : live[0].id);
+    const open = this.viewTabOf("exposure", tabs.filter(x => !x.disabled), r.findings.length || !live.length ? "findings" : live[0].id);
     let body;
     if (open === "findings") {
       this.lvState("exposure", "", "asc");
@@ -105,6 +97,6 @@ class ExposureMixin {
       const rows = shown.length ? this.expoSection("expoToCheck", shown.filter(f => f.level === "warn")) + this.expoSection("expoToNote", shown.filter(f => f.level !== "warn")) : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("expoTabFindings")}</h2><p>${this.t("expoFindingsHint")}</p></div></div>${bar}${rows}${this.howCounted("expoFootnote")}</div>`;
     } else body = this.expoSourceTab(r, sources.find(x => x.id === open));
-    return `<div class="stack"><div class="panel">${head}<p class="factnote">${this.t("expoIntro")}</p></div>${tiles}${this.viewTabBar("exposure", tabs, open)}${body}</div>`;
+    return `<div class="stack"><div class="panel">${head}<p class="factnote">${this.t("expoIntro")}</p></div>${this.navTiles("exposure", tabs, open, this.t("exposure"))}${body}</div>`;
   }
 }

@@ -109,19 +109,14 @@ class PoliciesMixin {
     const on = r.rules.filter(rule => rule.enabled);
     const violations = on.reduce((n, rule) => n + rule.count, 0);
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
-    const tiles = this.sumTiles([
-      { label: this.t("polSumRules"), value: `${this.formatNumber(on.length)}`, sub: this.t("relSumOf", { n: this.formatNumber(r.rules.length) }), tone: on.length ? "ok" : "mute", tab: "policies|rules" },
-      { label: this.t("polSumViolations"), value: this.formatNumber(violations), tone: !on.length ? "mute" : violations ? "warn" : "ok", tab: "policies|violations" },
-      hidden ? { label: this.t("polSumHidden"), value: this.formatNumber(hidden), tone: "mute", tab: "policies|violations" } : null,
-    ]);
     const tabs = [
-      { id: "rules", label: this.t("polTabRules"), count: r.rules.length },
-      { id: "violations", label: this.t("polTabViolations"), count: violations, tone: violations ? "warn" : "ok" },
+      { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: this.t("polTileRulesHint", { on: this.formatNumber(on.length) }), count: r.rules.length, tone: on.length ? "ok" : "mute" },
+      { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: violations, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute" },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
     const body = open === "rules"
       ? `<div class="panel">${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${on.length ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`}${this.howCounted("polFootnote")}</div>`
       : this.polViolations(r);
-    return `<div class="stack"><div class="panel">${head}</div>${tiles}${this.viewTabBar("policies", tabs, open)}${body}</div>`;
+    return `<div class="stack"><div class="panel">${head}</div>${this.navTiles("policies", tabs, open, this.t("policies"))}${body}</div>`;
   }
 }

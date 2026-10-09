@@ -138,10 +138,13 @@ class RunsMixin {
 
   // Two tabs: the counted runs, and the quality of each automation (46-diagnostics.js).
   runsView() {
-    const tabs = [{ id: "runs", label: this.t("runsTabRuns") }, { id: "quality", label: this.t("qualityTab") }];
+    const tabs = [
+      { id: "runs", icon: "mdi:run-fast", label: this.t("runsTabRuns"), hint: this.t("runsTileRunsHint"), tone: "mute" },
+      { id: "quality", icon: "mdi:clipboard-pulse-outline", label: this.t("qualityTab"), hint: this.t("runsTileQualityHint"), tone: "mute" },
+    ];
     const open = this.viewTabOf("runs", tabs, "runs");
-    if (open === "quality") return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.qualityView()}</div>`;
-    return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.runsListView()}</div>`;
+    if (open === "quality") return `<div class="stack">${this.navTiles("runs", tabs, open, this.t("runs"))}${this.qualityView()}</div>`;
+    return `<div class="stack">${this.navTiles("runs", tabs, open, this.t("runs"))}${this.runsListView()}</div>`;
   }
 
   runsListView() {

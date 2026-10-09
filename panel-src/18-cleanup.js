@@ -34,8 +34,7 @@ class CleanupMixin {
 
   // The tiles of the Cleanup view: one job each, with the number of things to do; the chosen one is marked.
   cleanupTiles(tabs, open) {
-    const tiles = tabs.map(t => `<button class="taskcard t-${t.count ? t.tone : "mute"}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`cleanup|${t.id}`)}"><ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill"><span class="pill ${t.count ? t.tone : "mute"}">${this.esc(this.formatNumber(t.count))}</span>${t.pill ? `<span class="pill ok">${this.esc(t.pill)}</span>` : ""}</span><small>${this.esc(t.hint)}</small></button>`).join("");
-    return `<div class="taskgrid compactgrid setgrid cleantiles" role="group" aria-label="${this.esc(this.t("cleanup"))}">${tiles}</div>`;
+    return this.navTiles("cleanup", tabs.map(t => ({ ...t, tone: t.count ? t.tone : "mute" })), open, this.t("cleanup"));
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them.
