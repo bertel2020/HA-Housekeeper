@@ -1,5 +1,85 @@
 # Changelog
 
+## 0.17.0 - 2026-10-09
+
+Housekeeper sagt jetzt, was am dringendsten ist und woran es liegt: Befunde haben
+eine Auswirkung, gemeinsame Ursachen werden gebündelt, und du legst fest, was für
+dein Haus „in Ordnung“ heißt. Automatisiert getestet (597 Python- und 133
+Panel-Tests). Wie bisher liest fast alles nur; Neues, das etwas schreibt, steht
+nur in Housekeepers eigenem Speicher.
+
+### Neu
+
+- **Wartungs-Inbox:** Befunde lassen sich ausblenden, bewusst behalten (mit
+  Begründung) oder auf Wiedervorlage legen. Abgelaufene Entscheidungen kommen
+  von selbst zurück. Das gilt auch für Richtlinien-Verstöße.
+- **Vermerke:** Eine Entität oder ein Gerät kann als absichtlich offline,
+  saisonal, Reserve, wird ersetzt oder „nicht entfernen“ markiert werden. Das
+  blendet „nicht verfügbar“ aus und schützt vor der Bereinigung.
+- **Auswirkung:** Jeder Befund hat eine Auswirkung (hoch bis keine) samt Gründen.
+  Kritisch sind Schlösser, Alarmanlagen, Rauch- und Wassermelder und alles mit dem
+  Label `housekeeper_critical`. Die Befundliste sortiert danach, und Aufräumen
+  verlangt für kritische Objekte eine eigene Bestätigung.
+- **Gemeinsame Ursachen:** Fällt eine Integration oder ein ganzes Gerät aus,
+  steht das als eine Ursache über der Liste; die Folgebefunde sind eingeklappt.
+- **Wartungsziele:** Auf der Übersicht stellst du sieben Grenzen selbst ein
+  (zum Beispiel Alter des Backups oder Zahl nicht verfügbarer Entitäten) und
+  siehst, ob sie erfüllt sind.
+- **Konflikte und Schleifen:** Housekeeper erkennt Automationen mit gegensätzlichen
+  Befehlen und Schleifen zwischen Automationen.
+- **Recorder-Reste löschen:** Statistiken verwaister Entitäten lassen sich nach
+  einem Backup löschen, mit erneuter Prüfung nach dem Backup.
+- **Weitere Richtlinien, Wochenbericht, Blueprint-Prüfung:** 16 zusätzliche
+  Qualitätsregeln, ein Wochenbericht im Bereich Änderungen, eine Prüfung der
+  Blueprints und eine optionale Benachrichtigung bei neuen defekten Referenzen.
+
+### Geändert
+
+- Die Zurück-Taste des Browsers geht im Panel einen Schritt zurück.
+- Listen merken Sortierung und Filter; Befunde lassen sich per Auswahl sammeln.
+- Der Graph zeichnet Kanten übersichtlicher und fasst viele gleiche Knoten zusammen.
+- Mobil stehen die Kennzahlen wieder in zwei Spalten.
+
+### English
+
+Housekeeper now tells you what matters most and why: findings have an impact,
+common causes are bundled, and you decide what “in order” means for your home.
+Automatically tested (597 Python and 133 panel tests). As before almost
+everything only reads; anything new that writes stays in Housekeeper’s own
+storage.
+
+#### New
+
+- **Maintenance inbox:** hide a finding, keep it on purpose (with a reason) or
+  put it off for later. Expired decisions come back by themselves. This also
+  applies to policy violations.
+- **Marks:** an entity or device can be marked as offline on purpose, seasonal,
+  spare, being replaced or “do not remove”. This hides “not available” and
+  protects it from cleanup.
+- **Impact:** every finding has an impact (high to none) with the reasons. Locks,
+  alarm panels, smoke and water sensors and anything with the label
+  `housekeeper_critical` count as critical. The findings list sorts by it, and
+  cleanup asks for a separate confirmation for critical objects.
+- **Common causes:** when an integration or a whole device is down, it shows as one
+  cause above the list; the follow-up findings are folded away.
+- **Maintenance goals:** on the overview you set seven limits yourself (for
+  example the age of the backup or the number of unavailable entities) and see
+  whether they are met.
+- **Conflicts and loops:** Housekeeper detects automations with opposing commands
+  and loops between automations.
+- **Delete recorder leftovers:** statistics of orphaned entities can be deleted
+  after a backup, checked again once the backup is done.
+- **More policies, weekly report, blueprint check:** 16 more quality rules, a
+  weekly report under Changes, a check of blueprints and an optional notification
+  for new broken references.
+
+#### Changed
+
+- The browser’s back button steps back inside the panel.
+- Lists remember sort and filters; findings can be collected by selection.
+- The graph draws edges more clearly and folds many equal nodes together.
+- On phones the figures are back in two columns.
+
 ## 0.16.0 - 2026-10-09
 
 Der Ablauf-Reiter für Automationen und Skripte, Befunde mit Bezug zu Updates,
