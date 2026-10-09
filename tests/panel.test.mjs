@@ -2919,3 +2919,29 @@ test("findings get a status: known, snoozed, hidden, new and in work, and the li
   assert.equal(JSON.stringify(calls.filter(c => c.type === "ha_housekeeper/ignore").map(c => [c.kind, c.reason, c.finding_key])), JSON.stringify([["keep", "on purpose", "c"]]));
   assert.equal(el.decidedState(findings[2]), "known");
 });
+
+test("the counter assistant scans, previews with a chart and asks for REPAIR", async () => {
+  const { el, shadow } = panel("en");
+  const found = { available: true, busy: false, checked: 12, items: [{ statistic_id: "sensor.water", name: "Water", unit: "m³", findings: [{ bad_first: 1788220800, bad_last: 1788260800, low: 41.5, high: 41.5, good_before: 91.69, good_after: 91.8 }] }] };
+  const sent = [];
+  el.data = stepCData().data; el.journal = []; el.view = "cleanup"; el.cleanupKind = "repair_counter";
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("counter_scan") ? found : { ...REPAIR_PLAN }; } };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Repair counter glitches") && shadow.innerHTML.includes("data-counter-scan"));
+  await el.loadCounterScan(true);
+  assert.ok(shadow.innerHTML.includes("sensor.water") && shadow.innerHTML.includes("data-counter-pick"));
+  el.counterSel = "sensor.water"; el.counterMode = "interpolate";
+  await el.createPlan();
+  assert.equal(JSON.stringify(sent[1]), JSON.stringify({ type: "ha_housekeeper/plan_create", actions: [{ kind: "repair_counter", object_id: "sensor.water", mode: "interpolate" }] }));
+  el.confirmation = { plan_id: "r1", token: "t", execute: ["sensor.water"], needs_acknowledgement: [] };
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("<polyline") && html.includes("5-minute rows") && html.includes("REPAIR"));
+});
+
+const REPAIR_PLAN = {
+  plan_id: "r1", created_at: "2026-10-09T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
+  actions: [{ kind: "repair_counter", object_type: "entity", object_id: "sensor.water", mode: "interpolate", name: "Water", verdict: "review", executable: true, reasons: ["counter_write"], used_by: [],
+    counter: { unit: "m³", counts: { states: 3, short_term: 10, long_term: 10, tail_short_term: 40, tail_long_term: 30 }, skipped: {},
+      findings: [{ bad_first: 1788220800, bad_last: 1788260800, low: 41.5, high: 41.5, good_before: 91.69, good_after: 91.8, series: [[1, 91, 91], [2, 41, 91], [3, 41, 91], [4, 91, 91]] }] } }],
+};

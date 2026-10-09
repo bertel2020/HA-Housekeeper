@@ -19,6 +19,8 @@ MODES = ("read_only", "quarantine", "confirmed", "full")
 DEFAULT_MODE = "full"
 QUARANTINE_KINDS = frozenset({"disable_entity", "disable_device"})
 IRREVERSIBLE_KINDS = frozenset({"purge_statistics"})
+# Rewrites rows of the recorder database: only in the mode that allows anything.
+RECORDER_WRITE_KINDS = frozenset({"repair_counter"})
 
 
 def allows(mode: str, action: dict[str, Any]) -> bool:
@@ -26,7 +28,7 @@ def allows(mode: str, action: dict[str, Any]) -> bool:
     rank = MODES.index(mode)
     if action["kind"] in QUARANTINE_KINDS:
         return rank >= 1
-    if action["kind"] in IRREVERSIBLE_KINDS or action.get("recorder"):
+    if action["kind"] in IRREVERSIBLE_KINDS | RECORDER_WRITE_KINDS or action.get("recorder"):
         return rank >= 3
     return rank >= 2
 

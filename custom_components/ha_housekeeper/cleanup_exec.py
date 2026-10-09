@@ -28,6 +28,12 @@ Meters:
   cannot be undone) and/or lets the new entity take over the old entity ID. The old entity moves
   to a free ``_alt`` ID; Home Assistant moves history and statistics along with every rename.
 
+Counters:
+
+* ``repair_counter`` replaces the wrong readings of a counter in the raw states and in both
+  statistics tables and rebuilds the sums that the wrong readings spoiled. The overwritten values
+  stay in the journal, so the repair can be undone while the rows are still as it left them.
+
 Every step is re-checked right before it runs, journaled, and the run stops at the first surprise.
 """
 
@@ -50,7 +56,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util.file import write_utf8_file_atomic
 from homeassistant.util.yaml import dump, parse_yaml
 
-from . import followup
+from . import counter_repair, followup
 from . import refactor as refactor_module
 from .cleanup import (
     BACKUP_KINDS,
@@ -62,6 +68,7 @@ from .cleanup import (
     REFACTOR_KINDS,
     REFERENCE_KINDS,
     REMOVAL_KINDS,
+    REPAIR_KINDS,
     device_fingerprint,
     device_support,
     get_main_device,
@@ -69,7 +76,7 @@ from .cleanup import (
     judge_purge_action,
     registry_fingerprint,
 )
-from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
+from .const import DOMAIN, MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 from .meter import analyse, prepare_meter, read_series, recorder_ready
 from .protection import allows, allows_undo
 from .recorder_purge import delete_statistics, statistics_left
@@ -534,6 +541,8 @@ class CleanupRunner:
             return await self._migrate_meter(action), "meter_migrated"
         if kind in PURGE_KINDS:
             return await self._purge_statistics(action), "statistics_purged"
+        if kind in REPAIR_KINDS:
+            return await self._repair_counter(action), "counter_repaired"
         if kind in REFACTOR_KINDS:
             return await self._refactor_automation(action), "automation_refactored"
         return await self._replace_references(action), "references_replaced"
@@ -571,6 +580,38 @@ class CleanupRunner:
             "purge", _now(), requested=1, removed=len(removed), skipped=0, states=states
         )
         return {"states": states, "irreversible": True}
+
+    # -- counters --------------------------------------------------------------------------
+
+    async def _recorder_write(self, work: Any) -> Any:
+        """Run ``work`` while no slow recorder query reads the tables; the caches are stale after."""
+        store = self.hass.data.setdefault(DOMAIN, {})
+        lock: asyncio.Lock = store.setdefault("reliability_lock", asyncio.Lock())
+        try:
+            async with asyncio.timeout(30):
+                await lock.acquire()
+        except TimeoutError as err:
+            raise StepAbort("recorder_busy") from err
+        try:
+            return await work()
+        finally:
+            lock.release()
+            store.get("query_cache", {}).clear()
+            self.scanner.replies.clear()
+
+    async def _repair_counter(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Write the repair; the overwritten values go into the result, so it can be undone."""
+        written = await self._recorder_write(
+            lambda: counter_repair.apply(
+                self.hass, action["object_id"], action["mode"], action["fingerprint"]
+            )
+        )
+        if written.get("error"):
+            raise StepAbort(written["error"])
+        return {"before": action["fingerprint"], "mode": action["mode"], "counter": written}
+
+    async def _undo_counter(self, result: dict[str, Any]) -> str:
+        return await self._recorder_write(lambda: counter_repair.undo(self.hass, result["counter"]))
 
     # -- devices ---------------------------------------------------------------------------
 
@@ -1080,6 +1121,13 @@ class CleanupRunner:
                 return "now_blocked"
             action["sources"] = [found["source"]]
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
+        if kind in REPAIR_KINDS:
+            if not recorder_ready(self.hass):
+                return "no_recorder"
+            found = await counter_repair.prepare(self.hass, object_id, action.get("mode") or "hold")
+            if found.get("error") or action.get("fingerprint") != found["fingerprint"]:
+                return "counter_changed"
+            return None if object_id in context["acknowledged"] else "needs_acknowledgement"
         if kind in PURGE_KINDS:
             verdict = judge_purge_action(
                 object_id,
@@ -1213,6 +1261,10 @@ class CleanupRunner:
                     )
             elif kind in METER_KINDS:
                 checks.extend(await self._verify_meter(action))
+            elif kind in REPAIR_KINDS:
+                found = await counter_repair.prepare(self.hass, object_id, action["mode"])
+                ok = found.get("error") == "nothing_found"
+                checks.append({"check": "counter_clean", "object_id": object_id, "ok": ok})
             elif kind in REFACTOR_KINDS:
                 checks.append(await self._verify_refactor(action))
             elif kind in PURGE_KINDS:
@@ -1344,6 +1396,11 @@ class CleanupRunner:
                 outcome = await self._undo_references(result)
             elif kind in METER_KINDS:
                 outcome = await self._undo_meter(result)
+            elif kind in REPAIR_KINDS:
+                try:
+                    outcome = await self._undo_counter(result)
+                except StepAbort as stop:
+                    outcome = stop.reason
             elif kind in PURGE_KINDS:
                 outcome = "irreversible"
             else:

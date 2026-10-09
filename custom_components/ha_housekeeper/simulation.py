@@ -22,6 +22,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     devices = {"removed": 0, "disabled": 0}
     changed: dict[tuple[str, str], int] = {}
     meters = 0
+    repaired = 0
     purged: set[str] = set()
     certain: set[tuple[str, str]] = set()
     uncertain: set[tuple[str, str]] = set()
@@ -59,6 +60,8 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
                 kept_rows += history["statistics"] + history["states"]
         if kind == "migrate_meter":
             meters += 1
+        if kind == "repair_counter":
+            repaired += 1
         if kind == "replace_references":
             for source in action.get("sources") or []:
                 if source.get("writable") and source.get("changes"):
@@ -83,6 +86,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
             for (name, kind), count in sorted(changed.items(), key=lambda i: (-i[1], i[0]))[:SHOWN]
         ],
         "meters": meters,
+        "repaired": repaired,
         "purged": len(purged),
         "remaining_certain": len(certain),
         "remaining_uncertain": len(uncertain) + manual,

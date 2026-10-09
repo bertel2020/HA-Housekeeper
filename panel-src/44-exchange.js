@@ -176,6 +176,7 @@ class ExchangeMixin {
     if (s.disabled) lines.push(this.t("simDisabled", { count: s.disabled, devices: s.disabled_devices }));
     if (s.replaced) lines.push(this.t("simReplaced", { count: s.replaced }) + (s.replaced_by_source.length ? ` (${s.replaced_by_source.slice(0, 5).map(r => `${r.name}: ${r.count}`).join(", ")})` : ""));
     if (s.meters) lines.push(this.t("simMeters", { count: s.meters }));
+    if (s.repaired) lines.push(this.t("simRepaired", { count: s.repaired }));
     if (s.purged) lines.push(this.t("simPurged", { count: s.purged }));
     lines.push(this.t("simCertain", { count: s.remaining_certain }), this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));

@@ -14,7 +14,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from . import battery_trend
+from . import battery_trend, counter_repair
 from . import refactor as refactor_module
 from .audit_report import build_report
 from .backup_health import ATTEST_KINDS, backup_health
@@ -28,6 +28,7 @@ from .cleanup import (
     RECORDER_CHOICES,
     REFACTOR_KINDS,
     REFERENCE_KINDS,
+    REPAIR_KINDS,
     attach_history,
     build_plan,
     device_fingerprint,
@@ -58,7 +59,7 @@ from .lifecycle import removed_devices, timeline
 from .maintenance import preflight_report, recorder_costs
 from .marks import KINDS as MARK_KINDS
 from .marks import OBJECT_TYPES as MARK_TYPES
-from .meter import prepare_meter
+from .meter import prepare_meter, recorder_ready
 from .policies import RULES as POLICY_RULES
 from .policies import policies
 from .protection import MODES as PROTECTION_MODES
@@ -322,6 +323,13 @@ async def _plan_from_requests(
             if key not in meter_data and key[0] != key[1]:
                 meter_data[key] = await prepare_meter(hass, key[0], key[1], key[2])
 
+    counter_data = {}
+    for action in requests:
+        if action["kind"] in REPAIR_KINDS:
+            key = (action["object_id"], action.get("mode") or "hold")
+            if key not in counter_data:
+                counter_data[key] = await counter_repair.prepare(hass, *key)
+
     def statistic_exists(statistic_id: str) -> bool:
         return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
 
@@ -347,6 +355,7 @@ async def _plan_from_requests(
         statistic_exists=statistic_exists,
         refactor_data=refactor_data,
         refactor_enabled=refactor_enabled,
+        counter_data=counter_data,
     )
     await _add_history(hass, snapshot, plan)
     return plan
@@ -362,7 +371,7 @@ async def _plan_from_requests(
                     vol.Required("kind"): vol.In(sorted(ACTION_KINDS)),
                     vol.Required("object_id"): str,
                     vol.Optional("target"): str,
-                    vol.Optional("mode"): vol.In(METER_MODES),
+                    vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.MODES)),
                     vol.Optional("states"): bool,
                     vol.Optional("recorder"): vol.In(RECORDER_CHOICES),
                     vol.Optional("fix"): vol.In(refactor_module.FIXES),
@@ -900,6 +909,65 @@ async def websocket_statistics_last(
     except Exception as err:
         connection.send_error(msg["id"], "statistics_last_failed", f"{type(err).__name__}: {err}")
         return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/counter_scan",
+        vol.Optional("statistic_id"): str,
+        vol.Optional("days", default=counter_repair.SCAN_DAYS): vol.All(
+            int, vol.Range(min=1, max=3650)
+        ),
+        vol.Optional("refresh", default=False): bool,
+    }
+)
+@websocket_api.async_response
+async def websocket_counter_scan(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Counters whose readings broke the order and came back (a sensor glitch). Read-only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    if not recorder_ready(hass) or not counter_repair.schema_ok():
+        connection.send_result(
+            msg["id"], _versioned({"available": False, "busy": False, "items": [], "checked": 0})
+        )
+        return
+    wanted = [msg["statistic_id"]] if msg.get("statistic_id") else None
+    days = msg["days"]
+    name = f"counter_scan:{wanted[0] if wanted else '*'}:{days}"
+    try:
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            found = await cached_query(
+                hass,
+                name,
+                counter_repair.CACHE_SECONDS,
+                lambda: counter_repair.scan_blocking(hass, wanted, days, counter_repair.MAX_SPAN),
+                refresh=msg["refresh"],
+            )
+    except Exception as err:
+        connection.send_error(msg["id"], "counter_scan_failed", f"{type(err).__name__}: {err}")
+        return
+    if found.busy:
+        result: dict[str, Any] = {"available": True, "busy": True, "items": [], "checked": 0}
+    else:
+        items = []
+        for item in found.raw["items"]:
+            state = hass.states.get(item["statistic_id"])
+            items.append({**item, "name": (state.name if state else None) or item["statistic_id"]})
+        result = {
+            "available": True,
+            "busy": False,
+            "items": items,
+            "checked": found.raw["checked"],
+            "cached": found.cached,
+        }
     connection.send_result(msg["id"], _versioned(result))
 
 
@@ -2110,6 +2178,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_storms)
     websocket_api.async_register_command(hass, websocket_db_health)
     websocket_api.async_register_command(hass, websocket_statistics_last)
+    websocket_api.async_register_command(hass, websocket_counter_scan)
     websocket_api.async_register_command(hass, websocket_policies)
     websocket_api.async_register_command(hass, websocket_set_policy)
     websocket_api.async_register_command(hass, websocket_set_policy_prefix)

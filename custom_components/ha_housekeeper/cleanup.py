@@ -29,12 +29,19 @@ REFERENCE_KINDS = frozenset({"replace_references"})
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
+REPAIR_KINDS = frozenset({"repair_counter"})
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
 RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})
 ACTION_KINDS = (
-    ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS | METER_KINDS | PURGE_KINDS | REFACTOR_KINDS
+    ENTITY_KINDS
+    | DEVICE_KINDS
+    | REFERENCE_KINDS
+    | METER_KINDS
+    | PURGE_KINDS
+    | REFACTOR_KINDS
+    | REPAIR_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
@@ -48,6 +55,7 @@ BACKUP_KINDS = frozenset(
         "migrate_meter",
         "purge_statistics",
         "refactor_automation",
+        "repair_counter",
     }
 )
 # Kinds that remove something: they get the strongest confirmation word.
@@ -294,6 +302,11 @@ BLOCKING_REASONS = frozenset(
         "stats_type_differs",
         "stats_nothing_to_import",
         "no_recorder",
+        "no_counter_statistics",
+        "nothing_found",
+        "too_many_rows",
+        "schema_unknown",
+        "counter_changed",
         "old_not_in_registry",
         "target_not_in_registry",
         "alt_id_taken",
@@ -566,6 +579,40 @@ def judge_purge_action(
     return action
 
 
+def judge_counter_action(
+    object_id: str, objects: dict[str, dict[str, Any]], counter: dict[str, Any], recorder: bool
+) -> dict[str, Any]:
+    """Judge repairing the wrong readings of one counter in the recorder tables.
+
+    ``counter`` is the preview of ``counter_repair``: the findings, the rows each table would
+    change and a fingerprint. Writing the recorder is always ``review``; the old values are kept in
+    the journal, so the repair can be undone as long as the rows are still as it left them.
+    """
+    action: dict[str, Any] = {
+        "kind": "repair_counter",
+        "object_id": object_id,
+        "object_type": "entity",
+        "name": (objects.get(object_id) or {}).get("name") or object_id,
+        "mode": counter.get("mode") or "hold",
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": True,
+        "counter": {k: v for k, v in counter.items() if k != "error"},
+    }
+    reasons = action["reasons"]
+    if not recorder:
+        reasons.append("no_recorder")
+    elif counter.get("error"):
+        reasons.append(counter["error"])
+    else:
+        reasons.append("counter_write")
+        if counter.get("skipped"):
+            reasons.append("counter_partial")
+    _verdict(action)
+    return action
+
+
 def judge_meter_action(
     object_id: str,
     target: str | None,
@@ -710,6 +757,7 @@ def build_plan(
     statistic_exists: Callable[[str], bool] | None = None,
     refactor_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
     refactor_enabled: bool = False,
+    counter_data: dict[tuple[str, str], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -758,6 +806,15 @@ def build_plan(
                 bool(snapshot["meta"].get("recorder_available")),
             )
             action["fingerprint"] = None
+        elif kind in REPAIR_KINDS:
+            mode = request.get("mode") or "hold"
+            counter = (counter_data or {}).get(
+                (object_id, mode), {"error": "no_counter_statistics"}
+            )
+            action = judge_counter_action(
+                object_id, objects, counter, bool(snapshot["meta"].get("recorder_available"))
+            )
+            action["fingerprint"] = counter.get("fingerprint")
         elif kind in REFACTOR_KINDS:
             fix, values = request.get("fix") or "", request.get("values") or {}
             found = (refactor_data or {}).get(refactor_key(object_id, fix, values))
@@ -908,7 +965,7 @@ def attach_history(plan: dict[str, Any], rows: dict[str, dict[str, int]]) -> Non
 
 # Fields that only the server needs to undo a step. They can be large (a whole config file) and are
 # never sent to the panel.
-INTERNAL_RESULT_KEYS = frozenset({"restore"})
+INTERNAL_RESULT_KEYS = frozenset({"restore", "counter"})
 INTERNAL_SOURCE_KEYS = frozenset({"before", "file_before", "file_after_hash"})
 
 
