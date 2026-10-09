@@ -180,7 +180,7 @@ class DiagnosisMixin {
       try {
         const r = await this._hass.callWS({ type: "ha_housekeeper/statistics_last", ids: [id] });
         if (r?.busy) { asked.delete(id); return; }
-        (this.statLast ||= {})[id] = r?.last?.[id] ?? 0;
+        (this.statLast ||= {})[id] = r?.last?.[id] ?? 0; (this.statSpan ||= {})[id] = { first: r?.first?.[id] ?? 0, rows: r?.rows?.[id] ?? 0 };
       } catch (_) { return; }
       if (this.selected?.object_id === id) this.render();
     }, 0);
@@ -209,7 +209,9 @@ class DiagnosisMixin {
       if (item.has_statistics) this.ensureStatLast(item.object_id);
       const last = this.statLast?.[item.object_id];
       const lastLine = item.has_statistics && last ? `<small>${this.t("statLastEntry")}: ${this.esc(this.formatDate(new Date(last * 1000).toISOString()))} · ${this.esc(this.relTime(new Date(last * 1000).toISOString()))}</small>` : "";
-      facts.push([this.t("longTermStats"), `${this.t(item.has_statistics ? "yes" : "no")}${lastLine}`]);
+      const span = this.statSpan?.[item.object_id];
+      const spanLine = item.has_statistics && span?.first ? `<small>${this.t("statFirstEntry")}: ${this.esc(this.formatDate(new Date(span.first * 1000).toISOString()))} · ${this.t("statRows", { count: this.formatNumber(span.rows) })}</small>` : "";
+      facts.push([this.t("longTermStats"), `${this.t(item.has_statistics ? "yes" : "no")}${spanLine}${lastLine}`]);
     }
     if (["automation", "script"].includes(item.object_type) && this.runs) {
       const row = this.runsRow(item);

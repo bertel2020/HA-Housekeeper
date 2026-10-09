@@ -96,18 +96,22 @@ class UnusedMixin {
     this.lvState("orphanstats", "id", "asc");
     const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
     const lastOf = o => this.orphanLast?.last?.[o.statistic_id];
+    const firstOf = o => this.orphanLast?.first?.[o.statistic_id];
+    const rowsOf = o => this.orphanLast?.rows?.[o.statistic_id];
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
       { key: "kind", label: "sortKind", dir: "asc", get: o => this.t(kind(o)) },
       { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
       { key: "last", label: "sortLastEntry", dir: "desc", get: lastOf },
+      { key: "first", label: "sortFirstEntry", dir: "asc", get: firstOf },
+      { key: "rows", label: "sortRows", dir: "desc", get: rowsOf },
     ];
     this.ensureOrphanLast();
     const kinds = [...new Set(all.map(kind))];
     const units = [...new Set(all.map(o => o.unit).filter(Boolean))].sort();
     const AGES = [30, 365, 730];
-    this.setExporter("orphanstats", "orphaned-statistics", ["ID", this.t("utKind"), this.t("utUnit"), this.t("utLast"), this.t("inEnergy")], () => rows.map(o => [o.statistic_id, this.t(kind(o)), o.unit || "", lastOf(o) ? new Date(lastOf(o) * 1000).toISOString() : "", o.in_energy ? "yes" : "no"]));
-    const bar = this.listBar("orphanstats", { columns: [{ key: "kind", label: "utKind" }, { key: "unit", label: "utUnit" }, { key: "last", label: "utLast" }, { key: "energy", label: "utEnergy" }], sorts, filters: [
+    this.setExporter("orphanstats", "orphaned-statistics", ["ID", this.t("utKind"), this.t("utUnit"), this.t("utFirst"), this.t("utLast"), this.t("utRows"), this.t("inEnergy")], () => rows.map(o => [o.statistic_id, this.t(kind(o)), o.unit || "", firstOf(o) ? new Date(firstOf(o) * 1000).toISOString() : "", lastOf(o) ? new Date(lastOf(o) * 1000).toISOString() : "", rowsOf(o) ?? "", o.in_energy ? "yes" : "no"]));
+    const bar = this.listBar("orphanstats", { columns: [{ key: "kind", label: "utKind" }, { key: "unit", label: "utUnit" }, { key: "first", label: "utFirst" }, { key: "last", label: "utLast" }, { key: "rows", label: "utRows" }, { key: "energy", label: "utEnergy" }], sorts, filters: [
       { name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) },
       { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
       { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
@@ -117,6 +121,7 @@ class UnusedMixin {
       age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
     }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
+    this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
     const lastCell = o => {
       if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">…</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
@@ -124,16 +129,22 @@ class UnusedMixin {
       if (ts === null || ts === undefined) return `<span class="muted">${this.orphanLast?.available ? this.t("lastEntryNone") : "–"}</span>`;
       return this.ageCell(new Date(ts * 1000).toISOString());
     };
+    const firstCell = o => {
+      const ts = firstOf(o);
+      return ts ? this.ageCell(new Date(ts * 1000).toISOString()) : `<span class="muted">${this.orphanLast?.busy || (this.orphanLastLoading && !this.orphanLast) ? "…" : "–"}</span>`;
+    };
+    const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">…</span>`; };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}</div></div>` },
+      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
+      { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
+      { key: "rows", label: "utRows", dir: "desc", cell: rowsCell },
       { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
     ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
-    this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
     return `<div class="stack">${this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
   }
 
@@ -141,6 +152,13 @@ class UnusedMixin {
   purgeBox(o) {
     if (!this.data.meta.recorder_available || o.in_energy) return "";
     return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
+  }
+
+  // Header box: ticks every selectable row of the shown page; half-ticked when only some are.
+  purgeHeadBox() {
+    if (!this.data.meta.recorder_available || !this._purgePage?.length) return "";
+    const n = this._purgePage.filter(id => this.purgeSel.has(id)).length;
+    return `<input type="checkbox" class="selbox" data-psel-all ${n === this._purgePage.length ? "checked" : ""} ${n && n < this._purgePage.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`;
   }
 
   purgeBar() {

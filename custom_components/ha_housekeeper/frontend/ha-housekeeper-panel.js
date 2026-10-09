@@ -479,7 +479,7 @@ Object.assign(TEXT.de, {
   changesFiltered: "Der Filter blendet alle {n} Einträge dieses Abschnitts aus.",
   lastEntry: "Letzter Eintrag", lastEntryNone: "kein Eintrag gefunden", sortLastEntry: "Letzter Eintrag",
   utName: "Name", utDomain: "Domain", utDevice: "Gerät", utArea: "Bereich", utIntegration: "Integration", utChanged: "Letzte Änderung", utReported: "Letzte Meldung", utSince: "Beobachtet seit", utStats: "Statistik",
-  utStatId: "Statistik-ID", utKind: "Art", utUnit: "Einheit", utLast: "Letzter Eintrag", utEnergy: "Energie-Dashboard",
+  utStatId: "Statistik-ID", utKind: "Art", utUnit: "Einheit", utLast: "Letzter Eintrag", utFirst: "Erster Eintrag", utRows: "Datensätze", sortFirstEntry: "Erster Eintrag", sortRows: "Datensätze", statFirstEntry: "Erster Statistik-Eintrag", statRows: "{count} Stundenwerte", utEnergy: "Energie-Dashboard",
   sortKind: "Art", sortDomain: "Domain", sortDevice: "Gerät", sortIntegration: "Integration", sortChanged: "Letzte Änderung", sortReported: "Letzte Meldung", sortStats: "Statistik",
   allUnits: "Alle Einheiten", allAges: "Letzter Eintrag: jeder", allIntegrations: "Alle Integrationen", statAge30: "Letzter Eintrag älter als 30 Tage", statAge365: "Letzter Eintrag älter als 1 Jahr", statAge730: "Letzter Eintrag älter als 2 Jahre", lastEntryBusyShort: "Recorder beschäftigt",
   statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entität mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entität umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger sind Vermutungen aus Name und Einheit.",
@@ -512,7 +512,7 @@ Object.assign(TEXT.en, {
   changesFiltered: "The filter hides all {n} entries of this section.",
   lastEntry: "Last entry", lastEntryNone: "no entry found", sortLastEntry: "Last entry",
   utName: "Name", utDomain: "Domain", utDevice: "Device", utArea: "Area", utIntegration: "Integration", utChanged: "Last change", utReported: "Last report", utSince: "Observed since", utStats: "Statistics",
-  utStatId: "Statistic ID", utKind: "Kind", utUnit: "Unit", utLast: "Last entry", utEnergy: "Energy dashboard",
+  utStatId: "Statistic ID", utKind: "Kind", utUnit: "Unit", utLast: "Last entry", utFirst: "First entry", utRows: "Records", sortFirstEntry: "First entry", sortRows: "Records", statFirstEntry: "First statistics entry", statRows: "{count} hourly values", utEnergy: "Energy dashboard",
   sortKind: "Kind", sortDomain: "Domain", sortDevice: "Device", sortIntegration: "Integration", sortChanged: "Last change", sortReported: "Last report", sortStats: "Statistics",
   allUnits: "All units", allAges: "Last entry: any", allIntegrations: "All integrations", statAge30: "Last entry older than 30 days", statAge365: "Last entry older than 1 year", statAge730: "Last entry older than 2 years", lastEntryBusyShort: "Recorder busy",
   statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are guesses from name and unit.",
@@ -1146,7 +1146,7 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
-      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}
+      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
@@ -1412,7 +1412,7 @@ class ListsMixin {
     const head = columns.map(c => {
       const on = st.sort === c.key;
       const inner = c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-      return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${inner}</th>`;
+      return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}</th>`;
     }).join("");
     const body = rows.map(item => {
       const attrs = rowAttrs(item);
@@ -2510,11 +2510,13 @@ class CleanupMixin {
   // Follow a running plan until it stops; the plan object is replaced everywhere it is shown.
   async pollPlan(planId) {
     this._polling = planId;
+    let tries = 0;
     while (this._polling === planId) {
       try {
         const res = await this._hass.callWS({ type: "ha_housekeeper/plan_status", plan_id: planId });
         this.adoptPlan(res.plan); this.planProgress = res.progress; this.render();
-        if (!res.progress.running && res.plan.status !== "running") break;
+        const verifying = res.plan.status === "executed" && !res.plan.verification && (tries += 1) < 60;
+        if (!res.progress.running && res.plan.status !== "running" && !verifying) break;
       } catch (_) { break; }
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
@@ -2609,11 +2611,27 @@ class CleanupMixin {
     return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" style="--mdc-icon-size:14px"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
   }
 
+  // One clear line with the end of a run: green when it all worked, amber when something is left, red when nothing was done.
+  planOutcome(plan) {
+    const status = plan.status, total = plan.actions.length;
+    const done = plan.actions.filter(a => a.result?.state === "done").length;
+    const failedCheck = plan.verification && !plan.verification.ok;
+    let tone, icon, text;
+    if (status === "verified") { tone = "ok"; icon = "mdi:check-circle"; text = this.t("outcomeDone", { done, total }); }
+    else if (status === "executed" && !plan.verification) { tone = "mute"; icon = "mdi:progress-clock"; text = this.t("outcomeVerifying", { done, total }); }
+    else if (status === "executed" && failedCheck) { tone = "warn"; icon = "mdi:alert-circle"; text = this.t("outcomeCheckFailed", { done, total }); }
+    else if (status === "partial") { tone = "warn"; icon = "mdi:alert-circle"; text = this.t("outcomePartial", { done, total }); }
+    else if (status === "aborted") { tone = "red"; icon = "mdi:close-circle"; text = this.t("outcomeAborted"); }
+    else return "";
+    return `<div class="outcome ${tone}" role="status"><ha-icon icon="${icon}"></ha-icon><strong>${this.esc(text)}</strong></div>`;
+  }
+
   planCard(plan) {
     const sm = plan.summary || {};
     const open = plan.status === "dry_run";
     const rows = plan.actions.map(a => {
-      const tone = { ok: "ok", review: "warn", blocked: "red" }[a.verdict] || "mute";
+      const settled = a.result?.state === "done";
+      const tone = settled ? "ok" : { ok: "ok", review: "warn", blocked: "red" }[a.verdict] || "mute";
       const uses = (a.used_by || []).slice(0, 4).map(u => {
         const obj = this.findObject(u.source);
         return `<button class="chip" data-object="${this.esc(u.source)}">${this.esc(obj?.name || u.source.split(":").slice(1).join(":"))}</button>`;
@@ -2631,9 +2649,9 @@ class CleanupMixin {
       const undo = result?.state !== "done" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
-      return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
+      return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${settled || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
         <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc(sub)}${reasons ? ` · ${this.esc(reasons)}` : ""}${this.esc(abort)}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
-        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable ? this.undoBadge(a) : ""}<span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span></span></div>`;
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable ? this.undoBadge(a) : ""}${result ? "" : `<span class="pill ${tone}">${this.t(`verdict_${a.verdict}`)}</span>`}</span></div>`;
     }).join("");
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
@@ -2650,7 +2668,7 @@ class CleanupMixin {
       : `<div class="setrow planfoot"><small style="margin:0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<div class="checkrow"><b>${this.t("verification")}</b>${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      ${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
+      ${this.planOutcome(plan)}${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
   }
 
   kindSelect() {
@@ -3265,18 +3283,22 @@ class UnusedMixin {
     this.lvState("orphanstats", "id", "asc");
     const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
     const lastOf = o => this.orphanLast?.last?.[o.statistic_id];
+    const firstOf = o => this.orphanLast?.first?.[o.statistic_id];
+    const rowsOf = o => this.orphanLast?.rows?.[o.statistic_id];
     const sorts = [
       { key: "id", label: "sortId", dir: "asc", get: o => o.statistic_id },
       { key: "kind", label: "sortKind", dir: "asc", get: o => this.t(kind(o)) },
       { key: "unit", label: "sortUnit", dir: "asc", get: o => o.unit },
       { key: "last", label: "sortLastEntry", dir: "desc", get: lastOf },
+      { key: "first", label: "sortFirstEntry", dir: "asc", get: firstOf },
+      { key: "rows", label: "sortRows", dir: "desc", get: rowsOf },
     ];
     this.ensureOrphanLast();
     const kinds = [...new Set(all.map(kind))];
     const units = [...new Set(all.map(o => o.unit).filter(Boolean))].sort();
     const AGES = [30, 365, 730];
-    this.setExporter("orphanstats", "orphaned-statistics", ["ID", this.t("utKind"), this.t("utUnit"), this.t("utLast"), this.t("inEnergy")], () => rows.map(o => [o.statistic_id, this.t(kind(o)), o.unit || "", lastOf(o) ? new Date(lastOf(o) * 1000).toISOString() : "", o.in_energy ? "yes" : "no"]));
-    const bar = this.listBar("orphanstats", { columns: [{ key: "kind", label: "utKind" }, { key: "unit", label: "utUnit" }, { key: "last", label: "utLast" }, { key: "energy", label: "utEnergy" }], sorts, filters: [
+    this.setExporter("orphanstats", "orphaned-statistics", ["ID", this.t("utKind"), this.t("utUnit"), this.t("utFirst"), this.t("utLast"), this.t("utRows"), this.t("inEnergy")], () => rows.map(o => [o.statistic_id, this.t(kind(o)), o.unit || "", firstOf(o) ? new Date(firstOf(o) * 1000).toISOString() : "", lastOf(o) ? new Date(lastOf(o) * 1000).toISOString() : "", rowsOf(o) ?? "", o.in_energy ? "yes" : "no"]));
+    const bar = this.listBar("orphanstats", { columns: [{ key: "kind", label: "utKind" }, { key: "unit", label: "utUnit" }, { key: "first", label: "utFirst" }, { key: "last", label: "utLast" }, { key: "rows", label: "utRows" }, { key: "energy", label: "utEnergy" }], sorts, filters: [
       { name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) },
       { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
       { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
@@ -3286,6 +3308,7 @@ class UnusedMixin {
       age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
     }, sorts, tie: o => o.statistic_id });
     const pg = this.paginate("orphanstats", rows);
+    this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
     const lastCell = o => {
       if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">…</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
@@ -3293,16 +3316,22 @@ class UnusedMixin {
       if (ts === null || ts === undefined) return `<span class="muted">${this.orphanLast?.available ? this.t("lastEntryNone") : "–"}</span>`;
       return this.ageCell(new Date(ts * 1000).toISOString());
     };
+    const firstCell = o => {
+      const ts = firstOf(o);
+      return ts ? this.ageCell(new Date(ts * 1000).toISOString()) : `<span class="muted">${this.orphanLast?.busy || (this.orphanLastLoading && !this.orphanLast) ? "…" : "–"}</span>`;
+    };
+    const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">…</span>`; };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}</div></div>` },
+      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
+      { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
+      { key: "rows", label: "utRows", dir: "desc", cell: rowsCell },
       { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
     ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
-    this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
     return `<div class="stack">${this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
   }
 
@@ -3310,6 +3339,13 @@ class UnusedMixin {
   purgeBox(o) {
     if (!this.data.meta.recorder_available || o.in_energy) return "";
     return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
+  }
+
+  // Header box: ticks every selectable row of the shown page; half-ticked when only some are.
+  purgeHeadBox() {
+    if (!this.data.meta.recorder_available || !this._purgePage?.length) return "";
+    const n = this._purgePage.filter(id => this.purgeSel.has(id)).length;
+    return `<input type="checkbox" class="selbox" data-psel-all ${n === this._purgePage.length ? "checked" : ""} ${n && n < this._purgePage.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`;
   }
 
   purgeBar() {
@@ -3612,7 +3648,7 @@ class DiagnosisMixin {
       try {
         const r = await this._hass.callWS({ type: "ha_housekeeper/statistics_last", ids: [id] });
         if (r?.busy) { asked.delete(id); return; }
-        (this.statLast ||= {})[id] = r?.last?.[id] ?? 0;
+        (this.statLast ||= {})[id] = r?.last?.[id] ?? 0; (this.statSpan ||= {})[id] = { first: r?.first?.[id] ?? 0, rows: r?.rows?.[id] ?? 0 };
       } catch (_) { return; }
       if (this.selected?.object_id === id) this.render();
     }, 0);
@@ -3641,7 +3677,9 @@ class DiagnosisMixin {
       if (item.has_statistics) this.ensureStatLast(item.object_id);
       const last = this.statLast?.[item.object_id];
       const lastLine = item.has_statistics && last ? `<small>${this.t("statLastEntry")}: ${this.esc(this.formatDate(new Date(last * 1000).toISOString()))} · ${this.esc(this.relTime(new Date(last * 1000).toISOString()))}</small>` : "";
-      facts.push([this.t("longTermStats"), `${this.t(item.has_statistics ? "yes" : "no")}${lastLine}`]);
+      const span = this.statSpan?.[item.object_id];
+      const spanLine = item.has_statistics && span?.first ? `<small>${this.t("statFirstEntry")}: ${this.esc(this.formatDate(new Date(span.first * 1000).toISOString()))} · ${this.t("statRows", { count: this.formatNumber(span.rows) })}</small>` : "";
+      facts.push([this.t("longTermStats"), `${this.t(item.has_statistics ? "yes" : "no")}${spanLine}${lastLine}`]);
     }
     if (["automation", "script"].includes(item.object_type) && this.runs) {
       const row = this.runsRow(item);
@@ -7209,6 +7247,7 @@ Object.assign(TEXT.en, {
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  outcomeDone: "Erfolgreich abgeschlossen: {done} von {total} erledigt, Prüfung bestanden.", outcomeVerifying: "Ausgeführt: {done} von {total} erledigt. Die Prüfung läuft noch …", outcomeCheckFailed: "{done} von {total} erledigt, aber die Prüfung hat etwas gefunden. Siehe unten.", outcomePartial: "Nur teilweise ausgeführt: {done} von {total} erledigt.", outcomeAborted: "Abgebrochen. Es wurde nichts geändert; der Grund steht unten.",
   repeatPlan: "Plan wiederholen", repeatHint: "Es wurde nichts geändert. Das erstellt eine neue Vorschau mit denselben Objekten.",
   planResultDone: "Plan", undoYes: "Ja, rückgängig machen", undoAskOne: "Diese Änderung zurücksetzen?", undoAskAll: "Alles rückgängig machen?",
   undoAskAllHint: "Housekeeper stellt zurück, was dieser Plan geändert hat, soweit es unverändert ist.", undoAllHint: "Housekeeper kann zurückstellen, was dieser Plan geändert hat, solange es unverändert ist.", reportTitle: "Prüfbericht",
@@ -7237,6 +7276,7 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  outcomeDone: "Completed successfully: {done} of {total} done, check passed.", outcomeVerifying: "Executed: {done} of {total} done. The check is still running …", outcomeCheckFailed: "{done} of {total} done, but the check found something. See below.", outcomePartial: "Only partly executed: {done} of {total} done.", outcomeAborted: "Aborted. Nothing was changed; the reason is below.",
   repeatPlan: "Repeat plan", repeatHint: "Nothing was changed. This creates a new preview with the same objects.",
   planResultDone: "Plan", undoYes: "Yes, undo", undoAskOne: "Undo this change?", undoAskAll: "Undo everything?",
   undoAskAllHint: "Housekeeper puts back what this plan changed, as far as it is still unchanged.", undoAllHint: "Housekeeper can put back what this plan changed, as long as it is unchanged.", reportTitle: "Audit report",
@@ -8129,6 +8169,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
     root.querySelectorAll("[data-meter-pick]").forEach(el => el.onclick = () => { this.meterNew = el.dataset.meterPick; this.render(); });
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { el.checked ? this.purgeSel.add(el.dataset.psel) : this.purgeSel.delete(el.dataset.psel); this.render(); });
+    root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-page]")?.addEventListener("click", () => { (this._purgePage || []).forEach(id => this.purgeSel.add(id)); this.render(); });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.purgeOpen = false; this.render(); });
     root.querySelector("[data-purge-open]")?.addEventListener("click", () => { this.purgeOpen = true; this.purgeWord = ""; this.purgeResult = null; this.render(); });

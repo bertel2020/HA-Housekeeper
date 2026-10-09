@@ -45,7 +45,7 @@ def snapshot(*ids: str) -> dict:
 
 async def test_without_a_recorder_nothing_is_available(hass: HomeAssistant) -> None:
     result = await statistics_last(hass, snapshot("sensor.a"))
-    assert result == {"available": False, "busy": False, "last": {}}
+    assert result == {"available": False, "busy": False, "last": {}, "first": {}, "rows": {}}
 
 
 async def test_the_newest_hourly_row_per_orphan(recorder_mock, hass: HomeAssistant) -> None:
@@ -66,6 +66,8 @@ async def test_the_newest_hourly_row_per_orphan(recorder_mock, hass: HomeAssista
         "sensor.renamed": newer.timestamp(),
         "sensor.empty": None,
     }
+    assert result["first"]["sensor.gone"] == (old - timedelta(hours=2)).timestamp()
+    assert result["rows"] == {"sensor.gone": 3, "sensor.renamed": 2, "sensor.empty": 0}
 
 
 async def test_a_busy_recorder_reports_busy(recorder_mock, hass: HomeAssistant) -> None:

@@ -156,6 +156,8 @@ class StatisticsLastResult(TypedDict):
     available: bool
     busy: bool
     last: dict[str, float | None]  # statistic_id -> start of the newest hourly row (epoch seconds)
+    first: dict[str, float | None]  # statistic_id -> start of the oldest hourly row
+    rows: dict[str, int]  # statistic_id -> number of hourly rows
 
 
 class PolicyItem(TypedDict):
