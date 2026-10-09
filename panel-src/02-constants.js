@@ -71,13 +71,14 @@ const NAV = [
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
   ["batteries", "mdi:battery-alert-variant-outline"],
+  ["reminders", "mdi:calendar-clock-outline"],
   ["settings", "mdi:cog-outline"],
 ];
 
 // The sidebar groups every view but "settings", which stands alone at the foot.
 const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav", "cleanup", "repair"]],
-  ["navGroupMaintain", ["maintenance", "batteries", "policies", "exposure"]],
+  ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies", "exposure"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph", "changes", "journal"]],
 ];

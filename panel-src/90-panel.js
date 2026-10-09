@@ -482,7 +482,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   topbar() {
-    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined } : {};
+    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined } : {};
     const item = view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
@@ -538,6 +538,7 @@ class HAHousekeeperPanel extends HTMLElement {
       findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
       changes: [this.t("changes"), this.t("changesSubtitle")],
       batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
+      reminders: [this.t("reminders"), this.t("remindersSubtitle")],
       unreferenced: [this.t("unreferenced"), this.t("unreferencedSubtitle")],
       graph: [this.t("pathTitle"), this.t("pathSubtitle")],
       settings: [this.t("settings"), this.t("settingsSubtitle")],
@@ -571,6 +572,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
     if (this.view === "batteries") return this.batteriesView();
+    if (this.view === "reminders") return this.remindersView();
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "repair") return this.repairView();

@@ -223,7 +223,7 @@ class UnusedMixin {
   batterySorts() {
     return [
       // Low batteries first, then the lowest level.
-      { key: "level", label: "sortLevel", dir: "asc", get: r => (r.low ? 0 : 1e6) + (r.level ?? -1) },
+      { key: "level", label: "sortLevel", dir: "asc", get: r => (r.low ? 0 : 1e6) + (r.volt ? 1000 : 0) + (r.level ?? -1) },
       { key: "name", label: "sortName", dir: "asc", get: r => r.item.name },
       { key: "area", label: "sortArea", dir: "asc", get: r => this.areaName(r.item) },
     ];
@@ -232,7 +232,7 @@ class UnusedMixin {
   lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
 
   batteriesView() {
-    const all = this.batteryRows(), low = all.filter(r => r.low);
+    const all = [...this.batteryRows(), ...this.batteryVoltRows()], low = all.filter(r => r.low);
     this.lvState("batteries", "level", "asc");
     const areas = [...new Set(all.map(r => this.areaName(r.item)).filter(Boolean))].sort();
     const bar = this.listBar("batteries", { sorts: this.batterySorts(), filters: [{ name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) }] });
@@ -242,19 +242,21 @@ class UnusedMixin {
     });
     const limit = this.data.meta.low_battery_percent ?? 20;
     const levels = all.map(r => r.level).filter(x => x !== null && x !== undefined);
-    const lowest = all.filter(r => r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
+    const lowest = all.filter(r => !r.volt && r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
     const chips = this.sumTiles([
       { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
       { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: limit }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
       lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc(lowest.item.name), tone: lowest.low ? "warn" : "mute" } : null,
     ]);
-    const row = ({ item, level, low: isLow }) => {
+    const row = ({ item, level, low: isLow, volt }) => {
       const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
       const area = this.findObject(`area:${item.area_id || device?.area_id}`);
-      const tone = isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
-      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
+      const tone = volt ? (isLow ? "red" : volt.days_left !== null && volt.days_left <= 30 ? "warn" : "ok") : isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
+      const sub = volt ? [area?.name, this.t("bvLine", { now: this.voltNum(level), kind: this.t(`bvType_${volt.type}`), limit: this.voltNum(volt.limit) })] : [area?.name, item.object_id];
+      const pill = volt ? this.voltNum(level) : level !== null ? `${Math.round(level)} ${item.unit || "%"}` : this.t("batteryLow");
+      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(device?.name && !String(item.name).toLowerCase().includes(device.name.toLowerCase()) ? `${device.name} – ${item.name}` : item.name)}</strong><small>${this.esc(sub.filter(Boolean).join(" · "))}</small></span><span class="pill ${tone}">${this.esc(pill)}</span></button>`;
     };
     const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
-    return `<div class="stack">${chips}${this.batteryTrendCard()}${this.batteryVoltageCard()}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>${this.remindersCard()}</div>`;
+    return `<div class="stack">${chips}${this.batteryTrendCard()}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}${this.voltNote()}</div></div>`;
   }
 }

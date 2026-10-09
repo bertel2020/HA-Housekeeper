@@ -44,18 +44,19 @@ class BatteryCareMixin {
     return `<div class="panel">${head}${body}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
   }
 
-  // Batteries that report volts: the type is guessed from the full voltage, the limit comes from the type.
-  batteryVoltageCard() {
+  // Batteries that report volts, as rows of the same list: the type is guessed from the full voltage, the limit comes from the type.
+  batteryVoltRows() {
+    return (this.batteryTrend?.voltage?.rows || []).map(v => {
+      const item = this.findObject(`entity:${v.entity_id}`);
+      return item ? { item, level: v.level, low: v.state === "low", volt: v } : null;
+    }).filter(Boolean);
+  }
+
+  voltNum(n) { return `${Number(n).toLocaleString(this.lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} V`; }
+
+  voltNote() {
     const v = this.batteryTrend?.voltage;
-    if (!v || (!v.rows.length && !v.unknown)) return "";
-    const volt = n => `${Number(n).toLocaleString(this.lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} V`;
-    const row = r => {
-      const tone = r.state === "low" ? "red" : r.days_left !== null && r.days_left <= 30 ? "warn" : "ok";
-      const when = r.state === "low" ? this.t("btLow") : r.days_left !== null ? this.t("btIn", { n: r.days_left }) : this.t("bvStable");
-      return `<button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.t("bvLine", { now: volt(r.level), kind: this.t(`bvType_${r.type}`), limit: volt(r.limit) })}</small></span><span class="pill ${tone}">${when}</span></button>`;
-    };
-    const head = `<div class="panelhead"><div><h2>${this.t("bvTitle")}</h2><p>${this.t("bvHint")}</p></div></div>`;
-    return `<div class="panel">${head}${v.rows.map(row).join("")}<p class="factnote">${this.t("bvNote", { unknown: this.formatNumber(v.unknown) })}</p></div>`;
+    return v && (v.rows.length || v.unknown) ? `<p class="factnote">${this.t("bvNote", { unknown: this.formatNumber(v.unknown) })}</p>` : "";
   }
 
   reminderRow(r) {
@@ -64,11 +65,14 @@ class BatteryCareMixin {
     return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:wrench-clock"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(this.t("remLine", { interval: r.interval_days, last: r.last_done, due: r.due }))}${r.note ? ` · ${this.esc(r.note)}` : ""}</small></span><span class="pill ${tone}">${this.esc(when)}</span><button class="btn" data-rem-done="${this.esc(r.id)}">${this.t("remDone")}</button><button class="btn quiet" data-rem-del="${this.esc(r.id)}" aria-label="${this.esc(this.t("remDelete"))}">${this.t("remDelete")}</button></div>`;
   }
 
+  // Own view under "Maintain": own reminders (filter, descaling, changing batteries) with a date when they are due.
+  remindersView() { return `<div class="stack">${this.remindersCard()}</div>`; }
+
   remindersCard() {
     const items = this.data.reminders || [];
     const draft = this.remDraft || { name: "", interval_days: 90, last_done: new Date().toISOString().slice(0, 10), note: "" };
     const form = `<div class="setrow remform"><input data-rem-field="name" placeholder="${this.esc(this.t("remName"))}" aria-label="${this.esc(this.t("remName"))}" value="${this.esc(draft.name)}" maxlength="80"><label class="recchoice"><span>${this.t("remEvery")}</span><input data-rem-field="interval_days" type="number" min="1" max="3650" value="${this.esc(draft.interval_days)}" style="width:5em"> ${this.t("remDays")}</label><label class="recchoice"><span>${this.t("remLast")}</span><input data-rem-field="last_done" type="date" value="${this.esc(draft.last_done)}"></label><input data-rem-field="note" placeholder="${this.esc(this.t("remNote"))}" aria-label="${this.esc(this.t("remNote"))}" value="${this.esc(draft.note)}" maxlength="200"><button class="btn primary" data-rem-add>${this.t("remAdd")}</button></div>${this.remError ? `<div class="error">${this.esc(this.remError)}</div>` : ""}`;
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("remTitle")}</h2><p>${this.t("remHint")}</p></div></div>${items.length ? items.map(r => this.reminderRow(r)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:wrench-clock"></ha-icon>${this.t("remNone")}</div>`}${form}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("remTitle")}</h2><p>${this.t("remHint")}</p></div></div>${items.length ? items.map(r => this.reminderRow(r)).join("") : `<p class="factnote">${this.t("remNone")}</p>`}${form}</div>`;
   }
 
   async reminderCall(msg) {
@@ -99,7 +103,7 @@ Object.assign(TEXT.de, {
   remTitle: "Wartungserinnerungen", remHint: "Filter, Entkalken, Batteriewechsel: du trägst Name, Abstand und letztes Datum ein, Housekeeper sagt, wann es wieder fällig ist. Es ändert nichts in Home Assistant.", remNone: "Noch keine Erinnerung.",
   remName: "Name (z. B. Wasserfilter)", remEvery: "alle", remDays: "Tage", remLast: "zuletzt am", remNote: "Notiz (z. B. Batterietyp CR2032)", remAdd: "Hinzufügen", remDone: "Erledigt", remDelete: "Löschen",
   remLine: "Alle {interval} Tage · zuletzt {last} · fällig {due}", remOverdue: "{n} Tage überfällig", remIn: "in {n} Tagen", remInvalid: "Nicht gespeichert, bitte prüfen: {field}",
-  actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
+  reminders: "Erinnerungen", remindersSubtitle: "Eigene Wartungstermine: Filter, Entkalken, Batteriewechsel.", actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
   relSetup: "Einrichtungsfehler: {n} in {days} Tagen, zuletzt {last}", relSetupNow: "Gerade im Zustand {state}", relSetupNote: "Aus den Scans gezählt, so fein wie das Scan-Intervall.",
   event_reminder_due: "Wartungserinnerung fällig",
 });
@@ -113,7 +117,7 @@ Object.assign(TEXT.en, {
   remTitle: "Maintenance reminders", remHint: "Filter, descaling, battery change: you enter a name, an interval and the last date, Housekeeper tells you when it is due again. It changes nothing in Home Assistant.", remNone: "No reminder yet.",
   remName: "Name (e.g. water filter)", remEvery: "every", remDays: "days", remLast: "last done", remNote: "Note (e.g. battery type CR2032)", remAdd: "Add", remDone: "Done", remDelete: "Delete",
   remLine: "Every {interval} days · last {last} · due {due}", remOverdue: "{n} days overdue", remIn: "in {n} days", remInvalid: "Not saved, please check: {field}",
-  actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
+  reminders: "Reminders", remindersSubtitle: "Your own maintenance dates: filter, descaling, changing batteries.", actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
   relSetup: "Setup failures: {n} in {days} days, last {last}", relSetupNow: "Currently in state {state}", relSetupNote: "Counted from the scans, as fine as the scan interval.",
   event_reminder_due: "maintenance reminder due",
 });

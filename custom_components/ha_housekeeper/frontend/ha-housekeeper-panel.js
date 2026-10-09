@@ -434,13 +434,14 @@ const NAV = [
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
   ["batteries", "mdi:battery-alert-variant-outline"],
+  ["reminders", "mdi:calendar-clock-outline"],
   ["settings", "mdi:cog-outline"],
 ];
 
 // The sidebar groups every view but "settings", which stands alone at the foot.
 const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav", "cleanup", "repair"]],
-  ["navGroupMaintain", ["maintenance", "batteries", "policies", "exposure"]],
+  ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies", "exposure"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
   ["navGroupExplore", ["inventory", "graph", "changes", "journal"]],
 ];
@@ -1580,7 +1581,7 @@ class OverviewMixin {
     const regressions = (this.data.regressions || []).length;
     if (regressions) items.push({ key: "followup", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "journal" });
     const due = (this.data.reminders || []).filter(r => r.state === "due").length;
-    if (due) items.push({ key: "reminders", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, view: "batteries" });
+    if (due) items.push({ key: "reminders", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, view: "reminders" });
     const missed = (this.data.criteria_alerts || []).length;
     if (missed) items.push({ key: "criteria", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, view: "runs" });
     const fresh = (this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).length;
@@ -3379,7 +3380,7 @@ class UnusedMixin {
   batterySorts() {
     return [
       // Low batteries first, then the lowest level.
-      { key: "level", label: "sortLevel", dir: "asc", get: r => (r.low ? 0 : 1e6) + (r.level ?? -1) },
+      { key: "level", label: "sortLevel", dir: "asc", get: r => (r.low ? 0 : 1e6) + (r.volt ? 1000 : 0) + (r.level ?? -1) },
       { key: "name", label: "sortName", dir: "asc", get: r => r.item.name },
       { key: "area", label: "sortArea", dir: "asc", get: r => this.areaName(r.item) },
     ];
@@ -3388,7 +3389,7 @@ class UnusedMixin {
   lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
 
   batteriesView() {
-    const all = this.batteryRows(), low = all.filter(r => r.low);
+    const all = [...this.batteryRows(), ...this.batteryVoltRows()], low = all.filter(r => r.low);
     this.lvState("batteries", "level", "asc");
     const areas = [...new Set(all.map(r => this.areaName(r.item)).filter(Boolean))].sort();
     const bar = this.listBar("batteries", { sorts: this.batterySorts(), filters: [{ name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) }] });
@@ -3398,20 +3399,22 @@ class UnusedMixin {
     });
     const limit = this.data.meta.low_battery_percent ?? 20;
     const levels = all.map(r => r.level).filter(x => x !== null && x !== undefined);
-    const lowest = all.filter(r => r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
+    const lowest = all.filter(r => !r.volt && r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
     const chips = this.sumTiles([
       { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
       { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: limit }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
       lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc(lowest.item.name), tone: lowest.low ? "warn" : "mute" } : null,
     ]);
-    const row = ({ item, level, low: isLow }) => {
+    const row = ({ item, level, low: isLow, volt }) => {
       const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
       const area = this.findObject(`area:${item.area_id || device?.area_id}`);
-      const tone = isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
-      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc([device?.name, area?.name].filter(Boolean).join(" · ") || item.object_id)}</small></span><span class="pill ${tone}">${level !== null ? `${this.esc(Math.round(level))} ${this.esc(item.unit || "%")}` : this.t("batteryLow")}</span></button>`;
+      const tone = volt ? (isLow ? "red" : volt.days_left !== null && volt.days_left <= 30 ? "warn" : "ok") : isLow ? (level !== null && level <= limit / 2 ? "red" : "warn") : "ok";
+      const sub = volt ? [area?.name, this.t("bvLine", { now: this.voltNum(level), kind: this.t(`bvType_${volt.type}`), limit: this.voltNum(volt.limit) })] : [area?.name, item.object_id];
+      const pill = volt ? this.voltNum(level) : level !== null ? `${Math.round(level)} ${item.unit || "%"}` : this.t("batteryLow");
+      return `<button class="row rel" data-object="${this.esc(this.objectKey(item))}"><span class="tile ${tone === "ok" ? "ok" : tone}"><ha-icon icon="${isLow ? "mdi:battery-alert-variant-outline" : "mdi:battery-high"}"></ha-icon></span><span class="row-text"><strong>${this.esc(device?.name && !String(item.name).toLowerCase().includes(device.name.toLowerCase()) ? `${device.name} – ${item.name}` : item.name)}</strong><small>${this.esc(sub.filter(Boolean).join(" · "))}</small></span><span class="pill ${tone}">${this.esc(pill)}</span></button>`;
     };
     const pg = this.paginate(`batteries-${this.batteryFilter}`, list);
-    return `<div class="stack">${chips}${this.batteryTrendCard()}${this.batteryVoltageCard()}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}</div>${this.remindersCard()}</div>`;
+    return `<div class="stack">${chips}${this.batteryTrendCard()}<div class="panel">${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noBatteries")}</div>`}${pg.footer}${this.voltNote()}</div></div>`;
   }
 }
 
@@ -6567,18 +6570,19 @@ class BatteryCareMixin {
     return `<div class="panel">${head}${body}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
   }
 
-  // Batteries that report volts: the type is guessed from the full voltage, the limit comes from the type.
-  batteryVoltageCard() {
+  // Batteries that report volts, as rows of the same list: the type is guessed from the full voltage, the limit comes from the type.
+  batteryVoltRows() {
+    return (this.batteryTrend?.voltage?.rows || []).map(v => {
+      const item = this.findObject(`entity:${v.entity_id}`);
+      return item ? { item, level: v.level, low: v.state === "low", volt: v } : null;
+    }).filter(Boolean);
+  }
+
+  voltNum(n) { return `${Number(n).toLocaleString(this.lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} V`; }
+
+  voltNote() {
     const v = this.batteryTrend?.voltage;
-    if (!v || (!v.rows.length && !v.unknown)) return "";
-    const volt = n => `${Number(n).toLocaleString(this.lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} V`;
-    const row = r => {
-      const tone = r.state === "low" ? "red" : r.days_left !== null && r.days_left <= 30 ? "warn" : "ok";
-      const when = r.state === "low" ? this.t("btLow") : r.days_left !== null ? this.t("btIn", { n: r.days_left }) : this.t("bvStable");
-      return `<button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.t("bvLine", { now: volt(r.level), kind: this.t(`bvType_${r.type}`), limit: volt(r.limit) })}</small></span><span class="pill ${tone}">${when}</span></button>`;
-    };
-    const head = `<div class="panelhead"><div><h2>${this.t("bvTitle")}</h2><p>${this.t("bvHint")}</p></div></div>`;
-    return `<div class="panel">${head}${v.rows.map(row).join("")}<p class="factnote">${this.t("bvNote", { unknown: this.formatNumber(v.unknown) })}</p></div>`;
+    return v && (v.rows.length || v.unknown) ? `<p class="factnote">${this.t("bvNote", { unknown: this.formatNumber(v.unknown) })}</p>` : "";
   }
 
   reminderRow(r) {
@@ -6587,11 +6591,14 @@ class BatteryCareMixin {
     return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:wrench-clock"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(this.t("remLine", { interval: r.interval_days, last: r.last_done, due: r.due }))}${r.note ? ` · ${this.esc(r.note)}` : ""}</small></span><span class="pill ${tone}">${this.esc(when)}</span><button class="btn" data-rem-done="${this.esc(r.id)}">${this.t("remDone")}</button><button class="btn quiet" data-rem-del="${this.esc(r.id)}" aria-label="${this.esc(this.t("remDelete"))}">${this.t("remDelete")}</button></div>`;
   }
 
+  // Own view under "Maintain": own reminders (filter, descaling, changing batteries) with a date when they are due.
+  remindersView() { return `<div class="stack">${this.remindersCard()}</div>`; }
+
   remindersCard() {
     const items = this.data.reminders || [];
     const draft = this.remDraft || { name: "", interval_days: 90, last_done: new Date().toISOString().slice(0, 10), note: "" };
     const form = `<div class="setrow remform"><input data-rem-field="name" placeholder="${this.esc(this.t("remName"))}" aria-label="${this.esc(this.t("remName"))}" value="${this.esc(draft.name)}" maxlength="80"><label class="recchoice"><span>${this.t("remEvery")}</span><input data-rem-field="interval_days" type="number" min="1" max="3650" value="${this.esc(draft.interval_days)}" style="width:5em"> ${this.t("remDays")}</label><label class="recchoice"><span>${this.t("remLast")}</span><input data-rem-field="last_done" type="date" value="${this.esc(draft.last_done)}"></label><input data-rem-field="note" placeholder="${this.esc(this.t("remNote"))}" aria-label="${this.esc(this.t("remNote"))}" value="${this.esc(draft.note)}" maxlength="200"><button class="btn primary" data-rem-add>${this.t("remAdd")}</button></div>${this.remError ? `<div class="error">${this.esc(this.remError)}</div>` : ""}`;
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("remTitle")}</h2><p>${this.t("remHint")}</p></div></div>${items.length ? items.map(r => this.reminderRow(r)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:wrench-clock"></ha-icon>${this.t("remNone")}</div>`}${form}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("remTitle")}</h2><p>${this.t("remHint")}</p></div></div>${items.length ? items.map(r => this.reminderRow(r)).join("") : `<p class="factnote">${this.t("remNone")}</p>`}${form}</div>`;
   }
 
   async reminderCall(msg) {
@@ -6622,7 +6629,7 @@ Object.assign(TEXT.de, {
   remTitle: "Wartungserinnerungen", remHint: "Filter, Entkalken, Batteriewechsel: du trägst Name, Abstand und letztes Datum ein, Housekeeper sagt, wann es wieder fällig ist. Es ändert nichts in Home Assistant.", remNone: "Noch keine Erinnerung.",
   remName: "Name (z. B. Wasserfilter)", remEvery: "alle", remDays: "Tage", remLast: "zuletzt am", remNote: "Notiz (z. B. Batterietyp CR2032)", remAdd: "Hinzufügen", remDone: "Erledigt", remDelete: "Löschen",
   remLine: "Alle {interval} Tage · zuletzt {last} · fällig {due}", remOverdue: "{n} Tage überfällig", remIn: "in {n} Tagen", remInvalid: "Nicht gespeichert, bitte prüfen: {field}",
-  actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
+  reminders: "Erinnerungen", remindersSubtitle: "Eigene Wartungstermine: Filter, Entkalken, Batteriewechsel.", actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
   relSetup: "Einrichtungsfehler: {n} in {days} Tagen, zuletzt {last}", relSetupNow: "Gerade im Zustand {state}", relSetupNote: "Aus den Scans gezählt, so fein wie das Scan-Intervall.",
   event_reminder_due: "Wartungserinnerung fällig",
 });
@@ -6636,7 +6643,7 @@ Object.assign(TEXT.en, {
   remTitle: "Maintenance reminders", remHint: "Filter, descaling, battery change: you enter a name, an interval and the last date, Housekeeper tells you when it is due again. It changes nothing in Home Assistant.", remNone: "No reminder yet.",
   remName: "Name (e.g. water filter)", remEvery: "every", remDays: "days", remLast: "last done", remNote: "Note (e.g. battery type CR2032)", remAdd: "Add", remDone: "Done", remDelete: "Delete",
   remLine: "Every {interval} days · last {last} · due {due}", remOverdue: "{n} days overdue", remIn: "in {n} days", remInvalid: "Not saved, please check: {field}",
-  actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
+  reminders: "Reminders", remindersSubtitle: "Your own maintenance dates: filter, descaling, changing batteries.", actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
   relSetup: "Setup failures: {n} in {days} days, last {last}", relSetupNow: "Currently in state {state}", relSetupNote: "Counted from the scans, as fine as the scan interval.",
   event_reminder_due: "maintenance reminder due",
 });
@@ -7807,7 +7814,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   topbar() {
-    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined } : {};
+    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined } : {};
     const item = view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
@@ -7863,6 +7870,7 @@ class HAHousekeeperPanel extends HTMLElement {
       findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
       changes: [this.t("changes"), this.t("changesSubtitle")],
       batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
+      reminders: [this.t("reminders"), this.t("remindersSubtitle")],
       unreferenced: [this.t("unreferenced"), this.t("unreferencedSubtitle")],
       graph: [this.t("pathTitle"), this.t("pathSubtitle")],
       settings: [this.t("settings"), this.t("settingsSubtitle")],
@@ -7896,6 +7904,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
     if (this.view === "batteries") return this.batteriesView();
+    if (this.view === "reminders") return this.remindersView();
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "repair") return this.repairView();
