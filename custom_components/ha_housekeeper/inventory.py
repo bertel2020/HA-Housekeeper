@@ -52,6 +52,7 @@ from .dashboard_analysis import (
     view_keys,
 )
 from .db_health import database_summary
+from .entry_states import EntryStateHistory
 from .events import EventLog
 from .goals import GoalStore
 from .history import ScanHistory
@@ -77,6 +78,7 @@ from .policies import PolicyStore
 from .protection import ProtectionStore
 from .queries import ReplyStore
 from .refactor import RefactorStore
+from .reminders import ReminderStore
 from .runs import RunStore
 from .signals import SignalStore, situations
 from .signals import fire as signal_fire
@@ -527,6 +529,8 @@ class InventoryScanner:
         self.refactor = RefactorStore(hass)
         self.protection = ProtectionStore(hass)
         self.signals = SignalStore(hass)
+        self.entry_states = EntryStateHistory(hass)
+        self.reminders = ReminderStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -573,6 +577,8 @@ class InventoryScanner:
         await self.refactor.async_load()
         await self.protection.async_load()
         await self.signals.async_load()
+        await self.entry_states.async_load()
+        await self.reminders.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()
@@ -615,6 +621,13 @@ class InventoryScanner:
                     async_sync_issues(self.hass, snapshot["findings"])
                     async_announce(self.hass, self.notify.new(snapshot["findings"]))
                     self.history.record(snapshot)
+                    self.entry_states.record(
+                        {
+                            e.entry_id: getattr(e.state, "value", str(e.state))
+                            for e in self.hass.config_entries.async_entries()
+                        },
+                        datetime.now(UTC),
+                    )
                     self._observe_versions(snapshot)
                     if followup.check(
                         self.journal.plans, snapshot, datetime.now(UTC), self.runs.errors_since
@@ -647,7 +660,13 @@ class InventoryScanner:
         except Exception:  # noqa: BLE001 - without the backup report only that event is skipped
             backup = None
         try:
-            found = situations(snapshot, self.journal.plans, backup, datetime.now(UTC))
+            found = situations(
+                snapshot,
+                self.journal.plans,
+                backup,
+                datetime.now(UTC),
+                snapshot.get("reminders"),
+            )
             # Unknown is not "overdue", and a missing report must not end that situation either.
             unknown = ("backup:",) if backup is None else ()
             signal_fire(self.hass, self.signals.fresh(found, unknown))
@@ -873,6 +892,7 @@ class InventoryScanner:
             "edges": edges,
             "findings": findings,
             "causes": causes,
+            "reminders": self.reminders.view(datetime.now(UTC).date()),
             "regressions": [],
             "criteria_alerts": [],
             "orphaned_statistics": orphaned_statistics,

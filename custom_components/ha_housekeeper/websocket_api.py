@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from datetime import UTC, date, datetime
 from typing import Any
 
@@ -13,6 +14,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
+from . import battery_trend
 from . import refactor as refactor_module
 from .audit_report import build_report
 from .backup_health import ATTEST_KINDS, backup_health
@@ -61,11 +63,13 @@ from .policies import RULES as POLICY_RULES
 from .policies import policies
 from .protection import MODES as PROTECTION_MODES
 from .quality import build as build_quality
+from .queries import cached_query
 from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
 from .recorder_purge import count_history
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
+from .reminders import ReminderError
 from .run_health import report as runs_report
 from .runs import run_key
 from .statistics_last import statistics_last
@@ -834,6 +838,9 @@ async def websocket_reliability(
     except Exception as err:
         connection.send_error(msg["id"], "reliability_failed", f"{type(err).__name__}: {err}")
         return
+    now = datetime.now(UTC)
+    for row in result.get("entries", []):
+        row["setup"] = scanner.entry_states.summary(row["entry_id"], now)
     connection.send_result(msg["id"], _versioned(result))
 
 
@@ -1358,6 +1365,108 @@ def websocket_refactor_set(
         return
     scanner.refactor.set_enabled(msg["enabled"])
     connection.send_result(msg["id"], {"enabled": scanner.refactor.enabled})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/battery_trend", vol.Optional("refresh", default=False): bool}
+)
+@websocket_api.async_response
+async def websocket_battery_trend(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """When working batteries will probably reach the limit. Reads daily statistics only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    snapshot = await scanner.async_get_snapshot()
+    if not snapshot["meta"].get("recorder_available"):
+        connection.send_result(
+            msg["id"], _versioned({"available": False, "rows": [], "groups": []})
+        )
+        return
+    limit = snapshot["meta"].get("low_battery_percent") or 20
+    names = {
+        o["object_id"]: o["name"]
+        for o in snapshot["objects"]
+        if o["object_type"] == "entity"
+        and o.get("device_class") == "battery"
+        and o["object_id"].startswith("sensor.")
+        and o.get("status") == "active"
+        and o.get("has_statistics")
+    }
+    now = time.time()
+    try:
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            found = await cached_query(
+                hass,
+                "battery_trend",
+                600,
+                lambda: battery_trend.read_series(
+                    hass, sorted(names), now - battery_trend.WINDOW_DAYS * 86400, now
+                ),
+                refresh=msg["refresh"],
+            )
+    except Exception as err:
+        connection.send_error(msg["id"], "battery_trend_failed", f"{type(err).__name__}: {err}")
+        return
+    if found.busy:
+        connection.send_result(
+            msg["id"], _versioned({"available": True, "busy": True, "rows": [], "groups": []})
+        )
+        return
+    result = battery_trend.build(found.raw, names, limit)
+    connection.send_result(msg["id"], _versioned({"available": True, "busy": False, **result}))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/reminder_set",
+        vol.Required("action"): vol.In(["save", "done", "delete"]),
+        vol.Optional("reminder_id"): str,
+        vol.Optional("name"): str,
+        vol.Optional("interval_days"): int,
+        vol.Optional("last_done"): str,
+        vol.Optional("note", default=""): str,
+    }
+)
+@callback
+def websocket_reminder_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Save, finish or delete a maintenance reminder. Only Housekeeper's own list changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    today = datetime.now(UTC).date()
+    try:
+        if msg["action"] == "save":
+            scanner.reminders.upsert(
+                msg.get("reminder_id"),
+                msg.get("name", ""),
+                msg.get("interval_days", 0),
+                msg.get("last_done", ""),
+                msg["note"],
+                today,
+            )
+        elif msg["action"] == "done":
+            scanner.reminders.done(msg.get("reminder_id", ""), today)
+        else:
+            scanner.reminders.delete(msg.get("reminder_id", ""))
+    except ReminderError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    view = scanner.reminders.view(today)
+    if scanner._snapshot is not None:
+        scanner._snapshot["reminders"] = view
+    connection.send_result(msg["id"], _versioned({"reminders": view}))
 
 
 @websocket_api.require_admin
@@ -2032,3 +2141,5 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_refactor_proposals)
     websocket_api.async_register_command(hass, websocket_refactor_set)
     websocket_api.async_register_command(hass, websocket_protection_set)
+    websocket_api.async_register_command(hass, websocket_battery_trend)
+    websocket_api.async_register_command(hass, websocket_reminder_set)

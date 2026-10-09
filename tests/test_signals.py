@@ -91,3 +91,14 @@ async def test_a_situation_is_announced_once_and_again_after_it_ended(hass) -> N
     # An unreadable backup report neither fires nor ends the backup situation.
     store.fresh(situations(snapshot, plans, None, NOW), ("backup:",))
     assert "backup:d1" in store.seen
+
+
+def test_a_due_reminder_is_a_situation_with_ids_and_days_only() -> None:
+    reminders = [
+        {"id": "r1", "state": "due", "due": "2026-10-01", "days_left": -8, "name": "Filter"},
+        {"id": "r2", "state": "soon", "due": "2026-10-20", "days_left": 11, "name": "Other"},
+    ]
+    found = situations({"findings": []}, [], None, NOW, reminders)
+    assert found == {
+        "reminder:r1:2026-10-01": ("reminder_due", {"reminder_id": "r1", "days_overdue": 8})
+    }

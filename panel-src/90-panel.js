@@ -673,6 +673,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindDiagnostics(root);
     this.bindTraceDiag(root);
     this.bindRefactor(root);
+    this.bindBatteryCare(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };

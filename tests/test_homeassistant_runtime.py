@@ -1319,3 +1319,26 @@ async def test_the_window_reload_follows_the_rules_of_a_plan(
     assert reply["success"] and reply["result"]["targets"][0]["ok"] is True
     reloaded.assert_awaited_once_with("e1")
     assert [e["type"] for e in plan["events"]] == ["integration_reloaded"]
+
+
+async def test_reminders_are_saved_finished_and_deleted_over_the_websocket(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+
+    async def call(**msg):
+        await client.send_json_auto_id({"type": "ha_housekeeper/reminder_set", **msg})
+        return await client.receive_json()
+
+    bad = await call(action="save", name="", interval_days=30, last_done="2026-01-01")
+    assert bad["error"]["code"] == "invalid_format"
+    saved = await call(action="save", name="Filter", interval_days=30, last_done="2026-01-01")
+    reminder = saved["result"]["reminders"][0]
+    assert reminder["state"] == "due" and scanner.snapshot["reminders"][0]["id"] == reminder["id"]
+    done = await call(action="done", reminder_id=reminder["id"])
+    assert done["result"]["reminders"][0]["state"] == "ok"
+    assert (await call(action="delete", reminder_id=reminder["id"]))["result"]["reminders"] == []
+    assert (await call(action="delete", reminder_id=reminder["id"]))["error"][
+        "code"
+    ] == "invalid_format"

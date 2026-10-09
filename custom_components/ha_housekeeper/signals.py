@@ -3,7 +3,7 @@
 After each finished scan Housekeeper looks for a few situations and fires an event on the bus for
 each one that is new: ``ha_housekeeper_critical_finding``, ``ha_housekeeper_backup_overdue``,
 ``ha_housekeeper_quarantine_expired``, ``ha_housekeeper_followup_regression`` and
-``ha_housekeeper_integration_down``. Nothing leaves Home Assistant and nothing is sent by
+``ha_housekeeper_integration_down`` and ``ha_housekeeper_reminder_due``. Nothing leaves Home Assistant and nothing is sent by
 Housekeeper itself. A situation is announced once; it can be announced again after it ended. The
 first time, what exists already counts as announced, so switching this on starts quiet.
 The payloads hold ids, counts and ages only, never names or texts.
@@ -29,6 +29,7 @@ EVENTS = (
     "quarantine_expired",
     "followup_regression",
     "integration_down",
+    "reminder_due",
 )
 
 
@@ -37,6 +38,7 @@ def situations(
     plans: list[dict[str, Any]],
     backup: dict[str, Any] | None,
     now: datetime,
+    reminders: list[dict[str, Any]] | None = None,
 ) -> dict[str, tuple[str, dict[str, Any]]]:
     """Everything that is the case now: key -> (event name, payload)."""
     found: dict[str, tuple[str, dict[str, Any]]] = {}
@@ -93,6 +95,12 @@ def situations(
                     "domain": cause.get("domain"),
                     "follower_count": cause["follower_count"],
                 },
+            )
+    for reminder in reminders or []:
+        if reminder["state"] == "due":
+            found[f"reminder:{reminder['id']}:{reminder['due']}"] = (
+                "reminder_due",
+                {"reminder_id": reminder["id"], "days_overdue": -reminder["days_left"]},
             )
     return found
 
