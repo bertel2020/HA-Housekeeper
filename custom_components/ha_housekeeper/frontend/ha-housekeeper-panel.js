@@ -1160,7 +1160,7 @@ class StylesMixin {
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
-      .expohd{margin:14px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.08em;text-transform:uppercase;color:var(--hk-muted)}.expohead{width:100%}.expogroup{margin:0 0 6px 28px;border-left:2px solid var(--hk-line,rgba(128,128,128,.25))}.expoadvice{margin:6px 16px 2px}.rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
+      .qlight{display:none;gap:3px;margin-top:4px}.qlight i{width:9px;height:9px;border-radius:50%;background:var(--hk-muted)}.qlight i.ok{background:var(--hk-ok,#3f7d4e)}.qlight i.warn{background:var(--hk-warn,#b8860b)}.qlight i.red{background:var(--hk-red,#b3392f)}@media(max-width:700px){.qualitytable th:not(:first-child):not(:last-child),.qualitytable td:not(:first-child):not(:last-child){display:none}.qlight{display:flex}}.foldhead{width:100%}.foldbody{margin:0 0 6px 28px;border-left:2px solid var(--hk-line,rgba(128,128,128,.25))}.foldadvice{margin:6px 16px 2px}.foldhd,.expohd{margin:14px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.08em;text-transform:uppercase;color:var(--hk-muted)}.rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.rel .bar i{background:var(--hk-gray)}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
@@ -1461,6 +1461,17 @@ class ListsMixin {
     const footer = `<div class="tablefoot"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select data-pagesize aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
     return { rows, footer };
   }
+
+  // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
+  // head: { tone, title, sub, pill }; the state lives in this.folds and survives a render.
+  foldOpen(id, def) { return this.folds?.[id] ?? def; }
+
+  fold(id, head, body, def, force) {
+    const open = force ?? this.foldOpen(id, def);
+    const pill = head.pill ? `<span class="pill ${head.tone || "mute"}">${this.esc(head.pill)}</span>` : "";
+    const top = `<button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${head.tone || "mute"}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${head.sub ? `<small>${this.esc(head.sub)}</small>` : ""}</span>${pill}</button>`;
+    return `<div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${body}</div>` : ""}</div>`;
+  }
 }
 
 // Texts for the flow tab of automations and scripts; merged into TEXT.
@@ -1538,7 +1549,12 @@ class OverviewMixin {
       const target = `data-jump="${it.view}"${it.filter !== undefined ? ` data-filter="${it.filter}"` : ""}${it.type ? ` data-type="${it.type}"` : ""}${it.status ? ` data-status="${it.status}"` : ""}`;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${it.count !== undefined ? `<span class="pill ${it.tone}">${this.formatNumber(it.count)}</span>` : ""}</button>`;
     };
-    const body = items.length ? items.map(row).join("")
+    // Red items first and open; the rest is a fold of its own once both kinds exist.
+    const urgent = items.filter(i => i.tone === "red"), later = items.filter(i => i.tone !== "red");
+    const grouped = urgent.length && later.length;
+    const body = items.length ? (grouped
+      ? `<h3 class="foldhd">${this.t("actNow")}</h3>${urgent.map(row).join("")}${this.fold("todo_later", { tone: "warn", title: this.t("actSoon"), pill: this.formatNumber(later.length) }, later.map(row).join(""), later.length <= 3)}`
+      : items.map(row).join(""))
       : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
     return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}</section>`;
   }
@@ -2584,7 +2600,7 @@ class CleanupMixin {
     const journal = journalPage.rows.map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}<br><small>${this.t("journalEmptyNext")}</small></div>`}${journalPage.footer}</div>`;
     const tiles = this.sumTiles([
       { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
       removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
@@ -2592,8 +2608,16 @@ class CleanupMixin {
       { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
       { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
     ]);
+    const purges = this.purges || [];
+    const tabs = [
+      { id: "new", label: this.t("cleanupTabNew"), count: all.length },
+      { id: "journal", label: this.t("cleanupTabJournal"), count: (this.journal || []).length },
+      ...(purges.length ? [{ id: "purges", label: this.t("cleanupTabPurges"), count: purges.length }] : []),
+    ];
+    const open = this.viewTabOf("cleanup", tabs, "new");
+    const body = open === "journal" ? journalCard : open === "purges" ? this.purgeJournalCard() : `${this.quarantineCard()}${this.recurringCard()}${assistant}`;
     return `<div class="stack">${tiles}<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
-      ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${this.recurringCard()}${assistant}${journalCard}${this.purgeJournalCard()}</div>`;
+      ${this.plan ? this.planCard(this.plan) : ""}${this.viewTabBar("cleanup", tabs, open)}${body}</div>`;
   }
 }
 
@@ -4534,16 +4558,14 @@ class ExposureMixin {
     const tone = f.level === "warn" ? "warn" : "mute";
     const q = (this.lv.exposure?.q || "").trim().toLowerCase();
     const matching = (f.items || []).filter(item => !q || [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q));
-    const open = q ? matching.length > 0 : (this.expoFold?.[f.kind] ?? f.level === "warn");
-    const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
-    const head = `<button class="row expohead" data-expo-fold="${this.esc(f.kind)}" aria-expanded="${open}"><span class="tile ${tone}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small></span>${pill}</button>`;
-    if (!open) return `<div class="expofold">${head}</div>`;
     const all = !!this.expoAll?.[f.kind];
     const shown = all || q ? matching : matching.slice(0, 10);
     const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
     const total = q ? matching.length : f.count;
     const more = total > shown.length ? `<p class="factnote"><button class="link" data-expo-all="${this.esc(f.kind)}">${this.t("expoShowAll", { n: this.formatNumber(total) })}</button></p>` : "";
-    return `<div class="expofold open">${head}<div class="expogroup"><p class="factnote expoadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}</div></div>`;
+    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}`;
+    const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
+    return this.fold(`expo_${f.kind}`, head, body, f.level === "warn", q ? matching.length > 0 : undefined);
   }
 
   expoSection(titleKey, list) {
@@ -5747,7 +5769,7 @@ class DiagnosticsMixin {
 
   qualityRow(item) {
     const dots = DIM_ORDER.map(id => `<td aria-label="${this.esc(this.t(`dim_${id}`))}: ${this.esc(this.t(`ql_${item.dimensions[id].level}`))}">${this.dimDot(item.dimensions[id])}</td>`).join("");
-    return `<tr><td>${this.nameCell(item.name, item.entity_id)}</td>${dots}<td><button class="btn" data-diag-open="${this.esc(item.entity_id)}">${this.t("diagOpen")}</button></td></tr>`;
+    return `<tr><td>${this.nameCell(item.name, item.entity_id)}<span class="qlight" aria-hidden="true">${DIM_ORDER.map(id => `<i class="${QL_TONE[item.dimensions[id].level]}" title="${this.esc(this.t(`dim_${id}`))}"></i>`).join("")}</span></td>${dots}<td><button class="btn" data-diag-open="${this.esc(item.entity_id)}">${this.t("diagOpen")}</button></td></tr>`;
   }
 
   qualityView() {
@@ -5756,9 +5778,14 @@ class DiagnosticsMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("qualityTab")}</h2><p>${this.t("qualityHint")}</p></div><div class="actions"><button class="btn" data-quality-refresh ${d.loading ? "disabled" : ""}>${this.t("qualityRefresh")}</button></div></div>`;
     if (d.error) return `<div class="panel">${head}<div class="error">${this.esc(d.error)}</div></div>`;
     if (!q) return `<div class="panel">${head}${this.skeleton("qualityLoading")}</div>`;
+    const issue = i => i.worst === "red" || i.worst === "warn" || i.worst === "info";
+    const items = d.issuesOnly ? q.items.filter(issue) : q.items;  // the backend sends them worst first
+    const sorted = d.byName ? [...items].sort((a, b) => a.name.localeCompare(b.name)) : items;
+    const bar = `<div class="listbar"><label><input type="checkbox" data-quality-issues ${d.issuesOnly ? "checked" : ""}> ${this.t("qualityOnlyIssues")}</label><label><input type="checkbox" data-quality-byname ${d.byName ? "checked" : ""}> ${this.t("qualityName")}</label></div>`;
     const header = `<tr><th>${this.t("utName")}</th>${DIM_ORDER.map(id => `<th>${this.t(`dim_${id}`)}</th>`).join("")}<th></th></tr>`;
-    const table = q.items.length ? `<div class="tablewrap lt"><table><thead>${header}</thead><tbody>${q.items.map(i => this.qualityRow(i)).join("")}</tbody></table></div>` : `<div class="emptymsg">${this.t("qualityNone")}</div>`;
-    return `<div class="stack"><div class="panel">${head}${table}</div>${d.sel ? this.diagDetail(d.sel) : ""}</div>`;
+    const empty = d.issuesOnly && q.items.length ? this.t("qualityNoIssues") : this.t("qualityNoneNext");
+    const table = sorted.length ? `<div class="tablewrap lt qualitytable"><table><thead>${header}</thead><tbody>${sorted.map(i => this.qualityRow(i)).join("")}</tbody></table></div>` : `<div class="emptymsg">${empty}</div>`;
+    return `<div class="stack"><div class="panel">${head}${q.items.length ? bar : ""}${table}</div>${d.sel ? this.diagDetail(d.sel) : ""}</div>`;
   }
 
   // Everything about one automation in one place: why each dimension is as it is, the criteria, and later the coverage, the comparison and the dry run.
@@ -5769,7 +5796,7 @@ class DiagnosticsMixin {
       const dim = item.dimensions[id];
       return `<div class="row"><span class="tile ${QL_TONE[dim.level]}">${QL_MARK[dim.level]}</span><span class="row-text"><strong>${this.t(`dim_${id}`)}</strong><small>${this.esc(dim.reasons.length ? dim.reasons.map(r => this.dimReason(r)).join(" · ") : this.t(`ql_${dim.level}`))}</small></span><span class="pill ${QL_TONE[dim.level]}">${this.t(`ql_${dim.level}`)}</span></div>`;
     }).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagFor", { name: this.esc(item.name) })}</h2><p>${this.esc(entityId)}</p></div><button class="btn" data-diag-close>${this.t("diagClose")}</button></div>${dims}${this.criteriaCard(entityId)}${this.diagExtras(entityId)}</section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagFor", { name: this.esc(item.name) })}</h2><p>${this.esc(entityId)}</p></div><button class="btn" data-diag-close>${this.t("diagClose")}</button></div>${this.fold("diag_dims", { title: this.t("diagSecDims") }, dims, true)}${this.fold("diag_crit", { title: this.t("diagSecCriteria") }, this.criteriaCard(entityId), true)}${this.fold("diag_more", { title: this.t("diagSecMore") }, this.diagExtras(entityId), false)}</section>`;
   }
 
   async openDiag(entityId) {
@@ -5821,6 +5848,8 @@ class DiagnosticsMixin {
 
   bindDiagnostics(root) {
     const d = () => this.diagState();
+    root.querySelector("[data-quality-issues]")?.addEventListener("change", ev => { d().issuesOnly = ev.target.checked; this.render(); });
+    root.querySelector("[data-quality-byname]")?.addEventListener("change", ev => { d().byName = ev.target.checked; this.render(); });
     root.querySelector("[data-quality-refresh]")?.addEventListener("click", () => this.loadQuality());
     root.querySelectorAll("[data-diag-open]").forEach(el => el.onclick = () => this.openDiag(el.dataset.diagOpen));
     root.querySelector("[data-diag-close]")?.addEventListener("click", () => { d().sel = ""; d().draft = null; this.render(); });
@@ -5995,6 +6024,24 @@ class DryRunMixin {
     root.querySelectorAll("[data-dry-state]").forEach(el => el.oninput = () => { dry().states[Number(el.dataset.dryState)].state = el.value; });
   }
 }
+
+// Texts of the panel polish: folds, groups and tabs in the cleanup view, filters of the quality view.
+Object.assign(TEXT.de, {
+  actNow: "Jetzt", actSoon: "Bald",
+  cleanupTabNew: "Neuer Plan", cleanupTabJournal: "Pläne und Journal", cleanupTabPurges: "Gelöschte Statistiken",
+  journalEmptyNext: "Noch kein Plan. Wähle unter „Neuer Plan“ Kandidaten aus und lege einen Plan an.",
+  qualityOnlyIssues: "Nur mit Problem oder Hinweis", qualityAll: "Alle", qualityWorst: "Schlechteste zuerst", qualityName: "Nach Name",
+  qualityNoneNext: "Keine Automationen gefunden. Sie erscheinen nach dem nächsten Scan.", qualityNoIssues: "Keine Automation mit Problem oder Hinweis.",
+  diagSecDims: "Bewertung", diagSecCriteria: "Erfolgskriterien", diagSecMore: "Abdeckung, Vergleich und Testlauf",
+});
+Object.assign(TEXT.en, {
+  actNow: "Now", actSoon: "Soon",
+  cleanupTabNew: "New plan", cleanupTabJournal: "Plans and journal", cleanupTabPurges: "Deleted statistics",
+  journalEmptyNext: "No plan yet. Pick candidates under “New plan” and create one.",
+  qualityOnlyIssues: "Only with a problem or note", qualityAll: "All", qualityWorst: "Worst first", qualityName: "By name",
+  qualityNoneNext: "No automations found. They appear after the next scan.", qualityNoIssues: "No automation with a problem or note.",
+  diagSecDims: "Assessment", diagSecCriteria: "Success criteria", diagSecMore: "Coverage, comparison and test run",
+});
 
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
@@ -6783,7 +6830,7 @@ class HAHousekeeperPanel extends HTMLElement {
       const kind = el.dataset.bhSave, date = root.querySelector(`[data-bh-date="${kind}"]`)?.value;
       this.loadBackup({ type: "ha_housekeeper/backup_attest", kind, ...(date ? { date } : {}) });
     });
-    root.querySelectorAll("[data-expo-fold]").forEach(el => el.onclick = () => { const kind = el.dataset.expoFold; this.expoFold = { ...this.expoFold, [kind]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
+    root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-expo-all]").forEach(el => el.onclick = () => { this.expoAll = { ...this.expoAll, [el.dataset.expoAll]: true }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));
     root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());

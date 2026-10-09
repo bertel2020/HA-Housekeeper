@@ -584,6 +584,7 @@ test("cleanup view lists candidates, creates a dry-run plan and shows the verdic
   await el.createPlan();
   const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "disable_entity", object_id: "sensor.old" }, { kind: "disable_entity", object_id: "sensor.used" }]));
+  el.viewTab = { cleanup: "journal" };
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("2 checked: 1 with no known use, 0 to review, 1 blocked.") && html.includes("Blocked") && html.includes("Definitely in use"));
@@ -794,6 +795,7 @@ test("the journal lists short entries and opening one fetches the plan", async (
   el.view = "cleanup";
   el.journal = [{ plan_id: "p9", created_at: "2026-10-07T10:00:00+00:00", status: "verified", executed: true, run: true, summary: { total: 1, ok: 1, review: 0, blocked: 0 } }];
   el.plan = null;
+  el.viewTab = { cleanup: "journal" };
   el.render();
   assert.ok(shadow.innerHTML.includes('data-plan-open="p9"'));
   assert.ok(!shadow.innerHTML.includes("file copy was dropped"));
@@ -1689,6 +1691,7 @@ test("a long journal and long relation groups get a search box", () => {
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
   el.view = "cleanup";
   el.journal = Array.from({ length: 8 }, (_, i) => ({ plan_id: `p${i}`, created_at: `2026-10-0${i + 1}T10:00:00+00:00`, status: "verified", summary: { total: 1, ok: 1, review: 0, blocked: 0 } }));
+  el.viewTab = { cleanup: "journal" };
   el.render();
   assert.ok(shadow.innerHTML.includes('data-lq="journal"'));
   el.lv.journal.q = "zzz";
@@ -2159,9 +2162,22 @@ test("exposure findings fold: warnings open, hints closed, the head toggles and 
   assert.ok(html.includes("light.x9") && !html.includes("light.x10"), "ten entities, the warning is open");
   assert.ok(!html.includes("sensor.diag"), "the hint is closed");
   assert.ok(html.includes('data-expo-all="stale_exposed"') && html.includes('aria-expanded="false"'));
-  el.expoAll = { stale_exposed: true }; el.expoFold = { diagnostic_exposed: true };
+  el.expoAll = { stale_exposed: true }; el.folds = { expo_diagnostic_exposed: true };
   html = el.exposureView();
   assert.ok(html.includes("light.x13") && html.includes("sensor.diag"));
+});
+
+test("polish: the to-do list groups by urgency, the cleanup view has tabs, the quality list filters", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }] };
+  const card = el.todoCard();
+  assert.ok(card.includes("Now") && card.includes("Soon") && card.includes('data-fold="todo_later"'));
+  el.view = "cleanup"; el.journal = []; el._journalRequested = true; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
+  const html = el.cleanupView();
+  assert.ok(html.includes('data-view-tab="cleanup|new"') && html.includes('data-view-tab="cleanup|journal"') && html.includes('data-view-tab="cleanup|purges"'));
+  el.diag = { quality: { items: [{ entity_id: "automation.ok", name: "Fine", status: "on", worst: "ok", dimensions: Object.fromEntries(["integrity", "reliability", "effectiveness", "maintainability", "restart_safety", "efficiency", "conflicts"].map(id => [id, { level: "ok", reasons: [] }])) }] }, issuesOnly: true, criteria: {}, detail: {} };
+  el._qualityRequested = true;
+  assert.ok(el.qualityView().includes("No automation with a problem or note."));
 });
 
 test("an object leaves quarantine after a question, through the undo of just that object", async () => {
@@ -2716,6 +2732,7 @@ test("automation diagnostics: quality dimensions, criteria, coverage, comparison
   assert.ok(html.includes("Hall") && html.includes("Reliability") && html.includes("Restart safety") && html.includes('title="Many errors'));
   assert.ok(!html.includes("Overall"), "no single score");
   await el.openDiag("automation.hall");
+  el.folds = { diag_more: true };
   html = el.qualityView();
   assert.ok(html.includes("Diagnosis: Hall") && html.includes("No success criterion defined") && html.includes("never reached") && html.includes("Compare") && html.includes("Test run"));
   el.editCriteria("automation.hall");

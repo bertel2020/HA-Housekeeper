@@ -31,16 +31,14 @@ class ExposureMixin {
     const tone = f.level === "warn" ? "warn" : "mute";
     const q = (this.lv.exposure?.q || "").trim().toLowerCase();
     const matching = (f.items || []).filter(item => !q || [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q));
-    const open = q ? matching.length > 0 : (this.expoFold?.[f.kind] ?? f.level === "warn");
-    const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
-    const head = `<button class="row expohead" data-expo-fold="${this.esc(f.kind)}" aria-expanded="${open}"><span class="tile ${tone}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small></span>${pill}</button>`;
-    if (!open) return `<div class="expofold">${head}</div>`;
     const all = !!this.expoAll?.[f.kind];
     const shown = all || q ? matching : matching.slice(0, 10);
     const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
     const total = q ? matching.length : f.count;
     const more = total > shown.length ? `<p class="factnote"><button class="link" data-expo-all="${this.esc(f.kind)}">${this.t("expoShowAll", { n: this.formatNumber(total) })}</button></p>` : "";
-    return `<div class="expofold open">${head}<div class="expogroup"><p class="factnote expoadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}</div></div>`;
+    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}`;
+    const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
+    return this.fold(`expo_${f.kind}`, head, body, f.level === "warn", q ? matching.length > 0 : undefined);
   }
 
   expoSection(titleKey, list) {

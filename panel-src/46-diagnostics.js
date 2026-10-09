@@ -66,7 +66,7 @@ class DiagnosticsMixin {
 
   qualityRow(item) {
     const dots = DIM_ORDER.map(id => `<td aria-label="${this.esc(this.t(`dim_${id}`))}: ${this.esc(this.t(`ql_${item.dimensions[id].level}`))}">${this.dimDot(item.dimensions[id])}</td>`).join("");
-    return `<tr><td>${this.nameCell(item.name, item.entity_id)}</td>${dots}<td><button class="btn" data-diag-open="${this.esc(item.entity_id)}">${this.t("diagOpen")}</button></td></tr>`;
+    return `<tr><td>${this.nameCell(item.name, item.entity_id)}<span class="qlight" aria-hidden="true">${DIM_ORDER.map(id => `<i class="${QL_TONE[item.dimensions[id].level]}" title="${this.esc(this.t(`dim_${id}`))}"></i>`).join("")}</span></td>${dots}<td><button class="btn" data-diag-open="${this.esc(item.entity_id)}">${this.t("diagOpen")}</button></td></tr>`;
   }
 
   qualityView() {
@@ -75,9 +75,14 @@ class DiagnosticsMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("qualityTab")}</h2><p>${this.t("qualityHint")}</p></div><div class="actions"><button class="btn" data-quality-refresh ${d.loading ? "disabled" : ""}>${this.t("qualityRefresh")}</button></div></div>`;
     if (d.error) return `<div class="panel">${head}<div class="error">${this.esc(d.error)}</div></div>`;
     if (!q) return `<div class="panel">${head}${this.skeleton("qualityLoading")}</div>`;
+    const issue = i => i.worst === "red" || i.worst === "warn" || i.worst === "info";
+    const items = d.issuesOnly ? q.items.filter(issue) : q.items;  // the backend sends them worst first
+    const sorted = d.byName ? [...items].sort((a, b) => a.name.localeCompare(b.name)) : items;
+    const bar = `<div class="listbar"><label><input type="checkbox" data-quality-issues ${d.issuesOnly ? "checked" : ""}> ${this.t("qualityOnlyIssues")}</label><label><input type="checkbox" data-quality-byname ${d.byName ? "checked" : ""}> ${this.t("qualityName")}</label></div>`;
     const header = `<tr><th>${this.t("utName")}</th>${DIM_ORDER.map(id => `<th>${this.t(`dim_${id}`)}</th>`).join("")}<th></th></tr>`;
-    const table = q.items.length ? `<div class="tablewrap lt"><table><thead>${header}</thead><tbody>${q.items.map(i => this.qualityRow(i)).join("")}</tbody></table></div>` : `<div class="emptymsg">${this.t("qualityNone")}</div>`;
-    return `<div class="stack"><div class="panel">${head}${table}</div>${d.sel ? this.diagDetail(d.sel) : ""}</div>`;
+    const empty = d.issuesOnly && q.items.length ? this.t("qualityNoIssues") : this.t("qualityNoneNext");
+    const table = sorted.length ? `<div class="tablewrap lt qualitytable"><table><thead>${header}</thead><tbody>${sorted.map(i => this.qualityRow(i)).join("")}</tbody></table></div>` : `<div class="emptymsg">${empty}</div>`;
+    return `<div class="stack"><div class="panel">${head}${q.items.length ? bar : ""}${table}</div>${d.sel ? this.diagDetail(d.sel) : ""}</div>`;
   }
 
   // Everything about one automation in one place: why each dimension is as it is, the criteria, and later the coverage, the comparison and the dry run.
@@ -88,7 +93,7 @@ class DiagnosticsMixin {
       const dim = item.dimensions[id];
       return `<div class="row"><span class="tile ${QL_TONE[dim.level]}">${QL_MARK[dim.level]}</span><span class="row-text"><strong>${this.t(`dim_${id}`)}</strong><small>${this.esc(dim.reasons.length ? dim.reasons.map(r => this.dimReason(r)).join(" · ") : this.t(`ql_${dim.level}`))}</small></span><span class="pill ${QL_TONE[dim.level]}">${this.t(`ql_${dim.level}`)}</span></div>`;
     }).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagFor", { name: this.esc(item.name) })}</h2><p>${this.esc(entityId)}</p></div><button class="btn" data-diag-close>${this.t("diagClose")}</button></div>${dims}${this.criteriaCard(entityId)}${this.diagExtras(entityId)}</section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagFor", { name: this.esc(item.name) })}</h2><p>${this.esc(entityId)}</p></div><button class="btn" data-diag-close>${this.t("diagClose")}</button></div>${this.fold("diag_dims", { title: this.t("diagSecDims") }, dims, true)}${this.fold("diag_crit", { title: this.t("diagSecCriteria") }, this.criteriaCard(entityId), true)}${this.fold("diag_more", { title: this.t("diagSecMore") }, this.diagExtras(entityId), false)}</section>`;
   }
 
   async openDiag(entityId) {
@@ -140,6 +145,8 @@ class DiagnosticsMixin {
 
   bindDiagnostics(root) {
     const d = () => this.diagState();
+    root.querySelector("[data-quality-issues]")?.addEventListener("change", ev => { d().issuesOnly = ev.target.checked; this.render(); });
+    root.querySelector("[data-quality-byname]")?.addEventListener("change", ev => { d().byName = ev.target.checked; this.render(); });
     root.querySelector("[data-quality-refresh]")?.addEventListener("click", () => this.loadQuality());
     root.querySelectorAll("[data-diag-open]").forEach(el => el.onclick = () => this.openDiag(el.dataset.diagOpen));
     root.querySelector("[data-diag-close]")?.addEventListener("click", () => { d().sel = ""; d().draft = null; this.render(); });

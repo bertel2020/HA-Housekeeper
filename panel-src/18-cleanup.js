@@ -414,7 +414,7 @@ class CleanupMixin {
     const journal = journalPage.rows.map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}<br><small>${this.t("journalEmptyNext")}</small></div>`}${journalPage.footer}</div>`;
     const tiles = this.sumTiles([
       { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
       removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
@@ -422,7 +422,15 @@ class CleanupMixin {
       { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
       { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
     ]);
+    const purges = this.purges || [];
+    const tabs = [
+      { id: "new", label: this.t("cleanupTabNew"), count: all.length },
+      { id: "journal", label: this.t("cleanupTabJournal"), count: (this.journal || []).length },
+      ...(purges.length ? [{ id: "purges", label: this.t("cleanupTabPurges"), count: purges.length }] : []),
+    ];
+    const open = this.viewTabOf("cleanup", tabs, "new");
+    const body = open === "journal" ? journalCard : open === "purges" ? this.purgeJournalCard() : `${this.quarantineCard()}${this.recurringCard()}${assistant}`;
     return `<div class="stack">${tiles}<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
-      ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${this.recurringCard()}${assistant}${journalCard}${this.purgeJournalCard()}</div>`;
+      ${this.plan ? this.planCard(this.plan) : ""}${this.viewTabBar("cleanup", tabs, open)}${body}</div>`;
   }
 }
