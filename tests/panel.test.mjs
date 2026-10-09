@@ -607,7 +607,7 @@ test("orphaned statistics have their own tab with search, kind filter and energy
   el.unrefTab = "statistics";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Orphaned statistics</span><b class=\"sumvalue\">3</b>") && html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("Developer tools"));
+  assert.ok(html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("Developer tools"));
   assert.equal((html.match(/In the Energy dashboard/g) || []).length, 1);
   el.lv.orphanstats.f.kind = "kindMean";
   el.render();

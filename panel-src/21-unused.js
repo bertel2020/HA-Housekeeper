@@ -29,19 +29,16 @@ class UnusedMixin {
     return this.viewTabBar("unreferenced", tabs, this.unrefTab === "statistics" ? "statistics" : "entities");
   }
 
-  // Key figures of both tabs; the two main ones switch the tab.
+  // Key figures of the unused entities (the counts themselves are in the cleanup tiles above).
   unrefTiles() {
-    const stats = this.data.orphaned_statistics || [], rows = this.unreferencedRows();
+    const rows = this.unreferencedRows();
     const top = list => { const counts = new Map(); list.forEach(x => x && counts.set(x, (counts.get(x) || 0) + 1)); return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]; };
     const domain = top(rows.map(o => o.object_id.split(".")[0])), platform = top(rows.map(o => o.platform));
-    const withStats = rows.filter(o => o.has_statistics).length, inEnergy = stats.filter(o => o.in_energy).length;
+    const withStats = rows.filter(o => o.has_statistics).length;
     return this.sumTiles([
-      { label: this.t("unreferencedEntities"), value: this.formatNumber(rows.length), tone: rows.length ? "warn" : "ok", unref: "entities", active: this.unrefTab !== "statistics" },
       this.data.meta.recorder_available && rows.length ? { label: this.t("unrefSumStats"), value: this.formatNumber(withStats), sub: this.t("unrefSumStatsHint"), tone: "mute" } : null,
       domain ? { label: this.t("unrefSumDomain"), value: this.esc(domain[0]), sub: this.formatNumber(domain[1]), tone: "mute" } : null,
       platform ? { label: this.t("unrefSumPlatform"), value: this.esc(platform[0]), sub: this.formatNumber(platform[1]), tone: "mute" } : null,
-      { label: this.t("orphanStats"), value: this.formatNumber(stats.length), tone: stats.length ? "warn" : "ok", unref: "statistics", active: this.unrefTab === "statistics" },
-      inEnergy ? { label: this.t("unrefSumEnergy"), value: this.formatNumber(inEnergy), sub: this.t("unrefSumEnergyHint"), tone: "red", unref: "statistics" } : null,
     ]);
   }
 
@@ -145,7 +142,7 @@ class UnusedMixin {
     ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
-    return `<div class="stack">${this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
+    return `<div class="stack">${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
   }
 
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
