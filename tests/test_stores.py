@@ -17,7 +17,7 @@ from custom_components.ha_housekeeper.backup_health import AttestStore  # noqa: 
 from custom_components.ha_housekeeper.cleanup import JournalStore  # noqa: E402
 from custom_components.ha_housekeeper.events import EventLog  # noqa: E402
 from custom_components.ha_housekeeper.history import ScanHistory  # noqa: E402
-from custom_components.ha_housekeeper.ignored import IgnoreStore  # noqa: E402
+from custom_components.ha_housekeeper.ignored import IgnoreStore, _clean  # noqa: E402
 from custom_components.ha_housekeeper.maintenance import PreflightStore  # noqa: E402
 from custom_components.ha_housekeeper.observations import ObservationStore  # noqa: E402
 from custom_components.ha_housekeeper.policies import PolicyStore  # noqa: E402
@@ -93,6 +93,27 @@ async def test_ignored_findings_survive_a_reload(hass: HomeAssistant, hass_stora
     third = IgnoreStore(hass)
     await third.async_load()
     assert not third.is_ignored("rule|a")
+
+
+async def test_decisions_keep_their_reason_run_out_and_read_old_entries(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    assert _clean("2026-01-01T00:00:00+00:00")["kind"] == "ignore", "an old entry was just a time"
+    assert _clean({"kind": "x"}) is None and _clean(3) is None
+    store = IgnoreStore(hass)
+    await store.async_load()
+    now = datetime.now(UTC)
+    store.decide("k", "keep", now, reason=" Reserve " + "x" * 300, until=now + timedelta(days=30))
+    await flush(hass)
+    store.decide("s", "snooze", now - timedelta(days=9), until=now - timedelta(days=2))
+    await flush(hass)
+    again = IgnoreStore(hass)
+    await again.async_load()
+    assert again.info("k")["reason"].startswith("Reserve") and len(again.info("k")["reason"]) == 200
+    assert not again.is_ignored("s") and again.is_due("s"), "ran out: shown again, marked due"
+    assert not again.is_due("k")
+    again.set_ignored("s", False, now)
+    assert not again.is_due("s")
 
 
 async def test_observations_survive_a_reload_and_forget_what_is_gone(

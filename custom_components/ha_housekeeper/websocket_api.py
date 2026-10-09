@@ -32,6 +32,8 @@ from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
 from .correlation import correlate
 from .db_health import db_health
 from .exposure import exposure
+from .ignored import KINDS as IGNORE_KINDS
+from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
 from .lifecycle import removed_devices, timeline
 from .maintenance import preflight_report, recorder_costs
@@ -190,6 +192,9 @@ async def websocket_compare(
         vol.Required("type"): f"{DOMAIN}/ignore",
         vol.Required("finding_key"): str,
         vol.Required("ignored"): bool,
+        vol.Optional("kind", default="ignore"): vol.In(IGNORE_KINDS),
+        vol.Optional("reason", default=""): vol.All(str, vol.Length(max=IGNORE_REASON_LIMIT)),
+        vol.Optional("days"): vol.All(int, vol.Range(min=1, max=3650)),
     }
 )
 @callback
@@ -198,12 +203,26 @@ def websocket_ignore(
     connection: websocket_api.ActiveConnection,
     msg: dict[str, Any],
 ) -> None:
-    """Hide or show one finding. Only Housekeeper's own list changes."""
+    """Hide, keep or put off one finding, or show it again. Only Housekeeper's own list changes."""
     scanner = _scanner(hass)
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    if not scanner.set_finding_ignored(msg["finding_key"], msg["ignored"]):
+    if msg["ignored"]:
+        if msg["kind"] == "keep" and not msg["reason"].strip():
+            connection.send_error(msg["id"], "reason_required", "Keeping a finding needs a reason")
+            return
+        if msg["kind"] == "snooze" and "days" not in msg:
+            connection.send_error(msg["id"], "days_required", "Putting a finding off needs days")
+            return
+    if not scanner.set_finding_ignored(
+        msg["finding_key"],
+        msg["ignored"],
+        kind=msg["kind"],
+        reason=msg["reason"],
+        days=msg.get("days"),
+        by=connection.user.id if connection.user else None,
+    ):
         connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
         return
     connection.send_result(msg["id"], {"ignored": msg["ignored"]})

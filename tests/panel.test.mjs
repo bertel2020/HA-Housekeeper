@@ -327,8 +327,8 @@ test("detail page offers to hide and show findings, but not label-hidden ones", 
     { rule_id: "entity.state_unavailable", object_id: "sensor.a", classification: "unavailable", confidence: 0.75, key: "k3", ignored: true, ignored_by: "label" },
   ] };
   const html = el.findingsCard("entity:sensor.a");
-  assert.ok(html.includes('data-ignore="k1" data-ignore-value="1"'));
-  assert.ok(!html.includes('data-ignore="k3"'));
+  assert.ok(html.includes('data-decide-open="k1"'));
+  assert.ok(!html.includes('data-ignore="k3"') && !html.includes('data-decide-open="k3"'));
   assert.ok(html.includes("housekeeper_ignore"));
 });
 
@@ -2509,4 +2509,27 @@ test("the browser's back button steps back inside the panel, one history entry i
   assert.deepEqual(calls, ["push", "push", "back"], "own back button: the spare entry is removed");
   el.onPopState();
   assert.equal(el.view, "inventory", "that pop is ignored");
+});
+
+test("a finding can be kept on purpose with a reason, put off for days, and comes back as due", async () => {
+  const { el } = panel("en");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/ignore")) sent.push(msg); return {}; } };
+  el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1", ignored: false }, { ...DATA.findings[1], key: "k2", ignored: false, resurfaced: true }] };
+  el.openDecide("k1");
+  assert.ok(el.findingsCard("entity:sensor.a").includes("data-decide-form"));
+  el.decide.kind = "keep";
+  await el.commitDecide();
+  assert.equal(sent.length, 0, "keeping on purpose needs a reason");
+  assert.equal(el.decide.error, "decideNeedReason");
+  el.decide.reason = " Reserve "; await el.commitDecide();
+  assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/ignore", finding_key: "k1", ignored: true, kind: "keep", reason: "Reserve" }));
+  const f = el.data.findings[0];
+  assert.ok(f.ignored && f.ignore_info.kind === "keep" && el.decide === null);
+  assert.ok(el.decisionLabel(f).includes("Kept on purpose") && el.decisionLabel(f).includes("Reserve"));
+  el.openDecide("k2"); el.decide.kind = "snooze"; el.decide.days = 0; await el.commitDecide();
+  assert.equal(sent[1].kind, "snooze"); assert.equal(sent[1].days, 30, "put off needs a time: 30 days by default");
+  assert.equal(el.data.findings[1].resurfaced, false);
+  el.data.findings[1].ignored = false; el.data.findings[1].resurfaced = true;
+  assert.ok(el.findingRow(el.data.findings[1]).includes("Due again"));
 });

@@ -440,6 +440,14 @@ async def test_findings_can_be_hidden_by_the_user_or_by_label(hass: HomeAssistan
     assert issues.async_get_issue(DOMAIN, "orphaned_entities") is not None
     assert scanner.set_finding_ignored("does|not|exist", True) is False
 
+    assert scanner.set_finding_ignored(key, True, kind="keep", reason="Reserve", days=30)
+    info = by_object[plain.entity_id]["ignore_info"]
+    assert info["kind"] == "keep" and info["reason"] == "Reserve" and info["until"]
+    scanner.ignored._items[key]["until"] = "2000-01-01T00:00:00+00:00"  # the time ran out
+    await scanner.async_scan()
+    again = {f["object_id"]: f for f in scanner.snapshot["findings"]}[plain.entity_id]
+    assert again["ignored"] is False and again["resurfaced"] is True
+
 
 async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> None:
     """The set-up entry provides count sensors that ignore hidden findings."""

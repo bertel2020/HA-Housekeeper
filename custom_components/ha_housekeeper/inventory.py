@@ -769,8 +769,7 @@ class InventoryScanner:
         entity_registry_entries = er.async_get(self.hass)
         for finding in findings:
             finding["key"] = finding_key(finding)
-            finding["ignored_by"] = self._ignored_by(finding, entity_registry_entries)
-            finding["ignored"] = finding["ignored_by"] is not None
+            self._mark_ignored(finding, entity_registry_entries)
 
         self.status.update(phase="finalizing", progress=90)
 
@@ -824,22 +823,48 @@ class InventoryScanner:
             return "label"
         return None
 
-    def set_finding_ignored(self, key: str, ignored: bool) -> bool:
+    def _mark_ignored(self, finding: dict[str, Any], registry: Any) -> None:
+        """Set what hides a finding, the decision behind it and whether one ran out."""
+        finding["ignored_by"] = self._ignored_by(finding, registry)
+        finding["ignored"] = finding["ignored_by"] is not None
+        info = self.ignored.info(finding["key"])
+        finding["ignore_info"] = info if finding["ignored_by"] == "user" else None
+        finding["resurfaced"] = not finding["ignored"] and self.ignored.is_due(finding["key"])
+
+    def set_finding_ignored(
+        self,
+        key: str,
+        ignored: bool,
+        *,
+        kind: str = "ignore",
+        reason: str = "",
+        days: int | None = None,
+        by: str | None = None,
+    ) -> bool:
         """Hide or show one finding in the stored state and the cached snapshot.
 
+        ``kind`` and ``reason`` say what was decided and why; ``days`` how long it holds.
         A policy violation (key ``policy.<rule>|...``) is no finding: only the ignore list changes.
         """
+        now = datetime.now(UTC)
+
+        def store() -> bool:
+            if not ignored:
+                self.ignored.set_ignored(key, False, now)
+                return True
+            until = now + timedelta(days=days) if days else None
+            return self.ignored.decide(key, kind, now, reason=reason, until=until, by=by)
+
         if key.startswith(POLICY_KEY_PREFIX):
-            self.ignored.set_ignored(key, ignored, datetime.now(UTC))
-            return True
+            return store()
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
         )
         if finding is None:
             return False
-        self.ignored.set_ignored(key, ignored, datetime.now(UTC))
-        finding["ignored_by"] = self._ignored_by(finding, er.async_get(self.hass))
-        finding["ignored"] = finding["ignored_by"] is not None
+        if not store():
+            return False
+        self._mark_ignored(finding, er.async_get(self.hass))
         async_sync_issues(self.hass, self._snapshot["findings"])
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
         return True
