@@ -32,16 +32,10 @@ class CleanupMixin {
     this.render();
   }
 
-  quarantineCard() {
-    const entries = this.data.quarantine || [];
-    if (!entries.length) return "";
-    const limit = this.data.meta.quarantine_days ?? 14;
-    const rows = entries.map(q => {
-      const type = q.object_type || "entity", item = this.findObject(`${type}:${q.object_id}`), days = this.daysSince(q.since), left = limit - days;
-      return `<div class="row qrow"><span class="tile mute"><ha-icon icon="${type === "device" ? "mdi:devices" : "mdi:archive-clock-outline"}"></ha-icon></span><span class="row-text"><strong><button class="linklike" data-object="${this.esc(`${type}:${q.object_id}`)}">${this.esc(item?.name || q.object_id)}</button></strong><small>${this.esc(type === "device" ? [item?.manufacturer, item?.model].filter(Boolean).join(" ") || q.object_id : q.object_id)} · ${this.t("quarantineSince", { date: this.formatDate(q.since), days })}</small></span><span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("quarantineWait", { days: left }) : this.t("quarantineReady")}</span>${this.releaseControl(q)}</div>`;
-    }).join("");
-    const message = this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("quarantine")} (${entries.length})</h2><p>${this.t("quarantineHint", { days: limit })}</p></div></div>${rows}${message}</div>`;
+  // The tiles of the Cleanup view: one job each, with the number of things to do; the chosen one is marked.
+  cleanupTiles(tabs, open) {
+    const tiles = tabs.map(t => `<button class="taskcard t-${t.count ? t.tone : "mute"}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`cleanup|${t.id}`)}"><ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill"><span class="pill ${t.count ? t.tone : "mute"}">${this.esc(this.formatNumber(t.count))}</span>${t.pill ? `<span class="pill ok">${this.esc(t.pill)}</span>` : ""}</span><small>${this.esc(t.hint)}</small></button>`).join("");
+    return `<div class="taskgrid compactgrid setgrid cleantiles" role="group" aria-label="${this.esc(this.t("cleanup"))}">${tiles}</div>`;
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them.
@@ -56,8 +50,7 @@ class CleanupMixin {
     return (this.data.quarantine || []).filter(q => (q.object_type || "entity") === type).map(q => ({ item: this.findObject(`${type}:${q.object_id}`), finding: null, quarantine: q })).filter(r => r.item);
   }
 
-  cleanupCandidates() {
-    const kind = this.cleanupKind;
+  cleanupCandidates(kind = this.cleanupKind) {
     if (kind === "remove_entity") return this.quarantineRows("entity");
     if (kind === "remove_device" || kind === "forget_device") return this.quarantineRows("device");
     if (kind === "disable_device") return this.deviceCandidates();
@@ -349,7 +342,7 @@ class CleanupMixin {
   }
 
   kindSelect() {
-    if (this.view !== "cleanup") return "";
+    if (this.view !== "cleanup" || (this._cleanupKinds || CLEANUP_KINDS).length < 2) return "";
     const labels = { disable_entity: "kindDisable", remove_entity: "kindRemove", disable_device: "kindDisableDevice", remove_device: "kindRemoveDevice", forget_device: "kindForgetDevice" };
     return `<select data-cleanup-kind aria-label="${this.t("actionKind")}">${(this._cleanupKinds || CLEANUP_KINDS).map(value => `<option value="${value}" ${this.cleanupKind === value ? "selected" : ""}>${this.t(labels[value])}</option>`).join("")}</select>`;
   }
@@ -411,22 +404,30 @@ class CleanupMixin {
   cleanupView() {
     this.ensureJournal();
     const purges = this.purges || [];
+    const limit = this.data.meta.quarantine_days ?? 14;
+    const held = this.data.quarantine || [], heldReady = held.filter(q => this.daysSince(q.since) >= limit).length;
+    const unusedCount = this.unreferencedRows().length, statsCount = (this.data.orphaned_statistics || []).length;
+    const count = kind => this.cleanupCandidates(kind).length;
+    // The tiles are the navigation: each one is one job, with how much there is to do.
     const tabs = [
-      { id: "entities", label: this.t("cleanupTabEntities") },
-      { id: "devices", label: this.t("cleanupTabDevices") },
-      { id: "unused", label: this.t("unreferenced"), count: this.unreferencedRows().length },
-      { id: "stats", label: this.t("orphanStats"), count: (this.data.orphaned_statistics || []).length },
-      ...(purges.length ? [{ id: "purges", label: this.t("cleanupTabPurges"), count: purges.length }] : []),
+      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), count: count("disable_entity"), tone: "warn" },
+      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), count: count("disable_device"), tone: "warn" },
+      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), count: held.length, pill: heldReady ? this.t("cleanupReadyCount", { count: heldReady }) : "", tone: heldReady ? "ok" : "mute" },
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, tone: "mute" },
+      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), count: statsCount, tone: "mute" },
+      ...(purges.length ? [{ id: "purges", icon: "mdi:history", label: this.t("cleanupTabPurges"), hint: this.t("cleanupTilePurgesHint"), count: purges.length, tone: "mute" }] : []),
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
+    const tiles = this.cleanupTiles(tabs, open);
     if (["unused", "stats", "purges"].includes(open)) {
       this.unrefTab = open === "stats" ? "statistics" : "entities";
       this._embedUnref = true;
       const body = open === "purges" ? this.purgeJournalCard() : this.unreferencedView();
       this._embedUnref = false;
-      return `<div class="stack">${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${body}</div>`;
+      return `<div class="stack">${this.planHeader()}${tiles}${body}</div>`;
     }
-    this._cleanupKinds = open === "devices" ? DEVICE_KINDS : ["disable_entity", "remove_entity"];
+    const quarantineType = this.quarantineType === "device" ? "device" : "entity";
+    this._cleanupKinds = open === "devices" ? ["disable_device"] : open === "quarantine" ? (quarantineType === "device" ? ["remove_device", "forget_device"] : ["remove_entity"]) : ["disable_entity"];
     if (!this._cleanupKinds.includes(this.cleanupKind)) this.cleanupKind = this._cleanupKinds[0];
     this.lvState("cleanup", "name", "asc");
     const all = this.cleanupCandidates();
@@ -436,7 +437,6 @@ class CleanupMixin {
       { key: "since", label: "sortSince", dir: "desc", get: r => (r.quarantine ? r.quarantine.since : r.finding?.first_detected_at) },
       { key: "certainty", label: "sortCertainty", dir: "desc", get: r => (r.finding ? r.finding.confidence : null) },
     ];
-    const limit = this.data.meta.quarantine_days ?? 14;
     const ready = r => !r.quarantine || this.daysSince(r.quarantine.since) >= limit;
     const classes = [...new Set(all.filter(r => r.finding).map(r => r.finding.classification))];
     const removal = ["remove_entity", "remove_device", "forget_device"].includes(this.cleanupKind);
@@ -454,21 +454,16 @@ class CleanupMixin {
       const badge = finding ? this.pill(finding.classification) : quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t("deviceEntities", { count: r.count })}</span>`;
       const sub = item.object_type === "device" ? [item.manufacturer, item.model].filter(Boolean).join(" ") || item.object_id : item.object_id;
       return `<div class="row"><input type="checkbox" data-sel="${this.esc(item.object_id)}" ${this.cleanupSel.has(item.object_id) ? "checked" : ""} ${left > 0 ? "disabled" : ""} aria-label="${this.esc(item.name)}">
-      <button class="row-text link" style="text-align:left" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(sub)}</small></button>${badge}</div>`;
+      <button class="row-text link" style="text-align:left" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(sub)}</small></button>${badge}${quarantine ? this.releaseControl(quarantine) : ""}</div>`;
     };
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
       <div class="toolbar">${this.kindSelect()}${this.recorderChoice(removal)}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
-    const tiles = this.sumTiles([
-      { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
-      removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
-      removal ? { label: this.t("waitingShort"), value: this.formatNumber(all.filter(r => !ready(r)).length), tone: "mute" } : null,
-      { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
-      { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
-    ]);
-    return `<div class="stack">${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${tiles}${this.quarantineCard()}${this.recurringCard()}${candidates}</div>`;
+    const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
+    const message = open === "quarantine" && this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
+    return `<div class="stack">${this.planHeader()}${tiles}${typeSwitch}${open === "devices" ? this.recurringCard() : ""}${candidates}${message}</div>`;
   }
 
   ensureJournal() {

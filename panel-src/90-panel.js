@@ -765,6 +765,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
+    root.querySelectorAll("[data-qtype]").forEach(el => el.onclick = () => { this.quarantineType = el.dataset.qtype; this.cleanupKind = el.dataset.qtype === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); });
     const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
     root.querySelectorAll("[data-repair-task]").forEach(el => el.onclick = () => { this.repairTask = el.dataset.repairTask; this.cleanupKind = this.repairTask; this.cleanupSel = new Set(); this.plan = null; this.render(); });
     root.querySelector("[data-repair-back]")?.addEventListener("click", () => { this.repairTask = null; this.render(); });

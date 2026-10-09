@@ -582,7 +582,7 @@ test("cleanup view lists candidates, creates a dry-run plan and shows the verdic
   assert.equal(el.cleanupCandidates().length, 2); // broken references are not entity candidates
   el.view = "cleanup";
   el.render();
-  assert.ok(shadow.innerHTML.includes("Candidates (2)") && shadow.innerHTML.includes("changes nothing") && shadow.innerHTML.includes("disabled"));
+  assert.ok(shadow.innerHTML.includes("Candidates (2)") && shadow.innerHTML.includes("Nothing is changed") && shadow.innerHTML.includes("disabled"));
   el.cleanupSel = new Set(["sensor.old", "sensor.used"]);
   await el.createPlan();
   const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
@@ -938,7 +938,7 @@ test("removal candidates are the quarantined entities and wait for the quarantin
   el.data = { ...DATA, meta: { ...DATA.meta, quarantine_days: 14 }, objects: [item("sensor.old"), item("sensor.new")], edges: [], findings: [],
     quarantine: [{ object_id: "sensor.old", plan_id: "p", since: ago(20) }, { object_id: "sensor.new", plan_id: "p", since: ago(2) }] };
   el.journal = [];
-  el.view = "cleanup";
+  el.view = "cleanup"; el.viewTab = { cleanup: "quarantine" };
   el.cleanupKind = "remove_entity";
   el.render();
   const html = shadow.innerHTML;
@@ -975,12 +975,12 @@ test("device candidates are the devices without working entities; removal lists 
   assert.ok(html.includes("Candidates (1)") && html.includes('data-sel="d-dead"') && !html.includes('data-sel="d-live"') && !html.includes('data-sel="d-q"'));
   assert.ok(html.includes("1 entities") && html.includes('data-object="device:d-dead"'));
   for (const kind of ["remove_device", "forget_device"]) {
-    el.cleanupKind = kind; el.lv.cleanup = undefined; el.render();
+    el.viewTab = { cleanup: "quarantine" }; el.quarantineType = "device"; el.cleanupKind = kind; el.lv.cleanup = undefined; el.render();
     html = shadow.innerHTML;
     assert.ok(html.includes('data-sel="d-q"') && html.includes("Devices in quarantine") && !html.includes('data-sel="d-dead"'), kind);
   }
-  for (const value of ["disable_device", "remove_device", "forget_device"]) assert.ok(html.includes(`value="${value}"`));
-  assert.ok(!html.includes('value="disable_entity"'));
+  for (const value of ["remove_device", "forget_device"]) assert.ok(html.includes(`value="${value}"`));
+  assert.ok(!html.includes('value="disable_entity"') && !html.includes('value="disable_device"'));
   assert.ok(!html.includes('value="replace_references"'));
 });
 
@@ -2252,11 +2252,11 @@ test("an object leaves quarantine after a question, through the undo of just tha
   const item = id => ({ object_type: "entity", object_id: id, name: id.toUpperCase(), status: "disabled" });
   el.data = { ...DATA, meta: { ...DATA.meta, quarantine_days: 14 }, objects: [item("sensor.a"), item("sensor.b")], edges: [], findings: [],
     quarantine: [{ object_id: "sensor.a", object_type: "entity", plan_id: "p1", since: new Date().toISOString() }, { object_id: "sensor.b", plan_id: "p2", since: new Date().toISOString() }] };
-  el.journal = []; el.view = "cleanup";
+  el.journal = []; el.view = "cleanup"; el.viewTab = { cleanup: "quarantine" };
   el.render();
   let html = shadow.innerHTML;
   assert.equal(html.split("data-release=\"").length - 1, 2);
-  assert.ok(html.includes('class="linklike" data-object="entity:sensor.a"'));
+  assert.ok(html.includes('data-object="entity:sensor.a"'));
   el.releaseConfirm = "entity:sensor.a"; el.render();
   html = shadow.innerHTML;
   assert.ok(html.includes("Enable it again?") && html.includes('data-release-yes="entity:sensor.a"') && html.includes('data-release="entity:sensor.b"'));
@@ -2266,7 +2266,7 @@ test("an object leaves quarantine after a question, through the undo of just tha
   await el.releaseQuarantine("entity:sensor.a");
   assert.equal(JSON.stringify(calls.filter(c => c.type.endsWith("plan_undo"))), JSON.stringify([{ type: "ha_housekeeper/plan_undo", plan_id: "p1", object_ids: ["sensor.a"] }]));
   html = shadow.innerHTML;
-  assert.ok(html.includes("sensor.a: enabled again") && html.includes("Quarantine (1)") && el.releaseConfirm === null);
+  assert.ok(html.includes("sensor.a: enabled again") && html.split("data-release=\"").length - 1 === 1 && el.releaseConfirm === null);
   el._hass.callWS = async () => { throw new Error("boom"); };
   await el.releaseQuarantine("entity:sensor.b");
   assert.ok(shadow.innerHTML.includes("boom"));

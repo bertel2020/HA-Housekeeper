@@ -99,7 +99,7 @@ const TEXT = {
     scanSettings: "Scan und Schwellenwerte", scanSettingsHint: "Ändert die Optionen der Integration. Housekeeper lädt danach neu.", optMinUnavailable: "Nicht verfügbar gilt als Befund nach (Tage, 0 = sofort)",
     optUnusedAutomation: "Ungenutzte Automationen nach (Tage, 0 = aus)", optScanInterval: "Automatischer Scan alle (Stunden, 0 = aus)", optLowBattery: "Schwache Batterie ab (Prozent)",
     saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
-    cleanupSubtitle: "Vorschau für das Aufräumen: Housekeeper prüft Kandidaten und protokolliert das Ergebnis. Es wird nichts geändert.",
+    cleanupSubtitle: "Erst deaktivieren, nach der Quarantäne entfernen; Reste in der Datenbank löschen.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entitäten.", cleanupNone: "Keine Kandidaten gefunden.",
     selectPage: "Seite auswählen", successorHint: "Mögliche Nachfolger (nur ein Vorschlag):", purgeOpen: "Auswahl aus dem Recorder löschen …", purgeTitle: "Statistiken aus dem Recorder löschen", purgeWarn: "{n} Statistik-Reihen werden mit Lang- und Kurzzeitwerten gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an und löscht nur, wenn es gelingt. Danach geht es nur noch aus dem Backup zurück. Reihen im Energie-Dashboard sind ausgenommen.", purgeStates: "Auch die gespeicherten Zustände dieser IDs löschen", purgeWord: "LÖSCHEN", purgeRun: "Jetzt löschen", purgeRunning: "Läuft (Backup, dann Löschen) …", purgeDone: "{n} Reihen gelöscht, {skipped} übersprungen.", purgeError: "Nichts gelöscht: {reason}", purgeReason_backup_unavailable: "Backup nicht verfügbar", purgeReason_no_backup_agent: "kein Backup-Ziel eingerichtet", purgeReason_backup_failed: "Backup fehlgeschlagen", purgeReason_failed: "Fehler beim Löschen", purgeReason_busy: "ein Löschvorgang läuft schon", bpTab: "Blueprints", bpTitle: "Blueprints", bpHint: "Blueprint-Dateien, die keine Automation und kein Skript mehr nutzt, und Automationen oder Skripte, deren Blueprint fehlt oder nicht lädt. Nur Hinweise; es wird nichts gelöscht.", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", findHideSelected: "Ausgewählte ausblenden", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
     stepsLabel: "Ablauf des Plans", stepSelect: "Auswahl", stepAnalysis: "Auswirkungsanalyse", stepConfirm: "Bestätigung", stepBackup: "Backup", stepRun: "Ausführung", stepVerify: "Verifikation",
@@ -123,7 +123,7 @@ const TEXT = {
     err_warming_up: "Home Assistant startet noch. Bitte in wenigen Minuten erneut versuchen.",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
     kindDisable: "Deaktivieren (Quarantäne, umkehrbar)", kindRemove: "Entfernen (nach Quarantäne, mit Backup)", actionKind: "Aktion",
-    cleanupDryRun: "Nur Vorschau (Dry Run): Housekeeper ändert nichts, bis du einen Plan ausdrücklich bestätigst. Deaktivieren ist umkehrbar und lässt Historie und Statistiken unberührt; Entfernen geht erst nach der Quarantäne und mit Backup.",
+    cleanupDryRun: "Nichts wird geändert, bis du einen Plan ausdrücklich bestätigst. Deaktivieren ist umkehrbar; Entfernen geht erst nach der Quarantäne und mit Backup.",
     reason_already_disabled: "Die Entität ist bereits deaktiviert.",
     skippedUnacknowledged: "{count} zu prüfende Einträge ohne ausdrückliche Bestätigung werden übersprungen.",
     confirmPlan: "Bestätigen …", confirmPlanTitle: "Plan bestätigen", acknowledgeReview: "Ich habe das geprüft und will es trotzdem ausführen", confirmedSummary: "{count} Entitäten werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange die Entität unverändert bleibt.",
@@ -278,7 +278,7 @@ const TEXT = {
     scanSettings: "Scan and thresholds", scanSettingsHint: "Changes the integration options. Housekeeper reloads afterwards.", optMinUnavailable: "Unavailable becomes a finding after (days, 0 = immediately)",
     optUnusedAutomation: "Unused automations after (days, 0 = off)", optScanInterval: "Automatic scan every (hours, 0 = off)", optLowBattery: "Low battery at (percent)",
     saveOptions: "Save", optionsSaved: "Saved. Housekeeper is reloading …", optionsInvalid: "Please enter values within the allowed range.",
-    cleanupSubtitle: "Preview for tidying up: Housekeeper checks candidates and records the result. Nothing is changed.",
+    cleanupSubtitle: "Disable first, remove after the quarantine; delete leftovers in the database.",
     cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
     selectPage: "Select page", successorHint: "Possible successors (a suggestion only):", purgeOpen: "Delete selection from the recorder …", purgeTitle: "Delete statistics from the recorder", purgeWarn: "{n} statistic series are deleted with their long-term and short-term values. Housekeeper creates a Home Assistant backup first and only deletes if it succeeds. Afterwards the backup is the only way back. Series in the Energy dashboard are left out.", purgeStates: "Also delete the stored states of these IDs", purgeWord: "DELETE", purgeRun: "Delete now", purgeRunning: "Running (backup, then delete) …", purgeDone: "{n} series deleted, {skipped} skipped.", purgeError: "Nothing deleted: {reason}", purgeReason_backup_unavailable: "backup not available", purgeReason_no_backup_agent: "no backup location set up", purgeReason_backup_failed: "backup failed", purgeReason_failed: "error while deleting", purgeReason_busy: "a purge is already running", bpTab: "Blueprints", bpTitle: "Blueprints", bpHint: "Blueprint files that no automation or script uses any more, and automations or scripts whose blueprint is missing or fails to load. Hints only; nothing is deleted.", bpMissing: "blueprint file is missing", bpBroken: "blueprint fails to load", bpUnused: "not used", bpFiles: "files", bpNone: "Nothing to note.", notifyTitle: "Notification", notifyHint: "The only thing Housekeeper does on its own. Off by default.", notifyLabel: "Tell about new broken references", notifyDetail: "A notification in Home Assistant when an automation or script points to something that does not exist. Each finding is announced once; switching it on announces nothing old.", diagDownload: "Download diagnostics file", diagHint: "Numbers and versions only, no names, ids or attributes. Fit to attach to an issue on GitHub.", weeklyBtn: "Weekly report", weeklyHint: "Loads the comparison with the state from about a week ago and saves it as a Markdown file.", weeklyTitle: "Housekeeper report", weeklyRecorder: "Loudest entities in the recorder", findHideSelected: "Hide selected", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
     stepsLabel: "Steps of the plan", stepSelect: "Selection", stepAnalysis: "Impact analysis", stepConfirm: "Confirmation", stepBackup: "Backup", stepRun: "Execution", stepVerify: "Verification",
@@ -302,7 +302,7 @@ const TEXT = {
     err_warming_up: "Home Assistant is still starting. Please try again in a few minutes.",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
     kindDisable: "Disable (quarantine, reversible)", kindRemove: "Remove (after quarantine, with backup)", actionKind: "Action",
-    cleanupDryRun: "Preview only (dry run): Housekeeper changes nothing until you explicitly confirm a plan. Disabling is reversible and leaves history and statistics untouched; removal only works after the quarantine and with a backup.",
+    cleanupDryRun: "Nothing is changed until you explicitly confirm a plan. Disabling is reversible; removal only works after the quarantine and with a backup.",
     reason_already_disabled: "The entity is already disabled.",
     skippedUnacknowledged: "{count} entries to review without explicit confirmation will be skipped.",
     confirmPlan: "Confirm …", confirmPlanTitle: "Confirm plan", acknowledgeReview: "I have checked this and want to run it anyway", confirmedSummary: "{count} entities will be disabled (quarantine). This is reversible at any time while the entity stays unchanged.",
@@ -1086,7 +1086,7 @@ class StylesMixin {
       .btn{min-height:37px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--hk-border);background:var(--hk-surface)}.btn:hover{background:var(--hk-soft)}
       .howto{padding:6px 16px 10px}.howto summary{cursor:pointer;color:var(--hk-blue-text);font-weight:600;font-size:calc(12.5px*var(--hk-fs,1));padding:4px 0}.howto .factnote{margin:4px 0 0;padding:0}
       .setband{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:12px 16px;margin-bottom:14px}.setband .grow{flex:1}.bandbit{display:grid;gap:1px}.bandbit small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.bandbit b{font-size:calc(14px*var(--hk-fs,1))}
-      .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;padding:14px 16px}.tilebtn{display:grid;gap:8px;justify-items:start;align-content:start;padding:10px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);text-align:left;font-weight:600}.schemetiles{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.schemetiles .tilebtn{gap:10px;padding:12px}.schemeprev{display:grid;gap:8px;width:100%;box-sizing:border-box;padding:10px;border:1px solid;border-radius:10px}.sp-card{display:grid;grid-template-columns:18px 1fr;grid-template-rows:auto auto;gap:5px 8px;align-items:center;padding:8px;border:1px solid;border-radius:8px}.sp-card b{grid-row:1/3;width:18px;height:18px;border-radius:50%}.sp-card i{display:block;height:5px;border-radius:3px}.sp-row{display:flex;align-items:center;gap:6px}.sp-row em{width:10px;height:10px;border-radius:50%}.sp-row u{margin-left:auto;width:42px;height:14px;border-radius:7px}.tilebtn[aria-pressed=true]>span:last-child:before{content:"\\2713";margin-right:.4em;color:var(--hk-blue-text)}.tilebtn ha-icon{color:var(--hk-blue-text)}.tilebtn:hover{border-color:var(--hk-blue)}.tilebtn[aria-pressed=true]{border-color:var(--hk-blue-solid);box-shadow:0 0 0 2px color-mix(in srgb,var(--hk-blue) 35%,transparent)}
+      .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;padding:14px 16px}.tilebtn{display:grid;gap:8px;justify-items:start;align-content:start;padding:10px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);text-align:left;font-weight:600}.qtype{margin:0 0 12px}.cleantiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}.setpill{gap:6px;flex-wrap:wrap}.schemetiles{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.schemetiles .tilebtn{gap:10px;padding:12px}.schemeprev{display:grid;gap:8px;width:100%;box-sizing:border-box;padding:10px;border:1px solid;border-radius:10px}.sp-card{display:grid;grid-template-columns:18px 1fr;grid-template-rows:auto auto;gap:5px 8px;align-items:center;padding:8px;border:1px solid;border-radius:8px}.sp-card b{grid-row:1/3;width:18px;height:18px;border-radius:50%}.sp-card i{display:block;height:5px;border-radius:3px}.sp-row{display:flex;align-items:center;gap:6px}.sp-row em{width:10px;height:10px;border-radius:50%}.sp-row u{margin-left:auto;width:42px;height:14px;border-radius:7px}.tilebtn[aria-pressed=true]>span:last-child:before{content:"\\2713";margin-right:.4em;color:var(--hk-blue-text)}.tilebtn ha-icon{color:var(--hk-blue-text)}.tilebtn:hover{border-color:var(--hk-blue)}.tilebtn[aria-pressed=true]{border-color:var(--hk-blue-solid);box-shadow:0 0 0 2px color-mix(in srgb,var(--hk-blue) 35%,transparent)}
       .mini{display:flex;gap:4px;width:100%;height:38px;padding:5px;border:1px solid;border-radius:8px}.mini i{flex:1;border-radius:4px}.mini b{width:16px;border-radius:4px}
       .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:14px 16px}.optcard{display:grid;gap:8px;align-content:start;padding:14px;border:1px solid var(--hk-border);border-radius:12px}.optcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.unitrow{display:flex;align-items:center;gap:8px}.unitrow input{width:110px}.savebar{border-bottom:0;border-top:1px solid var(--hk-border)}.quietreset{grid-template-columns:1fr auto}a.row{text-decoration:none}
       .sharebar{display:block;height:6px;border-radius:3px;background:var(--hk-soft);overflow:hidden;margin-top:4px}.sharebar i{display:block;height:100%;background:var(--hk-blue-solid)}
@@ -2327,16 +2327,10 @@ class CleanupMixin {
     this.render();
   }
 
-  quarantineCard() {
-    const entries = this.data.quarantine || [];
-    if (!entries.length) return "";
-    const limit = this.data.meta.quarantine_days ?? 14;
-    const rows = entries.map(q => {
-      const type = q.object_type || "entity", item = this.findObject(`${type}:${q.object_id}`), days = this.daysSince(q.since), left = limit - days;
-      return `<div class="row qrow"><span class="tile mute"><ha-icon icon="${type === "device" ? "mdi:devices" : "mdi:archive-clock-outline"}"></ha-icon></span><span class="row-text"><strong><button class="linklike" data-object="${this.esc(`${type}:${q.object_id}`)}">${this.esc(item?.name || q.object_id)}</button></strong><small>${this.esc(type === "device" ? [item?.manufacturer, item?.model].filter(Boolean).join(" ") || q.object_id : q.object_id)} · ${this.t("quarantineSince", { date: this.formatDate(q.since), days })}</small></span><span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("quarantineWait", { days: left }) : this.t("quarantineReady")}</span>${this.releaseControl(q)}</div>`;
-    }).join("");
-    const message = this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("quarantine")} (${entries.length})</h2><p>${this.t("quarantineHint", { days: limit })}</p></div></div>${rows}${message}</div>`;
+  // The tiles of the Cleanup view: one job each, with the number of things to do; the chosen one is marked.
+  cleanupTiles(tabs, open) {
+    const tiles = tabs.map(t => `<button class="taskcard t-${t.count ? t.tone : "mute"}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`cleanup|${t.id}`)}"><ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill"><span class="pill ${t.count ? t.tone : "mute"}">${this.esc(this.formatNumber(t.count))}</span>${t.pill ? `<span class="pill ok">${this.esc(t.pill)}</span>` : ""}</span><small>${this.esc(t.hint)}</small></button>`).join("");
+    return `<div class="taskgrid compactgrid setgrid cleantiles" role="group" aria-label="${this.esc(this.t("cleanup"))}">${tiles}</div>`;
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them.
@@ -2351,8 +2345,7 @@ class CleanupMixin {
     return (this.data.quarantine || []).filter(q => (q.object_type || "entity") === type).map(q => ({ item: this.findObject(`${type}:${q.object_id}`), finding: null, quarantine: q })).filter(r => r.item);
   }
 
-  cleanupCandidates() {
-    const kind = this.cleanupKind;
+  cleanupCandidates(kind = this.cleanupKind) {
     if (kind === "remove_entity") return this.quarantineRows("entity");
     if (kind === "remove_device" || kind === "forget_device") return this.quarantineRows("device");
     if (kind === "disable_device") return this.deviceCandidates();
@@ -2644,7 +2637,7 @@ class CleanupMixin {
   }
 
   kindSelect() {
-    if (this.view !== "cleanup") return "";
+    if (this.view !== "cleanup" || (this._cleanupKinds || CLEANUP_KINDS).length < 2) return "";
     const labels = { disable_entity: "kindDisable", remove_entity: "kindRemove", disable_device: "kindDisableDevice", remove_device: "kindRemoveDevice", forget_device: "kindForgetDevice" };
     return `<select data-cleanup-kind aria-label="${this.t("actionKind")}">${(this._cleanupKinds || CLEANUP_KINDS).map(value => `<option value="${value}" ${this.cleanupKind === value ? "selected" : ""}>${this.t(labels[value])}</option>`).join("")}</select>`;
   }
@@ -2706,22 +2699,30 @@ class CleanupMixin {
   cleanupView() {
     this.ensureJournal();
     const purges = this.purges || [];
+    const limit = this.data.meta.quarantine_days ?? 14;
+    const held = this.data.quarantine || [], heldReady = held.filter(q => this.daysSince(q.since) >= limit).length;
+    const unusedCount = this.unreferencedRows().length, statsCount = (this.data.orphaned_statistics || []).length;
+    const count = kind => this.cleanupCandidates(kind).length;
+    // The tiles are the navigation: each one is one job, with how much there is to do.
     const tabs = [
-      { id: "entities", label: this.t("cleanupTabEntities") },
-      { id: "devices", label: this.t("cleanupTabDevices") },
-      { id: "unused", label: this.t("unreferenced"), count: this.unreferencedRows().length },
-      { id: "stats", label: this.t("orphanStats"), count: (this.data.orphaned_statistics || []).length },
-      ...(purges.length ? [{ id: "purges", label: this.t("cleanupTabPurges"), count: purges.length }] : []),
+      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), count: count("disable_entity"), tone: "warn" },
+      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), count: count("disable_device"), tone: "warn" },
+      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), count: held.length, pill: heldReady ? this.t("cleanupReadyCount", { count: heldReady }) : "", tone: heldReady ? "ok" : "mute" },
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, tone: "mute" },
+      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), count: statsCount, tone: "mute" },
+      ...(purges.length ? [{ id: "purges", icon: "mdi:history", label: this.t("cleanupTabPurges"), hint: this.t("cleanupTilePurgesHint"), count: purges.length, tone: "mute" }] : []),
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
+    const tiles = this.cleanupTiles(tabs, open);
     if (["unused", "stats", "purges"].includes(open)) {
       this.unrefTab = open === "stats" ? "statistics" : "entities";
       this._embedUnref = true;
       const body = open === "purges" ? this.purgeJournalCard() : this.unreferencedView();
       this._embedUnref = false;
-      return `<div class="stack">${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${body}</div>`;
+      return `<div class="stack">${this.planHeader()}${tiles}${body}</div>`;
     }
-    this._cleanupKinds = open === "devices" ? DEVICE_KINDS : ["disable_entity", "remove_entity"];
+    const quarantineType = this.quarantineType === "device" ? "device" : "entity";
+    this._cleanupKinds = open === "devices" ? ["disable_device"] : open === "quarantine" ? (quarantineType === "device" ? ["remove_device", "forget_device"] : ["remove_entity"]) : ["disable_entity"];
     if (!this._cleanupKinds.includes(this.cleanupKind)) this.cleanupKind = this._cleanupKinds[0];
     this.lvState("cleanup", "name", "asc");
     const all = this.cleanupCandidates();
@@ -2731,7 +2732,6 @@ class CleanupMixin {
       { key: "since", label: "sortSince", dir: "desc", get: r => (r.quarantine ? r.quarantine.since : r.finding?.first_detected_at) },
       { key: "certainty", label: "sortCertainty", dir: "desc", get: r => (r.finding ? r.finding.confidence : null) },
     ];
-    const limit = this.data.meta.quarantine_days ?? 14;
     const ready = r => !r.quarantine || this.daysSince(r.quarantine.since) >= limit;
     const classes = [...new Set(all.filter(r => r.finding).map(r => r.finding.classification))];
     const removal = ["remove_entity", "remove_device", "forget_device"].includes(this.cleanupKind);
@@ -2749,21 +2749,16 @@ class CleanupMixin {
       const badge = finding ? this.pill(finding.classification) : quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t("deviceEntities", { count: r.count })}</span>`;
       const sub = item.object_type === "device" ? [item.manufacturer, item.model].filter(Boolean).join(" ") || item.object_id : item.object_id;
       return `<div class="row"><input type="checkbox" data-sel="${this.esc(item.object_id)}" ${this.cleanupSel.has(item.object_id) ? "checked" : ""} ${left > 0 ? "disabled" : ""} aria-label="${this.esc(item.name)}">
-      <button class="row-text link" style="text-align:left" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(sub)}</small></button>${badge}</div>`;
+      <button class="row-text link" style="text-align:left" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong><small>${this.esc(sub)}</small></button>${badge}${quarantine ? this.releaseControl(quarantine) : ""}</div>`;
     };
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
       <div class="toolbar">${this.kindSelect()}${this.recorderChoice(removal)}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
-    const tiles = this.sumTiles([
-      { label: this.t("cleanupCandidates"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok" },
-      removal ? { label: this.t("removalReady"), value: this.formatNumber(all.filter(ready).length), tone: all.some(ready) ? "warn" : "mute" } : null,
-      removal ? { label: this.t("waitingShort"), value: this.formatNumber(all.filter(r => !ready(r)).length), tone: "mute" } : null,
-      { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
-      { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
-    ]);
-    return `<div class="stack">${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${tiles}${this.quarantineCard()}${this.recurringCard()}${candidates}</div>`;
+    const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
+    const message = open === "quarantine" && this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
+    return `<div class="stack">${this.planHeader()}${tiles}${typeSwitch}${open === "devices" ? this.recurringCard() : ""}${candidates}${message}</div>`;
   }
 
   ensureJournal() {
@@ -5069,6 +5064,7 @@ class LayoutMixin {
     const [view, id] = String(tab || "").split("|");
     if (!view || !id) return;
     (this.viewTab ||= {})[view] = id;
+    if (view === "cleanup") { this.cleanupSel = new Set(); if (this.lv?.cleanup) this.lv.cleanup.f = {}; this.pages = {}; }
     if (view === "unreferenced") { this.unrefTab = id; this.retryOrphanLast(); this.pages = {}; }
     this.render();
   }
@@ -7160,7 +7156,7 @@ class DetailActionsMixin {
     this.noteJump?.("cleanup");
     this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
     if (this.lv.cleanup) this.lv.cleanup.f = {};
-    this.view = viewForKind(kind); (this.viewTab ||= {}).cleanup = DEVICE_KINDS.includes(kind) ? "devices" : "entities"; this.repairTask = this.view === "repair" ? kind : null; this.pages = {}; this.selected = null;
+    this.view = viewForKind(kind); (this.viewTab ||= {}).cleanup = ["remove_entity", "remove_device", "forget_device"].includes(kind) ? "quarantine" : DEVICE_KINDS.includes(kind) ? "devices" : "entities"; if (kind === "remove_device" || kind === "forget_device") this.quarantineType = "device"; else if (kind === "remove_entity") this.quarantineType = "entity"; this.repairTask = this.view === "repair" ? kind : null; this.pages = {}; this.selected = null;
     this.render();
   }
 
@@ -7224,7 +7220,7 @@ Object.assign(TEXT.de, {
   healthScore: "{percent} % der Objekte ohne Befund", healthTasks: "{count} Aufgaben offen", healthNoTasks: "keine offenen Aufgaben", healthTip: "{affected} von {base} bewerteten Objekten sind betroffen; gezählt werden Objekte, nicht einzelne Befunde. Der Status ist so gut wie der schlechtere von zwei Werten: der Anteil der Objekte ohne Befund und die offenen Aufgaben (kaputte Integrationen, verfehlte Wartungsziele, Backup- oder Datenbankprobleme). Ausgeblendete Befunde zählen nicht. Die Zahl im Ring ist der abgerundete Anteil ohne Befund, minus 4 Punkte je offener Aufgabe und 10 je dringender.",
   repair: "Reparieren", repairSubtitle: "Dinge in Ordnung bringen, die bleiben sollen. Housekeeper zeigt erst eine Vorschau; geschrieben wird erst nach deiner Bestätigung.",
   journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt.",
-  cleanupTabEntities: "Entitäten", cleanupTabDevices: "Geräte",
+  cleanupTabEntities: "Entitäten deaktivieren", cleanupTabDevices: "Geräte deaktivieren", cleanupTabQuarantine: "Quarantäne und Entfernen", cleanupReadyCount: "{count} bereit", cleanupTileEntitiesHint: "Verwaist oder lange nicht verfügbar", cleanupTileDevicesHint: "Geräte ohne funktionierende Entität", cleanupTileQuarantineHint: "Frühestens nach {days} Tagen entfernbar", cleanupTileUnusedHint: "Entitäten ohne bekannte Verwendung", cleanupTileStatsHint: "Reste in der Datenbank löschen", cleanupTilePurgesHint: "Was schon gelöscht wurde", qTypeEntities: "Entitäten ({count})", qTypeDevices: "Geräte ({count})",
   repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde", repairNotChecked: "nicht geprüft", repairNoneFound: "keine Funde",
   repairTaskCounter: "Sensorfehler bereinigen", repairTaskCounterHint: "Falsche Werte in Zählern und Messwerten korrigieren, zum Beispiel ein Zähler, der kurz sinkt, oder ein Ausschlag auf 85 °C.",
   repairTaskMeter: "Zähler wechseln", repairTaskMeterHint: "Die Statistik eines alten Zählers beim neuen fortführen.",
@@ -7250,7 +7246,7 @@ Object.assign(TEXT.en, {
   healthScore: "{percent}% of objects without a finding", healthTasks: "{count} tasks open", healthNoTasks: "no open tasks", healthTip: "{affected} of {base} rated objects are affected; objects are counted, not single findings. The status is the worse of two readings: the share of objects without a finding, and the open tasks (broken integrations, missed maintenance goals, backup or database problems). Hidden findings do not count. The number in the ring is the share without a finding, rounded down, minus 4 points for each open task and 10 for an urgent one.",
   repair: "Repair", repairSubtitle: "Fix things that are meant to stay. Housekeeper shows a preview first; nothing is written until you confirm.",
   journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone.",
-  cleanupTabEntities: "Entities", cleanupTabDevices: "Devices",
+  cleanupTabEntities: "Disable entities", cleanupTabDevices: "Disable devices", cleanupTabQuarantine: "Quarantine and removal", cleanupReadyCount: "{count} ready", cleanupTileEntitiesHint: "Orphaned or unavailable for a long time", cleanupTileDevicesHint: "Devices without a working entity", cleanupTileQuarantineHint: "Removable after {days} days at the earliest", cleanupTileUnusedHint: "Entities with no known use", cleanupTileStatsHint: "Delete leftovers in the database", cleanupTilePurgesHint: "What has been deleted already", qTypeEntities: "Entities ({count})", qTypeDevices: "Devices ({count})",
   repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found", repairNotChecked: "not checked", repairNoneFound: "none found",
   repairTaskCounter: "Repair sensor errors", repairTaskCounterHint: "Correct wrong values in counters and measurements, for example a counter that briefly falls, or a spike to 85 °C.",
   repairTaskMeter: "Replace a meter", repairTaskMeterHint: "Carry the statistics of an old meter on with the new one.",
@@ -8097,6 +8093,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-sel-page]")?.addEventListener("click", () => { (this._cleanupVisible || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
+    root.querySelectorAll("[data-qtype]").forEach(el => el.onclick = () => { this.quarantineType = el.dataset.qtype; this.cleanupKind = el.dataset.qtype === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); });
     const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
     root.querySelectorAll("[data-repair-task]").forEach(el => el.onclick = () => { this.repairTask = el.dataset.repairTask; this.cleanupKind = this.repairTask; this.cleanupSel = new Set(); this.plan = null; this.render(); });
     root.querySelector("[data-repair-back]")?.addEventListener("click", () => { this.repairTask = null; this.render(); });

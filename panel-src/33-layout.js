@@ -30,6 +30,7 @@ class LayoutMixin {
     const [view, id] = String(tab || "").split("|");
     if (!view || !id) return;
     (this.viewTab ||= {})[view] = id;
+    if (view === "cleanup") { this.cleanupSel = new Set(); if (this.lv?.cleanup) this.lv.cleanup.f = {}; this.pages = {}; }
     if (view === "unreferenced") { this.unrefTab = id; this.retryOrphanLast(); this.pages = {}; }
     this.render();
   }
