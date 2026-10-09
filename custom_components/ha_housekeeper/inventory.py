@@ -71,6 +71,7 @@ from .observations import ObservationStore
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
 from .policies import PolicyStore
 from .queries import ReplyStore
+from .refactor import RefactorStore
 from .runs import RunStore
 from .window import WindowStore
 
@@ -514,6 +515,7 @@ class InventoryScanner:
         self.goals = GoalStore(hass)
         self.criteria = CriteriaStore(hass)
         self.coverage = CoverageStore(hass)
+        self.refactor = RefactorStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -557,6 +559,7 @@ class InventoryScanner:
         await self.goals.async_load()
         await self.criteria.async_load()
         await self.coverage.async_load()
+        await self.refactor.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()

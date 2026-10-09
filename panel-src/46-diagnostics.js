@@ -97,7 +97,7 @@ class DiagnosticsMixin {
       const dim = item.dimensions[id];
       return `<div class="row"><span class="tile ${QL_TONE[dim.level]}">${QL_MARK[dim.level]}</span><span class="row-text"><strong>${this.t(`dim_${id}`)}</strong><small>${this.esc(dim.reasons.length ? dim.reasons.map(r => this.dimReason(r)).join(" · ") : this.t(`ql_${dim.level}`))}</small></span><span class="pill ${QL_TONE[dim.level]}">${this.t(`ql_${dim.level}`)}</span></div>`;
     }).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagFor", { name: this.esc(item.name) })}</h2><p>${this.esc(entityId)}</p></div><button class="btn" data-diag-close>${this.t("diagClose")}</button></div>${this.fold("diag_dims", { title: this.t("diagSecDims") }, dims, true)}${this.fold("diag_crit", { title: this.t("diagSecCriteria") }, this.criteriaCard(entityId), true)}${this.fold("diag_more", { title: this.t("diagSecMore") }, this.diagExtras(entityId), false)}</section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagFor", { name: this.esc(item.name) })}</h2><p>${this.esc(entityId)}</p></div><button class="btn" data-diag-close>${this.t("diagClose")}</button></div>${this.fold("diag_dims", { title: this.t("diagSecDims") }, dims, true)}${this.fold("diag_crit", { title: this.t("diagSecCriteria") }, this.criteriaCard(entityId), true)}${this.fold("diag_improve", { title: this.t("refactorTitle") }, this.refactorCard(entityId), false)}${this.fold("diag_more", { title: this.t("diagSecMore") }, this.diagExtras(entityId), false)}</section>`;
   }
 
   async openDiag(entityId) {
@@ -106,6 +106,7 @@ class DiagnosticsMixin {
     this.render();
     try { d.criteria[entityId] = await this._hass.callWS({ type: "ha_housekeeper/criteria", entity_id: entityId }); } catch (_) { /* shown as empty */ }
     this.render();
+    await this.loadRefactor?.(entityId);
     await this.loadDiagExtras?.(entityId);
   }
 

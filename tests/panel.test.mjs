@@ -2199,6 +2199,31 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   assert.ok(el.mergeNote.includes("1 objects were left out") && el.mergeNote.includes("sensor.x"));
 });
 
+test("the improve block asks for the switch, offers fixes and turns one into a plan under cleanup", async () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const calls = [];
+  let enabled = false;
+  el._hass = { language: "en", callWS: async msg => {
+    calls.push(msg);
+    if (msg.type.endsWith("/refactor_proposals")) return { entity_id: msg.entity_id, enabled, editable: true, reason: null, proposals: [{ fix: "add_description" }, { fix: "remove_duplicate_triggers", count: 2 }] };
+    if (msg.type.endsWith("/refactor_set")) { enabled = msg.enabled; return { enabled }; }
+    return { plan_id: "r1", status: "dry_run", actions: [], summary: { total: 1, ok: 0, review: 1, blocked: 0 } };
+  } };
+  el.diag = { quality: null, loading: false, error: "", sel: "automation.hall", criteria: {}, draft: null, message: "", detail: {} };
+  await el.loadRefactor("automation.hall");
+  assert.ok(el.refactorCard("automation.hall").includes('data-refactor-switch="on"') && !el.refactorCard("automation.hall").includes("data-refactor-plan"));
+  await el.setRefactor(true);
+  const card = el.refactorCard("automation.hall");
+  assert.ok(card.includes('data-refactor-plan="add_description"') && card.includes("2 triggers are exactly the same"));
+  el.refactorState().text.add_description = "  Warms the hall ";
+  await el.makeRefactorPlan("automation.hall", "add_description");
+  const create = calls.find(c => c.type.endsWith("/plan_create"));
+  assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "refactor_automation", object_id: "automation.hall", fix: "add_description", values: { description: "Warms the hall" } }]));
+  assert.equal(el.view, "cleanup");
+  assert.equal(el.plan.plan_id, "r1");
+});
+
 test("an object leaves quarantine after a question, through the undo of just that object", async () => {
   const { el, shadow } = panel("en");
   const item = id => ({ object_type: "entity", object_id: id, name: id.toUpperCase(), status: "disabled" });

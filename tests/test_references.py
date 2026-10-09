@@ -815,3 +815,122 @@ async def test_the_preview_says_when_undo_will_work_per_item(hass: HomeAssistant
         assert source["undo_per_item"] is True
         await run(scanner, plan, [OLD])
         assert "file_before" not in plan["actions"][0]["result"]["sources"][0]  # as announced
+
+
+# ---- mechanical refactoring --------------------------------------------------------------
+
+
+def test_refactoring_makes_exactly_the_named_edit() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    item = {
+        "id": "a",
+        "alias": "Heating",
+        "trigger": [{"platform": "state", "entity_id": "x.y"}] * 2 + [{"platform": "sun"}],
+        "action": [{"service": "notify.me"}],
+    }
+    assert [p["fix"] for p in refactor.propose(item)] == [
+        "add_description",
+        "remove_duplicate_triggers",
+    ]
+    new, diff = refactor.apply(item, "remove_duplicate_triggers", None)
+    assert [t["platform"] for t in new["trigger"]] == ["state", "sun"] and diff[0][
+        "path"
+    ] == "trigger/1"
+    assert new["action"] == item["action"] and len(item["trigger"]) == 3, "the input is untouched"
+    new, diff = refactor.apply(item, "add_description", {"description": " Warms the house "})
+    assert (
+        list(new)[:3] == ["id", "alias", "description"] and new["description"] == "Warms the house"
+    )
+    for fix, values, reason in (
+        ("add_description", {}, "invalid_fix"),
+        ("add_description", {"description": "x" * 301}, "invalid_fix"),
+        ("remove_duplicate_triggers", None, "nothing_to_do"),
+        ("other", None, "invalid_fix"),
+    ):
+        source = {**item, "trigger": [{"platform": "sun"}]} if reason == "nothing_to_do" else item
+        with pytest.raises(ValueError, match=reason):
+            refactor.apply(source, fix, values)
+    with pytest.raises(ValueError, match="nothing_to_do"):
+        refactor.apply({**item, "description": "has one"}, "add_description", {"description": "z"})
+
+
+DOUBLED = AUTOMATIONS.replace(
+    "      entity_id: sensor.old_temp\n  action:",
+    "      entity_id: sensor.old_temp\n    - platform: state\n      entity_id: sensor.old_temp\n  action:",
+    1,
+)
+
+
+async def test_a_refactoring_is_written_validated_verified_and_undone(hass: HomeAssistant) -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    make_entities(hass)
+    path = write_config(hass, "automations.yaml", DOUBLED)
+    reloads = reload_services(hass)
+    scanner = await make_scanner(hass)
+    scanner.refactor.enabled = True
+    manager, _ = fake_backup()
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        snapshot = await scanner.async_scan()
+        found = await refactor.preview(
+            hass, snapshot, "automation.heating", "remove_duplicate_triggers", {}
+        )
+        assert found["error"] is None and found["source"]["change_count"] == 1
+        request = [
+            {
+                "kind": "refactor_automation",
+                "object_id": "automation.heating",
+                "fix": "remove_duplicate_triggers",
+                "values": {},
+            }
+        ]
+        key = ("automation.heating", "remove_duplicate_triggers", "{}")
+        plan = build_plan(
+            snapshot, request, datetime.now(UTC), refactor_data={key: found}, refactor_enabled=True
+        )
+        off = build_plan(snapshot, request, datetime.now(UTC), refactor_data={key: found})
+        assert (
+            off["actions"][0]["verdict"] == "blocked"
+            and "refactor_disabled" in off["actions"][0]["reasons"]
+        )
+        action = plan["actions"][0]
+        assert action["verdict"] == "review", action["reasons"]
+        assert action["executable"] is True
+        scanner.journal.add(plan)
+
+        before = Path(path).read_text(encoding="utf-8")
+        await run(scanner, plan, ["automation.heating"])
+        assert len(load_yaml(path)[0]["trigger"]) == 1 and reloads == ["automation"]
+        assert plan["actions"][0]["result"]["state"] == "done"
+        assert "refactor_applied" in [c["check"] for c in plan["verification"]["checks"]]
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"][0]["outcome"] == "undone"
+        assert Path(path).read_text(encoding="utf-8") == before
+
+
+async def test_a_blueprint_automation_and_an_invalid_result_are_never_written(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    make_entities(hass)
+    blueprint = "- id: auto-1\n  alias: B\n  use_blueprint:\n    path: a/b.yaml\n    input: {}\n"
+    write_config(hass, "automations.yaml", blueprint)
+    scanner = await make_scanner(hass)
+    with automation_scanner_state(hass, scanner):
+        snapshot = await scanner.async_scan()
+        found = await refactor.preview(
+            hass, snapshot, "automation.heating", "add_description", {"description": "x"}
+        )
+        assert found["error"] == "not_editable" and found["source_reason"] == "blueprint"
+        write_config(hass, "automations.yaml", AUTOMATIONS)
+        with patch.object(refactor, "is_valid", return_value=False):
+            found = await refactor.preview(
+                hass, snapshot, "automation.heating", "add_description", {"description": "x"}
+            )
+        assert found["error"] == "invalid_config"

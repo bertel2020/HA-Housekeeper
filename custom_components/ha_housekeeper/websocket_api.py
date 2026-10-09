@@ -13,6 +13,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
+from . import refactor as refactor_module
 from .audit_report import build_report
 from .backup_health import ATTEST_KINDS, backup_health
 from .blueprints import async_blueprints
@@ -22,6 +23,7 @@ from .cleanup import (
     MAX_MERGE,
     METER_KINDS,
     METER_MODES,
+    REFACTOR_KINDS,
     REFERENCE_KINDS,
     attach_history,
     build_plan,
@@ -31,6 +33,7 @@ from .cleanup import (
     merge_requests,
     plan_summary,
     public_plan,
+    refactor_key,
     registry_fingerprint,
 )
 from .cleanup_exec import CleanupError, entity_restorable
@@ -278,7 +281,10 @@ def websocket_set_options(
 
 
 async def _plan_from_requests(
-    hass: HomeAssistant, snapshot: dict[str, Any], requests: list[dict[str, Any]]
+    hass: HomeAssistant,
+    snapshot: dict[str, Any],
+    requests: list[dict[str, Any]],
+    refactor_enabled: bool = False,
 ) -> dict[str, Any]:
     """Judge ``requests`` against the snapshot and the live registries: a plan, not yet journaled."""
     registry = er.async_get(hass)
@@ -313,6 +319,16 @@ async def _plan_from_requests(
     def statistic_exists(statistic_id: str) -> bool:
         return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
 
+    refactor_data = {}
+    for action in requests:
+        if action["kind"] in REFACTOR_KINDS and refactor_enabled:
+            fix, values = action.get("fix") or "", action.get("values") or {}
+            key = refactor_key(action["object_id"], fix, values)
+            if key not in refactor_data:
+                refactor_data[key] = await refactor_module.preview(
+                    hass, snapshot, action["object_id"], fix, values
+                )
+
     plan = build_plan(
         snapshot,
         requests,
@@ -323,6 +339,8 @@ async def _plan_from_requests(
         reference_data=reference_data,
         meter_data=meter_data,
         statistic_exists=statistic_exists,
+        refactor_data=refactor_data,
+        refactor_enabled=refactor_enabled,
     )
     await _add_history(hass, snapshot, plan)
     return plan
@@ -340,6 +358,12 @@ async def _plan_from_requests(
                     vol.Optional("target"): str,
                     vol.Optional("mode"): vol.In(METER_MODES),
                     vol.Optional("states"): bool,
+                    vol.Optional("fix"): vol.In(refactor_module.FIXES),
+                    vol.Optional("values"): {
+                        vol.Optional("description"): vol.All(
+                            str, vol.Length(max=refactor_module.DESCRIPTION_MAX)
+                        )
+                    },
                 }
             ],
             vol.Length(min=1, max=MAX_ACTIONS),
@@ -365,7 +389,7 @@ async def websocket_plan_create(
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
-    plan = await _plan_from_requests(hass, snapshot, msg["actions"])
+    plan = await _plan_from_requests(hass, snapshot, msg["actions"], scanner.refactor.enabled)
     scanner.journal.add(plan)
     connection.send_result(msg["id"], _versioned(public_plan(plan)))
 
@@ -411,7 +435,7 @@ async def websocket_plan_merge(
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
-    plan = await _plan_from_requests(hass, snapshot, requests)
+    plan = await _plan_from_requests(hass, snapshot, requests, scanner.refactor.enabled)
     plan["events"].append({"at": datetime.now(UTC).isoformat(), "type": "merged", "plans": ids})
     scanner.journal.add(plan)
     for plan_id in ids:
@@ -1271,6 +1295,62 @@ async def websocket_trace_compare(
 
 @websocket_api.require_admin
 @websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/refactor_proposals", vol.Required("entity_id"): str}
+)
+@websocket_api.async_response
+async def websocket_refactor_proposals(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """What could be improved mechanically in one automation, and whether refactoring is on."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    snapshot = await _snapshot_or_error(scanner, connection, msg)
+    if snapshot is None:
+        return
+    result: dict[str, Any] = {
+        "entity_id": msg["entity_id"],
+        "enabled": scanner.refactor.enabled,
+        "editable": False,
+        "reason": None,
+        "proposals": [],
+    }
+    try:
+        loaded = await refactor_module.load_source(hass, snapshot, f"automation:{msg['entity_id']}")
+        if "use_blueprint" in loaded["item"]:
+            result["reason"] = "blueprint"
+        else:
+            result["editable"] = True
+            result["proposals"] = refactor_module.propose(loaded["item"])
+    except refactor_module.SourceError as err:
+        result["reason"] = str(err)
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/refactor_set", vol.Required("enabled"): bool}
+)
+@callback
+def websocket_refactor_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Switch the experimental refactoring on or off."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    scanner.refactor.set_enabled(msg["enabled"])
+    connection.send_result(msg["id"], {"enabled": scanner.refactor.enabled})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/automation_dry_run",
         vol.Required("entity_id"): str,
@@ -1886,3 +1966,5 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_coverage_set)
     websocket_api.async_register_command(hass, websocket_trace_compare)
     websocket_api.async_register_command(hass, websocket_automation_dry_run)
+    websocket_api.async_register_command(hass, websocket_refactor_proposals)
+    websocket_api.async_register_command(hass, websocket_refactor_set)

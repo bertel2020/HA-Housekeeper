@@ -29,7 +29,10 @@ REFERENCE_KINDS = frozenset({"replace_references"})
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
-ACTION_KINDS = ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS | METER_KINDS | PURGE_KINDS
+REFACTOR_KINDS = frozenset({"refactor_automation"})
+ACTION_KINDS = (
+    ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS | METER_KINDS | PURGE_KINDS | REFACTOR_KINDS
+)
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
 # Kinds that cannot simply be switched back: a verified backup is created before they run.
@@ -41,6 +44,7 @@ BACKUP_KINDS = frozenset(
         "replace_references",
         "migrate_meter",
         "purge_statistics",
+        "refactor_automation",
     }
 )
 # Kinds that remove something: they get the strongest confirmation word.
@@ -294,6 +298,10 @@ BLOCKING_REASONS = frozenset(
         "in_energy",
         "entity_exists",
         "nothing_to_do",
+        "refactor_disabled",
+        "not_editable",
+        "invalid_fix",
+        "invalid_config",
     }
 )
 
@@ -447,6 +455,50 @@ def judge_reference_action(
     if action["has_statistics"]:
         reasons.append("has_statistics")
     reasons.append("config_rewrite")
+    _verdict(action)
+    return action
+
+
+def judge_refactor_action(
+    entity_id: str,
+    fix: str,
+    values: dict[str, Any] | None,
+    automations: dict[str, dict[str, Any]],
+    preview: dict[str, Any] | None,
+    enabled: bool,
+) -> dict[str, Any]:
+    """Judge one mechanical improvement of an automation (see ``refactor``).
+
+    ``preview`` is what ``refactor.preview`` found: the source with its diff, or an error code.
+    The edit rewrites a configuration file, so a plan that may run is always ``review``.
+    """
+    obj = automations.get(entity_id)
+    action: dict[str, Any] = {
+        "kind": "refactor_automation",
+        "object_id": entity_id,
+        "object_type": "automation",
+        "name": (obj or {}).get("name") or entity_id,
+        "fix": fix,
+        "values": values or {},
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+        "sources": [],
+    }
+    reasons = action["reasons"]
+    if not enabled:
+        reasons.append("refactor_disabled")
+    elif obj is None:
+        reasons.append("not_found")
+    elif preview is None or preview.get("error"):
+        error = (preview or {}).get("error") or "invalid_fix"
+        reasons.append(error if error in BLOCKING_REASONS else "invalid_fix")
+        if preview and preview.get("source_reason"):
+            action["source_reason"] = preview["source_reason"]
+    else:
+        action["sources"] = [preview["source"]]
+        reasons.append("config_rewrite")
     _verdict(action)
     return action
 
@@ -633,6 +685,8 @@ def build_plan(
     reference_data: dict[tuple[str, str], tuple[str | None, list[dict[str, Any]]]] | None = None,
     meter_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
     statistic_exists: Callable[[str], bool] | None = None,
+    refactor_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
+    refactor_enabled: bool = False,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -681,6 +735,16 @@ def build_plan(
                 bool(snapshot["meta"].get("recorder_available")),
             )
             action["fingerprint"] = None
+        elif kind in REFACTOR_KINDS:
+            fix, values = request.get("fix") or "", request.get("values") or {}
+            found = (refactor_data or {}).get(refactor_key(object_id, fix, values))
+            automations = {
+                o["object_id"]: o for o in snapshot["objects"] if o["object_type"] == "automation"
+            }
+            action = judge_refactor_action(
+                object_id, fix, values, automations, found, refactor_enabled
+            )
+            action["fingerprint"] = (found or {}).get("fingerprint")
         elif kind in METER_KINDS:
             target = request.get("target") or ""
             mode = request.get("mode") or "both"
@@ -746,6 +810,11 @@ def build_plan(
 MAX_MERGE = 10
 
 
+def refactor_key(entity_id: str, fix: str, values: dict[str, Any]) -> tuple[str, str, str]:
+    """How a fix is found again in the data gathered for ``build_plan``."""
+    return entity_id, fix, json.dumps(values, sort_keys=True)
+
+
 def merge_requests(
     plans: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, str]], int]:
@@ -767,6 +836,8 @@ def merge_requests(
                 request["mode"] = action["mode"]
             if action["kind"] in PURGE_KINDS:
                 request["states"] = bool(action.get("states"))
+            if action["kind"] in REFACTOR_KINDS:
+                request["fix"], request["values"] = action["fix"], action.get("values") or {}
             known = requests.get(request["object_id"])
             if known is None:
                 if request["object_id"] not in conflicts:

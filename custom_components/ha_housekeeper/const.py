@@ -25,6 +25,7 @@ MARKS_STORAGE_KEY: Final = f"{DOMAIN}.marks"
 GOALS_STORAGE_KEY: Final = f"{DOMAIN}.goals"
 CRITERIA_STORAGE_KEY: Final = f"{DOMAIN}.criteria"
 COVERAGE_STORAGE_KEY: Final = f"{DOMAIN}.coverage"
+REFACTOR_STORAGE_KEY: Final = f"{DOMAIN}.refactor"
 WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"
 NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"
 STORAGE_VERSION: Final = 1

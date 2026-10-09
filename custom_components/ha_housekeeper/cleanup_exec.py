@@ -51,6 +51,7 @@ from homeassistant.util.file import write_utf8_file_atomic
 from homeassistant.util.yaml import dump, parse_yaml
 
 from . import followup
+from . import refactor as refactor_module
 from .cleanup import (
     BACKUP_KINDS,
     DEVICE_KINDS,
@@ -58,6 +59,7 @@ from .cleanup import (
     METER_KINDS,
     PLAN_MAX_AGE_HOURS,
     PURGE_KINDS,
+    REFACTOR_KINDS,
     REFERENCE_KINDS,
     REMOVAL_KINDS,
     device_fingerprint,
@@ -320,7 +322,7 @@ class CleanupRunner:
             "rewrites": [
                 a["object_id"]
                 for a in plan["actions"]
-                if a["object_id"] in selected and a["kind"] in REFERENCE_KINDS
+                if a["object_id"] in selected and a["kind"] in REFERENCE_KINDS | REFACTOR_KINDS
             ],
             "migrations": [
                 a["object_id"]
@@ -527,6 +529,8 @@ class CleanupRunner:
             return await self._migrate_meter(action), "meter_migrated"
         if kind in PURGE_KINDS:
             return await self._purge_statistics(action), "statistics_purged"
+        if kind in REFACTOR_KINDS:
+            return await self._refactor_automation(action), "automation_refactored"
         return await self._replace_references(action), "references_replaced"
 
     async def _purge_statistics(self, action: dict[str, Any]) -> dict[str, Any]:
@@ -911,6 +915,48 @@ class CleanupRunner:
             raise StepAbort("source_write_failed") from err
         return {"before": action["fingerprint"], "sources": written}
 
+    async def _refactor_automation(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Write one mechanical edit of an automation, reload, and put the file back if it fails."""
+        planned, entity_id = action["sources"][0], action["object_id"]
+        snapshot = self.scanner.snapshot
+        written: list[dict[str, Any]] = []
+        try:
+            loaded = await load_source(self.hass, snapshot, planned["source"])
+            if loaded["hash"] != planned["hash"]:
+                raise StepAbort("source_changed")
+            try:
+                item, _ = refactor_module.apply(loaded["item"], action["fix"], action["values"])
+            except ValueError as err:
+                raise StepAbort(str(err)) from err
+            if not await refactor_module.is_valid(self.hass, loaded["ref"], item):
+                raise StepAbort("invalid_config")
+            before, extra = await self._write_source(loaded, item, planned["hash"])
+            source = {
+                "source": loaded["source"],
+                "type": "automation",
+                "format": loaded["format"],
+                "before": before,
+                "after_hash": None,
+                "change_count": planned["change_count"],
+                "state": "written",
+                **extra,
+            }
+            written.append(source)
+            after = await load_source(self.hass, snapshot, planned["source"])
+            source["after_hash"] = after["hash"]
+            source["state"] = "done"
+            await self._reload(loaded)
+            if self.hass.states.get(entity_id) is None:  # Home Assistant did not load it again
+                raise StepAbort("reload_failed")
+        except (StepAbort, SourceError) as err:
+            reason = err.reason if isinstance(err, StepAbort) else str(err)
+            await self._roll_back(written, reason, action)
+            raise StepAbort(reason) from err
+        except Exception as err:
+            await self._roll_back(written, "source_write_failed", action)
+            raise StepAbort("source_write_failed") from err
+        return {"before": action["fingerprint"], "sources": written}
+
     async def _roll_back(
         self, written: list[dict[str, Any]], reason: str, action: dict[str, Any]
     ) -> None:
@@ -999,6 +1045,16 @@ class CleanupRunner:
         kind, object_id, snapshot = action["kind"], action["object_id"], context["snapshot"]
         verdict_args: dict[str, Any] = {}
         restorable = None
+        if kind in REFACTOR_KINDS:
+            found = await refactor_module.preview(
+                self.hass, snapshot, object_id, action["fix"], action["values"]
+            )
+            if found.get("error") or action.get("fingerprint") != found["fingerprint"]:
+                return "source_changed" if not found.get("error") else "now_blocked"
+            if not self.scanner.refactor.enabled:
+                return "now_blocked"
+            action["sources"] = [found["source"]]
+            return None if object_id in context["acknowledged"] else "needs_acknowledgement"
         if kind in PURGE_KINDS:
             verdict = judge_purge_action(
                 object_id,
@@ -1132,6 +1188,8 @@ class CleanupRunner:
                     )
             elif kind in METER_KINDS:
                 checks.extend(await self._verify_meter(action))
+            elif kind in REFACTOR_KINDS:
+                checks.append(await self._verify_refactor(action))
             elif kind in PURGE_KINDS:
                 gone = object_id not in await statistics_left(self.hass, [object_id])
                 checks.append({"check": "statistics_gone", "object_id": object_id, "ok": gone})
@@ -1165,6 +1223,27 @@ class CleanupRunner:
         _event(plan, "verified", ok=plan["verification"]["ok"])
         followup.start(plan, snapshot, _now())
         self.scanner.journal.save()
+
+    async def _verify_refactor(self, action: dict[str, Any]) -> dict[str, Any]:
+        """The edit is in the file and Home Assistant has the automation loaded."""
+        ok = False
+        try:
+            loaded = await load_source(
+                self.hass, self.scanner.snapshot, action["sources"][0]["source"]
+            )
+            item = loaded["item"]
+            if action["fix"] == "add_description":
+                ok = str(item.get("description") or "").strip() == action["values"]["description"]
+            else:
+                ok = not refactor_module.duplicates(item)
+        except SourceError:
+            ok = False
+        loaded_now = self.hass.states.get(action["object_id"]) is not None
+        return {
+            "check": "refactor_applied",
+            "object_id": action["object_id"],
+            "ok": ok and loaded_now,
+        }
 
     async def _verify_meter(self, action: dict[str, Any]) -> list[dict[str, Any]]:
         result, checks = action["result"], []
@@ -1225,7 +1304,7 @@ class CleanupRunner:
                 outcome = self._restore_device(result["restore"])
             elif kind == "disable_device":
                 outcome = self._reenable_device(action["object_id"], result)
-            elif kind in REFERENCE_KINDS:
+            elif kind in REFERENCE_KINDS | REFACTOR_KINDS:
                 outcome = await self._undo_references(result)
             elif kind in METER_KINDS:
                 outcome = await self._undo_meter(result)
