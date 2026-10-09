@@ -361,6 +361,15 @@ class CleanupRunner:
         )
 
     async def _run(self, plan: dict[str, Any], object_ids: list[str], user_id: str | None) -> None:
+        try:
+            await self._run_plan(plan, object_ids, user_id)
+            await self._verify(plan)
+        finally:
+            release_write(self.hass, "plan")  # whatever happens, the slot must not stay taken
+
+    async def _run_plan(
+        self, plan: dict[str, Any], object_ids: list[str], user_id: str | None
+    ) -> None:
         journal = self.scanner.journal
         plan["status"] = "running"
         plan["run"] = {"started_at": _now().isoformat(), "user_id": user_id, "finished_at": None}
@@ -386,10 +395,6 @@ class CleanupRunner:
                 "total": 0,
             }
             journal.save()
-        try:
-            await self._verify(plan)
-        finally:
-            release_write(self.hass, "plan")
 
     async def _backup(self, plan: dict[str, Any]) -> None:
         """Create a Home Assistant backup with the user's own backup settings and wait for it.

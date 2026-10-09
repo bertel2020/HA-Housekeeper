@@ -1070,6 +1070,17 @@ def websocket_criteria_set(
     connection.send_result(msg["id"], _versioned({**result, "limits": CRITERIA_LIMITS}))
 
 
+async def _snapshot_or_error(
+    scanner: Any, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> dict[str, Any] | None:
+    """The last snapshot, or None after the error was sent."""
+    try:
+        return await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return None
+
+
 def _automation_key(snapshot: dict[str, Any], entity_id: str) -> tuple[str | None, dict[str, Any]]:
     for obj in snapshot["objects"]:
         if obj["object_type"] == "automation" and obj["object_id"] == entity_id:
@@ -1092,7 +1103,9 @@ async def websocket_coverage(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    snapshot = await scanner.async_get_snapshot()
+    snapshot = await _snapshot_or_error(scanner, connection, msg)
+    if snapshot is None:
+        return
     key, _ = _automation_key(snapshot, msg["entity_id"])
     if key is None:
         connection.send_error(msg["id"], "not_found", "Unknown automation")
@@ -1145,7 +1158,9 @@ async def websocket_trace_compare(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    snapshot = await scanner.async_get_snapshot()
+    snapshot = await _snapshot_or_error(scanner, connection, msg)
+    if snapshot is None:
+        return
     key, _ = _automation_key(snapshot, msg["entity_id"])
     if key is None:
         connection.send_error(msg["id"], "not_found", "Unknown automation")
@@ -1194,7 +1209,9 @@ async def websocket_automation_dry_run(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    snapshot = await scanner.async_get_snapshot()
+    snapshot = await _snapshot_or_error(scanner, connection, msg)
+    if snapshot is None:
+        return
     key, _ = _automation_key(snapshot, msg["entity_id"])
     if key is None:
         connection.send_error(msg["id"], "not_found", "Unknown automation")

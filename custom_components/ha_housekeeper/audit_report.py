@@ -110,7 +110,15 @@ def _kind_of_source(source: str) -> str:
 def build_report(plan: dict[str, Any], *, anonymize: bool = True, lang: str = "en") -> str:
     """The report for ``plan`` as Markdown."""
     t = TEXTS.get(lang, TEXTS["en"])
-    ref = _Names(anonymize)
+    names = _Names(anonymize)
+    device_ids = {
+        a["object_id"] for a in plan.get("actions", []) if a.get("object_type") == "device"
+    }
+
+    def ref(kind: str, value: Any) -> str:
+        # The same object keeps one placeholder wherever it appears.
+        return names("device" if value in device_ids else kind, value)
+
     lines = [f"# {t['title']} {plan['plan_id']}", ""]
     if anonymize:
         lines += [f"_{t['anonymized']}_", ""]

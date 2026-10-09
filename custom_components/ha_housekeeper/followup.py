@@ -2,8 +2,8 @@
 
 When a plan finishes, the findings that already exist are remembered. Every following scan is
 compared with them: a new broken reference, a new unavailable entity or a device that came back
-after being forgotten means a ``regression``. After the watch time without such a finding the
-plan is ``clean``. The check only reads scans; it does not look at automation runs.
+after being forgotten means a ``regression``, if it concerns an object the plan touched. After the
+watch time without such a finding the plan is ``clean``. The check only reads scans; it does not look at automation runs.
 """
 
 from __future__ import annotations
@@ -27,6 +27,22 @@ def _current(snapshot: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], set[s
     return findings, recurring
 
 
+def _scope(plan: dict[str, Any]) -> set[str]:
+    """Objects the plan touched: only findings about these can be a consequence of it."""
+    scope: set[str] = set()
+    for action in plan.get("actions", []):
+        scope.update(
+            i
+            for i in (
+                action.get("object_id"),
+                action.get("target"),
+                *(action.get("entities") or []),
+            )
+            if isinstance(i, str)
+        )
+    return scope
+
+
 def start(plan: dict[str, Any], snapshot: dict[str, Any], now: datetime) -> None:
     """Begin watching after a plan that changed something; ``snapshot`` is the state afterwards."""
     if not plan.get("executed"):
@@ -36,7 +52,11 @@ def start(plan: dict[str, Any], snapshot: dict[str, Any], now: datetime) -> None
         "state": "watching",
         "since": now.isoformat(),
         "until": (now + timedelta(hours=WATCH_HOURS)).isoformat(),
-        "baseline": {"findings": sorted(findings), "recurring": sorted(recurring)},
+        "baseline": {
+            "findings": sorted(findings),
+            "recurring": sorted(recurring),
+            "scope": sorted(_scope(plan)),
+        },
         "baseline_counts": {
             kind: sum(f["classification"] == kind for f in findings.values())
             for kind in BASELINE_KINDS
@@ -63,14 +83,17 @@ def check(plans: list[dict[str, Any]], snapshot: dict[str, Any], now: datetime) 
             continue
         baseline = followup["baseline"]
         known = set(baseline["findings"])
+        scope = set(baseline.get("scope", []))  # empty: nothing to narrow down by
         new = [
             {"key": key, "object_id": f["object_id"], "classification": f["classification"]}
             for key, f in sorted(findings.items())
             if key not in known
+            and (not scope or {f["object_id"], f.get("affected_object")} & scope)
         ]
         new += [
             {"key": f"recurring:{d}", "object_id": d, "classification": "recurring"}
             for d in sorted(recurring - set(baseline["recurring"]))
+            if not scope or d in scope
         ]
         if new:
             followup.update(state="regression", at=now.isoformat(), new_count=len(new))

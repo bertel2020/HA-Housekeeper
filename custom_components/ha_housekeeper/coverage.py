@@ -157,8 +157,10 @@ class CoverageStore:
                 or (item is not None and run_id in item["seen"])
             ):
                 continue
-            if counted >= MAX_PER_COLLECTION or (item is None and len(self.items) >= MAX_ITEMS):
+            if counted >= MAX_PER_COLLECTION:
                 break
+            if item is None and len(self.items) >= MAX_ITEMS:
+                continue
             try:
                 trace = await async_get_trace(self._hass, key, run_id)
             except Exception:

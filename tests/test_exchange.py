@@ -164,3 +164,18 @@ def test_report_hides_ids_and_users_unless_asked() -> None:
     assert "entity_1" in hidden and "user_1" in hidden and "device_1" in hidden
     shown = build_report(plan, anonymize=False)
     assert "sensor.old" in shown and "u-secret" in shown and "dashboard:y" in shown
+
+
+def test_followup_only_counts_findings_about_what_the_plan_touched() -> None:
+    plan = {"executed": True, "actions": [{"object_id": "sensor.old", "target": "sensor.new"}]}
+    followup.start(plan, {"findings": [], "recurring_devices": []}, NOW)
+    other = {
+        "key": "x",
+        "object_id": "sensor.other",
+        "classification": "unavailable",
+        "ignored": False,
+    }
+    assert not followup.check([plan], {"findings": [other], "recurring_devices": []}, NOW)
+    mine = {**other, "key": "y", "object_id": "automation.a", "affected_object": "sensor.old"}
+    assert followup.check([plan], {"findings": [other, mine], "recurring_devices": []}, NOW)
+    assert plan["followup"]["new_count"] == 1

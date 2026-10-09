@@ -33,6 +33,7 @@ WINDOW_DAYS = 7
 MISSED_MIN = 3  # missed outcomes in the window before it is a finding
 MISSED_RATE = 0.5
 SAVE_DELAY = 300
+ID = re.compile(r"^[a-z0-9_-]{1,32}$")
 ENTITY = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
 AUTOMATION = re.compile(r"^automation\.[a-z0-9_]+$")
 THRESHOLDS = {
@@ -50,6 +51,7 @@ def validate(criteria: Any) -> list[dict[str, Any]]:
     if not isinstance(criteria, list):
         raise ValueError("criteria must be a list")
     clean = []
+    used: set[str] = set()
     for entry in criteria:
         if not isinstance(entry, dict):
             raise ValueError("a criterion must be an object")
@@ -71,9 +73,12 @@ def validate(criteria: Any) -> list[dict[str, Any]]:
         if isinstance(hold, bool) or not isinstance(hold, int) or not 0 <= hold <= HOLD_MAX:
             raise ValueError(f"the hold time is 0 to {HOLD_MAX} seconds")
         ident = entry.get("id")
+        if not isinstance(ident, str) or not ID.match(ident) or ident in used:
+            ident = secrets.token_hex(3)
+        used.add(ident)
         clean.append(
             {
-                "id": ident if isinstance(ident, str) and ident else secrets.token_hex(3),
+                "id": ident,
                 "targets": cleaned_targets,
                 "within": within,
                 "hold": hold,
@@ -141,8 +146,9 @@ class CriteriaStore:
             raise ValueError(f"at most {MAX_CRITERIA} criteria")
         if clean:
             self.items[entity_id] = clean
-        else:
-            self.items.pop(entity_id, None)
+        else:  # without criteria the outcomes mean nothing any more
+            for part in (self.items, self.days, self.recent):
+                part.pop(entity_id, None)
         self._save()
         return clean
 
@@ -208,6 +214,8 @@ class CriteriaStore:
         for per_day in self.days.values():
             for day in [d for d in per_day if d < limit]:
                 del per_day[day]
+        for entity_id in [e for e, per_day in self.days.items() if not per_day]:
+            del self.days[entity_id]
 
     def cancel_all(self) -> None:
         """Drop the timers that are still waiting (the integration is unloading)."""

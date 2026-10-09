@@ -122,8 +122,13 @@ def evaluate(cond: Any, ctx: Context) -> bool | None:
             return None
         options = [str(w) for w in (wanted if isinstance(wanted, list) else [wanted])]
         states = [ctx.state(e) for e in entities]
-        return None if any(s is None for s in states) else all(s in options for s in states)
+        if any(s is None for s in states):
+            return None
+        matches = [s in options for s in states]
+        return any(matches) if cond.get("match") == "any" else all(matches)
     if kind == "numeric_state":
+        if cond.get("attribute") or cond.get("value_template"):
+            return None
         return _numeric(_ids(cond.get("entity_id")), cond.get("above"), cond.get("below"), ctx)
     if kind == "time":
         return _time(cond, ctx)
@@ -155,6 +160,8 @@ def trigger_result(trigger: Any, ctx: Context) -> bool | None:
     if kind not in ("state", "numeric_state") or not entities:
         return None
     if kind == "numeric_state":
+        if trigger.get("attribute") or trigger.get("value_template"):
+            return None
         return _numeric(entities, trigger.get("above"), trigger.get("below"), ctx)
     if trigger.get("from") is not None or trigger.get("attribute"):
         return None
@@ -223,12 +230,20 @@ class _Walk:
             base = f"{prefix}/{index}"
             if not self.step(step, base, certain):
                 return False
+            if (
+                (step.get("condition") is not None and evaluate(step, self.ctx) is None)
+                or "wait_template" in step
+                or "wait_for_trigger" in step
+            ):
+                certain = False  # whether the rest runs at all is not known
         return True
 
     def step(self, step: dict[str, Any], base: str, certain: bool) -> bool:
         service = step.get("action") or step.get("service")
         if isinstance(service, str) and "." in service and len(self.calls) < MAX_CALLS:
             self.calls.append(_call(step, service, certain, base, self.ctx))
+        if "stop" in step:
+            return False
         if step.get("condition") is not None:
             verdict = evaluate(step, self.ctx)
             if verdict is False:
@@ -244,7 +259,12 @@ class _Walk:
         if "sequence" in step and "choose" not in step:
             return self.steps(step["sequence"], f"{base}/sequence", certain)
         if isinstance(step.get("repeat"), dict):
-            return self.steps(step["repeat"].get("sequence"), f"{base}/repeat/sequence", certain)
+            count = step["repeat"].get("count")
+            return self.steps(
+                step["repeat"].get("sequence"),
+                f"{base}/repeat/sequence",
+                certain and isinstance(count, int) and not isinstance(count, bool) and count >= 1,
+            )
         return True
 
     def choose(self, step: dict[str, Any], base: str, certain: bool) -> bool:

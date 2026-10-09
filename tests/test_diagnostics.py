@@ -293,3 +293,28 @@ def test_the_dry_run_judges_known_values_and_calls_the_rest_unknown() -> None:
     assert away["conditions"] is False and away["calls"] == []
     night = dry_run(triggers, conditions, actions, _ctx(states, hour=23))
     assert night["conditions"] is False
+
+
+def test_dry_run_calls_after_an_unknown_condition_or_a_stop_are_not_certain() -> None:
+    from custom_components.ha_housekeeper.dry_run import Context, dry_run
+
+    ctx = Context(
+        state=lambda e: "on",
+        attrs=lambda e: {},
+        exists=lambda e: True,
+        disabled=lambda e: False,
+        now=datetime(2026, 1, 1, 12, tzinfo=UTC),
+        overrides={},
+    )
+    call = {"action": "light.turn_on", "target": {"entity_id": "light.a"}}
+    unknown = {"condition": "template", "value_template": "{{ x }}"}
+    attribute = {
+        "condition": "numeric_state",
+        "entity_id": "climate.a",
+        "attribute": "t",
+        "above": 1,
+    }
+    result = dry_run([], [], [call, unknown, call, attribute, call], ctx)
+    assert [c["certain"] for c in result["calls"]] == [True, False, False]
+    result = dry_run([], [], [call, {"stop": "x"}, call], ctx)
+    assert len(result["calls"]) == 1
