@@ -40,6 +40,7 @@ JOURNAL_STORAGE_KEY: Final = f"{DOMAIN}.journal"
 # Earliest point at which a quarantined entity may be removed (a later step, preview only today).
 QUARANTINE_DAYS: Final = 14
 IGNORE_LABEL: Final = "housekeeper_ignore"
+CRITICAL_LABEL: Final = "housekeeper_critical"
 # Allowed range (min, max) per option, shared by the options flow and the panel command.
 OPTION_LIMITS: Final = {
     CONF_MIN_UNAVAILABLE_DAYS: (0, 365),

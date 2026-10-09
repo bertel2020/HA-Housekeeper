@@ -2,8 +2,18 @@
 class FindingsMixin {
   sortedFindings(includeIgnored = false) {
     const { plain } = this.collators();
-    return this.data.findings.filter(f => includeIgnored || !f.ignored).sort((a, b) => (b.confidence - a.confidence)
+    return this.data.findings.filter(f => includeIgnored || !f.ignored).sort((a, b) => (this.impactScore(b) - this.impactScore(a))
       || plain.compare(String(a.object_id), String(b.object_id)));
+  }
+
+  // Impact first, then how sure the diagnosis is: the fraction keeps the certainty from outranking a level.
+  impactScore(f) { return (IMPACT_RANK[f.impact] ?? 0) + (f.confidence || 0) / 2; }
+
+  // The level and the facts behind it, as text: "High impact (critical · used by 3 automations)".
+  impactLine(f, withFacts = true) {
+    if (!f.impact) return "";
+    const facts = withFacts ? (f.impact_facts || []).map(x => this.t(`impactFact_${x.fact}`, { n: x.n ?? "", id: x.id ?? "", why: this.t(`impactWhy_${x.why}`) })) : [];
+    return `${this.t(`impact_${f.impact}`)}${facts.length ? ` (${facts.join(" · ")})` : ""}`;
   }
 
   // The share of objects without a finding. It counts affected objects, not findings, so an object
@@ -27,12 +37,13 @@ class FindingsMixin {
       : finding.affected_object
         ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
         : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    const button = `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+    const button = `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.impact && finding.impact !== "none" ? ` · ${this.t(`impact_${finding.impact}`)}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
     return `<div class="rowwrap"><input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">${button}</div>`;
   }
 
   findingSorts() {
     return [
+      { key: "impact", label: "sortImpact", dir: "desc", get: f => this.impactScore(f) },
       { key: "certainty", label: "sortCertainty", dir: "desc", get: f => f.confidence },
       { key: "name", label: "sortName", dir: "asc", get: f => this.findObject(this.findingKey(f))?.name || f.object_id },
       { key: "id", label: "sortId", dir: "asc", get: f => f.object_id },
@@ -47,10 +58,10 @@ class FindingsMixin {
     const classed = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
     const afterOnly = this.findingAfter ? classed.filter(f => this.corr?.by_key?.[f.key]) : classed;
     const byClass = this.findingDue ? afterOnly.filter(f => f.resurfaced) : afterOnly;
-    this.lvState("findings", "certainty", "desc");
+    this.lvState("findings", "impact", "desc");
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
-      filters: { type: (f, v) => this.findingType(f) === v },
+      filters: { type: (f, v) => this.findingType(f) === v, impact: (f, v) => (f.impact || "none") === v },
       sorts: this.findingSorts(), tie: f => f.object_id,
     });
   }
@@ -61,7 +72,7 @@ class FindingsMixin {
     return list.map(f => {
       const key = this.findingKey(f), object = this.findObject(key);
       return {
-        rule_id: f.rule_id, classification: f.classification, confidence: f.confidence,
+        rule_id: f.rule_id, classification: f.classification, confidence: f.confidence, impact: f.impact || "",
         object_id: f.object_id, name: object?.name || "", affected_object: f.affected_object || "",
         first_detected_at: f.first_detected_at || "", location: f.evidence?.[0]?.location || "",
       };
@@ -94,7 +105,7 @@ class FindingsMixin {
     const classes = [...new Set(all.map(f => f.classification))];
     const list = this.visibleFindings();
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
-    const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }] });
+    const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, { name: "impact", all: this.t("allImpacts"), options: ["high", "medium", "low", "none"].map(x => [x, this.t(`impact_${x}`)]) }] });
     const pg = this.paginate("findings", list);
     const h = this.health();
     const classTone = c => { const tone = this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
@@ -189,7 +200,7 @@ class FindingsMixin {
     if (!list.length) return "";
     const hideButton = f => this.decide && this.decide.key === f.key ? this.decideForm(f)
       : `<button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button>`;
-    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
+    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("findingsOfObject")} (${list.length})</h2></div>${rows}</section>`;
   }
 }

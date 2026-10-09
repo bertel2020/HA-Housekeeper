@@ -2552,3 +2552,12 @@ test("a mark can be set and cleared on the detail page and hides nothing in the 
   await el.clearMark("entity:sensor.b");
   assert.equal(sent.at(-2).type, "ha_housekeeper/mark_clear");
 });
+
+test("findings sort by impact first, then certainty, and say why", () => {
+  const { el } = panel("en");
+  const f = (id, impact, confidence, facts = []) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence, impact, impact_facts: facts, key: id, ignored: false });
+  el.data = { ...DATA, findings: [f("sensor.a", "none", 0.99), f("sensor.b", "medium", 0.5), f("lock.c", "high", 0.4, [{ fact: "critical", why: "kind" }, { fact: "used_by_active", n: 3 }])] };
+  assert.deepEqual(el.sortedFindings().map(x => x.object_id), ["lock.c", "sensor.b", "sensor.a"]);
+  assert.equal(el.impactLine(el.data.findings[2]), "High impact (critical: kind of object · used by 3 active automations or scripts)");
+  assert.equal(el.findingSorts()[0].key, "impact");
+});

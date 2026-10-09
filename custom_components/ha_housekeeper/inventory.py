@@ -56,6 +56,7 @@ from .hygiene import (
     orphan_statistics,
 )
 from .ignored import IgnoreStore
+from .impact import apply_impact
 from .issues import async_sync_issues
 from .lifecycle import LifecycleStore
 from .maintenance import PreflightStore
@@ -774,6 +775,7 @@ class InventoryScanner:
             finding["key"] = finding_key(finding)
             self._mark_ignored(finding, entity_registry_entries)
         apply_marks(objects, findings, self.marks.items)
+        apply_impact(objects, edges, findings)
 
         self.status.update(phase="finalizing", progress=90)
 
