@@ -1,5 +1,68 @@
 # Changelog
 
+## 0.21.0 - 2026-10-09
+
+Die Oberfläche ist einheitlicher, Batterien mit Spannung werden richtig behandelt, und
+die Suche ist überall dieselbe. Automatisiert getestet (651 Python- und 157
+Panel-Tests), aber **noch nicht auf einer echten Instanz** und nicht in jedem
+Farbschema und auf schmalen Bildschirmen angesehen.
+
+### Neu
+
+- **Batterien mit Spannung:** Sensoren in Volt gelten nicht mehr als Prozent (ein
+  Sensor mit 3,2 V löste „schwache Batterie“ aus). Sie stehen in einer eigenen Karte;
+  Housekeeper schätzt den Typ aus der höchsten Spannung der letzten Wochen
+  (zum Beispiel 3-V-Knopfzelle oder 1,5-V-Zelle), nimmt dessen Grenze und rechnet
+  die Prognose wie bei Prozent-Batterien. Der geschätzte Typ steht dabei.
+- **Eine Suche:** Die Suche im Kopf, im Abhängigkeitspfad und das Sensorfeld im
+  Zähler-Assistenten zeigen beim Tippen dieselbe Liste (Pfeiltasten, Enter, Esc).
+- **Rückgängig mit Bestätigung** im Journal, für den ganzen Plan und für einzelne
+  Änderungen.
+
+### Geändert
+
+- **Gesundheitswert:** Die Zahl im Ring wird abgerundet und zählt offene Aufgaben mit
+  (4 Punkte je Aufgabe, 10 je dringender). 100 gibt es nur, wenn nichts offen ist.
+- Knöpfe sind gleich groß und besser erkennbar (Entscheiden, Sammelaktionen, Plan,
+  Prüfbericht). Die Plan-Vorschau, der Endzustand, die Fußzeilen und der Prüfbericht
+  sind aufgeräumt, ein ausgeführter Plan heißt „Plan“ statt „Ergebnis der Vorschau“.
+- Auswahlfelder haben überall denselben Pfeil mit Abstand zum Rand.
+- Aufräumen zeigt in jedem Reiter dieselbe Reihenfolge: Hinweis, Reiter, Kennzahlen.
+- Freigaben sind zunächst zugeklappt.
+- Das Label-Formular erklärt sich selbst („Vorschau erstellen“).
+
+### English
+
+The interface is more consistent, batteries that report volts are handled properly, and
+the search is the same everywhere. Automatically tested (651 Python and 157 panel
+tests), but **not yet on a real instance** and not checked in every colour scheme or
+on narrow screens.
+
+#### New
+
+- **Batteries in volts:** sensors in volts no longer count as percent (a sensor at
+  3.2 V raised “low battery”). They get their own card; Housekeeper guesses the type
+  from the highest voltage of the last weeks (for example a 3 V coin cell or a 1.5 V
+  cell), uses its limit and runs the forecast as for percent batteries. The guessed
+  type is shown.
+- **One search:** the search in the top bar, in the dependency path and the sensor
+  field in the counter assistant show the same list while typing (arrow keys, Enter,
+  Esc).
+- **Undo with a confirmation** in the journal, for the whole plan and for single
+  changes.
+
+#### Changed
+
+- **Health value:** the number in the ring is rounded down and counts open tasks
+  (4 points each, 10 for an urgent one). 100 only appears when nothing is open.
+- Buttons are the same size and easier to recognise (decide, bulk actions, plan, audit
+  report). The plan preview, the end state, the footers and the audit report are tidied
+  up, and an executed plan is called “Plan” instead of “Preview result”.
+- Select fields have the same arrow with some space from the edge everywhere.
+- Cleanup shows the same order in every tab: note, tabs, figures.
+- Exposures are closed at first.
+- The label form explains itself (“Create preview”).
+
 ## 0.20.0 - 2026-10-09
 
 Die Oberfläche ist neu geordnet: Aufräumen, Reparieren und Journal sind getrennt,
