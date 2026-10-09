@@ -6548,12 +6548,23 @@ class BatteryCareMixin {
     const row = r => {
       const tone = r.state === "low" ? "red" : r.days_left <= 30 ? "warn" : "ok";
       const text = r.state === "low" ? this.t("btLow") : this.t("btIn", { n: r.days_left });
-      return `<button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.t("btLevel", { n: this.formatNumber(r.level), slope: this.formatNumber(Math.abs(r.slope)) })}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>`;
+      const item = this.findObject(`entity:${r.entity_id}`);
+      const device = (item?.device_id ? this.findObject(`device:${item.device_id}`)?.name : "") || "";
+      const title = device && !String(r.name).toLowerCase().includes(device.toLowerCase()) ? `${device} – ${r.name}` : r.name;
+      const empty = r.state === "low" ? "" : this.formatDate(new Date(Date.now() + r.days_left * 86400000).toISOString()).split(",")[0];
+      const area = item ? this.areaName(item) : "";
+      const bits = [area, this.t("btNow", { n: this.formatNumber(r.level) }), empty ? this.t("btEmptyOn", { date: empty }) : ""].filter(Boolean).join(" · ");
+      return `<button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(bits)}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>`;
     };
-    const groups = b.groups.filter(g => g.entity_ids.length > 1).map(g => `<p class="factnote">${this.esc(this.t("btGroup", { n: g.entity_ids.length, from: g.from_days, to: g.to_days }))}</p>`).join("");
-    const body = falling.length ? falling.slice(0, 15).map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t("btNone")}</div>`;
-    const more = falling.length > 15 ? `<p class="factnote">${this.t("btMore", { n: falling.length - 15 })}</p>` : "";
-    return `<div class="panel">${head}${groups}${body}${more}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
+    // Batteries that run low in the same fortnight sit in one fold, the nearest one open: change them together.
+    const slots = [...b.groups].sort((x, y) => x.from_days - y.from_days);
+    const body = falling.length ? slots.map((g, index) => {
+      const rows = g.entity_ids.map(id => falling.find(r => r.entity_id === id)).filter(Boolean);
+      if (!rows.length) return "";
+      const tone = g.from_days <= 13 ? "red" : g.from_days <= 41 ? "warn" : "ok";
+      return this.fold(`bt_${g.from_days}`, { tone, title: this.t("btWindow", { from: g.from_days, to: g.to_days }), sub: rows.length > 1 ? this.t("btTogether") : "", pill: this.formatNumber(rows.length) }, rows.map(row).join(""), index === 0);
+    }).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t("btNone")}</div>`;
+    return `<div class="panel">${head}${body}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
   }
 
   // Batteries that report volts: the type is guessed from the full voltage, the limit comes from the type.
@@ -6607,7 +6618,7 @@ Object.assign(TEXT.de, {
   bvType_cell15: "Einzelzelle 1,5 V (AA/AAA, Alkaline oder NiMH)", bvType_coin3: "3-V-Zelle (z. B. CR2032 oder 2 × AA)", bvType_lithium: "Lithium-Ionen-Zelle", bvType_cells3: "3 Zellen in Reihe (4,5 V)", bvType_cells4: "4 Zellen in Reihe (6 V)", bvType_block9: "9-V-Block", bvType_lead12: "12-V-Akku",
   btTitle: "Batterieprognose", btHint: "Wann eine Batterie voraussichtlich die Grenze erreicht, aus dem Verlauf der letzten fünf Wochen. Eine Schätzung, keine Zusage.", btLoading: "Prognose wird berechnet …", btNoRecorder: "Ohne Recorder gibt es keine Prognose.",
   btNone: "Keine Batterie fällt erkennbar auf die Grenze zu.", btIn: "in etwa {n} Tagen", btLow: "schon unter der Grenze", btLevel: "Jetzt {n} %, fällt um {slope} Prozentpunkte pro Tag", btMore: "{n} weitere nicht gezeigt.",
-  btGroup: "{n} Batterien erreichen die Grenze in {from} bis {to} Tagen: gemeinsam wechseln.", btNote: "Nur Batteriesensoren mit Langzeitstatistik. Ohne Prognose: {unknown} (zu wenige Tage, stabil oder steigend). Nach einem Wechsel zählt nur der Verlauf danach.",
+  btWindow: "In {from} bis {to} Tagen", btTogether: "Gemeinsam wechseln", btNow: "Jetzt {n} %", btEmptyOn: "Grenze etwa am {date}", btNote: "Nur Batteriesensoren mit Langzeitstatistik. Ohne Prognose: {unknown} (zu wenige Tage, stabil oder steigend). Nach einem Wechsel zählt nur der Verlauf danach.",
   remTitle: "Wartungserinnerungen", remHint: "Filter, Entkalken, Batteriewechsel: du trägst Name, Abstand und letztes Datum ein, Housekeeper sagt, wann es wieder fällig ist. Es ändert nichts in Home Assistant.", remNone: "Noch keine Erinnerung.",
   remName: "Name (z. B. Wasserfilter)", remEvery: "alle", remDays: "Tage", remLast: "zuletzt am", remNote: "Notiz (z. B. Batterietyp CR2032)", remAdd: "Hinzufügen", remDone: "Erledigt", remDelete: "Löschen",
   remLine: "Alle {interval} Tage · zuletzt {last} · fällig {due}", remOverdue: "{n} Tage überfällig", remIn: "in {n} Tagen", remInvalid: "Nicht gespeichert, bitte prüfen: {field}",
@@ -6621,7 +6632,7 @@ Object.assign(TEXT.en, {
   bvType_cell15: "single 1.5 V cell (AA/AAA, alkaline or NiMH)", bvType_coin3: "3 V cell (e.g. CR2032 or 2 × AA)", bvType_lithium: "lithium-ion cell", bvType_cells3: "3 cells in series (4.5 V)", bvType_cells4: "4 cells in series (6 V)", bvType_block9: "9 V block", bvType_lead12: "12 V battery",
   btTitle: "Battery forecast", btHint: "When a battery will probably reach the limit, from the last five weeks. An estimate, not a promise.", btLoading: "Calculating the forecast …", btNoRecorder: "There is no forecast without a recorder.",
   btNone: "No battery is visibly heading for the limit.", btIn: "in about {n} days", btLow: "already below the limit", btLevel: "Now {n} %, falling {slope} points per day", btMore: "{n} more not shown.",
-  btGroup: "{n} batteries reach the limit in {from} to {to} days: change them together.", btNote: "Only battery sensors with long-term statistics. No forecast for {unknown} (too few days, stable or rising). After a change only the time since counts.",
+  btWindow: "In {from} to {to} days", btTogether: "Change them together", btNow: "Now {n} %", btEmptyOn: "limit around {date}", btNote: "Only battery sensors with long-term statistics. No forecast for {unknown} (too few days, stable or rising). After a change only the time since counts.",
   remTitle: "Maintenance reminders", remHint: "Filter, descaling, battery change: you enter a name, an interval and the last date, Housekeeper tells you when it is due again. It changes nothing in Home Assistant.", remNone: "No reminder yet.",
   remName: "Name (e.g. water filter)", remEvery: "every", remDays: "days", remLast: "last done", remNote: "Note (e.g. battery type CR2032)", remAdd: "Add", remDone: "Done", remDelete: "Delete",
   remLine: "Every {interval} days · last {last} · due {due}", remOverdue: "{n} days overdue", remIn: "in {n} days", remInvalid: "Not saved, please check: {field}",

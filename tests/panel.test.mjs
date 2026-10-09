@@ -2890,7 +2890,7 @@ test("the batteries view shows the forecast with groups and the reminders, which
   el._btRequested = true;
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { reminders: [] }; } };
   const forecast = el.batteryTrendCard();
-  assert.ok(forecast.includes("in about 20 days") && forecast.includes("2 batteries reach the limit in 14 to 27 days"));
+  assert.ok(forecast.includes("in about 20 days") && forecast.includes("In 14 to 27 days") && forecast.includes("Door"));
   const reminders = el.remindersCard();
   assert.ok(reminders.includes("Water filter") && reminders.includes("10 days overdue"));
   assert.ok(el.todoItems().some(i => i.key === "reminders"));
