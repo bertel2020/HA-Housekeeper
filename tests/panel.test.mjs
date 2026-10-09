@@ -2666,3 +2666,14 @@ test("a plan shows its follow-up, expected end state and audit report; a regress
   el.data = { objects: [], quarantine: [], findings: [], edges: [], meta: {}, regressions: [{ plan_id: "p1", at: "2026-10-09T10:00:00+00:00", new_count: 2 }] };
   assert.ok(el.todoItems().some(item => item.key === "followup" && item.count === 1));
 });
+
+test("the unused view has a tab for the entities and one for the orphaned statistics", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, orphaned_statistics: [{ statistic_id: "sensor.old", in_energy: false }] };
+  el.view = "unreferenced"; el._orphanLastRequested = true;
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-view-tab="unreferenced|statistics"'));
+  el.pickViewTab("unreferenced|statistics");
+  assert.equal(el.unrefTab, "statistics");
+  assert.ok(shadow.innerHTML.includes('aria-selected="true"') && shadow.innerHTML.includes('data-psel="sensor.old"'));
+});
