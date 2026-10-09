@@ -38,6 +38,8 @@ from .maintenance import preflight_report, recorder_costs
 from .meter import prepare_meter
 from .policies import RULES as POLICY_RULES
 from .policies import policies
+from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
+from .recorder_purge import purge_orphans
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
@@ -991,6 +993,42 @@ async def websocket_blueprints(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/purge_statistics",
+        vol.Required("statistic_ids"): vol.All([str], vol.Length(min=1, max=PURGE_MAX_IDS)),
+        vol.Required("states"): bool,
+        vol.Required("confirmed"): True,
+    }
+)
+@websocket_api.async_response
+async def websocket_purge_statistics(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Delete the recorder statistics of orphaned entities after a backup. Not undoable."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    if scanner.warming_up or scanner.cleanup.running:
+        connection.send_error(msg["id"], "busy", "Home Assistant is starting or a plan is running")
+        return
+    if not scanner.snapshot or not scanner.snapshot["meta"].get("recorder_available"):
+        connection.send_error(msg["id"], "no_recorder", "The recorder is not available")
+        return
+    try:
+        result = await purge_orphans(
+            hass, scanner.snapshot, msg["statistic_ids"], states=msg["states"]
+        )
+    except Exception as err:
+        connection.send_error(msg["id"], "purge_failed", f"{type(err).__name__}: {err}")
+        return
+    if result["removed"]:
+        hass.async_create_task(scanner.async_scan())
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/notify_set",
         vol.Required("enabled"): bool,
     }
@@ -1223,6 +1261,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_window)
     websocket_api.async_register_command(hass, websocket_window_set)
     websocket_api.async_register_command(hass, websocket_notify_set)
+    websocket_api.async_register_command(hass, websocket_purge_statistics)
     websocket_api.async_register_command(hass, websocket_blueprints)
     websocket_api.async_register_command(hass, websocket_window_reload)
     websocket_api.async_register_command(hass, websocket_lifecycle)

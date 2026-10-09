@@ -45,19 +45,23 @@ class UnusedMixin {
   }
 
   // Active entities that look like what an orphaned statistic became after a rename: same domain, same unit, similar name.
-  statSuccessors(orphan) {
-    const [domain, name = ""] = orphan.statistic_id.split(".");
+  statSuccessors(orphan) { return this.successorsOf(orphan.statistic_id, orphan.unit, 2); }
+
+  // The same idea for any entity id; `unit` is optional. Hints only, never chosen for the person.
+  successorsOf(id, unit, limit = 5) {
+    const [domain, name = ""] = String(id || "").split(".");
+    if (!domain) return [];
     const words = new Set(name.split("_").filter(Boolean));
     const found = [];
     for (const o of this.data.objects) {
-      if (o.object_type !== "entity" || o.status !== "active" || o.object_id === orphan.statistic_id || !o.object_id.startsWith(`${domain}.`)) continue;
-      if (orphan.unit && o.unit !== orphan.unit) continue;
+      if (o.object_type !== "entity" || o.status !== "active" || o.object_id === id || !o.object_id.startsWith(`${domain}.`)) continue;
+      if (unit && o.unit !== unit) continue;
       const other = new Set(o.object_id.split(".")[1].split("_").filter(Boolean));
       const shared = [...words].filter(w => other.has(w)).length;
       const score = shared / (words.size + other.size - shared || 1);
       if (score >= 0.5) found.push({ item: o, score });
     }
-    return found.sort((a, b) => b.score - a.score || a.item.object_id.localeCompare(b.item.object_id)).slice(0, 2).map(f => f.item);
+    return found.sort((a, b) => b.score - a.score || a.item.object_id.localeCompare(b.item.object_id)).slice(0, limit).map(f => f.item);
   }
 
   statSuccessorLine(orphan) {
@@ -120,7 +124,7 @@ class UnusedMixin {
       return this.ageCell(new Date(ts * 1000).toISOString());
     };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", cell: o => `${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}` },
+      { key: "id", label: "utStatId", dir: "asc", cell: o => `${this.purgeBox(o)}${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
@@ -128,7 +132,38 @@ class UnusedMixin {
     ];
     const empty = this.t(this.data.meta.recorder_available ? (all.length ? "noMatches" : "noOrphanStats") : "noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
-    return `<div class="stack">${this.unrefTiles()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${bar}${table}${pg.footer}</div></div>`;
+    this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
+    return `<div class="stack">${this.unrefTiles()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
+  }
+
+  // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
+  purgeBox(o) {
+    if (!this.data.meta.recorder_available || o.in_energy) return "";
+    return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
+  }
+
+  purgeBar() {
+    if (!this.data.meta.recorder_available) return "";
+    const n = this.purgeSel.size, r = this.purgeResult;
+    const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeError", { reason: this.t(`purgeReason_${r.error}`) }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
+    const open = this.purgeOpen && n ? `<div class="panel" role="group" aria-label="${this.esc(this.t("purgeTitle"))}"><div class="pad">
+      <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
+      <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
+      <div class="setrow"><label for="purgeWord">${this.t("confirmTypeWord", { word: this.t("purgeWord") })}</label><input id="purgeWord" data-purge-word autocomplete="off" value="${this.esc(this.purgeWord)}">
+      <button class="btn danger" data-purge-run ${this.purgeWord.trim() === this.t("purgeWord") && !this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgeRun")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
+    return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-purge-open ${n ? "" : "disabled"}>${this.t("purgeOpen")}</button></div>${open}`;
+  }
+
+  async purgeRun() {
+    this.purgeBusy = true; this.purgeResult = null; this.render();
+    try {
+      this.purgeResult = await this._hass.callWS({ type: "ha_housekeeper/purge_statistics", statistic_ids: [...this.purgeSel], states: this.purgeStates, confirmed: true });
+      for (const id of this.purgeResult.removed) this.purgeSel.delete(id);
+      this.purgeOpen = false; this.purgeWord = "";
+    } catch (err) { this.purgeResult = { removed: [], skipped: [], error: "failed", detail: err?.message || String(err) }; }
+    this.purgeBusy = false;
+    this.render();
+    if (this.purgeResult.removed?.length) setTimeout(() => this.load?.(true), 3000);
   }
 
   unreferencedView() {

@@ -2154,6 +2154,29 @@ test("blueprints tab, notification switch, diagnostics without names and the wee
   assert.ok(downloads.at(-1).text.includes("# Housekeeper report") && downloads.at(-1).text.includes("sensor.a"));
 });
 
+test("orphaned statistics can be selected and deleted only after typing the word; replacements get successor hints", async () => {
+  const { el, shadow } = panel("en");
+  const orphans = [{ statistic_id: "sensor.old_power", unit: "W", has_mean: true, in_energy: false }, { statistic_id: "sensor.grid", unit: "kWh", has_sum: true, in_energy: true }];
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, orphaned_statistics: orphans,
+    objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.new_power", name: "N", status: "active", unit: "W" }] };
+  el.view = "unreferenced"; el.unrefTab = "statistics"; el._orphanLastRequested = true;
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-psel="sensor.old_power"') && !shadow.innerHTML.includes('data-psel="sensor.grid"'), "an Energy series cannot be picked");
+  el.purgeSel.add("sensor.old_power"); el.purgeOpen = true;
+  el.render();
+  assert.ok(/data-purge-run disabled/.test(shadow.innerHTML), "disabled until the word is typed");
+  el.purgeWord = "DELETE";
+  el.render();
+  assert.ok(!/data-purge-run disabled/.test(shadow.innerHTML));
+  const asked = [];
+  el._hass = { language: "en", callWS: async msg => { asked.push(msg); return { removed: ["sensor.old_power"], skipped: [], backup: true }; } };
+  el.load = async () => {};
+  await el.purgeRun();
+  assert.equal(JSON.stringify(asked[0]), JSON.stringify({ type: "ha_housekeeper/purge_statistics", statistic_ids: ["sensor.old_power"], states: false, confirmed: true }));
+  assert.equal(el.purgeSel.size, 0);
+  assert.equal(el.successorsOf("sensor.power_new", "W")[0].object_id, "sensor.new_power");
+});
+
 test("the layout puts levels in columns without overlapping nodes", () => {
   const { el } = graphPanel();
   const model = el.graphModel(el.graphSelected, "entity:sensor.e", { depth: 3 });
