@@ -2677,3 +2677,44 @@ test("the unused view has a tab for the entities and one for the orphaned statis
   assert.equal(el.unrefTab, "statistics");
   assert.ok(shadow.innerHTML.includes('aria-selected="true"') && shadow.innerHTML.includes('data-psel="sensor.old"'));
 });
+
+test("automation diagnostics: quality dimensions, criteria, coverage, comparison and the dry run", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  const dim = (level, key = "runs") => ({ level, reasons: [{ key, count: 3 }] });
+  const quality = { items: [{ entity_id: "automation.hall", name: "Hall", status: "active", worst: "red", dimensions: { integrity: dim("ok"), reliability: dim("red", "failing"), effectiveness: dim("unknown", "no_criteria"), maintainability: dim("info", "no_description"), restart_safety: dim("ok"), efficiency: dim("ok"), conflicts: dim("warn", "conflict") } }] };
+  const answers = {
+    "ha_housekeeper/automation_quality": quality,
+    "ha_housekeeper/criteria": { entity_id: "automation.hall", criteria: [], stats: { ok: 0, missed: 0 }, recent: [], limits: {} },
+    "ha_housekeeper/criteria_set": { entity_id: "automation.hall", criteria: [{ id: "a1", targets: [{ entity_id: "light.hall", state: "on" }], within: 5, hold: 0 }], stats: { ok: 2, missed: 1 }, recent: [] },
+    "ha_housekeeper/coverage": { enabled: true, runs: 12, since: "2026-09-20T10:00:00+00:00", ready: true, never: ["trigger/1"], thresholds: { min_runs: 10, min_days: 7 }, rows: [{ id: "trigger/0", kind: "trigger", label: "state: binary_sensor.door", count: 12, mean_ms: 1500, max_ms: 2000 }, { id: "trigger/1", kind: "trigger", label: "time: 07:00", count: 0, mean_ms: null, max_ms: null }] },
+    "ha_housekeeper/trace_compare": { runs: [{ run_id: "r1", start: "2026-10-09T08:00:00+00:00", execution: "finished", trigger: "state of x" }, { run_id: "r2", start: "2026-10-09T09:00:00+00:00", execution: "error", trigger: "time" }] },
+    "ha_housekeeper/automation_dry_run": { executes: false, triggers: [{ index: 0, result: true, platform: "state" }], conditions: true, branches: ["action/0/default"], calls: [{ service: "lock.unlock", targets: ["lock.front"], certain: false, critical: true, missing: [], disabled: [], templated: false }], uncertain: true, limits: [] },
+  };
+  el._hass = { language: "en", callWS: async msg => { calls.push(JSON.parse(JSON.stringify(msg))); if (msg.type === "ha_housekeeper/trace_compare" && msg.run_a) return { older: {}, newer: {}, differences: [{ kind: "execution", a: "finished", b: "error" }, { kind: "duration", a: 1000, b: 4000, factor: 4 }], updates_between: [], criterion: { older: true, newer: false } }; return answers[msg.type]; } };
+  el.data = { ...DATA, objects: [...DATA.objects] };
+  await el.loadQuality();
+  let html = el.qualityView();
+  assert.ok(html.includes("Hall") && html.includes("Reliability") && html.includes("Restart safety") && html.includes('title="Many errors'));
+  assert.ok(!html.includes("Overall"), "no single score");
+  await el.openDiag("automation.hall");
+  html = el.qualityView();
+  assert.ok(html.includes("Diagnosis: Hall") && html.includes("No success criterion defined") && html.includes("never reached") && html.includes("Compare") && html.includes("Test run"));
+  el.editCriteria("automation.hall");
+  el.diag.draft.push({ targets: [{ entity_id: "light.hall", state: "on" }], within: "5", hold: "0" });
+  await el.saveCriteria();
+  const set = calls.find(c => c.type === "ha_housekeeper/criteria_set");
+  assert.deepEqual(set.criteria, [{ targets: [{ entity_id: "light.hall", state: "on" }], within: 5, hold: 0 }]);
+  assert.ok(el.criteriaCard("automation.hall").includes("2 reached, 1 missed"));
+  el.diag.compare.a = "r1"; el.diag.compare.b = "r2";
+  await el.runCompare();
+  const lines = el.compareLines(el.diag.compare.result);
+  assert.ok(lines.includes("finished → error") && lines.includes("factor 4") && lines.includes("older run reached, newer run missed"));
+  el.dryState().states[0] = { entity_id: "binary_sensor.door", state: "on" };
+  await el.runDry();
+  assert.deepEqual(calls.at(-1).states, { "binary_sensor.door": "on" });
+  const dry = el.dryResult(el.diag.dry.result);
+  assert.ok(dry.includes("lock.unlock") && dry.includes("critical") && dry.includes("uncertain") && dry.includes("fires"));
+  el.data = { ...DATA, criteria_alerts: [{ entity_id: "automation.hall", ok: 1, missed: 4 }] };
+  assert.ok(el.todoItems().some(item => item.key === "criteria" && item.count === 1));
+});

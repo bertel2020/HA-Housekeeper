@@ -18,6 +18,7 @@ from homeassistant.helpers.event import async_call_later, async_track_time_inter
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
+from . import criteria as criteria_module
 from . import db_health as db_health_module
 from . import reliability as reliability_module
 from . import storms as storms_module
@@ -44,6 +45,7 @@ from .db_health import sample_size
 from .inventory import InventoryScanner
 from .issues import async_clear_issues
 from .maintenance import recorder_costs
+from .runs import run_key
 from .websocket_api import async_register as async_register_websocket
 
 _LOGGER = logging.getLogger(__name__)
@@ -151,6 +153,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         scanner.events.beat(datetime.now(UTC))
 
     entry.async_on_unload(async_track_time_interval(hass, _heartbeat, timedelta(minutes=5)))
+    entry.async_on_unload(criteria_module.async_listen(hass, scanner.criteria))
+    entry.async_on_unload(scanner.criteria.cancel_all)
 
     async def _collect_runs(_: Any) -> None:
         # Each collector on its own: one that fails must neither stop the other nor disturb Home Assistant.
@@ -158,6 +162,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await scanner.runs.async_collect()
         except Exception:
             _LOGGER.exception("Collecting automation runs failed")
+        try:
+            snapshot = scanner.snapshot
+            present = (
+                {run_key(o) for o in snapshot["objects"] if o["object_type"] == "automation"}
+                if snapshot
+                else None
+            )
+            await scanner.coverage.async_collect(present)
+        except Exception:
+            _LOGGER.exception("Collecting trigger and branch coverage failed")
         try:
             await sample_size(hass, scanner.events)
         except Exception:

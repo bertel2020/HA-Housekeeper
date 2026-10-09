@@ -11,6 +11,7 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.util import dt as dt_util
 
 from .audit_report import build_report
 from .backup_health import ATTEST_KINDS, backup_health
@@ -31,8 +32,11 @@ from .cleanup import (
 from .cleanup_exec import CleanupError, entity_restorable
 from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
 from .correlation import correlate
+from .criteria import THRESHOLDS as CRITERIA_LIMITS
 from .db_health import db_health, growth
 from .device_pairs import pair_devices
+from .dry_run import Context as DryRunContext
+from .dry_run import dry_run as run_dry
 from .exposure import exposure
 from .goals import CATALOG as GOAL_CATALOG
 from .goals import evaluate as evaluate_goals
@@ -47,14 +51,18 @@ from .marks import OBJECT_TYPES as MARK_TYPES
 from .meter import prepare_meter
 from .policies import RULES as POLICY_RULES
 from .policies import policies
+from .quality import build as build_quality
 from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
 from .run_health import report as runs_report
+from .runs import run_key
 from .statistics_last import statistics_last
 from .storms import WINDOWS as STORMS_WINDOWS
 from .storms import storms
+from .trace_compare import compare as compare_traces
+from .trace_compare import list_runs as list_trace_runs
 from .window import SKIPPABLE, STEPS, WindowError, reload_targets
 from .writelock import write_holder
 
@@ -985,6 +993,245 @@ async def websocket_automation_runs(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/automation_quality"})
+@websocket_api.async_response
+async def websocket_automation_quality(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Seven separate quality dimensions per automation; reads only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        async with asyncio.timeout(RUNS_TIMEOUT):
+            runs = await runs_report(scanner)
+            snapshot = await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "quality_failed", f"{type(err).__name__}: {err}")
+        return
+    result = build_quality(
+        snapshot,
+        runs,
+        runs["conflicts"]["items"],
+        scanner.criteria,
+        datetime.now(UTC).date(),
+        lambda entity_id: (scanner.get_details("automation", entity_id) or {}).get("actions"),
+    )
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/criteria", vol.Required("entity_id"): str}
+)
+@callback
+def websocket_criteria(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """The success criteria of one automation with their outcomes of the last days."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    result = scanner.criteria.view(msg["entity_id"], datetime.now(UTC).date())
+    connection.send_result(msg["id"], _versioned({**result, "limits": CRITERIA_LIMITS}))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/criteria_set",
+        vol.Required("entity_id"): str,
+        vol.Required("criteria"): list,
+    }
+)
+@callback
+def websocket_criteria_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Replace the success criteria of one automation; an empty list removes them."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        scanner.criteria.set(msg["entity_id"], msg["criteria"])
+    except ValueError as err:
+        connection.send_error(msg["id"], "invalid_format", str(err))
+        return
+    result = scanner.criteria.view(msg["entity_id"], datetime.now(UTC).date())
+    connection.send_result(msg["id"], _versioned({**result, "limits": CRITERIA_LIMITS}))
+
+
+def _automation_key(snapshot: dict[str, Any], entity_id: str) -> tuple[str | None, dict[str, Any]]:
+    for obj in snapshot["objects"]:
+        if obj["object_type"] == "automation" and obj["object_id"] == entity_id:
+            return run_key(obj), obj
+    return None, {}
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/coverage", vol.Required("entity_id"): str}
+)
+@websocket_api.async_response
+async def websocket_coverage(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """How often each trigger and branch of one automation ran (only when switched on)."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    snapshot = await scanner.async_get_snapshot()
+    key, _ = _automation_key(snapshot, msg["entity_id"])
+    if key is None:
+        connection.send_error(msg["id"], "not_found", "Unknown automation")
+        return
+    details = scanner.get_details("automation", msg["entity_id"]) or {}
+    result = scanner.coverage.view(key, details.get("triggers"), details.get("actions"))
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/coverage_set",
+        vol.Required("enabled"): bool,
+        vol.Optional("clear", default=False): bool,
+    }
+)
+@callback
+def websocket_coverage_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Switch the coverage counting on or off; ``clear`` forgets what was counted."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    scanner.coverage.set_enabled(msg["enabled"], clear=msg["clear"])
+    connection.send_result(msg["id"], {"enabled": scanner.coverage.enabled})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/trace_compare",
+        vol.Required("entity_id"): str,
+        vol.Optional("run_a"): str,
+        vol.Optional("run_b"): str,
+    }
+)
+@websocket_api.async_response
+async def websocket_trace_compare(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """List the runs Home Assistant still has, or compare two of them by structure. Reads only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    snapshot = await scanner.async_get_snapshot()
+    key, _ = _automation_key(snapshot, msg["entity_id"])
+    if key is None:
+        connection.send_error(msg["id"], "not_found", "Unknown automation")
+        return
+    try:
+        if "run_a" not in msg or "run_b" not in msg:
+            runs = await list_trace_runs(hass, key)
+            connection.send_result(msg["id"], _versioned({"runs": runs}))
+            return
+        result = await compare_traces(
+            hass,
+            key,
+            msg["run_a"],
+            msg["run_b"],
+            scanner.events.events,
+            scanner.criteria.recent.get(msg["entity_id"], []),
+        )
+    except Exception as err:
+        connection.send_error(msg["id"], "trace_failed", f"{type(err).__name__}: {err}")
+        return
+    if result is None:
+        connection.send_error(msg["id"], "not_found", "A run is no longer in the trace buffer")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/automation_dry_run",
+        vol.Required("entity_id"): str,
+        vol.Optional("states", default={}): vol.All(
+            {vol.Match(r"^[a-z0-9_]+\.[a-z0-9_]+$"): vol.All(str, vol.Length(min=1, max=100))},
+            vol.Length(max=20),
+        ),
+    }
+)
+@websocket_api.async_response
+async def websocket_automation_dry_run(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Explain what one automation would do for the given test states. Never executes anything."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    snapshot = await scanner.async_get_snapshot()
+    key, _ = _automation_key(snapshot, msg["entity_id"])
+    if key is None:
+        connection.send_error(msg["id"], "not_found", "Unknown automation")
+        return
+    details = scanner.get_details("automation", msg["entity_id"]) or {}
+    registry = er.async_get(hass)
+    overrides = msg["states"]
+
+    def state(entity_id: str) -> str | None:
+        if entity_id in overrides:
+            return overrides[entity_id]
+        found = hass.states.get(entity_id)
+        return found.state if found else None
+
+    def attrs(entity_id: str) -> dict[str, Any]:
+        found = hass.states.get(entity_id)
+        return dict(found.attributes) if found else {}
+
+    def disabled(entity_id: str) -> bool:
+        entry = registry.async_get(entity_id)
+        return bool(entry and entry.disabled_by)
+
+    ctx = DryRunContext(
+        state=state,
+        attrs=attrs,
+        exists=lambda e: hass.states.get(e) is not None or registry.async_get(e) is not None,
+        disabled=disabled,
+        now=dt_util.now(),
+        overrides=overrides,
+    )
+    result = run_dry(
+        details.get("triggers"), details.get("conditions"), details.get("actions"), ctx
+    )
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command(
     {vol.Required("type"): f"{DOMAIN}/lifecycle", vol.Optional("device_id"): str}
 )
@@ -1531,3 +1778,10 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_correlations)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_automation_runs)
+    websocket_api.async_register_command(hass, websocket_automation_quality)
+    websocket_api.async_register_command(hass, websocket_criteria)
+    websocket_api.async_register_command(hass, websocket_criteria_set)
+    websocket_api.async_register_command(hass, websocket_coverage)
+    websocket_api.async_register_command(hass, websocket_coverage_set)
+    websocket_api.async_register_command(hass, websocket_trace_compare)
+    websocket_api.async_register_command(hass, websocket_automation_dry_run)

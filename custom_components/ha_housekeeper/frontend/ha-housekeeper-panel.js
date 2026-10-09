@@ -1510,6 +1510,8 @@ class OverviewMixin {
     if (causes) items.push({ key: "causes", tone: "red", icon: "mdi:source-branch", label: "actCauses", hint: "actCausesHint", count: causes, view: "findingsNav", filter: "" });
     const regressions = (this.data.regressions || []).length;
     if (regressions) items.push({ key: "followup", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "cleanup" });
+    const missed = (this.data.criteria_alerts || []).length;
+    if (missed) items.push({ key: "criteria", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, view: "runs" });
     const fresh = (this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).length;
     if (fresh) items.push({ key: "critical", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, view: "findingsNav", filter: "" });
     const stale = this.staleScan();
@@ -4261,7 +4263,15 @@ class RunsMixin {
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsColTrend")}</dt><dd>${this.runsTrend(row)}</dd></dl></div>${notes}${this.howCounted("runsFootnote")}</section>`;
   }
 
+  // Two tabs: the counted runs, and the quality of each automation (46-diagnostics.js).
   runsView() {
+    const tabs = [{ id: "runs", label: this.t("runsTabRuns") }, { id: "quality", label: this.t("qualityTab") }];
+    const open = this.viewTabOf("runs", tabs, "runs");
+    if (open === "quality") return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.qualityView()}</div>`;
+    return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.runsListView()}</div>`;
+  }
+
+  runsListView() {
     this.ensureRuns();
     const r = this.runs;
     const since = r?.since ? ` · ${this.t("runsSince", { date: this.formatDate(r.since) })}` : "";
@@ -5661,6 +5671,323 @@ class ExchangeMixin {
   }
 }
 
+// Automation diagnostics: quality dimensions, success criteria, coverage, trace comparison and the dry run (see quality.py, criteria.py, coverage.py, trace_compare.py, dry_run.py); mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  qualityTab: "Qualität", runsTabRuns: "Läufe",
+  qualityHint: "Sieben getrennte Blickwinkel je Automation, bewusst ohne Gesamtnote. „Unbekannt“ heißt: dazu gibt es noch nichts zu beurteilen.",
+  qualityLoading: "Die Qualität wird zusammengestellt …", qualityNone: "Keine Automationen gefunden.", qualityRefresh: "Neu berechnen",
+  dim_integrity: "Integrität", dim_reliability: "Zuverlässigkeit", dim_effectiveness: "Wirksamkeit", dim_maintainability: "Wartbarkeit", dim_restart_safety: "Restart-Festigkeit", dim_efficiency: "Effizienz", dim_conflicts: "Konflikte",
+  ql_ok: "In Ordnung", ql_info: "Hinweis", ql_warn: "Prüfen", ql_red: "Problem", ql_unknown: "Unbekannt",
+  dr_broken: "{count} defekte Referenzen", dr_stale_targets: "{count} Ziele sind deaktiviert oder nicht verfügbar", dr_runs: "{count} Läufe ohne Auffälligkeit", dr_no_runs: "Noch keine Läufe beobachtet",
+  dr_no_criteria: "Kein Erfolgskriterium definiert", dr_not_yet_checked: "Noch nicht ausgelöst, seit es ein Kriterium gibt", dr_missed: "{missed} verfehlt, {ok} erreicht (7 Tage)", dr_reached: "{ok} erreicht (7 Tage)",
+  dr_no_description: "Keine Beschreibung", dr_large: "Groß: viele Trigger oder Aktionen", dr_deep: "Tief verschachtelt", dr_no_config: "Konfiguration nicht lesbar", dr_no_effect: "Läufe enden meist an Bedingungen", dr_conflict: "{count} mögliche Konflikte",
+  dr_failing: "Viele Fehler", dr_never_ok: "Nie erfolgreich", dr_overlap: "Läufe überschneiden sich", dr_burst: "Ungewöhnlich oft", dr_long_run: "Ungewöhnlich lange Läufe", dr_after_update: "Mehr Fehler seit einem Update", dr_long_wait: "Lange Wartezeit", dr_wait_no_timeout: "Warten ohne Timeout",
+  diagOpen: "Details", diagClose: "Schließen", diagFor: "Diagnose: {name}",
+  critTitle: "Erfolgskriterien", critHint: "Du legst fest, was die Automation erreichen soll. Nach jeder Auslösung wird einmal nach der Frist geprüft. Gespeichert werden nur Zähler.",
+  critNone: "Kein Kriterium definiert.", critEdit: "Bearbeiten", critAdd: "Kriterium hinzufügen", critAddTarget: "Ziel hinzufügen", critRemove: "Entfernen", critSave: "Speichern", critCancel: "Abbrechen",
+  critEntity: "Entität", critState: "Sollzustand", critWithin: "Frist (Sekunden)", critHold: "Mindestdauer (Sekunden)", critStats: "{ok} erreicht, {missed} verfehlt in 7 Tagen", critSaved: "Gespeichert.", critFailed: "Nicht gespeichert: {reason}",
+  actCriteria: "Ziele von Automationen verfehlt", actCriteriaHint: "Mindestens eine Automation verfehlt ihr Erfolgskriterium immer wieder.",
+});
+Object.assign(TEXT.en, {
+  qualityTab: "Quality", runsTabRuns: "Runs",
+  qualityHint: "Seven separate views of each automation, deliberately without an overall grade. “Unknown” means there is nothing to judge by yet.",
+  qualityLoading: "Putting the quality together …", qualityNone: "No automations found.", qualityRefresh: "Recalculate",
+  dim_integrity: "Integrity", dim_reliability: "Reliability", dim_effectiveness: "Effectiveness", dim_maintainability: "Maintainability", dim_restart_safety: "Restart safety", dim_efficiency: "Efficiency", dim_conflicts: "Conflicts",
+  ql_ok: "Fine", ql_info: "Note", ql_warn: "Check", ql_red: "Problem", ql_unknown: "Unknown",
+  dr_broken: "{count} broken references", dr_stale_targets: "{count} targets are disabled or unavailable", dr_runs: "{count} runs without anything unusual", dr_no_runs: "No runs observed yet",
+  dr_no_criteria: "No success criterion defined", dr_not_yet_checked: "Not triggered since there is a criterion", dr_missed: "{missed} missed, {ok} reached (7 days)", dr_reached: "{ok} reached (7 days)",
+  dr_no_description: "No description", dr_large: "Large: many triggers or actions", dr_deep: "Deeply nested", dr_no_config: "Configuration not readable", dr_no_effect: "Runs mostly end at conditions", dr_conflict: "{count} possible conflicts",
+  dr_failing: "Many errors", dr_never_ok: "Never succeeds", dr_overlap: "Runs overlap", dr_burst: "Unusually often", dr_long_run: "Unusually long runs", dr_after_update: "More errors since an update", dr_long_wait: "Long wait", dr_wait_no_timeout: "Waiting without a timeout",
+  diagOpen: "Details", diagClose: "Close", diagFor: "Diagnosis: {name}",
+  critTitle: "Success criteria", critHint: "You define what the automation should achieve. After every trigger, one check is made after the time limit. Only counters are kept.",
+  critNone: "No criterion defined.", critEdit: "Edit", critAdd: "Add criterion", critAddTarget: "Add target", critRemove: "Remove", critSave: "Save", critCancel: "Cancel",
+  critEntity: "Entity", critState: "Expected state", critWithin: "Time limit (seconds)", critHold: "Hold for (seconds)", critStats: "{ok} reached, {missed} missed in 7 days", critSaved: "Saved.", critFailed: "Not saved: {reason}",
+  actCriteria: "Automation goals missed", actCriteriaHint: "At least one automation misses its success criterion again and again.",
+});
+
+const DIM_ORDER = ["integrity", "reliability", "effectiveness", "maintainability", "restart_safety", "efficiency", "conflicts"];
+const QL_TONE = { ok: "ok", info: "mute", warn: "warn", red: "red", unknown: "mute" };
+const QL_MARK = { ok: "✓", info: "i", warn: "!", red: "✗", unknown: "?" };
+
+class DiagnosticsMixin {
+  diagState() {
+    return (this.diag ||= { quality: null, loading: false, error: "", sel: "", criteria: {}, draft: null, message: "", detail: {} });
+  }
+
+  async loadQuality() {
+    const d = this.diagState();
+    d.loading = true; d.error = ""; this.render();
+    try { d.quality = await this._hass.callWS({ type: "ha_housekeeper/automation_quality" }); }
+    catch (err) { d.error = err?.message || String(err); }
+    d.loading = false; this.render();
+  }
+
+  ensureQuality() {
+    if (this.diagState().loading || this._qualityRequested) return;
+    this._qualityRequested = true;
+    setTimeout(() => this.loadQuality(), 0);
+  }
+
+  dimReason(reason) {
+    const key = `dr_${reason.key}`;
+    return TEXT[this.lang][key] ? this.t(key, reason) : reason.key;
+  }
+
+  dimDot(dim) {
+    return `<span class="pill ${QL_TONE[dim.level]}" title="${this.esc(dim.reasons.map(r => this.dimReason(r)).join(" · "))}">${QL_MARK[dim.level]}</span>`;
+  }
+
+  qualityRow(item) {
+    const dots = DIM_ORDER.map(id => `<td aria-label="${this.esc(this.t(`dim_${id}`))}: ${this.esc(this.t(`ql_${item.dimensions[id].level}`))}">${this.dimDot(item.dimensions[id])}</td>`).join("");
+    return `<tr><td>${this.nameCell(item.name, item.entity_id)}</td>${dots}<td><button class="btn" data-diag-open="${this.esc(item.entity_id)}">${this.t("diagOpen")}</button></td></tr>`;
+  }
+
+  qualityView() {
+    this.ensureQuality();
+    const d = this.diagState(), q = d.quality;
+    const head = `<div class="panelhead"><div><h2>${this.t("qualityTab")}</h2><p>${this.t("qualityHint")}</p></div><div class="actions"><button class="btn" data-quality-refresh ${d.loading ? "disabled" : ""}>${this.t("qualityRefresh")}</button></div></div>`;
+    if (d.error) return `<div class="panel">${head}<div class="error">${this.esc(d.error)}</div></div>`;
+    if (!q) return `<div class="panel">${head}${this.skeleton("qualityLoading")}</div>`;
+    const header = `<tr><th>${this.t("utName")}</th>${DIM_ORDER.map(id => `<th>${this.t(`dim_${id}`)}</th>`).join("")}<th></th></tr>`;
+    const table = q.items.length ? `<div class="tablewrap lt"><table><thead>${header}</thead><tbody>${q.items.map(i => this.qualityRow(i)).join("")}</tbody></table></div>` : `<div class="emptymsg">${this.t("qualityNone")}</div>`;
+    return `<div class="stack"><div class="panel">${head}${table}</div>${d.sel ? this.diagDetail(d.sel) : ""}</div>`;
+  }
+
+  // Everything about one automation in one place: why each dimension is as it is, the criteria, and later the coverage, the comparison and the dry run.
+  diagDetail(entityId) {
+    const d = this.diagState(), item = d.quality?.items.find(i => i.entity_id === entityId);
+    if (!item) return "";
+    const dims = DIM_ORDER.map(id => {
+      const dim = item.dimensions[id];
+      return `<div class="row"><span class="tile ${QL_TONE[dim.level]}">${QL_MARK[dim.level]}</span><span class="row-text"><strong>${this.t(`dim_${id}`)}</strong><small>${this.esc(dim.reasons.length ? dim.reasons.map(r => this.dimReason(r)).join(" · ") : this.t(`ql_${dim.level}`))}</small></span><span class="pill ${QL_TONE[dim.level]}">${this.t(`ql_${dim.level}`)}</span></div>`;
+    }).join("");
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagFor", { name: this.esc(item.name) })}</h2><p>${this.esc(entityId)}</p></div><button class="btn" data-diag-close>${this.t("diagClose")}</button></div>${dims}${this.criteriaCard(entityId)}${this.diagExtras(entityId)}</section>`;
+  }
+
+  async openDiag(entityId) {
+    const d = this.diagState();
+    d.sel = entityId; d.draft = null; d.message = "";
+    this.render();
+    try { d.criteria[entityId] = await this._hass.callWS({ type: "ha_housekeeper/criteria", entity_id: entityId }); } catch (_) { /* shown as empty */ }
+    this.render();
+    await this.loadDiagExtras?.(entityId);
+  }
+
+  criteriaCard(entityId) {
+    const d = this.diagState(), view = d.criteria[entityId];
+    const message = d.message ? `<small role="status">${this.esc(d.message)}</small>` : "";
+    let body;
+    if (d.draft) body = this.criteriaForm(view);
+    else if (!view?.criteria.length) body = `<div class="pad"><small>${this.t("critNone")}</small></div>`;
+    else body = view.criteria.map(c => `<div class="pad"><small>${c.targets.map(t => `${this.esc(t.entity_id)} = ${this.esc(t.state)}`).join(" · ")} · ${c.within} s${c.hold ? ` + ${c.hold} s` : ""}</small></div>`).join("") + `<div class="pad"><small>${this.t("critStats", view.stats)}</small></div>`;
+    const edit = d.draft ? "" : `<button class="btn" data-crit-edit="${this.esc(entityId)}">${this.t("critEdit")}</button>`;
+    return `<div class="panelhead"><div><h2>${this.t("critTitle")}</h2><p>${this.t("critHint")}</p></div><div class="actions">${edit}</div></div>${body}${message}`;
+  }
+
+  criteriaForm() {
+    const draft = this.diagState().draft;
+    const crit = draft.map((c, i) => `<div class="pad polform" data-crit="${i}">${c.targets.map((t, j) => `<div class="setrow"><input type="text" data-crit-entity="${i}:${j}" value="${this.esc(t.entity_id)}" placeholder="light.hall" aria-label="${this.esc(this.t("critEntity"))}" style="max-width:260px"><input type="text" data-crit-state="${i}:${j}" value="${this.esc(t.state)}" placeholder="on" aria-label="${this.esc(this.t("critState"))}" style="max-width:140px">${c.targets.length > 1 ? `<button class="btn quiet" data-crit-del-target="${i}:${j}">${this.t("critRemove")}</button>` : ""}</div>`).join("")}
+      <button class="btn quiet" data-crit-add-target="${i}">${this.t("critAddTarget")}</button>
+      <label>${this.t("critWithin")} <input type="number" min="1" max="300" data-crit-within="${i}" value="${this.esc(String(c.within))}"></label>
+      <label>${this.t("critHold")} <input type="number" min="0" max="300" data-crit-hold="${i}" value="${this.esc(String(c.hold))}"></label>
+      <button class="btn quiet" data-crit-del="${i}">${this.t("critRemove")}</button></div>`).join("");
+    return `${crit}<div class="pad" style="display:flex;gap:8px"><button class="btn" data-crit-add>${this.t("critAdd")}</button><button class="btn primary" data-crit-save>${this.t("critSave")}</button><button class="btn quiet" data-crit-cancel>${this.t("critCancel")}</button></div>`;
+  }
+
+  editCriteria(entityId) {
+    const view = this.diagState().criteria[entityId];
+    this.diagState().draft = JSON.parse(JSON.stringify(view?.criteria || []));
+    this.diagState().message = "";
+    this.render();
+  }
+
+  async saveCriteria() {
+    const d = this.diagState();
+    const criteria = d.draft.map(c => ({ ...(c.id ? { id: c.id } : {}), targets: c.targets.map(t => ({ entity_id: t.entity_id.trim(), state: t.state.trim() })), within: Number.parseInt(c.within, 10), hold: Number.parseInt(c.hold || 0, 10) }));
+    try {
+      d.criteria[d.sel] = await this._hass.callWS({ type: "ha_housekeeper/criteria_set", entity_id: d.sel, criteria });
+      d.draft = null; d.message = this.t("critSaved");
+    } catch (err) { d.message = this.t("critFailed", { reason: err?.message || String(err) }); }
+    this.render();
+  }
+
+  bindDiagnostics(root) {
+    const d = () => this.diagState();
+    root.querySelector("[data-quality-refresh]")?.addEventListener("click", () => this.loadQuality());
+    root.querySelectorAll("[data-diag-open]").forEach(el => el.onclick = () => this.openDiag(el.dataset.diagOpen));
+    root.querySelector("[data-diag-close]")?.addEventListener("click", () => { d().sel = ""; d().draft = null; this.render(); });
+    root.querySelector("[data-crit-edit]")?.addEventListener("click", ev => this.editCriteria(ev.currentTarget.dataset.critEdit));
+    root.querySelector("[data-crit-cancel]")?.addEventListener("click", () => { d().draft = null; this.render(); });
+    root.querySelector("[data-crit-save]")?.addEventListener("click", () => this.saveCriteria());
+    root.querySelector("[data-crit-add]")?.addEventListener("click", () => { d().draft.push({ targets: [{ entity_id: "", state: "" }], within: 10, hold: 0 }); this.render(); });
+    const at = value => value.split(":").map(Number);
+    root.querySelectorAll("[data-crit-del]").forEach(el => el.onclick = () => { d().draft.splice(Number(el.dataset.critDel), 1); this.render(); });
+    root.querySelectorAll("[data-crit-add-target]").forEach(el => el.onclick = () => { d().draft[Number(el.dataset.critAddTarget)].targets.push({ entity_id: "", state: "" }); this.render(); });
+    root.querySelectorAll("[data-crit-del-target]").forEach(el => el.onclick = () => { const [i, j] = at(el.dataset.critDelTarget); d().draft[i].targets.splice(j, 1); this.render(); });
+    root.querySelectorAll("[data-crit-entity]").forEach(el => el.oninput = () => { const [i, j] = at(el.dataset.critEntity); d().draft[i].targets[j].entity_id = el.value; });
+    root.querySelectorAll("[data-crit-state]").forEach(el => el.oninput = () => { const [i, j] = at(el.dataset.critState); d().draft[i].targets[j].state = el.value; });
+    root.querySelectorAll("[data-crit-within]").forEach(el => el.oninput = () => { d().draft[Number(el.dataset.critWithin)].within = el.value; });
+    root.querySelectorAll("[data-crit-hold]").forEach(el => el.oninput = () => { d().draft[Number(el.dataset.critHold)].hold = el.value; });
+  }
+}
+
+// Coverage of triggers and branches, comparison of two runs, and the dry run of one automation; mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  covTitle: "Abdeckung von Triggern und Zweigen", covHint: "Zählt aus der Struktur der Läufe, welcher Trigger ausgelöst und welcher Zweig durchlaufen wurde. Variablen und Nutzdaten werden nicht gespeichert.",
+  covOffNote: "Ist aus. Zum Zählen liest Housekeeper den Trace jedes Laufs kurz im Arbeitsspeicher (er enthält Variablen) und behält nur Zähler.", covOn: "Zählen einschalten", covOff: "Zählen ausschalten", covClear: "Zähler löschen",
+  covRuns: "{runs} Läufe gezählt seit {date}", covNeverNote: "Nie erreicht gilt erst nach {runs} Läufen und {days} Tagen.", covNever: "nie erreicht", covCount: "{n}×", covMean: "Ø {time}", covNoRows: "Keine Trigger oder Zweige gefunden.",
+  covKind_trigger: "Trigger", covKind_choose: "Zweig (choose)", covKind_default: "Standardzweig", covKind_then: "Dann-Zweig", covKind_else: "Sonst-Zweig",
+  cmpTitle: "Zwei Läufe vergleichen", cmpHint: "Vergleicht die Struktur zweier Läufe aus dem Trace-Puffer von Home Assistant. Nichts wird gespeichert.", cmpNoRuns: "Home Assistant hat keine beendeten Läufe mehr.",
+  cmpOlder: "Älterer Lauf", cmpNewer: "Neuerer Lauf", cmpRun: "Vergleichen", cmpSame: "Strukturell gleich: gleicher Trigger, gleiche Zweige, gleiches Ende.",
+  cmp_trigger: "Anderer Trigger: {a} → {b}", cmp_branch: "Andere Zweige. Nur im ersten: {a}. Nur im zweiten: {b}.", cmp_execution: "Anderes Ergebnis: {a} → {b}", cmp_last_step: "Anderes Ende: {a} → {b}", cmp_duration: "Laufzeit {a} ms → {b} ms (Faktor {factor})",
+  cmpUpdates: "Dazwischen gab es Updates: {list}", cmpCriterion: "Erfolgskriterium: älterer Lauf {a}, neuerer Lauf {b}", cmpReached: "erreicht", cmpMissed: "verfehlt", cmpUnknown: "unbekannt", cmpFailed: "Vergleich nicht möglich: {reason}",
+});
+Object.assign(TEXT.en, {
+  covTitle: "Trigger and branch coverage", covHint: "Counts from the structure of the runs which trigger fired and which branch ran. Variables and payloads are not stored.",
+  covOffNote: "It is off. To count, Housekeeper briefly reads each run's trace in memory (it holds variables) and keeps only counters.", covOn: "Switch counting on", covOff: "Switch counting off", covClear: "Clear counts",
+  covRuns: "{runs} runs counted since {date}", covNeverNote: "Never reached is only said after {runs} runs and {days} days.", covNever: "never reached", covCount: "{n}×", covMean: "avg {time}", covNoRows: "No triggers or branches found.",
+  covKind_trigger: "Trigger", covKind_choose: "Branch (choose)", covKind_default: "Default branch", covKind_then: "Then branch", covKind_else: "Else branch",
+  cmpTitle: "Compare two runs", cmpHint: "Compares the structure of two runs from Home Assistant's trace buffer. Nothing is stored.", cmpNoRuns: "Home Assistant has no finished runs left.",
+  cmpOlder: "Older run", cmpNewer: "Newer run", cmpRun: "Compare", cmpSame: "Structurally the same: same trigger, same branches, same end.",
+  cmp_trigger: "Different trigger: {a} → {b}", cmp_branch: "Different branches. Only in the first: {a}. Only in the second: {b}.", cmp_execution: "Different result: {a} → {b}", cmp_last_step: "Different end: {a} → {b}", cmp_duration: "Run time {a} ms → {b} ms (factor {factor})",
+  cmpUpdates: "Updates in between: {list}", cmpCriterion: "Success criterion: older run {a}, newer run {b}", cmpReached: "reached", cmpMissed: "missed", cmpUnknown: "unknown", cmpFailed: "Cannot compare: {reason}",
+});
+
+class TraceDiagMixin {
+  async loadDiagExtras(entityId) {
+    const d = this.diagState();
+    try { d.coverage = { ...(d.coverage || {}), [entityId]: await this._hass.callWS({ type: "ha_housekeeper/coverage", entity_id: entityId }) }; } catch (_) { /* section stays empty */ }
+    try { d.compare = { runs: (await this._hass.callWS({ type: "ha_housekeeper/trace_compare", entity_id: entityId })).runs, a: "", b: "", result: null, error: "" }; } catch (_) { d.compare = { runs: [], a: "", b: "", result: null, error: "" }; }
+    this.render();
+  }
+
+  diagExtras(entityId) {
+    return `${this.coverageCard(entityId)}${this.compareCard(entityId)}${this.dryRunCard?.(entityId) || ""}`;
+  }
+
+  async setCoverage(enabled, clear = false) {
+    await this._hass.callWS({ type: "ha_housekeeper/coverage_set", enabled, clear });
+    await this.loadDiagExtras(this.diagState().sel);
+  }
+
+  coverageCard(entityId) {
+    const view = this.diagState().coverage?.[entityId];
+    if (!view) return "";
+    const toggle = view.enabled ? `<button class="btn" data-cov-set="off">${this.t("covOff")}</button><button class="btn quiet" data-cov-clear>${this.t("covClear")}</button>` : `<button class="btn" data-cov-set="on">${this.t("covOn")}</button>`;
+    let body = `<div class="pad"><small>${this.t("covOffNote")}</small></div>`;
+    if (view.enabled) {
+      const rows = view.rows.map(row => {
+        const never = view.never.includes(row.id);
+        const time = row.mean_ms === null ? "" : ` · ${this.t("covMean", { time: this.runsDuration(row.mean_ms) })}`;
+        return `<div class="row"><span class="row-text"><strong>${this.esc(this.t(`covKind_${row.kind}`))}${row.label ? `: ${this.esc(row.label)}` : ""}</strong><small>${this.esc(row.id)}${this.esc(time)}</small></span>${never ? `<span class="pill warn">${this.t("covNever")}</span>` : ""}<span class="pill ${row.count ? "ok" : "mute"}">${this.t("covCount", { n: this.formatNumber(row.count) })}</span></div>`;
+      }).join("");
+      const since = view.since ? `<div class="pad"><small>${this.t("covRuns", { runs: this.formatNumber(view.runs), date: this.formatDate(view.since) })}${view.ready ? "" : ` · ${this.t("covNeverNote", { runs: view.thresholds.min_runs, days: view.thresholds.min_days })}`}</small></div>` : "";
+      body = `${since}${rows || `<div class="emptymsg">${this.t("covNoRows")}</div>`}`;
+    }
+    return `<div class="panelhead"><div><h2>${this.t("covTitle")}</h2><p>${this.t("covHint")}</p></div><div class="actions">${toggle}</div></div>${body}`;
+  }
+
+  async runCompare() {
+    const c = this.diagState().compare;
+    c.error = ""; c.result = null;
+    try { c.result = await this._hass.callWS({ type: "ha_housekeeper/trace_compare", entity_id: this.diagState().sel, run_a: c.a, run_b: c.b }); }
+    catch (err) { c.error = this.t("cmpFailed", { reason: err?.message || String(err) }); }
+    this.render();
+  }
+
+  compareLines(result) {
+    const list = v => (Array.isArray(v) ? (v.join(", ") || "—") : (v ?? "—"));
+    const lines = result.differences.map(d => this.t(`cmp_${d.kind}`, { a: list(d.a ?? d.only_a), b: list(d.b ?? d.only_b), factor: d.factor }));
+    if (!lines.length) lines.push(this.t("cmpSame"));
+    if (result.updates_between.length) lines.push(this.t("cmpUpdates", { list: result.updates_between.map(u => `${u.domain || u.kind} ${u.to || ""}`.trim()).join(", ") }));
+    const word = v => (v === true ? this.t("cmpReached") : v === false ? this.t("cmpMissed") : this.t("cmpUnknown"));
+    if (result.criterion.older !== null || result.criterion.newer !== null) lines.push(this.t("cmpCriterion", { a: word(result.criterion.older), b: word(result.criterion.newer) }));
+    return lines.map(l => `<div class="pad"><small>${this.esc(l)}</small></div>`).join("");
+  }
+
+  compareCard() {
+    const c = this.diagState().compare;
+    if (!c) return "";
+    const option = (run, selected) => `<option value="${this.esc(run.run_id)}" ${run.run_id === selected ? "selected" : ""}>${this.esc(this.formatDate(run.start))} · ${this.esc(run.execution || "")}${run.trigger ? ` · ${this.esc(run.trigger)}` : ""}</option>`;
+    const picker = (attr, label, selected) => `<div class="setrow"><div><label>${label}</label></div><select ${attr} style="max-width:460px"><option value=""></option>${c.runs.map(r => option(r, selected)).join("")}</select></div>`;
+    const body = c.runs.length ? `${picker("data-cmp-a", this.t("cmpOlder"), c.a)}${picker("data-cmp-b", this.t("cmpNewer"), c.b)}<div class="setrow"><small style="margin:0"></small><button class="btn" data-cmp-run ${c.a && c.b && c.a !== c.b ? "" : "disabled"}>${this.t("cmpRun")}</button></div>` : `<div class="emptymsg">${this.t("cmpNoRuns")}</div>`;
+    return `<div class="panelhead"><div><h2>${this.t("cmpTitle")}</h2><p>${this.t("cmpHint")}</p></div></div>${body}${c.error ? `<div class="error">${this.esc(c.error)}</div>` : ""}${c.result ? this.compareLines(c.result) : ""}`;
+  }
+
+  bindTraceDiag(root) {
+    root.querySelectorAll("[data-cov-set]").forEach(el => el.onclick = () => this.setCoverage(el.dataset.covSet === "on"));
+    root.querySelector("[data-cov-clear]")?.addEventListener("click", () => this.setCoverage(true, true));
+    root.querySelector("[data-cmp-a]")?.addEventListener("change", e => { this.diagState().compare.a = e.target.value; this.render(); });
+    root.querySelector("[data-cmp-b]")?.addEventListener("change", e => { this.diagState().compare.b = e.target.value; this.render(); });
+    root.querySelector("[data-cmp-run]")?.addEventListener("click", () => this.runCompare());
+    this.bindDryRun?.(root);
+  }
+}
+
+// The dry run of one automation (see dry_run.py): explains, never executes; mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  dryTitle: "Testlauf (erklärend)", dryHint: "Rechnet durch, was die Automation mit den aktuellen Zuständen und deinen Testzuständen tun würde. Es wird nichts ausgeführt und nichts an Geräte gesendet.",
+  dryStateEntity: "Entität", dryStateValue: "Testzustand", dryAddState: "Testzustand hinzufügen", dryRemove: "Entfernen", dryRun: "Durchrechnen", dryRunning: "Rechne …", dryFailed: "Nicht möglich: {reason}",
+  dryTriggers: "Trigger", dryConditions: "Bedingungen", dryBranches: "Wahrscheinlicher Weg", dryCalls: "Aufgerufene Dienste", dryNoCalls: "Keine Dienste auf dem berechneten Weg.",
+  dryYes: "feuert", dryNo: "feuert nicht", dryOpen: "offen", dryTrue: "erfüllt", dryFalse: "nicht erfüllt, die Automation bräche hier ab", dryUnknown: "nicht beurteilbar",
+  dryUncertain: "Teile des Wegs lassen sich nicht sicher beurteilen; Dienste daraus sind als „unsicher“ markiert.", dryCertain: "sicher", dryMaybe: "unsicher",
+  dryCritical: "kritisch (Schloss, Alarm, Garage)", dryMissing: "fehlt: {list}", dryDisabled: "deaktiviert: {list}", dryTemplated: "Ziel per Vorlage",
+  dryLimits: "Grenzen: Vorlagen, Sonne, Zonen, Geräte-Bedingungen und Abläufe außerhalb von Home Assistant werden nicht beurteilt.",
+});
+Object.assign(TEXT.en, {
+  dryTitle: "Test run (explaining)", dryHint: "Works out what the automation would do with the current states and your test states. Nothing is executed and nothing is sent to devices.",
+  dryStateEntity: "Entity", dryStateValue: "Test state", dryAddState: "Add test state", dryRemove: "Remove", dryRun: "Work it out", dryRunning: "Working …", dryFailed: "Not possible: {reason}",
+  dryTriggers: "Triggers", dryConditions: "Conditions", dryBranches: "Likely path", dryCalls: "Services called", dryNoCalls: "No services on the calculated path.",
+  dryYes: "fires", dryNo: "does not fire", dryOpen: "open", dryTrue: "met", dryFalse: "not met, the automation would stop here", dryUnknown: "cannot be judged",
+  dryUncertain: "Parts of the path cannot be judged for certain; services from there are marked “uncertain”.", dryCertain: "certain", dryMaybe: "uncertain",
+  dryCritical: "critical (lock, alarm, garage)", dryMissing: "missing: {list}", dryDisabled: "disabled: {list}", dryTemplated: "target by template",
+  dryLimits: "Limits: templates, sun, zones, device conditions and anything outside Home Assistant are not judged.",
+});
+
+class DryRunMixin {
+  dryState() {
+    const d = this.diagState();
+    return (d.dry ||= { states: [{ entity_id: "", state: "" }], result: null, error: "", busy: false });
+  }
+
+  async runDry() {
+    const dry = this.dryState(), d = this.diagState();
+    const states = Object.fromEntries(dry.states.filter(s => s.entity_id.trim() && s.state.trim()).map(s => [s.entity_id.trim(), s.state.trim()]));
+    dry.busy = true; dry.error = ""; this.render();
+    try { dry.result = await this._hass.callWS({ type: "ha_housekeeper/automation_dry_run", entity_id: d.sel, states }); }
+    catch (err) { dry.result = null; dry.error = this.t("dryFailed", { reason: err?.message || String(err) }); }
+    dry.busy = false; this.render();
+  }
+
+  dryVerdict(value, yes, no) { return value === true ? `<span class="pill ok">${this.t(yes)}</span>` : value === false ? `<span class="pill warn">${this.t(no)}</span>` : `<span class="pill mute">${this.t("dryOpen")}</span>`; }
+
+  dryResult(r) {
+    const triggers = r.triggers.map(t => `<div class="row"><span class="row-text"><strong>${this.t("dryTriggers")} ${t.index + 1}</strong><small>${this.esc(t.platform || "")}</small></span>${this.dryVerdict(t.result, "dryYes", "dryNo")}</div>`).join("");
+    const conditions = `<div class="row"><span class="row-text"><strong>${this.t("dryConditions")}</strong><small>${this.t(r.conditions === true ? "dryTrue" : r.conditions === false ? "dryFalse" : "dryUnknown")}</small></span>${this.dryVerdict(r.conditions, "dryTrue", "dryNo")}</div>`;
+    const path = r.branches.length ? `<div class="pad"><small><b>${this.t("dryBranches")}:</b> ${this.esc(r.branches.join(" → "))}</small></div>` : "";
+    const calls = r.calls.length ? r.calls.map(c => {
+      const notes = [c.critical ? this.t("dryCritical") : "", c.missing.length ? this.t("dryMissing", { list: c.missing.join(", ") }) : "", c.disabled.length ? this.t("dryDisabled", { list: c.disabled.join(", ") }) : "", c.templated ? this.t("dryTemplated") : ""].filter(Boolean);
+      return `<div class="row"><span class="tile ${c.critical ? "red" : "mute"}"><ha-icon icon="${c.critical ? "mdi:alert-outline" : "mdi:flash-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(c.service)}</strong><small>${this.esc(c.targets.join(", ") || "—")}${notes.length ? ` · ${this.esc(notes.join(" · "))}` : ""}</small></span><span class="pill ${c.certain ? "ok" : "warn"}">${this.t(c.certain ? "dryCertain" : "dryMaybe")}</span></div>`;
+    }).join("") : `<div class="emptymsg">${this.t("dryNoCalls")}</div>`;
+    return `${triggers}${conditions}${path}<div class="sectionlabel">${this.t("dryCalls")}</div>${calls}${r.uncertain ? `<div class="pad"><small>${this.t("dryUncertain")}</small></div>` : ""}<div class="pad"><small>${this.t("dryLimits")}</small></div>`;
+  }
+
+  dryRunCard() {
+    const dry = this.dryState();
+    const rows = dry.states.map((s, i) => `<div class="setrow"><input type="text" data-dry-entity="${i}" value="${this.esc(s.entity_id)}" placeholder="binary_sensor.door" aria-label="${this.esc(this.t("dryStateEntity"))}" style="max-width:260px"><input type="text" data-dry-state="${i}" value="${this.esc(s.state)}" placeholder="on" aria-label="${this.esc(this.t("dryStateValue"))}" style="max-width:140px">${dry.states.length > 1 ? `<button class="btn quiet" data-dry-del="${i}">${this.t("dryRemove")}</button>` : ""}</div>`).join("");
+    return `<div class="panelhead"><div><h2>${this.t("dryTitle")}</h2><p>${this.t("dryHint")}</p></div></div><div class="pad polform">${rows}<div style="display:flex;gap:8px"><button class="btn quiet" data-dry-add>${this.t("dryAddState")}</button><button class="btn primary" data-dry-run ${dry.busy ? "disabled" : ""}>${dry.busy ? this.t("dryRunning") : this.t("dryRun")}</button></div></div>${dry.error ? `<div class="error">${this.esc(dry.error)}</div>` : ""}${dry.result ? this.dryResult(dry.result) : ""}`;
+  }
+
+  bindDryRun(root) {
+    const dry = () => this.dryState();
+    root.querySelector("[data-dry-run]")?.addEventListener("click", () => this.runDry());
+    root.querySelector("[data-dry-add]")?.addEventListener("click", () => { dry().states.push({ entity_id: "", state: "" }); this.render(); });
+    root.querySelectorAll("[data-dry-del]").forEach(el => el.onclick = () => { dry().states.splice(Number(el.dataset.dryDel), 1); this.render(); });
+    root.querySelectorAll("[data-dry-entity]").forEach(el => el.oninput = () => { dry().states[Number(el.dataset.dryEntity)].entity_id = el.value; });
+    root.querySelectorAll("[data-dry-state]").forEach(el => el.oninput = () => { dry().states[Number(el.dataset.dryState)].state = el.value; });
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -6327,6 +6654,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindMarks(root);
     this.bindGoals(root);
     this.bindExchange(root);
+    this.bindDiagnostics(root);
+    this.bindTraceDiag(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
@@ -6514,7 +6843,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

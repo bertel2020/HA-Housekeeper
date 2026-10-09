@@ -136,7 +136,15 @@ class RunsMixin {
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsColTrend")}</dt><dd>${this.runsTrend(row)}</dd></dl></div>${notes}${this.howCounted("runsFootnote")}</section>`;
   }
 
+  // Two tabs: the counted runs, and the quality of each automation (46-diagnostics.js).
   runsView() {
+    const tabs = [{ id: "runs", label: this.t("runsTabRuns") }, { id: "quality", label: this.t("qualityTab") }];
+    const open = this.viewTabOf("runs", tabs, "runs");
+    if (open === "quality") return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.qualityView()}</div>`;
+    return `<div class="stack">${this.viewTabBar("runs", tabs, open)}${this.runsListView()}</div>`;
+  }
+
+  runsListView() {
     this.ensureRuns();
     const r = this.runs;
     const since = r?.since ? ` · ${this.t("runsSince", { date: this.formatDate(r.since) })}` : "";

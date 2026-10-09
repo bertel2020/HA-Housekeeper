@@ -1198,3 +1198,36 @@ async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
     assert registry.async_get(orphan.entity_id).disabled_by is None
     stored = scanner.journal.get(done["result"]["plan_id"])
     assert stored["actions"][0]["kind"] == "purge_statistics" and stored["followup"]
+
+
+async def test_diagnostics_commands_answer_for_known_and_unknown_automations(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    await client.send_json_auto_id({"type": "ha_housekeeper/automation_quality"})
+    quality = (await client.receive_json())["result"]
+    assert quality["dimensions"][0] == "integrity" and quality["items"] == []
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/criteria_set",
+            "entity_id": "automation.x",
+            "criteria": [{"targets": [{"entity_id": "light.a", "state": "on"}], "within": 5}],
+        }
+    )
+    assert (await client.receive_json())["result"]["criteria"][0]["within"] == 5
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/criteria_set",
+            "entity_id": "automation.x",
+            "criteria": [{"targets": [], "within": 5}],
+        }
+    )
+    assert (await client.receive_json())["error"]["code"] == "invalid_format"
+    await client.send_json_auto_id({"type": "ha_housekeeper/coverage_set", "enabled": True})
+    assert (await client.receive_json())["result"] == {"enabled": True}
+    for command in ("coverage", "trace_compare", "automation_dry_run"):
+        await client.send_json_auto_id(
+            {"type": f"ha_housekeeper/{command}", "entity_id": "automation.none"}
+        )
+        assert (await client.receive_json())["error"]["code"] == "not_found"

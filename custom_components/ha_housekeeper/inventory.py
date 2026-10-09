@@ -40,6 +40,8 @@ from .const import (
     SIGNAL_SCAN_COMPLETE,
     WARMUP_SECONDS,
 )
+from .coverage import CoverageStore
+from .criteria import CriteriaStore
 from .dashboard_analysis import (
     HELPER_DOMAINS,
     extract_dashboard_references,
@@ -510,6 +512,8 @@ class InventoryScanner:
         self.lifecycle = LifecycleStore(hass)
         self.marks = MarkStore(hass)
         self.goals = GoalStore(hass)
+        self.criteria = CriteriaStore(hass)
+        self.coverage = CoverageStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -551,6 +555,8 @@ class InventoryScanner:
         await self.lifecycle.async_load()
         await self.marks.async_load()
         await self.goals.async_load()
+        await self.criteria.async_load()
+        await self.coverage.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()
@@ -599,6 +605,7 @@ class InventoryScanner:
                     snapshot["regressions"] = followup.regressions(
                         self.journal.plans, datetime.now(UTC)
                     )
+                    snapshot["criteria_alerts"] = self.criteria.alerts(datetime.now(UTC).date())
                 async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
@@ -828,6 +835,7 @@ class InventoryScanner:
             "findings": findings,
             "causes": causes,
             "regressions": [],
+            "criteria_alerts": [],
             "orphaned_statistics": orphaned_statistics,
             "quarantine": quarantine,
             "recurring_devices": recurring,
