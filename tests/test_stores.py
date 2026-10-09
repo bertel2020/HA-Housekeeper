@@ -19,6 +19,7 @@ from custom_components.ha_housekeeper.events import EventLog  # noqa: E402
 from custom_components.ha_housekeeper.history import ScanHistory  # noqa: E402
 from custom_components.ha_housekeeper.ignored import IgnoreStore, _clean  # noqa: E402
 from custom_components.ha_housekeeper.maintenance import PreflightStore  # noqa: E402
+from custom_components.ha_housekeeper.marks import MarkStore  # noqa: E402
 from custom_components.ha_housekeeper.observations import ObservationStore  # noqa: E402
 from custom_components.ha_housekeeper.policies import PolicyStore  # noqa: E402
 from custom_components.ha_housekeeper.queries import ReplyStore  # noqa: E402
@@ -27,6 +28,7 @@ from custom_components.ha_housekeeper.runs import RunStore  # noqa: E402
 STORES = [
     (ObservationStore, const.STORAGE_KEY),
     (IgnoreStore, const.IGNORED_STORAGE_KEY),
+    (MarkStore, const.MARKS_STORAGE_KEY),
     (ScanHistory, const.HISTORY_STORAGE_KEY),
     (JournalStore, const.JOURNAL_STORAGE_KEY),
     (PreflightStore, const.PREFLIGHT_STORAGE_KEY),

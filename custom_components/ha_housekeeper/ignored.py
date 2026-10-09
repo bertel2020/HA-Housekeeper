@@ -38,7 +38,7 @@ def _clean(value: Any) -> dict[str, Any] | None:
     }
 
 
-def _due(entry: dict[str, Any], now: datetime) -> bool:
+def due(entry: dict[str, Any], now: datetime) -> bool:
     """Whether the time of an entry has passed."""
     if not entry["until"]:
         return False
@@ -67,7 +67,7 @@ class IgnoreStore:
     def is_ignored(self, key: str, now: datetime | None = None) -> bool:
         """Whether a decision hides this finding right now."""
         entry = self._items.get(key)
-        return entry is not None and not _due(entry, now or datetime.now(UTC))
+        return entry is not None and not due(entry, now or datetime.now(UTC))
 
     def info(self, key: str, now: datetime | None = None) -> dict[str, Any] | None:
         """The decision for a finding that it is hidden by, or None."""
@@ -76,7 +76,7 @@ class IgnoreStore:
     def is_due(self, key: str, now: datetime | None = None) -> bool:
         """Whether a decision ran out, so the finding is back and wants a new look."""
         entry = self._items.get(key)
-        return entry is not None and _due(entry, now or datetime.now(UTC))
+        return entry is not None and due(entry, now or datetime.now(UTC))
 
     def decide(
         self,

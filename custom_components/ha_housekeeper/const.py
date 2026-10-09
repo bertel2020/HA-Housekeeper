@@ -21,6 +21,7 @@ ATTEST_STORAGE_KEY: Final = f"{DOMAIN}.attest"
 EVENTS_STORAGE_KEY: Final = f"{DOMAIN}.events"
 RUNS_STORAGE_KEY: Final = f"{DOMAIN}.runs"
 LIFECYCLE_STORAGE_KEY: Final = f"{DOMAIN}.lifecycle"
+MARKS_STORAGE_KEY: Final = f"{DOMAIN}.marks"
 WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"
 NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"
 STORAGE_VERSION: Final = 1

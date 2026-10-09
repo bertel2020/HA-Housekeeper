@@ -448,6 +448,12 @@ async def test_findings_can_be_hidden_by_the_user_or_by_label(hass: HomeAssistan
     again = {f["object_id"]: f for f in scanner.snapshot["findings"]}[plain.entity_id]
     assert again["ignored"] is False and again["resurfaced"] is True
 
+    assert scanner.set_mark("entity", "sensor.nope", "keep") == "not_found"
+    assert scanner.set_mark("entity", plain.entity_id, "keep", reason="Reserve") is None
+    item = next(o for o in scanner.snapshot["objects"] if o["object_id"] == plain.entity_id)
+    assert item["marked_keep"] and item["mark"]["reason"] == "Reserve"
+    assert scanner.clear_mark("entity", plain.entity_id) and "marked_keep" not in item
+
 
 async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> None:
     """The set-up entry provides count sensors that ignore hidden findings."""

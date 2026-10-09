@@ -2533,3 +2533,22 @@ test("a finding can be kept on purpose with a reason, put off for days, and come
   el.data.findings[1].ignored = false; el.data.findings[1].resurfaced = true;
   assert.ok(el.findingRow(el.data.findings[1]).includes("Due again"));
 });
+
+test("a mark can be set and cleared on the detail page and hides nothing in the panel by itself", async () => {
+  const { el } = panel("en");
+  const sent = [];
+  el.data = { ...DATA, objects: DATA.objects.map(o => ({ ...o })) };
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("/inventory") ? { ...DATA, objects: DATA.objects.map(o => o.object_id === "sensor.b" ? { ...o, mark: { kind: "seasonal", reason: "Winter", until: null, target: null }, } : { ...o }) } : {}; } };
+  const item = el.data.objects[1];
+  el.selected = item;
+  assert.ok(el.markCard(item).includes('data-mark-open="entity:sensor.b"'));
+  assert.equal(el.markCard({ object_type: "automation", object_id: "automation.c" }), "", "only entities and devices");
+  el.openMark("entity:sensor.b");
+  el.markForm.kind = "seasonal"; el.markForm.reason = " Winter "; el.markForm.days = 90;
+  await el.commitMark();
+  assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/mark_set", object_type: "entity", object_id: "sensor.b", kind: "seasonal", reason: "Winter", days: 90 }));
+  assert.equal(el.markForm, null);
+  assert.ok(el.markCard(el.selected).includes("Seasonal") && el.markCard(el.selected).includes("data-mark-clear"));
+  await el.clearMark("entity:sensor.b");
+  assert.equal(sent.at(-2).type, "ha_housekeeper/mark_clear");
+});

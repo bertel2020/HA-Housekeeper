@@ -37,6 +37,8 @@ from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
 from .lifecycle import removed_devices, timeline
 from .maintenance import preflight_report, recorder_costs
+from .marks import KINDS as MARK_KINDS
+from .marks import OBJECT_TYPES as MARK_TYPES
 from .meter import prepare_meter
 from .policies import RULES as POLICY_RULES
 from .policies import policies
@@ -944,6 +946,63 @@ async def websocket_lifecycle(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/mark_set",
+        vol.Required("object_type"): vol.In(MARK_TYPES),
+        vol.Required("object_id"): str,
+        vol.Required("kind"): vol.In(MARK_KINDS),
+        vol.Optional("reason", default=""): vol.All(str, vol.Length(max=IGNORE_REASON_LIMIT)),
+        vol.Optional("days"): vol.All(int, vol.Range(min=1, max=3650)),
+        vol.Optional("target"): vol.All(str, vol.Length(max=255)),
+    }
+)
+@callback
+def websocket_mark_set(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Tell Housekeeper what to expect of an entity or device. Only its own list changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    error = scanner.set_mark(
+        msg["object_type"],
+        msg["object_id"],
+        msg["kind"],
+        reason=msg["reason"],
+        days=msg.get("days"),
+        target=msg.get("target"),
+        by=connection.user.id if connection.user else None,
+    )
+    if error:
+        connection.send_error(msg["id"], error, f"Mark not set: {error}")
+        return
+    connection.send_result(msg["id"], {"marked": True})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/mark_clear",
+        vol.Required("object_type"): vol.In(MARK_TYPES),
+        vol.Required("object_id"): str,
+    }
+)
+@callback
+def websocket_mark_clear(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Take a mark away again."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    scanner.clear_mark(msg["object_type"], msg["object_id"])
+    connection.send_result(msg["id"], {"marked": False})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/lifecycle_note",
         vol.Required("device_id"): str,
         vol.Required("text"): str,
@@ -1287,6 +1346,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_window_reload)
     websocket_api.async_register_command(hass, websocket_lifecycle)
     websocket_api.async_register_command(hass, websocket_lifecycle_note)
+    websocket_api.async_register_command(hass, websocket_mark_set)
+    websocket_api.async_register_command(hass, websocket_mark_clear)
     websocket_api.async_register_command(hass, websocket_correlations)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_automation_runs)

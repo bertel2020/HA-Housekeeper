@@ -59,6 +59,7 @@ from .ignored import IgnoreStore
 from .issues import async_sync_issues
 from .lifecycle import LifecycleStore
 from .maintenance import PreflightStore
+from .marks import MarkStore, apply_marks, mark_key
 from .notify import NotifyStore, async_announce
 from .observations import ObservationStore
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
@@ -503,6 +504,7 @@ class InventoryScanner:
         self.attest = AttestStore(hass)
         self.events = EventLog(hass)
         self.lifecycle = LifecycleStore(hass)
+        self.marks = MarkStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -542,6 +544,7 @@ class InventoryScanner:
         await self.attest.async_load()
         await self.events.async_load()
         await self.lifecycle.async_load()
+        await self.marks.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()
@@ -770,6 +773,7 @@ class InventoryScanner:
         for finding in findings:
             finding["key"] = finding_key(finding)
             self._mark_ignored(finding, entity_registry_entries)
+        apply_marks(objects, findings, self.marks.items)
 
         self.status.update(phase="finalizing", progress=90)
 
@@ -868,6 +872,58 @@ class InventoryScanner:
         async_sync_issues(self.hass, self._snapshot["findings"])
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
         return True
+
+    def set_mark(
+        self,
+        object_type: str,
+        object_id: str,
+        kind: str,
+        *,
+        reason: str = "",
+        days: int | None = None,
+        target: str | None = None,
+        by: str | None = None,
+    ) -> str | None:
+        """Mark an entity or device; the reason it failed, or None."""
+        snapshot = self._snapshot or {}
+        known = {(item["object_type"], item["object_id"]) for item in snapshot.get("objects", [])}
+        if (object_type, object_id) not in known:
+            return "not_found"
+        if target and (object_type, target) not in known:
+            return "target_unknown"
+        now = datetime.now(UTC)
+        until = now + timedelta(days=days) if days else None
+        if not self.marks.set(
+            mark_key(object_type, object_id),
+            kind,
+            now,
+            reason=reason,
+            until=until,
+            target=target,
+            by=by,
+        ):
+            return "too_many"
+        self._refresh_marks()
+        return None
+
+    def clear_mark(self, object_type: str, object_id: str) -> bool:
+        """Take a mark away again."""
+        if not self.marks.clear(mark_key(object_type, object_id)):
+            return False
+        self._refresh_marks()
+        return True
+
+    def _refresh_marks(self) -> None:
+        """Bring the objects and findings of the cached snapshot up to date with the marks."""
+        snapshot = self._snapshot
+        if not snapshot:
+            return
+        registry = er.async_get(self.hass)
+        for finding in snapshot["findings"]:
+            self._mark_ignored(finding, registry)
+        apply_marks(snapshot["objects"], snapshot["findings"], self.marks.items)
+        async_sync_issues(self.hass, snapshot["findings"])
+        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
 
     def _existing_objects(self) -> dict[str, set[str]]:
         """Collect the IDs a reference may legitimately point to."""
