@@ -2596,3 +2596,21 @@ test("a policy violation takes the same decisions as a finding and reloads the r
   el.policyShowHidden = true; el.render();
   assert.ok(shadow.innerHTML.includes("Reserve") && el.decide === null);
 });
+
+test("maintenance goals show state and values, and a limit is saved through goal_set", async () => {
+  const calls = [];
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  const goal = (id, extra) => ({ id, unit: "count", enabled: true, limit: 10, default: 10, value: 3, never: false, state: "met", ...extra });
+  const reply = { goals: [goal("unavailable", { value: 11, state: "missed" }), goal("backup_age", { unit: "hours", limit: 36, value: null, never: true, state: "missed" }), goal("recorder_growth", { unit: "mb_per_day", state: "unknown", value: null })], met: 0, missed: 2 };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/goals" ? reply : { saved: true }; } };
+  await el.loadGoals();
+  let html = el.goalsCard();
+  assert.ok(html.includes("0 met, 2 missed") && html.includes("now 11 · at most 10") && html.includes("no backup · at most 36 h") && html.includes("cannot be measured yet"));
+  assert.ok(html.includes(">Missed<") && html.includes(">Unknown<"));
+  el.openGoal("unavailable");
+  assert.ok(el.goalsCard().includes("data-goal-form"));
+  el.goalForm.limit = "20"; el.goalForm.enabled = false;
+  await el.commitGoal();
+  assert.deepEqual(JSON.parse(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/goal_set"))), { type: "ha_housekeeper/goal_set", goal: "unavailable", enabled: false, limit: 20 });
+  assert.equal(el.goalForm, null);
+});

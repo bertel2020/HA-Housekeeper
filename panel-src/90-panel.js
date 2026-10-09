@@ -8,7 +8,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.query = "";
     this.typeFilter = "";
     this.statusFilter = "";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.showIgnored = false;
     this.batteryFilter = "low";
 
@@ -661,6 +661,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
+    this.bindGoals(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };

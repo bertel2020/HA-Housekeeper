@@ -1074,3 +1074,24 @@ async def test_policy_prefixes_over_the_websocket(hass: HomeAssistant, hass_ws_c
         {"type": "ha_housekeeper/set_policy_prefix", "domain": "sensor", "prefix": ""}
     )
     assert gone["result"]["prefixes"] == {}
+
+
+async def test_goals_are_measured_changed_and_refused_outside_their_range(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    await client.send_json_auto_id({"type": "ha_housekeeper/goals"})
+    goals = {g["id"]: g for g in (await client.receive_json())["result"]["goals"]}
+    assert goals["broken_references"]["state"] == "met" and goals["unavailable"]["limit"] == 10
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/goal_set", "goal": "unavailable", "limit": 3, "enabled": False}
+    )
+    assert (await client.receive_json())["result"] == {"saved": True}
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/goal_set", "goal": "backup_age", "limit": 0}
+    )
+    assert (await client.receive_json())["success"] is False, "a limit of 0 hours is not allowed"
+    await client.send_json_auto_id({"type": "ha_housekeeper/goals"})
+    goals = {g["id"]: g for g in (await client.receive_json())["result"]["goals"]}
+    assert goals["unavailable"]["state"] == "off" and goals["unavailable"]["limit"] == 3

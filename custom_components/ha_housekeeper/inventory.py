@@ -47,6 +47,7 @@ from .dashboard_analysis import (
 )
 from .db_health import database_summary
 from .events import EventLog
+from .goals import GoalStore
 from .history import ScanHistory
 from .hygiene import (
     automation_hygiene_findings,
@@ -507,6 +508,7 @@ class InventoryScanner:
         self.events = EventLog(hass)
         self.lifecycle = LifecycleStore(hass)
         self.marks = MarkStore(hass)
+        self.goals = GoalStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -547,6 +549,7 @@ class InventoryScanner:
         await self.events.async_load()
         await self.lifecycle.async_load()
         await self.marks.async_load()
+        await self.goals.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()

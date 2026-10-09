@@ -30,8 +30,11 @@ from .cleanup import (
 from .cleanup_exec import CleanupError, entity_restorable
 from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
 from .correlation import correlate
-from .db_health import db_health
+from .db_health import db_health, growth
 from .exposure import exposure
+from .goals import CATALOG as GOAL_CATALOG
+from .goals import evaluate as evaluate_goals
+from .goals import measure as measure_goals
 from .ignored import KINDS as IGNORE_KINDS
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
@@ -980,6 +983,65 @@ def websocket_mark_set(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/goals"})
+@websocket_api.async_response
+async def websocket_goals(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Each maintenance goal with its limit, the current value and whether it is met. Read-only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+        try:  # a missing source makes its goals unknown, it never fails the answer
+            async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
+                backup = await backup_health(hass, scanner.attest, scanner.journal.plans)
+        except Exception:  # noqa: BLE001
+            backup = None
+        rules = policies(
+            hass,
+            snapshot,
+            scanner.policies,
+            scanner.ignored,
+            scanner.replies,
+            scanner.low_battery_percent,
+        )["rules"]
+        grown = growth(scanner.events.sizes, datetime.now(UTC).date())
+        measured = measure_goals(snapshot, backup, grown, rules)
+        result = evaluate_goals(measured, scanner.goals.items)
+    except Exception as err:
+        connection.send_error(msg["id"], "goals_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/goal_set",
+        vol.Required("goal"): vol.In(tuple(GOAL_CATALOG)),
+        vol.Optional("enabled"): bool,
+        vol.Optional("limit"): vol.All(int, vol.Range(min=0, max=1_000_000)),
+    }
+)
+@callback
+def websocket_goal_set(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Switch a goal on or off or change its limit. Only Housekeeper's own list changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    if not scanner.goals.set(msg["goal"], enabled=msg.get("enabled"), limit=msg.get("limit")):
+        connection.send_error(msg["id"], "invalid_limit", "The limit is outside the allowed range")
+        return
+    connection.send_result(msg["id"], {"saved": True})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/mark_clear",
@@ -1360,6 +1422,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_lifecycle_note)
     websocket_api.async_register_command(hass, websocket_mark_set)
     websocket_api.async_register_command(hass, websocket_mark_clear)
+    websocket_api.async_register_command(hass, websocket_goals)
+    websocket_api.async_register_command(hass, websocket_goal_set)
     websocket_api.async_register_command(hass, websocket_correlations)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_automation_runs)

@@ -16,6 +16,7 @@ from custom_components.ha_housekeeper import const  # noqa: E402
 from custom_components.ha_housekeeper.backup_health import AttestStore  # noqa: E402
 from custom_components.ha_housekeeper.cleanup import JournalStore  # noqa: E402
 from custom_components.ha_housekeeper.events import EventLog  # noqa: E402
+from custom_components.ha_housekeeper.goals import GoalStore  # noqa: E402
 from custom_components.ha_housekeeper.history import ScanHistory  # noqa: E402
 from custom_components.ha_housekeeper.ignored import IgnoreStore, _clean  # noqa: E402
 from custom_components.ha_housekeeper.maintenance import PreflightStore  # noqa: E402
@@ -29,6 +30,7 @@ STORES = [
     (ObservationStore, const.STORAGE_KEY),
     (IgnoreStore, const.IGNORED_STORAGE_KEY),
     (MarkStore, const.MARKS_STORAGE_KEY),
+    (GoalStore, const.GOALS_STORAGE_KEY),
     (ScanHistory, const.HISTORY_STORAGE_KEY),
     (JournalStore, const.JOURNAL_STORAGE_KEY),
     (PreflightStore, const.PREFLIGHT_STORAGE_KEY),
@@ -227,3 +229,16 @@ async def test_replies_can_be_cleared_and_the_event_log_takes_a_purge(
     log = EventLog(hass)
     log.record("purge", datetime.now(UTC), removed=2, skipped=0)
     assert log.events[-1]["kind"] == "purge"
+
+
+async def test_goal_choices_survive_a_reload_and_stay_in_range(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = GoalStore(hass)
+    await store.async_load()
+    assert store.set("backup_age", limit=48, enabled=False)
+    assert not store.set("backup_age", limit=0) and not store.set("nope", limit=3)
+    await flush(hass)
+    again = GoalStore(hass)
+    await again.async_load()
+    assert again.items["backup_age"] == {"enabled": False, "limit": 48}
