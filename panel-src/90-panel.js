@@ -9,7 +9,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.typeFilter = "";
     this.statusFilter = "";
     this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
-    this.showIgnored = false;
+    this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "low";
 
     this._urlApplied = false;
@@ -422,7 +422,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const shell = `<div class="shell${this.dense ? " dense" : ""}">${this.topbar()}${this.safetyBar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.dense ? " dense" : ""}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
@@ -626,6 +626,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
+      if (el.dataset.safeKey === "mode") this.settingsTab = "scan";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
       if (this.view === "cleanup") this.viewTab = { ...this.viewTab, cleanup: "journal" };
       this.render();
@@ -654,7 +655,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
-    root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.pages = {}; this.render(); });
+    this.bindFindingStatus(root);
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
@@ -674,7 +675,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindTraceDiag(root);
     this.bindRefactor(root);
     this.bindBatteryCare(root);
-    root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen));
+    root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
       form.querySelector("[data-decide-kind]").onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; if (this.decide.kind === "snooze" && !Number(this.decide.days)) this.decide.days = 30; this.render(); };
@@ -724,7 +725,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
-    root.querySelector("[data-protection]")?.addEventListener("change", ev => this.setProtection(ev.target.value));
+    root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
       try { await this._hass.callWS({ type: "ha_housekeeper/notify_set", enabled: ev.target.checked }); this.data.meta.notify = ev.target.checked; }
       catch (err) { this.error = err?.message || String(err); }

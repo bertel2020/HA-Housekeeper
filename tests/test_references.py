@@ -744,6 +744,8 @@ async def test_the_panel_never_receives_the_restore_data_of_a_plan(
             "summary",
             "file_snapshot_dropped",
             "followup",
+            "objects",
+            "done_objects",
         }
 
         for message in (

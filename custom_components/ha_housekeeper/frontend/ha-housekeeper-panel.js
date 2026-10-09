@@ -90,7 +90,7 @@ const TEXT = {
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
-    hiddenFindings: "Ausgeblendete Befunde", decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Bewusst behalten", decideKind_snooze: "Später erinnern", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "Bewusst behalten braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
+    hiddenFindings: "Ausgeblendete Befunde", decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Bekannt", decideKind_snooze: "Zurückgestellt", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "Bewusst behalten braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
     sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
     denseOn: "Kompakte Zeilen", denseOff: "Ausführliche Zeilen", sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
@@ -269,7 +269,7 @@ const TEXT = {
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
     colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
-    hiddenFindings: "Hidden findings", decideKind: "Kind of decision", decideKind_ignore: "Hidden", decideKind_keep: "Kept on purpose", decideKind_snooze: "Remind me later", decideReason: "Reason (optional)", decideReasonNeeded: "Reason (required)", decideNeedReason: "Keeping on purpose needs a reason.", decideHow: "For how long", decideForever: "Indefinitely", decideDays: "{n} days", decideUntil: "until {date}", dueLabel: "Due again", dueFilter: "Due again", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
+    hiddenFindings: "Hidden findings", decideKind: "Kind of decision", decideKind_ignore: "Hidden", decideKind_keep: "Known", decideKind_snooze: "Snoozed", decideReason: "Reason (optional)", decideReasonNeeded: "Reason (required)", decideNeedReason: "Keeping on purpose needs a reason.", decideHow: "For how long", decideForever: "Indefinitely", decideDays: "{n} days", decideUntil: "until {date}", dueLabel: "Due again", dueFilter: "Due again", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
     sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule",
     sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
     denseOn: "Compact rows", denseOff: "Detailed rows", sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
@@ -1053,7 +1053,7 @@ class StylesMixin {
       *{box-sizing:border-box} button,input,select{font:inherit;color:inherit} button{cursor:pointer} h1,h2,h3,h4,p{margin:0}
       ha-icon{--mdc-icon-size:20px}
       .shell{min-height:100vh;display:block}
-      .safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
+      .stickyhead{position:sticky;top:0;z-index:30}.modeopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:12px 16px 16px}.modeopt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);cursor:pointer}.modeopt.on{border-color:var(--hk-blue);box-shadow:0 0 0 1px var(--hk-blue)}.modeopt input{position:absolute;opacity:0;pointer-events:none}.modeopt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.modepanel{border-left:4px solid var(--hk-blue)}.bulkform{padding:0 14px 10px}.safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
       .safeitem{display:inline-flex;align-items:center;gap:6px;padding:2px 0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
       .safeitem:hover{color:var(--hk-text)}.safeitem .dot{width:8px;height:8px;border-radius:50%;background:var(--hk-muted)}.safeitem .dot.ok{background:var(--hk-green,#2e7d32)}.safeitem .dot.warn{background:var(--hk-amber,#b26a00)}.safeitem .dot.red{background:var(--hk-red,#c62828)}
       @media(max-width:860px){.safebar{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;padding:6px 12px}}
@@ -1715,7 +1715,7 @@ class FindingsMixin {
       : finding.affected_object
         ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
         : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    const button = `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.impact && finding.impact !== "none" ? ` · ${this.t(`impact_${finding.impact}`)}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
+    const button = `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${this.statusTags(finding)}${finding.impact && finding.impact !== "none" ? ` · ${this.t(`impact_${finding.impact}`)}` : ""}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.pill(finding.classification)}<span class="date">${finding.first_detected_at ? this.formatDate(finding.first_detected_at) : ""}</span></button>`;
     return `<div class="rowwrap"><input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">${button}</div>`;
   }
 
@@ -1732,7 +1732,7 @@ class FindingsMixin {
 
   // The findings as shown (classification chip, search, type filter, sort); the export uses the same list.
   visibleFindings() {
-    const all = this.sortedFindings(this.showIgnored);
+    const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const classed = this.findingFilter ? all.filter(f => f.classification === this.findingFilter) : all;
     const afterOnly = this.findingAfter ? classed.filter(f => this.corr?.by_key?.[f.key]) : classed;
     const byClass = this.findingDue ? afterOnly.filter(f => f.resurfaced) : afterOnly;
@@ -1778,8 +1778,7 @@ class FindingsMixin {
   }
 
   findingsView() {
-    const all = this.sortedFindings(this.showIgnored);
-    const ignoredCount = this.data.findings.filter(f => f.ignored).length;
+    const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const classes = [...new Set(all.map(f => f.classification))];
     const list = this.collapseFollowers(this.visibleFindings());
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
@@ -1797,7 +1796,7 @@ class FindingsMixin {
     ]);
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
     const followers = this.followerCount();
-    return `<div class="stack">${tiles}${this.causesCard()}<div class="panel"><div class="chips">${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t(this.showFollowers ? "causeHide" : "causeShow")} (${followers})</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    return `<div class="stack">${tiles}${this.causesCard()}${this.fixedCard()}<div class="panel"><div class="chips">${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t(this.showFollowers ? "causeHide" : "causeShow")} (${followers})</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}${this.statusChips()}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findSelBar(pg.rows)}${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
   }
 
@@ -1806,7 +1805,7 @@ class FindingsMixin {
     const n = this.findSel.size;
     this._findPage = pageRows.map(f => f.key);
     if (!pageRows.length && !n) return "";
-    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div>`;
+    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-fsel-state="known" ${n ? "" : "disabled"}>${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed" ${n ? "" : "disabled"}>${this.t("fselSnooze")}</button><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div>${this.bulkForm()}`;
   }
 
   async hideSelectedFindings() {
@@ -1851,7 +1850,7 @@ class FindingsMixin {
       ${d.error ? `<small class="error" role="alert">${this.esc(this.t(d.error))}</small>` : ""}</form>`;
   }
 
-  openDecide(key) { this.decide = { key, kind: "ignore", reason: "", days: 0, error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]")?.focus?.(); }
+  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]")?.focus?.(); }
 
   async commitDecide() {
     const d = this.decide;
@@ -1879,7 +1878,7 @@ class FindingsMixin {
     const list = this.data.findings.filter(f => this.findingKey(f) === key);
     if (!list.length) return "";
     const hideButton = f => this.decide && this.decide.key === f.key ? this.decideForm(f)
-      : `<button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button>`;
+      : `${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button>`;
     const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("findingsOfObject")} (${list.length})</h2></div>${rows}</section>`;
   }
@@ -2170,7 +2169,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
     const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-set-${id}" aria-selected="${id === tab}" aria-controls="hk-setpanel" tabindex="${id === tab ? 0 : -1}" data-set-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.protectionCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, scan: () => `${this.protectionCard()}${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="tabs" role="tablist" aria-label="${this.esc(this.t("settings"))}">${tablist}</div><div role="tabpanel" id="hk-setpanel" aria-labelledby="hk-set-${tab}" tabindex="0">${body}</div>`;
   }
 
@@ -6236,7 +6235,7 @@ class SafetyMixin {
   safetyItems() {
     const items = [], plans = this.journal || [];
     const mode = this.data?.meta?.protection || "full";
-    if (mode !== "full") items.push(["mode", "warn", this.t(`safeMode_${mode}`), "settings"]);
+    items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "cleanup"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
@@ -6255,11 +6254,15 @@ class SafetyMixin {
   // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
   protectionCard() {
     const mode = this.data?.meta?.protection || "full";
-    const options = ["read_only", "quarantine", "confirmed", "full"].map(m => `<option value="${m}" ${m === mode ? "selected" : ""}>${this.t(`mode_${m}`)}</option>`).join("");
+    const icons = { read_only: "mdi:eye-outline", quarantine: "mdi:archive-lock-outline", confirmed: "mdi:shield-check-outline", full: "mdi:shield-lock-outline" };
+    const options = ["read_only", "quarantine", "confirmed", "full"].map(m => `<label class="modeopt${m === mode ? " on" : ""}"><input type="radio" name="hk-protection" value="${m}" data-protection ${m === mode ? "checked" : ""}><span class="tile ${m === mode ? (m === "full" ? "ok" : "warn") : "mute"}"><ha-icon icon="${icons[m]}"></ha-icon></span><span class="row-text"><strong>${this.t(`mode_${m}`)}</strong><small>${this.t(`modeText_${m}`)}</small></span></label>`).join("");
+    return `<section class="panel modepanel"><div class="panelhead"><div><h2>${this.t("modeTitle")}</h2><p>${this.t("modeHint")}</p></div><span class="pill ${mode === "full" ? "ok" : "warn"}">${this.t(`safeMode_${mode}`)}</span></div>
+      <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("modeLabel"))}">${options}</div></section>`;
+  }
+
+  eventsCard() {
     const events = ["critical_finding", "backup_overdue", "quarantine_expired", "followup_regression", "integration_down", "reminder_due"].map(e => `<li><code>ha_housekeeper_${e}</code> · ${this.t(`event_${e}`)}</li>`).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("modeTitle")}</h2><p>${this.t("modeHint")}</p></div></div>
-      <div class="row"><span class="tile ${mode === "full" ? "mute" : "warn"}"><ha-icon icon="mdi:shield-lock-outline"></ha-icon></span><span class="row-text"><strong>${this.t("modeLabel")}</strong><small>${this.t(`modeText_${mode}`)}</small></span><select data-protection aria-label="${this.esc(this.t("modeLabel"))}">${options}</select></div></section>
-      <section class="panel"><div class="panelhead"><div><h2>${this.t("eventsTitle")}</h2><p>${this.t("eventsHint")}</p></div></div><ul class="factnote" style="margin:0;padding:10px 16px 14px 32px">${events}</ul></section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("eventsTitle")}</h2><p>${this.t("eventsHint")}</p></div></div><ul class="factnote" style="margin:0;padding:10px 16px 14px 32px">${events}</ul></section>`;
   }
 
   async setProtection(mode) {
@@ -6292,7 +6295,7 @@ Object.assign(TEXT.en, {
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",
 });
 Object.assign(TEXT.de, {
-  safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne unumkehrbare Löschungen",
+  safeMode_full: "Schutzmodus: voll", safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne unumkehrbare Löschungen",
   modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Ansichten bleiben immer erlaubt.", modeLabel: "Was Housekeeper ändern darf",
   mode_read_only: "1 · Nur lesen", mode_quarantine: "2 · Quarantäne erlaubt", mode_confirmed: "3 · Bestätigte Änderungen mit Backup", mode_full: "4 · Voller Wartungsmodus",
   modeText_read_only: "Nichts wird geändert, auch kein Rückgängig.", modeText_quarantine: "Nur Deaktivieren (und dessen Rückgängig) ist erlaubt.", modeText_confirmed: "Alles mit Einzelbestätigung und Backup außer unumkehrbarem Löschen von Recorder-Daten.", modeText_full: "Alles, wie bisher.",
@@ -6301,7 +6304,7 @@ Object.assign(TEXT.de, {
   event_critical_finding: "neuer Befund mit hoher Auswirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen (Ursache mit Folgebefunden)",
 });
 Object.assign(TEXT.en, {
-  safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
+  safeMode_full: "Protection mode: full", safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
   modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and every view stay allowed.", modeLabel: "What Housekeeper may change",
   mode_read_only: "1 · Read only", mode_quarantine: "2 · Quarantine allowed", mode_confirmed: "3 · Confirmed changes with backup", mode_full: "4 · Full maintenance",
   modeText_read_only: "Nothing is changed, not even an undo.", modeText_quarantine: "Only disabling (and undoing it) is allowed.", modeText_confirmed: "Everything with one-by-one confirmation and backup except irreversible deletion of recorder data.", modeText_full: "Everything, as before.",
@@ -6419,6 +6422,148 @@ Object.assign(TEXT.en, {
   event_reminder_due: "maintenance reminder due",
 });
 
+// FindingStatusMixin: the status of a finding as the list shows it. Some are decided by the user (known,
+// snoozed, hidden), some follow from what Housekeeper sees (new, in work, fixed). Nothing here stores anything:
+// the decisions are the ones of the ignore list, the rest is derived from the scan and the journal of plans.
+const NEW_FINDING_DAYS = 7, FIXED_DAYS = 30, ACTIVE_PLAN = ["dry_run", "backup", "running"];
+const FINDING_STATES = ["new", "inwork", "known", "snoozed", "hidden"];
+
+class FindingStatusMixin {
+  // The objects of drafted or running plans, and those a finished plan changed lately; rebuilt when the journal changes.
+  planSets() {
+    if (this._planSets?.journal === this.journal) return this._planSets;
+    const active = new Set(), done = new Map(), limit = Date.now() - FIXED_DAYS * 864e5;
+    for (const plan of this.journal || []) {
+      if (ACTIVE_PLAN.includes(plan.status)) (plan.objects || []).forEach(id => active.add(id));
+      const at = plan.finished_at ? Date.parse(plan.finished_at) : 0;
+      if (at >= limit) (plan.done_objects || []).forEach(id => { if (!done.has(id) || done.get(id) < at) done.set(id, at); });
+    }
+    this._planSets = { journal: this.journal, active, done };
+    return this._planSets;
+  }
+
+  // What the user decided: known (kept on purpose), snoozed, hidden; "" for an open finding.
+  decidedState(f) {
+    if (!f.ignored) return "";
+    if (f.ignored_by !== "user") return "hidden";
+    const kind = f.ignore_info?.kind;
+    return kind === "keep" ? "known" : kind === "snooze" ? "snoozed" : "hidden";
+  }
+
+  isNewFinding(f) { return !f.ignored && f.first_detected_at && Date.parse(f.first_detected_at) >= Date.now() - NEW_FINDING_DAYS * 864e5; }
+
+  inWork(f) { return !f.ignored && this.planSets().active.has(f.object_id); }
+
+  // Does a finding belong to the chosen status? "" is the default: everything not decided.
+  statusMatch(f) {
+    switch (this.findingStatus) {
+      case "": return !f.ignored;
+      case "all": return true;
+      case "new": return this.isNewFinding(f);
+      case "inwork": return this.inWork(f);
+      default: return this.decidedState(f) === this.findingStatus;
+    }
+  }
+
+  statusCount(state) {
+    const list = this.data.findings;
+    if (state === "") return list.filter(f => !f.ignored).length;
+    return list.filter(f => (state === "new" ? this.isNewFinding(f) : state === "inwork" ? this.inWork(f) : this.decidedState(f) === state)).length;
+  }
+
+  // "New", "In work" next to a row's other facts.
+  statusTags(f) {
+    return [this.isNewFinding(f) ? this.t("stateNew") : "", this.inWork(f) ? this.t("stateInwork") : ""].filter(Boolean).map(x => ` · ${x}`).join("");
+  }
+
+  statusChips() {
+    const chip = (state, label, count) => `<button class="chip ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}">${label} (${this.formatNumber(count)})</button>`;
+    const decided = FINDING_STATES.filter(s => this.statusCount(s));
+    return decided.length ? [chip("", this.t("stateOpen"), this.statusCount("")), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s)))].join("") : "";
+  }
+
+  // Objects a plan changed lately that no longer have a finding: the closed cases.
+  fixedLately() {
+    const withFinding = new Set(this.data.findings.map(f => f.object_id));
+    return [...this.planSets().done].filter(([id]) => !withFinding.has(id)).sort((a, b) => b[1] - a[1]);
+  }
+
+  fixedCard() {
+    const fixed = this.fixedLately();
+    if (!fixed.length) return "";
+    const rows = fixed.slice(0, 20).map(([id, at]) => `<div class="row"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`entity:${id}`)?.name || id)}</strong><small>${this.esc(id)} · ${this.formatDate(new Date(at).toISOString())}</small></span></div>`).join("");
+    return this.fold("fixed_lately", { tone: "ok", title: this.t("fixedTitle", { days: FIXED_DAYS }), pill: this.formatNumber(fixed.length) }, rows, false);
+  }
+
+  // The form under the selection bar: known or snoozed for all selected findings at once.
+  bulkForm() {
+    const b = this.bulk;
+    if (!b) return "";
+    const days = [7, 30, 90, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("decideDays", { n })}</option>`).join("");
+    return `<form class="polform bulkform" data-bulk-form><strong>${this.t(`state_${b.kind}`)}</strong>
+      <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(b.kind === "known" ? "decideReasonNeeded" : "decideReason"))}">
+      ${b.kind === "snoozed" ? `<select data-bulk-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>` : ""}
+      <button type="submit" class="btn primary">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
+  }
+
+  async commitBulk() {
+    const b = this.bulk;
+    if (!b) return;
+    if (b.kind === "known" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
+    const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
+    try {
+      for (const key of keys) {
+        const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: b.kind === "known" ? "keep" : "snooze", reason: b.reason.trim() };
+        if (b.kind === "snoozed") msg.days = Number(b.days);
+        await this._hass.callWS(msg);
+        const finding = this.data.findings.find(f => f.key === key);
+        if (finding) {
+          finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false;
+          finding.ignore_info = { kind: msg.kind, reason: msg.reason, until: msg.days ? new Date(Date.now() + msg.days * 864e5).toISOString() : null, at: new Date().toISOString() };
+        }
+      }
+      this._rev++;
+    } catch (err) { this.error = err?.message || String(err); }
+    this.bulk = null; this.findSel.clear();
+    this.render();
+  }
+
+  // "This is no duplicate": a known finding with the reason filled in.
+  async markNotDuplicate(key) {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("notDuplicateReason") });
+      const finding = this.data.findings.find(f => f.key === key);
+      if (finding) { finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.ignore_info = { kind: "keep", reason: this.t("notDuplicateReason"), until: null, at: new Date().toISOString() }; this._rev++; }
+    } catch (err) { this.error = err?.message || String(err); }
+    this.render();
+  }
+
+  bindFindingStatus(root) {
+    root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { this.bulk = { kind: el.dataset.fselState, reason: "", days: 30, error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
+    const form = root.querySelector("[data-bulk-form]");
+    if (form) {
+      form.onsubmit = ev => { ev.preventDefault(); this.commitBulk(); };
+      form.querySelector("[data-bulk-reason]").oninput = ev => { this.bulk.reason = ev.target.value; };
+      const days = form.querySelector("[data-bulk-days]");
+      if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
+      form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };
+    }
+  }
+}
+Object.assign(TEXT.de, {
+  stateOpen: "Offen", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
+  fixedTitle: "Zuletzt behoben (letzte {days} Tage)", fselKnown: "Als bekannt markieren", fselSnooze: "Zurückstellen",
+  notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen", markKnown: "Als bekannt markieren",
+});
+Object.assign(TEXT.en, {
+  stateOpen: "Open", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
+  fixedTitle: "Fixed lately (last {days} days)", fselKnown: "Mark as known", fselSnooze: "Snooze",
+  notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity", markKnown: "Mark as known",
+});
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -6430,7 +6575,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.typeFilter = "";
     this.statusFilter = "";
     this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
-    this.showIgnored = false;
+    this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "low";
 
     this._urlApplied = false;
@@ -6843,7 +6988,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const shell = `<div class="shell${this.dense ? " dense" : ""}">${this.topbar()}${this.safetyBar()}<main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.dense ? " dense" : ""}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
@@ -7047,6 +7192,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
+      if (el.dataset.safeKey === "mode") this.settingsTab = "scan";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
       if (this.view === "cleanup") this.viewTab = { ...this.viewTab, cleanup: "journal" };
       this.render();
@@ -7075,7 +7221,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status] = el.dataset.invFilter.split("|"); this.typeFilter = type; this.statusFilter = status; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
-    root.querySelector("[data-toggle-ignored]")?.addEventListener("click", () => { this.showIgnored = !this.showIgnored; this.pages = {}; this.render(); });
+    this.bindFindingStatus(root);
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
@@ -7095,7 +7241,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindTraceDiag(root);
     this.bindRefactor(root);
     this.bindBatteryCare(root);
-    root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen));
+    root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
       form.querySelector("[data-decide-kind]").onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; if (this.decide.kind === "snooze" && !Number(this.decide.days)) this.decide.days = 30; this.render(); };
@@ -7145,7 +7291,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
-    root.querySelector("[data-protection]")?.addEventListener("change", ev => this.setProtection(ev.target.value));
+    root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
       try { await this._hass.callWS({ type: "ha_housekeeper/notify_set", enabled: ev.target.checked }); this.data.meta.notify = ev.target.checked; }
       catch (err) { this.error = err?.message || String(err); }
@@ -7288,7 +7434,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

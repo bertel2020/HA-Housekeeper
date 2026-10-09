@@ -912,6 +912,11 @@ INTERNAL_RESULT_KEYS = frozenset({"restore"})
 INTERNAL_SOURCE_KEYS = frozenset({"before", "file_before", "file_after_hash"})
 
 
+OBJECT_LIST_LIMIT = (
+    300  # objects per plan in the journal list; the panel only marks findings with them
+)
+
+
 def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
     """What the journal list shows: no actions and no restore data."""
     return {
@@ -926,6 +931,16 @@ def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
         "summary": plan.get("summary"),
         "file_snapshot_dropped": bool(plan.get("file_snapshot_dropped")),
         "followup": (plan.get("followup") or {}).get("state"),
+        "objects": sorted({a["object_id"] for a in plan.get("actions", []) if a.get("object_id")})[
+            :OBJECT_LIST_LIMIT
+        ],
+        "done_objects": sorted(
+            {
+                a["object_id"]
+                for a in plan.get("actions", [])
+                if a.get("object_id") and (a.get("result") or {}).get("state") == "done"
+            }
+        )[:OBJECT_LIST_LIMIT],
     }
 
 

@@ -312,12 +312,12 @@ test("hidden findings are excluded from counts, lists and export unless shown", 
   assert.equal(el.health().percent, 67);
   el.exportFindings("json");
   assert.equal(JSON.parse(downloads[0].text).findings.length, 1);
-  el.showIgnored = true;
+  el.findingStatus = "all";
   el.exportFindings("json");
   assert.equal(JSON.parse(downloads[1].text).findings.length, 2);
   el.view = "findingsNav";
   el.render();
-  assert.ok(el.shadowRoot.innerHTML.includes("Show hidden (1)"));
+  assert.ok(el.shadowRoot.innerHTML.includes("Hidden (1)"));
 });
 
 test("detail page offers to hide and show findings, but not label-hidden ones", () => {
@@ -2617,7 +2617,7 @@ test("a finding can be kept on purpose with a reason, put off for days, and come
   assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/ignore", finding_key: "k1", ignored: true, kind: "keep", reason: "Reserve" }));
   const f = el.data.findings[0];
   assert.ok(f.ignored && f.ignore_info.kind === "keep" && el.decide === null);
-  assert.ok(el.decisionLabel(f).includes("Kept on purpose") && el.decisionLabel(f).includes("Reserve"));
+  assert.ok(el.decisionLabel(f).includes("Known") && el.decisionLabel(f).includes("Reserve"));
   el.openDecide("k2"); el.decide.kind = "snooze"; el.decide.days = 0; await el.commitDecide();
   assert.equal(sent[1].kind, "snooze"); assert.equal(sent[1].days, 30, "put off needs a time: 30 days by default");
   assert.equal(el.data.findings[1].resurfaced, false);
@@ -2860,11 +2860,11 @@ test("the protection mode shows in the safety line and the settings, and is set 
   el.data = { ...DATA, meta: { ...DATA.meta, protection: "read_only" } };
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return {}; } };
   assert.ok(el.safetyBar().includes("Protection mode: read only"));
-  assert.ok(el.protectionCard().includes("ha_housekeeper_backup_overdue") && el.protectionCard().includes('value="read_only" selected'));
+  assert.ok(el.eventsCard().includes("ha_housekeeper_backup_overdue") && el.protectionCard().includes('value="read_only" data-protection checked'));
   await el.setProtection("full");
   assert.equal(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/protection_set")), JSON.stringify({ type: "ha_housekeeper/protection_set", mode: "full" }));
   assert.equal(el.data.meta.protection, "full");
-  assert.ok(!el.safetyBar().includes("Protection mode"));
+  assert.ok(el.safetyBar().includes("Protection mode: full"));
   void shadow;
 });
 
@@ -2887,4 +2887,35 @@ test("the batteries view shows the forecast with groups and the reminders, which
   assert.equal(el.remDraft, null);
   const row = el.relRowBody({ title: "Hue", domain: "hue", entities: 3, availability: 99, setup: { count: 2, days: 7, last: "2026-10-08T10:00:00+00:00", state: "setup_retry" } });
   assert.ok(row.includes("Setup failures: 2 in 7 days") && row.includes("Currently in state setup_retry"));
+});
+
+test("findings get a status: known, snoozed, hidden, new and in work, and the list filters by it", async () => {
+  const calls = [];
+  const { el } = panel("en");
+  const now = new Date().toISOString();
+  const base = DATA.findings[0];
+  const findings = [
+    { ...base, key: "a", object_id: "sensor.a", ignored: true, ignored_by: "user", ignore_info: { kind: "keep", reason: "ok" } },
+    { ...base, key: "b", object_id: "sensor.b", ignored: true, ignored_by: "user", ignore_info: { kind: "snooze", until: now } },
+    { ...base, key: "c", object_id: "sensor.c", ignored: false, first_detected_at: now },
+    { ...base, key: "d", object_id: "sensor.d", ignored: false, first_detected_at: "2020-01-01T00:00:00Z" },
+  ];
+  el.data = { ...DATA, findings };
+  el.journal = [{ plan_id: "p1", status: "dry_run", objects: ["sensor.d"], done_objects: [] }, { plan_id: "p2", status: "executed", finished_at: now, objects: ["sensor.z"], done_objects: ["sensor.z"] }];
+  const keys = status => { el.findingStatus = status; return findings.filter(f => el.statusMatch(f)).map(f => f.key).join(""); };
+  assert.equal(keys(""), "cd");
+  assert.equal(keys("known"), "a");
+  assert.equal(keys("snoozed"), "b");
+  assert.equal(keys("new"), "c");
+  assert.equal(keys("inwork"), "d");
+  assert.equal(el.fixedLately().map(([id]) => id).join(), "sensor.z");
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return {}; } };
+  el.findSel = new Set(["c"]);
+  el.bulk = { kind: "known", reason: "", days: 30, error: "" };
+  await el.commitBulk();
+  assert.equal(el.bulk.error, "decideNeedReason");
+  el.bulk.reason = "on purpose";
+  await el.commitBulk();
+  assert.equal(JSON.stringify(calls.filter(c => c.type === "ha_housekeeper/ignore").map(c => [c.kind, c.reason, c.finding_key])), JSON.stringify([["keep", "on purpose", "c"]]));
+  assert.equal(el.decidedState(findings[2]), "known");
 });
