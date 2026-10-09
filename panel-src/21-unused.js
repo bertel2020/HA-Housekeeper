@@ -125,7 +125,7 @@ class UnusedMixin {
       return this.ageCell(new Date(ts * 1000).toISOString());
     };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", cell: o => `${this.purgeBox(o)}${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}` },
+      { key: "id", label: "utStatId", dir: "asc", cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "")}${this.statSuccessorLine(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
