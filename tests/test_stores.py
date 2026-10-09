@@ -242,3 +242,24 @@ async def test_goal_choices_survive_a_reload_and_stay_in_range(
     again = GoalStore(hass)
     await again.async_load()
     assert again.items["backup_age"] == {"enabled": False, "limit": 48}
+
+
+async def test_purges_are_noted_in_the_journal_and_survive_a_reload(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    journal = JournalStore(hass)
+    await journal.async_load()
+    for n in range(105):
+        journal.add_purge(
+            {"at": f"2026-10-09T10:00:{n % 60:02d}+00:00", "removed": [f"sensor.a{n}"]}
+        )
+    assert len(journal.purges) == 100 and journal.purges[0]["removed"] == ["sensor.a104"]
+    # the delayed save merges calls made close together (a debounce), so save at once
+    await journal._store.async_save({"plans": journal.plans, "purges": journal.purges})
+    again = JournalStore(hass)
+    await again.async_load()
+    assert len(again.purges) == 100 and again.plans == []
+    put(hass_storage, const.JOURNAL_STORAGE_KEY, {"plans": [], "purges": ["x", {"at": "t"}]})
+    third = JournalStore(hass)
+    await third.async_load()
+    assert third.purges == [{"at": "t"}]

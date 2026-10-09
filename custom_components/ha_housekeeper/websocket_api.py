@@ -355,7 +355,13 @@ def websocket_plan_list(
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
     connection.send_result(
-        msg["id"], _versioned({"plans": [plan_summary(p) for p in scanner.journal.plans]})
+        msg["id"],
+        _versioned(
+            {
+                "plans": [plan_summary(p) for p in scanner.journal.plans],
+                "purges": scanner.journal.purges,
+            }
+        ),
     )
 
 
@@ -1157,12 +1163,25 @@ async def websocket_purge_statistics(
         connection.send_error(msg["id"], "no_recorder", "The recorder is not available")
         return
     now = datetime.now(UTC)
+    by = connection.user.id if connection.user else None
     try:
         result = await purge_orphans(
             hass, scanner.snapshot, msg["statistic_ids"], states=msg["states"]
         )
     except Exception as err:
         scanner.events.record("purge", now, requested=len(msg["statistic_ids"]), failed=True)
+        scanner.journal.add_purge(
+            {
+                "at": now.isoformat(),
+                "by": by,
+                "requested": list(msg["statistic_ids"]),
+                "removed": [],
+                "skipped": [],
+                "states": msg["states"],
+                "backup": None,
+                "error": f"{type(err).__name__}: {err}"[:200],
+            }
+        )
         connection.send_error(msg["id"], "purge_failed", f"{type(err).__name__}: {err}")
         return
     if result["backup"] or result["removed"]:  # a record of what was deleted: counts, no names
@@ -1173,6 +1192,19 @@ async def websocket_purge_statistics(
             removed=len(result["removed"]),
             skipped=len(result["skipped"]),
             states=bool(result["states"]),
+        )
+    if result["backup"] or result["removed"] or result.get("error"):
+        scanner.journal.add_purge(
+            {
+                "at": now.isoformat(),
+                "by": by,
+                "requested": list(msg["statistic_ids"]),
+                "removed": result["removed"],
+                "skipped": result["skipped"],
+                "states": bool(result["states"]),
+                "backup": {"job_id": result.get("backup_job")} if result["backup"] else None,
+                "error": result.get("error"),
+            }
         )
     if result["removed"]:
         scanner.replies.clear()  # views built on the recorder answered before the purge

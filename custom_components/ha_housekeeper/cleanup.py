@@ -45,6 +45,7 @@ MAX_ACTIONS = 200
 # undo, restore and the start of the quarantine); when the journal grows too large the oldest ones
 # lose their whole-file copies instead.
 MAX_OPEN_PREVIEWS = 20
+MAX_PURGES = 100  # recorder purges kept in the journal
 JOURNAL_MAX_BYTES = 8 * 1024 * 1024
 SAVE_DELAY = 5
 
@@ -722,12 +723,21 @@ class JournalStore:
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, JOURNAL_STORAGE_KEY)
         self._plans: list[dict[str, Any]] = []
+        self.purges: list[dict[str, Any]] = []
 
     async def async_load(self) -> None:
         """Load the journal."""
         data = await self._store.async_load()
         if isinstance(data, dict) and isinstance(data.get("plans"), list):
             self._plans = data["plans"]
+        if isinstance(data, dict) and isinstance(data.get("purges"), list):
+            self.purges = [p for p in data["purges"] if isinstance(p, dict)][:MAX_PURGES]
+
+    def add_purge(self, entry: dict[str, Any]) -> None:
+        """Record a recorder purge, newest first. It cannot be undone, so it is only noted."""
+        self.purges.insert(0, entry)
+        del self.purges[MAX_PURGES:]
+        self._save()
 
     @property
     def plans(self) -> list[dict[str, Any]]:
@@ -793,4 +803,6 @@ class JournalStore:
         self._save()
 
     def _save(self) -> None:
-        self._store.async_delay_save(lambda: {"plans": self._plans}, SAVE_DELAY)
+        self._store.async_delay_save(
+            lambda: {"plans": self._plans, "purges": self.purges}, SAVE_DELAY
+        )

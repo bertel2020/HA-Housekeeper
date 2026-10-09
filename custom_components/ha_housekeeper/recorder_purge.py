@@ -62,23 +62,23 @@ def judge(
     return allowed, skipped
 
 
-async def _backup(hass: HomeAssistant) -> str | None:
-    """Create the backup and wait for it; the reason as text if there is none."""
+async def _backup(hass: HomeAssistant) -> tuple[str | None, str | None]:
+    """Create the backup and wait for it: the reason as text if there is none, and the job id."""
     try:
         from homeassistant.components.backup import async_get_manager
 
         manager = async_get_manager(hass)
     except Exception:  # noqa: BLE001 - no backup component
-        return "backup_unavailable"
+        return "backup_unavailable", None
     if not manager.config.data.create_backup.agent_ids:
-        return "no_backup_agent"
+        return "no_backup_agent", None
     try:
         async with asyncio.timeout(BACKUP_TIMEOUT):
-            await manager.async_create_automatic_backup()
+            created = await manager.async_create_automatic_backup()
     except Exception as err:  # noqa: BLE001 - the reason goes to the person
         _LOGGER.warning("Backup before the recorder purge failed: %s", err)
-        return "backup_failed"
-    return None
+        return "backup_failed", None
+    return None, getattr(created, "backup_job_id", None)
 
 
 async def purge_orphans(
@@ -111,10 +111,12 @@ async def purge_orphans(
         }
         if not allowed:
             return result
-        if (reason := await _backup(hass)) is not None:
+        reason, job_id = await _backup(hass)
+        if reason is not None:
             result["error"] = reason
             return result
         result["backup"] = True
+        result["backup_job"] = job_id
         # The backup took a while: an entity may be back, or the Energy dashboard may use it now.
         still, changed = _judge_live(hass, orphans, allowed)
         result["skipped"] += [{"id": item["id"], "reason": "changed"} for item in changed]

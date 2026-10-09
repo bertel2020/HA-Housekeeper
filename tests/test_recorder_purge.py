@@ -43,7 +43,7 @@ def _recorder(monkeypatch: pytest.MonkeyPatch, existing: set[str], backup):
     instance.async_clear_statistics = cleared.append
 
     async def done():
-        return None
+        return None, "job-1"
 
     async def run_job(job):
         return job()
@@ -64,7 +64,7 @@ async def test_entity_back_during_backup_is_not_deleted(monkeypatch: pytest.Monk
 
     async def backup(hass):
         existing.add("sensor.back")  # the entity returns while the backup runs
-        return None
+        return None, "job-1"
 
     hass, cleared = _recorder(monkeypatch, existing, backup)
     snapshot = {
@@ -91,7 +91,7 @@ async def test_a_second_purge_waits_while_one_runs(monkeypatch: pytest.MonkeyPat
 
     async def backup(hass):
         await gate.wait()  # the first purge sits in its backup
-        return None
+        return None, "job-1"
 
     hass, cleared = _recorder(monkeypatch, set(), backup)
     snapshot = {"orphaned_statistics": [{"statistic_id": "sensor.gone", "in_energy": False}]}

@@ -2288,8 +2288,25 @@ class CleanupMixin {
     return `<span style="display:block;padding:6px 0 0">${lines.map(l => `<small style="display:block">${this.esc(l)}</small>`).join("")}${rows}${kept}</span>`;
   }
 
+  // Recorder purges are no plans and cannot be undone; the journal only notes them.
+  purgeJournalCard() {
+    const purges = this.purges || [];
+    if (!purges.length) return "";
+    const me = this._hass?.user?.id;
+    const rows = purges.slice(0, 20).map(p => {
+      const what = this.t("purgeEntry", { removed: this.formatNumber(p.removed.length), skipped: this.formatNumber(p.skipped.length) });
+      const who = p.by && p.by === me ? this.t("purgeByYou") : p.by ? this.t("purgeByOther") : "";
+      const parts = [this.formatDate(p.at), what, p.states ? this.t("purgeWithStates") : "", p.backup ? this.t("purgeBackup", { job: p.backup.job_id || "—" }) : this.t("purgeNoBackup"), who, p.error ? this.t("purgeError", { error: p.error }) : ""];
+      return `<div class="row"><span class="tile ${p.error ? "warn" : "mute"}"><ha-icon icon="mdi:database-remove-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(p.removed.slice(0, 3).join(", ") + (p.removed.length > 3 ? ` +${p.removed.length - 3}` : "") || this.t("purgeNothing"))}</strong><small>${parts.filter(Boolean).map(x => this.esc(x)).join(" · ")}</small></span></div>`;
+    }).join("");
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("purgeJournal")} (${purges.length})</h2><p>${this.t("purgeJournalHint")}</p></div></div>${rows}</div>`;
+  }
+
   async loadJournal() {
-    try { this.journal = (await this._hass.callWS({ type: "ha_housekeeper/plan_list" })).plans || []; } catch (_) { this.journal = []; }
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/plan_list" });
+      this.journal = reply.plans || []; this.purges = reply.purges || [];
+    } catch (_) { this.journal = []; }
     this.render();
   }
 
@@ -2570,7 +2587,7 @@ class CleanupMixin {
       { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
     ]);
     return `<div class="stack">${tiles}<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>
-      ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${this.recurringCard()}${assistant}${journalCard}</div>`;
+      ${this.plan ? this.planCard(this.plan) : ""}${this.quarantineCard()}${this.recurringCard()}${assistant}${journalCard}${this.purgeJournalCard()}</div>`;
   }
 }
 
@@ -5429,6 +5446,16 @@ class GoalsMixin {
     });
   }
 }
+
+// Texts for the purge entries in the cleanup journal.
+Object.assign(TEXT.de, {
+  purgeJournal: "Gelöschte Statistiken", purgeJournalHint: "Recorder-Reste, die gelöscht wurden. Nicht umkehrbar, deshalb nur vermerkt.",
+  purgeEntry: "{removed} gelöscht, {skipped} übersprungen", purgeWithStates: "mit Zuständen", purgeBackup: "Backup {job}", purgeNoBackup: "ohne Backup", purgeByYou: "von dir", purgeByOther: "von anderem Benutzer", purgeError: "Fehler: {error}", purgeNothing: "nichts gelöscht",
+});
+Object.assign(TEXT.en, {
+  purgeJournal: "Deleted statistics", purgeJournalHint: "Recorder leftovers that were deleted. Not reversible, so only noted.",
+  purgeEntry: "{removed} deleted, {skipped} skipped", purgeWithStates: "with states", purgeBackup: "backup {job}", purgeNoBackup: "no backup", purgeByYou: "by you", purgeByOther: "by another user", purgeError: "error: {error}", purgeNothing: "nothing deleted",
+});
 
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {

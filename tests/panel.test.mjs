@@ -2614,3 +2614,13 @@ test("maintenance goals show state and values, and a limit is saved through goal
   assert.deepEqual(JSON.parse(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/goal_set"))), { type: "ha_housekeeper/goal_set", goal: "unavailable", enabled: false, limit: 20 });
   assert.equal(el.goalForm, null);
 });
+
+test("the cleanup journal notes recorder purges with backup, user and result", () => {
+  const { el } = panel("en");
+  el._hass = { language: "en", user: { id: "u1" } };
+  el.purges = [{ at: "2026-10-09T10:00:00+00:00", by: "u1", removed: ["sensor.a", "sensor.b"], skipped: [{ id: "sensor.c", reason: "changed" }], states: true, backup: { job_id: "job-7" }, error: null }];
+  const html = el.purgeJournalCard();
+  assert.ok(html.includes("Deleted statistics (1)") && html.includes("sensor.a, sensor.b") && html.includes("2 deleted, 1 skipped") && html.includes("backup job-7") && html.includes("by you") && html.includes("with states"));
+  el.purges = [];
+  assert.equal(el.purgeJournalCard(), "");
+});
