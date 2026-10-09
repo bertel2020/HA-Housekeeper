@@ -333,11 +333,11 @@ class CleanupMixin {
     const word = this.planWord(plan), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
     let control = "";
     if (open && !executable) control = `<p class="factnote">${this.t("nothingExecutable")}</p>`;
-    else if (open && !conf) control = `<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
-    else if (open && conf) control = `<div class="setrow"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
+    else if (open && !conf) control = `<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
+    else if (open && conf) control = `<div class="setrow planfoot"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn primary" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
-    else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
-    else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
+    else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
+    else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow planfoot"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<p class="factnote"><b>${this.t("verification")}:</b> ${plan.verification.checks.map(c => `${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}`).join(" · ")}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
       ${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
@@ -358,7 +358,7 @@ class CleanupMixin {
     if (!id) return "";
     const found = this.successorsOf(id, unit);
     if (!found.length) return "";
-    return `<div class="setrow"><small style="margin:0">${this.t("successorHint")}</small><span class="chips">${found.map(o => `<button class="chip" ${attr}="${this.esc(o.object_id)}" title="${this.esc(o.name)}">${this.esc(o.object_id)}</button>`).join("")}</span></div>`;
+    return `<div class="setrow planfoot"><small style="margin:0">${this.t("successorHint")}</small><span class="chips">${found.map(o => `<button class="chip" ${attr}="${this.esc(o.object_id)}" title="${this.esc(o.name)}">${this.esc(o.object_id)}</button>`).join("")}</span></div>`;
   }
 
   replaceCard() {
@@ -374,7 +374,7 @@ class CleanupMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("replaceTitle")}</h2><p>${this.t("replaceHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
       <div class="setrow"><div><label>${this.t("replaceOld")}</label></div><input type="text" list="hk-repl-old" data-repl-old value="${this.esc(this.replOld || "")}" placeholder="sensor.old_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-old">${oldOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("replaceNew")}</label></div><input type="text" list="hk-repl-new" data-repl-new value="${this.esc(this.replNew || "")}" placeholder="sensor.new_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-new">${newOptions}</datalist></div>
-      ${hints}<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
+      ${hints}<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
   // Join a replaced meter's history to its successor and/or let the successor take over the ID.
@@ -392,7 +392,7 @@ class CleanupMixin {
       <div class="setrow"><div><label>${this.t("meterOld")}</label></div><input type="text" list="hk-meter-old" data-meter-old value="${this.esc(this.meterOld || "")}" placeholder="sensor.old_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-old">${oldOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("meterNew")}</label></div><input type="text" list="hk-meter-new" data-meter-new value="${this.esc(this.meterNew || "")}" placeholder="sensor.new_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-new">${newOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("meterMode")}</label></div><select data-meter-mode style="max-width:460px">${modes.map(([value, label]) => `<option value="${value}" ${this.meterMode === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select></div>
-      ${this.successorHints(this.meterOld, byId.get(this.meterOld)?.unit, "data-meter-pick")}<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
+      ${this.successorHints(this.meterOld, byId.get(this.meterOld)?.unit, "data-meter-pick")}<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
   // Devices that an integration created again after they were forgotten.
@@ -463,7 +463,7 @@ class CleanupMixin {
       { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
       { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
     ]);
-    return `<div class="stack">${tiles}${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${this.quarantineCard()}${this.recurringCard()}${candidates}</div>`;
+    return `<div class="stack">${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${tiles}${this.quarantineCard()}${this.recurringCard()}${candidates}</div>`;
   }
 
   ensureJournal() {

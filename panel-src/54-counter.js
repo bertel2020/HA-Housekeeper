@@ -162,15 +162,15 @@ class CounterMixin {
       <div class="setrow"><div><label>${this.t("rangeTo")}</label></div><input type="datetime-local" data-range-to value="${stamp(this.rangeTo)}" style="max-width:260px"></div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-range-mode style="max-width:460px">${["hold", "interpolate", "fixed"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`rangeMode_${m}`)}</option>`).join("")}</select></div>
       ${mode === "fixed" ? `<div class="setrow"><div><label>${this.t("rangeFixed")}</label></div><input type="text" inputmode="decimal" data-range-fixed value="${stamp(this.rangeFixed)}" style="max-width:160px"></div>` : ""}
-      <div class="setrow"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button></div>`;
+      <div class="setrow planfoot"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button></div>`;
   }
 
   counterCard() {
     const s = this.counterScan, mode = this.counterMode || "hold";
     const head = `<div class="panelhead"><div>${this.view === "repair" ? "" : `<h2>${this.t("counterTitle")}</h2>`}<p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
-    const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div><input type="text" data-counter-id value="${this.esc(this.counterId || "")}" placeholder="sensor.water_meter" autocomplete="off" style="max-width:360px"></div>
+    const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div>${this.pickerBox("counter", "sensor.water_meter", "data-counter-id")}</div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-counter-mode style="max-width:460px">${["hold", "interpolate"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`counterMode_${m}`)}</option>`).join("")}</select></div>
-      <div class="setrow"><small style="margin:0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? "disabled" : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
+      <div class="setrow planfoot"><small style="margin:0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? "disabled" : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
     let body = "";
     if (this.counterError) body = `<div class="error">${this.esc(this.counterError)}</div>`;
     else if (s && !s.available) body = `<div class="emptymsg">${this.t("counterNoRecorder")}</div>`;

@@ -38,7 +38,7 @@ class ExposureMixin {
     const more = total > shown.length ? `<p class="factnote"><button class="link" data-expo-all="${this.esc(f.kind)}">${this.t("expoShowAll", { n: this.formatNumber(total) })}</button></p>` : "";
     const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
-    return this.fold(`expo_${f.kind}`, head, body, f.level === "warn", q ? matching.length > 0 : undefined);
+    return this.fold(`expo_${f.kind}`, head, body, false, q ? matching.length > 0 : undefined);
   }
 
   expoSection(titleKey, list) {

@@ -1115,7 +1115,8 @@ class StylesMixin {
       .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.fflow{padding:6px 14px 12px}.fstep{margin:6px 0;padding:8px 10px;border:1px solid var(--hk-border);border-left:3px solid var(--hk-blue);border-radius:8px;background:var(--hk-surface)}.fstep.broken{border-left-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 6%,var(--hk-surface))}.fstep>summary{cursor:pointer;list-style-position:inside}.fhead{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - 20px);vertical-align:middle}.fhead ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.ffacts{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fpath{margin-left:auto;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.fkids{margin:8px 0 2px 14px;padding-left:10px;border-left:1px dashed var(--hk-border)}.fgroup>small{display:block;margin:6px 0 2px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(10px*var(--hk-fs,1))}.fbranch{margin:6px 0}.chip.flowref{cursor:pointer;padding:2px 8px;font-size:calc(12px*var(--hk-fs,1))}.chip.flowref.missing{border-color:var(--hk-red,#b3261e);color:var(--hk-red,#b3261e);cursor:default}.listtools{display:flex;gap:8px;justify-content:flex-end;padding:0 14px 10px}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;gap:6px;min-width:180px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:8px;align-items:center;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){.tablewrap.lt,.tablewrap.inv{max-height:calc(100vh - 140px)}.tablewrap.lt thead th,.tablewrap.inv thead th{position:sticky;top:0;z-index:2;background:var(--hk-surface)}}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
-      input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
+      input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}
+      select{appearance:none;-webkit-appearance:none;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23808a84' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;cursor:pointer}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
       .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:3 1 260px}.listbar select{flex:0 1 150px}.sortgroup{display:flex;gap:4px;margin-left:auto;min-width:0}.sortgroup select{flex:0 1 150px;min-width:0}.dirbtn{flex:none}@media(max-width:560px){.listbar>select{flex:1 1 130px}.viewgroup{flex:1 1 100%}.sortgroup{flex:1 1 100%;margin-left:0}.sortgroup select{flex:1 1 auto}}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
       .setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.setrow .btn{justify-self:start}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
       @media(max-width:700px){.setrow{grid-template-columns:1fr}}
@@ -1156,7 +1157,11 @@ class StylesMixin {
       .cause.ok{background:color-mix(in srgb,var(--hk-green) 9%,transparent);border-color:color-mix(in srgb,var(--hk-green) 35%,transparent)}.cause.warn{background:color-mix(in srgb,var(--hk-amber) 10%,transparent);border-color:color-mix(in srgb,var(--hk-amber) 35%,transparent)}.cause.red{background:color-mix(in srgb,var(--hk-red) 9%,transparent);border-color:color-mix(in srgb,var(--hk-red) 35%,transparent)}.cause.violet{background:color-mix(in srgb,var(--hk-violet) 9%,transparent);border-color:color-mix(in srgb,var(--hk-violet) 35%,transparent)}
       .cause ha-icon{color:var(--hk-muted)}.hintbox ha-icon{color:var(--hk-amber)}.row.rel{grid-template-columns:auto minmax(0,1fr) auto}
       .changesum{grid-template-columns:repeat(5,1fr)}
-      .finding{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.finding strong{display:block;font-weight:600}.finding small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.row.dim .tile{opacity:.55}.row.dim strong{font-weight:500}
+      .finding{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.finding strong{display:block;font-weight:600}.planfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}.planfoot>:first-child{flex:1 1 280px;min-width:0}.planfoot>.factnote{border:0;padding:0}.planfoot>.btn,.planfoot>span,.planfoot>div:last-child{flex:0 0 auto}.simbox{margin:12px 16px;padding:12px 16px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft)}.simbox summary{cursor:pointer;font-weight:600;font-size:calc(13px*var(--hk-fs,1))}.simlist{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:calc(13px*var(--hk-fs,1))}.simlist li{position:relative;padding-left:18px}.simlist li:before{content:"";position:absolute;left:4px;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--hk-blue)}.simlimits{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.step{align-items:center}.fmeta{display:flex!important;flex-wrap:wrap;align-items:center;gap:4px 8px}.nw{white-space:nowrap}
+      .finding:has(.polform){flex-wrap:wrap}.finding .polform{flex:1 1 100%;display:grid;grid-template-columns:minmax(150px,200px) minmax(180px,1fr) minmax(130px,170px) auto auto;gap:8px;align-items:center}.finding .polform .error{grid-column:1/-1}.finding .polform input,.finding .polform select{min-height:40px;box-sizing:border-box}@media(max-width:860px){.finding .polform{grid-template-columns:1fr 1fr}.finding .polform input{grid-column:1/-1}}
+      .labelbox{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(160px,220px) auto;gap:12px 14px;align-items:center;margin-top:12px;padding:14px 16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-soft)}.labelbox .labeltext strong{display:block;font-weight:600}.labelbox .labeltext small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.labelbox select{min-height:40px;box-sizing:border-box}@media(max-width:860px){.labelbox{grid-template-columns:auto minmax(0,1fr)}.labelbox select,.labelbox .btn{grid-column:1/-1}}
+      .picker{position:relative;max-width:360px;width:100%}.picker input{width:100%;box-sizing:border-box}.picker .quicklist{left:0;right:auto;width:100%}
+      .fbtns{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);gap:8px;flex:0 0 auto}.fbtns .btn{min-height:44px;padding:8px 12px;text-align:center;line-height:1.2;border-color:color-mix(in srgb,var(--hk-blue) 40%,var(--hk-border));background:color-mix(in srgb,var(--hk-blue) 7%,var(--hk-surface));box-shadow:var(--hk-sh1)}.fbtns .btn:disabled{opacity:.5;box-shadow:none}.toolbar .fbtns{grid-auto-columns:minmax(120px,1fr)}.fbtns .btn ha-icon{color:var(--hk-blue);flex:none}.fbtns .btn:hover{background:color-mix(in srgb,var(--hk-blue) 14%,var(--hk-surface));box-shadow:var(--hk-sh2)}@media(max-width:860px){.finding{flex-wrap:wrap}.fbtns{flex:1 1 100%;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}.finding small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.row.dim .tile{opacity:.55}.row.dim strong{font-weight:500}
       .kv{display:grid;grid-template-columns:155px 1fr;gap:8px 14px;font-size:calc(13px*var(--hk-fs,1))}.kv dt{color:var(--hk-muted)}.kv dd{margin:0;overflow-wrap:anywhere}
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:calc(11px*var(--hk-fs,1))/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:calc(12px*var(--hk-fs,1));margin:12px 0 6px;color:var(--hk-muted)}
@@ -1179,7 +1184,7 @@ class StylesMixin {
       .panelhead>div:first-child{flex:1 1 0;min-width:0}.panelhead>.actions{flex:0 0 auto;flex-wrap:nowrap;justify-content:flex-end;align-items:center}.panelhead>.actions .btn{white-space:nowrap}@media(max-width:640px){.panelhead:has(>.actions){flex-wrap:wrap}.panelhead>.actions{flex:1 1 100%;flex-wrap:wrap;justify-content:stretch}.panelhead>.actions .btn{flex:1 1 auto}}.panelhead{background:linear-gradient(180deg,color-mix(in srgb,var(--hk-soft) 60%,transparent),transparent)}.panelhead h2{letter-spacing:-.005em}
       .taskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}.taskcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);padding:14px;cursor:pointer;color:var(--hk-text);font:inherit}.taskcard:hover,.taskcard.on{background:var(--hk-soft)}.taskcard.on{border-color:var(--hk-blue)}.compactgrid{padding:0 0 14px}.compactgrid .taskcard{padding:12px}.taskcard ha-icon{--mdc-icon-size:22px;color:var(--hk-blue)}.taskcard strong{font-size:calc(14px*var(--hk-fs,1));font-weight:600}.taskcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.45}.repairhead{font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin:10px 0 6px}
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
-      .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
+      .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:break-word;hyphens:auto}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
       .qlight{display:none;gap:3px;margin-top:4px}.qlight i{width:9px;height:9px;border-radius:50%;background:var(--hk-muted)}.qlight i.ok{background:var(--hk-ok,#3f7d4e)}.qlight i.warn{background:var(--hk-warn,#b8860b)}.qlight i.red{background:var(--hk-red,#b3392f)}@media(max-width:700px){.qualitytable th:not(:first-child):not(:last-child),.qualitytable td:not(:first-child):not(:last-child){display:none}.qlight{display:flex}}.foldhead{width:100%}.foldbody{margin:0 0 6px 28px;border-left:2px solid var(--hk-line,rgba(128,128,128,.25))}.foldadvice{margin:6px 16px 2px}.foldhd,.expohd{margin:14px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.08em;text-transform:uppercase;color:var(--hk-muted)}.rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
@@ -1205,8 +1210,8 @@ class StylesMixin {
       .statushead .ring{width:84px;height:84px;flex:none;box-shadow:inset 0 0 0 1px var(--hk-border),var(--hk-sh1);background:radial-gradient(circle at center,var(--hk-surface) 66%,transparent 68%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}
       .statushead .ring b{font-size:calc(22px*var(--hk-fs,1));font-weight:600}
       .statustext{min-width:0;flex:1 1 220px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
-      .kpis{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
-      .kpi{display:block;min-width:104px;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
+      .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}}
+      .kpi{display:block;min-width:0;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
       .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
       .taskgrid{gap:14px}
       .taskcard{--c:var(--hk-blue);position:relative;overflow:hidden;padding-left:20px;box-shadow:var(--hk-sh1),var(--hk-hi)}
@@ -1882,7 +1887,7 @@ class FindingsMixin {
     const n = this.findSel.size;
     this._findPage = pageRows.map(f => f.key);
     if (!pageRows.length && !n) return "";
-    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-fsel-state="known" ${n ? "" : "disabled"}>${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed" ${n ? "" : "disabled"}>${this.t("fselSnooze")}</button><button class="btn" data-fsel-state="label" ${n ? "" : "disabled"}>${this.t("fselLabel")}</button><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div>${this.bulkForm()}`;
+    return `<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns"><button class="btn" data-fsel-state="known" ${n ? "" : "disabled"}>${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed" ${n ? "" : "disabled"}>${this.t("fselSnooze")}</button><button class="btn" data-fsel-state="label" ${n ? "" : "disabled"}>${this.t("fselLabel")}</button><button class="btn" data-fsel-hide ${n ? "" : "disabled"}>${this.t("findHideSelected")}</button></div></div>${this.bulkForm()}`;
   }
 
   async hideSelectedFindings() {
@@ -1923,7 +1928,7 @@ class FindingsMixin {
     return `<form class="polform" data-decide-form="${this.esc(f.key)}"><select data-decide-kind aria-label="${this.esc(this.t("decideKind"))}">${kinds}</select>
       <input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
       <select data-decide-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>
-      <button type="submit" class="btn primary">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button>
+      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button>
       ${d.error ? `<small class="error" role="alert">${this.esc(this.t(d.error))}</small>` : ""}</form>`;
   }
 
@@ -1956,8 +1961,8 @@ class FindingsMixin {
     const list = this.data.findings.filter(f => this.findingKey(f) === key);
     if (!list.length) return "";
     const hideButton = f => this.decide && this.decide.key === f.key ? this.decideForm(f)
-      : `${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="snooze"><ha-icon icon="mdi:clock-outline"></ha-icon>${this.t("fselSnooze")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button>`;
-    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
+      : `<div class="fbtns">${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="snooze"><ha-icon icon="mdi:clock-outline"></ha-icon>${this.t("fselSnooze")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button></div>`;
+    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return rows;
   }
 }
@@ -2615,11 +2620,11 @@ class CleanupMixin {
     const word = this.planWord(plan), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
     let control = "";
     if (open && !executable) control = `<p class="factnote">${this.t("nothingExecutable")}</p>`;
-    else if (open && !conf) control = `<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
-    else if (open && conf) control = `<div class="setrow"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
+    else if (open && !conf) control = `<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
+    else if (open && conf) control = `<div class="setrow planfoot"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn primary" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")}</button></div></div>`;
-    else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
-    else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
+    else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
+    else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow planfoot"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<p class="factnote"><b>${this.t("verification")}:</b> ${plan.verification.checks.map(c => `${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}`).join(" · ")}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
       ${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
@@ -2640,7 +2645,7 @@ class CleanupMixin {
     if (!id) return "";
     const found = this.successorsOf(id, unit);
     if (!found.length) return "";
-    return `<div class="setrow"><small style="margin:0">${this.t("successorHint")}</small><span class="chips">${found.map(o => `<button class="chip" ${attr}="${this.esc(o.object_id)}" title="${this.esc(o.name)}">${this.esc(o.object_id)}</button>`).join("")}</span></div>`;
+    return `<div class="setrow planfoot"><small style="margin:0">${this.t("successorHint")}</small><span class="chips">${found.map(o => `<button class="chip" ${attr}="${this.esc(o.object_id)}" title="${this.esc(o.name)}">${this.esc(o.object_id)}</button>`).join("")}</span></div>`;
   }
 
   replaceCard() {
@@ -2656,7 +2661,7 @@ class CleanupMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("replaceTitle")}</h2><p>${this.t("replaceHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
       <div class="setrow"><div><label>${this.t("replaceOld")}</label></div><input type="text" list="hk-repl-old" data-repl-old value="${this.esc(this.replOld || "")}" placeholder="sensor.old_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-old">${oldOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("replaceNew")}</label></div><input type="text" list="hk-repl-new" data-repl-new value="${this.esc(this.replNew || "")}" placeholder="sensor.new_entity" autocomplete="off" style="max-width:360px"><datalist id="hk-repl-new">${newOptions}</datalist></div>
-      ${hints}<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
+      ${hints}<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
   // Join a replaced meter's history to its successor and/or let the successor take over the ID.
@@ -2674,7 +2679,7 @@ class CleanupMixin {
       <div class="setrow"><div><label>${this.t("meterOld")}</label></div><input type="text" list="hk-meter-old" data-meter-old value="${this.esc(this.meterOld || "")}" placeholder="sensor.old_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-old">${oldOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("meterNew")}</label></div><input type="text" list="hk-meter-new" data-meter-new value="${this.esc(this.meterNew || "")}" placeholder="sensor.new_meter" autocomplete="off" style="max-width:360px"><datalist id="hk-meter-new">${newOptions}</datalist></div>
       <div class="setrow"><div><label>${this.t("meterMode")}</label></div><select data-meter-mode style="max-width:460px">${modes.map(([value, label]) => `<option value="${value}" ${this.meterMode === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select></div>
-      ${this.successorHints(this.meterOld, byId.get(this.meterOld)?.unit, "data-meter-pick")}<div class="setrow"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
+      ${this.successorHints(this.meterOld, byId.get(this.meterOld)?.unit, "data-meter-pick")}<div class="setrow planfoot"><small style="margin:0">${this.t("cleanupDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
   // Devices that an integration created again after they were forgotten.
@@ -2745,7 +2750,7 @@ class CleanupMixin {
       { label: this.t("journal"), value: this.formatNumber((this.journal || []).length), tone: "mute" },
       { label: this.t("cleanupSumSelected"), value: this.formatNumber(n), tone: n ? "warn" : "mute" },
     ]);
-    return `<div class="stack">${tiles}${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${this.quarantineCard()}${this.recurringCard()}${candidates}</div>`;
+    return `<div class="stack">${this.planHeader()}${this.viewTabBar("cleanup", tabs, open)}${tiles}${this.quarantineCard()}${this.recurringCard()}${candidates}</div>`;
   }
 
   ensureJournal() {
@@ -3291,7 +3296,7 @@ class UnusedMixin {
     const open = this.purgeOpen && n ? `<div class="panel" role="group" aria-label="${this.esc(this.t("purgeTitle"))}"><div class="pad">
       <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
       <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
-      <div class="setrow"><small style="margin:0">${this.t("purgePlanHint")}</small>
+      <div class="setrow planfoot"><small style="margin:0">${this.t("purgePlanHint")}</small>
       <button class="btn primary" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
     return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-purge-open ${n ? "" : "disabled"}>${this.t("purgeOpen")}</button></div>${open}`;
   }
@@ -4742,7 +4747,7 @@ class ExposureMixin {
     const more = total > shown.length ? `<p class="factnote"><button class="link" data-expo-all="${this.esc(f.kind)}">${this.t("expoShowAll", { n: this.formatNumber(total) })}</button></p>` : "";
     const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
-    return this.fold(`expo_${f.kind}`, head, body, f.level === "warn", q ? matching.length > 0 : undefined);
+    return this.fold(`expo_${f.kind}`, head, body, false, q ? matching.length > 0 : undefined);
   }
 
   expoSection(titleKey, list) {
@@ -5459,7 +5464,7 @@ class MarksMixin {
       return `<section class="panel">${head}<form class="pad polform" data-mark-form="${this.esc(key)}"><select data-mark-kind aria-label="${this.esc(this.t("markKind"))}">${kinds}</select>
         <input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">${target}
         <select data-mark-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
-        <button type="submit" class="btn primary">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button>
+        <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button>
         ${f.error ? `<small class="error" role="alert">${this.esc(f.error)}</small>` : ""}</form></section>`;
     }
     const body = mark
@@ -5813,12 +5818,12 @@ class ExchangeMixin {
     const planDone = ["executed", "verified"].includes(this.plan?.status) && ex.planned && ex.planned === ex.oldDev;
     const rows = ex.result ? (ex.result.pairs.length ? ex.result.pairs.map(p => this.pairRow(p)).join("") : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : "";
     const unmatched = ex.result?.unmatched_new?.length ? `<p class="factnote">${this.t("exUnmatched", { list: this.esc(ex.result.unmatched_new.slice(0, 10).join(", ")) })}</p>` : "";
-    const create = ex.result ? `<div class="setrow"><small style="margin:0">${this.t("exChosen", { count: chosen })} · ${this.t("cleanupDryRun")}</small><button class="btn primary" data-ex-create ${chosen && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("exCreate", { count: chosen })}</button></div>` : "";
-    const disable = planDone ? `<div class="setrow"><small style="margin:0">${this.t("exDisableHint")}</small><button class="btn" data-ex-disable>${this.t("exDisableOld")}</button></div>` : "";
+    const create = ex.result ? `<div class="setrow planfoot"><small style="margin:0">${this.t("exChosen", { count: chosen })} · ${this.t("cleanupDryRun")}</small><button class="btn primary" data-ex-create ${chosen && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("exCreate", { count: chosen })}</button></div>` : "";
+    const disable = planDone ? `<div class="setrow planfoot"><small style="margin:0">${this.t("exDisableHint")}</small><button class="btn" data-ex-disable>${this.t("exDisableOld")}</button></div>` : "";
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("exTitle")}</h2><p>${this.t("exHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
       <div class="setrow"><div><label>${this.t("exOld")}</label></div><select data-ex-old style="max-width:360px">${this.deviceOptions(ex.oldDev, ex.newDev)}</select></div>
       <div class="setrow"><div><label>${this.t("exNew")}</label></div><select data-ex-new style="max-width:360px">${this.deviceOptions(ex.newDev, ex.oldDev)}</select></div>
-      <div class="setrow"><small style="margin:0">${this.esc(ex.error)}</small><button class="btn" data-ex-load ${ex.oldDev && ex.newDev && !ex.loading ? "" : "disabled"}>${ex.loading ? this.t("exLoading") : this.t("exLoad")}</button></div>
+      <div class="setrow planfoot"><small style="margin:0">${this.esc(ex.error)}</small><button class="btn" data-ex-load ${ex.oldDev && ex.newDev && !ex.loading ? "" : "disabled"}>${ex.loading ? this.t("exLoading") : this.t("exLoad")}</button></div>
       ${rows}${unmatched}${create}${disable}</div>`;
   }
 
@@ -5876,8 +5881,8 @@ class ExchangeMixin {
 
   reportBlock(plan) {
     const shown = this.report?.plan_id === plan.plan_id ? this.report : null;
-    const body = shown ? `<pre class="reportpre" style="white-space:pre-wrap;max-height:320px;overflow:auto">${this.esc(shown.markdown)}</pre><div class="setrow"><small style="margin:0">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</small><span style="display:flex;gap:8px"><button class="btn" data-report-copy>${this.t("reportCopy")}</button><button class="btn" data-report-download>${this.t("reportDownload")}</button></span></div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
-    return `<div class="setrow"><label class="factnote" style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}>${this.t("reportNames")}</label><button class="btn" data-report="${this.esc(plan.plan_id)}">${this.t("reportButton")}</button></div>${body}`;
+    const body = shown ? `<pre class="reportpre" style="white-space:pre-wrap;max-height:320px;overflow:auto">${this.esc(shown.markdown)}</pre><div class="setrow planfoot"><small style="margin:0">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</small><span style="display:flex;gap:8px"><button class="btn" data-report-copy>${this.t("reportCopy")}</button><button class="btn" data-report-download>${this.t("reportDownload")}</button></span></div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
+    return `<div class="setrow planfoot"><label class="factnote" style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}>${this.t("reportNames")}</label><button class="btn" data-report="${this.esc(plan.plan_id)}">${this.t("reportButton")}</button></div>${body}`;
   }
 
   // -- end state simulation ---------------------------------------------------------------
@@ -5896,7 +5901,7 @@ class ExchangeMixin {
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
     if (s.rows_counted) { if (s.purge_rows) lines.push(this.t("simPurgeRows", { count: this.formatNumber(s.purge_rows) })); if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); }
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
-    return `<details class="rowdetails" ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary>${lines.map(l => `<small style="display:block">${this.esc(l)}</small>`).join("")}<small style="display:block;opacity:.8">${this.t("simLimits")}</small></details>`;
+    return `<div class="simbox"><details ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary><ul class="simlist">${lines.map(l => `<li>${this.esc(l)}</li>`).join("")}</ul><p class="simlimits">${this.t("simLimits")}</p></details></div>`;
   }
 }
 
@@ -6156,7 +6161,7 @@ class TraceDiagMixin {
     if (!c) return "";
     const option = (run, selected) => `<option value="${this.esc(run.run_id)}" ${run.run_id === selected ? "selected" : ""}>${this.esc(this.formatDate(run.start))} · ${this.esc(run.execution || "")}${run.trigger ? ` · ${this.esc(run.trigger)}` : ""}</option>`;
     const picker = (attr, label, selected) => `<div class="setrow"><div><label>${label}</label></div><select ${attr} style="max-width:460px"><option value=""></option>${c.runs.map(r => option(r, selected)).join("")}</select></div>`;
-    const body = c.runs.length ? `${picker("data-cmp-a", this.t("cmpOlder"), c.a)}${picker("data-cmp-b", this.t("cmpNewer"), c.b)}<div class="setrow"><small style="margin:0"></small><button class="btn" data-cmp-run ${c.a && c.b && c.a !== c.b ? "" : "disabled"}>${this.t("cmpRun")}</button></div>` : `<div class="emptymsg">${this.t("cmpNoRuns")}</div>`;
+    const body = c.runs.length ? `${picker("data-cmp-a", this.t("cmpOlder"), c.a)}${picker("data-cmp-b", this.t("cmpNewer"), c.b)}<div class="setrow planfoot"><small style="margin:0"></small><button class="btn" data-cmp-run ${c.a && c.b && c.a !== c.b ? "" : "disabled"}>${this.t("cmpRun")}</button></div>` : `<div class="emptymsg">${this.t("cmpNoRuns")}</div>`;
     return `<div class="panelhead"><div><h2>${this.t("cmpTitle")}</h2><p>${this.t("cmpHint")}</p></div></div>${body}${c.error ? `<div class="error">${this.esc(c.error)}</div>` : ""}${c.result ? this.compareLines(c.result) : ""}`;
   }
 
@@ -6752,15 +6757,15 @@ class CounterMixin {
       <div class="setrow"><div><label>${this.t("rangeTo")}</label></div><input type="datetime-local" data-range-to value="${stamp(this.rangeTo)}" style="max-width:260px"></div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-range-mode style="max-width:460px">${["hold", "interpolate", "fixed"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`rangeMode_${m}`)}</option>`).join("")}</select></div>
       ${mode === "fixed" ? `<div class="setrow"><div><label>${this.t("rangeFixed")}</label></div><input type="text" inputmode="decimal" data-range-fixed value="${stamp(this.rangeFixed)}" style="max-width:160px"></div>` : ""}
-      <div class="setrow"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button></div>`;
+      <div class="setrow planfoot"><small style="margin:0">${this.t("rangeNote")}</small><button class="btn primary" data-range-pick ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button></div>`;
   }
 
   counterCard() {
     const s = this.counterScan, mode = this.counterMode || "hold";
     const head = `<div class="panelhead"><div>${this.view === "repair" ? "" : `<h2>${this.t("counterTitle")}</h2>`}<p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
-    const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div><input type="text" data-counter-id value="${this.esc(this.counterId || "")}" placeholder="sensor.water_meter" autocomplete="off" style="max-width:360px"></div>
+    const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div>${this.pickerBox("counter", "sensor.water_meter", "data-counter-id")}</div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-counter-mode style="max-width:460px">${["hold", "interpolate"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`counterMode_${m}`)}</option>`).join("")}</select></div>
-      <div class="setrow"><small style="margin:0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? "disabled" : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
+      <div class="setrow planfoot"><small style="margin:0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? "disabled" : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
     let body = "";
     if (this.counterError) body = `<div class="error">${this.esc(this.counterError)}</div>`;
     else if (s && !s.available) body = `<div class="emptymsg">${this.t("counterNoRecorder")}</div>`;
@@ -6967,7 +6972,7 @@ class FindingStatusMixin {
     return `<form class="polform bulkform" data-bulk-form><strong>${this.t(`state_${b.kind}`)}</strong>
       <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(b.kind === "known" ? "decideReasonNeeded" : "decideReason"))}">
       ${b.kind === "snoozed" ? `<select data-bulk-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>` : ""}
-      <button type="submit" class="btn primary">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
       ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
   }
 
@@ -7081,8 +7086,9 @@ class DetailActionsMixin {
     const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
     if (!labels.length) return "";
     const chosen = this.actLabel && labels.some(l => l.object_id === this.actLabel) ? this.actLabel : labels[0].object_id;
-    return `<div class="setrow"><select data-act-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${chosen === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
-      <button class="btn" data-act-label-plan="${this.esc(item.object_id)}"><ha-icon icon="mdi:label-outline"></ha-icon>${this.t("fselLabel")}</button></div>`;
+    return `<div class="labelbox"><span class="tile"><ha-icon icon="mdi:label-outline"></ha-icon></span><div class="labeltext"><strong>${this.t("actLabelTitle")}</strong><small>${this.t("actLabelHint")}</small></div>
+      <select data-act-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${chosen === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
+      <button class="btn primary" data-act-label-plan="${this.esc(item.object_id)}">${this.t("actLabelPreview")}</button></div>`;
   }
 
   actionsCard(item, key) {
@@ -7132,11 +7138,13 @@ class DetailActionsMixin {
 }
 Object.assign(TEXT.de, {
   actionsTitle: "Was möchtest du tun?", actReplace: "Ersetzen:", actReplaceThis: "Durch andere Entität ersetzen", actDisable: "Deaktivieren planen",
+  actLabelTitle: "Label ergänzen", actLabelHint: "Fügt ein vorhandenes Label hinzu, zum Beispiel zum Filtern. Du siehst zuerst eine Vorschau.", actLabelPreview: "Vorschau erstellen",
   actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie bestätigst.",
   actEditInHa: "Eine einzelne Referenz entfernt Housekeeper nicht selbst. Öffne die Automation in Home Assistant und bearbeite sie dort.",
 });
 Object.assign(TEXT.en, {
   actionsTitle: "What would you like to do?", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable",
+  actLabelTitle: "Add a label", actLabelHint: "Adds an existing label, for example for filtering. You see a preview first.", actLabelPreview: "Create preview",
   actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it.",
   actEditInHa: "Housekeeper does not remove a single reference itself. Open the automation in Home Assistant and edit it there.",
 });
@@ -7190,6 +7198,76 @@ Object.assign(TEXT.en, {
   repairTaskReplace: "Replace references", repairTaskReplaceHint: "Replace one entity with another everywhere (automations, dashboards, energy).",
   repairTaskExchange: "Exchange a device", repairTaskExchangeHint: "Replace a broken device with a new one and carry everything over.",
 });
+
+// PickerMixin: a text field for an entity id that shows matching entities while typing, like the search in the top bar.
+// A field is described by its name: where its value lives and which entities it may offer.
+class PickerMixin {
+  pickerDef(name) {
+    return {
+      counter: { get: () => this.counterId || "", set: v => { this.counterId = v; }, filter: o => o.has_statistics && o.object_id.startsWith("sensor.") },
+    }[name];
+  }
+
+  pickerResults(name) {
+    const def = this.pickerDef(name), q = def ? String(def.get()).trim().toLowerCase() : "";
+    if (!q || !this.data) return [];
+    const terms = q.split(/\s+/), found = [];
+    for (const o of this.data.objects) {
+      if (o.object_type !== "entity" || !def.filter(o)) continue;
+      const id = o.object_id.toLowerCase(), label = String(o.name || "").toLowerCase();
+      if (!terms.every(term => id.includes(term) || label.includes(term))) continue;
+      found.push({ o, rank: id.startsWith(q) || label.startsWith(q) ? 0 : 1 });
+    }
+    found.sort((a, b) => a.rank - b.rank || a.o.object_id.localeCompare(b.o.object_id));
+    return found.slice(0, QUICK_LIMIT).map(entry => entry.o);
+  }
+
+  // The input plus, while it is open, the list of matches. `attrs` carries the field's own data attribute.
+  pickerBox(name, placeholder, attrs = "") {
+    const def = this.pickerDef(name), value = def.get(), open = this._picker?.name === name && this._picker.open && String(value).trim();
+    const results = open ? this.pickerResults(name) : [];
+    const active = Math.min(this._picker?.index || 0, Math.max(results.length - 1, 0));
+    const list = open ? `<ul class="quicklist" id="picker-${name}" role="listbox" aria-label="${this.esc(this.t("quickLabel"))}">${results.length
+      ? results.map((o, i) => `<li role="option" id="picker-${name}-${i}" aria-selected="${i === active}" data-picker-item="${this.esc(o.object_id)}" data-picker-name="${name}" class="${i === active ? "on" : ""}">${this.tile("entity")}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}</small></span></li>`).join("")
+      : `<li class="none">${this.t("quickNone")}</li>`}</ul>` : "";
+    return `<div class="picker"><input type="text" data-picker="${name}" ${attrs} value="${this.esc(value)}" placeholder="${this.esc(placeholder)}" autocomplete="off" role="combobox" aria-expanded="${Boolean(open)}" aria-controls="picker-${name}" aria-autocomplete="list" ${open && results.length ? `aria-activedescendant="picker-${name}-${active}"` : ""}>${list}</div>`;
+  }
+
+  pickerPick(name, id) {
+    this.pickerDef(name).set(id);
+    this._picker = { name, open: false, index: 0 };
+    this.render();
+  }
+
+  bindPicker(root) {
+    root.querySelectorAll("[data-picker]").forEach(input => {
+      const name = input.dataset.picker;
+      input.oninput = () => { this.pickerDef(name).set(input.value.trim()); this._picker = { name, open: true, index: 0 }; this.scheduleRender(); };
+      input.onkeydown = ev => {
+        const results = this._picker?.open ? this.pickerResults(name) : [];
+        if ((ev.key === "ArrowDown" || ev.key === "ArrowUp") && results.length) {
+          ev.preventDefault();
+          this._picker.index = (this._picker.index + (ev.key === "ArrowDown" ? 1 : results.length - 1)) % results.length;
+          this.render();
+        } else if (ev.key === "Enter" && results.length) {
+          ev.preventDefault();
+          this.pickerPick(name, results[Math.min(this._picker.index, results.length - 1)].object_id);
+        } else if (ev.key === "Escape" && this._picker?.open) {
+          ev.stopPropagation();
+          this._picker.open = false; this.render();
+        }
+      };
+    });
+    root.querySelectorAll("[data-picker-item]").forEach(el => { el.onclick = () => this.pickerPick(el.dataset.pickerName, el.dataset.pickerItem); });
+    if (!this._pickerBound && root.addEventListener) {
+      this._pickerBound = true;
+      root.addEventListener("click", ev => {
+        if (!this._picker?.open || (ev.composedPath?.() || []).some(node => node.classList?.contains?.("picker"))) return;
+        this._picker.open = false; this.render();
+      });
+    }
+  }
+}
 
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
@@ -7879,6 +7957,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindRefactor(root);
     this.bindBatteryCare(root);
     this.bindCounter(root);
+    this.bindPicker(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
@@ -8074,7 +8153,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

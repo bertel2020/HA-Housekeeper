@@ -2152,7 +2152,7 @@ test("the load view, the policies and the exposure view have a search box once t
   assert.ok(el.exposureView().includes("No matches for these filters."));
 });
 
-test("exposure findings fold: warnings open, hints closed, the head toggles and a click shows all", () => {
+test("exposure findings fold: all closed at first, the head toggles and a click shows all", () => {
   const { el } = panel("en");
   el.data = { ...DATA }; el._exposureRequested = true;
   const items = n => Array.from({ length: n }, (_, i) => ({ entity_id: `light.x${i}`, name: `X ${i}` }));
@@ -2162,10 +2162,12 @@ test("exposure findings fold: warnings open, hints closed, the head toggles and 
   ] };
   let html = el.exposureView();
   assert.ok(html.includes("To check") && html.includes("For your information"));
-  assert.ok(html.includes("light.x9") && !html.includes("light.x10"), "ten entities, the warning is open");
-  assert.ok(!html.includes("sensor.diag"), "the hint is closed");
-  assert.ok(html.includes('data-expo-all="stale_exposed"') && html.includes('aria-expanded="false"'));
-  el.expoAll = { stale_exposed: true }; el.folds = { expo_diagnostic_exposed: true };
+  assert.ok(!html.includes("light.x0") && !html.includes("sensor.diag"), "everything is closed at first");
+  assert.ok(html.includes('aria-expanded="false"'));
+  el.folds = { expo_stale_exposed: true };
+  html = el.exposureView();
+  assert.ok(html.includes("light.x9") && !html.includes("light.x10") && html.includes('data-expo-all="stale_exposed"'), "ten entities");
+  el.expoAll = { stale_exposed: true }; el.folds = { expo_stale_exposed: true, expo_diagnostic_exposed: true };
   html = el.exposureView();
   assert.ok(html.includes("light.x13") && html.includes("sensor.diag"));
 });
@@ -3071,5 +3073,16 @@ test("the language can be set by hand, saved with the preferences, and falls bac
   assert.equal(el.lang, "en");
   el.view = "settings"; el.settingsTab = "look"; el.render();
   assert.ok(shadow.innerHTML.includes('data-pref="language|de"') && shadow.innerHTML.includes('data-pref="language|auto"'));
+});
+test("the sensor field lists matching sensors with statistics while typing and takes the picked one", () => {
+  const { el } = panel("en");
+  const mk = (id, stats) => ({ object_type: "entity", object_id: id, name: id, status: "active", has_statistics: stats });
+  el.data = { ...DATA, objects: [mk("sensor.water_meter", true), mk("sensor.water_temp", true), mk("sensor.water_off", false), mk("light.water", true)] };
+  el.counterId = "water"; el._picker = { name: "counter", open: true, index: 0 };
+  assert.equal(el.pickerResults("counter").map(o => o.object_id).join(), "sensor.water_meter,sensor.water_temp");
+  const html = el.pickerBox("counter", "sensor.x", "data-counter-id");
+  assert.ok(html.includes('data-picker-item="sensor.water_meter"') && !html.includes("water_off") && !html.includes("light.water"));
+  el.pickerPick("counter", "sensor.water_temp");
+  assert.equal(el.counterId, "sensor.water_temp"); assert.equal(el._picker.open, false);
 });
 const TEXT_DE_SETTINGS = "Einstellungen";

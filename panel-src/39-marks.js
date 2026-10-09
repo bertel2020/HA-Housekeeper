@@ -29,7 +29,7 @@ class MarksMixin {
       return `<section class="panel">${head}<form class="pad polform" data-mark-form="${this.esc(key)}"><select data-mark-kind aria-label="${this.esc(this.t("markKind"))}">${kinds}</select>
         <input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">${target}
         <select data-mark-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
-        <button type="submit" class="btn primary">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button>
+        <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button>
         ${f.error ? `<small class="error" role="alert">${this.esc(f.error)}</small>` : ""}</form></section>`;
     }
     const body = mark

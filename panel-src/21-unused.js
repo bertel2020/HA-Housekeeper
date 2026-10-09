@@ -150,7 +150,7 @@ class UnusedMixin {
     const open = this.purgeOpen && n ? `<div class="panel" role="group" aria-label="${this.esc(this.t("purgeTitle"))}"><div class="pad">
       <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
       <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
-      <div class="setrow"><small style="margin:0">${this.t("purgePlanHint")}</small>
+      <div class="setrow planfoot"><small style="margin:0">${this.t("purgePlanHint")}</small>
       <button class="btn primary" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
     return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-purge-open ${n ? "" : "disabled"}>${this.t("purgeOpen")}</button></div>${open}`;
   }

@@ -99,12 +99,12 @@ class ExchangeMixin {
     const planDone = ["executed", "verified"].includes(this.plan?.status) && ex.planned && ex.planned === ex.oldDev;
     const rows = ex.result ? (ex.result.pairs.length ? ex.result.pairs.map(p => this.pairRow(p)).join("") : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : "";
     const unmatched = ex.result?.unmatched_new?.length ? `<p class="factnote">${this.t("exUnmatched", { list: this.esc(ex.result.unmatched_new.slice(0, 10).join(", ")) })}</p>` : "";
-    const create = ex.result ? `<div class="setrow"><small style="margin:0">${this.t("exChosen", { count: chosen })} · ${this.t("cleanupDryRun")}</small><button class="btn primary" data-ex-create ${chosen && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("exCreate", { count: chosen })}</button></div>` : "";
-    const disable = planDone ? `<div class="setrow"><small style="margin:0">${this.t("exDisableHint")}</small><button class="btn" data-ex-disable>${this.t("exDisableOld")}</button></div>` : "";
+    const create = ex.result ? `<div class="setrow planfoot"><small style="margin:0">${this.t("exChosen", { count: chosen })} · ${this.t("cleanupDryRun")}</small><button class="btn primary" data-ex-create ${chosen && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("exCreate", { count: chosen })}</button></div>` : "";
+    const disable = planDone ? `<div class="setrow planfoot"><small style="margin:0">${this.t("exDisableHint")}</small><button class="btn" data-ex-disable>${this.t("exDisableOld")}</button></div>` : "";
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("exTitle")}</h2><p>${this.t("exHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
       <div class="setrow"><div><label>${this.t("exOld")}</label></div><select data-ex-old style="max-width:360px">${this.deviceOptions(ex.oldDev, ex.newDev)}</select></div>
       <div class="setrow"><div><label>${this.t("exNew")}</label></div><select data-ex-new style="max-width:360px">${this.deviceOptions(ex.newDev, ex.oldDev)}</select></div>
-      <div class="setrow"><small style="margin:0">${this.esc(ex.error)}</small><button class="btn" data-ex-load ${ex.oldDev && ex.newDev && !ex.loading ? "" : "disabled"}>${ex.loading ? this.t("exLoading") : this.t("exLoad")}</button></div>
+      <div class="setrow planfoot"><small style="margin:0">${this.esc(ex.error)}</small><button class="btn" data-ex-load ${ex.oldDev && ex.newDev && !ex.loading ? "" : "disabled"}>${ex.loading ? this.t("exLoading") : this.t("exLoad")}</button></div>
       ${rows}${unmatched}${create}${disable}</div>`;
   }
 
@@ -162,8 +162,8 @@ class ExchangeMixin {
 
   reportBlock(plan) {
     const shown = this.report?.plan_id === plan.plan_id ? this.report : null;
-    const body = shown ? `<pre class="reportpre" style="white-space:pre-wrap;max-height:320px;overflow:auto">${this.esc(shown.markdown)}</pre><div class="setrow"><small style="margin:0">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</small><span style="display:flex;gap:8px"><button class="btn" data-report-copy>${this.t("reportCopy")}</button><button class="btn" data-report-download>${this.t("reportDownload")}</button></span></div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
-    return `<div class="setrow"><label class="factnote" style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}>${this.t("reportNames")}</label><button class="btn" data-report="${this.esc(plan.plan_id)}">${this.t("reportButton")}</button></div>${body}`;
+    const body = shown ? `<pre class="reportpre" style="white-space:pre-wrap;max-height:320px;overflow:auto">${this.esc(shown.markdown)}</pre><div class="setrow planfoot"><small style="margin:0">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</small><span style="display:flex;gap:8px"><button class="btn" data-report-copy>${this.t("reportCopy")}</button><button class="btn" data-report-download>${this.t("reportDownload")}</button></span></div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
+    return `<div class="setrow planfoot"><label class="factnote" style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}>${this.t("reportNames")}</label><button class="btn" data-report="${this.esc(plan.plan_id)}">${this.t("reportButton")}</button></div>${body}`;
   }
 
   // -- end state simulation ---------------------------------------------------------------
@@ -182,6 +182,6 @@ class ExchangeMixin {
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
     if (s.rows_counted) { if (s.purge_rows) lines.push(this.t("simPurgeRows", { count: this.formatNumber(s.purge_rows) })); if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); }
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
-    return `<details class="rowdetails" ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary>${lines.map(l => `<small style="display:block">${this.esc(l)}</small>`).join("")}<small style="display:block;opacity:.8">${this.t("simLimits")}</small></details>`;
+    return `<div class="simbox"><details ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary><ul class="simlist">${lines.map(l => `<li>${this.esc(l)}</li>`).join("")}</ul><p class="simlimits">${this.t("simLimits")}</p></details></div>`;
   }
 }

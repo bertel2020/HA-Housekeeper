@@ -87,7 +87,7 @@ class FindingStatusMixin {
     return `<form class="polform bulkform" data-bulk-form><strong>${this.t(`state_${b.kind}`)}</strong>
       <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(b.kind === "known" ? "decideReasonNeeded" : "decideReason"))}">
       ${b.kind === "snoozed" ? `<select data-bulk-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>` : ""}
-      <button type="submit" class="btn primary">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
       ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
   }
 
