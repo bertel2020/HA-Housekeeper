@@ -483,8 +483,14 @@ class CleanupMixin {
     const journal = journalPage.rows.map(plan => `<div class="row">${this.mergeable(plan) ? `<input type="checkbox" data-merge-sel="${this.esc(plan.plan_id)}" ${this.mergeSel?.has(plan.plan_id) ? "checked" : ""} aria-label="${this.esc(this.t("mergeSelect"))}">` : ""}<span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div><div class="actions"><button class="btn" data-merge ${(this.mergeSel?.size || 0) >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: this.mergeSel?.size || 0 })}</button></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}<br><small>${this.t("journalEmptyNext")}</small></div>`}${journalPage.footer}</div>`;
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div><div class="actions"><button class="btn" data-merge ${(this.mergeSel?.size || 0) >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: this.mergeSel?.size || 0 })}</button></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg mute"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon><strong>${this.t("journalEmpty")}</strong>${this.t("journalEmptyNext")}<button class="btn" data-jump="repair">${this.t("repair")}</button></div>`}${journalPage.footer}</div>`;
     return `<div class="stack">${this.planHeader()}${journalCard}</div>`;
+  }
+
+  // Where the person is in an assistant: choose, set up, look at the preview.
+  stepsBar(current) {
+    const names = ["stepChoose", "stepSetup", "stepPreview"];
+    return `<div class="stepsbar" role="list">${names.map((name, i) => `${i ? `<span class="line${i < current ? " done" : ""}"></span>` : ""}<span class="step${i + 1 === current ? " on" : i + 1 < current ? " done" : ""}" role="listitem"${i + 1 === current ? ' aria-current="step"' : ""}><i>${i + 1 < current ? "✓" : i + 1}</i>${this.t(name)}</span>`).join("")}</div>`;
   }
 
   // Tasks that fix something that stays. A tile opens the assistant for one task; the plan is finished in the same view.
@@ -495,12 +501,14 @@ class CleanupMixin {
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), repair_counter: () => this.counterCard() }[task]();
       const label = REPAIR_TASKS.find(([kind]) => kind === task)[2];
-      body = `<button class="btn quiet" data-repair-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("repairBack")}</button><h2 class="repairhead">${this.t(label)}</h2>${card}`;
+      const chosen = { repair_counter: (this.counterId || "").trim(), migrate_meter: this.meterOld, replace_references: this.replOld, exchange_device: this.exchangeState().oldDev }[task];
+      body = `<button class="btn quiet" data-repair-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("repairBack")}</button><h2 class="repairhead">${this.t(label)}</h2>${this.stepsBar(this.plan ? 3 : chosen ? 2 : 1)}${card}`;
     } else {
       const scan = this.counterScan, found = scan?.items?.length || 0;
       // Without a scan there is nothing to count: the tile says so instead of showing nothing (no scan runs by itself).
       const state = kind => kind !== "repair_counter" ? "" : !scan?.available ? ` <span class="pill mute">${this.t("repairNotChecked")}</span>` : found ? ` <span class="pill warn">${this.t("repairFound", { count: found })}</span>` : ` <span class="pill ok">${this.t("repairNoneFound")}</span>`;
-      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${state(kind)}</strong><small>${this.t(hint)}</small></button>`).join("");
+      const tone = kind => (kind !== "repair_counter" ? "ac" : !scan?.available ? "mute" : found ? "warn" : "ok");
+      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard t-${tone(kind)}" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${state(kind)}</strong><small>${this.t(hint)}</small></button>`).join("");
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("repairTitle")}</h2><p>${this.t("repairHint")}</p></div></div><div class="taskgrid">${tiles}</div></div>`;
     }
     return `<div class="stack">${this.planHeader()}${body}</div>`;

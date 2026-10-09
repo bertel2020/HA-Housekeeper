@@ -2834,7 +2834,7 @@ test("the health card names the score and the count; the safety line shows backu
   ];
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes("% of objects without a finding") && html.includes("no open tasks"));
+  assert.ok(html.includes("class=\"statushead\"") && /tasks are waiting for you|All good/.test(html));
   assert.ok(html.includes("of 3 rated objects affected"));
   assert.ok(html.includes("Last backup: 5 h ago") && html.includes("Undo available") && html.includes("1 follow-up running") && html.includes("1 regression after a change"));
   el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
@@ -2932,7 +2932,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   el.data = stepCData().data; el.journal = []; el.view = "repair"; el.repairTask = "repair_counter"; el.cleanupKind = "repair_counter";
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("counter_scan") ? found : { ...REPAIR_PLAN }; } };
   el.render();
-  assert.ok(shadow.innerHTML.includes("Find and repair counter glitches") && shadow.innerHTML.includes("data-counter-scan") && shadow.innerHTML.includes("data-range-pick"));
+  assert.ok(shadow.innerHTML.includes("A counter must never fall") && shadow.innerHTML.includes("data-counter-scan") && shadow.innerHTML.includes("data-range-pick"));
   await el.loadCounterScan(true);
   assert.ok(shadow.innerHTML.includes("sensor.water") && shadow.innerHTML.includes("data-counter-pick"));
   el.counterSel = "sensor.water"; el.counterMode = "interpolate";
@@ -3032,7 +3032,7 @@ test("the overview starts with task tiles; a missed goal is a to-do row, not a c
   el.goals = { met: 2, missed: 1, goals: [{ id: "broken_references", state: "missed", value: 43, limit: 0, unit: "count", enabled: true, default: 0 }, { id: "backup_age", state: "met", value: 3, limit: 48, unit: "hours", enabled: true, default: 48 }] };
   el._goalsRequested = true; el._goalsKey = el.data.meta.scanned_at || "";
   const html = el.overview();
-  for (const view of ["cleanup", "repair", "maintenance", "findingsNav"]) assert.ok(html.includes(`class="taskcard" data-jump="${view}"`), view);
+  for (const view of ["cleanup", "repair", "maintenance", "findingsNav"]) assert.ok(new RegExp(`class="taskcard t-\\w+" data-jump="${view}"`).test(html), view);
   assert.ok(html.includes("Broken references: goal missed") && html.includes("Maintenance goals: 3 of 3 met".replace("3 of 3", "2 of 3")) && html.includes("data-goals-settings"));
   assert.ok(!html.includes('aria-labelledby="hk-goals"') && html.includes("Housekeeping status"));
   assert.ok(el.health().tasks >= 1 && el.health().tone !== "ok"); // a missed goal is an open task: the status is not "all good"

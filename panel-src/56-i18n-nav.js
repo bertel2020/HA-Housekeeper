@@ -1,5 +1,8 @@
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  statusTasks: "{count} Aufgaben warten auf dich", statusAllGood: "Alles in Ordnung",
+  counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterRescan: "Neu prüfen", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten.", counterScanNow: "Sensoren jetzt prüfen",
+  stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
   setTabProtection: "Sicherheit", setTabNotify: "Benachrichtigungen", setTabGoals: "Wartungsziele", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Schutzmodus: was Housekeeper ändern darf.", setHintScan: "Wann und wie oft geprüft wird, und Grenzwerte.", setHintNotify: "Meldung bei neuen kaputten Referenzen.", setHintGoals: "Eigene Grenzen für „in Ordnung“.", setHintHidden: "Befunde, die du ausgeblendet hast.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
@@ -21,6 +24,9 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  statusTasks: "{count} tasks are waiting for you", statusAllGood: "All good",
+  counterNoneSub: "{count} sensors look fine.", counterRescan: "Check again", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements.", counterScanNow: "Check sensors now",
+  stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
   setTabProtection: "Safety", setTabNotify: "Notifications", setTabGoals: "Maintenance goals", setHintLook: "Language, density and appearance.", setHintProtection: "Protection mode: what Housekeeper may change.", setHintScan: "When and how often it checks, and limits.", setHintNotify: "A message for new broken references.", setHintGoals: "Your own limits for what in order means.", setHintHidden: "Findings you have hidden.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",

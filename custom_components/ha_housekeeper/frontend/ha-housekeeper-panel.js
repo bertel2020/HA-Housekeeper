@@ -993,13 +993,14 @@ class ThemeMixin {
 
   themeCss() {
     const { scheme, mode, size } = this.prefs;
-    let vars = `--hk-fs:${SIZES[size] || 1};font-size:calc(14px*${SIZES[size] || 1})`;
+    const darkNow = this.isDark();
+    let vars = `--hk-fs:${SIZES[size] || 1};font-size:calc(14px*${SIZES[size] || 1});--hk-sh-rgb:${darkNow ? "0,0,0" : "19,28,23"};--hk-hi:inset 0 1px 0 rgba(255,255,255,${darkNow ? ".05" : ".7"})`;
     if (!(scheme === "standard" && mode === "auto")) {
       const dark = this.isDark(), p = (SCHEMES[scheme] || SCHEMES.standard)[dark ? "dark" : "light"];
       vars += `;--hk-blue:${p.accent};--hk-bg:${p.bg};--hk-surface:${p.surface};--hk-soft:${p.soft};--hk-text:${p.text};--hk-muted:${p.muted};--hk-border:${p.border};--hk-on:${p.on || "#ffffff"};--hk-green:${p.positive};--hk-amber:${p.warning};--hk-red:${p.danger};color-scheme:${dark ? "dark" : "light"}`;
     }
     const compact = this.prefs.density === "compact" ? `.row{padding-top:6px;padding-bottom:6px}.card{padding:10px 12px}.panelhead{min-height:44px;padding-top:8px;padding-bottom:8px}td{padding:6px 14px}th{padding:7px 14px}.nav{min-height:36px}.tile{width:30px;height:30px}.setrow{padding-top:9px;padding-bottom:9px}.chips{padding-top:8px;padding-bottom:8px}.listbar{padding-top:8px;padding-bottom:8px}.summary,.stack,.grid2{gap:10px}.heading{margin-bottom:14px}` : "";
-    const calm = "*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}";
+    const calm = "*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.taskcard:hover{transform:none!important}";
     const motion = this.prefs.motion === "reduced" ? calm : `@media(prefers-reduced-motion:reduce){${calm}}`;
     return `:host{${vars}}${compact}${motion}`;
   }
@@ -1195,6 +1196,34 @@ class StylesMixin {
       th{background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:500;letter-spacing:0;text-transform:none;border-bottom:1px solid var(--hk-border)}
       .id,.ring b,code,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace}
       .btn{border-radius:10px}.chip{padding:5px 13px}input,select{border-radius:10px}
+      /* depth: three shadow levels, a light edge on top of every surface, state stripes on task tiles */
+      :host{--hk-sh1:0 1px 2px rgba(var(--hk-sh-rgb,19,28,23),.07),0 1px 1px rgba(var(--hk-sh-rgb,19,28,23),.04);--hk-sh2:0 6px 16px rgba(var(--hk-sh-rgb,19,28,23),.09),0 1px 3px rgba(var(--hk-sh-rgb,19,28,23),.07);--hk-sh3:0 12px 28px rgba(var(--hk-sh-rgb,19,28,23),.14),0 2px 6px rgba(var(--hk-sh-rgb,19,28,23),.08);--hk-hi:inset 0 1px 0 rgba(255,255,255,.7)}
+      .panel,.card,.sumtile,.type,.modeopt{box-shadow:var(--hk-sh1),var(--hk-hi)}
+      .panel{margin-bottom:16px}.card[data-jump]:hover,.sumtile:hover,.type:hover{box-shadow:var(--hk-sh2),var(--hk-hi)}
+      .card,.sumtile,.type,.taskcard{transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease}
+      .statushead{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:20px 22px;margin-bottom:16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-surface);box-shadow:var(--hk-sh2),var(--hk-hi)}
+      .statushead .ring{width:84px;height:84px;flex:none;box-shadow:inset 0 0 0 1px var(--hk-border),var(--hk-sh1);background:radial-gradient(circle at center,var(--hk-surface) 66%,transparent 68%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}
+      .statushead .ring b{font-size:calc(22px*var(--hk-fs,1));font-weight:600}
+      .statustext{min-width:0;flex:1 1 220px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
+      .kpis{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+      .kpi{display:block;min-width:104px;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
+      .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
+      .taskgrid{gap:14px}
+      .taskcard{--c:var(--hk-blue);position:relative;overflow:hidden;padding-left:20px;box-shadow:var(--hk-sh1),var(--hk-hi)}
+      .taskcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+      .taskcard ha-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);--mdc-icon-size:22px;margin-bottom:2px}
+      .taskcard:hover{transform:translateY(-2px);box-shadow:var(--hk-sh3),var(--hk-hi)}.taskcard.on{box-shadow:var(--hk-sh2),var(--hk-hi)}
+      .taskcard.t-ok{--c:var(--hk-green)}.taskcard.t-warn{--c:var(--hk-amber)}.taskcard.t-red{--c:var(--hk-red)}.taskcard.t-mute{--c:var(--hk-gray)}
+      .emptymsg{display:grid;justify-items:center;gap:6px;padding:38px 22px;text-align:center;color:var(--hk-muted)}
+      .emptymsg ha-icon{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;margin:0 0 6px;--mdc-icon-size:30px;background:color-mix(in srgb,var(--hk-green) 14%,transparent);box-shadow:var(--hk-sh2),var(--hk-hi)}
+      .emptymsg.mute ha-icon{color:var(--hk-gray);background:var(--hk-soft)}.emptymsg.info ha-icon{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
+      .emptymsg strong{color:var(--hk-text);font-size:calc(15px*var(--hk-fs,1));font-weight:600}.emptymsg .btn{margin-top:10px}
+      .stepsbar{display:flex;align-items:center;margin:0 0 16px}.stepsbar .step{display:flex;align-items:center;gap:8px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
+      .stepsbar .step i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:calc(12px*var(--hk-fs,1));background:var(--hk-surface);border:1px solid var(--hk-border);box-shadow:var(--hk-sh1)}
+      .stepsbar .step.on{color:var(--hk-text);font-weight:600}.stepsbar .step.on i{background:var(--hk-blue);color:var(--hk-on,#fff);border-color:var(--hk-blue)}
+      .stepsbar .step.done i{background:color-mix(in srgb,var(--hk-green) 16%,var(--hk-surface));color:var(--hk-green);border-color:var(--hk-green)}
+      .stepsbar .line{flex:1;height:2px;min-width:20px;margin:0 10px;border-radius:2px;background:var(--hk-border)}.stepsbar .line.done{background:var(--hk-green)}
+      .rangechart .grid{stroke:var(--hk-border);stroke-width:1}
       ${this.themeCss()}
     </style>`;
   }
@@ -1580,7 +1609,7 @@ class OverviewMixin {
     const missed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const found = this.counterScan?.items?.length || 0;
     const open = this.data.findings.filter(f => !f.ignored).length;
-    const tile = (view, icon, label, hint, pill, tone) => `<button class="taskcard" data-jump="${view}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`;
+    const tile = (view, icon, label, hint, pill, tone) => `<button class="taskcard t-${pill ? tone : "ok"}" data-jump="${view}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`;
     return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-tiles"><div class="panelhead"><div><h2 id="hk-tiles">${this.t("tilesTitle")}</h2></div></div><div class="taskgrid">${[
       tile("cleanup", "mdi:broom", "cleanup", "tilesCleanupHint", ready ? this.t("tilesReady", { count: this.formatNumber(ready) }) : "", "warn"),
       tile("repair", "mdi:tools", "repair", "tilesRepairHint", found ? this.t("repairFound", { count: this.formatNumber(found) }) : "", "warn"),
@@ -1649,17 +1678,13 @@ class OverviewMixin {
   overview() {
     const m = this.data.meta, counts = m.status_counts || {}, types = m.type_counts || {}, health = this.health();
     const findings = this.sortedFindings();
-    const stats = [
-      ["objects", m.object_count, "mdi:shape-outline", "", "inventory"],
-      ["openFindings", findings.length, "mdi:alert-outline", findings.length ? "warn" : "ok", "findingsNav"],
-      ["unavailable", counts.unavailable || 0, "mdi:lan-disconnect", counts.unavailable ? "red" : "ok", "inventory", "unavailable"],
-      ["disabled", counts.disabled || 0, "mdi:cancel", "mute", "inventory", "disabled"],
-    ];
     this.ensureTrend();
     this.ensureBackup();
-    return `<div class="summary">
-      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span><span class="card-text"><small>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)}</small><strong>${this.t("healthScore", { percent: health.percent })}</strong><em>${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t(health.tasks ? "healthTasks" : "healthNoTasks", { count: this.formatNumber(health.tasks) })}</em></span></div>
-      ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
+    const kpi = ([label, value, tone, view, status]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></button>`;
+    const headline = health.tasks ? this.t("statusTasks", { count: this.formatNumber(health.tasks) }) : this.t("statusAllGood");
+    return `<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span>
+      <div class="statustext"><h2>${headline}</h2><p>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)} · ${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</p></div>
+      <div class="kpis">${[["objects", m.object_count, "", "inventory"], ["openFindings", findings.length, findings.length ? "warn" : "", "findingsNav"], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable"]].map(kpi).join("")}</div></section>
       ${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
@@ -2233,7 +2258,7 @@ class SettingsMixin {
   settingsView() {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
-    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
+    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${pill ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`).join("");
     const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, protection: () => this.protectionCard(), scan: () => `${this.scanCard()}${this.eventsCard()}`, notify: () => this.notifyCard(), goals: () => this.goalsCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
@@ -2740,8 +2765,14 @@ class CleanupMixin {
     const journal = journalPage.rows.map(plan => `<div class="row">${this.mergeable(plan) ? `<input type="checkbox" data-merge-sel="${this.esc(plan.plan_id)}" ${this.mergeSel?.has(plan.plan_id) ? "checked" : ""} aria-label="${this.esc(this.t("mergeSelect"))}">` : ""}<span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div><div class="actions"><button class="btn" data-merge ${(this.mergeSel?.size || 0) >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: this.mergeSel?.size || 0 })}</button></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}<br><small>${this.t("journalEmptyNext")}</small></div>`}${journalPage.footer}</div>`;
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div><div class="actions"><button class="btn" data-merge ${(this.mergeSel?.size || 0) >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: this.mergeSel?.size || 0 })}</button></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg mute"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon><strong>${this.t("journalEmpty")}</strong>${this.t("journalEmptyNext")}<button class="btn" data-jump="repair">${this.t("repair")}</button></div>`}${journalPage.footer}</div>`;
     return `<div class="stack">${this.planHeader()}${journalCard}</div>`;
+  }
+
+  // Where the person is in an assistant: choose, set up, look at the preview.
+  stepsBar(current) {
+    const names = ["stepChoose", "stepSetup", "stepPreview"];
+    return `<div class="stepsbar" role="list">${names.map((name, i) => `${i ? `<span class="line${i < current ? " done" : ""}"></span>` : ""}<span class="step${i + 1 === current ? " on" : i + 1 < current ? " done" : ""}" role="listitem"${i + 1 === current ? ' aria-current="step"' : ""}><i>${i + 1 < current ? "✓" : i + 1}</i>${this.t(name)}</span>`).join("")}</div>`;
   }
 
   // Tasks that fix something that stays. A tile opens the assistant for one task; the plan is finished in the same view.
@@ -2752,12 +2783,14 @@ class CleanupMixin {
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), repair_counter: () => this.counterCard() }[task]();
       const label = REPAIR_TASKS.find(([kind]) => kind === task)[2];
-      body = `<button class="btn quiet" data-repair-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("repairBack")}</button><h2 class="repairhead">${this.t(label)}</h2>${card}`;
+      const chosen = { repair_counter: (this.counterId || "").trim(), migrate_meter: this.meterOld, replace_references: this.replOld, exchange_device: this.exchangeState().oldDev }[task];
+      body = `<button class="btn quiet" data-repair-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("repairBack")}</button><h2 class="repairhead">${this.t(label)}</h2>${this.stepsBar(this.plan ? 3 : chosen ? 2 : 1)}${card}`;
     } else {
       const scan = this.counterScan, found = scan?.items?.length || 0;
       // Without a scan there is nothing to count: the tile says so instead of showing nothing (no scan runs by itself).
       const state = kind => kind !== "repair_counter" ? "" : !scan?.available ? ` <span class="pill mute">${this.t("repairNotChecked")}</span>` : found ? ` <span class="pill warn">${this.t("repairFound", { count: found })}</span>` : ` <span class="pill ok">${this.t("repairNoneFound")}</span>`;
-      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${state(kind)}</strong><small>${this.t(hint)}</small></button>`).join("");
+      const tone = kind => (kind !== "repair_counter" ? "ac" : !scan?.available ? "mute" : found ? "warn" : "ok");
+      const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard t-${tone(kind)}" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${state(kind)}</strong><small>${this.t(hint)}</small></button>`).join("");
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("repairTitle")}</h2><p>${this.t("repairHint")}</p></div></div><div class="taskgrid">${tiles}</div></div>`;
     }
     return `<div class="stack">${this.planHeader()}${body}</div>`;
@@ -3992,7 +4025,7 @@ class MaintenanceMixin {
       { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    const grid = `<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("maintenance"))}">${tabs.map(tab => `<button class="taskcard${tab.id === open ? " on" : ""}" aria-pressed="${tab.id === open}" data-view-tab="maintenance|${tab.id}"><ha-icon icon="${tab.icon}"></ha-icon><strong>${tab.label}${tab.pill ? ` <span class="pill ${tab.tone}">${this.esc(tab.pill)}</span>` : ""}</strong><small>${this.t(tab.hint)}</small></button>`).join("")}</div>`;
+    const grid = `<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("maintenance"))}">${tabs.map(tab => `<button class="taskcard t-${tab.pill ? tab.tone : "ok"}${tab.id === open ? " on" : ""}" aria-pressed="${tab.id === open}" data-view-tab="maintenance|${tab.id}"><ha-icon icon="${tab.icon}"></ha-icon><strong>${tab.label}${tab.pill ? ` <span class="pill ${tab.tone}">${this.esc(tab.pill)}</span>` : ""}</strong><small>${this.t(tab.hint)}</small></button>`).join("")}</div>`;
     return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
   }
 }
@@ -6575,7 +6608,7 @@ class CounterMixin {
     const sx = x => pad + ((x - x0) / Math.max(1, x1 - x0)) * (w - 2 * pad);
     const sy = y => h - pad - ((y - y0) / Math.max(1e-9, y1 - y0)) * (h - 2 * pad);
     const line = i => series.map(p => `${sx(p[0]).toFixed(1)},${sy(p[i]).toFixed(1)}`).join(" ");
-    return `<svg role="img" aria-label="${this.esc(this.t("counterChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0"><polyline fill="none" stroke="var(--hk-red)" stroke-width="1.5" stroke-dasharray="4 3" points="${line(1)}"/><polyline fill="none" stroke="var(--hk-green)" stroke-width="2" points="${line(2)}"/></svg><small style="display:block;opacity:.8"><span style="color:var(--hk-red)">- - -</span> ${this.t("counterOriginal")} · <span style="color:var(--hk-green)">───</span> ${this.t("counterRepaired")}</small>`;
+    return `<svg class="rangechart" role="img" aria-label="${this.esc(this.t("counterChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0">${[1, 2, 3].map(k => `<line class="grid" x1="${pad}" x2="${w - pad}" y1="${(k * h) / 4}" y2="${(k * h) / 4}"/>`).join("")}<polyline fill="none" stroke="var(--hk-red)" stroke-width="1.5" stroke-dasharray="4 3" points="${line(1)}"/><polyline fill="none" stroke="var(--hk-green)" stroke-width="2" points="${line(2)}"/></svg><small style="display:block;opacity:.8"><span style="color:var(--hk-red)">- - -</span> ${this.t("counterOriginal")} · <span style="color:var(--hk-green)">───</span> ${this.t("counterRepaired")}</small>`;
   }
 
   counterRange(f) {
@@ -6669,17 +6702,21 @@ class CounterMixin {
   // The readings with the picked range shaded and two sliders to move its ends.
   rangeChart() {
     const sr = this.rangeSeries, win = this.rangeWin;
-    if (this.rangeSeriesLoading) return `<p class="factnote">${this.t("counterScanning")}</p>`;
+    if (this.rangeSeriesLoading) return this.skeleton("counterScanning");
     if (this.rangeSeriesError) return `<div class="error">${this.esc(this.rangeSeriesError)}</div>`;
     if (!sr || !win || !sr.points.length) return sr ? `<p class="factnote">${this.t("rangeNoData")}</p>` : "";
-    const w = 360, h = 110, pad = 4, span = Math.max(1, win.to - win.from);
+    const w = 640, h = 150, pad = 4, span = Math.max(1, win.to - win.from);
     const ys = sr.points.map(p => p[1]), y0 = Math.min(...ys), y1 = Math.max(...ys);
     const sx = t => pad + ((t - win.from) / span) * (w - 2 * pad), sy = y => h - pad - ((y - y0) / Math.max(1e-9, y1 - y0)) * (h - 2 * pad);
-    const line = sr.points.map(p => `${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`).join(" ");
+    const pt = p => `${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`;
+    const line = sr.points.map(pt).join(" ");
     const f = new Date(this.rangeFrom).getTime() / 1000, t = new Date(this.rangeTo).getTime() / 1000;
     const has = f < t;
+    const area = `M${sx(win.from).toFixed(1)},${h - pad} L${sr.points.map(pt).join(" L")} L${sx(win.to).toFixed(1)},${h - pad} Z`;
+    const grid = [1, 2, 3].map(k => `<line class="grid" x1="${pad}" x2="${w - pad}" y1="${(k * h) / 4}" y2="${(k * h) / 4}"/>`).join("");
+    const bad = has ? sr.points.filter(p => p[0] >= f && p[0] <= t).map(pt).join(" ") : "";
     const slider = (name, value) => `<input type="range" min="0" max="1000" step="1" value="${Math.round(Math.min(1, Math.max(0, (value - win.from) / span)) * 1000)}" data-range-slide="${name}" aria-label="${this.esc(this.t(name === "from" ? "rangeFrom" : "rangeTo"))}" style="width:100%;max-width:${w}px;display:block">`;
-    return `<svg role="img" aria-label="${this.esc(this.t("rangeChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0"><rect data-range-band x="${has ? sx(Math.max(win.from, f)).toFixed(1) : 0}" width="${has ? Math.max(1, sx(Math.min(win.to, t)) - sx(Math.max(win.from, f))).toFixed(1) : 0}" y="0" height="${h}" fill="var(--hk-amber)" opacity=".25"/><polyline fill="none" stroke="var(--hk-blue, currentColor)" stroke-width="1.5" points="${line}"/></svg>
+    return `<svg class="rangechart" role="img" aria-label="${this.esc(this.t("rangeChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0">${grid}<rect data-range-band x="${has ? sx(Math.max(win.from, f)).toFixed(1) : 0}" width="${has ? Math.max(1, sx(Math.min(win.to, t)) - sx(Math.max(win.from, f))).toFixed(1) : 0}" y="0" height="${h}" rx="4" fill="var(--hk-amber)" opacity=".2"/><path d="${area}" fill="var(--hk-blue)" opacity=".08"/><polyline fill="none" stroke="var(--hk-blue)" stroke-width="2" stroke-linejoin="round" points="${line}"/>${bad.includes(" ") ? `<polyline fill="none" stroke="var(--hk-red)" stroke-width="2.4" points="${bad}"/>` : ""}</svg>
       <small style="display:block;opacity:.8">${this.esc(this.formatDate(win.from * 1000))} – ${this.esc(this.formatDate(win.to * 1000))} · ${this.esc(this.t(`rangeTable_${sr.table}`))} · ${this.esc(this.formatNumber(Math.round(y0 * 100) / 100))} … ${this.esc(this.formatNumber(Math.round(y1 * 100) / 100))} ${this.esc(sr.unit || "")}</small>
       ${slider("from", has ? f : win.from)}${slider("to", has ? t : win.to)}`;
   }
@@ -6693,7 +6730,7 @@ class CounterMixin {
     this.rangeFrom = this.localStamp(from); this.rangeTo = this.localStamp(to);
     const setValue = (sel, v) => { const el = root.querySelector(sel); if (el) el.value = v; };
     setValue("[data-range-from]", this.rangeFrom); setValue("[data-range-to]", this.rangeTo);
-    const band = root.querySelector("[data-range-band]"), span = Math.max(1, win.to - win.from), w = 360, pad = 4;
+    const band = root.querySelector("[data-range-band]"), span = Math.max(1, win.to - win.from), w = 640, pad = 4;
     if (band) { band.setAttribute("x", (pad + ((from - win.from) / span) * (w - 2 * pad)).toFixed(1)); band.setAttribute("width", Math.max(1, ((to - from) / span) * (w - 2 * pad)).toFixed(1)); }
   }
 
@@ -6720,7 +6757,7 @@ class CounterMixin {
 
   counterCard() {
     const s = this.counterScan, mode = this.counterMode || "hold";
-    const head = `<div class="panelhead"><div><h2>${this.t("counterTitle")}</h2><p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
+    const head = `<div class="panelhead"><div>${this.view === "repair" ? "" : `<h2>${this.t("counterTitle")}</h2>`}<p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
     const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div><input type="text" data-counter-id value="${this.esc(this.counterId || "")}" placeholder="sensor.water_meter" autocomplete="off" style="max-width:360px"></div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-counter-mode style="max-width:460px">${["hold", "interpolate"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`counterMode_${m}`)}</option>`).join("")}</select></div>
       <div class="setrow"><small style="margin:0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? "disabled" : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
@@ -6739,15 +6776,17 @@ class CounterMixin {
           : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button>`;
         return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.statistic_id)}</small>${lines}</span>${action}</div>`;
       }).join("");
-      body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("counterNone")}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
+      body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}<button class="btn" data-counter-scan>${this.t("counterRescan")}</button></div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
     }
+    if (!s && !this.counterError && !this.counterLoading) body = `<div class="emptymsg info"><ha-icon icon="mdi:magnify-scan"></ha-icon><strong>${this.t("counterNotChecked")}</strong>${this.t("counterNotCheckedSub")}<button class="btn primary" data-counter-scan>${this.t("counterScanNow")}</button></div>`;
+    else if (this.counterLoading) body = this.skeleton("counterScanning");
     return `<div class="panel">${head}${controls}${body}${this.rangeForm()}</div>`;
   }
 
   bindCounter(root) {
     root.querySelector("[data-counter-id]")?.addEventListener("change", e => { this.counterId = e.target.value.trim(); });
     root.querySelector("[data-counter-mode]")?.addEventListener("change", e => { this.counterMode = e.target.value; });
-    root.querySelector("[data-counter-scan]")?.addEventListener("click", () => this.loadCounterScan(true));
+    root.querySelectorAll("[data-counter-scan]").forEach(el => el.addEventListener("click", () => this.loadCounterScan(true)));
     root.querySelectorAll("[data-counter-pick]").forEach(el => el.addEventListener("click", () => { this.counterSel = el.dataset.counterPick; this.counterRangeReq = null; this.createPlan(); }));
     root.querySelector("[data-range-mode]")?.addEventListener("change", () => { this.saveRange(root); this.render(); });
     root.querySelector("[data-range-pick]")?.addEventListener("click", () => this.pickRange(root));
@@ -7104,6 +7143,9 @@ Object.assign(TEXT.en, {
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  statusTasks: "{count} Aufgaben warten auf dich", statusAllGood: "Alles in Ordnung",
+  counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterRescan: "Neu prüfen", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten.", counterScanNow: "Sensoren jetzt prüfen",
+  stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
   setTabProtection: "Sicherheit", setTabNotify: "Benachrichtigungen", setTabGoals: "Wartungsziele", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Schutzmodus: was Housekeeper ändern darf.", setHintScan: "Wann und wie oft geprüft wird, und Grenzwerte.", setHintNotify: "Meldung bei neuen kaputten Referenzen.", setHintGoals: "Eigene Grenzen für „in Ordnung“.", setHintHidden: "Befunde, die du ausgeblendet hast.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
@@ -7125,6 +7167,9 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  statusTasks: "{count} tasks are waiting for you", statusAllGood: "All good",
+  counterNoneSub: "{count} sensors look fine.", counterRescan: "Check again", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements.", counterScanNow: "Check sensors now",
+  stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
   setTabProtection: "Safety", setTabNotify: "Notifications", setTabGoals: "Maintenance goals", setHintLook: "Language, density and appearance.", setHintProtection: "Protection mode: what Housekeeper may change.", setHintScan: "When and how often it checks, and limits.", setHintNotify: "A message for new broken references.", setHintGoals: "Your own limits for what in order means.", setHintHidden: "Findings you have hidden.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",

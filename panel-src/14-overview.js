@@ -66,7 +66,7 @@ class OverviewMixin {
     const missed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const found = this.counterScan?.items?.length || 0;
     const open = this.data.findings.filter(f => !f.ignored).length;
-    const tile = (view, icon, label, hint, pill, tone) => `<button class="taskcard" data-jump="${view}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`;
+    const tile = (view, icon, label, hint, pill, tone) => `<button class="taskcard t-${pill ? tone : "ok"}" data-jump="${view}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}${pill ? ` <span class="pill ${tone}">${this.esc(pill)}</span>` : ""}</strong><small>${this.t(hint)}</small></button>`;
     return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-tiles"><div class="panelhead"><div><h2 id="hk-tiles">${this.t("tilesTitle")}</h2></div></div><div class="taskgrid">${[
       tile("cleanup", "mdi:broom", "cleanup", "tilesCleanupHint", ready ? this.t("tilesReady", { count: this.formatNumber(ready) }) : "", "warn"),
       tile("repair", "mdi:tools", "repair", "tilesRepairHint", found ? this.t("repairFound", { count: this.formatNumber(found) }) : "", "warn"),
@@ -135,17 +135,13 @@ class OverviewMixin {
   overview() {
     const m = this.data.meta, counts = m.status_counts || {}, types = m.type_counts || {}, health = this.health();
     const findings = this.sortedFindings();
-    const stats = [
-      ["objects", m.object_count, "mdi:shape-outline", "", "inventory"],
-      ["openFindings", findings.length, "mdi:alert-outline", findings.length ? "warn" : "ok", "findingsNav"],
-      ["unavailable", counts.unavailable || 0, "mdi:lan-disconnect", counts.unavailable ? "red" : "ok", "inventory", "unavailable"],
-      ["disabled", counts.disabled || 0, "mdi:cancel", "mute", "inventory", "disabled"],
-    ];
     this.ensureTrend();
     this.ensureBackup();
-    return `<div class="summary">
-      <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span><span class="card-text"><small>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)}</small><strong>${this.t("healthScore", { percent: health.percent })}</strong><em>${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t(health.tasks ? "healthTasks" : "healthNoTasks", { count: this.formatNumber(health.tasks) })}</em></span></div>
-      ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
+    const kpi = ([label, value, tone, view, status]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></button>`;
+    const headline = health.tasks ? this.t("statusTasks", { count: this.formatNumber(health.tasks) }) : this.t("statusAllGood");
+    return `<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span>
+      <div class="statustext"><h2>${headline}</h2><p>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)} · ${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</p></div>
+      <div class="kpis">${[["objects", m.object_count, "", "inventory"], ["openFindings", findings.length, findings.length ? "warn" : "", "findingsNav"], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable"]].map(kpi).join("")}</div></section>
       ${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}

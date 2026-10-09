@@ -18,7 +18,7 @@ class CounterMixin {
     const sx = x => pad + ((x - x0) / Math.max(1, x1 - x0)) * (w - 2 * pad);
     const sy = y => h - pad - ((y - y0) / Math.max(1e-9, y1 - y0)) * (h - 2 * pad);
     const line = i => series.map(p => `${sx(p[0]).toFixed(1)},${sy(p[i]).toFixed(1)}`).join(" ");
-    return `<svg role="img" aria-label="${this.esc(this.t("counterChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0"><polyline fill="none" stroke="var(--hk-red)" stroke-width="1.5" stroke-dasharray="4 3" points="${line(1)}"/><polyline fill="none" stroke="var(--hk-green)" stroke-width="2" points="${line(2)}"/></svg><small style="display:block;opacity:.8"><span style="color:var(--hk-red)">- - -</span> ${this.t("counterOriginal")} · <span style="color:var(--hk-green)">───</span> ${this.t("counterRepaired")}</small>`;
+    return `<svg class="rangechart" role="img" aria-label="${this.esc(this.t("counterChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0">${[1, 2, 3].map(k => `<line class="grid" x1="${pad}" x2="${w - pad}" y1="${(k * h) / 4}" y2="${(k * h) / 4}"/>`).join("")}<polyline fill="none" stroke="var(--hk-red)" stroke-width="1.5" stroke-dasharray="4 3" points="${line(1)}"/><polyline fill="none" stroke="var(--hk-green)" stroke-width="2" points="${line(2)}"/></svg><small style="display:block;opacity:.8"><span style="color:var(--hk-red)">- - -</span> ${this.t("counterOriginal")} · <span style="color:var(--hk-green)">───</span> ${this.t("counterRepaired")}</small>`;
   }
 
   counterRange(f) {
@@ -112,17 +112,21 @@ class CounterMixin {
   // The readings with the picked range shaded and two sliders to move its ends.
   rangeChart() {
     const sr = this.rangeSeries, win = this.rangeWin;
-    if (this.rangeSeriesLoading) return `<p class="factnote">${this.t("counterScanning")}</p>`;
+    if (this.rangeSeriesLoading) return this.skeleton("counterScanning");
     if (this.rangeSeriesError) return `<div class="error">${this.esc(this.rangeSeriesError)}</div>`;
     if (!sr || !win || !sr.points.length) return sr ? `<p class="factnote">${this.t("rangeNoData")}</p>` : "";
-    const w = 360, h = 110, pad = 4, span = Math.max(1, win.to - win.from);
+    const w = 640, h = 150, pad = 4, span = Math.max(1, win.to - win.from);
     const ys = sr.points.map(p => p[1]), y0 = Math.min(...ys), y1 = Math.max(...ys);
     const sx = t => pad + ((t - win.from) / span) * (w - 2 * pad), sy = y => h - pad - ((y - y0) / Math.max(1e-9, y1 - y0)) * (h - 2 * pad);
-    const line = sr.points.map(p => `${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`).join(" ");
+    const pt = p => `${sx(p[0]).toFixed(1)},${sy(p[1]).toFixed(1)}`;
+    const line = sr.points.map(pt).join(" ");
     const f = new Date(this.rangeFrom).getTime() / 1000, t = new Date(this.rangeTo).getTime() / 1000;
     const has = f < t;
+    const area = `M${sx(win.from).toFixed(1)},${h - pad} L${sr.points.map(pt).join(" L")} L${sx(win.to).toFixed(1)},${h - pad} Z`;
+    const grid = [1, 2, 3].map(k => `<line class="grid" x1="${pad}" x2="${w - pad}" y1="${(k * h) / 4}" y2="${(k * h) / 4}"/>`).join("");
+    const bad = has ? sr.points.filter(p => p[0] >= f && p[0] <= t).map(pt).join(" ") : "";
     const slider = (name, value) => `<input type="range" min="0" max="1000" step="1" value="${Math.round(Math.min(1, Math.max(0, (value - win.from) / span)) * 1000)}" data-range-slide="${name}" aria-label="${this.esc(this.t(name === "from" ? "rangeFrom" : "rangeTo"))}" style="width:100%;max-width:${w}px;display:block">`;
-    return `<svg role="img" aria-label="${this.esc(this.t("rangeChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0"><rect data-range-band x="${has ? sx(Math.max(win.from, f)).toFixed(1) : 0}" width="${has ? Math.max(1, sx(Math.min(win.to, t)) - sx(Math.max(win.from, f))).toFixed(1) : 0}" y="0" height="${h}" fill="var(--hk-amber)" opacity=".25"/><polyline fill="none" stroke="var(--hk-blue, currentColor)" stroke-width="1.5" points="${line}"/></svg>
+    return `<svg class="rangechart" role="img" aria-label="${this.esc(this.t("rangeChartLabel"))}" viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;display:block;margin:6px 0">${grid}<rect data-range-band x="${has ? sx(Math.max(win.from, f)).toFixed(1) : 0}" width="${has ? Math.max(1, sx(Math.min(win.to, t)) - sx(Math.max(win.from, f))).toFixed(1) : 0}" y="0" height="${h}" rx="4" fill="var(--hk-amber)" opacity=".2"/><path d="${area}" fill="var(--hk-blue)" opacity=".08"/><polyline fill="none" stroke="var(--hk-blue)" stroke-width="2" stroke-linejoin="round" points="${line}"/>${bad.includes(" ") ? `<polyline fill="none" stroke="var(--hk-red)" stroke-width="2.4" points="${bad}"/>` : ""}</svg>
       <small style="display:block;opacity:.8">${this.esc(this.formatDate(win.from * 1000))} – ${this.esc(this.formatDate(win.to * 1000))} · ${this.esc(this.t(`rangeTable_${sr.table}`))} · ${this.esc(this.formatNumber(Math.round(y0 * 100) / 100))} … ${this.esc(this.formatNumber(Math.round(y1 * 100) / 100))} ${this.esc(sr.unit || "")}</small>
       ${slider("from", has ? f : win.from)}${slider("to", has ? t : win.to)}`;
   }
@@ -136,7 +140,7 @@ class CounterMixin {
     this.rangeFrom = this.localStamp(from); this.rangeTo = this.localStamp(to);
     const setValue = (sel, v) => { const el = root.querySelector(sel); if (el) el.value = v; };
     setValue("[data-range-from]", this.rangeFrom); setValue("[data-range-to]", this.rangeTo);
-    const band = root.querySelector("[data-range-band]"), span = Math.max(1, win.to - win.from), w = 360, pad = 4;
+    const band = root.querySelector("[data-range-band]"), span = Math.max(1, win.to - win.from), w = 640, pad = 4;
     if (band) { band.setAttribute("x", (pad + ((from - win.from) / span) * (w - 2 * pad)).toFixed(1)); band.setAttribute("width", Math.max(1, ((to - from) / span) * (w - 2 * pad)).toFixed(1)); }
   }
 
@@ -163,7 +167,7 @@ class CounterMixin {
 
   counterCard() {
     const s = this.counterScan, mode = this.counterMode || "hold";
-    const head = `<div class="panelhead"><div><h2>${this.t("counterTitle")}</h2><p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
+    const head = `<div class="panelhead"><div>${this.view === "repair" ? "" : `<h2>${this.t("counterTitle")}</h2>`}<p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
     const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div><input type="text" data-counter-id value="${this.esc(this.counterId || "")}" placeholder="sensor.water_meter" autocomplete="off" style="max-width:360px"></div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select data-counter-mode style="max-width:460px">${["hold", "interpolate"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`counterMode_${m}`)}</option>`).join("")}</select></div>
       <div class="setrow"><small style="margin:0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? "disabled" : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
@@ -182,15 +186,17 @@ class CounterMixin {
           : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterPreview")}</button>`;
         return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.statistic_id)}</small>${lines}</span>${action}</div>`;
       }).join("");
-      body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("counterNone")}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
+      body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}<button class="btn" data-counter-scan>${this.t("counterRescan")}</button></div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
     }
+    if (!s && !this.counterError && !this.counterLoading) body = `<div class="emptymsg info"><ha-icon icon="mdi:magnify-scan"></ha-icon><strong>${this.t("counterNotChecked")}</strong>${this.t("counterNotCheckedSub")}<button class="btn primary" data-counter-scan>${this.t("counterScanNow")}</button></div>`;
+    else if (this.counterLoading) body = this.skeleton("counterScanning");
     return `<div class="panel">${head}${controls}${body}${this.rangeForm()}</div>`;
   }
 
   bindCounter(root) {
     root.querySelector("[data-counter-id]")?.addEventListener("change", e => { this.counterId = e.target.value.trim(); });
     root.querySelector("[data-counter-mode]")?.addEventListener("change", e => { this.counterMode = e.target.value; });
-    root.querySelector("[data-counter-scan]")?.addEventListener("click", () => this.loadCounterScan(true));
+    root.querySelectorAll("[data-counter-scan]").forEach(el => el.addEventListener("click", () => this.loadCounterScan(true)));
     root.querySelectorAll("[data-counter-pick]").forEach(el => el.addEventListener("click", () => { this.counterSel = el.dataset.counterPick; this.counterRangeReq = null; this.createPlan(); }));
     root.querySelector("[data-range-mode]")?.addEventListener("change", () => { this.saveRange(root); this.render(); });
     root.querySelector("[data-range-pick]")?.addEventListener("click", () => this.pickRange(root));

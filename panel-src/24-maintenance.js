@@ -143,7 +143,7 @@ class MaintenanceMixin {
       { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    const grid = `<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("maintenance"))}">${tabs.map(tab => `<button class="taskcard${tab.id === open ? " on" : ""}" aria-pressed="${tab.id === open}" data-view-tab="maintenance|${tab.id}"><ha-icon icon="${tab.icon}"></ha-icon><strong>${tab.label}${tab.pill ? ` <span class="pill ${tab.tone}">${this.esc(tab.pill)}</span>` : ""}</strong><small>${this.t(tab.hint)}</small></button>`).join("")}</div>`;
+    const grid = `<div class="taskgrid compactgrid" role="group" aria-label="${this.esc(this.t("maintenance"))}">${tabs.map(tab => `<button class="taskcard t-${tab.pill ? tab.tone : "ok"}${tab.id === open ? " on" : ""}" aria-pressed="${tab.id === open}" data-view-tab="maintenance|${tab.id}"><ha-icon icon="${tab.icon}"></ha-icon><strong>${tab.label}${tab.pill ? ` <span class="pill ${tab.tone}">${this.esc(tab.pill)}</span>` : ""}</strong><small>${this.t(tab.hint)}</small></button>`).join("")}</div>`;
     return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard()}</div>`;
   }
 }
