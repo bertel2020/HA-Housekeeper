@@ -2703,6 +2703,8 @@ test("maintenance goals show state and values, and a limit is saved through goal
   await el.commitGoal();
   assert.deepEqual(JSON.parse(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/goal_set"))), { type: "ha_housekeeper/goal_set", goal: "unavailable", enabled: false, limit: 20 });
   assert.equal(el.goalForm, null);
+  const compact = el.goalsCard(true);
+  assert.ok(compact.includes("data-goals-settings") && !compact.includes("data-goal-open") && compact.includes("no backup"));
 });
 
 test("the cleanup journal notes recorder purges with backup, user and result", () => {
