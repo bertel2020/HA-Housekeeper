@@ -166,7 +166,7 @@ class CleanupMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
-      this._scrollPlan = true;
+      this._scrollPlan = true; this.toast(this.t("previewReady"));
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -228,6 +228,7 @@ class CleanupMixin {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     this._polling = null; this.planProgress = null;
+    if (this.plan?.plan_id === planId && ["verified", "executed", "partial", "aborted"].includes(this.plan.status)) this.toast(this.t(`toast_${this.plan.status}`));
     if (this.data) this.load(false);
     this.render();
   }
@@ -287,7 +288,7 @@ class CleanupMixin {
     steps.push(open && !confirming ? (executable.length ? { id: "stepAnalysis", state: "current" } : { id: "stepAnalysis", state: "failed", note: this.t("stepAnalysisBlocked") }) : { id: "stepAnalysis", state: "done" });
     steps.push({ id: "stepConfirm", state: open ? (confirming ? "current" : "todo") : "done" });
     if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
-    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error)].join(" · ") });
+    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error), this.t("backupFailHint")].join(" · ") });
     else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
     else if (open) steps.push({ id: "stepBackup", state: "todo" });
     else {
@@ -330,7 +331,10 @@ class CleanupMixin {
     else if (status === "partial") { tone = "warn"; icon = "mdi:alert-circle"; text = this.t("outcomePartial", { done, total }); }
     else if (status === "aborted") { tone = "red"; icon = "mdi:close-circle"; text = this.t("outcomeAborted"); }
     else return "";
-    return `<div class="outcome ${tone}" role="status"><ha-icon icon="${icon}"></ha-icon><strong>${this.esc(text)}</strong></div>`;
+    const doneActions = plan.actions.filter(a => a.result?.state === "done");
+    const backupOnly = a => ["migrate_meter", "purge_statistics"].includes(a.kind);
+    const undo = !doneActions.length ? "" : doneActions.every(backupOnly) ? this.t("outcomeUndoBackup") : doneActions.some(backupOnly) ? this.t("outcomeUndoMixed") : this.t("outcomeUndoYes");
+    return `<div class="outcome ${tone}" role="status"><ha-icon icon="${icon}"></ha-icon><span><strong>${this.esc(text)}</strong>${undo ? `<small>${this.esc(undo)}</small>` : ""}</span></div>`;
   }
 
   planCard(plan) {
@@ -533,7 +537,7 @@ class CleanupMixin {
   // Where the person is in an assistant: choose, set up, look at the preview.
   stepsBar(current) {
     const names = ["stepChoose", "stepSetup", "stepPreview"];
-    return `<div class="stepsbar" role="list">${names.map((name, i) => `${i ? `<span class="line${i < current ? " done" : ""}"></span>` : ""}<span class="step${i + 1 === current ? " on" : i + 1 < current ? " done" : ""}" role="listitem"${i + 1 === current ? ' aria-current="step"' : ""}><i>${i + 1 < current ? "✓" : i + 1}</i>${this.t(name)}</span>`).join("")}</div>`;
+    return `<div class="stepsbar" role="list">${names.map((name, i) => `${i ? `<span class="line${i < current ? " done" : ""}"></span>` : ""}<span class="step${i + 1 === current ? " on" : i + 1 < current ? " done" : ""}" role="listitem"${i + 1 === current ? ' aria-current="step"' : ""}><i>${i + 1 < current ? "✓" : i + 1}</i><b class="stepname">${this.t(name)}</b></span>`).join("")}</div>`;
   }
 
   // Tasks that fix something that stays. A tile opens the assistant for one task; the plan is finished in the same view.

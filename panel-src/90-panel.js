@@ -488,7 +488,8 @@ class HAHousekeeperPanel extends HTMLElement {
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
-      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span><ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
+      const sum = views.reduce((n, v) => n + (typeof counts[v] === "number" && v !== "inventory" ? counts[v] : 0), 0);
+      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span>${sum ? `<em aria-label="${this.esc(this.t("groupOpen", { count: sum }))}">${sum}</em>` : ""}<ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
     };
     return `<header class="top${this.navOpen ? " open" : ""}"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><strong>${this.t("title")}</strong></div>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
@@ -554,6 +555,8 @@ class HAHousekeeperPanel extends HTMLElement {
       policies: [this.t("policies"), this.t("policiesSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
+    const writes = ["cleanup", "repair", "maintenance", "policies"].includes(this.view);
+    const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
     const from = this.viewTrail[this.viewTrail.length - 1];
@@ -562,13 +565,13 @@ class HAHousekeeperPanel extends HTMLElement {
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
+      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
-    if (!this.data) return `${this.skeleton("loading")}`;
+    if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
     if (this.view === "inventory") return this.inventory();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
@@ -611,6 +614,18 @@ class HAHousekeeperPanel extends HTMLElement {
         this.menuOpen = null; this.render();
       });
       root.addEventListener("click", ev => { this._shift = ev.shiftKey; }, true);
+      // Arrow keys move between the rows of a list: to the first control of the next or previous row.
+      root.addEventListener("keydown", ev => {
+        if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp") return;
+        const from = ev.composedPath?.()[0];
+        if (!from?.closest || from.matches("input[type=search],input[type=text],select,textarea")) return;
+        const row = from.closest("tr, .row");
+        if (!row || row.classList.contains("foldhead")) return;
+        let next = ev.key === "ArrowDown" ? row.nextElementSibling : row.previousElementSibling;
+        while (next && !next.matches("tr, .row")) next = ev.key === "ArrowDown" ? next.nextElementSibling : next.previousElementSibling;
+        const target = next?.matches("tr[tabindex]") ? next : next?.querySelector("input[type=checkbox], button, [tabindex]");
+        if (target) { ev.preventDefault(); target.focus(); }
+      });
       root.addEventListener("keydown", ev => {
         const typing = (ev.composedPath?.()[0]?.matches?.("input,select,textarea")) || ev.metaKey || ev.ctrlKey || ev.altKey;
         if (ev.key === "/" && !typing) {
@@ -772,7 +787,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { this.pickRange("fsel", el.dataset.fsel, el.checked, this.findSel, this._findPage); this.render(); });
     root.querySelectorAll("[data-sel-only]").forEach(el => el.onclick = () => { const id = el.dataset.selOnly; this.selOnly = { ...this.selOnly, [id]: !this.selOnly?.[id] }; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lreset]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.lreset]; if (st) { st.q = ""; st.f = {}; this.persistLv(el.dataset.lreset); } this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); ev.preventDefault(); try { await navigator.clipboard.writeText(el.dataset.copy); el.classList.add("done"); el.title = this.t("copiedShort"); setTimeout(() => { el.classList.remove("done"); el.title = this.t("copyId"); }, 1500); } catch (_) { /* no clipboard in this context */ } });
+    root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); ev.preventDefault(); try { await navigator.clipboard.writeText(el.dataset.copy); el.classList.add("done"); el.title = this.t("copiedShort"); this.toast(this.t("copiedShort")); setTimeout(() => { el.classList.remove("done"); el.title = this.t("copyId"); }, 1500); } catch (_) { /* no clipboard in this context */ } });
     root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());

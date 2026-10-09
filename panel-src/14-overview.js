@@ -132,6 +132,29 @@ class OverviewMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }
 
+  // What changed since the last visit of this browser: new and gone findings against the state kept then.
+  sinceVisit() {
+    if (this._visit !== undefined) return this._visit;
+    this._visit = null;
+    const keys = this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f));
+    let saved = null;
+    try { saved = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.visit") || "null"); } catch (_) { saved = null; }
+    const now = Date.now();
+    if (saved && Array.isArray(saved.keys) && now - saved.at >= 30 * 60000) {
+      const before = new Set(saved.keys), nowSet = new Set(keys);
+      this._visit = { at: saved.at, added: keys.filter(k => !before.has(k)).length, gone: saved.keys.filter(k => !nowSet.has(k)).length };
+    }
+    if (!saved || now - saved.at >= 30 * 60000) { try { globalThis.localStorage?.setItem("ha_housekeeper.visit", JSON.stringify({ at: now, keys })); } catch (_) { /* no storage */ } }
+    return this._visit;
+  }
+
+  sinceVisitLine() {
+    const v = this.sinceVisit();
+    if (!v || (!v.added && !v.gone)) return "";
+    const parts = [v.added ? this.t("visitAdded", { n: this.formatNumber(v.added) }) : "", v.gone ? this.t("visitGone", { n: this.formatNumber(v.gone) }) : ""].filter(Boolean).join(", ");
+    return `<p class="factnote visitline"><ha-icon icon="mdi:history"></ha-icon>${this.t("visitSince", { ago: this.agoText(new Date(v.at).toISOString()) })}: ${parts}</p>`;
+  }
+
   overview() {
     const m = this.data.meta, counts = m.status_counts || {}, types = m.type_counts || {}, health = this.health();
     const findings = this.sortedFindings();
@@ -142,7 +165,7 @@ class OverviewMixin {
     return `<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span>
       <div class="statustext"><h2>${headline}</h2><p>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)} · ${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</p></div>
       <div class="kpis">${[["objects", m.object_count, "", "inventory"], ["openFindings", findings.length, findings.length ? "warn" : "", "findingsNav"], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable"]].map(kpi).join("")}</div></section>
-      ${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
+      ${this.sinceVisitLine()}${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;

@@ -11,7 +11,7 @@ Object.assign(TEXT.de, {
   fuWatching: "Nachkontrolle läuft bis {date}", fuClean: "Nachkontrolle bestanden: bis {date} nichts Neues", fuRegression: "Nachkontrolle: {count} neue Funde seit {date}", fuStopped: "Nachkontrolle beendet (Plan rückgängig gemacht)",
   fu_watching: "Beobachtet", fu_clean: "Sauber", fu_regression: "Rückfall", fu_stopped: "Beendet",
   fu_class_broken_reference: "defekte Referenz", fu_class_unavailable: "nicht verfügbar", fu_class_recurring: "Gerät kehrt wieder",
-  actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Bereinigungsplan sind neue Probleme aufgetreten.",
+  actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Plan sind neue Probleme aufgetreten.",
   reportButton: "Prüfbericht", reportNames: "Echte Namen und IDs verwenden", reportNamesHint: "Ohne Haken ersetzen Platzhalter alle Namen und IDs. So kannst du den Bericht teilen, ohne etwas preiszugeben.", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
   simPurgeRows: "{count} Zeilen im Recorder werden entfernt (Datei schrumpft erst nach einem Repack)", simKeptRows: "{count} Zeilen Verlauf bleiben im Recorder, bis er sie bereinigt",
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",

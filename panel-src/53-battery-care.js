@@ -62,7 +62,7 @@ class BatteryCareMixin {
   reminderRow(r) {
     const tone = { due: "red", soon: "warn", ok: "ok" }[r.state];
     const when = r.state === "due" ? this.t("remOverdue", { n: Math.abs(r.days_left) }) : this.t("remIn", { n: r.days_left });
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:wrench-clock"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(this.t("remLine", { interval: r.interval_days, last: r.last_done, due: r.due }))}${r.note ? ` · ${this.esc(r.note)}` : ""}</small></span><span class="pill ${tone}">${this.esc(when)}</span><button class="btn" data-rem-done="${this.esc(r.id)}">${this.t("remDone")}</button><button class="btn quiet" data-rem-del="${this.esc(r.id)}" aria-label="${this.esc(this.t("remDelete"))}">${this.t("remDelete")}</button></div>`;
+    return `<div class="row remrow"><span class="tile ${tone}"><ha-icon icon="mdi:wrench-clock"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(this.t("remLine", { interval: r.interval_days, last: r.last_done, due: r.due }))}${r.note ? ` · ${this.esc(r.note)}` : ""}</small></span><span class="pill ${tone}">${this.esc(when)}</span><button class="btn" data-rem-done="${this.esc(r.id)}">${this.t("remDone")}</button><button class="btn quiet" data-rem-del="${this.esc(r.id)}" aria-label="${this.esc(this.t("remDelete"))}">${this.t("remDelete")}</button></div>`;
   }
 
   // Own view under "Maintain": own reminders (filter, descaling, changing batteries) with a date when they are due.

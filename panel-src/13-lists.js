@@ -55,6 +55,19 @@ class ListsMixin {
     return rows.map(row => row.it);
   }
 
+  // A short message at the bottom of the page for small actions; it goes away by itself.
+  toast(text) {
+    const root = this.shadowRoot;
+    if (!root?.querySelector || typeof document === "undefined") return;
+    try {
+      root.querySelector(".toast")?.remove();
+      const el = document.createElement("div");
+      el.className = "toast"; el.setAttribute("role", "status"); el.textContent = text;
+      root.appendChild(el);
+      setTimeout(() => el.remove(), 2600);
+    } catch (_) { /* a missing message is no loss */ }
+  }
+
   // "No matches" with a way out: clears search text and filters of that list.
   noMatches(id) {
     return `${this.t("noMatches")} <button class="btn quiet" data-lreset="${this.esc(id)}">${this.t("resetFilters")}</button>`;
@@ -133,7 +146,8 @@ class ListsMixin {
   // The view registers what its export holds before it draws the list bar: { name, header, rows() }.
   exportList(id) {
     const ex = this._exporters?.[id];
-    if (ex) this.downloadRows(ex.name, ex.header, ex.rows());
+    const st = this.lv?.[id], filtered = Boolean(st && (st.q?.trim() || Object.values(st.f || {}).some(Boolean)));
+    if (ex) this.downloadRows(filtered ? `${ex.name}-filtered` : ex.name, ex.header, ex.rows());
   }
 
   setExporter(id, name, header, rows) { (this._exporters ||= {})[id] = { name, header, rows }; }
@@ -202,7 +216,7 @@ class ListsMixin {
     if (this.viewNaming === id) {
       return `<form class="viewgroup" data-lview-form="${id}"><input data-lview-name="${id}" maxlength="40" autocomplete="off" value="${this.esc(this.viewDraft)}" aria-label="${this.esc(this.t("viewName"))}" placeholder="${this.esc(this.t("viewName"))}"><button type="submit" class="btn">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-lview-cancel="${id}">${this.t("cancelRun")}</button></form>`;
     }
-    const save = dirty ? `<button type="button" class="btn quiet" data-lview-save="${id}">${this.t("viewSave")}</button>` : "";
+    const save = dirty ? `<button type="button" class="btn quiet" data-lview-save="${id}"><ha-icon icon="mdi:star-outline"></ha-icon>${this.t("viewSave")}</button>` : "";
     const remove = st.view && saved.some(v => v.name === st.view) ? `<button type="button" class="btn quiet" data-lview-delete="${id}">${this.t("viewDelete")}</button>` : "";
     return `<span class="viewgroup">${select}${save}${remove}</span>`;
   }

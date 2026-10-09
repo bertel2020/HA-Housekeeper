@@ -1,6 +1,6 @@
 // Texts for the maintenance window; merged into TEXT.
 Object.assign(TEXT.de, {
-  winTab: "Wartungsfenster", winTitle: "Wartungsfenster", winExperimental: "experimentell", winHint: "Führt dich der Reihe nach durch Prüfung, einen Bereinigungsplan, das Neuladen, den Neustart und den Vergleich. Nichts läuft von allein, Housekeeper startet Home Assistant nie neu.",
+  winTab: "Wartungsfenster", winTitle: "Wartungsfenster", winExperimental: "experimentell", winHint: "Führt dich der Reihe nach durch Prüfung, einen Plan, das Neuladen, den Neustart und den Vergleich. Nichts läuft von allein, Housekeeper startet Home Assistant nie neu.",
   winWarning: "Das Wartungsfenster verkettet Schritte, die es einzeln schon gibt. Es wurde mit simulierten Schritten getestet, aber noch nicht in einer echten Instanz ausprobiert. Es ist deshalb ausgeschaltet.", winEnable: "Experimentell einschalten", winDisable: "Wieder ausschalten",
   winChoose: "Wähle einen Plan, der noch nicht gelaufen ist. Das Fenster begleitet dich durch Prüfung, Ausführung und Vergleich.", winNoPlans: "Es gibt keinen offenen Plan. Lege ihn unter Aufräumen an.", winBegin: "Fenster mit diesem Plan beginnen",
   win_preflight: "1. Vorab prüfen", win_baseline: "2. Ausgangsstand speichern", win_plan: "3. Plan ausführen", win_reload: "4. Integrationen neu laden", win_restart: "5. Neustart (von dir)", win_compare: "6. Vergleichen", win_report: "7. Bericht",
@@ -14,7 +14,7 @@ Object.assign(TEXT.de, {
   winAfterPlan: "Der Plan ist gelaufen. Zurückgehen geht nur noch über das Journal unter Aufräumen.", winStarted: "Begonnen", winSteps: "Schritte", winPlan: "Plan", winAfter: "Seit dem Ausgangsstand",
 });
 Object.assign(TEXT.en, {
-  winTab: "Maintenance window", winTitle: "Maintenance window", winExperimental: "experimental", winHint: "Guides you through the check, a cleanup plan, the reload, the restart and the comparison, one after the other. Nothing runs on its own, Housekeeper never restarts Home Assistant.",
+  winTab: "Maintenance window", winTitle: "Maintenance window", winExperimental: "experimental", winHint: "Guides you through the check, a plan, the reload, the restart and the comparison, one after the other. Nothing runs on its own, Housekeeper never restarts Home Assistant.",
   winWarning: "The maintenance window chains steps that already exist on their own. It was tested with simulated steps but not yet tried in a real instance, so it is switched off.", winEnable: "Switch on (experimental)", winDisable: "Switch off again",
   winChoose: "Pick a plan that has not run yet. The window guides you through the check, the run and the comparison.", winNoPlans: "There is no open plan. Create one under Cleanup.", winBegin: "Begin the window with this plan",
   win_preflight: "1. Check first", win_baseline: "2. Save the starting state", win_plan: "3. Run the plan", win_reload: "4. Reload integrations", win_restart: "5. Restart (by you)", win_compare: "6. Compare", win_report: "7. Report",

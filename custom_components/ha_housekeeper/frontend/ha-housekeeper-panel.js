@@ -1146,7 +1146,7 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
-      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.copybtn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;padding:4px;border:1px solid var(--hk-border);border-radius:6px;background:var(--hk-surface);color:var(--hk-muted);cursor:pointer;opacity:0;--mdc-icon-size:14px}tr:hover .copybtn,.copybtn:focus-visible,.namecell:hover .copybtn{opacity:1}.copybtn.done{color:var(--hk-green);opacity:1}@media (hover:none){.copybtn{opacity:.7}}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}
+      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.copybtn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;padding:4px;border:1px solid var(--hk-border);border-radius:6px;background:var(--hk-surface);color:var(--hk-muted);cursor:pointer;opacity:0;--mdc-icon-size:14px}tr:hover .copybtn,.copybtn:focus-visible,.namecell:hover .copybtn{opacity:1}.copybtn.done{color:var(--hk-green);opacity:1}@media (hover:none){.copybtn{opacity:.7}}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
@@ -1232,7 +1232,7 @@ class StylesMixin {
       .stepsbar .step i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:calc(12px*var(--hk-fs,1));background:var(--hk-surface);border:1px solid var(--hk-border);box-shadow:var(--hk-sh1)}
       .stepsbar .step.on{color:var(--hk-text);font-weight:600}.stepsbar .step.on i{background:var(--hk-blue);color:var(--hk-on,#fff);border-color:var(--hk-blue)}
       .stepsbar .step.done i{background:color-mix(in srgb,var(--hk-green) 16%,var(--hk-surface));color:var(--hk-green);border-color:var(--hk-green)}
-      .stepsbar .line{flex:1;height:2px;min-width:20px;margin:0 10px;border-radius:2px;background:var(--hk-border)}.stepsbar .line.done{background:var(--hk-green)}
+      @media (max-width:520px){.row.remrow{grid-auto-flow:row}.row.remrow>:nth-child(n+3){grid-column:1/-1;justify-self:end}}.stepsbar .step .stepname{font-weight:inherit}@media (max-width:640px){.stepsbar .step:not(.on) .stepname{display:none}.stepsbar .line{min-width:8px;margin:0 6px}}.stepsbar .line{flex:1;height:2px;min-width:20px;margin:0 10px;border-radius:2px;background:var(--hk-border)}.stepsbar .line.done{background:var(--hk-green)}
       .rangechart .grid{stroke:var(--hk-border);stroke-width:1}
       ${this.themeCss()}
     </style>`;
@@ -1334,6 +1334,19 @@ class ListsMixin {
     return rows.map(row => row.it);
   }
 
+  // A short message at the bottom of the page for small actions; it goes away by itself.
+  toast(text) {
+    const root = this.shadowRoot;
+    if (!root?.querySelector || typeof document === "undefined") return;
+    try {
+      root.querySelector(".toast")?.remove();
+      const el = document.createElement("div");
+      el.className = "toast"; el.setAttribute("role", "status"); el.textContent = text;
+      root.appendChild(el);
+      setTimeout(() => el.remove(), 2600);
+    } catch (_) { /* a missing message is no loss */ }
+  }
+
   // "No matches" with a way out: clears search text and filters of that list.
   noMatches(id) {
     return `${this.t("noMatches")} <button class="btn quiet" data-lreset="${this.esc(id)}">${this.t("resetFilters")}</button>`;
@@ -1412,7 +1425,8 @@ class ListsMixin {
   // The view registers what its export holds before it draws the list bar: { name, header, rows() }.
   exportList(id) {
     const ex = this._exporters?.[id];
-    if (ex) this.downloadRows(ex.name, ex.header, ex.rows());
+    const st = this.lv?.[id], filtered = Boolean(st && (st.q?.trim() || Object.values(st.f || {}).some(Boolean)));
+    if (ex) this.downloadRows(filtered ? `${ex.name}-filtered` : ex.name, ex.header, ex.rows());
   }
 
   setExporter(id, name, header, rows) { (this._exporters ||= {})[id] = { name, header, rows }; }
@@ -1481,7 +1495,7 @@ class ListsMixin {
     if (this.viewNaming === id) {
       return `<form class="viewgroup" data-lview-form="${id}"><input data-lview-name="${id}" maxlength="40" autocomplete="off" value="${this.esc(this.viewDraft)}" aria-label="${this.esc(this.t("viewName"))}" placeholder="${this.esc(this.t("viewName"))}"><button type="submit" class="btn">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-lview-cancel="${id}">${this.t("cancelRun")}</button></form>`;
     }
-    const save = dirty ? `<button type="button" class="btn quiet" data-lview-save="${id}">${this.t("viewSave")}</button>` : "";
+    const save = dirty ? `<button type="button" class="btn quiet" data-lview-save="${id}"><ha-icon icon="mdi:star-outline"></ha-icon>${this.t("viewSave")}</button>` : "";
     const remove = st.view && saved.some(v => v.name === st.view) ? `<button type="button" class="btn quiet" data-lview-delete="${id}">${this.t("viewDelete")}</button>` : "";
     return `<span class="viewgroup">${select}${save}${remove}</span>`;
   }
@@ -1705,6 +1719,29 @@ class OverviewMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }
 
+  // What changed since the last visit of this browser: new and gone findings against the state kept then.
+  sinceVisit() {
+    if (this._visit !== undefined) return this._visit;
+    this._visit = null;
+    const keys = this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f));
+    let saved = null;
+    try { saved = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.visit") || "null"); } catch (_) { saved = null; }
+    const now = Date.now();
+    if (saved && Array.isArray(saved.keys) && now - saved.at >= 30 * 60000) {
+      const before = new Set(saved.keys), nowSet = new Set(keys);
+      this._visit = { at: saved.at, added: keys.filter(k => !before.has(k)).length, gone: saved.keys.filter(k => !nowSet.has(k)).length };
+    }
+    if (!saved || now - saved.at >= 30 * 60000) { try { globalThis.localStorage?.setItem("ha_housekeeper.visit", JSON.stringify({ at: now, keys })); } catch (_) { /* no storage */ } }
+    return this._visit;
+  }
+
+  sinceVisitLine() {
+    const v = this.sinceVisit();
+    if (!v || (!v.added && !v.gone)) return "";
+    const parts = [v.added ? this.t("visitAdded", { n: this.formatNumber(v.added) }) : "", v.gone ? this.t("visitGone", { n: this.formatNumber(v.gone) }) : ""].filter(Boolean).join(", ");
+    return `<p class="factnote visitline"><ha-icon icon="mdi:history"></ha-icon>${this.t("visitSince", { ago: this.agoText(new Date(v.at).toISOString()) })}: ${parts}</p>`;
+  }
+
   overview() {
     const m = this.data.meta, counts = m.status_counts || {}, types = m.type_counts || {}, health = this.health();
     const findings = this.sortedFindings();
@@ -1715,7 +1752,7 @@ class OverviewMixin {
     return `<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span>
       <div class="statustext"><h2>${headline}</h2><p>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)} · ${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</p></div>
       <div class="kpis">${[["objects", m.object_count, "", "inventory"], ["openFindings", findings.length, findings.length ? "warn" : "", "findingsNav"], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable"]].map(kpi).join("")}</div></section>
-      ${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
+      ${this.sinceVisitLine()}${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
@@ -1998,12 +2035,12 @@ class FindingsMixin {
 // Texts for the findings that began together with an update or restart; merged into TEXT.
 Object.assign(TEXT.de, {
   corrAfter: "Zeitlich zusammen mit: {what} ({when})", corrTile: "Nach Update neu", corrTileSub: "begannen zusammen mit einem Update", corrTitle: "Zeitlich zusammen mit Updates und Neustarts",
-  corrHint: "Befunde, die zur selben Zeit begannen wie ein Update, ein Neustart oder ein Bereinigungsplan. Das ist ein zeitlicher Zusammenhang, keine Ursache.",
-  corr_ha_version: "Home-Assistant-Update {from} → {to}", corr_entry_version: "Update von {domain} {from} → {to}", corr_start: "Neustart von Home Assistant", corr_plan: "Bereinigungsplan ausgeführt", corr_purge: "Statistiken gelöscht", corrCount: "{n} Befunde",
+  corrHint: "Befunde, die zur selben Zeit begannen wie ein Update, ein Neustart oder ein Plan. Das ist ein zeitlicher Zusammenhang, keine Ursache.",
+  corr_ha_version: "Home-Assistant-Update {from} → {to}", corr_entry_version: "Update von {domain} {from} → {to}", corr_start: "Neustart von Home Assistant", corr_plan: "Plan ausgeführt", corr_purge: "Statistiken gelöscht", corrCount: "{n} Befunde",
 });
 Object.assign(TEXT.en, {
   corrAfter: "At about the same time as: {what} ({when})", corrTile: "New after update", corrTileSub: "began together with an update", corrTitle: "At about the same time as updates and restarts",
-  corrHint: "Findings that began at the same time as an update, a restart or a cleanup plan. This is a link in time, not a cause.",
+  corrHint: "Findings that began at the same time as an update, a restart or a plan. This is a link in time, not a cause.",
   corr_ha_version: "Home Assistant update {from} → {to}", corr_entry_version: "Update of {domain} {from} → {to}", corr_start: "Home Assistant restart", corr_plan: "Cleanup plan run", corr_purge: "Statistics deleted", corrCount: "{n} findings",
 });
 
@@ -2133,7 +2170,7 @@ Object.assign(TEXT.en, {
 
 // Texts for the maintenance window; merged into TEXT.
 Object.assign(TEXT.de, {
-  winTab: "Wartungsfenster", winTitle: "Wartungsfenster", winExperimental: "experimentell", winHint: "Führt dich der Reihe nach durch Prüfung, einen Bereinigungsplan, das Neuladen, den Neustart und den Vergleich. Nichts läuft von allein, Housekeeper startet Home Assistant nie neu.",
+  winTab: "Wartungsfenster", winTitle: "Wartungsfenster", winExperimental: "experimentell", winHint: "Führt dich der Reihe nach durch Prüfung, einen Plan, das Neuladen, den Neustart und den Vergleich. Nichts läuft von allein, Housekeeper startet Home Assistant nie neu.",
   winWarning: "Das Wartungsfenster verkettet Schritte, die es einzeln schon gibt. Es wurde mit simulierten Schritten getestet, aber noch nicht in einer echten Instanz ausprobiert. Es ist deshalb ausgeschaltet.", winEnable: "Experimentell einschalten", winDisable: "Wieder ausschalten",
   winChoose: "Wähle einen Plan, der noch nicht gelaufen ist. Das Fenster begleitet dich durch Prüfung, Ausführung und Vergleich.", winNoPlans: "Es gibt keinen offenen Plan. Lege ihn unter Aufräumen an.", winBegin: "Fenster mit diesem Plan beginnen",
   win_preflight: "1. Vorab prüfen", win_baseline: "2. Ausgangsstand speichern", win_plan: "3. Plan ausführen", win_reload: "4. Integrationen neu laden", win_restart: "5. Neustart (von dir)", win_compare: "6. Vergleichen", win_report: "7. Bericht",
@@ -2147,7 +2184,7 @@ Object.assign(TEXT.de, {
   winAfterPlan: "Der Plan ist gelaufen. Zurückgehen geht nur noch über das Journal unter Aufräumen.", winStarted: "Begonnen", winSteps: "Schritte", winPlan: "Plan", winAfter: "Seit dem Ausgangsstand",
 });
 Object.assign(TEXT.en, {
-  winTab: "Maintenance window", winTitle: "Maintenance window", winExperimental: "experimental", winHint: "Guides you through the check, a cleanup plan, the reload, the restart and the comparison, one after the other. Nothing runs on its own, Housekeeper never restarts Home Assistant.",
+  winTab: "Maintenance window", winTitle: "Maintenance window", winExperimental: "experimental", winHint: "Guides you through the check, a plan, the reload, the restart and the comparison, one after the other. Nothing runs on its own, Housekeeper never restarts Home Assistant.",
   winWarning: "The maintenance window chains steps that already exist on their own. It was tested with simulated steps but not yet tried in a real instance, so it is switched off.", winEnable: "Switch on (experimental)", winDisable: "Switch off again",
   winChoose: "Pick a plan that has not run yet. The window guides you through the check, the run and the comparison.", winNoPlans: "There is no open plan. Create one under Cleanup.", winBegin: "Begin the window with this plan",
   win_preflight: "1. Check first", win_baseline: "2. Save the starting state", win_plan: "3. Run the plan", win_reload: "4. Reload integrations", win_restart: "5. Restart (by you)", win_compare: "6. Compare", win_report: "7. Report",
@@ -2481,7 +2518,7 @@ class CleanupMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
-      this._scrollPlan = true;
+      this._scrollPlan = true; this.toast(this.t("previewReady"));
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -2543,6 +2580,7 @@ class CleanupMixin {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     this._polling = null; this.planProgress = null;
+    if (this.plan?.plan_id === planId && ["verified", "executed", "partial", "aborted"].includes(this.plan.status)) this.toast(this.t(`toast_${this.plan.status}`));
     if (this.data) this.load(false);
     this.render();
   }
@@ -2602,7 +2640,7 @@ class CleanupMixin {
     steps.push(open && !confirming ? (executable.length ? { id: "stepAnalysis", state: "current" } : { id: "stepAnalysis", state: "failed", note: this.t("stepAnalysisBlocked") }) : { id: "stepAnalysis", state: "done" });
     steps.push({ id: "stepConfirm", state: open ? (confirming ? "current" : "todo") : "done" });
     if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
-    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error)].join(" · ") });
+    else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error), this.t("backupFailHint")].join(" · ") });
     else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
     else if (open) steps.push({ id: "stepBackup", state: "todo" });
     else {
@@ -2645,7 +2683,10 @@ class CleanupMixin {
     else if (status === "partial") { tone = "warn"; icon = "mdi:alert-circle"; text = this.t("outcomePartial", { done, total }); }
     else if (status === "aborted") { tone = "red"; icon = "mdi:close-circle"; text = this.t("outcomeAborted"); }
     else return "";
-    return `<div class="outcome ${tone}" role="status"><ha-icon icon="${icon}"></ha-icon><strong>${this.esc(text)}</strong></div>`;
+    const doneActions = plan.actions.filter(a => a.result?.state === "done");
+    const backupOnly = a => ["migrate_meter", "purge_statistics"].includes(a.kind);
+    const undo = !doneActions.length ? "" : doneActions.every(backupOnly) ? this.t("outcomeUndoBackup") : doneActions.some(backupOnly) ? this.t("outcomeUndoMixed") : this.t("outcomeUndoYes");
+    return `<div class="outcome ${tone}" role="status"><ha-icon icon="${icon}"></ha-icon><span><strong>${this.esc(text)}</strong>${undo ? `<small>${this.esc(undo)}</small>` : ""}</span></div>`;
   }
 
   planCard(plan) {
@@ -2848,7 +2889,7 @@ class CleanupMixin {
   // Where the person is in an assistant: choose, set up, look at the preview.
   stepsBar(current) {
     const names = ["stepChoose", "stepSetup", "stepPreview"];
-    return `<div class="stepsbar" role="list">${names.map((name, i) => `${i ? `<span class="line${i < current ? " done" : ""}"></span>` : ""}<span class="step${i + 1 === current ? " on" : i + 1 < current ? " done" : ""}" role="listitem"${i + 1 === current ? ' aria-current="step"' : ""}><i>${i + 1 < current ? "✓" : i + 1}</i>${this.t(name)}</span>`).join("")}</div>`;
+    return `<div class="stepsbar" role="list">${names.map((name, i) => `${i ? `<span class="line${i < current ? " done" : ""}"></span>` : ""}<span class="step${i + 1 === current ? " on" : i + 1 < current ? " done" : ""}" role="listitem"${i + 1 === current ? ' aria-current="step"' : ""}><i>${i + 1 < current ? "✓" : i + 1}</i><b class="stepname">${this.t(name)}</b></span>`).join("")}</div>`;
   }
 
   // Tasks that fix something that stays. A tile opens the assistant for one task; the plan is finished in the same view.
@@ -3829,7 +3870,7 @@ class DiagnosisMixin {
     const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
     const summary = this.detailSummary(item, key).map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`).join("");
     const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
-    return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(item.object_type)}</span></div>
+    return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
       <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
       <div class="panel sumline">${summary}</div>
@@ -5817,7 +5858,7 @@ Object.assign(TEXT.de, {
   fuWatching: "Nachkontrolle läuft bis {date}", fuClean: "Nachkontrolle bestanden: bis {date} nichts Neues", fuRegression: "Nachkontrolle: {count} neue Funde seit {date}", fuStopped: "Nachkontrolle beendet (Plan rückgängig gemacht)",
   fu_watching: "Beobachtet", fu_clean: "Sauber", fu_regression: "Rückfall", fu_stopped: "Beendet",
   fu_class_broken_reference: "defekte Referenz", fu_class_unavailable: "nicht verfügbar", fu_class_recurring: "Gerät kehrt wieder",
-  actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Bereinigungsplan sind neue Probleme aufgetreten.",
+  actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Plan sind neue Probleme aufgetreten.",
   reportButton: "Prüfbericht", reportNames: "Echte Namen und IDs verwenden", reportNamesHint: "Ohne Haken ersetzen Platzhalter alle Namen und IDs. So kannst du den Bericht teilen, ohne etwas preiszugeben.", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
   simPurgeRows: "{count} Zeilen im Recorder werden entfernt (Datei schrumpft erst nach einem Repack)", simKeptRows: "{count} Zeilen Verlauf bleiben im Recorder, bis er sie bereinigt",
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
@@ -6655,7 +6696,7 @@ class BatteryCareMixin {
   reminderRow(r) {
     const tone = { due: "red", soon: "warn", ok: "ok" }[r.state];
     const when = r.state === "due" ? this.t("remOverdue", { n: Math.abs(r.days_left) }) : this.t("remIn", { n: r.days_left });
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:wrench-clock"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(this.t("remLine", { interval: r.interval_days, last: r.last_done, due: r.due }))}${r.note ? ` · ${this.esc(r.note)}` : ""}</small></span><span class="pill ${tone}">${this.esc(when)}</span><button class="btn" data-rem-done="${this.esc(r.id)}">${this.t("remDone")}</button><button class="btn quiet" data-rem-del="${this.esc(r.id)}" aria-label="${this.esc(this.t("remDelete"))}">${this.t("remDelete")}</button></div>`;
+    return `<div class="row remrow"><span class="tile ${tone}"><ha-icon icon="mdi:wrench-clock"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(this.t("remLine", { interval: r.interval_days, last: r.last_done, due: r.due }))}${r.note ? ` · ${this.esc(r.note)}` : ""}</small></span><span class="pill ${tone}">${this.esc(when)}</span><button class="btn" data-rem-done="${this.esc(r.id)}">${this.t("remDone")}</button><button class="btn quiet" data-rem-del="${this.esc(r.id)}" aria-label="${this.esc(this.t("remDelete"))}">${this.t("remDelete")}</button></div>`;
   }
 
   // Own view under "Maintain": own reminders (filter, descaling, changing batteries) with a date when they are due.
@@ -7273,6 +7314,10 @@ Object.assign(TEXT.en, {
 
 // Navigation split: Cleanup (remove what is not needed), Repair (fix what stays) and the shared Journal.
 Object.assign(TEXT.de, {
+  firstScan: "Der erste Scan läuft: {percent} %", groupOpen: "{count} offen", readOnly: "Nur lesen", canChange: "Kann ändern", readOnlyHint: "Diese Seite ändert nichts.", canChangeHint: "Von hier aus lassen sich Pläne erstellen und ausführen. Geändert wird erst nach deiner Bestätigung.",
+  outcomeUndoYes: "Rückgängig ist möglich, solange sich die Objekte nicht geändert haben.", outcomeUndoBackup: "Nur per Backup rückgängig.", outcomeUndoMixed: "Teils rückgängig machbar, teils nur per Backup.",
+  backupFailHint: "Prüfe unter Einstellungen → System → Backups, ob ein Backup-Ziel erreichbar ist, und lies das Protokoll unter Einstellungen → System → Protokolle.", previewReady: "Vorschau erstellt", toast_verified: "Plan abgeschlossen und geprüft", toast_executed: "Plan ausgeführt", toast_partial: "Plan nur teilweise ausgeführt", toast_aborted: "Plan abgebrochen",
+  visitSince: "Seit deinem letzten Besuch (vor {ago})", visitAdded: "{n} neue Befunde", visitGone: "{n} erledigt",
   loadingShort: "lädt …", resetFilters: "Filter zurücksetzen", showSelectedOnly: "Nur Ausgewählte zeigen", showAll: "Alle zeigen", copyId: "Kopieren", copiedShort: "Kopiert",
   verdictIrreversible: "Nicht umkehrbar",
   acknowledgeAll: "Ich habe die {count} zu prüfenden Einträge gesehen und führe sie mit aus", acknowledgeAllHint: "Ohne Haken laufen nur die unbedenklichen Einträge; zu prüfende werden übersprungen.",
@@ -7305,6 +7350,10 @@ Object.assign(TEXT.de, {
   repairTaskExchange: "Gerät austauschen", repairTaskExchangeHint: "Ein defektes Gerät durch ein neues ersetzen und alles übernehmen.",
 });
 Object.assign(TEXT.en, {
+  firstScan: "The first scan is running: {percent} %", groupOpen: "{count} open", readOnly: "Read only", canChange: "Can change", readOnlyHint: "This page changes nothing.", canChangeHint: "Plans can be created and run from here. Nothing changes before you confirm.",
+  outcomeUndoYes: "Undo is possible as long as the objects have not changed.", outcomeUndoBackup: "Undo only from the backup.", outcomeUndoMixed: "Partly undoable, partly only from the backup.",
+  backupFailHint: "Check under Settings → System → Backups that a backup location is reachable, and read the log under Settings → System → Logs.", previewReady: "Preview created", toast_verified: "Plan completed and verified", toast_executed: "Plan executed", toast_partial: "Plan only partly executed", toast_aborted: "Plan aborted",
+  visitSince: "Since your last visit ({ago} ago)", visitAdded: "{n} new findings", visitGone: "{n} resolved",
   loadingShort: "loading …", resetFilters: "Reset filters", showSelectedOnly: "Show selected only", showAll: "Show all", copyId: "Copy", copiedShort: "Copied",
   verdictIrreversible: "Not reversible",
   acknowledgeAll: "I have seen the {count} entries to review and run them too", acknowledgeAllHint: "Without the tick only the unproblematic entries run; entries to review are skipped.",
@@ -7899,7 +7948,8 @@ class HAHousekeeperPanel extends HTMLElement {
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
-      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span><ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
+      const sum = views.reduce((n, v) => n + (typeof counts[v] === "number" && v !== "inventory" ? counts[v] : 0), 0);
+      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span>${sum ? `<em aria-label="${this.esc(this.t("groupOpen", { count: sum }))}">${sum}</em>` : ""}<ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
     };
     return `<header class="top${this.navOpen ? " open" : ""}"><div class="brand"><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><strong>${this.t("title")}</strong></div>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
@@ -7965,6 +8015,8 @@ class HAHousekeeperPanel extends HTMLElement {
       policies: [this.t("policies"), this.t("policiesSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
+    const writes = ["cleanup", "repair", "maintenance", "policies"].includes(this.view);
+    const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
     const from = this.viewTrail[this.viewTrail.length - 1];
@@ -7973,13 +8025,13 @@ class HAHousekeeperPanel extends HTMLElement {
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div><p class="eyebrow">${this.eyebrowFor(this.view)}</p><h1>${title}</h1><span class="sub">${sub}</span></div>
-      <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
+      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? "disabled" : ""}>${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}`;
   }
 
   content() {
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
-    if (!this.data) return `${this.skeleton("loading")}`;
+    if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
     if (this.view === "inventory") return this.inventory();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
@@ -8022,6 +8074,18 @@ class HAHousekeeperPanel extends HTMLElement {
         this.menuOpen = null; this.render();
       });
       root.addEventListener("click", ev => { this._shift = ev.shiftKey; }, true);
+      // Arrow keys move between the rows of a list: to the first control of the next or previous row.
+      root.addEventListener("keydown", ev => {
+        if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp") return;
+        const from = ev.composedPath?.()[0];
+        if (!from?.closest || from.matches("input[type=search],input[type=text],select,textarea")) return;
+        const row = from.closest("tr, .row");
+        if (!row || row.classList.contains("foldhead")) return;
+        let next = ev.key === "ArrowDown" ? row.nextElementSibling : row.previousElementSibling;
+        while (next && !next.matches("tr, .row")) next = ev.key === "ArrowDown" ? next.nextElementSibling : next.previousElementSibling;
+        const target = next?.matches("tr[tabindex]") ? next : next?.querySelector("input[type=checkbox], button, [tabindex]");
+        if (target) { ev.preventDefault(); target.focus(); }
+      });
       root.addEventListener("keydown", ev => {
         const typing = (ev.composedPath?.()[0]?.matches?.("input,select,textarea")) || ev.metaKey || ev.ctrlKey || ev.altKey;
         if (ev.key === "/" && !typing) {
@@ -8183,7 +8247,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { this.pickRange("fsel", el.dataset.fsel, el.checked, this.findSel, this._findPage); this.render(); });
     root.querySelectorAll("[data-sel-only]").forEach(el => el.onclick = () => { const id = el.dataset.selOnly; this.selOnly = { ...this.selOnly, [id]: !this.selOnly?.[id] }; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lreset]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.lreset]; if (st) { st.q = ""; st.f = {}; this.persistLv(el.dataset.lreset); } this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); ev.preventDefault(); try { await navigator.clipboard.writeText(el.dataset.copy); el.classList.add("done"); el.title = this.t("copiedShort"); setTimeout(() => { el.classList.remove("done"); el.title = this.t("copyId"); }, 1500); } catch (_) { /* no clipboard in this context */ } });
+    root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); ev.preventDefault(); try { await navigator.clipboard.writeText(el.dataset.copy); el.classList.add("done"); el.title = this.t("copiedShort"); this.toast(this.t("copiedShort")); setTimeout(() => { el.classList.remove("done"); el.title = this.t("copyId"); }, 1500); } catch (_) { /* no clipboard in this context */ } });
     root.querySelector("[data-fsel-page]")?.addEventListener("click", () => { (this._findPage || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());
