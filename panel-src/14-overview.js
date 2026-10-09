@@ -53,6 +53,12 @@ class OverviewMixin {
     return items;
   }
 
+  // Quarantined objects whose waiting time is over.
+  readyQuarantine() {
+    const limit = this.data?.meta?.quarantine_days ?? 14;
+    return (this.data?.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
+  }
+
   // The tasks the person can start from here; a count says where something waits.
   actionTiles() {
     const limit = this.data.meta.quarantine_days ?? 14;

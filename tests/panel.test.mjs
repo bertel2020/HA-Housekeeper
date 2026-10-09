@@ -1359,13 +1359,14 @@ test("the navigation groups every view once, with settings at the foot", () => {
   el.render();
   const html = shadow.innerHTML;
   const menus = [...html.matchAll(/<div class="navmenu[^"]*"><button[^>]*data-menu="([^"]+)"/g)].map(m => m[1]);
-  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupOperation", "navGroupExplore", "navGroupMaintain"]), "three menus after the direct entries");
+  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupMaintain", "navGroupOperation", "navGroupExplore"]), "three menus after the direct entries");
   assert.ok(html.includes('<nav class="topnav" id="topnav" aria-label="Main navigation">'));
-  const order = ["overview", "findingsNav", "changes", "inventory", "cleanup", "repair", "journal", "batteries", "maintenance", "settings"].map(v => html.indexOf(`data-view="${v}"`));
+  const order = ["overview", "findingsNav", "cleanup", "repair", "maintenance", "batteries", "reliability", "inventory", "changes", "journal", "settings"].map(v => html.indexOf(`data-view="${v}"`));
   assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), "views keep their order and settings comes last");
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1, "one current entry");
   assert.ok(/data-view="cleanup"\s+aria-current="page"/.test(html));
-  assert.ok(/class="nav menubtn group-active" data-menu="navGroupMaintain"/.test(html), "the menu holding the current view is marked");
+  el.view = "batteries"; el.render();
+  assert.ok(/class="nav menubtn group-active" data-menu="navGroupMaintain"/.test(shadow.innerHTML), "the menu holding the current view is marked");
 });
 
 const TREND = {

@@ -467,7 +467,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   topbar() {
-    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined } : {};
+    const counts = this.data ? { inventory: this.formatNumber(this.data.meta.object_count), findingsNav: this.data.findings.filter(f => !f.ignored).length, batteries: this.lowBatteries().length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined } : {};
     const item = view => `<button class="nav ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
@@ -501,6 +501,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   eyebrowFor(view) {
     if (view === "settings") return this.t("title");
+    if (view === "overview") return this.t("navGroupOverview");
     const group = NAV_GROUPS.find(([, views]) => views.includes(view));
     return group ? this.t(group[0]) : this.t("navGroupOverview");
   }
