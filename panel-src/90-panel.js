@@ -559,7 +559,19 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-scan-point]").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
-    root.querySelectorAll("[data-view-tab]").forEach(el => el.onclick = () => this.pickViewTab(el.dataset.viewTab));
+    root.querySelectorAll("[data-view-tab]").forEach(el => {
+      el.onclick = () => this.pickViewTab(el.dataset.viewTab);
+      el.onkeydown = ev => {
+        const tabs = [...el.parentElement.querySelectorAll("[data-view-tab]")].map(b => b.dataset.viewTab), at = tabs.indexOf(el.dataset.viewTab);
+        const next = { ArrowRight: tabs[(at + 1) % tabs.length], ArrowLeft: tabs[(at - 1 + tabs.length) % tabs.length], Home: tabs[0], End: tabs[tabs.length - 1] }[ev.key];
+        if (!next) return;
+        ev.preventDefault();
+        this.pickViewTab(next);
+        const target = this.shadowRoot.querySelector(`[data-view-tab="${next}"]`);
+        target?.focus();
+        target?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+      };
+    });
     root.querySelector("[data-action='graph-back']")?.addEventListener("click", () => this.graphBack());
     root.querySelector("[data-action='view-back']")?.addEventListener("click", () => this.viewBack());
     root.querySelectorAll("[data-detail-tab]").forEach(el => {

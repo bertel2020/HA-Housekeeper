@@ -39,7 +39,7 @@ from .meter import prepare_meter
 from .policies import RULES as POLICY_RULES
 from .policies import policies
 from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
-from .recorder_purge import purge_orphans
+from .recorder_purge import purge_orphans, purge_running
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
@@ -1008,8 +1008,10 @@ async def websocket_purge_statistics(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    if scanner.warming_up or scanner.cleanup.running:
-        connection.send_error(msg["id"], "busy", "Home Assistant is starting or a plan is running")
+    if scanner.warming_up or scanner.cleanup.running or purge_running(hass):
+        connection.send_error(
+            msg["id"], "busy", "Home Assistant is starting or a plan or purge is running"
+        )
         return
     if not scanner.snapshot or not scanner.snapshot["meta"].get("recorder_available"):
         connection.send_error(msg["id"], "no_recorder", "The recorder is not available")

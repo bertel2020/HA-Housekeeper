@@ -16,10 +16,31 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
+from .const import DOMAIN
+
 _LOGGER = logging.getLogger(__name__)
 
 MAX_IDS = 50
 BACKUP_TIMEOUT = 30 * 60  # seconds, as for the cleanup plans
+RUNNING_KEY = "purge_running"
+
+
+def purge_running(hass: HomeAssistant) -> bool:
+    """Whether a purge is in progress; cleanup plans and a second purge wait for it."""
+    return bool(hass.data.get(DOMAIN, {}).get(RUNNING_KEY))
+
+
+def _judge_live(
+    hass: HomeAssistant, orphans: dict[str, dict[str, Any]], statistic_ids: list[str]
+) -> tuple[list[str], list[dict[str, str]]]:
+    """``judge`` against the registry and the states as they are right now."""
+    registry = er.async_get(hass)
+    exists = {
+        sid
+        for sid in statistic_ids
+        if registry.async_get(sid) is not None or hass.states.get(sid) is not None
+    }
+    return judge(statistic_ids, orphans, exists)
 
 
 def judge(
@@ -67,36 +88,53 @@ async def purge_orphans(
     *,
     states: bool,
 ) -> dict[str, Any]:
-    """Delete the statistics (and optionally the states) of orphaned IDs after a backup."""
+    """Delete the statistics (and optionally the states) of orphaned IDs after a backup.
+
+    The IDs are judged before the backup and again after it, which can take a long time; only
+    those that are still allowed then are deleted.
+    """
     from homeassistant.components.recorder import get_instance
     from homeassistant.components.recorder.statistics import get_metadata
 
-    orphans = {item["statistic_id"]: item for item in snapshot.get("orphaned_statistics", [])}
-    registry = er.async_get(hass)
-    exists = {
-        sid
-        for sid in statistic_ids
-        if registry.async_get(sid) is not None or hass.states.get(sid) is not None
-    }
-    allowed, skipped = judge(statistic_ids[:MAX_IDS], orphans, exists)
-    result: dict[str, Any] = {"removed": [], "skipped": skipped, "backup": False, "states": states}
-    if not allowed:
-        return result
-    if (reason := await _backup(hass)) is not None:
-        result["error"] = reason
-        return result
-    result["backup"] = True
-    instance = get_instance(hass)
-    instance.async_clear_statistics(allowed)
-    await instance.async_block_till_done()
-    if states:
-        await hass.services.async_call(
-            "recorder", "purge_entities", {"entity_id": allowed}, blocking=True
-        )
+    store = hass.data.setdefault(DOMAIN, {})
+    if store.get(RUNNING_KEY):
+        return {"removed": [], "skipped": [], "backup": False, "states": states, "error": "busy"}
+    store[RUNNING_KEY] = True
+    try:
+        orphans = {item["statistic_id"]: item for item in snapshot.get("orphaned_statistics", [])}
+        allowed, skipped = _judge_live(hass, orphans, statistic_ids[:MAX_IDS])
+        result: dict[str, Any] = {
+            "removed": [],
+            "skipped": skipped,
+            "backup": False,
+            "states": states,
+        }
+        if not allowed:
+            return result
+        if (reason := await _backup(hass)) is not None:
+            result["error"] = reason
+            return result
+        result["backup"] = True
+        # The backup took a while: an entity may be back, or the Energy dashboard may use it now.
+        still, changed = _judge_live(hass, orphans, allowed)
+        result["skipped"] += [{"id": item["id"], "reason": "changed"} for item in changed]
+        if not still:
+            return result
+        instance = get_instance(hass)
+        instance.async_clear_statistics(still)
         await instance.async_block_till_done()
-    left = await instance.async_add_executor_job(
-        lambda: set(get_metadata(hass, statistic_ids=set(allowed)))
-    )
-    result["removed"] = [sid for sid in allowed if sid not in left]
-    result["skipped"] += [{"id": sid, "reason": "still_there"} for sid in allowed if sid in left]
-    return result
+        if states:
+            await hass.services.async_call(
+                "recorder", "purge_entities", {"entity_id": still}, blocking=True
+            )
+            await instance.async_block_till_done()
+        left = await instance.async_add_executor_job(
+            lambda: set(get_metadata(hass, statistic_ids=set(still)))
+        )
+        result["removed"] = [sid for sid in still if sid not in left]
+        result["skipped"] += [{"id": sid, "reason": "still_there"} for sid in still if sid in left]
+        if result["removed"]:
+            store.get("query_cache", {}).clear()  # cost and statistics answers are out of date now
+        return result
+    finally:
+        store[RUNNING_KEY] = False

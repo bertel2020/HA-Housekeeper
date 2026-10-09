@@ -66,6 +66,7 @@ from .cleanup import (
 )
 from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 from .meter import analyse, prepare_meter, read_series, recorder_ready
+from .recorder_purge import purge_running
 from .references import (
     ENERGY_PARTS,
     SourceError,
@@ -323,7 +324,7 @@ class CleanupRunner:
 
     def start(self, plan_id: str, token: str, user_id: str | None) -> None:
         """Validate the token and run the plan in the background."""
-        if self.running:
+        if self.running or purge_running(self.hass):
             raise CleanupError("busy")
         plan = self._plan(plan_id)
         if self.scanner.warming_up:
@@ -1141,7 +1142,7 @@ class CleanupRunner:
 
     async def undo(self, plan_id: str, object_ids: list[str] | None) -> dict[str, Any]:
         """Revert steps that are still exactly as Housekeeper left them."""
-        if self.running:
+        if self.running or purge_running(self.hass):
             raise CleanupError("busy")
         plan = self._plan(plan_id)
         registry = er.async_get(self.hass)
