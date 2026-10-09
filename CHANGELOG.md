@@ -1,5 +1,66 @@
 # Changelog
 
+## 0.19.0 - 2026-10-09
+
+Befunde bekommen einen Status, der Schutzmodus ist immer sichtbar, und Housekeeper
+kann jetzt auch fehlerhafte Messwerte im Recorder korrigieren. Automatisiert
+getestet (650 Python- und 150 Panel-Tests), aber **noch nicht auf einer echten
+Instanz**. Neu ist vor allem das Schreiben in die Recorder-Datenbank: bitte
+zuerst an einer unwichtigen Entität ausprobieren, mit Backup.
+
+### Neu
+
+- **Status für Befunde:** Bekannt (mit Begründung), Zurückgestellt (mit Frist),
+  Ausgeblendet, dazu automatisch Neu, In Arbeit (ein Plan läuft oder liegt vor)
+  und „Zuletzt behoben“. Die Liste filtert danach, und die Sammelauswahl kann
+  mehrere Befunde auf einmal als bekannt markieren oder zurückstellen. Bei einem
+  möglichen Duplikat gibt es „Ist kein Duplikat“.
+- **Zähler und Messwerte reparieren** (Recorder): Ausreißer und Sprünge eines
+  Zählers werden gefunden und im Verlauf und in den Kurz- und Langzeitstatistiken
+  korrigiert. Ein Bereich lässt sich im Diagramm mit Reglern wählen. Mit Vorschau
+  je Tabelle, Backup, Journal und Rückgängig (Zeile für Zeile). Nur im Schutzmodus
+  „voll“.
+- **Label ergänzen:** Für ausgewählte Entitäten als Plan mit Vorschau und
+  Rückgängig.
+- **Refactoring-Hinweise** (nur lesen): Geräte-Trigger, lange Verzögerungen und
+  Zweige, die nie zutreffen können.
+
+### Geändert
+
+- Der Schutzmodus steht immer in der Sicherheitszeile. Sie bleibt oben
+  angeheftet. In den Einstellungen steht er ganz oben als Auswahlkarten.
+- Wartungsziele: Die Übersicht zeigt nur noch verfehlte Ziele, die Grenzen stellst
+  du unter Einstellungen → Scan ein. Der Knopf heißt „Speichern“.
+
+### English
+
+Findings get a status, the protection mode is always visible, and Housekeeper can
+now also correct faulty readings in the recorder. Automatically tested (650
+Python and 150 panel tests), but **not yet on a real instance**. Writing into the
+recorder database is the main new thing: please try it on an unimportant entity
+first, with a backup.
+
+#### New
+
+- **Status for findings:** Known (with a reason), Snoozed (with a date), Hidden,
+  plus automatic New, In work (a plan is running or open) and “Fixed lately”. The
+  list filters by it, and the selection can mark several findings as known or
+  snooze them at once. A possible duplicate offers “Not a duplicate”.
+- **Repair counters and measurements** (recorder): outliers and jumps of a counter
+  are found and corrected in the history and in the short-term and long-term
+  statistics. A range can be picked on the chart with sliders. With a preview per
+  table, backup, journal and undo (row by row). Only in the “full” protection mode.
+- **Add a label** to selected entities as a plan with a preview and an undo.
+- **Refactoring hints** (read only): device triggers, long delays and branches
+  that can never apply.
+
+#### Changed
+
+- The protection mode is always shown in the safety line, which stays pinned at the
+  top. In the settings it sits at the very top as selectable cards.
+- Maintenance goals: the overview shows only missed goals, the limits are set under
+  Settings → Scan. The button is called “Save”.
+
 ## 0.18.0 - 2026-10-09
 
 Housekeeper schreibt jetzt mehr, aber immer im selben Rahmen: Vorschau, Bestätigung,
