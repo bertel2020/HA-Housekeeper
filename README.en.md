@@ -208,7 +208,7 @@ Each relationship includes a confidence level. Explicit registry and configurati
 
 ### Languages
 
-The panel and configuration flow are available in German and English. The active Home Assistant language determines which panel language is shown.
+The panel and configuration flow are available in German and English. By default the active Home Assistant language determines the panel language; under **Settings → Appearance** you can set German or English by hand.
 
 ## Safety model
 
@@ -224,7 +224,7 @@ Intentionally not part of Housekeeper: overwriting existing statistics values, r
 
 ## Usage
 
-Open **Housekeeper** from the Home Assistant sidebar. The overview starts with “What do I need to do now?” and shows what changed since the last scan, plus object totals, findings, and the time of the last scan.
+Open **Housekeeper** from the Home Assistant sidebar. The overview starts with a status header (ring, a sentence about the situation, key figures) and tiles “What would you like to do?” whose stripe shows the state, then “What do I need to do now?”, and shows what changed since the last scan, plus object totals, findings, and the time of the last scan.
 
 - Select a category card to open a filtered inventory.
 - Select an object: status, cause, device, area, and the risk of removing it are on top, with the tabs Overview, Dependencies, Technical data, and Attributes below, plus **Runs** for automations and scripts and **Reliability** for integrations.
