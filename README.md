@@ -252,30 +252,6 @@ Der erste Scan legt die anfänglichen Beobachtungszeitpunkte fest. Nachfolgende 
 - Die Abhängigkeitsansicht konzentriert sich auf direkte Beziehungen. Der Recorder (Verlauf, Statistiken) und nicht lesbare oder automatisch erzeugte Dashboards fließen nicht in die Auswirkungsanalyse ein; sie ist ein Hinweis, keine Garantie.
 - Mögliche Duplikate und ungenutzte Automationen beruhen auf Heuristiken und sind Hinweise, keine Gewissheit.
 
-## Entwicklung und Validierung
-
-Housekeeper wird mit Home Assistant 2026.8.3 (der Mindestversion) und mit der jeweils neuesten vom Testpaket unterstützten Version automatisiert getestet (lokal und im GitHub-Workflow, beide verpflichtend, mit Python 3.14) und in einer laufenden Instanz mit Home Assistant 2026.9.4 ausprobiert. Die Tests decken Folgendes ab:
-
-- Manifest- und Paketverträge
-- Parität der deutschen und englischen Backend-Übersetzungen
-- Ermittlung von Automationsreferenzen und Erkennung fehlender Ziele
-- Config Flow und vollständige Einrichtung des Config Entry
-- Inventarisierung von Registry-Einträgen und Zuständen, Quellen (Skripte, Szenen, Dashboards, Gruppen, Helfer), Scanvergleich, Ausblenden von Befunden und Sensoren
-- Richtlinien, Zuverlässigkeit, Recorder-Abfragen (Last, Datenbank) und der Speicher für das letzte Ergebnis, auch mit beschädigten Dateien
-- Python-Linting und -Formatierung
-- Panel-Logik (Ansichten, Filter, Export, Escaping) mit Node.js
-- Python- und Frontend-Syntax
-
-Das Panel liegt als Quelltext in `panel-src/` (mehrere kleine Dateien) und wird mit `node scripts/build_panel.mjs` zu der einen Datei `custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js` gebaut, die Home Assistant ausliefert. Tests und CI prüfen mit `--check`, dass sie aktuell ist; nach Änderungen an `panel-src/` also neu bauen.
-
-Die von Home Assistant unabhängigen Tests lassen sich so ausführen:
-
-```bash
-python3 -m pytest -q
-```
-
-Der GitHub-Validierungsworkflow installiert zusätzlich Home Assistant und dessen Frontend, um die Laufzeit-Integrationstests sowie HACS- und Hassfest-Prüfungen auszuführen.
-
 ## Änderungsprotokoll
 
 Die Versionshinweise auf Deutsch und Englisch stehen in [CHANGELOG.md](CHANGELOG.md).

@@ -252,30 +252,6 @@ The first scan establishes the initial observation timestamps. Later scans prese
 - The dependency view focuses on direct relationships. The recorder (history, statistics) and unreadable or auto-generated dashboards are not part of the impact analysis; it is a hint, not a guarantee.
 - Possible duplicates and unused automations are based on heuristics and are hints, not certainty.
 
-## Development and validation
-
-Housekeeper is tested automatically against Home Assistant 2026.8.3 (the minimum version) and the latest version the test package supports (locally and in the GitHub workflow, both required, with Python 3.14) and has been tried in a running instance on Home Assistant 2026.9.4. The test suite covers:
-
-- manifest and package contracts
-- German/English backend translation parity
-- automation reference extraction and missing-target detection
-- Config Flow creation and complete Config Entry setup
-- registry and state inventory scanning, sources (scripts, scenes, dashboards, groups, helpers), scan comparison, hiding findings, and sensors
-- policies, reliability, recorder queries (load, database) and the store for the last result, also with damaged files
-- Python linting and formatting
-- panel logic (views, filters, export, escaping) with Node.js
-- Python and frontend syntax
-
-The panel's source lives in `panel-src/` (several small files) and is built with `node scripts/build_panel.mjs` into the single file `custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js` that Home Assistant serves. Tests and CI verify with `--check` that it is current, so rebuild after changing `panel-src/`.
-
-Run the dependency-free local tests with:
-
-```bash
-python3 -m pytest -q
-```
-
-The GitHub validation workflow additionally installs Home Assistant and its frontend to execute the runtime integration tests, HACS validation, and Hassfest.
-
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes in English and German.
