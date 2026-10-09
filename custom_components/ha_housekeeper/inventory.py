@@ -603,7 +603,9 @@ class InventoryScanner:
                     async_announce(self.hass, self.notify.new(snapshot["findings"]))
                     self.history.record(snapshot)
                     self._observe_versions(snapshot)
-                    if followup.check(self.journal.plans, snapshot, datetime.now(UTC)):
+                    if followup.check(
+                        self.journal.plans, snapshot, datetime.now(UTC), self.runs.errors_since
+                    ):
                         self.journal.save()
                     snapshot["regressions"] = followup.regressions(
                         self.journal.plans, datetime.now(UTC)

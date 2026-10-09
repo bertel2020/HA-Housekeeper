@@ -362,7 +362,15 @@ async def _plan_from_requests(
                     vol.Optional("values"): {
                         vol.Optional("description"): vol.All(
                             str, vol.Length(max=refactor_module.DESCRIPTION_MAX)
-                        )
+                        ),
+                        vol.Optional("timeout"): vol.All(
+                            int, vol.Range(min=1, max=refactor_module.TIMEOUT_MAX)
+                        ),
+                        vol.Optional("continue_on_timeout"): bool,
+                        vol.Optional("mode"): vol.In(refactor_module.MODES),
+                        vol.Optional("max"): vol.All(
+                            int, vol.Range(min=2, max=refactor_module.MAX_RUNS)
+                        ),
                     },
                 }
             ],

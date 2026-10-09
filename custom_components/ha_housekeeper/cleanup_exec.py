@@ -1221,7 +1221,7 @@ class CleanupRunner:
         if plan["status"] == "executed" and plan["verification"]["ok"]:
             plan["status"] = "verified"
         _event(plan, "verified", ok=plan["verification"]["ok"])
-        followup.start(plan, snapshot, _now())
+        followup.start(plan, snapshot, _now(), self.scanner.runs.errors_since)
         self.scanner.journal.save()
 
     async def _verify_refactor(self, action: dict[str, Any]) -> dict[str, Any]:
@@ -1231,11 +1231,7 @@ class CleanupRunner:
             loaded = await load_source(
                 self.hass, self.scanner.snapshot, action["sources"][0]["source"]
             )
-            item = loaded["item"]
-            if action["fix"] == "add_description":
-                ok = str(item.get("description") or "").strip() == action["values"]["description"]
-            else:
-                ok = not refactor_module.duplicates(item)
+            ok = refactor_module.applied(loaded["item"], action["fix"], action["values"])
         except SourceError:
             ok = False
         loaded_now = self.hass.states.get(action["object_id"]) is not None

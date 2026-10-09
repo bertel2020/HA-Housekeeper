@@ -19,9 +19,15 @@ from homeassistant.helpers.storage import Store
 from .const import REFACTOR_STORAGE_KEY, STORAGE_VERSION
 from .references import MAX_LISTED, SourceError, load_source, text_hash
 
-FIXES = ("add_description", "remove_duplicate_triggers")
+FIXES = ("add_description", "remove_duplicate_triggers", "set_timeout", "set_mode")
 DESCRIPTION_MAX = 300
+TIMEOUT_MAX = 86400  # seconds
+MODES = ("single", "restart", "queued", "parallel")
+MAX_RUNS = 100
+DEFAULT_MAX = 10  # what Home Assistant uses for queued and parallel without a value
 TRIGGER_KEYS = ("triggers", "trigger")
+ACTION_KEYS = ("actions", "action")
+WAITS = ("wait_template", "wait_for_trigger")
 
 
 class RefactorStore:
@@ -57,6 +63,49 @@ def duplicates(item: dict[str, Any]) -> list[int]:
     return found
 
 
+def _walk(steps: Any, prefix: str):
+    """Every step of an action list with its path, down through the blocks that hold steps."""
+    if not isinstance(steps, list):
+        return
+    for index, step in enumerate(steps):
+        if not isinstance(step, dict):
+            continue
+        base = f"{prefix}/{index}"
+        yield base, step
+        for number, option in enumerate(
+            step["choose"] if isinstance(step.get("choose"), list) else []
+        ):
+            if isinstance(option, dict):
+                yield from _walk(option.get("sequence"), f"{base}/choose/{number}/sequence")
+        yield from _walk(step.get("default"), f"{base}/default")
+        yield from _walk(step.get("then"), f"{base}/then")
+        yield from _walk(step.get("else"), f"{base}/else")
+        yield from _walk(step.get("sequence"), f"{base}/sequence")
+        yield from _walk(step.get("parallel"), f"{base}/parallel")
+        if isinstance(step.get("repeat"), dict):
+            yield from _walk(step["repeat"].get("sequence"), f"{base}/repeat/sequence")
+
+
+def _action_key(item: dict[str, Any]) -> str | None:
+    return next((k for k in ACTION_KEYS if isinstance(item.get(k), list)), None)
+
+
+def waits_without_timeout(item: dict[str, Any]) -> list[str]:
+    """Paths of waits that would wait forever."""
+    key = _action_key(item)
+    return [
+        path
+        for path, step in _walk(item[key] if key else [], key or "action")
+        if any(w in step for w in WAITS) and "timeout" not in step
+    ]
+
+
+def current_mode(item: dict[str, Any]) -> tuple[str, int | None]:
+    """The mode of the automation and, for queued and parallel, its limit."""
+    mode = item.get("mode") if item.get("mode") in MODES else "single"
+    return mode, (item.get("max", DEFAULT_MAX) if mode in ("queued", "parallel") else None)
+
+
 def propose(item: dict[str, Any]) -> list[dict[str, Any]]:
     """What could be improved in this configuration, without values the person has to give."""
     found: list[dict[str, Any]] = []
@@ -64,6 +113,10 @@ def propose(item: dict[str, Any]) -> list[dict[str, Any]]:
         found.append({"fix": "add_description"})
     if doubled := duplicates(item):
         found.append({"fix": "remove_duplicate_triggers", "count": len(doubled)})
+    if waits := waits_without_timeout(item):
+        found.append({"fix": "set_timeout", "count": len(waits), "paths": waits[:5]})
+    mode, limit = current_mode(item)
+    found.append({"fix": "set_mode", "mode": mode, "max": limit})
     return found
 
 
@@ -94,7 +147,67 @@ def apply(
         diff = [{"path": f"{key}/{i}", "before": new[key][i], "after": None} for i in positions]
         new[key] = [t for i, t in enumerate(new[key]) if i not in positions]
         return new, diff
+    if fix == "set_timeout":
+        timeout, keep = values.get("timeout"), values.get("continue_on_timeout", True)
+        if (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, int)
+            or not 1 <= timeout <= TIMEOUT_MAX
+        ):
+            raise ValueError("invalid_fix")
+        paths = waits_without_timeout(new)
+        if not paths:
+            raise ValueError("nothing_to_do")
+        key = _action_key(new)
+        steps = dict(_walk(new[key], key))
+        diff = []
+        for path in paths:
+            steps[path]["timeout"] = timeout
+            if keep is False:
+                steps[path]["continue_on_timeout"] = False
+            diff.append({"path": f"{path}/timeout", "before": None, "after": timeout})
+        return new, diff
+    if fix == "set_mode":
+        mode, limit = values.get("mode"), values.get("max")
+        if mode not in MODES:
+            raise ValueError("invalid_fix")
+        if mode in ("queued", "parallel"):
+            limit = DEFAULT_MAX if limit is None else limit
+            if isinstance(limit, bool) or not isinstance(limit, int) or not 2 <= limit <= MAX_RUNS:
+                raise ValueError("invalid_fix")
+        if (mode, limit if mode in ("queued", "parallel") else None) == current_mode(item):
+            raise ValueError("nothing_to_do")
+        before = current_mode(item)
+        new["mode"] = mode
+        if mode in ("queued", "parallel"):
+            new["max"] = limit
+        else:
+            new.pop("max", None)
+        return new, [
+            {"path": "mode", "before": before[0], "after": mode},
+            *(
+                [{"path": "max", "before": before[1], "after": new.get("max")}]
+                if before[1] != new.get("max")
+                else []
+            ),
+        ]
     raise ValueError("invalid_fix")
+
+
+def applied(item: dict[str, Any], fix: str, values: dict[str, Any]) -> bool:
+    """Whether the edit is in this configuration (checked after it was written)."""
+    if fix == "add_description":
+        return str(item.get("description") or "").strip() == values.get("description")
+    if fix == "remove_duplicate_triggers":
+        return not duplicates(item)
+    if fix == "set_timeout":
+        return not waits_without_timeout(item)
+    if fix == "set_mode":
+        mode, limit = current_mode(item)
+        return mode == values.get("mode") and (
+            mode not in ("queued", "parallel") or limit == values.get("max", DEFAULT_MAX)
+        )
+    return False
 
 
 async def is_valid(hass: HomeAssistant, ref: str, item: dict[str, Any]) -> bool:

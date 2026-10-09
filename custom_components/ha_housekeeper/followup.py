@@ -3,13 +3,16 @@
 When a plan finishes, the findings that already exist are remembered. Every following scan is
 compared with them: a new broken reference, a new unavailable entity or a device that came back
 after being forgotten means a ``regression``, if it concerns an object the plan touched. After the
-watch time without such a finding the plan is ``clean``. The check only reads scans; it does not look at automation runs.
+watch time without such a finding the plan is ``clean``. The check reads scans and, for an automation a plan changed, the error runs counted since.
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import Any
+
+from .runs import run_key
 
 WATCH_HOURS = 24
 SHOWN_NEW = 20  # new findings listed in the plan; the number is always exact
@@ -43,7 +46,37 @@ def _scope(plan: dict[str, Any]) -> set[str]:
     return scope
 
 
-def start(plan: dict[str, Any], snapshot: dict[str, Any], now: datetime) -> None:
+def _watched_runs(
+    plan: dict[str, Any],
+    snapshot: dict[str, Any],
+    now: datetime,
+    errors_since: Callable[[str, str], int] | None,
+) -> dict[str, dict[str, Any]]:
+    """Automations the plan changed, with the error runs counted so far today (the starting point)."""
+    if errors_since is None:
+        return {}
+    objects = {o["object_id"]: o for o in snapshot["objects"] if o["object_type"] == "automation"}
+    day = now.date().isoformat()
+    watched = {}
+    for action in plan.get("actions", []):
+        obj = objects.get(action["object_id"])
+        done = (action.get("result") or {}).get("state") == "done"
+        if action["kind"] == "refactor_automation" and done and obj is not None:
+            key = run_key(obj)
+            watched[action["object_id"]] = {
+                "key": key,
+                "day": day,
+                "errors": errors_since(key, day),
+            }
+    return watched
+
+
+def start(
+    plan: dict[str, Any],
+    snapshot: dict[str, Any],
+    now: datetime,
+    errors_since: Callable[[str, str], int] | None = None,
+) -> None:
     """Begin watching after a plan that changed something; ``snapshot`` is the state afterwards."""
     if not plan.get("executed"):
         return
@@ -56,6 +89,7 @@ def start(plan: dict[str, Any], snapshot: dict[str, Any], now: datetime) -> None
             "findings": sorted(findings),
             "recurring": sorted(recurring),
             "scope": sorted(_scope(plan)),
+            "runs": _watched_runs(plan, snapshot, now, errors_since),
         },
         "baseline_counts": {
             kind: sum(f["classification"] == kind for f in findings.values())
@@ -73,7 +107,12 @@ def stop(plan: dict[str, Any]) -> None:
         followup.pop("baseline", None)
 
 
-def check(plans: list[dict[str, Any]], snapshot: dict[str, Any], now: datetime) -> bool:
+def check(
+    plans: list[dict[str, Any]],
+    snapshot: dict[str, Any],
+    now: datetime,
+    errors_since: Callable[[str, str], int] | None = None,
+) -> bool:
     """Compare a finished scan with every watched plan; True if a plan changed."""
     changed = False
     findings, recurring = _current(snapshot)
@@ -95,6 +134,15 @@ def check(plans: list[dict[str, Any]], snapshot: dict[str, Any], now: datetime) 
             for d in sorted(recurring - set(baseline["recurring"]))
             if not scope or d in scope
         ]
+        for entity_id, watch in (baseline.get("runs") or {}).items():
+            if errors_since and errors_since(watch["key"], watch["day"]) > watch["errors"]:
+                new.append(
+                    {
+                        "key": f"run_error:{entity_id}",
+                        "object_id": entity_id,
+                        "classification": "run_error",
+                    }
+                )
         if new:
             followup.update(state="regression", at=now.isoformat(), new_count=len(new))
             followup["new"] = new[:SHOWN_NEW]

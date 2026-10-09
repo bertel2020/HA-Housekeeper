@@ -206,3 +206,34 @@ def test_recorder_rows_are_named_in_the_end_state_and_the_report() -> None:
     assert "120" in build_report(plan, lang="en") and "16" in build_report(plan, lang="en")
     attach_history(plan, {"sensor.a": rows["sensor.a"]})  # ids without a count stay uncounted
     assert plan["simulation"]["history_rows_kept"] == 16
+
+
+def test_followup_counts_error_runs_of_an_automation_the_plan_changed() -> None:
+    errors = {"automation.a1": 1}  # one error run already happened today
+
+    def errors_since(key: str, day: str) -> int:
+        return errors[key]
+
+    snapshot = {
+        "objects": [
+            {"object_type": "automation", "object_id": "automation.hall", "automation_id": "a1"}
+        ],
+        "findings": [],
+        "recurring_devices": [],
+    }
+    plan = {
+        "executed": True,
+        "actions": [
+            {
+                "kind": "refactor_automation",
+                "object_id": "automation.hall",
+                "result": {"state": "done"},
+            }
+        ],
+    }
+    followup.start(plan, snapshot, NOW, errors_since)
+    assert not followup.check([plan], snapshot, NOW + timedelta(hours=1), errors_since)
+    errors["automation.a1"] = 2
+    assert followup.check([plan], snapshot, NOW + timedelta(hours=2), errors_since)
+    assert plan["followup"]["state"] == "regression"
+    assert plan["followup"]["new"][0]["classification"] == "run_error"

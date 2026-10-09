@@ -832,6 +832,7 @@ def test_refactoring_makes_exactly_the_named_edit() -> None:
     assert [p["fix"] for p in refactor.propose(item)] == [
         "add_description",
         "remove_duplicate_triggers",
+        "set_mode",
     ]
     new, diff = refactor.apply(item, "remove_duplicate_triggers", None)
     assert [t["platform"] for t in new["trigger"]] == ["state", "sun"] and diff[0][
@@ -934,3 +935,55 @@ async def test_a_blueprint_automation_and_an_invalid_result_are_never_written(
                 hass, snapshot, "automation.heating", "add_description", {"description": "x"}
             )
         assert found["error"] == "invalid_config"
+
+
+def test_timeouts_and_modes_are_set_exactly_where_asked() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    item = {
+        "id": "a",
+        "alias": "Night",
+        "mode": "single",
+        "trigger": [{"platform": "sun"}],
+        "action": [
+            {"wait_template": "{{ is_state('light.a', 'off') }}"},
+            {"choose": [{"conditions": [], "sequence": [{"wait_for_trigger": [], "timeout": 5}]}]},
+            {"if": [], "then": [{"wait_for_trigger": [{"platform": "sun"}]}]},
+        ],
+    }
+    found = {p["fix"]: p for p in refactor.propose(item)}
+    assert found["set_timeout"]["count"] == 2 and found["set_timeout"]["paths"] == [
+        "action/0",
+        "action/2/then/0",
+    ]
+    new, diff = refactor.apply(item, "set_timeout", {"timeout": 60, "continue_on_timeout": False})
+    assert new["action"][0] == {
+        "wait_template": item["action"][0]["wait_template"],
+        "timeout": 60,
+        "continue_on_timeout": False,
+    }
+    assert new["action"][1] == item["action"][1] and "timeout" not in item["action"][0], (
+        "others and the input stay"
+    )
+    assert [d["path"] for d in diff] == ["action/0/timeout", "action/2/then/0/timeout"]
+    assert refactor.applied(new, "set_timeout", {}) and not refactor.applied(
+        item, "set_timeout", {}
+    )
+    for values in ({}, {"timeout": 0}, {"timeout": True}, {"timeout": 86401}):
+        with pytest.raises(ValueError, match="invalid_fix"):
+            refactor.apply(item, "set_timeout", values)
+    with pytest.raises(ValueError, match="nothing_to_do"):
+        refactor.apply(new, "set_timeout", {"timeout": 5})
+
+    new, diff = refactor.apply(item, "set_mode", {"mode": "queued", "max": 4})
+    assert (new["mode"], new["max"]) == ("queued", 4) and "max" not in item
+    new2, _ = refactor.apply(new, "set_mode", {"mode": "restart"})
+    assert new2["mode"] == "restart" and "max" not in new2
+    assert refactor.applied(new, "set_mode", {"mode": "queued", "max": 4})
+    for mode, values, reason in (
+        ("single", {"mode": "single"}, "nothing_to_do"),
+        ("single", {"mode": "x"}, "invalid_fix"),
+        ("single", {"mode": "parallel", "max": 1}, "invalid_fix"),
+    ):
+        with pytest.raises(ValueError, match=reason):
+            refactor.apply({**item, "mode": mode}, "set_mode", values)

@@ -172,6 +172,11 @@ class RunStore:
     def _data(self) -> dict[str, Any]:
         return {"since": self.since, "items": self.items}
 
+    def errors_since(self, key: str, day: str) -> int:
+        """Runs that ended in an error on ``day`` (an ISO date) or later."""
+        days = (self.items.get(key) or {}).get("days") or {}
+        return sum(counters["c"][ERROR] for d, counters in days.items() if d >= day)
+
     async def async_collect(self, now: datetime | None = None) -> int:
         """Read the trace heads of all automations and scripts and count new runs."""
         from homeassistant.components.trace.util import async_list_traces  # noqa: PLC0415

@@ -2222,6 +2222,18 @@ test("the improve block asks for the switch, offers fixes and turns one into a p
   assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "refactor_automation", object_id: "automation.hall", fix: "add_description", values: { description: "Warms the hall" } }]));
   assert.equal(el.view, "cleanup");
   assert.equal(el.plan.plan_id, "r1");
+  enabled = true;
+  el.refactor.by["automation.hall"] = { enabled: true, editable: true, proposals: [{ fix: "set_timeout", count: 2, paths: ["action/0", "action/2"] }, { fix: "set_mode", mode: "single", max: null }] };
+  const more = el.refactorCard("automation.hall");
+  assert.ok(more.includes("data-refactor-timeout") && more.includes("action/0, action/2") && more.includes("data-refactor-mode") && !more.includes("data-refactor-max"));
+  el.refactorState().timeout = "90"; el.refactorState().keep = false; el.refactorState().mode = "queued"; el.refactorState().max = "4";
+  assert.ok(el.refactorCard("automation.hall").includes("data-refactor-max"));
+  calls.length = 0;
+  await el.makeRefactorPlan("automation.hall", "set_timeout");
+  await el.makeRefactorPlan("automation.hall", "set_mode");
+  const [t, m] = calls.filter(c => c.type.endsWith("/plan_create")).map(c => JSON.stringify(c.actions[0].values));
+  assert.equal(t, '{"timeout":90,"continue_on_timeout":false}');
+  assert.equal(m, '{"mode":"queued","max":4}');
 });
 
 test("an object leaves quarantine after a question, through the undo of just that object", async () => {
