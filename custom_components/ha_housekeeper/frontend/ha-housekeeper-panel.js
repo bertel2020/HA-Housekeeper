@@ -1875,13 +1875,14 @@ class FindingsMixin {
     this.render();
   }
 
-  findingsCard(key) {
+  // The findings of one object with what can be decided about each; the detail page shows them in the card of actions.
+  findingRows(key) {
     const list = this.data.findings.filter(f => this.findingKey(f) === key);
     if (!list.length) return "";
     const hideButton = f => this.decide && this.decide.key === f.key ? this.decideForm(f)
-      : `${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button>`;
+      : `${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="snooze"><ha-icon icon="mdi:clock-outline"></ha-icon>${this.t("fselSnooze")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button>`;
     const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small>${this.pill(f.classification)} ${this.t("certainty")}: ${Math.round(f.confidence * 100)} %${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
-    return `<section class="panel"><div class="panelhead"><h2>${this.t("findingsOfObject")} (${list.length})</h2></div>${rows}</section>`;
+    return rows;
   }
 }
 
@@ -3603,7 +3604,7 @@ class DiagnosisMixin {
 
   // Only the open tab is built, so large attributes and relations cost nothing until they are asked for.
   detailPanel(tab, item, key) {
-    if (tab === "relations") return `<div class="stack">${this.markCard(item)}${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
+    if (tab === "relations") return `<div class="stack">${this.markCard(item)}${this.relationsCard(key)}</div>`;
     if (tab === "flow") return this.flowCard(item, key);
     if (tab === "life") return this.lifeCard(item);
     if (tab === "runs") return this.runsDetailCard(this.runsRow(item));
@@ -3620,7 +3621,7 @@ class DiagnosisMixin {
       const cards = this.propertyCards(item);
       return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
     }
-    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}</div></div>`;
+    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.actionsCard(item, key)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}</div></div>`;
   }
 }
 
@@ -6902,6 +6903,82 @@ Object.assign(TEXT.en, {
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity", markKnown: "Mark as known",
 });
 
+// DetailActionsMixin: the card "What you can do" on the overview of an object. It collects what the other views
+// already offer for this one object: decide its findings, and start a plan (replace, disable, label) that opens under
+// Cleanup with a preview. Nothing here changes anything by itself.
+class DetailActionsMixin {
+  // The entity ids a missing reference points to; only entities can be replaced by another entity.
+  missingEntities(key) {
+    return [...new Set(this.data.findings.filter(f => !f.ignored && this.findingKey(f) === key && f.classification === "broken_reference" && f.rule_id.endsWith("_entity") && String(f.affected_object).includes(".")).map(f => f.affected_object))];
+  }
+
+  fixButtons(item, key) {
+    const open = this.data.findings.filter(f => !f.ignored && this.findingKey(f) === key);
+    const btn = (attr, icon, label) => `<button class="btn" ${attr}><ha-icon icon="${icon}"></ha-icon>${label}</button>`;
+    const out = this.missingEntities(key).map(id => btn(`data-act-replace="${this.esc(id)}"`, "mdi:swap-horizontal", `${this.t("actReplace")} ${this.esc(id)}`));
+    const broken = open.some(f => f.classification === "broken_reference");
+    if (item.object_type === "entity" && open.some(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification))) {
+      out.push(btn(`data-act-replace="${this.esc(item.object_id)}"`, "mdi:swap-horizontal", this.t("actReplaceThis")));
+      if (item.status !== "disabled") out.push(btn(`data-act-disable="${this.esc(item.object_id)}"`, "mdi:cancel", this.t("actDisable")));
+    }
+    return { buttons: out.join(""), broken };
+  }
+
+  labelForm(item) {
+    if (!["entity", "automation"].includes(item.object_type)) return "";
+    const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
+    if (!labels.length) return "";
+    const chosen = this.actLabel && labels.some(l => l.object_id === this.actLabel) ? this.actLabel : labels[0].object_id;
+    return `<div class="setrow"><select data-act-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${chosen === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
+      <button class="btn" data-act-label-plan="${this.esc(item.object_id)}"><ha-icon icon="mdi:label-outline"></ha-icon>${this.t("fselLabel")}</button></div>`;
+  }
+
+  actionsCard(item, key) {
+    const rows = this.findingRows(key);
+    const { buttons, broken } = this.fixButtons(item, key);
+    const label = this.labelForm(item);
+    if (!rows && !buttons && !label) return "";
+    const fix = buttons || label ? `<div class="pad"><small class="factnote">${this.t("actPreviewOnly")}</small>${buttons ? `<div class="actions">${buttons}</div>` : ""}${label}${broken ? `<small class="factnote">${this.t("actEditInHa")}</small>` : ""}</div>` : "";
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("actionsTitle")}</h2></div>${rows}${fix}</section>`;
+  }
+
+  // The Cleanup view takes over from here: the assistant is filled in, the person looks at the preview and confirms.
+  startCleanup(kind, fill) {
+    this.noteJump?.("cleanup");
+    this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
+    if (this.lv.cleanup) this.lv.cleanup.f = {};
+    this.view = "cleanup"; this.pages = {}; this.selected = null;
+    this.render();
+  }
+
+  async planLabel(entityId, label) {
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "add_label", object_id: entityId, target: label }] });
+      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+      this.journal = [plan, ...(this.journal || [])];
+      this.noteJump?.("cleanup"); this.view = "cleanup"; this.pages = {}; this.selected = null;
+    } catch (err) { this.error = err?.message || String(err); }
+    this.render();
+  }
+
+  bindDetailActions(root) {
+    root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = ""; }));
+    root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
+    root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
+    root.querySelector("[data-act-label-plan]")?.addEventListener("click", e => this.planLabel(e.currentTarget.dataset.actLabelPlan, root.querySelector("[data-act-label]")?.value || this.actLabel));
+  }
+}
+Object.assign(TEXT.de, {
+  actionsTitle: "Was du tun kannst", actReplace: "Ersetzen:", actReplaceThis: "Durch andere Entität ersetzen", actDisable: "Deaktivieren planen",
+  actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie unter Aufräumen bestätigst.",
+  actEditInHa: "Eine einzelne Referenz entfernt Housekeeper nicht selbst. Öffne die Automation in Home Assistant und bearbeite sie dort.",
+});
+Object.assign(TEXT.en, {
+  actionsTitle: "What you can do", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable",
+  actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it under Cleanup.",
+  actEditInHa: "Housekeeper does not remove a single reference itself. Open the automation in Home Assistant and edit it there.",
+});
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -7560,6 +7637,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     this.bindFindingStatus(root);
+    this.bindDetailActions(root);
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
@@ -7773,7 +7851,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, CounterMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

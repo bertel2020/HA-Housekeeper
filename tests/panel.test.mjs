@@ -326,7 +326,7 @@ test("detail page offers to hide and show findings, but not label-hidden ones", 
     { ...DATA.findings[0], key: "k1", ignored: false },
     { rule_id: "entity.state_unavailable", object_id: "sensor.a", classification: "unavailable", confidence: 0.75, key: "k3", ignored: true, ignored_by: "label" },
   ] };
-  const html = el.findingsCard("entity:sensor.a");
+  const html = el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a");
   assert.ok(html.includes('data-decide-open="k1"'));
   assert.ok(!html.includes('data-ignore="k3"') && !html.includes('data-decide-open="k3"'));
   assert.ok(html.includes("housekeeper_ignore"));
@@ -2608,7 +2608,7 @@ test("a finding can be kept on purpose with a reason, put off for days, and come
   el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/ignore")) sent.push(msg); return {}; } };
   el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1", ignored: false }, { ...DATA.findings[1], key: "k2", ignored: false, resurfaced: true }] };
   el.openDecide("k1");
-  assert.ok(el.findingsCard("entity:sensor.a").includes("data-decide-form"));
+  assert.ok(el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a").includes("data-decide-form"));
   el.decide.kind = "keep";
   await el.commitDecide();
   assert.equal(sent.length, 0, "keeping on purpose needs a reason");
@@ -2988,4 +2988,22 @@ test("selected findings get a label through a plan that opens under Cleanup", as
   const sent = calls.find(c => c.type === "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(sent.actions.map(a => [a.kind, a.target])), JSON.stringify([["add_label", "review"]]));
   assert.equal(el.view, "cleanup");
+});
+
+test("the overview of an object offers its actions: decide a finding, replace a missing entity, disable, label", () => {
+  const { el } = panel("en");
+  el.lv = {}; el.render = () => {};
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "label", object_id: "lbl", name: "Check" }], findings: [
+    { rule_id: "automation.missing_entity", object_id: "automation.c", classification: "broken_reference", confidence: 0.98, affected_object: "sensor.gone", key: "k9", ignored: false, evidence: [] },
+    { ...DATA.findings[0], key: "k1", ignored: false },
+  ] };
+  const auto = el.actionsCard(el.findObject("automation:automation.c"), "automation:automation.c");
+  assert.ok(auto.includes('data-act-replace="sensor.gone"') && auto.includes('data-decide-preset="snooze"') && auto.includes("data-act-label-plan") && auto.includes("edit it there"));
+  assert.ok(!auto.includes("data-act-disable"));
+  const entity = el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a");
+  assert.ok(entity.includes('data-act-disable="sensor.a"'));
+  el.startCleanup("replace_references", () => { el.replOld = "sensor.gone"; });
+  assert.equal(el.view, "cleanup");
+  assert.equal(el.replOld, "sensor.gone");
+  assert.ok(!el.detailPanel("relations", el.findObject("entity:sensor.a"), "entity:sensor.a").includes("data-decide-open"), "findings moved off the dependencies tab");
 });

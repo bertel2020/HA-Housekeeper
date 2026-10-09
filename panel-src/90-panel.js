@@ -656,6 +656,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     this.bindFindingStatus(root);
+    this.bindDetailActions(root);
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { this.batteryFilter = el.dataset.batteryFilter; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";

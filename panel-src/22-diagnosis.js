@@ -343,7 +343,7 @@ class DiagnosisMixin {
 
   // Only the open tab is built, so large attributes and relations cost nothing until they are asked for.
   detailPanel(tab, item, key) {
-    if (tab === "relations") return `<div class="stack">${this.markCard(item)}${this.findingsCard(key)}${this.relationsCard(key)}</div>`;
+    if (tab === "relations") return `<div class="stack">${this.markCard(item)}${this.relationsCard(key)}</div>`;
     if (tab === "flow") return this.flowCard(item, key);
     if (tab === "life") return this.lifeCard(item);
     if (tab === "runs") return this.runsDetailCard(this.runsRow(item));
@@ -360,6 +360,6 @@ class DiagnosisMixin {
       const cards = this.propertyCards(item);
       return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
     }
-    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}</div></div>`;
+    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.actionsCard(item, key)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}</div></div>`;
   }
 }
