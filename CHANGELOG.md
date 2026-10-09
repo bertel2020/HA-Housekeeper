@@ -1,5 +1,50 @@
 # Changelog
 
+## 1.0.2 - 2026-10-09
+
+Neue Navigation mit Kacheln und einige Korrekturen. Automatisiert getestet, aber
+**noch nicht auf einer echten Instanz**.
+
+### Neu
+
+- **Kacheln mit Anzahlen** in Aufräumen, Zuverlässigkeit, Recorder, Richtlinien,
+  Freigabe, Läufe und Wartung; die gewählte Kachel ist hervorgehoben. Quarantäne ist ein
+  eigener Bereich mit Freigabe in der Liste.
+- **Erinnerungen** haben eine eigene Ansicht unter „Pflegen“. Batterien stehen in einer
+  Liste, auch solche in Volt; die Prognose ist in Gruppen mit Gerät, Raum und Datum
+  eingeklappt.
+- Abgebrochene Pläne lassen sich per „Plan wiederholen“ als neue Vorschau erneut anlegen.
+  Der Prüfbericht lässt sich wieder einklappen.
+
+### Geändert
+
+- Scheitert das kleine Backup vor einem Plan, versucht Housekeeper das volle automatische
+  Backup; der Fehlertext erscheint im Plan und im Log.
+- Beim Löschen von Statistiken sind die gespeicherten Zustände standardmäßig mit dabei.
+- Die Gruppe „Bald“ der Aufgabenliste ist zunächst eingeklappt.
+
+### English
+
+New tile navigation and some fixes. Automatically tested, but **not yet on a real
+instance**.
+
+#### New
+
+- **Tiles with counts** in Cleanup, Reliability, Recorder, Policies, Exposure, Runs and
+  Maintenance; the chosen tile is highlighted. Quarantine is its own area with release in
+  the list.
+- **Reminders** have their own view under "Maintain". Batteries are in one list, including
+  those in volts; the forecast is folded into groups with device, room and date.
+- Aborted plans can be repeated as a new preview with "Repeat plan". The audit report can
+  be folded again.
+
+#### Changed
+
+- If the small backup before a plan fails, Housekeeper tries the full automatic backup;
+  the error text shows in the plan and in the log.
+- Deleting statistics also deletes the stored states by default.
+- The "Soon" group of the to-do list starts folded.
+
 ## 1.0.1 - 2026-10-09
 
 Korrekturen und eine Oberfläche, die aufgeräumter ist. Automatisiert getestet, aber
