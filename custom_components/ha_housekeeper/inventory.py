@@ -25,6 +25,7 @@ from .automation_analysis import (
     summarize_script_config,
 )
 from .backup_health import AttestStore
+from .causes import apply_causes
 from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
 from .const import (
@@ -776,6 +777,7 @@ class InventoryScanner:
             self._mark_ignored(finding, entity_registry_entries)
         apply_marks(objects, findings, self.marks.items)
         apply_impact(objects, edges, findings)
+        causes = apply_causes(objects, edges, findings)
 
         self.status.update(phase="finalizing", progress=90)
 
@@ -815,6 +817,7 @@ class InventoryScanner:
             "objects": objects,
             "edges": edges,
             "findings": findings,
+            "causes": causes,
             "orphaned_statistics": orphaned_statistics,
             "quarantine": quarantine,
             "recurring_devices": recurring,
@@ -871,6 +874,9 @@ class InventoryScanner:
         if not store():
             return False
         self._mark_ignored(finding, er.async_get(self.hass))
+        self._snapshot["causes"] = apply_causes(
+            self._snapshot["objects"], self._snapshot["edges"], self._snapshot["findings"]
+        )
         async_sync_issues(self.hass, self._snapshot["findings"])
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
         return True
@@ -924,6 +930,9 @@ class InventoryScanner:
         for finding in snapshot["findings"]:
             self._mark_ignored(finding, registry)
         apply_marks(snapshot["objects"], snapshot["findings"], self.marks.items)
+        snapshot["causes"] = apply_causes(
+            snapshot["objects"], snapshot["edges"], snapshot["findings"]
+        )
         async_sync_issues(self.hass, snapshot["findings"])
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
 

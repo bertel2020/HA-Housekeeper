@@ -72,7 +72,7 @@ class FindingsMixin {
     return list.map(f => {
       const key = this.findingKey(f), object = this.findObject(key);
       return {
-        rule_id: f.rule_id, classification: f.classification, confidence: f.confidence, impact: f.impact || "",
+        rule_id: f.rule_id, classification: f.classification, confidence: f.confidence, impact: f.impact || "", cause: f.cause_id || "",
         object_id: f.object_id, name: object?.name || "", affected_object: f.affected_object || "",
         first_detected_at: f.first_detected_at || "", location: f.evidence?.[0]?.location || "",
       };
@@ -103,7 +103,7 @@ class FindingsMixin {
     const all = this.sortedFindings(this.showIgnored);
     const ignoredCount = this.data.findings.filter(f => f.ignored).length;
     const classes = [...new Set(all.map(f => f.classification))];
-    const list = this.visibleFindings();
+    const list = this.collapseFollowers(this.visibleFindings());
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
     const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, { name: "impact", all: this.t("allImpacts"), options: ["high", "medium", "low", "none"].map(x => [x, this.t(`impact_${x}`)]) }] });
     const pg = this.paginate("findings", list);
@@ -118,7 +118,8 @@ class FindingsMixin {
       ...classes.map(c => ({ label: this.t(c), value: this.formatNumber(all.filter(f => f.classification === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c })),
     ]);
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
-    return `<div class="stack">${tiles}<div class="panel"><div class="chips">${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    const followers = this.followerCount();
+    return `<div class="stack">${tiles}${this.causesCard()}<div class="panel"><div class="chips">${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t(this.showFollowers ? "causeHide" : "causeShow")} (${followers})</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findSelBar(pg.rows)}${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
   }
 

@@ -1506,6 +1506,8 @@ class OverviewMixin {
     const items = [], m = this.data.meta;
     const broken = this.data.objects.filter(o => o.object_type === "config_entry" && o.status === "problem").length;
     if (broken) items.push({ key: "integrations", tone: "red", icon: "mdi:puzzle-remove-outline", label: "actIntegrations", hint: "actIntegrationsHint", count: broken, view: "inventory", type: "config_entry", status: "problem" });
+    const causes = this.causeList().length;
+    if (causes) items.push({ key: "causes", tone: "red", icon: "mdi:source-branch", label: "actCauses", hint: "actCausesHint", count: causes, view: "findingsNav", filter: "" });
     const fresh = (this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).length;
     if (fresh) items.push({ key: "critical", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, view: "findingsNav", filter: "" });
     const stale = this.staleScan();
@@ -1584,7 +1586,7 @@ class OverviewMixin {
       <div class="card" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}%</b></span><span class="card-text"><small>${this.t("health")}</small><strong>${this.t(health.label)}</strong><em>${this.t("healthHint")}</em></span></div>
       ${stats.map(([label, value, icon, tone, view, status]) => `<button class="card" data-jump="${view}" data-status="${status || ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="card-text"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></span></button>`).join("")}</div>
       ${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
-      ${findings.length ? findings.slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
+      ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
       <div class="panel"><div class="panelhead"><h2>${this.t("byType")}</h2></div><div class="types">${["entity", "device", "config_entry", "automation", "script", "scene", "dashboard", "area", "floor", "label"].filter(t => types[t]).map(type => `<button class="type" data-type-jump="${type}">${this.tile(type)}<span>${this.t(type)}</span><b>${this.formatNumber(types[type])}</b></button>`).join("")}</div></div></div></div>`;
   }
@@ -1721,7 +1723,7 @@ class FindingsMixin {
     return list.map(f => {
       const key = this.findingKey(f), object = this.findObject(key);
       return {
-        rule_id: f.rule_id, classification: f.classification, confidence: f.confidence, impact: f.impact || "",
+        rule_id: f.rule_id, classification: f.classification, confidence: f.confidence, impact: f.impact || "", cause: f.cause_id || "",
         object_id: f.object_id, name: object?.name || "", affected_object: f.affected_object || "",
         first_detected_at: f.first_detected_at || "", location: f.evidence?.[0]?.location || "",
       };
@@ -1752,7 +1754,7 @@ class FindingsMixin {
     const all = this.sortedFindings(this.showIgnored);
     const ignoredCount = this.data.findings.filter(f => f.ignored).length;
     const classes = [...new Set(all.map(f => f.classification))];
-    const list = this.visibleFindings();
+    const list = this.collapseFollowers(this.visibleFindings());
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
     const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, { name: "impact", all: this.t("allImpacts"), options: ["high", "medium", "low", "none"].map(x => [x, this.t(`impact_${x}`)]) }] });
     const pg = this.paginate("findings", list);
@@ -1767,7 +1769,8 @@ class FindingsMixin {
       ...classes.map(c => ({ label: this.t(c), value: this.formatNumber(all.filter(f => f.classification === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c })),
     ]);
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
-    return `<div class="stack">${tiles}<div class="panel"><div class="chips">${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    const followers = this.followerCount();
+    return `<div class="stack">${tiles}${this.causesCard()}<div class="panel"><div class="chips">${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t(this.showFollowers ? "causeHide" : "causeShow")} (${followers})</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}${ignoredCount ? `<button class="chip ${this.showIgnored ? "active" : ""}" data-toggle-ignored>${this.t("showIgnored")} (${ignoredCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findSelBar(pg.rows)}${bar}${list.length ? pg.rows.map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "noFindings")}</div>`}${pg.footer}</div></div>`;
   }
 
@@ -5284,6 +5287,41 @@ Object.assign(TEXT.en, {
   impactWhy_label: "label", impactWhy_device_label: "label on the device", impactWhy_area_label: "label on the area", impactWhy_kind: "kind of object",
 });
 
+// CausesMixin: one note for the common cause behind many "not available" findings (see causes.py).
+class CausesMixin {
+  causeList() { return this.data?.causes || []; }
+
+  // Follow-up findings of a cause stay out of the list until asked for; the export keeps them.
+  collapseFollowers(list) { return this.showFollowers ? list : list.filter(f => !f.cause_id); }
+
+  causeLine(c) {
+    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: c.consumers[k] }));
+    const why = c.kind === "integration_down" ? [c.state ? this.t("causeState", { state: c.state }) : "", c.error || ""].filter(Boolean) : [];
+    return [...why, ...used, c.impact && c.impact !== "none" ? this.t(`impact_${c.impact}`) : ""].filter(Boolean).join(" · ");
+  }
+
+  causesCard() {
+    const causes = this.causeList();
+    if (!causes.length) return "";
+    const rows = causes.map(c => `<button class="row" data-object="${this.esc(`${c.object_type}:${c.object_id}`)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(this.causeLine(c))}</small></span><span class="pill red">${this.t("causeFollowers", { n: this.formatNumber(c.follower_count) })}</span></button>`).join("");
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("causesTitle")}</h2><p>${this.t("causesSub")}</p></div></div>${rows}</div>`;
+  }
+
+  followerCount() { return this.data.findings.filter(f => f.cause_id && !f.ignored).length; }
+}
+Object.assign(TEXT.de, {
+  causesTitle: "Gemeinsame Ursachen", causesSub: "Viele Befunde haben wahrscheinlich dieselbe Ursache. Beheb sie zuerst.",
+  cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
+  causeFollowers: "{n} Folgebefunde", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
+  causeShow: "Folgebefunde anzeigen", causeHide: "Folgebefunde ausblenden", actCauses: "Gemeinsame Ursachen", actCausesHint: "Ein Ausfall erklärt viele Befunde",
+});
+Object.assign(TEXT.en, {
+  causesTitle: "Common causes", causesSub: "Many findings probably share one cause. Fix it first.",
+  cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
+  causeFollowers: "{n} follow-up findings", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
+  causeShow: "Show follow-up findings", causeHide: "Hide follow-up findings", actCauses: "Common causes", actCausesHint: "One outage explains many findings",
+});
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -5294,7 +5332,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.query = "";
     this.typeFilter = "";
     this.statusFilter = "";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.decide = null; this.markForm = null;
     this.showIgnored = false;
     this.batteryFilter = "low";
 
@@ -5944,6 +5982,7 @@ class HAHousekeeperPanel extends HTMLElement {
       } catch (err) { this.error = err?.message || String(err); }
       this.render();
     });
+    root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen));
@@ -6133,7 +6172,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

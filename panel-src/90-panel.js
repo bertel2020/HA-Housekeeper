@@ -8,7 +8,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.query = "";
     this.typeFilter = "";
     this.statusFilter = "";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.decide = null; this.markForm = null;
     this.showIgnored = false;
     this.batteryFilter = "low";
 
@@ -658,6 +658,7 @@ class HAHousekeeperPanel extends HTMLElement {
       } catch (err) { this.error = err?.message || String(err); }
       this.render();
     });
+    root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen));

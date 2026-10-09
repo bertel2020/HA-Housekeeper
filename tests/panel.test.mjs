@@ -2561,3 +2561,18 @@ test("findings sort by impact first, then certainty, and say why", () => {
   assert.equal(el.impactLine(el.data.findings[2]), "High impact (critical: kind of object · used by 3 active automations or scripts)");
   assert.equal(el.findingSorts()[0].key, "impact");
 });
+
+test("follow-up findings of a cause stay folded until asked for, and the export keeps them", () => {
+  const { el } = panel("en");
+  const f = (id, cause) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.75, key: id, ignored: false, cause_id: cause });
+  const cause = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Cloud", follower_count: 2, consumers: { automation: 1 }, impact: "high", state: "setup_error", error: "timeout" };
+  el.data = { ...DATA, findings: [f("sensor.a", cause.id), f("sensor.b", cause.id), f("sensor.c")], causes: [cause] };
+  assert.deepEqual(el.collapseFollowers(el.visibleFindings()).map(x => x.object_id), ["sensor.c"]);
+  assert.equal(el.exportRows().length, 3);
+  const html = el.findingsView();
+  assert.ok(html.includes("Integration Cloud is not loaded") && html.includes("2 follow-up findings") && html.includes("data-toggle-followers"));
+  assert.ok(el.causesCard().includes("1 automations affected") && el.causesCard().includes("timeout"));
+  el.showFollowers = true;
+  assert.equal(el.collapseFollowers(el.visibleFindings()).length, 3);
+  assert.equal(el.todoItems().some(i => i.key === "causes"), true);
+});
