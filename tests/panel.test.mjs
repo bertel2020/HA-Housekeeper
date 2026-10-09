@@ -2146,6 +2146,24 @@ test("the load view, the policies and the exposure view have a search box once t
   assert.ok(el.exposureView().includes("No matches for these filters."));
 });
 
+test("exposure findings fold: warnings open, hints closed, the head toggles and a click shows all", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el._exposureRequested = true;
+  const items = n => Array.from({ length: n }, (_, i) => ({ entity_id: `light.x${i}`, name: `X ${i}` }));
+  el.exposure = { ...EXPO, findings: [
+    { kind: "stale_exposed", level: "warn", count: 14, items: items(14) },
+    { kind: "diagnostic_exposed", level: "hint", count: 2, items: [{ entity_id: "sensor.diag", name: "Diag" }] },
+  ] };
+  let html = el.exposureView();
+  assert.ok(html.includes("To check") && html.includes("For your information"));
+  assert.ok(html.includes("light.x9") && !html.includes("light.x10"), "ten entities, the warning is open");
+  assert.ok(!html.includes("sensor.diag"), "the hint is closed");
+  assert.ok(html.includes('data-expo-all="stale_exposed"') && html.includes('aria-expanded="false"'));
+  el.expoAll = { stale_exposed: true }; el.expoFold = { diagnostic_exposed: true };
+  html = el.exposureView();
+  assert.ok(html.includes("light.x13") && html.includes("sensor.diag"));
+});
+
 test("an object leaves quarantine after a question, through the undo of just that object", async () => {
   const { el, shadow } = panel("en");
   const item = id => ({ object_type: "entity", object_id: id, name: id.toUpperCase(), status: "disabled" });

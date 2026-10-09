@@ -26,17 +26,25 @@ class ExposureMixin {
     return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "" });
   }
 
+  // One finding as a fold: the head always shows, the entities and the advice only when open.
   expoFindingRows(f) {
     const tone = f.level === "warn" ? "warn" : "mute";
-    const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
-    const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:shield-search"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small><small>${this.t(`expoAdvice_${f.kind}`)}</small></span>${pill}</div>`;
     const q = (this.lv.exposure?.q || "").trim().toLowerCase();
     const matching = (f.items || []).filter(item => !q || [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q));
-    const shown = matching.slice(0, q ? 50 : 10);
+    const open = q ? matching.length > 0 : (this.expoFold?.[f.kind] ?? f.level === "warn");
+    const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
+    const head = `<button class="row expohead" data-expo-fold="${this.esc(f.kind)}" aria-expanded="${open}"><span class="tile ${tone}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small></span>${pill}</button>`;
+    if (!open) return `<div class="expofold">${head}</div>`;
+    const all = !!this.expoAll?.[f.kind];
+    const shown = all || q ? matching : matching.slice(0, 10);
     const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
-    const left = q ? matching.length - shown.length : f.count - shown.length;
-    const more = left > 0 ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(left) })}</p>` : "";
-    return head + rows + more;
+    const total = q ? matching.length : f.count;
+    const more = total > shown.length ? `<p class="factnote"><button class="link" data-expo-all="${this.esc(f.kind)}">${this.t("expoShowAll", { n: this.formatNumber(total) })}</button></p>` : "";
+    return `<div class="expofold open">${head}<div class="expogroup"><p class="factnote expoadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}</div></div>`;
+  }
+
+  expoSection(titleKey, list) {
+    return list.length ? `<h3 class="expohd">${this.t(titleKey)}</h3>${list.map(f => this.expoFindingRows(f)).join("")}` : "";
   }
 
   // Voice assistants and bridges as one list: id, name, state and how many entities each one reaches.
@@ -96,7 +104,7 @@ class ExposureMixin {
       const itemCount = r.findings.reduce((n, f) => n + (f.items || []).length, 0);
       const bar = itemCount >= 6 || q ? this.listBar("exposure", { sorts: [] }) : "";
       const shown = q ? r.findings.filter(f => (f.items || []).some(item => [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q))) : r.findings;
-      const rows = shown.length ? shown.map(f => this.expoFindingRows(f)).join("") : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
+      const rows = shown.length ? this.expoSection("expoToCheck", shown.filter(f => f.level === "warn")) + this.expoSection("expoToNote", shown.filter(f => f.level !== "warn")) : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("expoTabFindings")}</h2><p>${this.t("expoFindingsHint")}</p></div></div>${bar}${rows}${this.howCounted("expoFootnote")}</div>`;
     } else body = this.expoSourceTab(r, sources.find(x => x.id === open));
     return `<div class="stack"><div class="panel">${head}<p class="factnote">${this.t("expoIntro")}</p></div>${tiles}${this.viewTabBar("exposure", tabs, open)}${body}</div>`;

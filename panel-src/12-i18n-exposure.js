@@ -18,7 +18,7 @@ Object.assign(TEXT.de, {
   expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
   expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
-  expoMore: "und {n} weitere",
+  expoMore: "und {n} weitere", expoShowAll: "Alle {n} zeigen", expoToCheck: "Zu prüfen", expoToNote: "Zur Kenntnis",
   expoFootnote: "Housekeeper liest je Assistent, welche Entitäten Home Assistant freigibt, bei HomeKit nur den gespeicherten Entitäts-Filter der Bridge. Passwörter, Tokens, Ports und Webhook-IDs werden nie gelesen oder angezeigt. Wenn eine Quelle nicht antwortet, steht „nicht prüfbar“, nie „nicht freigegeben“. Sprachnamen gelten als gleich, wenn sie sich nur in Groß- und Kleinschreibung, Leerzeichen oder Umlauten unterscheiden.",
 });
 Object.assign(TEXT.en, {
@@ -40,6 +40,6 @@ Object.assign(TEXT.en, {
   expoAdvice_stale_exposed: "Clean up the entity or take the exposure back.",
   expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
   expoAdvice_webhook_orphan: "Set the integration up again or remove the leftovers if they are no longer needed.",
-  expoMore: "and {n} more",
+  expoMore: "and {n} more", expoShowAll: "Show all {n}", expoToCheck: "To check", expoToNote: "For your information",
   expoFootnote: "Housekeeper reads, per assistant, which entities Home Assistant exposes; for HomeKit only the stored entity filter of the bridge. Passwords, tokens, ports and webhook ids are never read or shown. If a source does not answer, it says \"cannot be checked\", never \"not exposed\". Voice names count as equal when they differ only in case, spaces or umlauts.",
 });

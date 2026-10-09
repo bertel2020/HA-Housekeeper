@@ -1019,7 +1019,7 @@ Object.assign(TEXT.de, {
   expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
   expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
-  expoMore: "und {n} weitere",
+  expoMore: "und {n} weitere", expoShowAll: "Alle {n} zeigen", expoToCheck: "Zu prüfen", expoToNote: "Zur Kenntnis",
   expoFootnote: "Housekeeper liest je Assistent, welche Entitäten Home Assistant freigibt, bei HomeKit nur den gespeicherten Entitäts-Filter der Bridge. Passwörter, Tokens, Ports und Webhook-IDs werden nie gelesen oder angezeigt. Wenn eine Quelle nicht antwortet, steht „nicht prüfbar“, nie „nicht freigegeben“. Sprachnamen gelten als gleich, wenn sie sich nur in Groß- und Kleinschreibung, Leerzeichen oder Umlauten unterscheiden.",
 });
 Object.assign(TEXT.en, {
@@ -1041,7 +1041,7 @@ Object.assign(TEXT.en, {
   expoAdvice_stale_exposed: "Clean up the entity or take the exposure back.",
   expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
   expoAdvice_webhook_orphan: "Set the integration up again or remove the leftovers if they are no longer needed.",
-  expoMore: "and {n} more",
+  expoMore: "and {n} more", expoShowAll: "Show all {n}", expoToCheck: "To check", expoToNote: "For your information",
   expoFootnote: "Housekeeper reads, per assistant, which entities Home Assistant exposes; for HomeKit only the stored entity filter of the bridge. Passwords, tokens, ports and webhook ids are never read or shown. If a source does not answer, it says \"cannot be checked\", never \"not exposed\". Voice names count as equal when they differ only in case, spaces or umlauts.",
 });
 
@@ -1160,7 +1160,7 @@ class StylesMixin {
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
-      .rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
+      .expohd{margin:14px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.08em;text-transform:uppercase;color:var(--hk-muted)}.expohead{width:100%}.expogroup{margin:0 0 6px 28px;border-left:2px solid var(--hk-line,rgba(128,128,128,.25))}.expoadvice{margin:6px 16px 2px}.rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.rel .bar i{background:var(--hk-gray)}.row.sel .bar i{background:var(--hk-blue)}
       .row.rel:hover,button.row:hover{background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}
@@ -4529,17 +4529,25 @@ class ExposureMixin {
     return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "" });
   }
 
+  // One finding as a fold: the head always shows, the entities and the advice only when open.
   expoFindingRows(f) {
     const tone = f.level === "warn" ? "warn" : "mute";
-    const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
-    const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:shield-search"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small><small>${this.t(`expoAdvice_${f.kind}`)}</small></span>${pill}</div>`;
     const q = (this.lv.exposure?.q || "").trim().toLowerCase();
     const matching = (f.items || []).filter(item => !q || [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q));
-    const shown = matching.slice(0, q ? 50 : 10);
+    const open = q ? matching.length > 0 : (this.expoFold?.[f.kind] ?? f.level === "warn");
+    const pill = `<span class="pill ${tone}">${this.t(f.level === "warn" ? "expoWarn" : "expoHint2")}</span>`;
+    const head = `<button class="row expohead" data-expo-fold="${this.esc(f.kind)}" aria-expanded="${open}"><span class="tile ${tone}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t(`expoKind_${f.kind}`)}</strong><small>${this.esc(this.expoFindingText(f))}</small></span>${pill}</button>`;
+    if (!open) return `<div class="expofold">${head}</div>`;
+    const all = !!this.expoAll?.[f.kind];
+    const shown = all || q ? matching : matching.slice(0, 10);
     const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
-    const left = q ? matching.length - shown.length : f.count - shown.length;
-    const more = left > 0 ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(left) })}</p>` : "";
-    return head + rows + more;
+    const total = q ? matching.length : f.count;
+    const more = total > shown.length ? `<p class="factnote"><button class="link" data-expo-all="${this.esc(f.kind)}">${this.t("expoShowAll", { n: this.formatNumber(total) })}</button></p>` : "";
+    return `<div class="expofold open">${head}<div class="expogroup"><p class="factnote expoadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}</div></div>`;
+  }
+
+  expoSection(titleKey, list) {
+    return list.length ? `<h3 class="expohd">${this.t(titleKey)}</h3>${list.map(f => this.expoFindingRows(f)).join("")}` : "";
   }
 
   // Voice assistants and bridges as one list: id, name, state and how many entities each one reaches.
@@ -4599,7 +4607,7 @@ class ExposureMixin {
       const itemCount = r.findings.reduce((n, f) => n + (f.items || []).length, 0);
       const bar = itemCount >= 6 || q ? this.listBar("exposure", { sorts: [] }) : "";
       const shown = q ? r.findings.filter(f => (f.items || []).some(item => [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q))) : r.findings;
-      const rows = shown.length ? shown.map(f => this.expoFindingRows(f)).join("") : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
+      const rows = shown.length ? this.expoSection("expoToCheck", shown.filter(f => f.level === "warn")) + this.expoSection("expoToNote", shown.filter(f => f.level !== "warn")) : q ? `<div class="emptymsg">${this.t("noMatches")}</div>` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("expoNone")}</div>`;
       body = `<div class="panel"><div class="panelhead"><div><h2>${this.t("expoTabFindings")}</h2><p>${this.t("expoFindingsHint")}</p></div></div>${bar}${rows}${this.howCounted("expoFootnote")}</div>`;
     } else body = this.expoSourceTab(r, sources.find(x => x.id === open));
     return `<div class="stack"><div class="panel">${head}<p class="factnote">${this.t("expoIntro")}</p></div>${tiles}${this.viewTabBar("exposure", tabs, open)}${body}</div>`;
@@ -6775,6 +6783,8 @@ class HAHousekeeperPanel extends HTMLElement {
       const kind = el.dataset.bhSave, date = root.querySelector(`[data-bh-date="${kind}"]`)?.value;
       this.loadBackup({ type: "ha_housekeeper/backup_attest", kind, ...(date ? { date } : {}) });
     });
+    root.querySelectorAll("[data-expo-fold]").forEach(el => el.onclick = () => { const kind = el.dataset.expoFold; this.expoFold = { ...this.expoFold, [kind]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
+    root.querySelectorAll("[data-expo-all]").forEach(el => el.onclick = () => { this.expoAll = { ...this.expoAll, [el.dataset.expoAll]: true }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));
     root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
     root.querySelector("[data-pf-save]")?.addEventListener("click", () => this.loadPreflight("save"));
