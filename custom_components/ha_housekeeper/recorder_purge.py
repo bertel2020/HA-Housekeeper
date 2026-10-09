@@ -17,17 +17,18 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .const import DOMAIN
+from .writelock import WriteBusy, acquire_write, release_write, write_holder
 
 _LOGGER = logging.getLogger(__name__)
 
 MAX_IDS = 50
 BACKUP_TIMEOUT = 30 * 60  # seconds, as for the cleanup plans
-RUNNING_KEY = "purge_running"
+QUERY_WAIT = 30  # seconds to wait for a running recorder query before giving up
 
 
 def purge_running(hass: HomeAssistant) -> bool:
-    """Whether a purge is in progress; cleanup plans and a second purge wait for it."""
-    return bool(hass.data.get(DOMAIN, {}).get(RUNNING_KEY))
+    """Whether a purge is in progress."""
+    return write_holder(hass) == "purge"
 
 
 def _judge_live(
@@ -81,6 +82,57 @@ async def _backup(hass: HomeAssistant) -> tuple[str | None, str | None]:
     return None, getattr(created, "backup_job_id", None)
 
 
+async def statistics_left(hass: HomeAssistant, statistic_ids: list[str]) -> set[str]:
+    """The statistic IDs among ``statistic_ids`` that the recorder still knows."""
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.statistics import get_metadata
+
+    wanted = set(statistic_ids)
+    return await get_instance(hass).async_add_executor_job(
+        lambda: set(get_metadata(hass, statistic_ids=wanted))
+    )
+
+
+async def delete_statistics(
+    hass: HomeAssistant, statistic_ids: list[str], *, states: bool
+) -> tuple[list[str], list[dict[str, str]], str | None]:
+    """Delete the statistics (and optionally the states) of IDs already judged as orphaned.
+
+    Waits up to ``QUERY_WAIT`` seconds for the shared recorder query lock and holds it while it
+    deletes, so no slow query reads the tables in between. Returns the IDs gone, the IDs still
+    there, and ``recorder_busy`` when the lock stayed taken (nothing was deleted then).
+    """
+    from homeassistant.components.recorder import get_instance
+
+    store = hass.data.setdefault(DOMAIN, {})
+    lock: asyncio.Lock = store.setdefault("reliability_lock", asyncio.Lock())
+    try:
+        async with asyncio.timeout(QUERY_WAIT):
+            await lock.acquire()
+    except TimeoutError:
+        return [], [], "recorder_busy"
+    try:
+        instance = get_instance(hass)
+        instance.async_clear_statistics(statistic_ids)
+        await instance.async_block_till_done()
+        if states:
+            await hass.services.async_call(
+                "recorder", "purge_entities", {"entity_id": statistic_ids}, blocking=True
+            )
+            await instance.async_block_till_done()
+        left = await statistics_left(hass, statistic_ids)
+    finally:
+        lock.release()
+    removed = [sid for sid in statistic_ids if sid not in left]
+    if removed:
+        store.get("query_cache", {}).clear()  # cost and statistics answers are out of date now
+    return (
+        removed,
+        [{"id": sid, "reason": "still_there"} for sid in statistic_ids if sid in left],
+        None,
+    )
+
+
 async def purge_orphans(
     hass: HomeAssistant,
     snapshot: dict[str, Any],
@@ -93,13 +145,10 @@ async def purge_orphans(
     The IDs are judged before the backup and again after it, which can take a long time; only
     those that are still allowed then are deleted.
     """
-    from homeassistant.components.recorder import get_instance
-    from homeassistant.components.recorder.statistics import get_metadata
-
-    store = hass.data.setdefault(DOMAIN, {})
-    if store.get(RUNNING_KEY):
+    try:
+        acquire_write(hass, "purge")
+    except WriteBusy:
         return {"removed": [], "skipped": [], "backup": False, "states": states, "error": "busy"}
-    store[RUNNING_KEY] = True
     try:
         orphans = {item["statistic_id"]: item for item in snapshot.get("orphaned_statistics", [])}
         allowed, skipped = _judge_live(hass, orphans, statistic_ids[:MAX_IDS])
@@ -122,21 +171,12 @@ async def purge_orphans(
         result["skipped"] += [{"id": item["id"], "reason": "changed"} for item in changed]
         if not still:
             return result
-        instance = get_instance(hass)
-        instance.async_clear_statistics(still)
-        await instance.async_block_till_done()
-        if states:
-            await hass.services.async_call(
-                "recorder", "purge_entities", {"entity_id": still}, blocking=True
-            )
-            await instance.async_block_till_done()
-        left = await instance.async_add_executor_job(
-            lambda: set(get_metadata(hass, statistic_ids=set(still)))
-        )
-        result["removed"] = [sid for sid in still if sid not in left]
-        result["skipped"] += [{"id": sid, "reason": "still_there"} for sid in still if sid in left]
-        if result["removed"]:
-            store.get("query_cache", {}).clear()  # cost and statistics answers are out of date now
+        removed, left, error = await delete_statistics(hass, still, states=states)
+        if error:
+            result["error"] = error
+            return result
+        result["removed"] = removed
+        result["skipped"] += left
         return result
     finally:
-        store[RUNNING_KEY] = False
+        release_write(hass, "purge")

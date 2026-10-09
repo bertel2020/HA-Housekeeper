@@ -1121,3 +1121,80 @@ async def test_report_and_device_pairs_are_served_to_admins(
         {"type": "ha_housekeeper/device_pairs", "old_device_id": "a", "new_device_id": "b"}
     )
     assert (await client.receive_json())["error"]["code"] == "not_found"
+
+
+async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """A purge sits in its backup: a second purge and a plan execution both see busy."""
+    import asyncio
+    from unittest.mock import patch
+
+    registry = er.async_get(hass)
+    orphan = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="w-1", suggested_object_id="old_sensor"
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    scanner.snapshot["meta"]["recorder_available"] = True
+    scanner.snapshot["orphaned_statistics"] = [{"statistic_id": "sensor.gone", "in_energy": False}]
+    gate = asyncio.Event()
+
+    async def slow_backup(plan):
+        plan["status"] = "backup"
+        await gate.wait()
+        plan["backup"] = {"job_id": "j1", "at": "2026-10-09T10:00:00+00:00"}
+        plan["status"] = "running"
+
+    async def deleted(hass_, ids, *, states):
+        return list(ids), [], None
+
+    async def nothing_left(hass_, ids):
+        return set()
+
+    purge = {
+        "type": "ha_housekeeper/purge_statistics",
+        "statistic_ids": ["sensor.gone"],
+        "states": False,
+        "confirmed": True,
+    }
+    module = "custom_components.ha_housekeeper.cleanup_exec"
+    with (
+        patch.object(scanner.cleanup, "_backup", slow_backup),
+        patch(f"{module}.delete_statistics", deleted),
+        patch(f"{module}.statistics_left", nothing_left),
+        patch(f"{module}.recorder_ready", lambda hass_: True),
+        patch(
+            f"{module}.judge_purge_action",
+            lambda *args: {"verdict": "review", "reasons": []},
+        ),
+    ):
+        await client.send_json_auto_id(purge)
+        await asyncio.sleep(0.1)
+        await client.send_json_auto_id(purge)
+        refused = await client.receive_json()
+        assert refused["error"]["code"] == "busy"
+        await client.send_json_auto_id({"type": "ha_housekeeper/status"})
+        assert (await client.receive_json())["result"]["writing"] == "plan"
+        await client.send_json_auto_id(
+            {
+                "type": "ha_housekeeper/plan_create",
+                "actions": [{"kind": "disable_entity", "object_id": orphan.entity_id}],
+            }
+        )
+        plan = (await client.receive_json())["result"]
+        await client.send_json_auto_id(
+            {"type": "ha_housekeeper/plan_confirm", "plan_id": plan["plan_id"]}
+        )
+        token = (await client.receive_json())["result"]["token"]
+        await client.send_json_auto_id(
+            {"type": "ha_housekeeper/plan_execute", "plan_id": plan["plan_id"], "token": token}
+        )
+        assert (await client.receive_json())["error"]["code"] == "busy"
+        gate.set()
+        done = await client.receive_json()
+        assert done["id"] == 1 and done["success"]
+        assert done["result"]["removed"] == ["sensor.gone"] and done["result"]["backup"]
+    assert registry.async_get(orphan.entity_id).disabled_by is None
+    stored = scanner.journal.get(done["result"]["plan_id"])
+    assert stored["actions"][0]["kind"] == "purge_statistics" and stored["followup"]

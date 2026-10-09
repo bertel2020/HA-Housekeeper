@@ -48,7 +48,6 @@ from .meter import prepare_meter
 from .policies import RULES as POLICY_RULES
 from .policies import policies
 from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
-from .recorder_purge import purge_orphans, purge_running
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
@@ -57,6 +56,7 @@ from .statistics_last import statistics_last
 from .storms import WINDOWS as STORMS_WINDOWS
 from .storms import storms
 from .window import SKIPPABLE, STEPS, WindowError, reload_targets
+from .writelock import write_holder
 
 BACKUP_HEALTH_TIMEOUT = 20  # seconds; a cloud backup target can answer slowly
 RUNS_TIMEOUT = 20
@@ -141,7 +141,7 @@ def websocket_status(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    connection.send_result(msg["id"], _versioned(scanner.status))
+    connection.send_result(msg["id"], _versioned({**scanner.status, "writing": write_holder(hass)}))
 
 
 @websocket_api.require_admin
@@ -275,6 +275,7 @@ def websocket_set_options(
                     vol.Required("object_id"): str,
                     vol.Optional("target"): str,
                     vol.Optional("mode"): vol.In(METER_MODES),
+                    vol.Optional("states"): bool,
                 }
             ],
             vol.Length(min=1, max=MAX_ACTIONS),
@@ -329,6 +330,9 @@ async def websocket_plan_create(
             if key not in meter_data and key[0] != key[1]:
                 meter_data[key] = await prepare_meter(hass, key[0], key[1], key[2])
 
+    def statistic_exists(statistic_id: str) -> bool:
+        return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
+
     plan = build_plan(
         snapshot,
         msg["actions"],
@@ -338,6 +342,7 @@ async def websocket_plan_create(
         device_info=device_info,
         reference_data=reference_data,
         meter_data=meter_data,
+        statistic_exists=statistic_exists,
     )
     scanner.journal.add(plan)
     connection.send_result(msg["id"], _versioned(public_plan(plan)))
@@ -1221,7 +1226,7 @@ async def websocket_purge_statistics(
     if scanner is None:
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
-    if scanner.warming_up or scanner.cleanup.running or purge_running(hass):
+    if scanner.warming_up or scanner.cleanup.running or write_holder(hass):
         connection.send_error(
             msg["id"], "busy", "Home Assistant is starting or a plan or purge is running"
         )
@@ -1229,53 +1234,51 @@ async def websocket_purge_statistics(
     if not scanner.snapshot or not scanner.snapshot["meta"].get("recorder_available"):
         connection.send_error(msg["id"], "no_recorder", "The recorder is not available")
         return
-    now = datetime.now(UTC)
     by = connection.user.id if connection.user else None
-    try:
-        result = await purge_orphans(
-            hass, scanner.snapshot, msg["statistic_ids"], states=msg["states"]
+    registry = er.async_get(hass)
+    ids = list(dict.fromkeys(msg["statistic_ids"]))
+    plan = build_plan(
+        scanner.snapshot,
+        [{"kind": "purge_statistics", "object_id": i, "states": msg["states"]} for i in ids],
+        datetime.now(UTC),
+        statistic_exists=lambda sid: (
+            registry.async_get(sid) is not None or hass.states.get(sid) is not None
+        ),
+    )
+    scanner.journal.add(plan)
+    legacy = {"entity_exists": "exists"}
+    result: dict[str, Any] = {
+        "removed": [],
+        "skipped": [
+            {"id": a["object_id"], "reason": legacy.get(a["reasons"][0], a["reasons"][0])}
+            for a in plan["actions"]
+            if not a["executable"]
+        ],
+        "backup": False,
+        "states": msg["states"],
+        "plan_id": plan["plan_id"],
+    }
+    runnable = [a["object_id"] for a in plan["actions"] if a["executable"]]
+    if runnable:
+        try:
+            confirmation = scanner.cleanup.confirm(plan["plan_id"], runnable, by)
+            scanner.cleanup.start(plan["plan_id"], confirmation["token"], by)
+        except CleanupError as err:
+            _cleanup_error(connection, msg, err)
+            return
+        await scanner.cleanup.wait()
+        results = {a["object_id"]: a.get("result") or {} for a in plan["actions"]}
+        result["removed"] = [i for i in runnable if results[i].get("state") == "done"]
+        result["skipped"] += [
+            {"id": i, "reason": results[i].get("reason", "not_run")}
+            for i in runnable
+            if i not in result["removed"]
+        ]
+        result["backup"] = bool(plan.get("backup"))
+        failures = {"backup_unavailable", "no_backup_agent", "backup_failed", "recorder_busy"}
+        result["error"] = next(
+            (r["reason"] for r in results.values() if r.get("reason") in failures), None
         )
-    except Exception as err:
-        scanner.events.record("purge", now, requested=len(msg["statistic_ids"]), failed=True)
-        scanner.journal.add_purge(
-            {
-                "at": now.isoformat(),
-                "by": by,
-                "requested": list(msg["statistic_ids"]),
-                "removed": [],
-                "skipped": [],
-                "states": msg["states"],
-                "backup": None,
-                "error": f"{type(err).__name__}: {err}"[:200],
-            }
-        )
-        connection.send_error(msg["id"], "purge_failed", f"{type(err).__name__}: {err}")
-        return
-    if result["backup"] or result["removed"]:  # a record of what was deleted: counts, no names
-        scanner.events.record(
-            "purge",
-            now,
-            requested=len(msg["statistic_ids"]),
-            removed=len(result["removed"]),
-            skipped=len(result["skipped"]),
-            states=bool(result["states"]),
-        )
-    if result["backup"] or result["removed"] or result.get("error"):
-        scanner.journal.add_purge(
-            {
-                "at": now.isoformat(),
-                "by": by,
-                "requested": list(msg["statistic_ids"]),
-                "removed": result["removed"],
-                "skipped": result["skipped"],
-                "states": bool(result["states"]),
-                "backup": {"job_id": result.get("backup_job")} if result["backup"] else None,
-                "error": result.get("error"),
-            }
-        )
-    if result["removed"]:
-        scanner.replies.clear()  # views built on the recorder answered before the purge
-        hass.async_create_task(scanner.async_scan())
     connection.send_result(msg["id"], _versioned(result))
 
 

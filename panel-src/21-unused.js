@@ -149,21 +149,24 @@ class UnusedMixin {
     const open = this.purgeOpen && n ? `<div class="panel" role="group" aria-label="${this.esc(this.t("purgeTitle"))}"><div class="pad">
       <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
       <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
-      <div class="setrow"><label for="purgeWord">${this.t("confirmTypeWord", { word: this.t("purgeWord") })}</label><input id="purgeWord" data-purge-word autocomplete="off" value="${this.esc(this.purgeWord)}">
-      <button class="btn danger" data-purge-run ${this.purgeWord.trim() === this.t("purgeWord") && !this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgeRun")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
+      <div class="setrow"><small style="margin:0">${this.t("purgePlanHint")}</small>
+      <button class="btn primary" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
     return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-purge-open ${n ? "" : "disabled"}>${this.t("purgeOpen")}</button></div>${open}`;
   }
 
   async purgeRun() {
+    // The deletion is an ordinary plan: preview, confirmation of each ID, backup, verification. It is made here and run under Cleanup.
     this.purgeBusy = true; this.purgeResult = null; this.render();
     try {
-      this.purgeResult = await this._hass.callWS({ type: "ha_housekeeper/purge_statistics", statistic_ids: [...this.purgeSel], states: this.purgeStates, confirmed: true });
-      for (const id of this.purgeResult.removed) this.purgeSel.delete(id);
-      this.purgeOpen = false; this.purgeWord = "";
+      const actions = [...this.purgeSel].map(object_id => ({ kind: "purge_statistics", object_id, states: this.purgeStates }));
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+      this.journal = [plan, ...(this.journal || [])];
+      this.purgeSel = new Set(); this.purgeOpen = false; this.purgeWord = "";
+      this.view = "cleanup"; this.pages = {};
     } catch (err) { this.purgeResult = { removed: [], skipped: [], error: "failed", detail: err?.message || String(err) }; }
     this.purgeBusy = false;
     this.render();
-    if (this.purgeResult.removed?.length) setTimeout(() => this.load?.(true), 3000);
   }
 
   unreferencedView() {

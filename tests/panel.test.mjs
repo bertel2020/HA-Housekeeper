@@ -1637,7 +1637,7 @@ test("blueprints tab, notification switch, diagnostics without names and the wee
   assert.ok(downloads.at(-1).text.includes("# Housekeeper report") && downloads.at(-1).text.includes("sensor.a"));
 });
 
-test("orphaned statistics can be selected and deleted only after typing the word; replacements get successor hints", async () => {
+test("orphaned statistics are selected and turned into a purge plan, which asks for the word; replacements get successor hints", async () => {
   const { el, shadow } = panel("en");
   const orphans = [{ statistic_id: "sensor.old_power", unit: "W", has_mean: true, in_energy: false }, { statistic_id: "sensor.grid", unit: "kWh", has_sum: true, in_energy: true }];
   el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, orphaned_statistics: orphans,
@@ -1647,16 +1647,16 @@ test("orphaned statistics can be selected and deleted only after typing the word
   assert.ok(shadow.innerHTML.includes('data-psel="sensor.old_power"') && !shadow.innerHTML.includes('data-psel="sensor.grid"'), "an Energy series cannot be picked");
   el.purgeSel.add("sensor.old_power"); el.purgeOpen = true;
   el.render();
-  assert.ok(/data-purge-run disabled/.test(shadow.innerHTML), "disabled until the word is typed");
-  el.purgeWord = "DELETE";
-  el.render();
-  assert.ok(!/data-purge-run disabled/.test(shadow.innerHTML));
+  assert.ok(!/data-purge-run disabled/.test(shadow.innerHTML), "making the preview needs no word: the plan asks for it");
   const asked = [];
-  el._hass = { language: "en", callWS: async msg => { asked.push(msg); return { removed: ["sensor.old_power"], skipped: [], backup: true }; } };
+  el._hass = { language: "en", callWS: async msg => { asked.push(msg); return { plan_id: "p9", status: "dry_run", actions: [], summary: {} }; } };
   el.load = async () => {};
   await el.purgeRun();
-  assert.equal(JSON.stringify(asked[0]), JSON.stringify({ type: "ha_housekeeper/purge_statistics", statistic_ids: ["sensor.old_power"], states: false, confirmed: true }));
+  assert.equal(JSON.stringify(asked[0]), JSON.stringify({ type: "ha_housekeeper/plan_create", actions: [{ kind: "purge_statistics", object_id: "sensor.old_power", states: false }] }));
   assert.equal(el.purgeSel.size, 0);
+  assert.equal(el.view, "cleanup");
+  assert.equal(el.plan.plan_id, "p9");
+  assert.equal(el.planWord({ actions: [{ kind: "purge_statistics", executable: true }] }), "DELETE");
   assert.equal(el.successorsOf("sensor.power_new", "W")[0].object_id, "sensor.new_power");
 });
 

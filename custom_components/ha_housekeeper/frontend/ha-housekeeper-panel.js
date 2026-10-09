@@ -369,7 +369,7 @@ const ICONS = {
 
 const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
-const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter"];
+const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter", "purge_statistics"];
 const IMPACT_RANK = { none: 0, low: 1, medium: 2, high: 3 };
 const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent"];
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
@@ -2243,6 +2243,7 @@ class CleanupMixin {
   // The word that has to be typed before a plan runs: the strongest action in it decides.
   planWord(plan) {
     const executable = (plan?.actions || []).filter(a => a.executable);
+    if (executable.some(a => a.kind === "purge_statistics")) return this.t("purgeWord");
     if (executable.some(a => REMOVAL_KINDS.includes(a.kind))) return this.t("confirmWordRemove");
     if (executable.some(a => a.kind === "migrate_meter")) return this.t("confirmWordMeter");
     if (executable.some(a => a.kind === "replace_references")) return this.t("confirmWordReplace");
@@ -2252,7 +2253,7 @@ class CleanupMixin {
   confirmSummary(plan, count) {
     const executable = plan.actions.filter(a => a.executable);
     const devices = executable.some(a => DEVICE_KINDS.includes(a.kind));
-    const key = executable.some(a => REMOVAL_KINDS.includes(a.kind)) ? (devices ? "confirmedSummaryDeviceRemove" : "confirmedSummaryRemove")
+    const key = executable.some(a => a.kind === "purge_statistics") ? "confirmedSummaryPurge" : executable.some(a => REMOVAL_KINDS.includes(a.kind)) ? (devices ? "confirmedSummaryDeviceRemove" : "confirmedSummaryRemove")
       : executable.some(a => a.kind === "migrate_meter") ? "confirmedSummaryMeter"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
@@ -2440,7 +2441,7 @@ class CleanupMixin {
 
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
   undoBadge(action) {
-    const backupOnly = action.kind === "migrate_meter";
+    const backupOnly = action.kind === "migrate_meter" || action.kind === "purge_statistics";
     return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" style="--mdc-icon-size:14px"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
   }
 
@@ -2457,7 +2458,7 @@ class CleanupMixin {
       const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : `result_${result.state}`)}</span>` : "";
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && a.kind === "purge_statistics" ? "result_purged" : `result_${result.state}`)}</span>` : "";
       const sub = a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sources = a.kind === "replace_references" ? this.sourceList(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "";
@@ -3087,21 +3088,24 @@ class UnusedMixin {
     const open = this.purgeOpen && n ? `<div class="panel" role="group" aria-label="${this.esc(this.t("purgeTitle"))}"><div class="pad">
       <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
       <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
-      <div class="setrow"><label for="purgeWord">${this.t("confirmTypeWord", { word: this.t("purgeWord") })}</label><input id="purgeWord" data-purge-word autocomplete="off" value="${this.esc(this.purgeWord)}">
-      <button class="btn danger" data-purge-run ${this.purgeWord.trim() === this.t("purgeWord") && !this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgeRun")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
+      <div class="setrow"><small style="margin:0">${this.t("purgePlanHint")}</small>
+      <button class="btn primary" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")}</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
     return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><button class="btn" data-purge-open ${n ? "" : "disabled"}>${this.t("purgeOpen")}</button></div>${open}`;
   }
 
   async purgeRun() {
+    // The deletion is an ordinary plan: preview, confirmation of each ID, backup, verification. It is made here and run under Cleanup.
     this.purgeBusy = true; this.purgeResult = null; this.render();
     try {
-      this.purgeResult = await this._hass.callWS({ type: "ha_housekeeper/purge_statistics", statistic_ids: [...this.purgeSel], states: this.purgeStates, confirmed: true });
-      for (const id of this.purgeResult.removed) this.purgeSel.delete(id);
-      this.purgeOpen = false; this.purgeWord = "";
+      const actions = [...this.purgeSel].map(object_id => ({ kind: "purge_statistics", object_id, states: this.purgeStates }));
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+      this.journal = [plan, ...(this.journal || [])];
+      this.purgeSel = new Set(); this.purgeOpen = false; this.purgeWord = "";
+      this.view = "cleanup"; this.pages = {};
     } catch (err) { this.purgeResult = { removed: [], skipped: [], error: "failed", detail: err?.message || String(err) }; }
     this.purgeBusy = false;
     this.render();
-    if (this.purgeResult.removed?.length) setTimeout(() => this.load?.(true), 3000);
   }
 
   unreferencedView() {
@@ -5452,12 +5456,24 @@ class GoalsMixin {
 
 // Texts for the purge entries in the cleanup journal.
 Object.assign(TEXT.de, {
-  purgeJournal: "Gelöschte Statistiken", purgeJournalHint: "Recorder-Reste, die gelöscht wurden. Nicht umkehrbar, deshalb nur vermerkt.",
+  purgeJournal: "Gelöschte Statistiken", purgeJournalHint: "Ältere Löschungen von Recorder-Resten, aus der Zeit vor den Plänen. Neue Löschungen stehen als Plan im Journal.",
   purgeEntry: "{removed} gelöscht, {skipped} übersprungen", purgeWithStates: "mit Zuständen", purgeBackup: "Backup {job}", purgeNoBackup: "ohne Backup", purgeByYou: "von dir", purgeByOther: "von anderem Benutzer", purgeError: "Fehler: {error}", purgeNothing: "nichts gelöscht",
 });
 Object.assign(TEXT.en, {
-  purgeJournal: "Deleted statistics", purgeJournalHint: "Recorder leftovers that were deleted. Not reversible, so only noted.",
+  purgeJournal: "Deleted statistics", purgeJournalHint: "Older deletions of recorder leftovers, from before plans. New deletions appear as plans in the journal.",
   purgeEntry: "{removed} deleted, {skipped} skipped", purgeWithStates: "with states", purgeBackup: "backup {job}", purgeNoBackup: "no backup", purgeByYou: "by you", purgeByOther: "by another user", purgeError: "error: {error}", purgeNothing: "nothing deleted",
+});
+Object.assign(TEXT.de, {
+  purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Aufräumen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
+  reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
+  check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an. Das lässt sich nur mit dem Backup zurücknehmen.",
+  abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.",
+});
+Object.assign(TEXT.en, {
+  purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
+  reason_irreversible: "Reversible only from the backup.", reason_with_states: "Also deletes the stored states.", reason_entity_exists: "An entity carries this ID again.", reason_not_orphaned: "The ID is not an orphaned statistic.", reason_in_energy: "The Energy dashboard uses this statistic.",
+  check_statistics_gone: "Statistic is deleted", result_purged: "Deleted", undo_irreversible: "not undone: only with the backup", confirmedSummaryPurge: "{count} statistics will be deleted. Housekeeper creates a Home Assistant backup first. It can only be taken back with that backup.",
+  abort_recorder_busy: "The recorder was busy with a query for 30 seconds; nothing was deleted.", abort_still_there: "The statistic was still there after deleting.",
 });
 
 // Device exchange, follow-up, audit report and end state simulation of a plan (see device_pairs.py, followup.py, audit_report.py, simulation.py); mixed into the panel in 99-register.js.
@@ -5475,7 +5491,7 @@ Object.assign(TEXT.de, {
   fu_class_broken_reference: "defekte Referenz", fu_class_unavailable: "nicht verfügbar", fu_class_recurring: "Gerät kehrt wieder",
   actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Bereinigungsplan sind neue Probleme aufgetreten.",
   reportButton: "Prüfbericht", reportNames: "Mit Klarnamen (nicht anonymisiert)", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
-  simTitle: "Erwarteter Endzustand",
+  simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
   simRemoved: "{count} Entitäten entfernt ({devices} Geräte)", simDisabled: "{count} Entitäten deaktiviert ({devices} Geräte)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Zählerwechsel",
   simCertain: "{count} sichere Verwendungen bleiben bestehen", simUncertain: "{count} unsichere oder manuelle Verwendungen bleiben bestehen", simOrphaned: "{count} Statistiken voraussichtlich verwaist", simBlocked: "{count} Aktionen laufen nicht",
   simLimits: "Grenzen: Verweise in Vorlagen und außerhalb von Home Assistant sind nicht sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
@@ -5494,7 +5510,7 @@ Object.assign(TEXT.en, {
   fu_class_broken_reference: "broken reference", fu_class_unavailable: "unavailable", fu_class_recurring: "device came back",
   actFollowup: "Follow-up reports new findings", actFollowupHint: "New problems appeared after a cleanup plan.",
   reportButton: "Audit report", reportNames: "With real names (not anonymized)", reportDownload: "Download", reportCopy: "Copy", reportCopied: "Copied", reportFailed: "Report not created: {reason}", reportAnonymous: "IDs and names are replaced by placeholders.",
-  simTitle: "Expected end state",
+  simTitle: "Expected end state", simPurged: "{count} statistics will be deleted (reversible only from the backup)",
   simRemoved: "{count} entities removed ({devices} devices)", simDisabled: "{count} entities disabled ({devices} devices)", simReplaced: "{count} references replaced", simMeters: "{count} meter switches",
   simCertain: "{count} certain uses remain", simUncertain: "{count} uncertain or manual uses remain", simOrphaned: "{count} statistics likely orphaned", simBlocked: "{count} actions will not run",
   simLimits: "Limits: references inside templates and outside Home Assistant cannot be checked for certain; saved storage is not estimated.",
@@ -5636,6 +5652,7 @@ class ExchangeMixin {
     if (s.disabled) lines.push(this.t("simDisabled", { count: s.disabled, devices: s.disabled_devices }));
     if (s.replaced) lines.push(this.t("simReplaced", { count: s.replaced }) + (s.replaced_by_source.length ? ` (${s.replaced_by_source.slice(0, 5).map(r => `${r.name}: ${r.count}`).join(", ")})` : ""));
     if (s.meters) lines.push(this.t("simMeters", { count: s.meters }));
+    if (s.purged) lines.push(this.t("simPurged", { count: s.purged }));
     lines.push(this.t("simCertain", { count: s.remaining_certain }), this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));

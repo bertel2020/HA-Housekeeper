@@ -28,12 +28,20 @@ DEVICE_KINDS = frozenset({"disable_device", "remove_device", "forget_device"})
 REFERENCE_KINDS = frozenset({"replace_references"})
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
-ACTION_KINDS = ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS | METER_KINDS
+PURGE_KINDS = frozenset({"purge_statistics"})
+ACTION_KINDS = ENTITY_KINDS | DEVICE_KINDS | REFERENCE_KINDS | METER_KINDS | PURGE_KINDS
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
 # Kinds that cannot simply be switched back: a verified backup is created before they run.
 BACKUP_KINDS = frozenset(
-    {"remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter"}
+    {
+        "remove_entity",
+        "remove_device",
+        "forget_device",
+        "replace_references",
+        "migrate_meter",
+        "purge_statistics",
+    }
 )
 # Kinds that remove something: they get the strongest confirmation word.
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
@@ -282,6 +290,9 @@ BLOCKING_REASONS = frozenset(
         "old_not_in_registry",
         "target_not_in_registry",
         "alt_id_taken",
+        "not_orphaned",
+        "in_energy",
+        "entity_exists",
         "nothing_to_do",
     }
 )
@@ -440,6 +451,46 @@ def judge_reference_action(
     return action
 
 
+def judge_purge_action(
+    statistic_id: str,
+    orphans: dict[str, dict[str, Any]],
+    exists: bool,
+    states: bool,
+    recorder: bool,
+) -> dict[str, Any]:
+    """Judge deleting the recorder statistics of one orphaned ID.
+
+    Only an ID the last scan listed as orphaned, that no entity carries now and that the Energy
+    dashboard does not use may go. The deletion cannot be undone except from the backup, so a
+    plan that may run is always ``review``: the person confirms it one by one.
+    """
+    action: dict[str, Any] = {
+        "kind": "purge_statistics",
+        "object_id": statistic_id,
+        "object_type": "statistic",
+        "name": statistic_id,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": True,
+        "states": states,
+    }
+    reasons = action["reasons"]
+    if not recorder:
+        reasons.append("no_recorder")
+    elif statistic_id not in orphans:
+        reasons.append("not_orphaned")
+    elif orphans[statistic_id].get("in_energy"):
+        reasons.append("in_energy")
+    elif exists:
+        reasons.append("entity_exists")
+    reasons.append("irreversible")
+    if states:
+        reasons.append("with_states")
+    _verdict(action)
+    return action
+
+
 def judge_meter_action(
     object_id: str,
     target: str | None,
@@ -573,7 +624,7 @@ def judge_entity_action(
 
 def build_plan(
     snapshot: dict[str, Any],
-    requested: list[dict[str, str]],
+    requested: list[dict[str, Any]],
     now: datetime,
     fingerprint: Callable[[str], str | None] | None = None,
     restorable: Callable[[str], bool | None] | None = None,
@@ -581,6 +632,7 @@ def build_plan(
     device_info: Callable[[str], tuple[str | None, dict[str, Any]]] | None = None,
     reference_data: dict[tuple[str, str], tuple[str | None, list[dict[str, Any]]]] | None = None,
     meter_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
+    statistic_exists: Callable[[str], bool] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -588,7 +640,8 @@ def build_plan(
     detect changes made after the preview; ``restorable`` tells whether a removal could be
     undone. ``device_info`` gives a device's fingerprint and what its integration supports;
     ``reference_data`` maps ``(old, new)`` entity IDs to the fingerprint and the sources found
-    for a replacement; ``meter_data`` maps ``(old, new, mode)`` to the fingerprint and judging data
+    for a replacement; ``statistic_exists`` tells whether an entity carries a statistic ID now;
+    ``meter_data`` maps ``(old, new, mode)`` to the fingerprint and judging data
     of a meter migration. A plan holds at most one action per object.
     """
     quarantine = {q["object_id"]: q["since"] for q in snapshot.get("quarantine", [])}
@@ -619,6 +672,15 @@ def build_plan(
                 support=support,
             )
             action["fingerprint"] = device_print
+        elif kind in PURGE_KINDS:
+            action = judge_purge_action(
+                object_id,
+                {i["statistic_id"]: i for i in snapshot.get("orphaned_statistics", [])},
+                bool(statistic_exists and statistic_exists(object_id)),
+                bool(request.get("states")),
+                bool(snapshot["meta"].get("recorder_available")),
+            )
+            action["fingerprint"] = None
         elif kind in METER_KINDS:
             target = request.get("target") or ""
             mode = request.get("mode") or "both"

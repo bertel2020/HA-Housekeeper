@@ -57,17 +57,19 @@ from .cleanup import (
     EXECUTABLE_KINDS,
     METER_KINDS,
     PLAN_MAX_AGE_HOURS,
+    PURGE_KINDS,
     REFERENCE_KINDS,
     REMOVAL_KINDS,
     device_fingerprint,
     device_support,
     get_main_device,
     judge_action,
+    judge_purge_action,
     registry_fingerprint,
 )
 from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 from .meter import analyse, prepare_meter, read_series, recorder_ready
-from .recorder_purge import purge_running
+from .recorder_purge import delete_statistics, statistics_left
 from .references import (
     ENERGY_PARTS,
     SourceError,
@@ -78,6 +80,7 @@ from .references import (
     rewrite,
     yaml_hash,
 )
+from .writelock import WriteBusy, acquire_write, release_write, write_holder
 
 TOKEN_TTL = timedelta(minutes=5)
 ID_FREE_TIMEOUT = 10.0  # seconds to wait until Home Assistant has removed a renamed entity's state
@@ -269,6 +272,11 @@ class CleanupRunner:
         """Whether a plan is being executed or undone right now."""
         return bool(self.status["running"])
 
+    async def wait(self) -> None:
+        """Wait until the plan that was started last has finished, including its verification."""
+        if self._task is not None:
+            await asyncio.shield(self._task)
+
     def cancel(self) -> None:
         """Stop after the current step."""
         self._cancel = True
@@ -325,7 +333,7 @@ class CleanupRunner:
 
     def start(self, plan_id: str, token: str, user_id: str | None) -> None:
         """Validate the token and run the plan in the background."""
-        if self.running or purge_running(self.hass):
+        if self.running or write_holder(self.hass):
             raise CleanupError("busy")
         plan = self._plan(plan_id)
         if self.scanner.warming_up:
@@ -335,6 +343,10 @@ class CleanupRunner:
             raise CleanupError("bad_token")
         if plan["status"] != "dry_run" or plan.get("run"):
             raise CleanupError("plan_not_open")
+        try:
+            acquire_write(self.hass, "plan")
+        except WriteBusy as busy:
+            raise CleanupError("busy") from busy
         self._cancel = False
         self.scanner.paused = True
         self.status = {
@@ -374,7 +386,10 @@ class CleanupRunner:
                 "total": 0,
             }
             journal.save()
-        await self._verify(plan)
+        try:
+            await self._verify(plan)
+        finally:
+            release_write(self.hass, "plan")
 
     async def _backup(self, plan: dict[str, Any]) -> None:
         """Create a Home Assistant backup with the user's own backup settings and wait for it.
@@ -505,7 +520,23 @@ class CleanupRunner:
             return await self._forget_device(action), "device_forgotten"
         if kind in METER_KINDS:
             return await self._migrate_meter(action), "meter_migrated"
+        if kind in PURGE_KINDS:
+            return await self._purge_statistics(action), "statistics_purged"
         return await self._replace_references(action), "references_replaced"
+
+    async def _purge_statistics(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Delete the statistics of one orphaned ID; it is only noted, never undone."""
+        statistic_id, states = action["object_id"], bool(action.get("states"))
+        removed, left, error = await delete_statistics(self.hass, [statistic_id], states=states)
+        if error:
+            raise StepAbort(error)
+        if left:
+            raise StepAbort(left[0]["reason"])
+        self.scanner.replies.clear()  # views built on the recorder answered before the purge
+        self.scanner.events.record(
+            "purge", _now(), requested=1, removed=len(removed), skipped=0, states=states
+        )
+        return {"states": states, "irreversible": True}
 
     # -- devices ---------------------------------------------------------------------------
 
@@ -963,6 +994,20 @@ class CleanupRunner:
         kind, object_id, snapshot = action["kind"], action["object_id"], context["snapshot"]
         verdict_args: dict[str, Any] = {}
         restorable = None
+        if kind in PURGE_KINDS:
+            verdict = judge_purge_action(
+                object_id,
+                {i["statistic_id"]: i for i in snapshot.get("orphaned_statistics", [])},
+                er.async_get(self.hass).async_get(object_id) is not None
+                or self.hass.states.get(object_id) is not None,
+                bool(action.get("states")),
+                recorder_ready(self.hass),
+            )
+            if verdict["verdict"] == "blocked":
+                return "now_blocked"
+            if object_id not in context["acknowledged"]:
+                return "needs_acknowledgement"
+            return None
         if kind in DEVICE_KINDS:
             registry = dr.async_get(self.hass)
             entry = get_main_device(registry, object_id)
@@ -1082,6 +1127,9 @@ class CleanupRunner:
                     )
             elif kind in METER_KINDS:
                 checks.extend(await self._verify_meter(action))
+            elif kind in PURGE_KINDS:
+                gone = object_id not in await statistics_left(self.hass, [object_id])
+                checks.append({"check": "statistics_gone", "object_id": object_id, "ok": gone})
             else:
                 done = {
                     s["source"] for s in action["result"]["sources"] if s.get("state") != "undone"
@@ -1144,8 +1192,18 @@ class CleanupRunner:
 
     async def undo(self, plan_id: str, object_ids: list[str] | None) -> dict[str, Any]:
         """Revert steps that are still exactly as Housekeeper left them."""
-        if self.running or purge_running(self.hass):
+        if self.running:
             raise CleanupError("busy")
+        try:
+            acquire_write(self.hass, "undo")
+        except WriteBusy as busy:
+            raise CleanupError("busy") from busy
+        try:
+            return await self._undo(plan_id, object_ids)
+        finally:
+            release_write(self.hass, "undo")
+
+    async def _undo(self, plan_id: str, object_ids: list[str] | None) -> dict[str, Any]:
         plan = self._plan(plan_id)
         registry = er.async_get(self.hass)
         results = []
@@ -1166,6 +1224,8 @@ class CleanupRunner:
                 outcome = await self._undo_references(result)
             elif kind in METER_KINDS:
                 outcome = await self._undo_meter(result)
+            elif kind in PURGE_KINDS:
+                outcome = "irreversible"
             else:
                 outcome = self._reenable(registry, action["object_id"], result)
             if outcome == "undone":

@@ -22,6 +22,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     devices = {"removed": 0, "disabled": 0}
     changed: dict[tuple[str, str], int] = {}
     meters = 0
+    purged: set[str] = set()
     certain: set[tuple[str, str]] = set()
     uncertain: set[tuple[str, str]] = set()
     statistics: set[str] = set()
@@ -37,6 +38,8 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
             devices["disabled"] += kind == "disable_device"
         if kind in REMOVING and action.get("has_statistics"):
             statistics.add(object_id)
+        if kind == "purge_statistics":
+            purged.add(object_id)
         if kind == "migrate_meter":
             meters += 1
         if kind == "replace_references":
@@ -63,6 +66,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
             for (name, kind), count in sorted(changed.items(), key=lambda i: (-i[1], i[0]))[:SHOWN]
         ],
         "meters": meters,
+        "purged": len(purged),
         "remaining_certain": len(certain),
         "remaining_uncertain": len(uncertain) + manual,
         "remaining_sources": sorted({source for source, _ in certain})[:SHOWN],
