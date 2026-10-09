@@ -19,6 +19,7 @@ from homeassistant.helpers import label_registry as lr
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.loader import IntegrationNotFound, async_get_integration, async_get_integrations
 
+from . import followup
 from .automation_analysis import (
     missing_references,
     summarize_automation_config,
@@ -593,6 +594,11 @@ class InventoryScanner:
                     async_announce(self.hass, self.notify.new(snapshot["findings"]))
                     self.history.record(snapshot)
                     self._observe_versions(snapshot)
+                    if followup.check(self.journal.plans, snapshot, datetime.now(UTC)):
+                        self.journal.save()
+                    snapshot["regressions"] = followup.regressions(
+                        self.journal.plans, datetime.now(UTC)
+                    )
                 async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
                 self.status.update(running=False, phase="complete", progress=100)
                 return snapshot
@@ -821,6 +827,7 @@ class InventoryScanner:
             "edges": edges,
             "findings": findings,
             "causes": causes,
+            "regressions": [],
             "orphaned_statistics": orphaned_statistics,
             "quarantine": quarantine,
             "recurring_devices": recurring,

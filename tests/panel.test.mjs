@@ -2624,3 +2624,45 @@ test("the cleanup journal notes recorder purges with backup, user and result", (
   el.purges = [];
   assert.equal(el.purgeJournalCard(), "");
 });
+
+test("the exchange assistant preselects nothing and turns only confirmed pairs into actions", async () => {
+  const calls = [];
+  const { el } = panel("en", { setTimeout: () => 0 });
+  el.data = { objects: [{ object_type: "device", object_id: "old", name: "Plug A" }, { object_type: "device", object_id: "new", name: "Plug B" }], quarantine: [], findings: [], edges: [], meta: {} };
+  const pairs = { old: { device_id: "old", name: "Plug A" }, new: { device_id: "new", name: "Plug B" }, unmatched_new: [], pairs: [
+    { object_id: "sensor.a_power", name: "Power", status: "active", used: 2, meter: false, candidates: [{ object_id: "sensor.b_power", name: "Power B", score: 6, reasons: ["same_class", "same_unit"], status: "active" }] },
+    { object_id: "sensor.a_total", name: "Total", status: "active", used: 0, meter: true, candidates: [{ object_id: "sensor.b_total", name: "Total B", score: 2, reasons: [], status: "active" }] },
+    { object_id: "switch.a", name: "Switch", status: "active", used: 0, meter: false, candidates: [] },
+  ] };
+  el._hass = { language: "en", callWS: async msg => { calls.push(JSON.parse(JSON.stringify(msg))); return msg.type === "ha_housekeeper/device_pairs" ? pairs : { plan_id: "p1", actions: [], status: "dry_run", summary: {} }; } };
+  el.exchangeState().oldDev = "old"; el.exchangeState().newDev = "new";
+  await el.loadPairs();
+  assert.deepEqual(el.exchangeActions(), [], "nothing is chosen for the person");
+  let html = el.exchangeCard();
+  assert.ok(html.includes("suggested") && html.includes("same device class, same unit") && html.includes("Nothing to replace") && html.includes("0 pairs confirmed"));
+  assert.ok(/data-ex-target="switch.a"[^>]*disabled/.test(html), "a pair without use and without meter cannot be chosen");
+  el.ex.choices["sensor.a_power"] = { target: "sensor.b_power" };
+  el.ex.choices["sensor.a_total"] = { target: "sensor.b_total", how: "statistics" };
+  assert.ok(el.exchangeCard().includes("data-ex-how"));
+  await el.createExchangePlan();
+  const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
+  assert.deepEqual(create.actions, [{ kind: "replace_references", object_id: "sensor.a_power", target: "sensor.b_power" }, { kind: "migrate_meter", object_id: "sensor.a_total", target: "sensor.b_total", mode: "statistics" }]);
+  assert.equal(el.plan.plan_id, "p1");
+});
+
+test("a plan shows its follow-up, expected end state and audit report; a regression reaches the to-do list", async () => {
+  const { el } = panel("en", { setTimeout: () => 0 });
+  const plan = { plan_id: "p1", status: "verified", actions: [], followup: { state: "regression", at: "2026-10-09T10:00:00+00:00", new_count: 2, new: [{ classification: "broken_reference", object_id: "automation.x", key: "k" }] },
+    simulation: { removed: 3, removed_devices: 1, disabled: 0, disabled_devices: 0, replaced: 4, replaced_by_source: [{ name: "Light", type: "automation", count: 4 }], meters: 0, remaining_certain: 1, remaining_uncertain: 2, statistics_orphaned_count: 1, blocked: 0 } };
+  const follow = el.followupLine(plan);
+  assert.ok(follow.includes("Regression") && follow.includes("2 new findings") && follow.includes("broken reference: automation.x"));
+  const sim = el.simulationBlock(plan);
+  assert.ok(sim.includes("3 entities removed (1 devices)") && sim.includes("4 references replaced (Light: 4)") && sim.includes("1 certain uses remain") && sim.includes("2 uncertain or manual uses remain") && sim.includes("1 statistics likely orphaned") && sim.includes("Limits:"));
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { filename: "housekeeper-plan-p1.md", anonymized: !msg.anonymize === false, markdown: "# Audit report" }; } };
+  await el.loadReport("p1");
+  assert.equal(calls[0].anonymize, true);
+  assert.ok(el.reportBlock(plan).includes("# Audit report") && el.reportBlock(plan).includes("data-report-download"));
+  el.data = { objects: [], quarantine: [], findings: [], edges: [], meta: {}, regressions: [{ plan_id: "p1", at: "2026-10-09T10:00:00+00:00", new_count: 2 }] };
+  assert.ok(el.todoItems().some(item => item.key === "followup" && item.count === 1));
+});

@@ -50,6 +50,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util.file import write_utf8_file_atomic
 from homeassistant.util.yaml import dump, parse_yaml
 
+from . import followup
 from .cleanup import (
     BACKUP_KINDS,
     DEVICE_KINDS,
@@ -1109,6 +1110,7 @@ class CleanupRunner:
         if plan["status"] == "executed" and plan["verification"]["ok"]:
             plan["status"] = "verified"
         _event(plan, "verified", ok=plan["verification"]["ok"])
+        followup.start(plan, snapshot, _now())
         self.scanner.journal.save()
 
     async def _verify_meter(self, action: dict[str, Any]) -> list[dict[str, Any]]:
@@ -1180,6 +1182,7 @@ class CleanupRunner:
                 a for a in plan["actions"] if (a.get("result") or {}).get("state") == "done"
             ]
             plan["status"] = "partially_undone" if open_actions else "undone"
+            followup.stop(plan)
         self.scanner.journal.save()
         if any(r["outcome"] == "undone" for r in results):
             # Refresh the inventory so the quarantine list is current; the undo itself succeeded.

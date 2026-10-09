@@ -16,7 +16,9 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
+from . import followup
 from .const import IGNORE_LABEL, JOURNAL_STORAGE_KEY, QUARANTINE_DAYS, STORAGE_VERSION
+from .simulation import simulate
 
 USAGE_RELATIONS = frozenset(
     {"TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"}
@@ -674,6 +676,7 @@ def build_plan(
             "uses": sum(len(a["used_by"]) for a in actions),
             "statistics": sum(a["has_statistics"] for a in actions),
         },
+        "simulation": simulate(actions),
         "events": [{"at": now.isoformat(), "type": "created"}],
     }
 
@@ -694,6 +697,7 @@ def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
         "run": bool(plan.get("run")),
         "summary": plan.get("summary"),
         "file_snapshot_dropped": bool(plan.get("file_snapshot_dropped")),
+        "followup": (plan.get("followup") or {}).get("state"),
     }
 
 
@@ -714,7 +718,10 @@ def public_plan(plan: dict[str, Any]) -> dict[str, Any]:
             ]
         return {**action, "result": shown}
 
-    return {**plan, "actions": [action_view(action) for action in plan.get("actions", [])]}
+    shown = {**plan, "actions": [action_view(action) for action in plan.get("actions", [])]}
+    if "followup" in shown:
+        shown["followup"] = followup.public(shown["followup"])
+    return shown
 
 
 class JournalStore:

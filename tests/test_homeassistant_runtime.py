@@ -1095,3 +1095,29 @@ async def test_goals_are_measured_changed_and_refused_outside_their_range(
     await client.send_json_auto_id({"type": "ha_housekeeper/goals"})
     goals = {g["id"]: g for g in (await client.receive_json())["result"]["goals"]}
     assert goals["unavailable"]["state"] == "off" and goals["unavailable"]["limit"] == 3
+
+
+async def test_report_and_device_pairs_are_served_to_admins(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    assert snapshot["regressions"] == []
+    scanner.journal.add(
+        {
+            "plan_id": "p1",
+            "created_at": "2026-10-09T10:00:00+00:00",
+            "status": "dry_run",
+            "actions": [],
+            "events": [],
+        }
+    )
+    await client.send_json_auto_id({"type": "ha_housekeeper/plan_report", "plan_id": "p1"})
+    report = (await client.receive_json())["result"]
+    assert report["anonymized"] and report["markdown"].startswith("# Audit report")
+    await client.send_json_auto_id({"type": "ha_housekeeper/plan_report", "plan_id": "none"})
+    assert (await client.receive_json())["error"]["code"] == "not_found"
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/device_pairs", "old_device_id": "a", "new_device_id": "b"}
+    )
+    assert (await client.receive_json())["error"]["code"] == "not_found"

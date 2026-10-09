@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
+from .audit_report import build_report
 from .backup_health import ATTEST_KINDS, backup_health
 from .blueprints import async_blueprints
 from .cleanup import (
@@ -31,6 +32,7 @@ from .cleanup_exec import CleanupError, entity_restorable
 from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
 from .correlation import correlate
 from .db_health import db_health, growth
+from .device_pairs import pair_devices
 from .exposure import exposure
 from .goals import CATALOG as GOAL_CATALOG
 from .goals import evaluate as evaluate_goals
@@ -382,6 +384,71 @@ def websocket_plan_detail(
         connection.send_error(msg["id"], "not_found", "Plan not found")
         return
     connection.send_result(msg["id"], _versioned(public_plan(plan)))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/plan_report",
+        vol.Required("plan_id"): str,
+        vol.Optional("anonymize", default=True): bool,
+        vol.Optional("lang", default="en"): vol.In(["de", "en"]),
+    }
+)
+@callback
+def websocket_plan_report(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Return the audit report of one plan as Markdown; IDs are anonymized unless asked."""
+    scanner = _scanner(hass)
+    plan = scanner.journal.get(msg["plan_id"]) if scanner else None
+    if scanner is None or plan is None:
+        connection.send_error(msg["id"], "not_found", "Plan not found")
+        return
+    markdown = build_report(plan, anonymize=msg["anonymize"], lang=msg["lang"])
+    connection.send_result(
+        msg["id"],
+        _versioned(
+            {
+                "filename": f"housekeeper-plan-{plan['plan_id']}.md",
+                "anonymized": msg["anonymize"],
+                "markdown": markdown,
+            }
+        ),
+    )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/device_pairs",
+        vol.Required("old_device_id"): str,
+        vol.Required("new_device_id"): str,
+    }
+)
+@websocket_api.async_response
+async def websocket_device_pairs(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Suggest the entities of a new device for those of an old one. Reads only; nothing is chosen."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        snapshot = await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    pairs = pair_devices(snapshot, msg["old_device_id"], msg["new_device_id"])
+    if pairs is None:
+        connection.send_error(msg["id"], "not_found", "Two different known devices are needed")
+        return
+    connection.send_result(msg["id"], _versioned(pairs))
 
 
 @websocket_api.require_admin
@@ -1425,6 +1492,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_plan_list)
     websocket_api.async_register_command(hass, websocket_plan_detail)
     websocket_api.async_register_command(hass, websocket_plan_delete)
+    websocket_api.async_register_command(hass, websocket_plan_report)
+    websocket_api.async_register_command(hass, websocket_device_pairs)
     websocket_api.async_register_command(hass, websocket_plan_confirm)
     websocket_api.async_register_command(hass, websocket_plan_execute)
     websocket_api.async_register_command(hass, websocket_plan_cancel)

@@ -1,0 +1,182 @@
+// Device exchange, follow-up, audit report and end state simulation of a plan (see device_pairs.py, followup.py, audit_report.py, simulation.py); mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  kindExchange: "Gerät austauschen",
+  exTitle: "Gerät austauschen", exHint: "Wähle das alte und das neue Gerät. Housekeeper schlägt zu jeder alten Entität eine neue vor; nichts ist vorausgewählt. Was du bestätigst, wird eine normale Vorschau mit Backup, Prüfung und Rückgängig.",
+  exOld: "Altes Gerät", exNew: "Neues Gerät", exPick: "Gerät wählen", exLoad: "Vorschläge laden", exLoading: "Lade …", exFailed: "Keine Vorschläge: {reason}",
+  exNoPairs: "Das alte Gerät hat keine Entitäten.", exNoTarget: "Kein Ersatz", exSuggested: "Vorschlag", exUsed: "{count} Verwendungen", exUnused: "Nichts zu ersetzen",
+  exHow: "Art", exHow_replace: "Referenzen ersetzen", exHow_both: "Zähler wechseln (Verlauf und ID)", exHow_statistics: "Zähler wechseln (nur Verlauf)", exHow_id: "Zähler wechseln (nur ID)",
+  exChosen: "{count} Paare bestätigt", exCreate: "Vorschau für {count} Paare", exUnmatched: "Ohne Gegenstück am alten Gerät: {list}",
+  exDisableOld: "Altes Gerät deaktivieren …", exDisableHint: "Erst nach dem Austausch. Das geht nur, wenn am alten Gerät nichts mehr funktioniert und nichts mehr darauf verweist.",
+  exReason_same_class: "gleiche Geräteklasse", exReason_same_unit: "gleiche Einheit", exReason_same_state_class: "gleiche Zustandsklasse", exReason_same_area: "gleicher Bereich", exReason_similar_name: "ähnlicher Name", exReason_same_id_tail: "gleiche ID-Endung",
+  fuWatching: "Nachkontrolle läuft bis {date}", fuClean: "Nachkontrolle bestanden: bis {date} nichts Neues", fuRegression: "Nachkontrolle: {count} neue Funde seit {date}", fuStopped: "Nachkontrolle beendet (Plan rückgängig gemacht)",
+  fu_watching: "Beobachtet", fu_clean: "Sauber", fu_regression: "Rückfall", fu_stopped: "Beendet",
+  fu_class_broken_reference: "defekte Referenz", fu_class_unavailable: "nicht verfügbar", fu_class_recurring: "Gerät kehrt wieder",
+  actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Bereinigungsplan sind neue Probleme aufgetreten.",
+  reportButton: "Prüfbericht", reportNames: "Mit Klarnamen (nicht anonymisiert)", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
+  simTitle: "Erwarteter Endzustand",
+  simRemoved: "{count} Entitäten entfernt ({devices} Geräte)", simDisabled: "{count} Entitäten deaktiviert ({devices} Geräte)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Zählerwechsel",
+  simCertain: "{count} sichere Verwendungen bleiben bestehen", simUncertain: "{count} unsichere oder manuelle Verwendungen bleiben bestehen", simOrphaned: "{count} Statistiken voraussichtlich verwaist", simBlocked: "{count} Aktionen laufen nicht",
+  simLimits: "Grenzen: Verweise in Vorlagen und außerhalb von Home Assistant sind nicht sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
+});
+Object.assign(TEXT.en, {
+  kindExchange: "Exchange device",
+  exTitle: "Exchange device", exHint: "Pick the old and the new device. Housekeeper proposes a new entity for each old one; nothing is preselected. What you confirm becomes an ordinary preview with backup, verification and undo.",
+  exOld: "Old device", exNew: "New device", exPick: "Pick a device", exLoad: "Load proposals", exLoading: "Loading …", exFailed: "No proposals: {reason}",
+  exNoPairs: "The old device has no entities.", exNoTarget: "No replacement", exSuggested: "suggested", exUsed: "{count} uses", exUnused: "Nothing to replace",
+  exHow: "Kind", exHow_replace: "Replace references", exHow_both: "Switch meter (history and ID)", exHow_statistics: "Switch meter (history only)", exHow_id: "Switch meter (ID only)",
+  exChosen: "{count} pairs confirmed", exCreate: "Preview for {count} pairs", exUnmatched: "Without a counterpart on the old device: {list}",
+  exDisableOld: "Disable old device …", exDisableHint: "Only after the exchange. It works only when nothing on the old device works any more and nothing refers to it.",
+  exReason_same_class: "same device class", exReason_same_unit: "same unit", exReason_same_state_class: "same state class", exReason_same_area: "same area", exReason_similar_name: "similar name", exReason_same_id_tail: "same ID ending",
+  fuWatching: "Follow-up running until {date}", fuClean: "Follow-up passed: nothing new until {date}", fuRegression: "Follow-up: {count} new findings since {date}", fuStopped: "Follow-up ended (plan undone)",
+  fu_watching: "Watching", fu_clean: "Clean", fu_regression: "Regression", fu_stopped: "Ended",
+  fu_class_broken_reference: "broken reference", fu_class_unavailable: "unavailable", fu_class_recurring: "device came back",
+  actFollowup: "Follow-up reports new findings", actFollowupHint: "New problems appeared after a cleanup plan.",
+  reportButton: "Audit report", reportNames: "With real names (not anonymized)", reportDownload: "Download", reportCopy: "Copy", reportCopied: "Copied", reportFailed: "Report not created: {reason}", reportAnonymous: "IDs and names are replaced by placeholders.",
+  simTitle: "Expected end state",
+  simRemoved: "{count} entities removed ({devices} devices)", simDisabled: "{count} entities disabled ({devices} devices)", simReplaced: "{count} references replaced", simMeters: "{count} meter switches",
+  simCertain: "{count} certain uses remain", simUncertain: "{count} uncertain or manual uses remain", simOrphaned: "{count} statistics likely orphaned", simBlocked: "{count} actions will not run",
+  simLimits: "Limits: references inside templates and outside Home Assistant cannot be checked for certain; saved storage is not estimated.",
+});
+
+const EXCHANGE_HOW = ["replace", "both", "statistics", "id"];
+
+class ExchangeMixin {
+  exchangeState() {
+    return (this.ex ||= { oldDev: "", newDev: "", result: null, choices: {}, loading: false, error: "", planned: "" });
+  }
+
+  deviceOptions(selected, skip) {
+    const devices = this.data.objects.filter(o => o.object_type === "device" && o.object_id !== skip).sort((a, b) => a.name.localeCompare(b.name)).slice(0, 2000);
+    return `<option value="">${this.t("exPick")}</option>${devices.map(o => `<option value="${this.esc(o.object_id)}" ${o.object_id === selected ? "selected" : ""}>${this.esc(o.name)}</option>`).join("")}`;
+  }
+
+  async loadPairs() {
+    const ex = this.exchangeState();
+    if (!ex.oldDev || !ex.newDev || ex.loading) return;
+    ex.loading = true; ex.error = ""; ex.choices = {}; this.render();
+    try { ex.result = await this._hass.callWS({ type: "ha_housekeeper/device_pairs", old_device_id: ex.oldDev, new_device_id: ex.newDev }); }
+    catch (err) { ex.result = null; ex.error = this.t("exFailed", { reason: err?.message || String(err) }); }
+    ex.loading = false; this.render();
+  }
+
+  // Only what the person chose becomes an action: a pair without a chosen target is left out.
+  exchangeActions() {
+    const ex = this.exchangeState();
+    return Object.entries(ex.choices).filter(([, c]) => c.target).map(([object_id, c]) => (c.how && c.how !== "replace"
+      ? { kind: "migrate_meter", object_id, target: c.target, mode: c.how }
+      : { kind: "replace_references", object_id, target: c.target }));
+  }
+
+  async createExchangePlan() {
+    const actions = this.exchangeActions();
+    if (!actions.length) return;
+    this.cleanupBusy = true; this.cleanupError = ""; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+      this.journal = [plan, ...(this.journal || [])];
+      this.exchangeState().planned = this.exchangeState().oldDev;
+    } catch (err) { this.cleanupError = err?.message || String(err); }
+    this.cleanupBusy = false; this.render();
+  }
+
+  pairRow(pair) {
+    const ex = this.exchangeState(), choice = ex.choices[pair.object_id] || {};
+    const candidates = pair.candidates.map((c, i) => {
+      const why = c.reasons.map(r => this.t(`exReason_${r}`)).join(", ");
+      return `<option value="${this.esc(c.object_id)}" ${choice.target === c.object_id ? "selected" : ""}>${this.esc(c.name)} (${this.esc(c.object_id)})${i === 0 && c.score > 0 ? ` · ${this.t("exSuggested")}` : ""}${why ? ` · ${this.esc(why)}` : ""}</option>`;
+    }).join("");
+    const locked = !pair.used && !pair.meter;
+    const how = choice.target && pair.meter ? `<select data-ex-how="${this.esc(pair.object_id)}" aria-label="${this.t("exHow")}">${EXCHANGE_HOW.map(h => `<option value="${h}" ${(choice.how || "replace") === h ? "selected" : ""}>${this.t(`exHow_${h}`)}</option>`).join("")}</select>` : "";
+    return `<div class="row"><span class="row-text"><strong>${this.esc(pair.name)}</strong><small>${this.esc(pair.object_id)} · ${this.esc(pair.used ? this.t("exUsed", { count: pair.used }) : this.t("exUnused"))}</small></span>
+      <span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select data-ex-target="${this.esc(pair.object_id)}" aria-label="${this.esc(pair.name)}" ${locked ? "disabled" : ""}><option value="">${this.t("exNoTarget")}</option>${candidates}</select>${how}</span></div>`;
+  }
+
+  exchangeCard() {
+    const ex = this.exchangeState(), chosen = this.exchangeActions().length;
+    const planDone = ["executed", "verified"].includes(this.plan?.status) && ex.planned && ex.planned === ex.oldDev;
+    const rows = ex.result ? (ex.result.pairs.length ? ex.result.pairs.map(p => this.pairRow(p)).join("") : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : "";
+    const unmatched = ex.result?.unmatched_new?.length ? `<p class="factnote">${this.t("exUnmatched", { list: this.esc(ex.result.unmatched_new.slice(0, 10).join(", ")) })}</p>` : "";
+    const create = ex.result ? `<div class="setrow"><small style="margin:0">${this.t("exChosen", { count: chosen })} · ${this.t("cleanupDryRun")}</small><button class="btn primary" data-ex-create ${chosen && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("exCreate", { count: chosen })}</button></div>` : "";
+    const disable = planDone ? `<div class="setrow"><small style="margin:0">${this.t("exDisableHint")}</small><button class="btn" data-ex-disable>${this.t("exDisableOld")}</button></div>` : "";
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("exTitle")}</h2><p>${this.t("exHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
+      <div class="setrow"><div><label>${this.t("exOld")}</label></div><select data-ex-old style="max-width:360px">${this.deviceOptions(ex.oldDev, ex.newDev)}</select></div>
+      <div class="setrow"><div><label>${this.t("exNew")}</label></div><select data-ex-new style="max-width:360px">${this.deviceOptions(ex.newDev, ex.oldDev)}</select></div>
+      <div class="setrow"><small style="margin:0">${this.esc(ex.error)}</small><button class="btn" data-ex-load ${ex.oldDev && ex.newDev && !ex.loading ? "" : "disabled"}>${ex.loading ? this.t("exLoading") : this.t("exLoad")}</button></div>
+      ${rows}${unmatched}${create}${disable}</div>`;
+  }
+
+  bindExchange(root) {
+    const ex = () => this.exchangeState();
+    root.querySelector("[data-ex-old]")?.addEventListener("change", e => { ex().oldDev = e.target.value; ex().result = null; ex().choices = {}; this.render(); });
+    root.querySelector("[data-ex-new]")?.addEventListener("change", e => { ex().newDev = e.target.value; ex().result = null; ex().choices = {}; this.render(); });
+    root.querySelector("[data-ex-load]")?.addEventListener("click", () => this.loadPairs());
+    root.querySelector("[data-ex-create]")?.addEventListener("click", () => this.createExchangePlan());
+    root.querySelectorAll("[data-ex-target]").forEach(el => el.onchange = () => { const id = el.dataset.exTarget; ex().choices[id] = { ...(ex().choices[id] || {}), target: el.value }; this.render(); });
+    root.querySelectorAll("[data-ex-how]").forEach(el => el.onchange = () => { const id = el.dataset.exHow; ex().choices[id] = { ...(ex().choices[id] || {}), how: el.value }; this.render(); });
+    root.querySelector("[data-ex-disable]")?.addEventListener("click", () => { this.cleanupKind = "disable_device"; this.cleanupSel = new Set([ex().oldDev]); this.render(); });
+    root.querySelectorAll("[data-report]").forEach(el => el.onclick = () => this.loadReport(el.dataset.report));
+    root.querySelector("[data-report-names]")?.addEventListener("change", e => { this.reportClear = e.target.checked; if (this.report) this.loadReport(this.report.plan_id); else this.render(); });
+    root.querySelector("[data-report-download]")?.addEventListener("click", () => this.downloadReport());
+    root.querySelector("[data-report-copy]")?.addEventListener("click", () => this.copyReport());
+  }
+
+  // -- follow-up --------------------------------------------------------------------------
+
+  followupLine(plan) {
+    const f = plan.followup;
+    if (!f) return "";
+    const key = { watching: "fuWatching", clean: "fuClean", regression: "fuRegression", stopped: "fuStopped" }[f.state];
+    const date = this.formatDate(f.state === "watching" ? f.until : f.at || f.until);
+    const items = (f.new || []).map(n => `<small style="display:block">${this.esc(this.t(`fu_class_${n.classification}`))}: ${this.esc(n.object_id)}</small>`).join("");
+    return `<p class="factnote"><span class="pill ${this.followupTone(f.state)}">${this.t(`fu_${f.state}`)}</span> ${this.esc(this.t(key, { date, count: f.new_count ?? 0 }))}${items}</p>`;
+  }
+
+  followupTone(state) { return { watching: "mute", clean: "ok", regression: "red", stopped: "mute" }[state] || "mute"; }
+
+  // -- audit report -----------------------------------------------------------------------
+
+  async loadReport(planId) {
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/plan_report", plan_id: planId, anonymize: !this.reportClear, lang: this.lang });
+      this.report = { plan_id: planId, ...reply }; this.reportMessage = "";
+    } catch (err) { this.report = null; this.reportMessage = this.t("reportFailed", { reason: err?.message || String(err) }); }
+    this.render();
+  }
+
+  downloadReport() {
+    if (!this.report || typeof document === "undefined") return;
+    const url = URL.createObjectURL(new Blob([this.report.markdown], { type: "text/markdown" }));
+    const link = document.createElement("a");
+    link.href = url; link.download = this.report.filename; link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async copyReport() {
+    try { await navigator.clipboard.writeText(this.report.markdown); this.reportMessage = this.t("reportCopied"); }
+    catch (err) { this.reportMessage = this.t("reportFailed", { reason: err?.message || String(err) }); }
+    this.render();
+  }
+
+  reportBlock(plan) {
+    const shown = this.report?.plan_id === plan.plan_id ? this.report : null;
+    const body = shown ? `<pre class="reportpre" style="white-space:pre-wrap;max-height:320px;overflow:auto">${this.esc(shown.markdown)}</pre><div class="setrow"><small style="margin:0">${this.esc(shown.anonymized ? this.t("reportAnonymous") : "")} ${this.esc(this.reportMessage || "")}</small><span style="display:flex;gap:8px"><button class="btn" data-report-copy>${this.t("reportCopy")}</button><button class="btn" data-report-download>${this.t("reportDownload")}</button></span></div>` : (this.reportMessage ? `<small class="error">${this.esc(this.reportMessage)}</small>` : "");
+    return `<div class="setrow"><label class="factnote" style="margin:0;display:flex;gap:6px;align-items:center"><input type="checkbox" data-report-names ${this.reportClear ? "checked" : ""}>${this.t("reportNames")}</label><button class="btn" data-report="${this.esc(plan.plan_id)}">${this.t("reportButton")}</button></div>${body}`;
+  }
+
+  // -- end state simulation ---------------------------------------------------------------
+
+  simulationBlock(plan) {
+    const s = plan.simulation;
+    if (!s) return "";
+    const lines = [];
+    if (s.removed) lines.push(this.t("simRemoved", { count: s.removed, devices: s.removed_devices }));
+    if (s.disabled) lines.push(this.t("simDisabled", { count: s.disabled, devices: s.disabled_devices }));
+    if (s.replaced) lines.push(this.t("simReplaced", { count: s.replaced }) + (s.replaced_by_source.length ? ` (${s.replaced_by_source.slice(0, 5).map(r => `${r.name}: ${r.count}`).join(", ")})` : ""));
+    if (s.meters) lines.push(this.t("simMeters", { count: s.meters }));
+    lines.push(this.t("simCertain", { count: s.remaining_certain }), this.t("simUncertain", { count: s.remaining_uncertain }));
+    if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
+    if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
+    return `<details class="rowdetails" ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary>${lines.map(l => `<small style="display:block">${this.esc(l)}</small>`).join("")}<small style="display:block;opacity:.8">${this.t("simLimits")}</small></details>`;
+  }
+}

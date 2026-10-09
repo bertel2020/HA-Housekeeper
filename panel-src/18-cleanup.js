@@ -151,6 +151,7 @@ class CleanupMixin {
   }
 
   async createPlan() {
+    if (this.cleanupKind === "exchange_device") return this.createExchangePlan();
     const pair = this.cleanupKind === "replace_references" ? [this.replOld, this.replNew] : this.cleanupKind === "migrate_meter" ? [this.meterOld, this.meterNew] : null;
     if (pair ? !(pair[0] && pair[1]) : !this.cleanupSel.size) return;
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
@@ -310,11 +311,11 @@ class CleanupMixin {
     else if (plan.actions.some(a => a.result?.state === "done")) control = `<div class="setrow"><small style="margin:0">${this.esc(this.undoMessage || "")}</small><button class="btn" data-undo-all>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<p class="factnote"><b>${this.t("verification")}:</b> ${plan.verification.checks.map(c => `${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}`).join(" · ")}</p>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      ${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${rows}${checks}${control}</section>`;
+      ${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
   }
 
   kindSelect() {
-    const kinds = [["disable_entity", "kindDisable"], ["remove_entity", "kindRemove"], ["disable_device", "kindDisableDevice"], ["remove_device", "kindRemoveDevice"], ["forget_device", "kindForgetDevice"], ["replace_references", "kindReplace"], ["migrate_meter", "kindMeter"]];
+    const kinds = [["disable_entity", "kindDisable"], ["remove_entity", "kindRemove"], ["disable_device", "kindDisableDevice"], ["remove_device", "kindRemoveDevice"], ["forget_device", "kindForgetDevice"], ["replace_references", "kindReplace"], ["migrate_meter", "kindMeter"], ["exchange_device", "kindExchange"]];
     return `<select data-cleanup-kind aria-label="${this.t("actionKind")}">${kinds.map(([value, label]) => `<option value="${value}" ${this.cleanupKind === value ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select>`;
   }
 
@@ -406,11 +407,11 @@ class CleanupMixin {
       <div class="toolbar">${this.kindSelect()}<span class="toolgap"></span><span class="date" aria-live="polite">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>
       <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button></div>
       ${bar}${list.length ? pg.rows.map(row).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(all.length ? "noMatches" : "cleanupNone")}</div>`}${pg.footer}</div>`;
-    const assistant = this.cleanupKind === "replace_references" ? this.replaceCard() : this.cleanupKind === "migrate_meter" ? this.meterCard() : candidates;
+    const assistant = this.cleanupKind === "exchange_device" ? this.exchangeCard() : this.cleanupKind === "replace_references" ? this.replaceCard() : this.cleanupKind === "migrate_meter" ? this.meterCard() : candidates;
     const journalFound = this.searchList("journal", this.journal || [], plan => `${this.formatDate(plan.created_at)} ${this.t(`plan_status_${plan.status || "dry_run"}`)}`);
     const journalPage = this.paginate("journal", journalFound.rows);
     const journal = journalPage.rows.map(plan => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
-      <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>
+      <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
       <span style="display:flex;gap:8px"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn" data-plan-delete="${this.esc(plan.plan_id)}">${this.t("deletePlan")}</button>`}</span></div>`).join("");
     const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div></div>${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("journalEmpty")}</div>`}${journalPage.footer}</div>`;
     const tiles = this.sumTiles([
