@@ -1251,6 +1251,7 @@ class StylesMixin {
       .stepsbar .step.done i{background:color-mix(in srgb,var(--hk-green) 16%,var(--hk-surface));color:var(--hk-green);border-color:var(--hk-green)}
       @media (max-width:520px){.row.remrow{grid-auto-flow:row}.row.remrow>:nth-child(n+3){grid-column:1/-1;justify-self:end}}.stepsbar .step .stepname{font-weight:inherit}@media (max-width:640px){.stepsbar .step:not(.on) .stepname{display:none}.stepsbar .line{min-width:8px;margin:0 6px}}.stepsbar .line{flex:1;height:2px;min-width:20px;margin:0 10px;border-radius:2px;background:var(--hk-border)}.stepsbar .line.done{background:var(--hk-green)}
       .rangechart .grid{stroke:var(--hk-border);stroke-width:1}
+      .bkcsum{padding:14px 16px 0}.bkcsum .sumtiles{margin-bottom:0}.bkcrule{display:grid;gap:8px;margin:14px 16px;padding:12px 14px;border-radius:12px;background:var(--hk-soft)}.bkcrule .line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.bkcrule input{width:76px}.bkcrule .line .btn{margin-left:auto}.bkcrule p,.bkcfoot small{display:block;margin:0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}.bkcwarn{display:flex;gap:6px;align-items:flex-start;margin-top:4px;color:var(--hk-amber)}.bkcwarn ha-icon{--mdc-icon-size:14px;flex:none;margin-top:1px}.bkcfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:14px 16px;border-top:1px solid var(--hk-border)}.bkcfoot>div{flex:1 1 260px;min-width:0}.bkcerr{margin:6px 0 0;color:var(--hk-red);font-size:calc(12px*var(--hk-fs,1))}@media(max-width:640px){.bkcrow{grid-auto-flow:row}.bkcrow>.pill{grid-column:2;justify-self:start}}
       @media(max-width:640px){.navtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.navtiles .taskcard{grid-template-rows:auto auto;padding:10px}.navtiles .taskcard>ha-icon,.navtiles .taskcard>small{display:none}.toolbar.nosel [data-fsel-clear],.toolbar.nosel [data-sel-clear],.toolbar.nosel [data-sel-only],.toolbar.nosel .fbtns{display:none}}
       ${this.themeCss()}
     </style>`;
@@ -8472,9 +8473,9 @@ class CriteriaHistoryMixin {
 // Mixed into the panel in 99-register.js. Deleting is planned like everything else under Cleanup.
 Object.assign(TEXT.de, {
   bkcTitle: "Housekeeper-Backups aufräumen", bkcHint: "Housekeeper legt vor riskanten Plänen ein eigenes Backup an. Home Assistant löscht diese nicht von selbst. Deine regulären Backups werden nie angezeigt und nie angefasst.",
-  bkcCount: "Housekeeper-Backups", bkcBytes: "belegt", bkcSuggested: "nach der Regel löschbar", bkcRule: "Regel", bkcKeepLast: "behalte die letzten", bkcKeepDays: "und alles jünger als", bkcDays: "Tage", bkcPick: "Auswahl nach Regel",
-  bkcProtectNote: "Geschützt (nie auswählbar): Backups von Plänen, die noch beobachtet werden, und das jüngste Backup eines Plans mit möglichem Rückgängig.",
-  bkcProtected_watching: "geschützt: Beobachtung läuft", bkcProtected_undo: "geschützt: Rückgängig möglich", bkcAge: "{days} Tage alt", bkcDb: "mit Datenbank", bkcNoDb: "ohne Datenbank", bkcNoPlan: "Plan nicht mehr im Journal",
+  bkcCount: "Housekeeper-Backups", bkcBytes: "belegt", bkcSuggested: "zum Löschen vorgeschlagen", bkcRule: "Was behalten wird", bkcKeepLast: "Die letzten", bkcKeepDays: "Backups und alle aus den letzten", bkcDays: "Tagen.", bkcReset: "Auf Vorschlag zurücksetzen",
+  bkcProtectNote: "Ältere Backups sind zum Löschen vorausgewählt; du kannst die Auswahl unten ändern. Nie auswählbar sind Backups von Plänen, die noch beobachtet werden, und das jüngste Backup eines Plans, der sich noch rückgängig machen lässt.", bkcSelSum: "{count} ausgewählt · {bytes}",
+  bkcProtected_watching: "geschützt: Beobachtung läuft", bkcProtected_undo: "geschützt: Rückgängig möglich", bkcAge: "{days} Tage alt", bkcToday: "von heute", bkcDb: "mit Datenbank", bkcNoDb: "ohne Datenbank", bkcNoPlan: "Plan nicht mehr im Journal",
   bkcOnlyReturn: "Dieses Backup ist die einzige Möglichkeit, gelöschte oder zusammengeführte Daten dieses Plans zurückzuholen.", bkcPlan: "Plan zum Löschen erstellen ({count})", bkcFinal: "Löschen ist endgültig. Es gibt kein Rückgängig.",
   bkcNone: "Es gibt keine Housekeeper-Backups.", bkcUnavailable: "Die Backups ließen sich nicht lesen.", bkcLoading: "Backups werden gelesen …", bkcFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   reason_backup_missing: "Das Backup gibt es nicht mehr.", reason_not_housekeeper_backup: "Das ist kein Backup von Housekeeper.", reason_backup_protected: "Geschützt: Der Plan wird noch beobachtet oder das Backup erlaubt noch ein Rückgängig.", reason_only_return: "Einzige Möglichkeit, Daten dieses Plans zurückzuholen.",
@@ -8488,9 +8489,9 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   bkcTitle: "Tidy up Housekeeper backups", bkcHint: "Housekeeper makes its own backup before risky plans. Home Assistant does not delete these by itself. Your regular backups are never shown and never touched.",
-  bkcCount: "Housekeeper backups", bkcBytes: "used", bkcSuggested: "deletable by the rule", bkcRule: "Rule", bkcKeepLast: "keep the last", bkcKeepDays: "and everything younger than", bkcDays: "days", bkcPick: "Select by rule",
-  bkcProtectNote: "Protected (never selectable): backups of plans that are still watched, and the newest backup of a plan that still allows an undo.",
-  bkcProtected_watching: "protected: being watched", bkcProtected_undo: "protected: undo possible", bkcAge: "{days} days old", bkcDb: "with database", bkcNoDb: "without database", bkcNoPlan: "plan no longer in the journal",
+  bkcCount: "Housekeeper backups", bkcBytes: "used", bkcSuggested: "suggested for deleting", bkcRule: "What is kept", bkcKeepLast: "The last", bkcKeepDays: "backups and all from the last", bkcDays: "days.", bkcReset: "Reset to the suggestion",
+  bkcProtectNote: "Older backups are preselected for deleting; you can change the selection below. Never selectable are backups of plans that are still watched, and the newest backup of a plan that can still be undone.", bkcSelSum: "{count} selected · {bytes}",
+  bkcProtected_watching: "protected: being watched", bkcProtected_undo: "protected: undo possible", bkcAge: "{days} days old", bkcToday: "from today", bkcDb: "with database", bkcNoDb: "without database", bkcNoPlan: "plan no longer in the journal",
   bkcOnlyReturn: "This backup is the only way to get back data this plan deleted or merged.", bkcPlan: "Create a plan to delete ({count})", bkcFinal: "Deleting is final. There is no undo.",
   bkcNone: "There are no Housekeeper backups.", bkcUnavailable: "The backups could not be read.", bkcLoading: "Reading backups …", bkcFailed: "The plan could not be created: {detail}",
   reason_backup_missing: "The backup no longer exists.", reason_not_housekeeper_backup: "This is not a Housekeeper backup.", reason_backup_protected: "Protected: the plan is still watched or the backup still allows an undo.", reason_only_return: "The only way to get back data of this plan.",
@@ -8531,17 +8532,25 @@ class BackupCleanupMixin {
     if (!d.available) return `<div class="panel">${head}<div class="emptymsg">${this.t("bkcUnavailable")}</div></div>`;
     if (!d.rows.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("bkcNone")}</div></div>`;
     const sel = this.bkcSel || new Set();
-    const stat = (big, small) => `<div><div class="big">${big}</div><small class="factnote">${small}</small></div>`;
-    const sum = `<div class="chcols">${stat(this.formatNumber(d.total.count), this.t("bkcCount"))}${stat(this.formatBytes(d.total.bytes), this.t("bkcBytes"))}${stat(`${this.formatNumber(d.suggested.count)} · ${this.formatBytes(d.suggested.bytes)}`, this.t("bkcSuggested"))}</div>`;
-    const rule = `<div class="btcart"><div class="rule"><strong>${this.t("bkcRule")}:</strong> ${this.t("bkcKeepLast")} <input type="number" min="0" max="100" value="${this.bkcLast ?? 3}" data-bkc-last aria-label="${this.esc(this.t("bkcKeepLast"))}"> ${this.t("bkcKeepDays")} <input type="number" min="0" max="3650" value="${this.bkcDaysValue ?? 14}" data-bkc-days aria-label="${this.esc(this.t("bkcKeepDays"))}"> ${this.t("bkcDays")} <button class="btn" data-bkc-pick>${this.t("bkcPick")}</button></div><div class="factnote">${this.t("bkcProtectNote")}</div></div>`;
+    const sum = `<div class="bkcsum">${this.sumTiles([
+      { label: this.t("bkcCount"), value: this.formatNumber(d.total.count) },
+      { label: this.t("bkcBytes"), value: this.formatBytes(d.total.bytes) },
+      { label: this.t("bkcSuggested"), value: this.formatNumber(d.suggested.count), sub: this.formatBytes(d.suggested.bytes), tone: d.suggested.count ? "warn" : "ok" },
+    ])}</div>`;
+    // The rule only suggests: changing a number selects anew; a hand-made selection can go back to it.
+    const suggested = d.rows.filter(r => r.suggested && !r.protected).map(r => r.backup_id);
+    const changed = sel.size !== suggested.length || suggested.some(id => !sel.has(id));
+    const rule = `<div class="bkcrule"><strong>${this.t("bkcRule")}</strong><div class="line"><label for="hk-bkc-last">${this.t("bkcKeepLast")}</label><input id="hk-bkc-last" type="number" min="0" max="100" value="${this.bkcLast ?? 3}" data-bkc-last><label for="hk-bkc-days">${this.t("bkcKeepDays")}</label><input id="hk-bkc-days" type="number" min="0" max="3650" value="${this.bkcDaysValue ?? 14}" data-bkc-days><span>${this.t("bkcDays")}</span>${changed ? `<button class="btn quiet" data-bkc-pick>${this.t("bkcReset")}</button>` : ""}</div><p>${this.t("bkcProtectNote")}</p></div>`;
     const rows = d.rows.map(r => {
       const bits = [r.date ? this.formatDate(r.date).split(",")[0] : "", this.formatBytes(r.size), r.with_database ? this.t("bkcDb") : this.t("bkcNoDb"), r.plan_id ? "" : this.t("bkcNoPlan")].filter(Boolean).join(" · ");
-      const pill = r.protected ? `<span class="pill ok">${this.t(`bkcProtected_${r.protected}`)}</span>` : r.age_days !== null ? `<span class="pill ${r.suggested ? "" : "mute"}">${this.t("bkcAge", { days: r.age_days })}</span>` : "";
-      const warn = r.only_return ? `<small class="factnote">${this.t("bkcOnlyReturn")}</small>` : "";
-      return `<div class="rowwrap"><input type="checkbox" class="selbox" data-bkc-sel="${this.esc(r.backup_id)}" ${sel.has(r.backup_id) ? "checked" : ""} ${r.protected ? "disabled" : ""} aria-label="${this.esc(r.name)}"><div class="row"><span class="tile ${r.protected ? "ok" : r.only_return ? "warn" : "mute"}"><ha-icon icon="mdi:backup-restore"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(bits)}</small>${warn}</span>${pill}</div></div>`;
+      const pill = r.protected ? `<span class="pill ok">${this.t(`bkcProtected_${r.protected}`)}</span>` : r.age_days !== null ? `<span class="pill ${r.suggested ? "" : "mute"}">${r.age_days ? this.t("bkcAge", { days: r.age_days }) : this.t("bkcToday")}</span>` : "";
+      const warn = r.only_return ? `<small class="bkcwarn"><ha-icon icon="mdi:alert-outline"></ha-icon>${this.t("bkcOnlyReturn")}</small>` : "";
+      return `<div class="rowwrap"><input type="checkbox" class="selbox" data-bkc-sel="${this.esc(r.backup_id)}" ${sel.has(r.backup_id) ? "checked" : ""} ${r.protected ? "disabled" : ""} aria-label="${this.esc(r.name)}"><div class="row bkcrow"><span class="tile ${r.protected ? "ok" : r.only_return ? "warn" : "mute"}"><ha-icon icon="mdi:backup-restore"></ha-icon></span><span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc(bits)}</small>${warn}</span>${pill}</div></div>`;
     });
     const pg = this.paginate("bkc", rows);
-    const action = `<div class="trimbox"><button class="btn danger" data-bkc-plan ${sel.size && !this.bkcBusy ? "" : "disabled"}>${this.bkcBusy ? this.t("trimBusy") : this.t("bkcPlan", { count: sel.size })}</button> <span class="factnote">${this.t("bkcFinal")}</span>${this.bkcPlanError ? `<p class="factnote" role="alert">${this.esc(this.t("bkcFailed", { detail: this.bkcPlanError }))}</p>` : ""}</div>`;
+    const bytes = d.rows.filter(r => sel.has(r.backup_id)).reduce((n, r) => n + (r.size || 0), 0);
+    const error = this.bkcPlanError ? `<p class="bkcerr" role="alert">${this.esc(this.t("bkcFailed", { detail: this.bkcPlanError }))}</p>` : "";
+    const action = `<div class="bkcfoot"><div><strong>${this.t("bkcSelSum", { count: this.formatNumber(sel.size), bytes: this.formatBytes(bytes) })}</strong><small>${this.t("bkcFinal")}</small>${error}</div><button class="btn danger" data-bkc-plan ${sel.size && !this.bkcBusy ? "" : "disabled"}>${this.bkcBusy ? this.t("trimBusy") : this.t("bkcPlan", { count: sel.size })}</button></div>`;
     return `<div class="panel">${head}${sum}${rule}${pg.rows.join("")}${pg.footer || ""}${action}</div>`;
   }
 
