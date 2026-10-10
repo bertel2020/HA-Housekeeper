@@ -182,7 +182,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(async_track_time_interval(hass, _collect_runs, timedelta(minutes=15)))
 
-    async def _prepare_replies(_: Any) -> None:
+    async def _prepare_replies() -> None:
         # The slow recorder views open with the last numbers; this keeps them from getting old, but
         # only for views and windows that were opened once. One after the other with a pause, so
         # the shared query lock is never held for long at a stretch. A busy recorder makes a run
@@ -220,8 +220,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         except Exception:
             _LOGGER.exception("Preparing the recorder views failed")
 
-    entry.async_on_unload(async_track_time_interval(hass, _prepare_replies, timedelta(minutes=30)))
-    entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 120, _prepare_replies))
+    @callback
+    def _schedule_replies(_: Any) -> None:
+        # A task of the entry, so an unload stops it instead of letting it query on for minutes.
+        entry.async_create_background_task(
+            hass, _prepare_replies(), "HA Housekeeper recorder views"
+        )
+
+    entry.async_on_unload(async_track_time_interval(hass, _schedule_replies, timedelta(minutes=30)))
+    entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 120, _schedule_replies))
 
     # Regular scans keep the comparison history, findings and hints current.
     interval_hours = entry.options.get(CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS)

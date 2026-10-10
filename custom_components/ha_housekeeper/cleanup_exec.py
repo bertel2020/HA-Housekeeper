@@ -70,6 +70,7 @@ from .cleanup import (
     DELETE_CANDIDATE_RULES,
     DEVICE_KINDS,
     EXECUTABLE_KINDS,
+    INTERNAL_RESULT_KEYS,
     LABEL_KINDS,
     METER_KINDS,
     PLAN_MAX_AGE_HOURS,
@@ -335,6 +336,17 @@ class CleanupRunner:
         """Stop after the current step."""
         self._cancel = True
 
+    async def _keep_undo_data(self, result: dict[str, Any]) -> None:
+        """Save the journal at once when the undo of a step needs data only the journal holds.
+
+        A removed entry or a rewritten file can only be put back from that data, so it must not
+        wait for the save delay (a crash in between would lose it). Other steps save delayed.
+        """
+        if INTERNAL_RESULT_KEYS & result.keys() or result.get("sources"):
+            await self.flush_journal()
+        else:
+            self.scanner.journal.save()
+
     async def flush_journal(self) -> None:
         """Write the journal now instead of after the save delay (before an unload)."""
         journal = self.scanner.journal
@@ -572,6 +584,7 @@ class CleanupRunner:
                 _event(plan, "rollback_incomplete", object_id=object_id, reason=stop.reason)
                 plan["executed"] = True
                 self._abort(plan, stop.reason, object_ids[index + 1 :], object_id)
+                await self._keep_undo_data(action["result"])
                 return
             action["result"] = {"state": "done", "at": _now().isoformat(), **result}
             _event(plan, event, object_id=object_id)
@@ -579,7 +592,7 @@ class CleanupRunner:
                 action["result"].update(await self._purge_after_removal(plan, action))
             plan["executed"] = True
             self.status["done"] = index + 1
-            self.scanner.journal.save()
+            await self._keep_undo_data(action["result"])
             if stopped := action["result"].get("stopped"):
                 self._abort(plan, stopped, object_ids[index + 1 :], object_id)
                 return
@@ -759,8 +772,12 @@ class CleanupRunner:
         left, error = await trim_states(self.hass, entity_id, keep_days)
         if error:
             raise StepAbort(error)
+        # Rows were deleted either way: the step stays done (irreversible) and the plan stops.
+        deleted = {"keep_days": keep_days, "irreversible": True}
+        if left is None:  # whether all of it is gone cannot be told
+            raise StepAbort("trim_unverified", deleted)
         if left:
-            raise StepAbort("trim_left")
+            raise StepAbort("trim_left", {**deleted, "rows_left": left})
         self.scanner.replies.clear()
         rows = (action.get("trim") or {}).get("rows", 0)
         self.scanner.events.record(

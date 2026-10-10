@@ -82,7 +82,7 @@ async def delete_statistics(
             async def remaining() -> int | None:
                 nonlocal states_left
                 # keep_days 0: every state row of these IDs counts
-                found = await count_older(hass, statistic_ids, 0)
+                found = await count_older(hass, statistic_ids, 0, locked=True)
                 states_left = found or {}
                 return None if found is None else sum(v["rows"] for v in found.values())
 
@@ -181,20 +181,36 @@ def _count_older(hass: HomeAssistant, ids: list[str], keep_days: int) -> dict[st
 
 
 async def count_older(
-    hass: HomeAssistant, ids: list[str], keep_days: int
+    hass: HomeAssistant, ids: list[str], keep_days: int, *, locked: bool = False
 ) -> dict[str, dict[str, Any]] | None:
-    """State rows that ``trim_history`` would delete; None when they cannot be counted."""
+    """State rows that ``trim_history`` would delete; None when they cannot be counted.
+
+    Takes the shared recorder query lock like every slow query (``locked`` when the caller holds
+    it already); a lock that stays taken for ``QUERY_WAIT`` seconds counts as "cannot count".
+    """
     from homeassistant.components.recorder import get_instance
 
     wanted = list(dict.fromkeys(ids))[:TRIM_IDS]
     if not wanted:
         return {}
+    lock: asyncio.Lock = hass.data.setdefault(DOMAIN, {}).setdefault(
+        "reliability_lock", asyncio.Lock()
+    )
+    if not locked:
+        try:
+            async with asyncio.timeout(QUERY_WAIT):
+                await lock.acquire()
+        except TimeoutError:
+            return None
     try:
         return await get_instance(hass).async_add_executor_job(
             _count_older, hass, wanted, keep_days
         )
     except Exception:  # noqa: BLE001 - without the count the plan cannot judge, it says so
         return None
+    finally:
+        if not locked:
+            lock.release()
 
 
 async def trim_states(
@@ -224,7 +240,7 @@ async def trim_states(
         )
 
         async def remaining() -> int | None:
-            found = await count_older(hass, [entity_id], keep_days)
+            found = await count_older(hass, [entity_id], keep_days, locked=True)
             return None if found is None else found[entity_id]["rows"]
 
         left = await _settle(get_instance(hass), remaining)

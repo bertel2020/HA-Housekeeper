@@ -21,6 +21,7 @@ from .const import DOMAIN, REPLIES_STORAGE_KEY, STORAGE_VERSION
 
 REPLY_KEY = re.compile(r"^[a-z_]{1,20}(:\d{1,2}){0,2}$")
 REPLY_SAVE_DELAY = 30  # seconds
+CACHE_MAX = 200  # cached answers kept; per-entity queries would otherwise add one per entity opened
 
 
 class QueryResult:
@@ -77,6 +78,8 @@ async def cached_query(
             async with lock:
                 raw = await get_instance(hass).async_add_executor_job(job)
                 cache[name] = (time.monotonic(), raw)
+                for old in sorted(cache, key=lambda key: cache[key][0])[: len(cache) - CACHE_MAX]:
+                    del cache[old]
                 return raw
 
         def finished(done: asyncio.Task[Any]) -> None:

@@ -2762,7 +2762,7 @@ class CleanupMixin {
       const sub0 = a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.t("trimSub", { days: a.keep_days, rows: a.trim?.rows ?? "?" }) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
-      const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
+      const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
       const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
@@ -7667,7 +7667,7 @@ Object.assign(TEXT.de, {
   trimTitle: "Alten Verlauf der Auswahl kürzen", trimHint: "Der Ausschluss wirkt nur für neue Daten. Hier löschst du die bereits gespeicherten Zustände der Auswahl, die älter sind als die gewählte Zeit. Statistiken bleiben. Daraus wird ein Plan unter Aufräumen: Vorschau mit Zeilenzahl, Bestätigung, Backup, Nachprüfung.",
   trimKeep: "Behalten", trimDays: "{days} Tage", trimPreview: "Plan für das Kürzen erstellen", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   trimSub: "älter als {days} Tage: {rows} Zeilen", reason_bad_keep_days: "Die Zeit zum Behalten ist ungültig.", reason_not_counted: "Die Zeilen ließen sich nicht zählen.", reason_nothing_to_trim: "Nichts zu löschen: Es gibt keine so alten Zustände.",
-  check_history_trimmed: "Alter Verlauf ist gelöscht", abort_trim_left: "Nach dem Löschen gab es noch ältere Zeilen.",
+  check_history_trimmed: "Alter Verlauf ist gelöscht", abort_trim_unverified: "Gelöscht, aber die übrigen Zeilen ließen sich nicht zählen.", abort_trim_left: "Nach dem Löschen gab es noch ältere Zeilen.",
   confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an, einschließlich der Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
 });
 Object.assign(TEXT.en, {
@@ -7677,7 +7677,7 @@ Object.assign(TEXT.en, {
   trimTitle: "Trim the old history of the selection", trimHint: "The exclusion only works for new data. Here you delete the states already stored for the selection that are older than the chosen time. Statistics stay. This becomes a plan under Cleanup: preview with row count, confirmation, backup, check afterwards.",
   trimKeep: "Keep", trimDays: "{days} days", trimPreview: "Create a plan to trim", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
   trimSub: "older than {days} days: {rows} rows", reason_bad_keep_days: "The time to keep is not valid.", reason_not_counted: "The rows could not be counted.", reason_nothing_to_trim: "Nothing to delete: there are no states that old.",
-  check_history_trimmed: "Old history is deleted", abort_trim_left: "Older rows were still there after deleting.",
+  check_history_trimmed: "Old history is deleted", abort_trim_unverified: "Deleted, but the rows left could not be counted.", abort_trim_left: "Older rows were still there after deleting.",
   confirmedSummaryTrim: "The old history of {count} entities will be deleted. Housekeeper creates a Home Assistant backup first, including the database. It can only be taken back with that backup.",
 });
 

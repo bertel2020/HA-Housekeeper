@@ -126,7 +126,8 @@ async def test_trimming_waits_for_every_batch_and_stops_when_nothing_moves(
     async def call(*args, **kwargs):
         return None
 
-    async def counted(hass_, ids, keep_days):
+    async def counted(hass_, ids, keep_days, locked=False):
+        assert locked  # trim_states holds the shared lock while it counts
         return {i: {"rows": rows["n"], "oldest": None} for i in ids}
 
     hass.services = type("S", (), {"async_call": staticmethod(call)})()
