@@ -1,7 +1,7 @@
 // Looks at the panel in a real browser: screenshots of the main views at desktop, tablet and phone
 // size in light and dark, and optionally an accessibility scan with axe-core.
 //
-//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--axe] [--serve] [--fail-fast]
+//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--lang de|en] [--axe] [--serve] [--fail-fast]
 //   (a failing Chrome run is reported with its view, size and scheme; the other runs continue and the exit code is 1)
 //
 // Needs Google Chrome (CHROME=/path, the macOS default path, or google-chrome/chromium on PATH).
@@ -39,12 +39,13 @@ const run = (file, args, { timeout = 60000, maxBuffer = 1024 * 1024, encoding = 
   child.on("close", code => code === 0 ? finish(resolve, { stdout, stderr }) : finish(reject, new Error(`${path.basename(file)} exited with ${code}: ${stderr.slice(-300)}`)));
 });
 const flag = name => process.argv.includes(`--${name}`);
+const language = arg("lang", "de") === "en" ? "en" : "de";
 
 const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 1700] };
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -60,6 +61,13 @@ function chromePath() {
 // a missing target, objects in quarantine.
 function showcase(objects) {
   const data = makeLoadFixture(objects);
+  if (language === "en") {
+    for (const object of data.objects) {
+      object.name = object.name
+        ?.replace(/^Gerät /, "Device ")
+        .replace(/^Beispielsensor (\d+) Raum /, "Example sensor $1 Room ");
+    }
+  }
   data.meta.scanned_at = new Date().toISOString();
   data.meta.scan_interval_hours = 24;
   data.orphaned_statistics = [["sensor.e2m_proxon_fwt_meter_energy", "kWh", true, false], ["sensor.fritz_box_7530_download_geschwindigkeit", "KiB/s", false, true], ["sensor.fritz_box_7530_upload_geschwindigkeit_2", "KiB/s", false, true], ["sensor.eltako_gw1_weather_station_illuminance", "lx", false, true]]
@@ -86,7 +94,7 @@ const TREND = {
   resolved_findings: { total: 5, items: [] }, status_changes: { total: 2, items: [] }, new_objects: { total: 1, items: [] }, removed_objects: { total: 0, items: [] },
 };
 
-const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ui-check</title><style>body{margin:0}</style></head><body>
+const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ui-check</title><style>body{margin:0}</style></head><body>
 <script src="/panel.js"></script><script src="/axe.js"></script>
 <script>
 (async () => {
@@ -108,7 +116,7 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
   const data = await (await fetch("/data.json")).json(), trend = await (await fetch("/trend.json")).json();
   const el = document.createElement("ha-housekeeper-panel");
   document.body.appendChild(el);
-  el.hass = { language: "de", themes: { darkMode: q.get("scheme") === "dark" }, locale: { language: "de" },
+  el.hass = { language: "${language}", themes: { darkMode: q.get("scheme") === "dark" }, locale: { language: "${language}" },
     callWS: async msg => { const t = msg.type;
       if (t.endsWith("/inventory") || t.endsWith("/scan")) return data;
       if (t.endsWith("/status")) return { running: false };
@@ -117,11 +125,11 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };
       if (t.endsWith("/backup_health")) return BACKUP;
       if (t.endsWith("/automation_runs")) return { schema: 1, window_days: 7, since: "2026-10-01T08:00:00+00:00", total: 3, items: [
-        { object_type: "automation", entity_id: "automation.flurlicht", name: "Flurlicht", status: "active", runs: 48, ok: 30, errors: 18, conditions: 0, mean_ms: 1200, max_ms: 95000, per_day: [2, 5, 8, 9, 7, 9, 8], lower_bound: true,
+        { object_type: "automation", entity_id: "automation.flurlicht", name: "${language === "en" ? "Hall light" : "Flurlicht"}", status: "active", runs: 48, ok: 30, errors: 18, conditions: 0, mean_ms: 1200, max_ms: 95000, per_day: [2, 5, 8, 9, 7, 9, 8], lower_bound: true,
           findings: [{ kind: "failing", level: "warn", errors: 18, runs: 48, step: "action/2", step_count: 12 }, { kind: "long_wait", level: "info", seconds: 600 }] },
-        { object_type: "script", entity_id: "script.nachtlicht", name: "Nachtlicht", status: "active", runs: 6, ok: 0, errors: 6, conditions: 0, mean_ms: null, max_ms: null, per_day: [0, 0, 1, 2, 1, 1, 1], lower_bound: false,
+        { object_type: "script", entity_id: "script.nachtlicht", name: "${language === "en" ? "Night light" : "Nachtlicht"}", status: "active", runs: 6, ok: 0, errors: 6, conditions: 0, mean_ms: null, max_ms: null, per_day: [0, 0, 1, 2, 1, 1, 1], lower_bound: false,
           findings: [{ kind: "never_ok", level: "red", runs: 6 }] },
-        { object_type: "automation", entity_id: "automation.heizung", name: "Heizung Nacht", status: "active", runs: 140, ok: 140, errors: 0, conditions: 0, mean_ms: 300, max_ms: 900, per_day: [20, 20, 20, 20, 20, 20, 20], lower_bound: false, findings: [] }] };
+        { object_type: "automation", entity_id: "automation.heizung", name: "${language === "en" ? "Night heating" : "Heizung Nacht"}", status: "active", runs: 140, ok: 140, errors: 0, conditions: 0, mean_ms: 300, max_ms: 900, per_day: [20, 20, 20, 20, 20, 20, 20], lower_bound: false, findings: [] }] };
       if (t.endsWith("/db_health")) return { available: true, busy: false, cached: false, took_ms: 3200, schema: 1, supported: true, dialect: "sqlite", db_bytes: 11811160064, wal_bytes: 3221225472, growth: { known: true, per_day: 83886080 }, restart_gaps: 2,
         findings: [
           { kind: "duplicates", level: "problem", groups: 7, capped: false, series: [{ statistic_id: "sensor.a", name: "Energie Haus", groups: 5 }] },
@@ -136,28 +144,28 @@ const PAGE = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta n
       if (t.endsWith("/exposure")) return { available: true, schema: 1, checked: 320, webhooks: 4, exposed_total: 3, exposed_entities: [{ entity_id: "lock.haustuer", name: "Haustür", assistants: ["conversation"] }, { entity_id: "light.kueche", name: "Küche", assistants: ["conversation", "homekit"] }, { entity_id: "light.kueche_decke", name: "Küche Decke", assistants: ["conversation", "homekit"] }], assistants: [{ id: "conversation", status: "ok", exposed: 41 }, { id: "cloud.alexa", status: "inactive", exposed: 0 }, { id: "cloud.google_assistant", status: "inactive", exposed: 0 }], bridges: [{ kind: "homekit", title: "HASS Bridge", exposed: 18 }], findings: [{ kind: "sensitive_exposed", level: "hint", count: 2, items: [{ entity_id: "lock.haustuer", name: "Haustür", assistants: ["conversation"] }] }, { kind: "alias_duplicate", level: "warn", assistant: "conversation", alias: "Küche", count: 2, items: [{ entity_id: "light.kueche", name: "Küche" }, { entity_id: "light.kueche_decke", name: "Küche Decke" }] }] };
       if (t.endsWith("/storms")) return { available: true, busy: false, cached: false, took_ms: 4100, window_days: 1, schema: 1, total_rows: 412000, per_day: 412000, entity_count: 380, event_total: 150000, state_changed_events: 140000,
         findings: [
-          { kind: "storm", entity_id: "sensor.laut", name: "Lauter Sensor", window_days: 1, per_day: 72000, peak_hour: 5100, rows: 72000, followers: { automation: 2, entity: 1 } },
-          { kind: "no_new_state", entity_id: "sensor.attr", name: "Nur Attribute", window_days: 1, per_day: 9000, share: 96, followers: {} },
+          { kind: "storm", entity_id: "sensor.laut", name: "${language === "en" ? "Noisy sensor" : "Lauter Sensor"}", window_days: 1, per_day: 72000, peak_hour: 5100, rows: 72000, followers: { automation: 2, entity: 1 } },
+          { kind: "no_new_state", entity_id: "sensor.attr", name: "${language === "en" ? "Attributes only" : "Nur Attribute"}", window_days: 1, per_day: 9000, share: 96, followers: {} },
           { kind: "integration_share", entry_id: "e1", title: "Cloud-Hub", window_days: 1, per_day: 80000, load_share: 41.5, row_share: 19.4 }],
-        entities: [{ entity_id: "sensor.laut", name: "Lauter Sensor", entry_id: "e1", rows: 72000, per_day: 72000, no_new_state: 0.12, attr_bytes: 640, peak_hour: 5100 }, { entity_id: "sensor.attr", name: "Nur Attribute", entry_id: "e2", rows: 9000, per_day: 9000, no_new_state: 0.96, attr_bytes: 5200, peak_hour: 900 }],
+        entities: [{ entity_id: "sensor.laut", name: "${language === "en" ? "Noisy sensor" : "Lauter Sensor"}", entry_id: "e1", rows: 72000, per_day: 72000, no_new_state: 0.12, attr_bytes: 640, peak_hour: 5100 }, { entity_id: "sensor.attr", name: "${language === "en" ? "Attributes only" : "Nur Attribute"}", entry_id: "e2", rows: 9000, per_day: 9000, no_new_state: 0.96, attr_bytes: 5200, peak_hour: 900 }],
         integrations: [{ entry_id: "e1", title: "Cloud-Hub", domain: "hue", entities: 12, rows: 80000, per_day: 80000, row_share: 19.4, load_share: 41.5 }, { entry_id: "e2", title: "Zigbee", domain: "zha", entities: 40, rows: 60000, per_day: 60000, row_share: 14.6, load_share: 22.1 }],
         events: [{ type: "state_changed", count: 140000 }, { type: "call_service", count: 4000 }] };
       if (t.endsWith("/reliability")) return { available: true, busy: false, cached: false, took_ms: 2800, window_days: 7, schema: 1, unstable: { total: 31, items: [
-        { entity_id: "sensor.tuer_batterie", name: "Türsensor Batterie", entry_id: "e2", entry_title: "Zigbee", episodes: 12, per_day: 1.7, total_seconds: 4800, mean_seconds: 400, level: "flapping", pattern_hour: 3, used: 2 },
-        { entity_id: "sensor.garten_feuchte", name: "Gartenfeuchte", entry_id: "e2", entry_title: "Zigbee", episodes: 4, per_day: 0.6, total_seconds: 120, mean_seconds: 30, level: "unstable", pattern_hour: null, used: 0 }] }, entries: [
+        { entity_id: "sensor.tuer_batterie", name: "${language === "en" ? "Door sensor battery" : "Türsensor Batterie"}", entry_id: "e2", entry_title: "Zigbee", episodes: 12, per_day: 1.7, total_seconds: 4800, mean_seconds: 400, level: "flapping", pattern_hour: 3, used: 2 },
+        { entity_id: "sensor.garten_feuchte", name: "${language === "en" ? "Garden moisture" : "Gartenfeuchte"}", entry_id: "e2", entry_title: "Zigbee", episodes: 4, per_day: 0.6, total_seconds: 120, mean_seconds: 30, level: "unstable", pattern_hour: null, used: 0 }] }, entries: [
         { entry_id: "e1", title: "Cloud-Hub", domain: "hue", state: "setup_retry", reauth: true, entities: 12, permanent: 2, availability: 93.4, shared_outages: 3, longest_outage: 7200, layer: "cloud", last_disruption: { end: 1791470000, seconds: 3600, shared: true } },
         { entry_id: "e2", title: "Zigbee", domain: "zha", state: "loaded", reauth: false, entities: 40, permanent: 0, availability: 98.2, shared_outages: 1, longest_outage: 900, layer: "local", last_disruption: { end: 1791400000, seconds: 900, shared: true } },
-        { entry_id: "e3", title: "Wetterstation", domain: "ecowitt", state: "loaded", reauth: false, entities: 8, permanent: 0, availability: 100, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null }] };
+        { entry_id: "e3", title: "${language === "en" ? "Weather station" : "Wetterstation"}", domain: "ecowitt", state: "loaded", reauth: false, entities: 8, permanent: 0, availability: 100, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null }] };
       if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
       return {}; } };
   for (let i = 0; i < 50 && !el.data; i++) await wait(100);
   const plan = q.get("plan");
   if (plan) {
-    const act = (kind, extra = {}) => ({ kind, object_id: "sensor.beispiel_" + kind.length, name: "Beispielsensor " + kind, verdict: "ok", executable: true, reasons: [], used_by: [], ...extra });
+    const act = (kind, extra = {}) => ({ kind, object_id: "sensor.beispiel_" + kind.length, name: (language === "en" ? "Example sensor " : "Beispielsensor ") + kind, verdict: "ok", executable: true, reasons: [], used_by: [], ...extra });
     el.plan = { plan_id: "p1", created_at: new Date().toISOString(), status: plan === "running" ? "running" : "dry_run", executed: false, summary: { total: 3, ok: 2, review: 0, blocked: 1 },
       backup: plan === "running" ? { job_id: "a1b2c3", at: new Date().toISOString() } : undefined,
-      actions: [act("remove_entity"), act("migrate_meter", { object_id: "sensor.alt", target: "sensor.neu", name: "Zähler alt" }),
-        act("remove_entity", { object_id: "sensor.x", name: "Genutzt", verdict: "blocked", executable: false, reasons: ["used_certain"], used_by: [{ source: "automation:automation.a1", relation: "TARGETS", confidence: "certain" }] })] };
+      actions: [act("remove_entity"), act("migrate_meter", { object_id: "sensor.alt", target: "sensor.neu", name: language === "en" ? "Old meter" : "Zähler alt" }),
+        act("remove_entity", { object_id: "sensor.x", name: language === "en" ? "In use" : "Genutzt", verdict: "blocked", executable: false, reasons: ["used_certain"], used_by: [{ source: "automation:automation.a1", relation: "TARGETS", confidence: "certain" }] })] };
     if (plan === "running") el.planProgress = { done: 1, total: 2 };
   }
   if (q.get("view")) { el.view = q.get("view"); if (el.view === "changes") await el.loadCompare(); }

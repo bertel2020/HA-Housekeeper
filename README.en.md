@@ -30,6 +30,37 @@ The goal is not aggressive automatic cleanup. Housekeeper helps you understand w
 
 > Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan: disabling entities (quarantine) and, after at least 14 days of quarantine and a successful backup, removing them. The same applies to devices (disable, then remove after quarantine or forget locally). Housekeeper can also replace references to an old entity with a new one. Much of this can be undone while the configuration is unchanged. Integrations and hubs are never modified, and Housekeeper changes only what a confirmed plan names. It also stores only its own data (observation times, scan history, hidden findings, journal).
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/showcase-en/overview-desktop-light.png" alt="Housekeeping overview" width="100%">
+</p>
+
+| Findings | Repair |
+| --- | --- |
+| ![Findings](screenshots/showcase-en/findings-desktop-light.png) | ![Repair](screenshots/showcase-en/repair-desktop-light.png) |
+
+| Tidy up | Dependency path |
+| --- | --- |
+| ![Tidy up](screenshots/showcase-en/cleanup-desktop-light.png) | ![Dependency path](screenshots/showcase-en/graph-desktop-light.png) |
+
+| Automations in operation | Reliability |
+| --- | --- |
+| ![Automations in operation](screenshots/showcase-en/runs-desktop-light.png) | ![Reliability](screenshots/showcase-en/reliability-desktop-light.png) |
+
+<p align="center">
+  <img src="screenshots/showcase-en/recorder-desktop-light.png" alt="Recorder analysis" width="100%">
+</p>
+
+<details>
+<summary>Dark mode</summary>
+
+| Overview | Dependency path | Reliability |
+| --- | --- | --- |
+| ![Overview in dark mode](screenshots/showcase-en/overview-desktop-dark.png) | ![Dependency path in dark mode](screenshots/showcase-en/graph-desktop-dark.png) | ![Reliability in dark mode](screenshots/showcase-en/reliability-desktop-dark.png) |
+
+</details>
+
 ## What Housekeeper does
 
 | Task | Behavior |

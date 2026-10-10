@@ -30,6 +30,37 @@ Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunäc
 
 > Housekeeper liest und analysiert zunächst nur. Änderungen gibt es ausschließlich nach ausdrücklicher Bestätigung eines Plans: Entitäten deaktivieren (Quarantäne) und, nach mindestens 14 Tagen Quarantäne und einem erfolgreichen Backup, entfernen. Dasselbe gilt für Geräte (deaktivieren, nach der Quarantäne entfernen oder lokal vergessen). Zusätzlich kann Housekeeper Verweise auf eine alte Entität durch eine neue ersetzen. Vieles davon lässt sich rückgängig machen, solange die Konfiguration unverändert ist. Integrationen und Hubs werden nie verändert, und Housekeeper ändert nur, was ein bestätigter Plan nennt. Gespeichert werden außerdem nur eigene Daten (Beobachtungszeitpunkte, Scanverlauf, ausgeblendete Befunde, Journal).
 
+## Einblicke
+
+<p align="center">
+  <img src="screenshots/showcase/overview-desktop-light.png" alt="Housekeeping-Übersicht" width="100%">
+</p>
+
+| Befunde | Reparieren |
+| --- | --- |
+| ![Befunde](screenshots/showcase/findings-desktop-light.png) | ![Reparieren](screenshots/showcase/repair-desktop-light.png) |
+
+| Aufräumen | Abhängigkeitspfad |
+| --- | --- |
+| ![Aufräumen](screenshots/showcase/cleanup-desktop-light.png) | ![Abhängigkeitspfad](screenshots/showcase/graph-desktop-light.png) |
+
+| Automationen im Betrieb | Zuverlässigkeit |
+| --- | --- |
+| ![Automationen im Betrieb](screenshots/showcase/runs-desktop-light.png) | ![Zuverlässigkeit](screenshots/showcase/reliability-desktop-light.png) |
+
+<p align="center">
+  <img src="screenshots/showcase/recorder-desktop-light.png" alt="Recorder-Analyse" width="100%">
+</p>
+
+<details>
+<summary>Dark-Mode-Ansichten</summary>
+
+| Übersicht | Abhängigkeitspfad | Zuverlässigkeit |
+| --- | --- | --- |
+| ![Übersicht im Dark Mode](screenshots/showcase/overview-desktop-dark.png) | ![Abhängigkeitspfad im Dark Mode](screenshots/showcase/graph-desktop-dark.png) | ![Zuverlässigkeit im Dark Mode](screenshots/showcase/reliability-desktop-dark.png) |
+
+</details>
+
 ## Was Housekeeper übernimmt
 
 | Aufgabe | Verhalten |
