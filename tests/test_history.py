@@ -119,3 +119,17 @@ def test_history_drops_checkpoints_older_than_the_retention(hass) -> None:
     assert min(ats) >= "2026-10-04"
     result = history.compare(_snapshot("2026-10-07T09:00:00+00:00", []), "previous")
     assert result["retention_days"] == 3 and result["current"] == {"objects": 0, "findings": 0}
+
+
+def test_series_lists_the_days_and_the_latest_scan_with_unavailable(hass) -> None:
+    history = ScanHistory(hass)
+    assert history.series()["points"] == []
+    history.record(_snapshot("2026-10-05T08:00:00+00:00", [("entity", "x.a", "active")]))
+    history.record(_snapshot("2026-10-06T08:00:00+00:00", [("entity", "x.a", "unavailable"), ("entity", "x.b", "active")]))
+    history.record(_snapshot("2026-10-06T20:00:00+00:00", [("entity", "x.a", "unavailable")]))
+
+    points = history.series()["points"]
+    assert [(p["at"][:10], p["objects"], p["unavailable"]) for p in points] == [
+        ("2026-10-05", 1, 0),
+        ("2026-10-06", 1, 1),
+    ]

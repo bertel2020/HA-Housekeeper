@@ -162,6 +162,30 @@ class ScanHistory:
         )
         return options
 
+    def series(self) -> dict[str, Any]:
+        """Totals per day for the sparklines: the stored days plus the latest scan, oldest first."""
+        checkpoints = list(self._daily)
+        if self._latest is not None:
+            if checkpoints and checkpoints[-1]["at"][:10] == self._latest["at"][:10]:
+                checkpoints.pop()
+            checkpoints.append(self._latest)
+        return {
+            "retention_days": self.retention_days,
+            "points": [
+                {
+                    "at": cp["at"],
+                    **checkpoint_counts(cp),
+                    "unavailable": sum(
+                        1
+                        for objs in cp["objects"].values()
+                        for status in objs.values()
+                        if status == "unavailable"
+                    ),
+                }
+                for cp in checkpoints
+            ],
+        }
+
     def compare(self, snapshot: dict[str, Any], baseline: str = "previous") -> dict[str, Any]:
         """Compare the current snapshot with a baseline; an empty result if none exists."""
         base = (

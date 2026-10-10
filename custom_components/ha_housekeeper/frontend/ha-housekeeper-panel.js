@@ -1224,6 +1224,7 @@ class StylesMixin {
       .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}}
       .kpi{display:block;min-width:0;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
       .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
+      .spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.spark-end{fill:var(--hk-muted);stroke:var(--hk-soft);stroke-width:1.5}.spark-end.red{fill:var(--hk-red)}.spark-end.ok{fill:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
       .taskgrid{gap:14px}
       .taskcard{--c:var(--hk-blue);position:relative;overflow:hidden;padding-left:20px;box-shadow:var(--hk-sh1),var(--hk-hi)}
       .taskcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
@@ -1752,12 +1753,13 @@ class OverviewMixin {
     const m = this.data.meta, counts = m.status_counts || {}, types = m.type_counts || {}, health = this.health();
     const findings = this.sortedFindings();
     this.ensureTrend();
+    this.ensureSeries();
     this.ensureBackup();
-    const kpi = ([label, value, tone, view, status]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></button>`;
+    const kpi = ([label, value, tone, view, status, key, rising]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.t("statusTasks", { count: this.formatNumber(health.tasks) })}</button>` : this.t("statusAllGood");
     return `<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span>
       <div class="statustext"><h2>${headline}</h2><p>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)} · ${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</p></div>
-      <div class="kpis">${[["objects", m.object_count, "", "inventory"], ["openFindings", findings.length, findings.length ? "warn" : "", "findingsNav"], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable"]].map(kpi).join("")}</div></section>
+      <div class="kpis">${[["objects", m.object_count, "", "inventory", "", "objects"], ["openFindings", findings.length, findings.length ? "warn" : "", "findingsNav", "", "findings", "bad"], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable", "unavailable", "bad"]].map(kpi).join("")}</div></section>
       ${this.sinceVisitLine()}${this.actionTiles()}${this.todoCard()}<div class="grid2"><div class="stack">${this.inventoryStatusCard()}<div class="panel"><div class="panelhead"><div><h2>${this.t("needsAttention")}</h2><p>${this.t("sortedBySure")}</p></div><button class="link" data-jump="findingsNav">${this.t("allFindings")} (${findings.length}) <ha-icon icon="mdi:chevron-right"></ha-icon></button></div>
       ${findings.length ? findings.filter(f => !f.cause_id).slice(0, 8).map(f => this.findingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noFindings")}</div>`}</div>${this.integrationProblems()}</div>
       <div class="stack">${this.databaseCard()}${this.trendCard()}${this.cleanupCard()}
@@ -8188,6 +8190,58 @@ class NotesMixin {
   }
 }
 
+// SparklineMixin: the small history lines in the overview tiles. The series comes from the stored
+// scan history (one point per day); the number beside it is the change over the whole period.
+const SPARK_MIN_POINTS = 3;
+
+class SparklineMixin {
+  // The series is fetched once per data set, like the comparison with the previous scan.
+  ensureSeries() {
+    if (this._seriesFor === this.data || !this._hass?.callWS) return;
+    this._seriesFor = this.data;
+    this.loadSeries(this.data);
+  }
+
+  async loadSeries(data) {
+    try {
+      const result = await this._hass.callWS({ type: "ha_housekeeper/history_series" });
+      if (this.data !== data) return;
+      this.series = Array.isArray(result?.points) ? result : null;
+      if (this.view === "overview" && !this.selected) this.render();
+    } catch (_) { if (this.data === data) this.series = null; }
+  }
+
+  // Line, end point and the change over the period for one key of the series ("objects", "findings",
+  // "unavailable"). "rising" says whether more is worse; without it the colour stays neutral.
+  sparkline(key, rising) {
+    const points = (this.series?.points || []).filter(p => Number.isFinite(p[key]));
+    if (points.length < SPARK_MIN_POINTS) return `<span class="spark-hint">${this.t("sparkBuilding")}</span>`;
+    const values = points.map(p => p[key]), n = values.length;
+    const first = values[0], last = values[n - 1], change = last - first;
+    const days = Math.max(1, Math.round((new Date(points[n - 1].at) - new Date(points[0].at)) / 864e5));
+    const w = 200, h = 36, pad = 4;
+    let lo = Math.min(...values), hi = Math.max(...values);
+    const span = Math.max(4, hi * 0.1);
+    if (hi - lo < span) { const mid = (hi + lo) / 2; lo = mid - span / 2; hi = mid + span / 2; }
+    const x = i => pad + ((w - 2 * pad) * i) / (n - 1), y = v => h - pad - ((h - 2 * pad) * (v - lo)) / (hi - lo);
+    const tone = !rising || !change ? "" : (change > 0) === (rising === "bad") ? "red" : "ok";
+    const sign = change > 0 ? "+" : change < 0 ? "−" : "±";
+    const text = this.t("sparkChange", { change: `${sign}${this.formatNumber(Math.abs(change))}`, days: this.formatNumber(days) });
+    const label = this.t("sparkLabel", { from: this.formatNumber(first), to: this.formatNumber(last), days: this.formatNumber(days) });
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${this.esc(label)}"><polyline fill="none" stroke="var(--hk-muted)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="${values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}"/><circle class="spark-end ${tone}" cx="${x(n - 1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="3.5"/></svg><span class="spark-cap ${tone}">${this.esc(text)}</span>`;
+  }
+}
+
+// Texts for the sparklines in the overview tiles; merged into TEXT.
+Object.assign(TEXT.de, {
+  sparkBuilding: "Verlauf entsteht nach ein paar Scans", sparkChange: "{change} in {days} Tagen",
+  sparkLabel: "Verlauf der letzten {days} Tage: von {from} auf {to}",
+});
+Object.assign(TEXT.en, {
+  sparkBuilding: "The trend appears after a few scans", sparkChange: "{change} in {days} days",
+  sparkLabel: "Trend over the last {days} days: from {from} to {to}",
+});
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -9123,7 +9177,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, SparklineMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

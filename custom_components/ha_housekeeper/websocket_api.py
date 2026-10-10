@@ -199,6 +199,22 @@ def websocket_detail(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/history_series"})
+@websocket_api.async_response
+async def websocket_history_series(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Totals per day from the scan history, for the sparklines. Reads only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    connection.send_result(msg["id"], scanner.history.series())
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command(
     {vol.Required("type"): f"{DOMAIN}/compare", vol.Optional("baseline", default="previous"): str}
 )
@@ -2347,6 +2363,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_status)
     websocket_api.async_register_command(hass, websocket_detail)
     websocket_api.async_register_command(hass, websocket_compare)
+    websocket_api.async_register_command(hass, websocket_history_series)
     websocket_api.async_register_command(hass, websocket_ignore)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)

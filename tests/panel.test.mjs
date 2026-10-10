@@ -3259,3 +3259,14 @@ test("the journal names the end of a follow-up and the safety line counts the wa
   assert.ok(el.t("safeWatching", { n: 8 }).includes("8 plans are being watched") && el.t("safeWatching1").includes("1 plan is being watched"));
   assert.ok(el.safetyBar().includes("24 hours after the run"), "the safety line explains the watching in a tooltip");
 });
+
+test("the sparkline shows the change over the whole period, and a hint while there are too few points", () => {
+  const { el } = panel("en");
+  const day = n => new Date(Date.UTC(2026, 9, n)).toISOString();
+  el.series = { points: [{ at: day(1), findings: 58, objects: 10 }, { at: day(11), findings: 50, objects: 10 }, { at: day(31), findings: 38, objects: 10 }] };
+  const html = el.sparkline("findings", "bad");
+  assert.ok(html.includes("<svg") && html.includes("−20 in 30 days") && html.includes('spark-end ok'), "fewer findings is good");
+  assert.ok(el.sparkline("findings", "bad") !== el.sparkline("objects") && !el.sparkline("objects").includes("spark-end ok"), "without a direction the end point stays neutral");
+  el.series = { points: [{ at: day(1), findings: 5 }, { at: day(2), findings: 6 }] };
+  assert.ok(el.sparkline("findings", "bad").includes("appears after a few scans") && !el.sparkline("findings", "bad").includes("<svg"));
+});
