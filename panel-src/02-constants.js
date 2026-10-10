@@ -65,6 +65,9 @@ const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFEREN
 // Pause after the last key stroke in a search field before the list is rebuilt.
 const SEARCH_DEBOUNCE_MS = 150;
 
+// What can carry a label: everything with an entry in the entity registry.
+const LABEL_TYPES = ["entity", "automation", "script", "scene"];
+
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
   ["findingsNav", "mdi:alert-outline"],

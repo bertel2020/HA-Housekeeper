@@ -3095,6 +3095,7 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   assert.ok(!auto.includes("data-act-disable"));
   const entity = el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a");
   assert.ok(entity.includes('data-act-disable="sensor.a"'));
+  assert.ok(el.labelForm({ object_type: "script", object_id: "script.x" }).includes("data-act-label-plan") && el.labelForm({ object_type: "device", object_id: "d1" }) === "", "scripts and scenes take a label too, devices not");
   el.startCleanup("replace_references", () => { el.replOld = "sensor.gone"; });
   assert.equal(el.view, "repair");
   assert.equal(el.repairTask, "replace_references");

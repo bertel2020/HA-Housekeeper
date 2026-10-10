@@ -26,7 +26,7 @@ class DetailActionsMixin {
   }
 
   labelForm(item) {
-    if (!["entity", "automation"].includes(item.object_type)) return "";
+    if (!LABEL_TYPES.includes(item.object_type)) return "";
     const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
     if (!labels.length) return "";
     const chosen = this.actLabel && labels.some(l => l.object_id === this.actLabel) ? this.actLabel : labels[0].object_id;
