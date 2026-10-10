@@ -1,5 +1,45 @@
 # Changelog
 
+## 1.0.5 - 2026-10-10
+
+Zwei Fehler behoben, die in 1.0.3 und 1.0.4 steckten, und vier neue Wartungsziele.
+
+### Behoben
+
+- **Scan bricht ab (Issue #5):** Mit Home Assistant 2026.10 scheiterte der erste Scan an
+  Automationen mit Vorlagen („Template is not a container or iterable“). Housekeeper
+  übernimmt aus Home Assistant nur noch echte IDs.
+- **Zeilen anhaken ging nicht:** Das Anhaken einzelner Zeilen in Befunden, Aufräumen und
+  beim Löschen von Statistiken löste einen Fehler aus.
+- **Statistiken löschen:** Mehr als 200 ausgewählte Reihen liefen auf einen leeren Fehler.
+  Jetzt nimmt jeder Durchgang die ersten 200, der Rest bleibt ausgewählt; der Knopf zeigt
+  die Zahl, und nach „Jetzt ausführen“ springt die Seite zum Fortschritt.
+
+### Neu
+
+- **Wartungsziele:** Sensoren ohne neue Meldung, wiederkehrende Ausfälle, Automationen mit
+  Fehlern (30 Tage) und verwaiste Statistiken.
+
+### English
+
+Two bugs fixed that were in 1.0.3 and 1.0.4, and four new maintenance goals.
+
+#### Fixed
+
+- **Scan aborts (issue #5):** with Home Assistant 2026.10 the first scan failed on
+  automations with templates ("Template is not a container or iterable"). Housekeeper now
+  takes only real IDs from Home Assistant.
+- **Ticking rows did not work:** ticking single rows in Findings, Cleanup and when
+  deleting statistics raised an error.
+- **Deleting statistics:** more than 200 selected series ended in an empty error. Each
+  round now takes the first 200 and the rest stays selected; the button shows the count,
+  and after "Run now" the page jumps to the progress.
+
+#### New
+
+- **Maintenance goals:** sensors without a new report, recurring outages, automations with
+  errors (30 days) and orphaned statistics.
+
 ## 1.0.4 - 2026-10-10
 
 Neue Erkennung für Sensoren, die nichts mehr melden.
