@@ -104,6 +104,21 @@ class ReminderStore:
         item["last_done"] = today.isoformat()
         self._save()
 
+    def done_matching(self, names: list[str], day: str, today: date) -> int:
+        """Set "last done" of every reminder whose name contains one of ``names``; how many changed."""
+        done = _day(day)
+        wanted = [n.lower() for n in names if n]
+        if done is None or done > today or not wanted:
+            return 0
+        changed = 0
+        for item in self.items:
+            if any(n in item["name"].lower() for n in wanted):
+                item["last_done"] = day
+                changed += 1
+        if changed:
+            self._save()
+        return changed
+
     def delete(self, item_id: str) -> None:
         before = len(self.items)
         self.items = [i for i in self.items if i["id"] != item_id]

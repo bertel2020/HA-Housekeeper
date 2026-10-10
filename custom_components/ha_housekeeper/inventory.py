@@ -28,6 +28,7 @@ from .automation_analysis import (
     summarize_script_config,
 )
 from .backup_health import AttestStore, backup_health
+from .battery_care import BatteryStore
 from .causes import apply_causes
 from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
@@ -538,6 +539,7 @@ class InventoryScanner:
         self.entry_states = EntryStateHistory(hass)
         self.reminders = ReminderStore(hass)
         self.notes = NoteStore(hass)
+        self.batteries = BatteryStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -589,6 +591,7 @@ class InventoryScanner:
         await self.entry_states.async_load()
         await self.reminders.async_load()
         await self.notes.async_load()
+        await self.batteries.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()
@@ -841,6 +844,13 @@ class InventoryScanner:
             + ([] if preliminary else self.stale.findings(entities, observed_at, self.stale_hours))
             + automation_hygiene_findings(automations, observed_at, self.unused_automation_days)
             + automation_findings
+            + (
+                []
+                if preliminary
+                else self.criteria.findings(
+                    observed_at.date(), {a["object_id"] for a in automations}
+                )
+            )
             + dashboard_findings
             + helper_findings
             + group_findings

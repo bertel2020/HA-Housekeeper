@@ -292,6 +292,29 @@ class CriteriaStore:
                 found.append({"entity_id": entity_id, **numbers})
         return sorted(found, key=lambda a: (-a["missed"], a["entity_id"]))
 
+    def findings(self, today: date, known: set[str]) -> list[dict[str, Any]]:
+        """The alerts as findings of the automations that still exist."""
+        return [
+            {
+                "rule_id": "automation.goal_missed",
+                "object_id": alert["entity_id"],
+                "classification": "problem",
+                "confidence": 0.8,
+                "first_detected_at": None,
+                "evidence": [
+                    {
+                        "kind": "goal_missed",
+                        "source": "criteria",
+                        "missed": alert["missed"],
+                        "reached": alert["ok"],
+                        "window_days": WINDOW_DAYS,
+                    }
+                ],
+            }
+            for alert in self.alerts(today)
+            if alert["entity_id"] in known
+        ]
+
     def view(self, entity_id: str, today: date) -> dict[str, Any]:
         """What the panel shows for one automation."""
         return {
@@ -299,6 +322,7 @@ class CriteriaStore:
             "criteria": self.items.get(entity_id, []),
             "stats": self.stats(entity_id, today),
             "recent": self.recent.get(entity_id, []),
+            "days": self.days.get(entity_id, {}),
         }
 
 

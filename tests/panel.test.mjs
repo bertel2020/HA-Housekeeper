@@ -3292,3 +3292,31 @@ test("the selection can be trimmed: a plan with a day count for each entity, and
   assert.ok(el.planCard(plan).includes("older than 30 days: 5000 rows"));
   assert.equal(el.undoBadge(action).includes("mdi:backup-restore"), true);
 });
+
+test("batteries: the shopping list counts the types, a detected replacement is offered, the goal history and finding read well", () => {
+  const { el } = panel("en");
+  el.batteryTrend = {
+    types: { "sensor.a": "2× AAA", "sensor.b": "2× AAA", "sensor.c": "CR2032" },
+    rows: [
+      { entity_id: "sensor.a", state: "low", days_left: 0 },
+      { entity_id: "sensor.b", state: "falling", days_left: 12 },
+      { entity_id: "sensor.c", state: "falling", days_left: 29 },
+      { entity_id: "sensor.d", state: "falling", days_left: 20 },
+      { entity_id: "sensor.e", state: "falling", days_left: 200 },
+    ],
+    replaced: [{ entity_id: "sensor.a", day: "2026-10-09", from: 9, to: 100 }],
+  };
+  const cart = el.batteryShopping();
+  assert.ok(cart.includes("4× AAA · 1× CR2032 · 1 device without a type"));
+  assert.ok(!cart.includes("sensor.e"));
+  const offer = el.batterySuggestions();
+  assert.ok(offer.includes("probably a new battery") && offer.includes("Level 9 % → 100 %") && offer.includes("data-bt-enter"));
+  assert.ok(el.batteryTypeControls("sensor.z").includes("Type missing"));
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const history = el.critHistory({ days: { [today]: [3, 0], [yesterday]: [1, 1] } });
+  assert.ok(history.includes("80 %") && history.includes("missed in 30 days") && history.includes('class="m"'));
+  assert.ok(el.critHistory({ days: {} }).includes("No runs with a criterion"));
+  const line = el.goalLine({ evidence: [{ missed: 5, reached: 2, window_days: 7 }] });
+  assert.equal(line, "Goal missed 5 of 7 times in the last 7 days · criterion set by you");
+});

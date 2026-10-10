@@ -19,6 +19,7 @@ from . import battery_trend, battery_voltage, counter_repair
 from . import refactor as refactor_module
 from .audit_report import build_report
 from .backup_health import ATTEST_KINDS, backup_health
+from .battery_care import BatteryError
 from .blueprints import async_blueprints
 from .cleanup import (
     ACTION_KINDS,
@@ -1631,8 +1632,106 @@ async def websocket_battery_trend(
         {k: o["name"] for k, o in volts.items()},
         {k: battery_voltage.UNITS[o["unit"]] for k, o in volts.items()},
     )
+    result["replaced"] = scanner.batteries.open_replacements(result["replaced"])
     connection.send_result(
-        msg["id"], _versioned({"available": True, "busy": False, **result, "voltage": voltage})
+        msg["id"],
+        _versioned(
+            {
+                "available": True,
+                "busy": False,
+                **result,
+                "voltage": voltage,
+                "types": scanner.batteries.types,
+            }
+        ),
+    )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/battery_type_set",
+        vol.Required("entity_id"): str,
+        vol.Required("battery_type"): str,
+    }
+)
+@callback
+def websocket_battery_type_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Set the battery type of one sensor (empty = take it back). Only Housekeeper's list changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        scanner.batteries.set_type(msg["entity_id"], msg["battery_type"])
+    except BatteryError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    connection.send_result(msg["id"], _versioned({"types": scanner.batteries.types}))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/battery_replaced",
+        vol.Required("entity_id"): str,
+        vol.Required("day"): str,
+        vol.Required("action"): vol.In(["enter", "dismiss"]),
+        vol.Optional("name", default=""): vol.All(str, vol.Length(max=80)),
+        vol.Optional("title", default=""): vol.All(str, vol.Length(max=80)),
+        vol.Optional("note", default=""): vol.All(str, vol.Length(max=200)),
+    }
+)
+@callback
+def websocket_battery_replaced(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Settle a detected battery replacement: enter it in the history, or say it was none."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    now = datetime.now(UTC)
+    updated = 0
+    try:
+        scanner.batteries.handle(msg["entity_id"], msg["day"], now.date())
+        if msg["action"] == "enter":
+            name = msg["name"] or msg["entity_id"]
+            scanner.notes.upsert(
+                None,
+                msg["title"] or f"Battery replaced: {name}"[:80],
+                f"{msg['day']}T12:00:00+00:00",
+                f"entity:{msg['entity_id']}",
+                msg["note"],
+                now,
+            )
+            updated = scanner.reminders.done_matching(
+                [name, msg["entity_id"].split(".", 1)[1].replace("_", " ")],
+                msg["day"],
+                now.date(),
+            )
+    except (BatteryError, NoteError) as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    if scanner._snapshot is not None:
+        scanner._snapshot["notes"] = scanner.notes.view()
+        scanner._snapshot["reminders"] = scanner.reminders.view(now.date())
+    connection.send_result(
+        msg["id"],
+        _versioned(
+            {
+                "reminders_updated": updated,
+                "handled": scanner.batteries.handled,
+                "notes": scanner.notes.view(),
+                "reminders": scanner.reminders.view(now.date()),
+            }
+        ),
     )
 
 
@@ -2416,6 +2515,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_window_set)
     websocket_api.async_register_command(hass, websocket_notify_set)
     websocket_api.async_register_command(hass, websocket_purge_statistics)
+    websocket_api.async_register_command(hass, websocket_battery_type_set)
+    websocket_api.async_register_command(hass, websocket_battery_replaced)
     websocket_api.async_register_command(hass, websocket_blueprints)
     websocket_api.async_register_command(hass, websocket_window_reload)
     websocket_api.async_register_command(hass, websocket_lifecycle)

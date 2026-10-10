@@ -41,7 +41,9 @@ class FindingsMixin {
     const title = object?.name || finding.object_id;
     const subtitle = finding.rule_id === "entity.possible_duplicate"
       ? `${this.t("duplicateOf")} ${this.esc(finding.affected_object)}`
-      : finding.rule_id === "entity.stale"
+      : finding.rule_id === "automation.goal_missed"
+        ? this.esc(this.goalLine(finding))
+        : finding.rule_id === "entity.stale"
         ? this.esc(this.staleLine(finding))
         : finding.affected_object
           ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -1342,3 +1343,47 @@ async def test_reminders_are_saved_finished_and_deleted_over_the_websocket(
     assert (await call(action="delete", reminder_id=reminder["id"]))["error"][
         "code"
     ] == "invalid_format"
+
+
+async def test_a_detected_battery_replacement_is_entered_once_and_updates_a_matching_reminder(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    today = datetime.now(UTC).date()
+    scanner.reminders.upsert(
+        None,
+        "Batterie Bewegungsmelder Flur",
+        365,
+        (today - timedelta(days=300)).isoformat(),
+        "",
+        today,
+    )
+    scanner.reminders.upsert(
+        None, "Filter", 90, (today - timedelta(days=10)).isoformat(), "", today
+    )
+    day = (today - timedelta(days=1)).isoformat()
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/battery_replaced",
+            "entity_id": "sensor.flur_battery",
+            "day": day,
+            "action": "enter",
+            "name": "Bewegungsmelder Flur",
+            "title": "Batterie gewechselt: Bewegungsmelder Flur",
+        }
+    )
+    result = (await client.receive_json())["result"]
+    assert result["reminders_updated"] == 1 and result["handled"]["sensor.flur_battery"] == day
+    assert [i["title"] for i in scanner.notes.view()] == [
+        "Batterie gewechselt: Bewegungsmelder Flur"
+    ]
+    assert scanner.reminders.items[0]["last_done"] == day
+    assert scanner.reminders.items[1]["last_done"] != day
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/battery_type_set",
+            "entity_id": "sensor.flur_battery",
+            "battery_type": "2× AAA",
+        }
+    )
+    assert (await client.receive_json())["result"]["types"] == {"sensor.flur_battery": "2× AAA"}

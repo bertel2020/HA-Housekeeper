@@ -31,7 +31,7 @@ class BatteryCareMixin {
       const empty = r.state === "low" ? "" : this.formatDate(new Date(Date.now() + r.days_left * 86400000).toISOString()).split(",")[0];
       const area = item ? this.areaName(item) : "";
       const bits = [area, this.t("btNow", { n: this.formatNumber(r.level) }), empty ? this.t("btEmptyOn", { date: empty }) : ""].filter(Boolean).join(" · ");
-      return `<button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(bits)}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>`;
+      return `<div class="rowwrap"><button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(bits)}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>${this.batteryTypeControls(r.entity_id)}</div>`;
     };
     // Batteries that run low in the same fortnight sit in one fold, the nearest one open: change them together.
     const slots = [...b.groups].sort((x, y) => x.from_days - y.from_days);
@@ -41,7 +41,7 @@ class BatteryCareMixin {
       const tone = g.from_days <= 13 ? "red" : g.from_days <= 41 ? "warn" : "ok";
       return this.fold(`bt_${g.from_days}`, { tone, title: this.t("btWindow", { from: g.from_days, to: g.to_days }), sub: rows.length > 1 ? this.t("btTogether") : "", pill: this.formatNumber(rows.length) }, rows.map(row).join(""), index === 0);
     }).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t("btNone")}</div>`;
-    return `<div class="panel">${head}${body}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
+    return `<div class="panel">${head}${this.batterySuggestions()}${this.batteryShopping()}${body}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
   }
 
   // Batteries that report volts, as rows of the same list: the type is guessed from the full voltage, the limit comes from the type.
@@ -83,6 +83,7 @@ class BatteryCareMixin {
   }
 
   bindBatteryCare(root) {
+    this.bindBatteryType(root);
     root.querySelector("[data-bt-refresh]")?.addEventListener("click", () => this.loadBatteryTrend(true));
     root.querySelectorAll("[data-rem-field]").forEach(el => el.addEventListener("input", () => { this.remDraft = { ...(this.remDraft || { name: "", interval_days: 90, last_done: new Date().toISOString().slice(0, 10), note: "" }), [el.dataset.remField]: el.value }; }));
     root.querySelector("[data-rem-add]")?.addEventListener("click", () => {

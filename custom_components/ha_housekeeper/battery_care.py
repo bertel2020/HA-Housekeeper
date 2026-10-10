@@ -1,0 +1,97 @@
+"""What you tell Housekeeper about your batteries: the type per sensor and handled replacements.
+
+Only Housekeeper's own list changes, never Home Assistant. A replacement the statistics seem to
+show stays a suggestion until you enter it or say it was none; either way it is not shown again.
+"""
+
+from __future__ import annotations
+
+import re
+from datetime import date
+from typing import Any
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
+
+from .const import BATTERY_STORAGE_KEY, STORAGE_VERSION
+
+SAVE_DELAY = 5
+MAX_ITEMS = 500
+TYPE_MAX = 30
+ENTITY = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
+
+
+class BatteryError(Exception):
+    """The input was not accepted; the message names the field."""
+
+
+class BatteryStore:
+    """Battery type per sensor and the day up to which replacements are settled."""
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, BATTERY_STORAGE_KEY)
+        self.types: dict[str, str] = {}
+        self.handled: dict[str, str] = {}
+
+    async def async_load(self) -> None:
+        data = await self._store.async_load()
+        if not isinstance(data, dict):
+            return
+        for name, kept in (("types", self.types), ("handled", self.handled)):
+            found = data.get(name)
+            for key, value in found.items() if isinstance(found, dict) else ():
+                if isinstance(key, str) and ENTITY.match(key) and isinstance(value, str):
+                    kept[key] = value[:TYPE_MAX] if name == "types" else value
+        for key in [k for k, v in self.handled.items() if not _day(v)]:
+            del self.handled[key]
+        for kept in (self.types, self.handled):
+            for key in list(kept)[MAX_ITEMS:]:
+                del kept[key]
+
+    def _save(self) -> None:
+        self._store.async_delay_save(
+            lambda: {"types": self.types, "handled": self.handled}, SAVE_DELAY
+        )
+
+    def set_type(self, entity_id: str, value: str) -> None:
+        """Set the type of one sensor; an empty text takes it back."""
+        if not ENTITY.match(entity_id):
+            raise BatteryError("entity_id")
+        value = value.strip()
+        if len(value) > TYPE_MAX:
+            raise BatteryError("type")
+        if not value:
+            self.types.pop(entity_id, None)
+        else:
+            if entity_id not in self.types and len(self.types) >= MAX_ITEMS:
+                raise BatteryError("too_many")
+            self.types[entity_id] = value
+        self._save()
+
+    def handle(self, entity_id: str, day: str, today: date) -> None:
+        """Settle replacements of one sensor up to ``day``."""
+        settled = _day(day)
+        if not ENTITY.match(entity_id) or settled is None or settled > today:
+            raise BatteryError("day")
+        if entity_id not in self.handled and len(self.handled) >= MAX_ITEMS:
+            raise BatteryError("too_many")
+        known = _day(self.handled.get(entity_id))
+        if known is None or settled > known:
+            self.handled[entity_id] = settled.isoformat()
+        self._save()
+
+    def open_replacements(self, found: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """The detected replacements that are not settled yet."""
+        return [
+            item
+            for item in found
+            if (_day(self.handled.get(item["entity_id"])) or date.min)
+            < date.fromisoformat(item["day"])
+        ]
+
+
+def _day(value: Any) -> date | None:
+    try:
+        return date.fromisoformat(value) if isinstance(value, str) else None
+    except ValueError:
+        return None

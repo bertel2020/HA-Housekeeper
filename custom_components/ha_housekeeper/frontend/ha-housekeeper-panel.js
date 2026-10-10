@@ -1150,7 +1150,7 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
-      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.copybtn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;padding:4px;border:1px solid var(--hk-border);border-radius:6px;background:var(--hk-surface);color:var(--hk-muted);cursor:pointer;opacity:0;--mdc-icon-size:14px}tr:hover .copybtn,.copybtn:focus-visible,.namecell:hover .copybtn{opacity:1}.copybtn.done{color:var(--hk-green);opacity:1}@media (hover:none){.copybtn{opacity:.7}}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
+      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.copybtn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;padding:4px;border:1px solid var(--hk-border);border-radius:6px;background:var(--hk-surface);color:var(--hk-muted);cursor:pointer;opacity:0;--mdc-icon-size:14px}tr:hover .copybtn,.copybtn:focus-visible,.namecell:hover .copybtn{opacity:1}.copybtn.done{color:var(--hk-green);opacity:1}@media (hover:none){.copybtn{opacity:.7}}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.btcart,.btsuggest{margin:14px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent)}.btcart strong{display:block;margin-bottom:2px}.btsuggest{background:color-mix(in srgb,var(--hk-green) 11%,transparent);border-color:color-mix(in srgb,var(--hk-green) 30%,transparent)}.btsuggest h3{margin:0 0 4px}.btrepl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}.btrepl .row-text{flex:1;min-width:200px}.btctl,.btedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 16px 0 8px}.btedit{flex-basis:100%;margin:0;padding:8px 16px 12px}.rowwrap:has(.btedit){flex-wrap:wrap}.chcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;padding:0 16px}.chcols>div{padding:8px 0}.chcols .big{font-size:22px;font-weight:700}.chbars{display:flex;gap:3px;align-items:flex-end;height:54px;padding:8px 16px 4px}.chbars i{flex:1;max-width:14px;min-width:3px;border-radius:3px 3px 0 0;background:var(--hk-green);display:block}.chbars i.m{background:var(--hk-red)}.chaxis{display:flex;justify-content:space-between;padding:0 16px 12px;color:var(--hk-muted);font-size:12px}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
@@ -1885,7 +1885,9 @@ class FindingsMixin {
     const title = object?.name || finding.object_id;
     const subtitle = finding.rule_id === "entity.possible_duplicate"
       ? `${this.t("duplicateOf")} ${this.esc(finding.affected_object)}`
-      : finding.rule_id === "entity.stale"
+      : finding.rule_id === "automation.goal_missed"
+        ? this.esc(this.goalLine(finding))
+        : finding.rule_id === "entity.stale"
         ? this.esc(this.staleLine(finding))
         : finding.affected_object
           ? `${this.esc(finding.affected_object)} · ${this.esc(finding.evidence?.[0]?.location || "")}`
@@ -6222,7 +6224,7 @@ class DiagnosticsMixin {
     let body;
     if (d.draft) body = this.criteriaForm(view);
     else if (!view?.criteria.length) body = `<div class="pad"><small>${this.t("critNone")}</small></div>`;
-    else body = view.criteria.map(c => `<div class="pad"><small>${c.targets.map(t => `${this.esc(t.entity_id)} = ${this.esc(t.state)}`).join(" · ")} · ${c.within} s${c.hold ? ` + ${c.hold} s` : ""}</small></div>`).join("") + `<div class="pad"><small>${this.t("critStats", view.stats)}</small></div>`;
+    else body = view.criteria.map(c => `<div class="pad"><small>${c.targets.map(t => `${this.esc(t.entity_id)} = ${this.esc(t.state)}`).join(" · ")} · ${c.within} s${c.hold ? ` + ${c.hold} s` : ""}</small></div>`).join("") + `<div class="pad"><small>${this.t("critStats", view.stats)}</small></div>` + this.critHistory(view);
     const edit = d.draft ? "" : `<button class="btn" data-crit-edit="${this.esc(entityId)}">${this.t("critEdit")}</button>`;
     return `<div class="panelhead"><div><h2>${this.t("critTitle")}</h2><p>${this.t("critHint")}</p></div><div class="actions">${edit}</div></div>${body}${message}`;
   }
@@ -6736,7 +6738,7 @@ class BatteryCareMixin {
       const empty = r.state === "low" ? "" : this.formatDate(new Date(Date.now() + r.days_left * 86400000).toISOString()).split(",")[0];
       const area = item ? this.areaName(item) : "";
       const bits = [area, this.t("btNow", { n: this.formatNumber(r.level) }), empty ? this.t("btEmptyOn", { date: empty }) : ""].filter(Boolean).join(" · ");
-      return `<button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(bits)}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>`;
+      return `<div class="rowwrap"><button class="row rel" data-object="entity:${this.esc(r.entity_id)}"><span class="tile ${tone}"><ha-icon icon="mdi:battery-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(bits)}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>${this.batteryTypeControls(r.entity_id)}</div>`;
     };
     // Batteries that run low in the same fortnight sit in one fold, the nearest one open: change them together.
     const slots = [...b.groups].sort((x, y) => x.from_days - y.from_days);
@@ -6746,7 +6748,7 @@ class BatteryCareMixin {
       const tone = g.from_days <= 13 ? "red" : g.from_days <= 41 ? "warn" : "ok";
       return this.fold(`bt_${g.from_days}`, { tone, title: this.t("btWindow", { from: g.from_days, to: g.to_days }), sub: rows.length > 1 ? this.t("btTogether") : "", pill: this.formatNumber(rows.length) }, rows.map(row).join(""), index === 0);
     }).join("") : `<div class="emptymsg"><ha-icon icon="mdi:battery-check-outline"></ha-icon>${this.t("btNone")}</div>`;
-    return `<div class="panel">${head}${body}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
+    return `<div class="panel">${head}${this.batterySuggestions()}${this.batteryShopping()}${body}<p class="factnote">${this.t("btNote", { unknown: this.formatNumber(b.unknown) })}</p></div>`;
   }
 
   // Batteries that report volts, as rows of the same list: the type is guessed from the full voltage, the limit comes from the type.
@@ -6788,6 +6790,7 @@ class BatteryCareMixin {
   }
 
   bindBatteryCare(root) {
+    this.bindBatteryType(root);
     root.querySelector("[data-bt-refresh]")?.addEventListener("click", () => this.loadBatteryTrend(true));
     root.querySelectorAll("[data-rem-field]").forEach(el => el.addEventListener("input", () => { this.remDraft = { ...(this.remDraft || { name: "", interval_days: 90, last_done: new Date().toISOString().slice(0, 10), note: "" }), [el.dataset.remField]: el.value }; }));
     root.querySelector("[data-rem-add]")?.addEventListener("click", () => {
@@ -8278,6 +8281,167 @@ Object.assign(TEXT.en, {
   sparkLabel: "Trend over the last {days} days: from {from} to {to}",
 });
 
+// Battery type per sensor, the shopping list and detected replacements in the Batteries view.
+// Mixed into the panel in 99-register.js. Only Housekeeper's own list changes.
+Object.assign(TEXT.de, {
+  btTypeSet: "Typ", btTypeNone: "Typ fehlt", btTypeSave: "Speichern", btTypeCustom: "Eigener Text …", btTypeLabel: "Batterietyp für {name}", btTypeHint: "Gespeichert nur in Housekeeper.",
+  btShopTitle: "Einkaufsliste für die nächsten 30 Tage", btShopNone: "Keine Batterie wird in den nächsten 30 Tagen leer.", btShopUntyped: "{count} Geräte ohne Typ", btShopUntyped1: "1 Gerät ohne Typ",
+  btShopHint: "Gezählt werden Geräte, die laut Prognose innerhalb von 30 Tagen unter die Schwelle fallen.",
+  btReplTitle: "Wechsel erkannt", btReplHint: "Der Ladestand sprang um mindestens 15 Punkte nach oben. Das ist ein Hinweis, kein Beweis: Ein Sensor kann auch neu kalibrieren.",
+  btReplLine: "{name}: vermutlich neue Batterie am {date}", btReplLevels: "Stand {from} % → {to} %", btReplEnter: "Eintragen", btReplDismiss: "Kein Wechsel",
+  btReplNote: "„Eintragen“ macht einen Eintrag in „Änderungen“ und setzt „zuletzt erledigt“ in Erinnerungen, deren Name den Gerätenamen enthält. Es wird nichts angelegt.",
+  btReplTitleEntry: "Batterie gewechselt: {name}", btReplDone: "Eingetragen.", btReplDoneRem: "Eingetragen, {count} Erinnerung aktualisiert.", btReplFailed: "Das hat nicht geklappt: {detail}",
+});
+Object.assign(TEXT.en, {
+  btTypeSet: "Type", btTypeNone: "Type missing", btTypeSave: "Save", btTypeCustom: "Own text …", btTypeLabel: "Battery type for {name}", btTypeHint: "Stored only in Housekeeper.",
+  btShopTitle: "Shopping list for the next 30 days", btShopNone: "No battery runs out in the next 30 days.", btShopUntyped: "{count} devices without a type", btShopUntyped1: "1 device without a type",
+  btShopHint: "Counted are devices that fall below the limit within 30 days according to the forecast.",
+  btReplTitle: "Replacement detected", btReplHint: "The level jumped up by at least 15 points. That is a hint, not proof: a sensor can also recalibrate.",
+  btReplLine: "{name}: probably a new battery on {date}", btReplLevels: "Level {from} % → {to} %", btReplEnter: "Enter", btReplDismiss: "No replacement",
+  btReplNote: "“Enter” adds an entry to “Changes” and sets “last done” on reminders whose name contains the device name. Nothing is created.",
+  btReplTitleEntry: "Battery replaced: {name}", btReplDone: "Entered.", btReplDoneRem: "Entered, {count} reminder updated.", btReplFailed: "That did not work: {detail}",
+});
+
+const BATTERY_TYPES = ["2× AAA", "2× AA", "CR2032", "CR2450", "9 V"];
+
+class BatteryTypeMixin {
+  // The device name when the sensor has one, else the entity name: what reminders are matched by.
+  batteryLabel(entityId) {
+    const item = this.findObject(`entity:${entityId}`);
+    return (item?.device_id ? this.findObject(`device:${item.device_id}`)?.name : "") || item?.name || entityId;
+  }
+
+  batteryTypeControls(entityId) {
+    const type = this.batteryTrend?.types?.[entityId];
+    if (this.btEdit === entityId) {
+      const known = !type || BATTERY_TYPES.includes(type);
+      const options = BATTERY_TYPES.map(o => `<option value="${this.esc(o)}" ${o === type ? "selected" : ""}>${this.esc(o)}</option>`).join("");
+      return `<span class="btedit"><label class="factnote" for="hk-bt-type">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select id="hk-bt-type" data-bt-type-select><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
+    }
+    return `<span class="btctl">${type ? `<span class="pill">${this.esc(type)}</span>` : `<span class="pill mute">${this.t("btTypeNone")}</span>`}<button class="btn quiet" data-bt-type="${this.esc(entityId)}">${this.t("btTypeSet")}</button></span>`;
+  }
+
+  // The batteries that run low within 30 days, counted by type: "4× AAA, 2× CR2032".
+  batteryShopping() {
+    const b = this.batteryTrend;
+    if (!b?.rows) return "";
+    const soon = b.rows.filter(r => r.state === "low" || (r.days_left !== null && r.days_left <= 30));
+    const counts = new Map();
+    let untyped = 0;
+    for (const r of soon) {
+      const type = b.types?.[r.entity_id];
+      if (!type) { untyped++; continue; }
+      const match = /^(\d+)\s*[×x]\s*(.+)$/i.exec(type);
+      const [n, name] = match ? [Number(match[1]), match[2].trim()] : [1, type];
+      counts.set(name, (counts.get(name) || 0) + n);
+    }
+    const list = [...counts].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0])).map(([name, n]) => `${n}× ${name}`).join(" · ");
+    const miss = untyped ? (untyped === 1 ? this.t("btShopUntyped1") : this.t("btShopUntyped", { count: untyped })) : "";
+    const text = [list, miss].filter(Boolean).join(" · ") || this.t("btShopNone");
+    return `<div class="btcart"><strong>${this.t("btShopTitle")}</strong>${this.esc(text)}<div class="factnote">${this.t("btShopHint")}</div></div>`;
+  }
+
+  batterySuggestions() {
+    const found = this.batteryTrend?.replaced || [];
+    if (!found.length) return "";
+    const rows = found.map(r => {
+      const name = this.batteryLabel(r.entity_id);
+      const date = this.formatDate(`${r.day}T12:00:00Z`).split(",")[0];
+      return `<div class="btrepl"><ha-icon icon="mdi:battery-sync-outline"></ha-icon><span class="row-text"><strong>${this.esc(this.t("btReplLine", { name, date }))}</strong><small>${this.t("btReplLevels", { from: r.from, to: r.to })}</small></span><button class="btn accent" data-bt-enter="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplEnter")}</button><button class="btn" data-bt-dismiss="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplDismiss")}</button></div>`;
+    }).join("");
+    return `<div class="btsuggest"><h3>${this.t("btReplTitle")}</h3><p class="factnote">${this.t("btReplHint")}</p>${rows}<p class="factnote">${this.t("btReplNote")}</p>${this.btMessage ? `<p class="factnote" role="status">${this.esc(this.btMessage)}</p>` : ""}</div>`;
+  }
+
+  async batterySetType(entityId, value) {
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/battery_type_set", entity_id: entityId, battery_type: value });
+      this.batteryTrend = { ...this.batteryTrend, types: reply.types };
+      this.btEdit = "";
+    } catch (err) { this.btMessage = this.t("btReplFailed", { detail: err?.message || String(err) }); }
+    this.render();
+  }
+
+  async batterySettle(entityId, day, action) {
+    const name = this.batteryLabel(entityId);
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/battery_replaced", entity_id: entityId, day, action, name, title: this.t("btReplTitleEntry", { name }).slice(0, 80), note: "" });
+      this.batteryTrend = { ...this.batteryTrend, replaced: (this.batteryTrend.replaced || []).filter(r => !(r.entity_id === entityId && r.day <= day)) };
+      if (this.data) { this.data.notes = reply.notes; this.data.reminders = reply.reminders; }
+      this.btMessage = action === "enter" ? (reply.reminders_updated ? this.t("btReplDoneRem", { count: reply.reminders_updated }) : this.t("btReplDone")) : "";
+    } catch (err) { this.btMessage = this.t("btReplFailed", { detail: err?.message || String(err) }); }
+    this.render();
+  }
+
+  bindBatteryType(root) {
+    root.querySelectorAll("[data-bt-type]").forEach(el => el.addEventListener("click", () => { this.btEdit = el.dataset.btType; this.render(); }));
+    root.querySelector("[data-bt-type-cancel]")?.addEventListener("click", () => { this.btEdit = ""; this.render(); });
+    root.querySelector("[data-bt-type-select]")?.addEventListener("change", e => {
+      const custom = root.querySelector("[data-bt-type-custom]");
+      if (custom) { custom.hidden = e.target.value !== "__custom"; if (!custom.hidden) custom.focus(); }
+    });
+    root.querySelector("[data-bt-type-save]")?.addEventListener("click", e => {
+      const select = root.querySelector("[data-bt-type-select]"), custom = root.querySelector("[data-bt-type-custom]");
+      const value = select?.value === "__custom" ? (custom?.value || "") : (select?.value || "");
+      this.batterySetType(e.currentTarget.dataset.btTypeSave, value);
+    });
+    root.querySelectorAll("[data-bt-enter]").forEach(el => el.addEventListener("click", () => this.batterySettle(el.dataset.btEnter, el.dataset.day, "enter")));
+    root.querySelectorAll("[data-bt-dismiss]").forEach(el => el.addEventListener("click", () => this.batterySettle(el.dataset.btDismiss, el.dataset.day, "dismiss")));
+  }
+}
+
+// The history of an automation's success criteria (reached and missed per day), and the finding line.
+// Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  chTitle: "Verlauf der Ziele", chRange: "Zeitraum", chDays: "{days} Tage", chQuota: "erreicht", chMissed: "verfehlt in {days} Tagen", chLast: "letzter verfehlter Tag", chNone: "Noch keine Läufe mit Kriterium in diesem Zeitraum.", chNever: "keiner",
+  chQuota7: "letzte 7 Tage: {percent} %", chBars: "Läufe pro Tag; rot: Tag mit verfehlten Läufen", chAxisFrom: "vor {days} Tagen", chAxisTo: "heute",
+  "automation.goal_missed": "Ziel wird verfehlt", goalLine: "Ziel in den letzten {days} Tagen {missed} von {total} Mal verfehlt · Kriterium von dir gesetzt",
+});
+Object.assign(TEXT.en, {
+  chTitle: "History of the goals", chRange: "Period", chDays: "{days} days", chQuota: "reached", chMissed: "missed in {days} days", chLast: "last day with a miss", chNone: "No runs with a criterion in this period yet.", chNever: "none",
+  chQuota7: "last 7 days: {percent} %", chBars: "Runs per day; red: day with missed runs", chAxisFrom: "{days} days ago", chAxisTo: "today",
+  "automation.goal_missed": "Goal is missed", goalLine: "Goal missed {missed} of {total} times in the last {days} days · criterion set by you",
+});
+
+class CriteriaHistoryMixin {
+  critSum(days, range, offset = 0) {
+    const sums = [0, 0];
+    for (let i = offset; i < offset + range; i++) {
+      const day = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const counts = days[day];
+      if (counts) { sums[0] += counts[0]; sums[1] += counts[1]; }
+    }
+    return sums;
+  }
+
+  critHistory(view) {
+    const days = view?.days || {}, range = this.critRange || 30;
+    const [ok, missed] = this.critSum(days, range);
+    const options = [7, 30, 60].map(d => `<option value="${d}" ${d === range ? "selected" : ""}>${this.t("chDays", { days: d })}</option>`).join("");
+    const head = `<div class="panelhead"><div><h3>${this.t("chTitle")}</h3></div><div class="actions"><label class="factnote" for="hk-ch-range">${this.t("chRange")}</label><select id="hk-ch-range" data-crit-range>${options}</select></div></div>`;
+    if (!ok && !missed) return `${head}<div class="pad"><small>${this.t("chNone")}</small></div>`;
+    const quota = Math.round(ok / (ok + missed) * 100);
+    const [ok7, missed7] = this.critSum(days, 7);
+    const lastMissed = Object.keys(days).filter(d => days[d][1] > 0).sort().pop();
+    const peak = Math.max(1, ...Array.from({ length: range }, (_, i) => { const c = days[new Date(Date.now() - i * 86400000).toISOString().slice(0, 10)]; return c ? c[0] + c[1] : 0; }));
+    const bars = Array.from({ length: range }, (_, i) => {
+      const c = days[new Date(Date.now() - (range - 1 - i) * 86400000).toISOString().slice(0, 10)];
+      const total = c ? c[0] + c[1] : 0;
+      return `<i class="${c && c[1] ? "m" : ""}" style="height:${total ? Math.max(8, Math.round(total / peak * 100)) : 4}%"></i>`;
+    }).join("");
+    const stat = (big, small) => `<div><div class="big">${big}</div><small class="factnote">${small}</small></div>`;
+    return `${head}<div class="chcols">${stat(`${quota} %`, `${this.t("chQuota")}${ok7 + missed7 ? ` (${this.t("chQuota7", { percent: Math.round(ok7 / (ok7 + missed7) * 100) })})` : ""}`)}${stat(this.formatNumber(missed), this.t("chMissed", { days: range }))}${stat(lastMissed ? this.formatDate(`${lastMissed}T12:00:00Z`).split(",")[0] : this.t("chNever"), this.t("chLast"))}</div><div class="chbars" role="img" aria-label="${this.esc(this.t("chBars"))}">${bars}</div><div class="chaxis"><span>${this.t("chAxisFrom", { days: range })}</span><span>${this.t("chAxisTo")}</span></div>`;
+  }
+
+  goalLine(finding) {
+    const ev = finding.evidence?.[0] || {};
+    return this.t("goalLine", { days: ev.window_days ?? 7, missed: ev.missed ?? 0, total: (ev.missed ?? 0) + (ev.reached ?? 0) });
+  }
+
+  bindCriteriaHistory(root) {
+    root.querySelector("[data-crit-range]")?.addEventListener("change", e => { this.critRange = Number(e.target.value) || 30; this.render(); });
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -9012,6 +9176,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindTraceDiag(root);
     this.bindRefactor(root);
     this.bindBatteryCare(root);
+    this.bindCriteriaHistory(root);
     this.bindCounter(root);
     this.bindPicker(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
@@ -9213,7 +9378,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, SparklineMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, CriteriaHistoryMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, SparklineMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

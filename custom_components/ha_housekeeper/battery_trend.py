@@ -20,6 +20,7 @@ FLAT = 0.03  # percent per day: a slower fall counts as stable
 FAR = 730  # days: further away is not worth a number
 GROUP_DAYS = 14
 MAX_ROWS = 200
+REPLACED_DAYS = 21  # a jump this recent is offered as a replacement
 
 
 def estimate(
@@ -60,6 +61,22 @@ def estimate(
     return {**base, "state": "falling", "days_left": round(days)}
 
 
+def detect_replacement(
+    points: list[tuple[float, float]], now: datetime, jump: float = REPLACED_JUMP
+) -> dict[str, Any] | None:
+    """The latest rise of ``jump`` points or more between two daily means, when it is recent."""
+    found = None
+    for index in range(1, len(points)):
+        if points[index][1] - points[index - 1][1] >= jump:
+            found = (points[index][0], points[index - 1][1], points[index][1])
+    if found is None:
+        return None
+    day = datetime.fromtimestamp(found[0], UTC).date()
+    if (now.date() - day).days > REPLACED_DAYS:
+        return None
+    return {"day": day.isoformat(), "from": round(found[1]), "to": round(found[2])}
+
+
 def build(
     series: dict[str, list[tuple[float, float]]],
     names: dict[str, str],
@@ -69,7 +86,13 @@ def build(
     """Rows with an estimate, soonest first, and the groups of batteries that run low together."""
     now = now or datetime.now(UTC)
     rows = []
+    replaced = []
     for entity_id, points in series.items():
+        change = detect_replacement(points, now)
+        if change:
+            replaced.append(
+                {"entity_id": entity_id, "name": names.get(entity_id, entity_id), **change}
+            )
         found = estimate(points, limit)
         if found is None:
             continue
@@ -91,6 +114,7 @@ def build(
             for slot, ids in sorted(groups.items())
         ],
         "unknown": len(series) - len(rows),
+        "replaced": sorted(replaced, key=lambda r: (r["day"], r["entity_id"]), reverse=True),
         "computed_at": now.isoformat(),
     }
 
