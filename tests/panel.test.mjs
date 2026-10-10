@@ -3416,4 +3416,5 @@ test("the findings tiles carry a sparkline for the status, the total and each cl
   assert.ok((html.match(/class="spark"/g) || []).length >= 3);
   assert.ok(el.sparkline("class:unused", "bad").includes("+3"));
   assert.ok(el.sparkline("class:missing", "bad").includes("±0"));
+  assert.ok(html.includes(`${el.health().share} %`), "the tile shows the share its line draws, not the number with the tasks taken off");
 });
