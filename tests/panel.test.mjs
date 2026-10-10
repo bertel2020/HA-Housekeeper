@@ -3451,12 +3451,19 @@ test("the detail page offers a rename and an area for one entity and sends one a
   assert.equal(JSON.stringify(calls.map(c => c.actions[0].kind)), JSON.stringify(["rename_entity", "set_area"]));
 });
 
-test("what the recorder already excludes cannot be picked and never reaches the block", () => {
+test("what the recorder already excludes stays pickable for trimming but never reaches the block", () => {
   const { el } = panel("en");
-  el.costs = { entities: [{ entity_id: "sensor.done", excluded: true }, { entity_id: "sensor.open", excluded: false }] };
+  el.costs = { entities: [{ entity_id: "sensor.done", excluded: true, states: 1200 }, { entity_id: "sensor.open", excluded: false, states: 50 }] };
   el.excludeSel.add("sensor.done"); el.excludeSel.add("sensor.open");
   assert.equal(el.excludeSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.open\n");
-  assert.ok(el.excludeBox("sensor.done", true).includes("disabled") && !el.excludeBox("sensor.done", true).includes("checked"));
+  assert.ok(el.excludeBox("sensor.done").includes("checked") && !el.excludeBox("sensor.done").includes("disabled"));
   assert.equal(el.t("exTitle"), "Exchange device", "the exchange card keeps its own title");
   assert.ok(el.excludeInfo("sensor.done", 5000, true).tags.includes("already excluded") && !el.excludeInfo("sensor.done", 5000, true).suggest);
+  let html = el.excludeCard([]);
+  assert.ok(html.includes("1 selected · 1 to trim") && html.includes("Trim the old history"), "one for the block, one to trim");
+  el.excludeSel.clear();
+  html = el.excludeCard([]);
+  assert.ok(html.includes("Excluded but still stored: 1 entities, at least 1,200 rows") && html.includes("data-ex-left"));
+  el.excludeSel.add("sensor.done");
+  assert.ok(!el.excludeCard([]).includes("data-ex-left") && el.excludeCard([]).includes("1 to trim") && !el.excludeCard([]).includes("Copy YAML"), "only trimming: no block");
 });
