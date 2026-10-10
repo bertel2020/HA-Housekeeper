@@ -123,12 +123,13 @@ class CleanupMixin {
     const purges = this.purges || [];
     if (!purges.length) return "";
     const me = this._hass?.user?.id;
-    const rows = purges.slice(0, 20).map(p => {
+    const purgeRows = purges.map(p => {
       const what = this.t("purgeEntry", { removed: this.formatNumber(p.removed.length), skipped: this.formatNumber(p.skipped.length) });
       const who = p.by && p.by === me ? this.t("purgeByYou") : p.by ? this.t("purgeByOther") : "";
       const parts = [this.formatDate(p.at), what, p.states ? this.t("purgeWithStates") : "", p.backup ? this.t("purgeBackup", { job: p.backup.job_id || "—" }) : this.t("purgeNoBackup"), who, p.error ? this.t("purgeError", { error: p.error }) : ""];
       return `<div class="row"><span class="tile ${p.error ? "warn" : "mute"}"><ha-icon icon="mdi:database-remove-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(p.removed.slice(0, 3).join(", ") + (p.removed.length > 3 ? ` +${p.removed.length - 3}` : "") || this.t("purgeNothing"))}</strong><small>${parts.filter(Boolean).map(x => this.esc(x)).join(" · ")}</small></span></div>`;
-    }).join("");
+    });
+    const pg = this.paginate("purgejournal", purgeRows), rows = pg.rows.join("") + pg.footer;
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("purgeJournal")} (${purges.length})</h2><p>${this.t("purgeJournalHint")}</p></div></div>${rows}</div>`;
   }
 
@@ -391,7 +392,7 @@ class CleanupMixin {
       return `<section class="panel" data-plan-card data-plan-idle><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill mute">${this.t("plan_status_dry_run")}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
         <div class="outcome warn" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><span><strong>${this.t("wzIdleTitle")}</strong><small>${this.esc(why)}</small></span></div>${rowList.join("")}${this.reportBlock(plan)}</section>`;
     }
-    const rows = this.planRowsShown(rowList);
+    const rows = this.planRowsShown(plan, rowList);
     const summary = `<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>`;
     const flow = `<details class="rowdetails wzflow"><summary>${this.t("wzFlow")}</summary>${this.planStepper(plan, Boolean(conf))}</details>`;
     const body = stage === 0 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`

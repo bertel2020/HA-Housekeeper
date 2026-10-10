@@ -2,14 +2,12 @@
 // Mixed into the panel in 99-register.js; the plan card itself is built in 18-cleanup.js.
 Object.assign(TEXT.de, {
   wzLabel: "Schritte des Plans", wzReview: "Prüfen", wzConfirm: "Bestätigen", wzRun: "Ausführen", wzResult: "Ergebnis",
-  wzFlow: "Ablauf im Detail", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück", wzMore: "… und {count} weitere", wzShowAll: "Alle zeigen", wzShowLess: "Weniger zeigen",
+  wzFlow: "Ablauf im Detail", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück",
 });
 Object.assign(TEXT.en, {
   wzLabel: "Steps of the plan", wzReview: "Review", wzConfirm: "Confirm", wzRun: "Run", wzResult: "Result",
-  wzFlow: "Flow in detail", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back", wzMore: "… and {count} more", wzShowAll: "Show all", wzShowLess: "Show less",
+  wzFlow: "Flow in detail", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back",
 });
-
-const PLAN_ROWS_SHOWN = 8; // rows of a long plan shown before "Show all"
 
 class PlanWizardMixin {
   // 0 review, 1 confirm, 2 run (also while the check afterwards is still pending), 3 result.
@@ -26,12 +24,10 @@ class PlanWizardMixin {
     return `<ol class="wz" aria-label="${this.esc(this.t("wzLabel"))}">${items}</ol>`;
   }
 
-  // A long plan shows its first rows; the rest is one click away.
-  planRowsShown(rowList) {
-    const long = rowList.length > PLAN_ROWS_SHOWN + 2;
-    const all = !long || this.planShowAll;
-    const more = long ? `<div class="setrow"><small style="margin:0">${all ? "" : this.t("wzMore", { count: rowList.length - PLAN_ROWS_SHOWN })}</small><button class="btn" data-plan-all>${this.t(all ? "wzShowLess" : "wzShowAll")}</button></div>` : "";
-    return (all ? rowList : rowList.slice(0, PLAN_ROWS_SHOWN)).join("") + more;
+  // The rows of a plan come in pages like every other long list.
+  planRowsShown(plan, rowList) {
+    const pg = this.paginate(`planrows-${plan.plan_id}`, rowList);
+    return pg.rows.join("") + pg.footer;
   }
 
   planProgressBar() {
@@ -43,6 +39,5 @@ class PlanWizardMixin {
 
   bindPlanWizard(root) {
     root.querySelector("[data-plan-back]")?.addEventListener("click", () => { this.confirmation = null; this.confirmWord = ""; this.render(); });
-    root.querySelector("[data-plan-all]")?.addEventListener("click", () => { this.planShowAll = !this.planShowAll; this.render(); });
   }
 }

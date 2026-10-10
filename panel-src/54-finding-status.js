@@ -67,7 +67,8 @@ class FindingStatusMixin {
   fixedCard() {
     const fixed = this.fixedLately();
     if (!fixed.length) return "";
-    const rows = fixed.slice(0, 20).map(([id, at]) => `<div class="row"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`entity:${id}`)?.name || id)}</strong><small>${this.esc(id)} · ${this.formatDate(new Date(at).toISOString())}</small></span></div>`).join("");
+    const fixedRows = fixed.map(([id, at]) => `<div class="row"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`entity:${id}`)?.name || id)}</strong><small>${this.esc(id)} · ${this.formatDate(new Date(at).toISOString())}</small></span></div>`);
+    const pg = this.paginate("fixedlately", fixedRows), rows = pg.rows.join("") + pg.footer;
     return this.fold("fixed_lately", { tone: "ok", title: this.t("fixedTitle", { days: FIXED_DAYS }), pill: this.formatNumber(fixed.length) }, rows, false);
   }
 

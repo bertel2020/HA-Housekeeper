@@ -158,15 +158,14 @@ class DiagnosisMixin {
     const title = m.certain ? "impactCertain" : m.hits.length ? "impactProbable" : "impactNone";
     const text = m.certain ? this.t("impactCertainText", { count: m.certain }) : m.hits.length ? this.t("impactProbableText", { count: m.probable }) : this.t("impactNoneText");
     const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:alert-octagon" }[m.tone];
-    const LIMIT = 15;
-    const rows = m.hits.slice(0, LIMIT).map(h => {
+    const hitRows = m.hits.map(h => {
       const obj = this.findObject(h.key);
       const note = `${this.t(h.certain ? "certain" : "probable")}${h.places.length ? ` · ${h.places.slice(0, 2).join(", ")}` : ""}`;
       return `<button class="row rel" data-object="${this.esc(h.key)}">${this.tile(h.key.split(":")[0], h.certain ? "red" : "warn")}<span class="row-text"><strong>${this.esc(obj?.name || h.key.split(":").slice(1).join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : ""}</button>`;
-    }).join("");
-    const more = m.hits.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: m.hits.length - LIMIT })}</p>` : "";
+    });
+    const hitPage = this.paginate(`impact-${key}`, hitRows), rows = hitPage.rows.join("") + hitPage.footer;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("impactTitle")}</h2><p>${this.t("impactSubtitle")}</p></div></div>
-      <div class="diagcard"><div class="cause ${m.tone}"><ha-icon icon="${icon}"></ha-icon><div><strong>${this.t(title)}</strong><p>${this.esc(text)}</p></div></div></div>${rows}${more}
+      <div class="diagcard"><div class="cause ${m.tone}"><ha-icon icon="${icon}"></ha-icon><div><strong>${this.t(title)}</strong><p>${this.esc(text)}</p></div></div></div>${rows}
       ${item.object_type === "entity" && item.has_statistics ? `<p class="factnote">${this.t("statsNote")}</p>` : ""}
       <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
   }
@@ -253,11 +252,11 @@ class DiagnosisMixin {
       const text = `${this.tile(obj?.object_type || type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "red")}<span class="row-text"><strong>${this.esc(obj?.name || rest.join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}`;
       return obj ? `<button class="row rel" data-object="${this.esc(other)}">${text}</button>` : `<div class="row rel">${text}</div>`;
     };
-    // From 26 entries on a group gets a search box; a search lists up to 100 hits instead of the first 25.
+    // From 26 entries on a group gets a search box; the entries come in pages.
     const body = groups.map(([title, list], i) => {
       const found = this.searchList(`rel-${i}`, list, x => `${this.findObject(x.other)?.name || ""} ${x.other} ${x.label}`, LIMIT + 1);
-      const cap = found.rows.length !== list.length ? 100 : LIMIT;
-      return `<div class="sectionlabel">${title} (${list.length})</div>${found.bar}${found.none}${found.rows.slice(0, cap).map(row).join("")}${found.rows.length > cap ? `<p class="factnote">${this.t("moreItems", { count: found.rows.length - cap })}</p>` : ""}`;
+      const page = this.paginate(`relp-${key}-${i}`, found.rows);
+      return `<div class="sectionlabel">${title} (${list.length})</div>${found.bar}${found.none}${page.rows.map(row).join("")}${page.footer}`
     }).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${body || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
   }

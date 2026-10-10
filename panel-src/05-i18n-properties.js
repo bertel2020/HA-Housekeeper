@@ -7,7 +7,7 @@ Object.assign(TEXT.de, {
   propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe des Recorders; gemessen ohne Abfrage der Tabellen.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvFirst: "Ältester Eintrag", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
   propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
   propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Aufräumen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
-  propMoreEntities: "… und {count} weitere (siehe Beziehungen)", propNoEntities: "Dieses Gerät hat keine Entitäten.",
+  propNoEntities: "Dieses Gerät hat keine Entitäten.",
   by_user: "Benutzer", by_integration: "Integration", by_config_entry: "Integrationseintrag (deaktiviert)", by_device: "Gerät (deaktiviert)", by_hass: "Home Assistant",
   cat_config: "Konfiguration", cat_diagnostic: "Diagnose", type_service: "Dienst (kein physisches Gerät)",
 });
@@ -19,7 +19,7 @@ Object.assign(TEXT.en, {
   propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Size of the recorder; measured without querying the tables.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvFirst: "Oldest entry", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details in Recorder",
   propManufacturer: "Manufacturer", propModel: "Model", propSerial: "Serial number", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Kind", propUserName: "Custom name", propOriginalDeviceName: "Name from the integration",
   propKind: "Kind", propKindChild: "Child device", propParent: "Parent device", propCleanupBlock: "Cleanup blocked", propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
-  propMoreEntities: "… and {count} more (see relations)", propNoEntities: "This device has no entities.",
+  propNoEntities: "This device has no entities.",
   by_user: "User", by_integration: "Integration", by_config_entry: "Integration entry (disabled)", by_device: "Device (disabled)", by_hass: "Home Assistant",
   cat_config: "Configuration", cat_diagnostic: "Diagnostic", type_service: "Service (not a physical device)",
 });

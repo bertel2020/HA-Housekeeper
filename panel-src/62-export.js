@@ -6,7 +6,7 @@ Object.assign(TEXT.de, {
   xpSelTitle: "Was soll in den Export?", xpSelHint: "Wähle Entitäten aus dem Bestand. Schnellwahlen setzen mehrere Häkchen auf einmal.",
   xpQuickFiltered: "Aktuelles Filterergebnis ({n})", xpQuickShown: "Suchtreffer ({n})", xpQuickClear: "Leeren",
   xpPickArea: "Bereich …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "In den Entitäten suchen …",
-  xpSelected: "{n} ausgewählt", xpNeedOne: "Wähle mindestens eine Entität.", xpMoreHits: "{n} weitere Treffer; eine engere Suche zeigt sie.", xpNone: "Keine Treffer.", xpNoEntities: "Dazu gibt es keine Entitäten zum Exportieren.",
+  xpSelected: "{n} ausgewählt", xpNeedOne: "Wähle mindestens eine Entität.", xpNone: "Keine Treffer.", xpNoEntities: "Dazu gibt es keine Entitäten zum Exportieren.",
   xpFieldsTitle: "Welche Angaben?", xpFieldsHint: "Pro Gruppe ein Häkchen. Eine Voreinstellung setzt sie für dich.",
   xpPresetMin: "Minimal", xpPresetDoc: "Dokumentation", xpPresetState: "Mit Zuständen", xpMyTemplates: "Meine Vorlagen", xpTplDelete: "Vorlage „{name}“ löschen",
   xpGBasis: "Basis", xpGBasisD: "Entity-ID, Name, Domain, Status", xpGZuord: "Zuordnung", xpGZuordD: "Bereich, Gerät, Integration, Geräteklasse, Einheit",
@@ -26,7 +26,7 @@ Object.assign(TEXT.en, {
   xpSelTitle: "What goes into the export?", xpSelHint: "Pick entities from the inventory. Quick picks tick several at once.",
   xpQuickFiltered: "Current filter result ({n})", xpQuickShown: "Search hits ({n})", xpQuickClear: "Clear",
   xpPickArea: "Area …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "Search the entities …",
-  xpSelected: "{n} selected", xpNeedOne: "Pick at least one entity.", xpMoreHits: "{n} more hits; a narrower search shows them.", xpNone: "No hits.", xpNoEntities: "There are no entities to export for this.",
+  xpSelected: "{n} selected", xpNeedOne: "Pick at least one entity.", xpNone: "No hits.", xpNoEntities: "There are no entities to export for this.",
   xpFieldsTitle: "Which fields?", xpFieldsHint: "One tick per group. A preset sets them for you.",
   xpPresetMin: "Minimal", xpPresetDoc: "Documentation", xpPresetState: "With states", xpMyTemplates: "My templates", xpTplDelete: "Delete template “{name}”",
   xpGBasis: "Basics", xpGBasisD: "Entity ID, name, domain, status", xpGZuord: "Placement", xpGZuordD: "Area, device, integration, device class, unit",
@@ -41,7 +41,6 @@ Object.assign(TEXT.en, {
   xpCopy: "Copy", xpCopied: "Copied", xpDownload: "Download",
 });
 
-const XP_SHOWN = 100; // entities listed in the pick step
 const XP_PREVIEW_CHARS = 6000;
 const XP_TEMPLATES_KEY = "ha_housekeeper.export_templates";
 const XP_TEMPLATES_MAX = 10;
@@ -211,13 +210,13 @@ class ExportMixin {
     const options = (label, values) => `<option value="">${this.esc(label)}</option>${values.map(([v, text]) => `<option value="${this.esc(v)}">${this.esc(text)}</option>`).join("")}`;
     const byName = (a, b) => a[1].localeCompare(b[1]);
     const filtered = this.filtered().filter(o => o.object_type === "entity");
-    const rows = hits.slice(0, XP_SHOWN).map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}${this.areaName(o) ? ` · ${this.esc(this.areaName(o))}` : ""}</small></span></label>`).join("");
-    const more = hits.length > XP_SHOWN ? `<p class="factnote">${this.t("xpMoreHits", { n: this.formatNumber(hits.length - XP_SHOWN) })}</p>` : "";
+    const pickRows = hits.map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}${this.areaName(o) ? ` · ${this.esc(this.areaName(o))}` : ""}</small></span></label>`);
+    const pickPage = this.paginate("xppick", pickRows), rows = pickPage.rows.join("") + pickPage.footer;
     return `<h3>${this.t("xpSelTitle")}</h3><p class="factnote">${this.t("xpSelHint")}</p>
       <div class="chips"><button class="chip" data-xp-quick="filtered">${this.t("xpQuickFiltered", { n: this.formatNumber(filtered.length) })}</button>${q ? `<button class="chip" data-xp-quick="shown">${this.t("xpQuickShown", { n: this.formatNumber(hits.length) })}</button>` : ""}<button class="chip" data-xp-quick="clear">${this.t("xpQuickClear")}</button></div>
       <div class="filters"><select data-xp-add="area" aria-label="${this.esc(this.t("xpPickArea"))}">${options(this.t("xpPickArea"), [...areas].sort(byName))}</select><select data-xp-add="domain" aria-label="${this.esc(this.t("xpPickDomain"))}">${options(this.t("xpPickDomain"), [...domains].sort().map(d => [d, d]))}</select><select data-xp-add="platform" aria-label="${this.esc(this.t("xpPickPlatform"))}">${options(this.t("xpPickPlatform"), [...platforms].sort().map(p => [p, p]))}</select></div>
       <input type="search" data-xp-q value="${this.esc(x.q)}" placeholder="${this.esc(this.t("xpSearch"))}">
-      ${rows || `<div class="emptymsg">${this.t("xpNone")}</div>`}${more}`;
+      ${rows || `<div class="emptymsg">${this.t("xpNone")}</div>`}`;
   }
 
   xpFieldsStep() {

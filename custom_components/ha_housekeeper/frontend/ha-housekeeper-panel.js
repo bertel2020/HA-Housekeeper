@@ -151,7 +151,7 @@ const TEXT = {
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
     available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: nicht verfügbare Entitäten werden erst nach {days} Tagen gemeldet.", refCount: "Verwendet von",
-    moreItems: "und {count} weitere", automationOff: "Automation ist ausgeschaltet", refsResolved: "Alle Referenzen aufgelöst", entities: "Entitäten",
+    automationOff: "Automation ist ausgeschaltet", refsResolved: "Alle Referenzen aufgelöst", entities: "Entitäten",
     cs_loaded: "Geladen", cs_setup_error: "Fehler beim Einrichten", cs_setup_retry: "Einrichtung wird wiederholt", cs_not_loaded: "Nicht geladen",
     cs_migration_error: "Fehler bei der Migration", cs_failed_unload: "Entladen fehlgeschlagen", cs_setup_in_progress: "Wird eingerichtet",
     missing_entity: "Entität", missing_device: "Gerät", missing_area: "Bereich", missing_floor: "Etage", missing_label: "Label",
@@ -330,7 +330,7 @@ const TEXT = {
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
     available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: unavailable entities are reported only after {days} days.", refCount: "Used by",
-    moreItems: "and {count} more", automationOff: "Automation is turned off", refsResolved: "All references resolved", entities: "Entities",
+    automationOff: "Automation is turned off", refsResolved: "All references resolved", entities: "Entities",
     cs_loaded: "Loaded", cs_setup_error: "Setup error", cs_setup_retry: "Retrying setup", cs_not_loaded: "Not loaded",
     cs_migration_error: "Migration error", cs_failed_unload: "Unload failed", cs_setup_in_progress: "Setting up",
     missing_entity: "Entity", missing_device: "Device", missing_area: "Area", missing_floor: "Floor", missing_label: "Label",
@@ -573,7 +573,7 @@ Object.assign(TEXT.de, {
   propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe des Recorders; gemessen ohne Abfrage der Tabellen.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvFirst: "Ältester Eintrag", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
   propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
   propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Aufräumen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
-  propMoreEntities: "… und {count} weitere (siehe Beziehungen)", propNoEntities: "Dieses Gerät hat keine Entitäten.",
+  propNoEntities: "Dieses Gerät hat keine Entitäten.",
   by_user: "Benutzer", by_integration: "Integration", by_config_entry: "Integrationseintrag (deaktiviert)", by_device: "Gerät (deaktiviert)", by_hass: "Home Assistant",
   cat_config: "Konfiguration", cat_diagnostic: "Diagnose", type_service: "Dienst (kein physisches Gerät)",
 });
@@ -585,7 +585,7 @@ Object.assign(TEXT.en, {
   propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Size of the recorder; measured without querying the tables.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvFirst: "Oldest entry", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details in Recorder",
   propManufacturer: "Manufacturer", propModel: "Model", propSerial: "Serial number", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Kind", propUserName: "Custom name", propOriginalDeviceName: "Name from the integration",
   propKind: "Kind", propKindChild: "Child device", propParent: "Parent device", propCleanupBlock: "Cleanup blocked", propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
-  propMoreEntities: "… and {count} more (see relations)", propNoEntities: "This device has no entities.",
+  propNoEntities: "This device has no entities.",
   by_user: "User", by_integration: "Integration", by_config_entry: "Integration entry (disabled)", by_device: "Device (disabled)", by_hass: "Home Assistant",
   cat_config: "Configuration", cat_diagnostic: "Diagnostic", type_service: "Service (not a physical device)",
 });
@@ -1115,7 +1115,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.fflow{padding:6px 14px 12px}.fstep{margin:6px 0;padding:8px 10px;border:1px solid var(--hk-border);border-left:3px solid var(--hk-blue);border-radius:8px;background:var(--hk-surface)}.fstep.broken{border-left-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 6%,var(--hk-surface))}.fstep>summary{cursor:pointer;list-style-position:inside}.fhead{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - 20px);vertical-align:middle}.fhead ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.ffacts{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fpath{margin-left:auto;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.fkids{margin:8px 0 2px 14px;padding-left:10px;border-left:1px dashed var(--hk-border)}.fgroup>small{display:block;margin:6px 0 2px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(10px*var(--hk-fs,1))}.fbranch{margin:6px 0}.chip.flowref{cursor:pointer;padding:2px 8px;font-size:calc(12px*var(--hk-fs,1))}.chip.flowref.missing{border-color:var(--hk-red,#b3261e);color:var(--hk-red,#b3261e);cursor:default}.listtools{display:flex;gap:8px;justify-content:flex-end;padding:0 14px 10px}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;gap:6px;min-width:180px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:8px;align-items:center;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){.tablewrap.lt,.tablewrap.inv{max-height:calc(100vh - 140px)}.tablewrap.lt thead th,.tablewrap.inv thead th{position:sticky;top:0;z-index:2;background:var(--hk-surface)}}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.fflow{padding:6px 14px 12px}.fstep{margin:6px 0;padding:8px 10px;border:1px solid var(--hk-border);border-left:3px solid var(--hk-blue);border-radius:8px;background:var(--hk-surface)}.fstep.broken{border-left-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 6%,var(--hk-surface))}.fstep>summary{cursor:pointer;list-style-position:inside}.fhead{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - 20px);vertical-align:middle}.fhead ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.ffacts{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fpath{margin-left:auto;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.fkids{margin:8px 0 2px 14px;padding-left:10px;border-left:1px dashed var(--hk-border)}.fgroup>small{display:block;margin:6px 0 2px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(10px*var(--hk-fs,1))}.fbranch{margin:6px 0}.chip.flowref{cursor:pointer;padding:2px 8px;font-size:calc(12px*var(--hk-fs,1))}.chip.flowref.missing{border-color:var(--hk-red,#b3261e);color:var(--hk-red,#b3261e);cursor:default}.listtools{display:flex;gap:8px;justify-content:flex-end;padding:0 14px 10px}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;gap:6px;min-width:180px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:8px;align-items:center;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){}.dense .tablewrap td{padding-top:4px;padding-bottom:4px}.dense .tablewrap .namecell .id{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}
@@ -1124,7 +1124,7 @@ class StylesMixin {
       .setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.setrow .btn{justify-self:start}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
       @media(max-width:700px){.setrow{grid-template-columns:1fr}}
       .row,.btn,.card,.chip,.nav,.dirbtn{transition:background-color .15s ease,border-color .15s ease,color .15s ease}.bar i{transition:width .4s ease}@keyframes hk-spin{to{transform:rotate(360deg)}}.loading ha-icon,.btn[disabled] ha-icon{animation:hk-spin 1s linear infinite}
-      .tablewrap{overflow:auto}table{border-collapse:collapse;width:100%}th{text-align:left;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;background:var(--hk-soft);cursor:pointer;white-space:nowrap}.thbtn{padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}td{padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}tbody tr{cursor:pointer}tbody tr:hover{background:var(--hk-soft)}
+      .tablewrap{overflow-x:auto;overflow-y:visible}table{border-collapse:collapse;width:100%}th{text-align:left;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;background:var(--hk-soft);cursor:pointer;white-space:nowrap}.thbtn{padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}td{padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}tbody tr{cursor:pointer}tbody tr:hover{background:var(--hk-soft)}
       .object{display:flex;align-items:center;gap:11px;min-width:260px}.object .tile{width:34px;height:34px}.object strong{display:block;font-weight:600}.id{display:block;color:var(--hk-muted);font-family:ui-monospace,SFMono-Regular,monospace;font-size:calc(11px*var(--hk-fs,1));margin-top:2px;max-width:390px;overflow:hidden;text-overflow:ellipsis}
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
       .chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue-text);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
@@ -2515,12 +2515,13 @@ class CleanupMixin {
     const purges = this.purges || [];
     if (!purges.length) return "";
     const me = this._hass?.user?.id;
-    const rows = purges.slice(0, 20).map(p => {
+    const purgeRows = purges.map(p => {
       const what = this.t("purgeEntry", { removed: this.formatNumber(p.removed.length), skipped: this.formatNumber(p.skipped.length) });
       const who = p.by && p.by === me ? this.t("purgeByYou") : p.by ? this.t("purgeByOther") : "";
       const parts = [this.formatDate(p.at), what, p.states ? this.t("purgeWithStates") : "", p.backup ? this.t("purgeBackup", { job: p.backup.job_id || "—" }) : this.t("purgeNoBackup"), who, p.error ? this.t("purgeError", { error: p.error }) : ""];
       return `<div class="row"><span class="tile ${p.error ? "warn" : "mute"}"><ha-icon icon="mdi:database-remove-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(p.removed.slice(0, 3).join(", ") + (p.removed.length > 3 ? ` +${p.removed.length - 3}` : "") || this.t("purgeNothing"))}</strong><small>${parts.filter(Boolean).map(x => this.esc(x)).join(" · ")}</small></span></div>`;
-    }).join("");
+    });
+    const pg = this.paginate("purgejournal", purgeRows), rows = pg.rows.join("") + pg.footer;
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("purgeJournal")} (${purges.length})</h2><p>${this.t("purgeJournalHint")}</p></div></div>${rows}</div>`;
   }
 
@@ -2783,7 +2784,7 @@ class CleanupMixin {
       return `<section class="panel" data-plan-card data-plan-idle><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill mute">${this.t("plan_status_dry_run")}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
         <div class="outcome warn" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><span><strong>${this.t("wzIdleTitle")}</strong><small>${this.esc(why)}</small></span></div>${rowList.join("")}${this.reportBlock(plan)}</section>`;
     }
-    const rows = this.planRowsShown(rowList);
+    const rows = this.planRowsShown(plan, rowList);
     const summary = `<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>`;
     const flow = `<details class="rowdetails wzflow"><summary>${this.t("wzFlow")}</summary>${this.planStepper(plan, Boolean(conf))}</details>`;
     const body = stage === 0 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`
@@ -3752,15 +3753,14 @@ class DiagnosisMixin {
     const title = m.certain ? "impactCertain" : m.hits.length ? "impactProbable" : "impactNone";
     const text = m.certain ? this.t("impactCertainText", { count: m.certain }) : m.hits.length ? this.t("impactProbableText", { count: m.probable }) : this.t("impactNoneText");
     const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:alert-octagon" }[m.tone];
-    const LIMIT = 15;
-    const rows = m.hits.slice(0, LIMIT).map(h => {
+    const hitRows = m.hits.map(h => {
       const obj = this.findObject(h.key);
       const note = `${this.t(h.certain ? "certain" : "probable")}${h.places.length ? ` · ${h.places.slice(0, 2).join(", ")}` : ""}`;
       return `<button class="row rel" data-object="${this.esc(h.key)}">${this.tile(h.key.split(":")[0], h.certain ? "red" : "warn")}<span class="row-text"><strong>${this.esc(obj?.name || h.key.split(":").slice(1).join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : ""}</button>`;
-    }).join("");
-    const more = m.hits.length > LIMIT ? `<p class="factnote">${this.t("moreItems", { count: m.hits.length - LIMIT })}</p>` : "";
+    });
+    const hitPage = this.paginate(`impact-${key}`, hitRows), rows = hitPage.rows.join("") + hitPage.footer;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("impactTitle")}</h2><p>${this.t("impactSubtitle")}</p></div></div>
-      <div class="diagcard"><div class="cause ${m.tone}"><ha-icon icon="${icon}"></ha-icon><div><strong>${this.t(title)}</strong><p>${this.esc(text)}</p></div></div></div>${rows}${more}
+      <div class="diagcard"><div class="cause ${m.tone}"><ha-icon icon="${icon}"></ha-icon><div><strong>${this.t(title)}</strong><p>${this.esc(text)}</p></div></div></div>${rows}
       ${item.object_type === "entity" && item.has_statistics ? `<p class="factnote">${this.t("statsNote")}</p>` : ""}
       <p class="factnote">${m.related ? this.t("impactScope", { count: m.related }) : this.t("impactScopeOne")} ${this.t("impactLimits")}</p></section>`;
   }
@@ -3847,11 +3847,11 @@ class DiagnosisMixin {
       const text = `${this.tile(obj?.object_type || type, obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : "red")}<span class="row-text"><strong>${this.esc(obj?.name || rest.join(":"))}</strong><small>${this.esc(note)}</small></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}`;
       return obj ? `<button class="row rel" data-object="${this.esc(other)}">${text}</button>` : `<div class="row rel">${text}</div>`;
     };
-    // From 26 entries on a group gets a search box; a search lists up to 100 hits instead of the first 25.
+    // From 26 entries on a group gets a search box; the entries come in pages.
     const body = groups.map(([title, list], i) => {
       const found = this.searchList(`rel-${i}`, list, x => `${this.findObject(x.other)?.name || ""} ${x.other} ${x.label}`, LIMIT + 1);
-      const cap = found.rows.length !== list.length ? 100 : LIMIT;
-      return `<div class="sectionlabel">${title} (${list.length})</div>${found.bar}${found.none}${found.rows.slice(0, cap).map(row).join("")}${found.rows.length > cap ? `<p class="factnote">${this.t("moreItems", { count: found.rows.length - cap })}</p>` : ""}`;
+      const page = this.paginate(`relp-${key}-${i}`, found.rows);
+      return `<div class="sectionlabel">${title} (${list.length})</div>${found.bar}${found.none}${page.rows.map(row).join("")}${page.footer}`
     }).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${body || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
   }
@@ -4054,9 +4054,9 @@ class PropertiesMixin {
       [t("propConfigUrl"), /^https?:\/\//i.test(item.configuration_url || "") ? `<a href="${this.esc(item.configuration_url)}" target="_blank" rel="noopener noreferrer">${this.esc(item.configuration_url)}</a>` : this.esc(item.configuration_url || "")],
     ]);
     const members = this.data.objects.filter(o => o.object_type === "entity" && o.device_id === item.object_id).sort((a, b) => a.name.localeCompare(b.name));
-    const LIMIT = 25;
-    const memberRows = members.slice(0, LIMIT).map(m => `<button class="row rel" data-object="entity:${this.esc(m.object_id)}">${this.tile("entity", this.tone(m.status) === "ok" ? "" : this.tone(m.status))}<span class="row-text"><strong>${this.esc(m.name)}</strong><small>${this.esc(m.object_id)}${m.state !== null && m.state !== undefined ? ` · ${this.esc(m.state)}${m.unit ? ` ${this.esc(m.unit)}` : ""}` : ""}</small></span>${this.pill(m.status)}</button>`).join("");
-    const entities = `<section class="panel wide"><div class="panelhead"><h2><ha-icon icon="mdi:shape-outline" style="--mdc-icon-size:18px;vertical-align:-3px;margin-right:6px;color:var(--hk-muted)"></ha-icon>${t("propEntities")} (${members.length})</h2></div>${memberRows || `<div class="emptymsg">${t("propNoEntities")}</div>`}${members.length > LIMIT ? `<p class="factnote">${this.t("propMoreEntities", { count: members.length - LIMIT })}</p>` : ""}</section>`;
+    const memberList = members.map(m => `<button class="row rel" data-object="entity:${this.esc(m.object_id)}">${this.tile("entity", this.tone(m.status) === "ok" ? "" : this.tone(m.status))}<span class="row-text"><strong>${this.esc(m.name)}</strong><small>${this.esc(m.object_id)}${m.state !== null && m.state !== undefined ? ` · ${this.esc(m.state)}${m.unit ? ` ${this.esc(m.unit)}` : ""}` : ""}</small></span>${this.pill(m.status)}</button>`);
+    const memberPage = this.paginate(`members-${item.object_id}`, memberList), memberRows = memberPage.rows.join("") + memberPage.footer;
+    const entities = `<section class="panel wide"><div class="panelhead"><h2><ha-icon icon="mdi:shape-outline" style="--mdc-icon-size:18px;vertical-align:-3px;margin-right:6px;color:var(--hk-muted)"></ha-icon>${t("propEntities")} (${members.length})</h2></div>${memberRows || `<div class="emptymsg">${t("propNoEntities")}</div>`}</section>`;
     const technical = this.propCard(t("propTechnical"), "mdi:identifier", [
       [t("propDeviceId"), this.propCode(item.object_id)],
       [t("propIdentifiers"), (item.identifiers || []).map(v => this.propCode(v)).join("<br>")],
@@ -4113,7 +4113,7 @@ class MaintenanceMixin {
     const rows = [...(this.costs?.entities || [])];
     const recent = this.costSort !== "total";
     rows.sort((a, b) => (recent ? (b.states_24h ?? 0) - (a.states_24h ?? 0) || (b.states_7d ?? 0) - (a.states_7d ?? 0) : 0) || b.states - a.states || a.entity_id.localeCompare(b.entity_id));
-    return rows.slice(0, 40);
+    return rows;
   }
 
   suggestedExclusions() { return (this.costs?.entities || []).filter(e => e.suggest_exclude && !e.excluded).map(e => e.entity_id); }
@@ -4130,7 +4130,7 @@ class MaintenanceMixin {
     const took = c.computed_at && (c.stale || c.age_seconds >= 60) ? this.tookNote(c) : c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
     const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) }) + took;
     const sortButtons = ["recent", "total"].map(key => `<button class="btn ${this.costSort === key ? "primary" : ""}" data-cost-sort="${key}" aria-pressed="${this.costSort === key}">${this.t(key === "recent" ? "recorderSortRecent" : "recorderSortTotal")}</button>`).join("");
-    const rows = this.costRanking().map(e => {
+    const costRows = this.costRanking().map(e => {
       const obj = this.findObject(`entity:${e.entity_id}`);
       const tags = [
         `<span class="pill ${e.used ? "ok" : "mute"}">${e.used ? this.t("recorderUsed", { count: e.used }) : this.t("recorderUnused")}</span>`,
@@ -4140,7 +4140,8 @@ class MaintenanceMixin {
       const inner = `<span class="tile ${e.suggest_exclude && !e.excluded ? "warn" : "mute"}"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong><small>${this.esc(e.entity_id)} · ${this.formatNumber(e.states)} · ${this.t("recorderWindows", { day: this.formatNumber(e.states_24h ?? 0), week: this.formatNumber(e.states_7d ?? 0), avg: this.formatNumber(e.per_day_avg ?? e.per_day) })} · ${this.t("recorderShare", { share: e.share })}</small><span class="bar" style="margin-top:4px"><i style="width:${Math.min(100, Math.round(e.share))}%"></i></span></span><span style="display:flex;gap:6px;flex-wrap:wrap">${tags}</span>`;
       const open = obj ? `<button class="row rel" data-object="${this.esc(`entity:${e.entity_id}`)}">${inner}</button>` : `<div class="row rel">${inner}</div>`;
       return `<div class="rowwrap">${this.excludeBox(e.entity_id)}${open}</div>`;
-    }).join("");
+    });
+    const costPage = this.paginate("costs", costRows), rows = costPage.rows.join("") + costPage.footer;
     const statRows = (c.statistics || []).slice(0, 10).map(s => `<div class="row rel"><span class="tile mute"><ha-icon icon="mdi:chart-line"></ha-icon></span><span class="row-text"><strong>${this.esc(s.statistic_id)}</strong><small>${this.formatNumber(s.rows)}</small></span></div>`).join("");
     const snippet = this.excludeCard(this.suggestedExclusions());
     return `<div class="panel">${head(`${sortButtons}<button class="btn" data-costs-load data-refresh>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.esc(summary)}</p>${snippet}${rows}${statRows ? `<div class="panelhead" style="border-top:1px solid var(--hk-border)"><div><h3>${this.t("recorderStats")}</h3></div></div>${statRows}` : ""}</div>`;
@@ -4302,8 +4303,9 @@ class BackupMixin {
 
   bhBackups(list) {
     if (!list?.length) return "";
-    const rows = list.map(b => `<tr><td>${this.formatDate(b.date)}</td><td>${this.formatBytes(b.size)}</td><td>${this.bhList(b.agents)}</td><td>${this.t(b.protected ? "bhYes" : "bhNo")}</td></tr>`).join("");
-    return `<div class="sectionlabel">${this.t("bhListTitle")}</div><div class="tablewrap"><table><thead><tr><th>${this.t("bhColDate")}</th><th>${this.t("bhColSize")}</th><th>${this.t("bhColTargets")}</th><th>${this.t("bhColProtected")}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    const backupRows = list.map(b => `<tr><td>${this.formatDate(b.date)}</td><td>${this.formatBytes(b.size)}</td><td>${this.bhList(b.agents)}</td><td>${this.t(b.protected ? "bhYes" : "bhNo")}</td></tr>`);
+    const pg = this.paginate("bhbackups", backupRows), rows = pg.rows.join("");
+    return `<div class="sectionlabel">${this.t("bhListTitle")}</div><div class="tablewrap"><table><thead><tr><th>${this.t("bhColDate")}</th><th>${this.t("bhColSize")}</th><th>${this.t("bhColTargets")}</th><th>${this.t("bhColProtected")}</th></tr></thead><tbody>${rows}</tbody></table></div>${pg.footer}`;
   }
 
   backupCard() {
@@ -4850,10 +4852,12 @@ class DbHealthMixin {
   // What lies behind a finding: the periods all series lack, and the series with their own and their shared hours.
   dbFindingExtra(f) {
     if (f.kind !== "missing_hours" || !(f.gaps?.length || f.series?.length)) return "";
-    const gaps = (f.gaps || []).map(g => `<div class="row rel"><span class="tile ${g.cause === "restart" ? "mute" : "warn"}"><ha-icon icon="${g.cause === "restart" ? "mdi:restart" : "mdi:database-clock-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(new Date(g.start * 1000).toISOString()))} – ${this.esc(this.formatDate(new Date(g.end * 1000).toISOString()))}</strong><small>${this.t("dbMissingHours", { n: this.formatNumber(g.hours) })} · ${this.t(`dbGapCause_${g.cause}`)}</small></span></div>`).join("");
-    const rows = f.series.map(s => { const obj = this.findObject(`entity:${s.statistic_id}`); const name = this.esc(s.name || s.statistic_id); return `<tr${obj ? ` data-object="${this.esc(`entity:${s.statistic_id}`)}" tabindex="0" role="button"` : ' class="static"'}><td>${this.nameCell(s.name || s.statistic_id, s.statistic_id, "span")}</td><td data-label="${this.esc(this.t("dbColOwn"))}">${this.formatNumber(s.own)}</td><td data-label="${this.esc(this.t("dbColShared"))}">${this.formatNumber(s.shared)}</td><td data-label="${this.esc(this.t("dbColMissing"))}">${this.formatNumber(s.missing)}</td></tr>`; }).join("");
+    const gapRows = (f.gaps || []).map(g => `<div class="row rel"><span class="tile ${g.cause === "restart" ? "mute" : "warn"}"><ha-icon icon="${g.cause === "restart" ? "mdi:restart" : "mdi:database-clock-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(new Date(g.start * 1000).toISOString()))} – ${this.esc(this.formatDate(new Date(g.end * 1000).toISOString()))}</strong><small>${this.t("dbMissingHours", { n: this.formatNumber(g.hours) })} · ${this.t(`dbGapCause_${g.cause}`)}</small></span></div>`);
+    const gapPage = this.paginate("dbgaps", gapRows), gaps = gapPage.rows.join("") + gapPage.footer;
+    const seriesRows = f.series.map(s => { const obj = this.findObject(`entity:${s.statistic_id}`); const name = this.esc(s.name || s.statistic_id); return `<tr${obj ? ` data-object="${this.esc(`entity:${s.statistic_id}`)}" tabindex="0" role="button"` : ' class="static"'}><td>${this.nameCell(s.name || s.statistic_id, s.statistic_id, "span")}</td><td data-label="${this.esc(this.t("dbColOwn"))}">${this.formatNumber(s.own)}</td><td data-label="${this.esc(this.t("dbColShared"))}">${this.formatNumber(s.shared)}</td><td data-label="${this.esc(this.t("dbColMissing"))}">${this.formatNumber(s.missing)}</td></tr>`; });
+    const seriesPage = this.paginate("dbseries", seriesRows), rows = seriesPage.rows.join("");
     const more = f.series_total > f.series.length ? `<p class="factnote">${this.t("relUnstableMore", { shown: f.series.length, total: f.series_total })}</p>` : "";
-    const table = rows ? `<div class="tablewrap lt"><table><thead><tr><th scope="col">${this.t("dbColSeries")}</th><th scope="col">${this.t("dbColOwn")}</th><th scope="col">${this.t("dbColShared")}</th><th scope="col">${this.t("dbColMissing")}</th></tr></thead><tbody>${rows}</tbody></table></div>${more}` : "";
+    const table = rows ? `<div class="tablewrap lt"><table><thead><tr><th scope="col">${this.t("dbColSeries")}</th><th scope="col">${this.t("dbColOwn")}</th><th scope="col">${this.t("dbColShared")}</th><th scope="col">${this.t("dbColMissing")}</th></tr></thead><tbody>${rows}</tbody></table></div>${seriesPage.footer}${more}` : "";
     return `<details class="howto dbextra"><summary>${this.t("dbDetails", { gaps: this.formatNumber(f.gaps_total || 0), series: this.formatNumber(f.series_total) })}</summary>${f.gaps?.length ? `<div class="sectionlabel">${this.t("dbGapsTitle")}</div>${gaps}` : ""}<div class="sectionlabel">${this.t("dbSeriesTitle")}</div>${table}</details>`;
   }
 
@@ -5462,7 +5466,8 @@ class LifecycleMixin {
     this.ensureRemoved();
     const head = `<div class="panelhead"><div><h2>${this.t("lifeRemovedTitle")}</h2><p>${this.t("lifeRemovedHint")}</p></div></div>`;
     if (!this.removed) return `<div class="panel">${head}${this.skeleton("loading")}</div>`;
-    const rows = this.removed.map(d => `<div class="row rel"><span class="tile red"><ha-icon icon="mdi:delete-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(d.name || d.object_id)}</strong><small>${this.esc(this.t(d.kind === "forget_device" ? "lifeForgotten" : "life_removed"))} · ${this.esc(this.formatDate(d.at))}${d.note ? ` · ${this.esc(d.note)}` : ""}</small></span></div>`).join("");
+    const removedRows = this.removed.map(d => `<div class="row rel"><span class="tile red"><ha-icon icon="mdi:delete-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(d.name || d.object_id)}</strong><small>${this.esc(this.t(d.kind === "forget_device" ? "lifeForgotten" : "life_removed"))} · ${this.esc(this.formatDate(d.at))}${d.note ? ` · ${this.esc(d.note)}` : ""}</small></span></div>`);
+    const pg = this.paginate("removed", removedRows), rows = pg.rows.join("") + pg.footer;
     return `<div class="panel">${head}${rows || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("lifeRemovedNone")}</div>`}</div>`;
   }
 }
@@ -5607,11 +5612,12 @@ class BlueprintsMixin {
     }).join(", ") + (b.count > (b.users || []).length ? ` +${b.count - b.users.length}` : "");
     const row = (tone, icon, title, sub) => `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${sub}</small></span></div>`;
     const blocks = this.blueprints.domains.map(d => {
-      const rows = [
+      const all = [
         ...d.missing.map(b => row("red", "mdi:file-question-outline", b.path, `${this.t("bpMissing")} · ${users(b)}`)),
         ...d.broken.map(b => row("red", "mdi:file-alert-outline", b.path, `${this.t("bpBroken")}${b.count ? ` · ${users(b)}` : ""}`)),
         ...d.unused.map(b => row("mute", "mdi:file-hidden", b.name === b.path ? b.path : b.name, `${this.t("bpUnused")} · ${this.esc(b.path)}`)),
-      ].join("");
+      ];
+      const pg = this.paginate(`bp-${d.domain}`, all), rows = pg.rows.join("") + pg.footer;
       return `<div class="sectionlabel">${this.t(d.domain)} (${this.formatNumber(d.total)} ${this.t("bpFiles")})</div>${rows || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("bpNone")}</div>`}`;
     }).join("");
     return `<div class="panel">${head}${blocks}</div>`;
@@ -6991,7 +6997,7 @@ class CounterMixin {
     else if (s && !s.available) body = `<div class="emptymsg">${this.t("counterNoRecorder")}</div>`;
     else if (s?.busy) body = `<p class="factnote">${this.t("relBusy")}</p>`;
     else if (s) {
-      const items = s.items.map(item => {
+      const itemRows = s.items.map(item => {
         const measure = item.kind === "measurement", n3 = v => this.formatNumber(Math.round(v * 1000) / 1000);
         const lines = item.findings.map(f => {
           const extreme = Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low;
@@ -7000,7 +7006,8 @@ class CounterMixin {
         const action = measure ? `<button class="btn primary" data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}">${this.t("rangeTake")}</button>`
           : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? "disabled" : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterFix")}</button>`;
         return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(item.statistic_id)}</small>${lines}</span>${action}</div>`;
-      }).join("");
+      });
+      const pg = this.paginate("counterfound", itemRows), items = pg.rows.join("") + pg.footer;
       body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
     }
     if (!s && !this.counterError && !this.counterLoading) body = `<div class="emptymsg info"><ha-icon icon="mdi:magnify-scan"></ha-icon><strong>${this.t("counterNotChecked")}</strong>${this.t("counterNotCheckedSub")}</div>`;
@@ -7172,7 +7179,8 @@ class FindingStatusMixin {
   fixedCard() {
     const fixed = this.fixedLately();
     if (!fixed.length) return "";
-    const rows = fixed.slice(0, 20).map(([id, at]) => `<div class="row"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`entity:${id}`)?.name || id)}</strong><small>${this.esc(id)} · ${this.formatDate(new Date(at).toISOString())}</small></span></div>`).join("");
+    const fixedRows = fixed.map(([id, at]) => `<div class="row"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`entity:${id}`)?.name || id)}</strong><small>${this.esc(id)} · ${this.formatDate(new Date(at).toISOString())}</small></span></div>`);
+    const pg = this.paginate("fixedlately", fixedRows), rows = pg.rows.join("") + pg.footer;
     return this.fold("fixed_lately", { tone: "ok", title: this.t("fixedTitle", { days: FIXED_DAYS }), pill: this.formatNumber(fixed.length) }, rows, false);
   }
 
@@ -7670,7 +7678,7 @@ class ExcludeMixin {
   excludeCard(suggested) {
     this._exSuggested = suggested;
     const n = this.excludeSel.size;
-    const body = n ? `<pre class="code">${this.esc(this.excludeSnippet())}</pre>` : `<p class="factnote">${this.t("exEmpty")}</p>`;
+    const body = n ? `<pre class="code" style="max-height:none">${this.esc(this.excludeSnippet())}</pre>` : `<p class="factnote">${this.t("exEmpty")}</p>`;
     return `<div class="panel" style="margin:14px 16px"><div class="panelhead"><div><h3>${this.t("exTitle")}</h3><p>${this.t("exHint")}</p></div><div class="actions"><span class="factnote">${this.t("exCount", { count: n })}</span>${suggested.length ? `<button class="btn" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${n ? `<button class="btn" data-ex-clear>${this.t("exClear")}</button><button class="btn" data-copy-snippet>${this.snippetCopied ? this.t("recorderCopied") : this.t("recorderCopy")}</button>` : ""}</div></div>${body}</div>`;
   }
 
@@ -7690,14 +7698,12 @@ class ExcludeMixin {
 // Mixed into the panel in 99-register.js; the plan card itself is built in 18-cleanup.js.
 Object.assign(TEXT.de, {
   wzLabel: "Schritte des Plans", wzReview: "Prüfen", wzConfirm: "Bestätigen", wzRun: "Ausführen", wzResult: "Ergebnis",
-  wzFlow: "Ablauf im Detail", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück", wzMore: "… und {count} weitere", wzShowAll: "Alle zeigen", wzShowLess: "Weniger zeigen",
+  wzFlow: "Ablauf im Detail", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück",
 });
 Object.assign(TEXT.en, {
   wzLabel: "Steps of the plan", wzReview: "Review", wzConfirm: "Confirm", wzRun: "Run", wzResult: "Result",
-  wzFlow: "Flow in detail", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back", wzMore: "… and {count} more", wzShowAll: "Show all", wzShowLess: "Show less",
+  wzFlow: "Flow in detail", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back",
 });
-
-const PLAN_ROWS_SHOWN = 8; // rows of a long plan shown before "Show all"
 
 class PlanWizardMixin {
   // 0 review, 1 confirm, 2 run (also while the check afterwards is still pending), 3 result.
@@ -7714,12 +7720,10 @@ class PlanWizardMixin {
     return `<ol class="wz" aria-label="${this.esc(this.t("wzLabel"))}">${items}</ol>`;
   }
 
-  // A long plan shows its first rows; the rest is one click away.
-  planRowsShown(rowList) {
-    const long = rowList.length > PLAN_ROWS_SHOWN + 2;
-    const all = !long || this.planShowAll;
-    const more = long ? `<div class="setrow"><small style="margin:0">${all ? "" : this.t("wzMore", { count: rowList.length - PLAN_ROWS_SHOWN })}</small><button class="btn" data-plan-all>${this.t(all ? "wzShowLess" : "wzShowAll")}</button></div>` : "";
-    return (all ? rowList : rowList.slice(0, PLAN_ROWS_SHOWN)).join("") + more;
+  // The rows of a plan come in pages like every other long list.
+  planRowsShown(plan, rowList) {
+    const pg = this.paginate(`planrows-${plan.plan_id}`, rowList);
+    return pg.rows.join("") + pg.footer;
   }
 
   planProgressBar() {
@@ -7731,7 +7735,6 @@ class PlanWizardMixin {
 
   bindPlanWizard(root) {
     root.querySelector("[data-plan-back]")?.addEventListener("click", () => { this.confirmation = null; this.confirmWord = ""; this.render(); });
-    root.querySelector("[data-plan-all]")?.addEventListener("click", () => { this.planShowAll = !this.planShowAll; this.render(); });
   }
 }
 
@@ -7743,7 +7746,7 @@ Object.assign(TEXT.de, {
   xpSelTitle: "Was soll in den Export?", xpSelHint: "Wähle Entitäten aus dem Bestand. Schnellwahlen setzen mehrere Häkchen auf einmal.",
   xpQuickFiltered: "Aktuelles Filterergebnis ({n})", xpQuickShown: "Suchtreffer ({n})", xpQuickClear: "Leeren",
   xpPickArea: "Bereich …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "In den Entitäten suchen …",
-  xpSelected: "{n} ausgewählt", xpNeedOne: "Wähle mindestens eine Entität.", xpMoreHits: "{n} weitere Treffer; eine engere Suche zeigt sie.", xpNone: "Keine Treffer.", xpNoEntities: "Dazu gibt es keine Entitäten zum Exportieren.",
+  xpSelected: "{n} ausgewählt", xpNeedOne: "Wähle mindestens eine Entität.", xpNone: "Keine Treffer.", xpNoEntities: "Dazu gibt es keine Entitäten zum Exportieren.",
   xpFieldsTitle: "Welche Angaben?", xpFieldsHint: "Pro Gruppe ein Häkchen. Eine Voreinstellung setzt sie für dich.",
   xpPresetMin: "Minimal", xpPresetDoc: "Dokumentation", xpPresetState: "Mit Zuständen", xpMyTemplates: "Meine Vorlagen", xpTplDelete: "Vorlage „{name}“ löschen",
   xpGBasis: "Basis", xpGBasisD: "Entity-ID, Name, Domain, Status", xpGZuord: "Zuordnung", xpGZuordD: "Bereich, Gerät, Integration, Geräteklasse, Einheit",
@@ -7763,7 +7766,7 @@ Object.assign(TEXT.en, {
   xpSelTitle: "What goes into the export?", xpSelHint: "Pick entities from the inventory. Quick picks tick several at once.",
   xpQuickFiltered: "Current filter result ({n})", xpQuickShown: "Search hits ({n})", xpQuickClear: "Clear",
   xpPickArea: "Area …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "Search the entities …",
-  xpSelected: "{n} selected", xpNeedOne: "Pick at least one entity.", xpMoreHits: "{n} more hits; a narrower search shows them.", xpNone: "No hits.", xpNoEntities: "There are no entities to export for this.",
+  xpSelected: "{n} selected", xpNeedOne: "Pick at least one entity.", xpNone: "No hits.", xpNoEntities: "There are no entities to export for this.",
   xpFieldsTitle: "Which fields?", xpFieldsHint: "One tick per group. A preset sets them for you.",
   xpPresetMin: "Minimal", xpPresetDoc: "Documentation", xpPresetState: "With states", xpMyTemplates: "My templates", xpTplDelete: "Delete template “{name}”",
   xpGBasis: "Basics", xpGBasisD: "Entity ID, name, domain, status", xpGZuord: "Placement", xpGZuordD: "Area, device, integration, device class, unit",
@@ -7778,7 +7781,6 @@ Object.assign(TEXT.en, {
   xpCopy: "Copy", xpCopied: "Copied", xpDownload: "Download",
 });
 
-const XP_SHOWN = 100; // entities listed in the pick step
 const XP_PREVIEW_CHARS = 6000;
 const XP_TEMPLATES_KEY = "ha_housekeeper.export_templates";
 const XP_TEMPLATES_MAX = 10;
@@ -7948,13 +7950,13 @@ class ExportMixin {
     const options = (label, values) => `<option value="">${this.esc(label)}</option>${values.map(([v, text]) => `<option value="${this.esc(v)}">${this.esc(text)}</option>`).join("")}`;
     const byName = (a, b) => a[1].localeCompare(b[1]);
     const filtered = this.filtered().filter(o => o.object_type === "entity");
-    const rows = hits.slice(0, XP_SHOWN).map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}${this.areaName(o) ? ` · ${this.esc(this.areaName(o))}` : ""}</small></span></label>`).join("");
-    const more = hits.length > XP_SHOWN ? `<p class="factnote">${this.t("xpMoreHits", { n: this.formatNumber(hits.length - XP_SHOWN) })}</p>` : "";
+    const pickRows = hits.map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}${this.areaName(o) ? ` · ${this.esc(this.areaName(o))}` : ""}</small></span></label>`);
+    const pickPage = this.paginate("xppick", pickRows), rows = pickPage.rows.join("") + pickPage.footer;
     return `<h3>${this.t("xpSelTitle")}</h3><p class="factnote">${this.t("xpSelHint")}</p>
       <div class="chips"><button class="chip" data-xp-quick="filtered">${this.t("xpQuickFiltered", { n: this.formatNumber(filtered.length) })}</button>${q ? `<button class="chip" data-xp-quick="shown">${this.t("xpQuickShown", { n: this.formatNumber(hits.length) })}</button>` : ""}<button class="chip" data-xp-quick="clear">${this.t("xpQuickClear")}</button></div>
       <div class="filters"><select data-xp-add="area" aria-label="${this.esc(this.t("xpPickArea"))}">${options(this.t("xpPickArea"), [...areas].sort(byName))}</select><select data-xp-add="domain" aria-label="${this.esc(this.t("xpPickDomain"))}">${options(this.t("xpPickDomain"), [...domains].sort().map(d => [d, d]))}</select><select data-xp-add="platform" aria-label="${this.esc(this.t("xpPickPlatform"))}">${options(this.t("xpPickPlatform"), [...platforms].sort().map(p => [p, p]))}</select></div>
       <input type="search" data-xp-q value="${this.esc(x.q)}" placeholder="${this.esc(this.t("xpSearch"))}">
-      ${rows || `<div class="emptymsg">${this.t("xpNone")}</div>`}${more}`;
+      ${rows || `<div class="emptymsg">${this.t("xpNone")}</div>`}`;
   }
 
   xpFieldsStep() {

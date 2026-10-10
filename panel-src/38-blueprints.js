@@ -23,11 +23,12 @@ class BlueprintsMixin {
     }).join(", ") + (b.count > (b.users || []).length ? ` +${b.count - b.users.length}` : "");
     const row = (tone, icon, title, sub) => `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${sub}</small></span></div>`;
     const blocks = this.blueprints.domains.map(d => {
-      const rows = [
+      const all = [
         ...d.missing.map(b => row("red", "mdi:file-question-outline", b.path, `${this.t("bpMissing")} · ${users(b)}`)),
         ...d.broken.map(b => row("red", "mdi:file-alert-outline", b.path, `${this.t("bpBroken")}${b.count ? ` · ${users(b)}` : ""}`)),
         ...d.unused.map(b => row("mute", "mdi:file-hidden", b.name === b.path ? b.path : b.name, `${this.t("bpUnused")} · ${this.esc(b.path)}`)),
-      ].join("");
+      ];
+      const pg = this.paginate(`bp-${d.domain}`, all), rows = pg.rows.join("") + pg.footer;
       return `<div class="sectionlabel">${this.t(d.domain)} (${this.formatNumber(d.total)} ${this.t("bpFiles")})</div>${rows || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("bpNone")}</div>`}`;
     }).join("");
     return `<div class="panel">${head}${blocks}</div>`;

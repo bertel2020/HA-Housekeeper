@@ -51,7 +51,8 @@ class LifecycleMixin {
     this.ensureRemoved();
     const head = `<div class="panelhead"><div><h2>${this.t("lifeRemovedTitle")}</h2><p>${this.t("lifeRemovedHint")}</p></div></div>`;
     if (!this.removed) return `<div class="panel">${head}${this.skeleton("loading")}</div>`;
-    const rows = this.removed.map(d => `<div class="row rel"><span class="tile red"><ha-icon icon="mdi:delete-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(d.name || d.object_id)}</strong><small>${this.esc(this.t(d.kind === "forget_device" ? "lifeForgotten" : "life_removed"))} · ${this.esc(this.formatDate(d.at))}${d.note ? ` · ${this.esc(d.note)}` : ""}</small></span></div>`).join("");
+    const removedRows = this.removed.map(d => `<div class="row rel"><span class="tile red"><ha-icon icon="mdi:delete-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(d.name || d.object_id)}</strong><small>${this.esc(this.t(d.kind === "forget_device" ? "lifeForgotten" : "life_removed"))} · ${this.esc(this.formatDate(d.at))}${d.note ? ` · ${this.esc(d.note)}` : ""}</small></span></div>`);
+    const pg = this.paginate("removed", removedRows), rows = pg.rows.join("") + pg.footer;
     return `<div class="panel">${head}${rows || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("lifeRemovedNone")}</div>`}</div>`;
   }
 }
