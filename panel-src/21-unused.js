@@ -162,24 +162,27 @@ class UnusedMixin {
   purgeBar() {
     if (!this.data.meta.recorder_available) return "";
     const n = this.purgeSel.size, r = this.purgeResult;
-    const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeError", { reason: this.t(`purgeReason_${r.error}`) }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
+    const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
+    const over = n > MAX_PLAN_ACTIONS;
     const open = this.purgeOpen && n ? `<div class="panel" role="group" aria-label="${this.esc(this.t("purgeTitle"))}"><div class="pad">
       <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
+      ${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}
       <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
       <div class="setrow planfoot"><small style="margin:0">${this.t("purgePlanHint")}</small>
-      <button class="btn accent" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")} (${n})</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
-    return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="toolgap"></span><button class="btn dangersoft" data-purge-open ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpen")}</button></div>${open}`;
+      <button class="btn accent" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")} (${Math.min(n, MAX_PLAN_ACTIONS)})</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
+    return `${result}<div class="toolbar"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="toolgap"></span><button class="btn dangersoft" data-purge-open ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button></div>${open}`;
   }
 
   async purgeRun() {
     // The deletion is an ordinary plan: preview, confirmation of each ID, backup, verification. It is made here and run under Cleanup.
     this.purgeBusy = true; this.purgeResult = null; this.render();
     try {
-      const actions = [...this.purgeSel].map(object_id => ({ kind: "purge_statistics", object_id, states: this.purgeStates }));
+      const chosen = [...this.purgeSel], now = chosen.slice(0, MAX_PLAN_ACTIONS);
+      const actions = now.map(object_id => ({ kind: "purge_statistics", object_id, states: this.purgeStates }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
-      this.purgeSel = new Set(); this.purgeOpen = false; this.purgeWord = "";
+      this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); this.purgeOpen = false; this._scrollPlan = true; this.purgeWord = "";
       this.view = "cleanup"; this.pages = {};
     } catch (err) { this.purgeResult = { removed: [], skipped: [], error: "failed", detail: err?.message || String(err) }; }
     this.purgeBusy = false;

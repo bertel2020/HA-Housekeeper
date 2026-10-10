@@ -206,7 +206,7 @@ class CleanupMixin {
     const { plan_id, token } = this.confirmation;
     try {
       await this._hass.callWS({ type: "ha_housekeeper/plan_execute", plan_id, token });
-      this.confirmation = null; this.cleanupError = "";
+      this.confirmation = null; this.cleanupError = ""; this._scrollPlan = true;
       this.pollPlan(plan_id);
     } catch (err) { this.cleanupError = this.errText(err); this.confirmation = null; }
     this.render();
