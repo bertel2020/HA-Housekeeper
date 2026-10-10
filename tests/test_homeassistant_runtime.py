@@ -640,6 +640,37 @@ async def test_a_refused_unload_keeps_the_runtime_objects(hass: HomeAssistant) -
     assert "ha-housekeeper" in hass.data["frontend_panels"]
 
 
+async def test_an_unload_stops_a_running_plan_and_writes_the_journal_after_it(
+    hass: HomeAssistant,
+) -> None:
+    """A reload in the middle of a plan lets the current step finish before the journal is saved."""
+    import asyncio
+    from unittest.mock import AsyncMock
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+    runner = hass.data[DOMAIN]["scanner"].cleanup
+    order: list[str] = []
+
+    async def step() -> None:
+        while not runner._cancel:
+            await asyncio.sleep(0)
+        order.append("stopped")
+        runner.status["running"] = False
+
+    runner.status["running"] = True
+    runner._task = hass.async_create_task(step())
+    flush = AsyncMock(side_effect=lambda: order.append("flushed"))
+    with patch.object(runner, "flush_journal", flush):
+        assert await hass.config_entries.async_unload(entry.entry_id)
+
+    assert order == ["stopped", "flushed"]
+
+
 async def test_preliminary_scan_during_warmup_changes_no_stored_state(
     hass: HomeAssistant,
 ) -> None:
