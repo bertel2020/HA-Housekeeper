@@ -18,6 +18,7 @@ from custom_components.ha_housekeeper import storms as module  # noqa: E402
 from custom_components.ha_housekeeper.storms import (  # noqa: E402
     evaluate_storms,
     followers,
+    mark_excluded,
     storms,
 )
 
@@ -280,3 +281,18 @@ async def test_the_last_load_reply_is_kept_and_handed_out_while_the_recorder_is_
     finally:
         lock.release()
     assert held["stale"] is True and held["busy"] is False
+
+
+async def test_mark_excluded_follows_the_recorder_filter(hass: HomeAssistant, monkeypatch) -> None:
+    """A row the filter rejects is marked; without a filter the rows stay as they are."""
+    result = {"entities": [{"entity_id": "sensor.out"}, {"entity_id": "sensor.in"}]}
+
+    class Instance:
+        entity_filter = staticmethod(lambda entity_id: entity_id != "sensor.out")
+
+    monkeypatch.setattr("homeassistant.components.recorder.get_instance", lambda _hass: Instance())
+    marked = mark_excluded(hass, result)
+    assert [row["excluded"] for row in marked["entities"]] == [True, False]
+    assert "excluded" not in result["entities"][0], "the kept reply is not changed"
+    Instance.entity_filter = None
+    assert mark_excluded(hass, result) is result

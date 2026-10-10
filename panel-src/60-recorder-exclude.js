@@ -1,8 +1,10 @@
 // Pick entities in the recorder views and get the exclusion for configuration.yaml; Housekeeper never writes it.
 // Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  exTitle: "Vorschlag für die configuration.yaml", exHint: "Häkchen in der Liste setzen; der Block baut sich daraus. Das ändert nichts in Home Assistant, es ist nur Text zum Einfügen. Ausgeschlossene Entitäten haben danach keinen Verlauf mehr.",
-  exCount: "{count} ausgewählt", exEmpty: "Noch nichts ausgewählt.", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Auswahl leeren",
+  exclHint: "Das ändert nichts in Home Assistant, es ist nur Text zum Einfügen. Ausgeschlossene Entitäten haben danach keinen Verlauf mehr.",
+  exCount: "{count} ausgewählt", exNone: "Nichts ausgewählt", exNoneSug: "Nichts ausgewählt · {count} Vorschläge", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Leeren", exCopy: "YAML kopieren",
+  exStepsTitle: "So geht es weiter", exStep1: "Einfügen in die configuration.yaml. Gibt es dort schon einen recorder:-Abschnitt, trage nur die Zeilen unter entities: in dessen exclude:-Liste ein, nicht noch einmal recorder:.",
+  exStep2: "Prüfen unter Entwicklerwerkzeuge → YAML → Konfiguration prüfen.", exStep3: "Neu starten. Der Recorder liest den Ausschluss nur beim Start. Danach steht die Entität hier als „bereits ausgeschlossen“.",
   exSuggest: "Ausschluss möglich", exHasStats: "Statistik vorhanden", exUsedBy: "{count} Verwendungen",
   trimTitle: "Alten Verlauf der Auswahl kürzen", trimHint: "Der Ausschluss wirkt nur für neue Daten. Hier löschst du die bereits gespeicherten Zustände der Auswahl, die älter sind als die gewählte Zeit. Statistiken bleiben. Daraus wird ein Plan unter Aufräumen: Vorschau mit Zeilenzahl, Bestätigung, Backup, Nachprüfung.",
   trimKeep: "Behalten", trimDays: "{days} Tage", trimPreview: "Plan für das Kürzen erstellen", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
@@ -11,8 +13,10 @@ Object.assign(TEXT.de, {
   confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an, einschließlich der Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
 });
 Object.assign(TEXT.en, {
-  exTitle: "Suggestion for configuration.yaml", exHint: "Tick entities in the list; the block builds from them. This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
-  exCount: "{count} selected", exEmpty: "Nothing selected yet.", exPickSuggested: "Select all suggested", exClear: "Clear selection",
+  exclHint: "This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
+  exCount: "{count} selected", exNone: "Nothing selected", exNoneSug: "Nothing selected · {count} suggestions", exPickSuggested: "Select all suggested", exClear: "Clear", exCopy: "Copy YAML",
+  exStepsTitle: "What to do next", exStep1: "Paste it into configuration.yaml. If there is a recorder: section already, add only the lines under entities: to its exclude: list, not recorder: again.",
+  exStep2: "Check under Developer tools → YAML → Check configuration.", exStep3: "Restart. The recorder reads the exclusion only at start. Afterwards the entity shows here as “already excluded”.",
   exSuggest: "can be excluded", exHasStats: "has statistics", exUsedBy: "{count} uses",
   trimTitle: "Trim the old history of the selection", trimHint: "The exclusion only works for new data. Here you delete the states already stored for the selection that are older than the chosen time. Statistics stay. This becomes a plan under Cleanup: preview with row count, confirmation, backup, check afterwards.",
   trimKeep: "Keep", trimDays: "{days} days", trimPreview: "Create a plan to trim", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
@@ -24,31 +28,43 @@ Object.assign(TEXT.en, {
 const EXCLUDE_MIN_PER_DAY = 100; // rows per day from which an unused entity is worth excluding
 
 class ExcludeMixin {
-  // What speaks for or against excluding one entity, from the inventory.
-  excludeInfo(entityId, perDay) {
+  // What speaks for or against excluding one entity, from the inventory. `excluded` is what the recorder reports.
+  excludeInfo(entityId, perDay, excluded = false) {
+    const tag = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
+    if (excluded) return { suggest: false, tags: tag("ok", this.t("recorderExcluded")) };
     const obj = this.findObject(`entity:${entityId}`);
     if (!obj) return { suggest: false, tags: "" };
     const uses = this.edgesTo(`entity:${entityId}`).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
     const suggest = !uses && !obj.has_statistics && perDay >= EXCLUDE_MIN_PER_DAY;
-    const tag = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
     const tags = suggest ? tag("warn", this.t("exSuggest")) : [obj.has_statistics ? tag("mute", this.t("exHasStats")) : "", uses ? tag("mute", this.t("exUsedBy", { count: uses })) : ""].join("");
     return { suggest, tags };
   }
 
-  excludeBox(entityId) {
-    return `<input type="checkbox" class="selbox" data-exsel="${this.esc(entityId)}" ${this.excludeSel.has(entityId) ? "checked" : ""} aria-label="${this.esc(entityId)}">`;
+  // An entity the recorder already keeps out cannot be picked: it would only repeat what is configured.
+  excludeBox(entityId, excluded = false) {
+    return `<input type="checkbox" class="selbox" data-exsel="${this.esc(entityId)}" ${excluded ? "disabled" : this.excludeSel.has(entityId) ? "checked" : ""} aria-label="${this.esc(entityId)}">`;
+  }
+
+  // The picked entities that are not excluded yet, in the order of the block.
+  excludeChosen() {
+    const done = new Set([...(this.costs?.entities || []), ...(this.storms?.entities || [])].filter(e => e.excluded).map(e => e.entity_id));
+    return [...this.excludeSel].filter(id => !done.has(id)).sort();
   }
 
   excludeSnippet() {
-    return `recorder:\n  exclude:\n    entities:\n${[...this.excludeSel].sort().map(id => `      - ${id}`).join("\n")}\n`;
+    return `recorder:\n  exclude:\n    entities:\n${this.excludeChosen().map(id => `      - ${id}`).join("\n")}\n`;
   }
 
+  // One bar over the list: what is picked and what can be done with it. The block and the steps open once something is.
   // `suggested` are the entity ids of the list in view that the Suggest button ticks.
   excludeCard(suggested) {
     this._exSuggested = suggested;
-    const n = this.excludeSel.size;
-    const body = n ? `<pre class="code" style="max-height:none">${this.esc(this.excludeSnippet())}</pre>` : `<p class="factnote">${this.t("exEmpty")}</p>`;
-    return `<div class="panel" style="margin:14px 16px"><div class="panelhead"><div><h3>${this.t("exTitle")}</h3><p>${this.t("exHint")}</p></div><div class="actions"><span class="factnote">${this.t("exCount", { count: n })}</span>${suggested.length ? `<button class="btn" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${n ? `<button class="btn" data-ex-clear>${this.t("exClear")}</button><button class="btn" data-copy-snippet>${this.snippetCopied ? this.t("recorderCopied") : this.t("recorderCopy")}</button>` : ""}</div></div>${body}${n ? this.trimBlock() : ""}</div>`;
+    const n = this.excludeChosen().length, sug = suggested.length;
+    const label = n ? this.t("exCount", { count: n }) : sug ? this.t("exNoneSug", { count: sug }) : this.t("exNone");
+    const bar = `<div class="toolbar exbar${n ? "" : " nosel"}"><span class="date" title="${this.esc(this.t("exclHint"))}">${label}</span>${sug ? `<button class="btn quiet" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${n ? `<button class="btn quiet" data-ex-clear>${this.t("exClear")}</button><button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}</div>`;
+    if (!n) return bar;
+    const steps = `<div class="exsteps"><strong>${this.t("exStepsTitle")}</strong><ol><li>${this.t("exStep1")}</li><li>${this.t("exStep2")}</li><li>${this.t("exStep3")}</li></ol></div>`;
+    return `${bar}<pre class="code exblock">${this.esc(this.excludeSnippet())}</pre>${steps}${this.trimBlock()}`;
   }
 
   // Deleting the states stored before: the exclusion alone leaves them. Made as an ordinary plan.

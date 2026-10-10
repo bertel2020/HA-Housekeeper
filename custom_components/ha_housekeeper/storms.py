@@ -312,6 +312,27 @@ def evaluate_storms(
     }
 
 
+def mark_excluded(hass: HomeAssistant, result: dict[str, Any]) -> dict[str, Any]:
+    """Say per entity whether the recorder's filter keeps it out, as it stands now.
+
+    Done on every answer and not in the kept reply, so it is right after a restart too. Without a
+    filter, or when it cannot be read, the rows stay as they are.
+    """
+    entities = result.get("entities")
+    if not entities:
+        return result
+    try:
+        from homeassistant.components.recorder import get_instance
+
+        entity_filter = getattr(get_instance(hass), "entity_filter", None)
+        if entity_filter is None:
+            return result
+        marked = [{**row, "excluded": not entity_filter(row["entity_id"])} for row in entities]
+    except Exception:
+        return result
+    return {**result, "entities": marked}
+
+
 async def storms(
     hass: HomeAssistant,
     snapshot: dict[str, Any],

@@ -1109,7 +1109,7 @@ class StylesMixin {
       .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:14px 16px}.optcard{display:grid;gap:8px;align-content:start;padding:14px;border:1px solid var(--hk-border);border-radius:12px}.optcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.unitrow{display:flex;align-items:center;gap:8px}.unitrow input{width:110px}.savebar{border-bottom:0;border-top:1px solid var(--hk-border)}.quietreset{grid-template-columns:1fr auto}a.row{text-decoration:none}
       .sharebar{display:block;height:6px;border-radius:3px;background:var(--hk-soft);overflow:hidden;margin-top:4px}.sharebar i{display:block;height:100%;background:var(--hk-blue-solid)}
       .recchoice{display:inline-flex;align-items:center;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.recwarn{flex:1 1 100%;color:var(--hk-muted)}
-      .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.toolgap{flex:1}.btn.quiet{box-shadow:none;border-color:transparent;background:none;color:var(--hk-blue-text);padding:8px 10px}.btn.quiet:hover{background:var(--hk-soft)}.btn.quiet[disabled]{color:var(--hk-muted);opacity:.7;cursor:default}
+      .exbar{border-top:1px solid var(--hk-border)}.exblock{margin:0;max-height:none;border-radius:0}.exsteps{padding:10px 16px 12px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}.exsteps ol{margin:4px 0 0;padding-left:20px}.exsteps li{margin:2px 0}.exdone{opacity:.6}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.toolgap{flex:1}.btn.quiet{box-shadow:none;border-color:transparent;background:none;color:var(--hk-blue-text);padding:8px 10px}.btn.quiet:hover{background:var(--hk-soft)}.btn.quiet[disabled]{color:var(--hk-muted);opacity:.7;cursor:default}
       .btn.primary{border-color:var(--hk-blue-solid);color:var(--hk-on,#fff);background:var(--hk-blue-solid)}.btn.primary:hover{background:#0a8ccf}.btn[disabled]{opacity:.6;cursor:wait}
       .summary{display:grid;grid-template-columns:repeat(4,1fr) 1.3fr;gap:12px;margin-bottom:14px}
       .card{min-width:0;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;padding:15px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);color:inherit;text-align:left}
@@ -4180,12 +4180,12 @@ class MaintenanceMixin {
       const obj = this.findObject(`entity:${e.entity_id}`);
       const tags = [
         `<span class="pill ${e.used ? "ok" : "mute"}">${e.used ? this.t("recorderUsed", { count: e.used }) : this.t("recorderUnused")}</span>`,
-        e.excluded ? `<span class="pill mute">${this.t("recorderExcluded")}</span>` : "",
+        e.excluded ? `<span class="pill ok">${this.t("recorderExcluded")}</span>` : "",
         e.suggest_exclude && !e.excluded ? `<span class="pill warn">${this.t("recorderSuggest")}</span>` : "",
       ].join("");
       const inner = `<span class="tile ${e.suggest_exclude && !e.excluded ? "warn" : "mute"}"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong>${this.rowId(e.entity_id, `${this.formatNumber(e.states)} · ${this.t("recorderWindows", { day: this.formatNumber(e.states_24h ?? 0), week: this.formatNumber(e.states_7d ?? 0), avg: this.formatNumber(e.per_day_avg ?? e.per_day) })} · ${this.t("recorderShare", { share: e.share })}`)}<span class="bar" style="margin-top:4px"><i style="width:${Math.min(100, Math.round(e.share))}%"></i></span></span><span style="display:flex;gap:6px;flex-wrap:wrap">${tags}</span>`;
       const open = obj ? `<button class="row rel" data-object="${this.esc(`entity:${e.entity_id}`)}">${inner}</button>` : `<div class="row rel">${inner}</div>`;
-      return `<div class="rowwrap">${this.excludeBox(e.entity_id)}${open}</div>`;
+      return `<div class="rowwrap${e.excluded ? " exdone" : ""}">${this.excludeBox(e.entity_id, e.excluded)}${open}</div>`;
     });
     const costPage = this.paginate("costs", costRows), rows = costPage.rows.join("") + costPage.footer;
     const statRows = (c.statistics || []).slice(0, 10).map(s => `<div class="row rel"><span class="tile mute"><ha-icon icon="mdi:chart-line"></ha-icon></span><span class="row-text"><strong>${this.esc(s.statistic_id)}</strong><small>${this.formatNumber(s.rows)}</small></span></div>`).join("");
@@ -4788,8 +4788,8 @@ class StormsMixin {
     if (item.no_new_state >= 0.1) parts.push(this.t("stormNoNewShort", { share: Math.round(item.no_new_state * 100) }));
     if (item.attr_bytes !== null && item.attr_bytes !== undefined) parts.push(this.t("stormAttr", { kb: this.formatNumber(Math.round(item.attr_bytes / 102.4) / 10) }));
     if (item.peak_hour) parts.push(this.t("stormPeak", { n: this.formatNumber(item.peak_hour) }));
-    const info = this.excludeInfo(item.entity_id, item.per_day);
-    return `<div class="rowwrap">${this.excludeBox(item.entity_id)}<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong>${this.rowId(item.entity_id, parts.join(" · "))}</span><span class="pill mute">${this.formatNumber(item.per_day)} ${this.t("stormPerDay")}</span>${info.tags}</button></div>`;
+    const info = this.excludeInfo(item.entity_id, item.per_day, item.excluded);
+    return `<div class="rowwrap${item.excluded ? " exdone" : ""}">${this.excludeBox(item.entity_id, item.excluded)}<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong>${this.rowId(item.entity_id, parts.join(" · "))}</span><span class="pill mute">${this.formatNumber(item.per_day)} ${this.t("stormPerDay")}</span>${info.tags}</button></div>`;
   }
 
   // A bar needs a text next to it: the percentage stands in the row, the bar is decoration.
@@ -4841,7 +4841,7 @@ class StormsMixin {
     const summary = `<p class="factnote">${this.t("stormSummary", { rows: this.formatNumber(r.total_rows), perDay: this.formatNumber(r.per_day), entities: this.formatNumber(r.entity_count), events: this.formatNumber(r.event_total) })}</p>`;
     const foundEntities = this.searchList("stormentities", r.entities, item => [item.name, item.entity_id].join(" "));
     const entityPage = this.paginate("stormentities", foundEntities.rows);
-    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${this.excludeCard(r.entities.filter(item => this.excludeInfo(item.entity_id, item.per_day).suggest).map(item => item.entity_id))}${foundEntities.bar}${foundEntities.none}${entityPage.rows.map(item => this.stormEntityRow(item)).join("")}${entityPage.footer}</div>` : "";
+    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${this.excludeCard(r.entities.filter(item => this.excludeInfo(item.entity_id, item.per_day, item.excluded).suggest).map(item => item.entity_id))}${foundEntities.bar}${foundEntities.none}${entityPage.rows.map(item => this.stormEntityRow(item)).join("")}${entityPage.footer}</div>` : "";
     const foundShares = this.searchList("stormshares", r.integrations, item => [item.title, item.domain].join(" "));
     const shares = r.integrations.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormShares")}</h2><p>${this.t("stormSharesHint")}</p></div></div>${foundShares.bar}${foundShares.none}${foundShares.rows.map(item => this.stormShareRow(item)).join("")}</div>` : "";
     const events = r.events.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormEvents")}</h2><p>${this.t("stormEventsHint")}</p></div></div>${r.events.map(e => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:flash-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.type)}</strong></span><span class="pill mute">${this.formatNumber(e.count)}</span></div>`).join("")}${this.howCounted("stormFootnote")}</div>` : "";
@@ -7703,8 +7703,10 @@ class EntityRecorderMixin {
 // Pick entities in the recorder views and get the exclusion for configuration.yaml; Housekeeper never writes it.
 // Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  exTitle: "Vorschlag für die configuration.yaml", exHint: "Häkchen in der Liste setzen; der Block baut sich daraus. Das ändert nichts in Home Assistant, es ist nur Text zum Einfügen. Ausgeschlossene Entitäten haben danach keinen Verlauf mehr.",
-  exCount: "{count} ausgewählt", exEmpty: "Noch nichts ausgewählt.", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Auswahl leeren",
+  exclHint: "Das ändert nichts in Home Assistant, es ist nur Text zum Einfügen. Ausgeschlossene Entitäten haben danach keinen Verlauf mehr.",
+  exCount: "{count} ausgewählt", exNone: "Nichts ausgewählt", exNoneSug: "Nichts ausgewählt · {count} Vorschläge", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Leeren", exCopy: "YAML kopieren",
+  exStepsTitle: "So geht es weiter", exStep1: "Einfügen in die configuration.yaml. Gibt es dort schon einen recorder:-Abschnitt, trage nur die Zeilen unter entities: in dessen exclude:-Liste ein, nicht noch einmal recorder:.",
+  exStep2: "Prüfen unter Entwicklerwerkzeuge → YAML → Konfiguration prüfen.", exStep3: "Neu starten. Der Recorder liest den Ausschluss nur beim Start. Danach steht die Entität hier als „bereits ausgeschlossen“.",
   exSuggest: "Ausschluss möglich", exHasStats: "Statistik vorhanden", exUsedBy: "{count} Verwendungen",
   trimTitle: "Alten Verlauf der Auswahl kürzen", trimHint: "Der Ausschluss wirkt nur für neue Daten. Hier löschst du die bereits gespeicherten Zustände der Auswahl, die älter sind als die gewählte Zeit. Statistiken bleiben. Daraus wird ein Plan unter Aufräumen: Vorschau mit Zeilenzahl, Bestätigung, Backup, Nachprüfung.",
   trimKeep: "Behalten", trimDays: "{days} Tage", trimPreview: "Plan für das Kürzen erstellen", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
@@ -7713,8 +7715,10 @@ Object.assign(TEXT.de, {
   confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an, einschließlich der Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
 });
 Object.assign(TEXT.en, {
-  exTitle: "Suggestion for configuration.yaml", exHint: "Tick entities in the list; the block builds from them. This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
-  exCount: "{count} selected", exEmpty: "Nothing selected yet.", exPickSuggested: "Select all suggested", exClear: "Clear selection",
+  exclHint: "This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
+  exCount: "{count} selected", exNone: "Nothing selected", exNoneSug: "Nothing selected · {count} suggestions", exPickSuggested: "Select all suggested", exClear: "Clear", exCopy: "Copy YAML",
+  exStepsTitle: "What to do next", exStep1: "Paste it into configuration.yaml. If there is a recorder: section already, add only the lines under entities: to its exclude: list, not recorder: again.",
+  exStep2: "Check under Developer tools → YAML → Check configuration.", exStep3: "Restart. The recorder reads the exclusion only at start. Afterwards the entity shows here as “already excluded”.",
   exSuggest: "can be excluded", exHasStats: "has statistics", exUsedBy: "{count} uses",
   trimTitle: "Trim the old history of the selection", trimHint: "The exclusion only works for new data. Here you delete the states already stored for the selection that are older than the chosen time. Statistics stay. This becomes a plan under Cleanup: preview with row count, confirmation, backup, check afterwards.",
   trimKeep: "Keep", trimDays: "{days} days", trimPreview: "Create a plan to trim", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
@@ -7726,31 +7730,43 @@ Object.assign(TEXT.en, {
 const EXCLUDE_MIN_PER_DAY = 100; // rows per day from which an unused entity is worth excluding
 
 class ExcludeMixin {
-  // What speaks for or against excluding one entity, from the inventory.
-  excludeInfo(entityId, perDay) {
+  // What speaks for or against excluding one entity, from the inventory. `excluded` is what the recorder reports.
+  excludeInfo(entityId, perDay, excluded = false) {
+    const tag = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
+    if (excluded) return { suggest: false, tags: tag("ok", this.t("recorderExcluded")) };
     const obj = this.findObject(`entity:${entityId}`);
     if (!obj) return { suggest: false, tags: "" };
     const uses = this.edgesTo(`entity:${entityId}`).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
     const suggest = !uses && !obj.has_statistics && perDay >= EXCLUDE_MIN_PER_DAY;
-    const tag = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
     const tags = suggest ? tag("warn", this.t("exSuggest")) : [obj.has_statistics ? tag("mute", this.t("exHasStats")) : "", uses ? tag("mute", this.t("exUsedBy", { count: uses })) : ""].join("");
     return { suggest, tags };
   }
 
-  excludeBox(entityId) {
-    return `<input type="checkbox" class="selbox" data-exsel="${this.esc(entityId)}" ${this.excludeSel.has(entityId) ? "checked" : ""} aria-label="${this.esc(entityId)}">`;
+  // An entity the recorder already keeps out cannot be picked: it would only repeat what is configured.
+  excludeBox(entityId, excluded = false) {
+    return `<input type="checkbox" class="selbox" data-exsel="${this.esc(entityId)}" ${excluded ? "disabled" : this.excludeSel.has(entityId) ? "checked" : ""} aria-label="${this.esc(entityId)}">`;
+  }
+
+  // The picked entities that are not excluded yet, in the order of the block.
+  excludeChosen() {
+    const done = new Set([...(this.costs?.entities || []), ...(this.storms?.entities || [])].filter(e => e.excluded).map(e => e.entity_id));
+    return [...this.excludeSel].filter(id => !done.has(id)).sort();
   }
 
   excludeSnippet() {
-    return `recorder:\n  exclude:\n    entities:\n${[...this.excludeSel].sort().map(id => `      - ${id}`).join("\n")}\n`;
+    return `recorder:\n  exclude:\n    entities:\n${this.excludeChosen().map(id => `      - ${id}`).join("\n")}\n`;
   }
 
+  // One bar over the list: what is picked and what can be done with it. The block and the steps open once something is.
   // `suggested` are the entity ids of the list in view that the Suggest button ticks.
   excludeCard(suggested) {
     this._exSuggested = suggested;
-    const n = this.excludeSel.size;
-    const body = n ? `<pre class="code" style="max-height:none">${this.esc(this.excludeSnippet())}</pre>` : `<p class="factnote">${this.t("exEmpty")}</p>`;
-    return `<div class="panel" style="margin:14px 16px"><div class="panelhead"><div><h3>${this.t("exTitle")}</h3><p>${this.t("exHint")}</p></div><div class="actions"><span class="factnote">${this.t("exCount", { count: n })}</span>${suggested.length ? `<button class="btn" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${n ? `<button class="btn" data-ex-clear>${this.t("exClear")}</button><button class="btn" data-copy-snippet>${this.snippetCopied ? this.t("recorderCopied") : this.t("recorderCopy")}</button>` : ""}</div></div>${body}${n ? this.trimBlock() : ""}</div>`;
+    const n = this.excludeChosen().length, sug = suggested.length;
+    const label = n ? this.t("exCount", { count: n }) : sug ? this.t("exNoneSug", { count: sug }) : this.t("exNone");
+    const bar = `<div class="toolbar exbar${n ? "" : " nosel"}"><span class="date" title="${this.esc(this.t("exclHint"))}">${label}</span>${sug ? `<button class="btn quiet" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${n ? `<button class="btn quiet" data-ex-clear>${this.t("exClear")}</button><button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}</div>`;
+    if (!n) return bar;
+    const steps = `<div class="exsteps"><strong>${this.t("exStepsTitle")}</strong><ol><li>${this.t("exStep1")}</li><li>${this.t("exStep2")}</li><li>${this.t("exStep3")}</li></ol></div>`;
+    return `${bar}<pre class="code exblock">${this.esc(this.excludeSnippet())}</pre>${steps}${this.trimBlock()}`;
   }
 
   // Deleting the states stored before: the exclusion alone leaves them. Made as an ordinary plan.

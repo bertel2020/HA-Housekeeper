@@ -1137,11 +1137,12 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   assert.ok(html.includes("12,000 stored states") && html.includes("5 MB") && html.includes("kept 10 days"));
   assert.ok(html.includes("&lt;b&gt;Noisy&lt;/b&gt;") && !html.includes("<b>Noisy</b>"), "names are escaped");
   assert.ok(html.includes("can be excluded") && html.includes("already excluded") && html.includes("3 uses"));
-  assert.ok(html.includes("Suggestion for configuration.yaml") && html.includes("Nothing selected yet.") && html.includes("Select all suggested"));
+  assert.ok(html.includes("Nothing selected · ") && html.includes("Select all suggested") && !html.includes("Copy YAML"), "without a pick there is only the bar");
   el.excludeSel.add("sensor.noisy");
   assert.equal(el.excludeSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.noisy\n");
   el.render();
   assert.ok(shadow.innerHTML.includes("- sensor.noisy") && !shadow.innerHTML.includes("- sensor.used") && shadow.innerHTML.includes("1 selected"));
+  assert.ok(shadow.innerHTML.includes("Copy YAML") && shadow.innerHTML.includes("What to do next"), "a pick opens the block and the steps");
 });
 
 test("the recorder costs rank by the current rate, switch to the total and ask for a refresh", async () => {
@@ -3448,4 +3449,14 @@ test("the detail page offers a rename and an area for one entity and sends one a
   await el.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: "light.hall" });
   await el.makeDetailPlan({ kind: "set_area", object_id: item.object_id, target: "kitchen" });
   assert.equal(JSON.stringify(calls.map(c => c.actions[0].kind)), JSON.stringify(["rename_entity", "set_area"]));
+});
+
+test("what the recorder already excludes cannot be picked and never reaches the block", () => {
+  const { el } = panel("en");
+  el.costs = { entities: [{ entity_id: "sensor.done", excluded: true }, { entity_id: "sensor.open", excluded: false }] };
+  el.excludeSel.add("sensor.done"); el.excludeSel.add("sensor.open");
+  assert.equal(el.excludeSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.open\n");
+  assert.ok(el.excludeBox("sensor.done", true).includes("disabled") && !el.excludeBox("sensor.done", true).includes("checked"));
+  assert.equal(el.t("exTitle"), "Exchange device", "the exchange card keeps its own title");
+  assert.ok(el.excludeInfo("sensor.done", 5000, true).tags.includes("already excluded") && !el.excludeInfo("sensor.done", 5000, true).suggest);
 });

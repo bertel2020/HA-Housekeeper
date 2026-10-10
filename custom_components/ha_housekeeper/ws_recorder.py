@@ -22,7 +22,7 @@ from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
 from .statistics_last import statistics_last
 from .storms import WINDOWS as STORMS_WINDOWS
-from .storms import storms
+from .storms import mark_excluded, storms
 from .ws_common import (
     RELIABILITY_TIMEOUT,
     STATISTICS_LAST_IDS,
@@ -304,7 +304,7 @@ async def websocket_storms(
     except Exception as err:
         connection.send_error(msg["id"], "storms_failed", f"{type(err).__name__}: {err}")
         return
-    connection.send_result(msg["id"], _versioned(result))
+    connection.send_result(msg["id"], _versioned(mark_excluded(hass, dict(result))))
 
 
 def async_register(hass: HomeAssistant) -> None:
