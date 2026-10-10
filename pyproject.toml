@@ -9,3 +9,14 @@ ignore = ["E501"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+follow_imports = "silent"
+files = [
+    "custom_components/ha_housekeeper/payloads.py",
+    "custom_components/ha_housekeeper/notes.py",
+    "custom_components/ha_housekeeper/entity_recorder.py",
+    "custom_components/ha_housekeeper/stale.py",
+]

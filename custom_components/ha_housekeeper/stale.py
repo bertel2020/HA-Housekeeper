@@ -116,10 +116,12 @@ class StaleStore:
             beat = _parse(self.heartbeat)
             if beat is not None and started > beat:
                 down = started - beat
-                self.anchors = {
-                    key: min(now, _parse(value) + down).isoformat()  # type: ignore[operator]
-                    for key, value in self.anchors.items()
-                }
+                shifted: dict[str, str] = {}
+                for key, value in self.anchors.items():
+                    anchor = _parse(value)
+                    if anchor is not None:
+                        shifted[key] = min(now, anchor + down).isoformat()
+                self.anchors = shifted
         watched = {
             item["object_id"]: item
             for item in entities
@@ -130,11 +132,11 @@ class StaleStore:
         for entity_id, item in watched.items():
             seen = _parse(item.get("last_reported")) or _parse(item.get("last_updated"))
             anchor = _parse(self.anchors.get(entity_id))
-            fresh = seen is not None and seen > cutoff
+            fresh = seen if seen is not None and seen > cutoff else None
             if anchor is None:
-                self.anchors[entity_id] = (seen if fresh else now).isoformat()
-            elif fresh and seen > anchor:
-                self.anchors[entity_id] = seen.isoformat()
+                self.anchors[entity_id] = (fresh or now).isoformat()
+            elif fresh is not None and fresh > anchor:
+                self.anchors[entity_id] = fresh.isoformat()
         self.heartbeat = now.isoformat()
         self._save()
 

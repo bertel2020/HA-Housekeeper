@@ -198,3 +198,68 @@ class BlueprintsResult(TypedDict):
     unused: int  # blueprints nothing uses
     missing: int  # paths used by automations or scripts that no blueprint file answers
     broken: int  # blueprint files that fail to load
+
+
+class Snapshot(TypedDict):
+    """The result of a scan (``inventory``, ``scan``): everything the overview and lists show."""
+
+    meta: dict[str, Any]
+    objects: list[dict[str, Any]]
+    edges: list[dict[str, Any]]
+    findings: list[dict[str, Any]]
+    causes: list[dict[str, Any]]
+    reminders: list[dict[str, Any]]
+    notes: list[dict[str, Any]]
+    regressions: list[dict[str, Any]]
+    criteria_alerts: list[dict[str, Any]]
+    orphaned_statistics: list[dict[str, Any]]
+    statistic_issues: list[dict[str, Any]]
+    quarantine: list[dict[str, Any]]
+    recurring_devices: list[dict[str, Any]]
+
+
+class Note(TypedDict):
+    """An entry written by the person (``note_set``, ``Snapshot.notes``)."""
+
+    id: str
+    title: str
+    at: str  # ISO time with zone
+    target: str
+    note: str
+
+
+class PlanSummary(TypedDict):
+    """One row of the journal list (``plan_list``): no actions and no restore data."""
+
+    plan_id: str
+    created_at: str | None
+    status: str | None
+    executed: bool
+    run: bool
+    finished_at: str | None
+    undoable: bool
+    summary: dict[str, Any] | None
+    file_snapshot_dropped: bool
+    followup: str | None  # watching, clean, regression, stopped
+    followup_until: str | None
+    objects: list[str]
+    done_objects: list[str]
+
+
+class RecorderSpan(TypedDict):
+    """Rows and first and last time (epoch seconds) of one recorder table for one entity."""
+
+    rows: int
+    first: float | None
+    last: float | None
+
+
+class EntityRecorderResult(TypedDict):
+    """What ``entity_recorder`` sends: raw states, short-term and long-term statistics."""
+
+    available: bool
+    busy: bool
+    states: NotRequired[RecorderSpan]
+    short: NotRequired[RecorderSpan]
+    long: NotRequired[RecorderSpan]
+    keep_days: NotRequired[int | None]

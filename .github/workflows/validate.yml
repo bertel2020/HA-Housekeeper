@@ -32,11 +32,14 @@ jobs:
           python-version: "3.14"
           cache: pip
       - name: Install test tools and Home Assistant
-        run: python -m pip install ${{ matrix.requirements }} home-assistant-frontend ruff
+        run: python -m pip install ${{ matrix.requirements }} home-assistant-frontend ruff mypy
       - name: Run Ruff
         run: ruff check custom_components tests
       - name: Check formatting
         run: ruff format --check custom_components tests
+      - name: Check types (a few modules, does not block)
+        continue-on-error: true
+        run: mypy
       - name: Run tests
         run: python -m pytest -q --asyncio-mode=auto
       - name: Check Python syntax

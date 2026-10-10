@@ -125,7 +125,12 @@ def test_series_lists_the_days_and_the_latest_scan_with_unavailable(hass) -> Non
     history = ScanHistory(hass)
     assert history.series()["points"] == []
     history.record(_snapshot("2026-10-05T08:00:00+00:00", [("entity", "x.a", "active")]))
-    history.record(_snapshot("2026-10-06T08:00:00+00:00", [("entity", "x.a", "unavailable"), ("entity", "x.b", "active")]))
+    history.record(
+        _snapshot(
+            "2026-10-06T08:00:00+00:00",
+            [("entity", "x.a", "unavailable"), ("entity", "x.b", "active")],
+        )
+    )
     history.record(_snapshot("2026-10-06T20:00:00+00:00", [("entity", "x.a", "unavailable")]))
 
     points = history.series()["points"]
