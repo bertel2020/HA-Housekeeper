@@ -248,7 +248,8 @@ class UnusedMixin {
     ];
   }
 
-  lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
+  // Percent sensors plus the batteries that report volts; the volts come with the trend data, which is loaded in the background.
+  lowBatteries() { return this.data ? [...this.batteryRows(), ...this.batteryVoltRows()].filter(r => r.low) : []; }
 
   batteriesView() {
     const all = [...this.batteryRows(), ...this.batteryVoltRows()], low = all.filter(r => r.low);

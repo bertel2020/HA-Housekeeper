@@ -72,6 +72,7 @@ class CleanupMixin {
     if (executable.some(a => a.kind === "migrate_meter")) return this.t("confirmWordMeter");
     if (executable.some(a => REPAIR_KINDS.includes(a.kind))) return this.t("confirmWordRepair");
     if (executable.some(a => a.kind === "replace_references" || a.kind === "refactor_automation")) return this.t("confirmWordReplace");
+    if (executable.some(a => a.kind === "rename_entity")) return this.t("confirmWordRename");
     return this.t("confirmWord");
   }
 
@@ -82,6 +83,8 @@ class CleanupMixin {
       : executable.some(a => a.kind === "migrate_meter") ? "confirmedSummaryMeter"
       : executable.some(a => REPAIR_KINDS.includes(a.kind)) ? "confirmedSummaryRepair"
       : executable.some(a => a.kind === "add_label") ? "confirmedSummaryLabel"
+      : executable.some(a => a.kind === "set_area") ? "confirmedSummaryArea"
+      : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
     return this.t(key, { count: key === "confirmedSummaryReplace" ? changes : count });
@@ -355,10 +358,10 @@ class CleanupMixin {
       const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && (PURGE_KINDS.includes(a.kind) || a.kind === "delete_automation") ? "result_purged" : `result_${result.state}`)}</span>` : "";
-      const sub0 = a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && a.kind === "set_area" ? "result_area" : result.state === "done" && a.kind === "rename_entity" ? "result_renamed" : result.state === "done" && (PURGE_KINDS.includes(a.kind) || a.kind === "delete_automation") ? "result_purged" : `result_${result.state}`)}</span>` : "";
+      const sub0 = a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.t("trimSub", { days: a.keep_days, rows: a.trim?.rows ?? "?" }) : ""].filter(Boolean).join(" · ");
-      const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
+      const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
       const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) ? "" : this.undoAsk === a.object_id

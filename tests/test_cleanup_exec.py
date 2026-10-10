@@ -716,3 +716,87 @@ def test_judging_a_trim_names_what_blocks_it() -> None:
     ):
         judged = judge_trim_action("sensor.a", days, {}, found, recorder)
         assert judged["verdict"] == "blocked" and reason in judged["reasons"]
+
+
+async def test_assigning_an_area_suggests_from_the_device_runs_and_undoes(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers import area_registry as ar
+    from homeassistant.helpers import device_registry as dr
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper import area_assign
+
+    config = MockConfigEntry(domain="test")
+    config.add_to_hass(hass)
+    kitchen = ar.async_get(hass).async_create("Kitchen").id
+    device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=config.entry_id, identifiers={("test", "d1")}
+    )
+    registry = er.async_get(hass)
+    placed = registry.async_get_or_create(
+        "sensor",
+        "test",
+        "a",
+        device_id=device.id,
+        config_entry=config,
+        suggested_object_id="a",
+        original_name="A",
+    )
+    bare = registry.async_get_or_create(
+        "sensor",
+        "test",
+        "b",
+        device_id=device.id,
+        config_entry=config,
+        suggested_object_id="b",
+        original_name="B",
+    )
+    registry.async_update_entity(placed.entity_id, area_id=kitchen)
+    lone = orphan(hass, "lonely")
+
+    assert area_assign.suggest(hass, bare.entity_id) == kitchen
+    assert area_assign.suggest(hass, lone.entity_id) is None
+
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    data = {i: area_assign.prepare(hass, i, "") for i in (bare.entity_id, lone.entity_id)}
+    plan = build_plan(
+        snapshot,
+        [{"kind": "set_area", "object_id": i} for i in data],
+        datetime.now(UTC),
+        area_data=data,
+    )
+    assert [(a["verdict"], a["reasons"]) for a in plan["actions"]] == [
+        ("ok", []),
+        ("blocked", ["no_suggestion"]),
+    ]
+    assert plan["actions"][0]["target"] == kitchen and plan["actions"][0]["suggested"] is True
+    scanner.journal.add(plan)
+
+    await run(scanner, plan)
+    assert registry.async_get(bare.entity_id).area_id == kitchen
+    assert plan["status"] == "verified" and plan["verification"]["ok"] is True
+
+    result = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert result["results"] == [{"object_id": bare.entity_id, "outcome": "undone"}]
+    assert registry.async_get(bare.entity_id).area_id is None
+
+    # A device works the same way, and an area that is set is never replaced.
+    info = area_assign.prepare(hass, device.id, kitchen)
+    action = build_plan(
+        snapshot,
+        [{"kind": "set_area", "object_id": device.id, "target": kitchen}],
+        datetime.now(UTC),
+        area_data={device.id: info},
+    )["actions"][0]
+    assert action["object_type"] == "device" and action["verdict"] == "ok"
+    dr.async_get(hass).async_update_device(device.id, area_id=kitchen)
+    again = area_assign.prepare(hass, device.id, kitchen)
+    blocked = build_plan(
+        snapshot,
+        [{"kind": "set_area", "object_id": device.id, "target": kitchen}],
+        datetime.now(UTC),
+        area_data={device.id: again},
+    )["actions"][0]
+    assert blocked["reasons"] == ["has_area"]

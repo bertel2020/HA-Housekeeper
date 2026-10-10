@@ -52,6 +52,7 @@ from typing import Any
 
 from homeassistant import loader
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import label_registry as lr
@@ -60,9 +61,11 @@ from homeassistant.util.yaml import dump, parse_yaml
 
 from . import counter_repair, followup
 from . import refactor as refactor_module
+from . import rename as rename_module
 from .automation_delete import preview as preview_automation_delete
 from .backup_cleanup import backup_exists, delete_backup, list_backups
 from .cleanup import (
+    AREA_KINDS,
     BACKUP_KINDS,
     DATABASE_KINDS,
     DELETE_AUTOMATION_KINDS,
@@ -78,6 +81,7 @@ from .cleanup import (
     REFACTOR_KINDS,
     REFERENCE_KINDS,
     REMOVAL_KINDS,
+    RENAME_KINDS,
     REPAIR_KINDS,
     TRIM_KINDS,
     device_fingerprint,
@@ -86,6 +90,7 @@ from .cleanup import (
     get_main_device,
     judge_action,
     judge_purge_action,
+    judge_rename_action,
     registry_fingerprint,
 )
 from .const import DOMAIN, MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
@@ -392,7 +397,8 @@ class CleanupRunner:
             "rewrites": [
                 a["object_id"]
                 for a in plan["actions"]
-                if a["object_id"] in selected and a["kind"] in REFERENCE_KINDS | REFACTOR_KINDS
+                if a["object_id"] in selected
+                and a["kind"] in REFERENCE_KINDS | RENAME_KINDS | REFACTOR_KINDS
             ],
             "migrations": [
                 a["object_id"]
@@ -641,6 +647,10 @@ class CleanupRunner:
             return await self._delete_backup(action), "backup_deleted"
         if kind in DELETE_AUTOMATION_KINDS:
             return await self._delete_automation(action), "automation_deleted"
+        if kind in AREA_KINDS:
+            return self._set_area(action), "area_set"
+        if kind in RENAME_KINDS:
+            return await self._rename_entity(action), "entity_renamed"
         if kind in LABEL_KINDS:
             registry = er.async_get(self.hass)
             entry = registry.async_get(object_id)
@@ -1344,6 +1354,17 @@ class CleanupRunner:
                 return "now_blocked"
             action["sources"] = [found["source"]]
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
+        if kind in AREA_KINDS:
+            if self._area_entry(object_id) is None:
+                return "entity_gone"
+            if (
+                action.get("fingerprint") is None
+                or self._area_print(object_id) != action["fingerprint"]
+            ):
+                return "entity_changed"
+            if ar.async_get(self.hass).async_get_area(action["target"]) is None:
+                return "now_blocked"
+            return None
         if kind in LABEL_KINDS:
             entry = er.async_get(self.hass).async_get(object_id)
             if entry is None:
@@ -1430,6 +1451,19 @@ class CleanupRunner:
                 "target": action["target"],
                 "meter": {**meter, "mode": action["mode"]},
             }
+        elif kind in RENAME_KINDS:
+            found = await rename_module.prepare(self.hass, snapshot, object_id, action["target"])
+            if action.get("fingerprint") is None or found["fingerprint"] != action["fingerprint"]:
+                return "source_changed"
+            action["sources"] = found["sources"]
+            verdict = judge_rename_action(
+                object_id, action["target"], context["entities"], snapshot["edges"], found
+            )
+            if verdict["verdict"] == "blocked":
+                return "now_blocked"
+            if verdict["verdict"] == "review" and object_id not in context["acknowledged"]:
+                return "needs_acknowledgement"
+            return None
         elif kind in REFERENCE_KINDS:
             fingerprint, sources = await preview_replacement(
                 self.hass, snapshot, object_id, action["target"]
@@ -1524,6 +1558,29 @@ class CleanupRunner:
                     )
             elif kind in METER_KINDS:
                 checks.extend(await self._verify_meter(action))
+            elif kind in RENAME_KINDS:
+                registry = er.async_get(self.hass)
+                done = {
+                    s["source"] for s in action["result"]["sources"] if s.get("state") != "undone"
+                }
+                still = [
+                    e
+                    for e in snapshot["edges"]
+                    if e["source"] in done
+                    and e["target"] == f"entity:{object_id}"
+                    and e.get("confidence", "certain") == "certain"
+                ]
+                ok = registry.async_get(action["target"]) is not None and (
+                    registry.async_get(object_id) is None
+                )
+                checks.append({"check": "entity_renamed", "object_id": object_id, "ok": ok})
+                checks.append(
+                    {"check": "references_replaced", "object_id": object_id, "ok": not still}
+                )
+            elif kind in AREA_KINDS:
+                entry = self._area_entry(object_id)
+                ok = entry is not None and entry.area_id == action["target"]
+                checks.append({"check": "area_set", "object_id": object_id, "ok": ok})
             elif kind in LABEL_KINDS:
                 entry = registry.async_get(object_id)
                 ok = entry is not None and action["target"] in entry.labels
@@ -1680,10 +1737,14 @@ class CleanupRunner:
                 outcome = self._restore_device(result["restore"])
             elif kind == "disable_device":
                 outcome = self._reenable_device(action["object_id"], result)
+            elif kind in RENAME_KINDS:
+                outcome = await self._undo_rename(result)
             elif kind in REFERENCE_KINDS | REFACTOR_KINDS:
                 outcome = await self._undo_references(result)
             elif kind in METER_KINDS:
                 outcome = await self._undo_meter(result)
+            elif kind in AREA_KINDS:
+                outcome = self._unset_area(action["object_id"], result)
             elif kind in LABEL_KINDS:
                 outcome = self._unlabel(registry, action["object_id"], result)
             elif kind in REPAIR_KINDS:
@@ -1728,6 +1789,46 @@ class CleanupRunner:
             result["statistics_kept"] = True
         return outcome
 
+    async def _rename_entity(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Write every reference with the new ID, then rename; a failed rename puts the files back."""
+        old, new = action["object_id"], action["target"]
+        registry = er.async_get(self.hass)
+        before = registry_fingerprint(registry.async_get(old))
+        result = await self._replace_references(action)
+        try:
+            updated = registry.async_update_entity(old, new_entity_id=new)
+        except Exception as err:
+            await self._undo_references(result)
+            raise StepAbort("rename_failed") from err
+        return {
+            **result,
+            "before": before,
+            "after": registry_fingerprint(updated),
+            "old_id": old,
+            "new_id": new,
+        }
+
+    async def _undo_rename(self, result: dict[str, Any]) -> str:
+        """Files back first (only while they are as left), then the old ID; conflicts stop early."""
+        registry = er.async_get(self.hass)
+        entry = registry.async_get(result["new_id"])
+        if entry is None:
+            return "conflict_gone"
+        if registry_fingerprint(entry) != result["after"]:
+            return "conflict_changed"
+        if registry.async_get(result["old_id"]) is not None or not await self._wait_free(
+            result["old_id"]
+        ):
+            return "conflict_taken"
+        outcome = await self._undo_references(result)
+        if outcome != "undone":
+            return outcome
+        try:
+            registry.async_update_entity(result["new_id"], new_entity_id=result["old_id"])
+        except Exception:
+            return "conflict_taken"
+        return "undone"
+
     async def _undo_references(self, result: dict[str, Any]) -> str:
         outcomes = [
             await self._revert_source(source)
@@ -1757,6 +1858,50 @@ class CleanupRunner:
         if registry_fingerprint(entry) != result["after"]:
             return "conflict_changed"
         registry.async_update_entity(object_id, disabled_by=None)
+        return "undone"
+
+    def _area_entry(self, object_id: str) -> Any:
+        """The registry entry of an entity (an ID with a dot) or of a device."""
+        if "." in object_id:
+            return er.async_get(self.hass).async_get(object_id)
+        return dr.async_get(self.hass).async_get(object_id)
+
+    def _area_print(self, object_id: str) -> str | None:
+        entry = self._area_entry(object_id)
+        if entry is None:
+            return None
+        return registry_fingerprint(entry) if "." in object_id else device_fingerprint(entry)
+
+    def _write_area(self, object_id: str, area_id: str | None) -> None:
+        if "." in object_id:
+            er.async_get(self.hass).async_update_entity(object_id, area_id=area_id)
+        else:
+            dr.async_get(self.hass).async_update_device(object_id, area_id=area_id)
+
+    def _set_area(self, action: dict[str, Any]) -> dict[str, Any]:
+        object_id = action["object_id"]
+        before = self._area_entry(object_id)
+        previous, fingerprint = before.area_id, self._area_print(object_id)
+        try:
+            self._write_area(object_id, action["target"])
+        except (
+            ValueError
+        ) as err:  # an entity without a name of its own can only take its device's area
+            raise StepAbort("area_not_allowed") from err
+        return {
+            "before": fingerprint,
+            "after": self._area_print(object_id),
+            "area": action["target"],
+            "previous": previous,
+        }
+
+    def _unset_area(self, object_id: str, result: dict[str, Any]) -> str:
+        """Put the area back as it was (empty); a change made since then is left alone."""
+        if self._area_entry(object_id) is None:
+            return "conflict_gone"
+        if self._area_print(object_id) != result["after"]:
+            return "conflict_changed"
+        self._write_area(object_id, result.get("previous"))
         return "undone"
 
     @staticmethod

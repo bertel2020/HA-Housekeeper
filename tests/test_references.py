@@ -1100,3 +1100,98 @@ async def test_an_unused_automation_is_removed_from_its_file_and_the_undo_puts_t
         )
         assert missing["actions"][0]["verdict"] == "blocked"
         assert "not_in_yaml" in missing["actions"][0]["reasons"]
+
+
+PLAIN_AUTOMATIONS = """\
+- id: auto-1
+  alias: Heating
+  trigger:
+  - platform: state
+    entity_id: sensor.old_temp
+  action:
+  - service: notify.me
+"""
+
+
+async def test_renaming_an_entity_rewrites_the_file_verifies_and_undoes_both(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper.rename import prepare
+
+    registry = er.async_get(hass)
+    registry.async_get_or_create("sensor", "test", "old", suggested_object_id="old_temp")
+    hass.states.async_set(OLD, "21")
+    path = write_config(hass, "automations.yaml", PLAIN_AUTOMATIONS)
+    reloads = reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, create = fake_backup()
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        snapshot = await scanner.async_scan()
+
+        def make(target: str, text: str | None = None):
+            return prepare(hass, snapshot, OLD, target)
+
+        found = await make(NEW)
+        plan = build_plan(
+            snapshot,
+            [{"kind": "rename_entity", "object_id": OLD, "target": NEW}],
+            datetime.now(UTC),
+            rename_data={(OLD, NEW): found},
+        )
+        action = plan["actions"][0]
+        assert action["verdict"] == "review" and action["executable"] is True
+        assert action["sources"][0]["change_count"] == 1
+        scanner.journal.add(plan)
+
+        # A taken or foreign ID is never allowed.
+        hass.states.async_set("sensor.taken", "1")
+        blocked = [
+            build_plan(
+                snapshot,
+                [{"kind": "rename_entity", "object_id": OLD, "target": t}],
+                datetime.now(UTC),
+                rename_data={(OLD, t): await prepare(hass, snapshot, OLD, t)},
+            )["actions"][0]["reasons"]
+            for t in ("sensor.taken", "light.other", "Bad Id")
+        ]
+        assert blocked[0][0] == "target_taken" and blocked[1][0] == "bad_new_id"
+        assert blocked[2][0] == "bad_new_id"
+
+        before = Path(path).read_text(encoding="utf-8")
+        await run(scanner, plan, [OLD])
+        create.assert_awaited_once()
+        assert registry.async_get(NEW) is not None and registry.async_get(OLD) is None
+        assert load_yaml(path)[0]["trigger"][0]["entity_id"] == NEW
+        checks = {c["check"]: c["ok"] for c in plan["verification"]["checks"]}
+        # The scanner stub keeps naming the old ID, so only the registry check can be true here.
+        assert checks["entity_renamed"] is True and "references_replaced" in checks
+
+        hass.states.async_remove(OLD)  # the old state goes when the real entity re-registers
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+        assert registry.async_get(OLD) is not None and registry.async_get(NEW) is None
+        assert Path(path).read_text(encoding="utf-8") == before
+        assert reloads == ["automation", "automation"]
+
+
+async def test_a_rename_with_a_template_mention_is_blocked(hass: HomeAssistant) -> None:
+    from custom_components.ha_housekeeper.rename import prepare
+
+    make_entities(hass)
+    write_config(hass, "automations.yaml", AUTOMATIONS)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    with automation_scanner_state(hass, scanner):
+        snapshot = await scanner.async_scan()
+        target = "sensor.fresh_temp"
+        plan = build_plan(
+            snapshot,
+            [{"kind": "rename_entity", "object_id": OLD, "target": target}],
+            datetime.now(UTC),
+            rename_data={(OLD, target): await prepare(hass, snapshot, OLD, target)},
+        )
+    action = plan["actions"][0]
+    assert action["verdict"] == "blocked" and "rename_templates" in action["reasons"]

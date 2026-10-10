@@ -369,7 +369,7 @@ const ICONS = {
 
 const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
-const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
+const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
 // Deleting recorder rows: cannot be undone, only the backup brings them back.
 const PURGE_KINDS = ["purge_statistics", "trim_history", "delete_backup"];
 const REPAIR_KINDS = ["repair_counter", "repair_range"];
@@ -1129,7 +1129,7 @@ class StylesMixin {
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px 190px;gap:10px;padding:14px;border-bottom:1px solid var(--hk-border)}
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}
-      select{appearance:none;-webkit-appearance:none;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23808a84' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;cursor:pointer}input:focus,select:focus{outline:2px solid color-mix(in srgb,var(--hk-blue) 35%,transparent);border-color:var(--hk-blue)}
+      select{appearance:none;-webkit-appearance:none;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23808a84' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;cursor:pointer}input:focus,select:focus{border-color:var(--hk-blue)}input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:3 1 260px}.listbar select{flex:0 1 150px}.sortgroup{display:flex;gap:4px;margin-left:auto;min-width:0}.sortgroup select{flex:0 1 150px;min-width:0}.dirbtn{flex:none}@media(max-width:560px){.listbar>select{flex:1 1 130px}.viewgroup{flex:1 1 100%}.sortgroup{flex:1 1 100%;margin-left:0}.sortgroup select{flex:1 1 auto}}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
       .setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.setrow .btn{justify-self:start}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
       @media(max-width:700px){.setrow{grid-template-columns:1fr}}
@@ -1825,6 +1825,7 @@ class OverviewMixin {
 
   // Quick links to the hint views; counts exclude hidden findings.
   cleanupCard() {
+    this.ensureBatteryTrend();
     const open = this.data.findings.filter(f => !f.ignored);
     const items = [
       ["batteries", "mdi:battery-alert-variant-outline", "batteries", this.lowBatteries().length, "batteries"],
@@ -2483,6 +2484,7 @@ class CleanupMixin {
     if (executable.some(a => a.kind === "migrate_meter")) return this.t("confirmWordMeter");
     if (executable.some(a => REPAIR_KINDS.includes(a.kind))) return this.t("confirmWordRepair");
     if (executable.some(a => a.kind === "replace_references" || a.kind === "refactor_automation")) return this.t("confirmWordReplace");
+    if (executable.some(a => a.kind === "rename_entity")) return this.t("confirmWordRename");
     return this.t("confirmWord");
   }
 
@@ -2493,6 +2495,8 @@ class CleanupMixin {
       : executable.some(a => a.kind === "migrate_meter") ? "confirmedSummaryMeter"
       : executable.some(a => REPAIR_KINDS.includes(a.kind)) ? "confirmedSummaryRepair"
       : executable.some(a => a.kind === "add_label") ? "confirmedSummaryLabel"
+      : executable.some(a => a.kind === "set_area") ? "confirmedSummaryArea"
+      : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
     return this.t(key, { count: key === "confirmedSummaryReplace" ? changes : count });
@@ -2766,10 +2770,10 @@ class CleanupMixin {
       const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && (PURGE_KINDS.includes(a.kind) || a.kind === "delete_automation") ? "result_purged" : `result_${result.state}`)}</span>` : "";
-      const sub0 = a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
+      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && a.kind === "set_area" ? "result_area" : result.state === "done" && a.kind === "rename_entity" ? "result_renamed" : result.state === "done" && (PURGE_KINDS.includes(a.kind) || a.kind === "delete_automation") ? "result_purged" : `result_${result.state}`)}</span>` : "";
+      const sub0 = a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.t("trimSub", { days: a.keep_days, rows: a.trim?.rows ?? "?" }) : ""].filter(Boolean).join(" · ");
-      const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
+      const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
       const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) ? "" : this.undoAsk === a.object_id
@@ -3587,7 +3591,8 @@ class UnusedMixin {
     ];
   }
 
-  lowBatteries() { return this.data ? this.batteryRows().filter(r => r.low) : []; }
+  // Percent sensors plus the batteries that report volts; the volts come with the trend data, which is loaded in the background.
+  lowBatteries() { return this.data ? [...this.batteryRows(), ...this.batteryVoltRows()].filter(r => r.low) : []; }
 
   batteriesView() {
     const all = [...this.batteryRows(), ...this.batteryVoltRows()], low = all.filter(r => r.low);
@@ -5160,10 +5165,10 @@ class PoliciesMixin {
     const due = item.resurfaced ? `<span class="pill warn">${this.t("dueLabel")}</span>` : "";
     const button = item.by === "label" ? ""
       : item.ignored ? `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="0">${this.t("polShow")}</button>`
-      : `<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
+      : `${this.renameButton(item)}<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
     const decision = item.ignored && item.by === "user" ? `<small>${this.esc(this.decisionLabel(item))}</small>` : "";
     const form = this.decide?.key === item.key ? this.decideForm(item) : "";
-    return `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}${decision}</span>${due}${pill}${button}</div>${form}`;
+    return `<div class="row politem">${this.polSelBox(item)}<span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}${decision}</span>${due}${pill}${button}</div>${form}`;
   }
 
   // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
@@ -5192,7 +5197,7 @@ class PoliciesMixin {
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
     const note = hidden && !this.policyShowHidden ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(hidden) })}</p>` : "";
     const empty = !found.rows.length && !found.none ? `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("polNoViolations")}</div>` : "";
-    return `<div class="panel">${chips}${found.bar}${found.none}${empty}${rows}${pg.footer}${note}</div>`;
+    return `<div class="panel">${chips}${found.bar}${this.polSelBar()}${found.none}${empty}${rows}${pg.footer}${note}</div>`;
   }
 
   policiesView() {
@@ -7215,6 +7220,8 @@ class FindingStatusMixin {
   bulkForm() {
     const b = this.bulk;
     if (!b) return "";
+    if (b.kind === "area") return this.areaForm();
+    if (b.kind === "rename") return this.renameForm();
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
@@ -7252,6 +7259,8 @@ class FindingStatusMixin {
     const b = this.bulk;
     if (!b) return;
     if (b.kind === "label") return this.makeLabelPlan();
+    if (b.kind === "area") return this.makeAreaPlan();
+    if (b.kind === "rename") return this.makeRenamePlan();
     if (b.kind === "known" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
     const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
     try {
@@ -7292,6 +7301,8 @@ class FindingStatusMixin {
       if (reason) reason.oninput = ev => { this.bulk.reason = ev.target.value; };
       const label = form.querySelector("[data-bulk-label]");
       if (label) label.onchange = ev => { this.bulk.label = ev.target.value; };
+      const area = form.querySelector("[data-bulk-area]");
+      if (area) area.onchange = ev => { this.bulk.area = ev.target.value; };
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
       form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };
@@ -8580,6 +8591,146 @@ class BackupCleanupMixin {
   }
 }
 
+// Giving findings "without an area" one: the bulk form under the selection bar and the plan. Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  fselArea: "Bereich zuweisen", state_area: "Bereich zuweisen", areaChoose: "Bereich", areaSuggest: "Je Eintrag nach Vorschlag", areaNone: "Es gibt noch keinen Bereich. Lege einen in Home Assistant an.",
+  areaNoItems: "Wähle Entitäten oder Geräte aus.", areaSuggested: "vorgeschlagen", areaNote: "Der Vorschlag kommt vom Gerät oder von der Integration, nie vom Namen.",
+  reason_no_suggestion: "Kein sicherer Vorschlag. Wähle einen Bereich aus.", reason_area_missing: "Den Bereich gibt es nicht.", reason_has_area: "Hat inzwischen einen Bereich.",
+  check_area_set: "Bereich ist gesetzt", confirmedSummaryArea: "{count} Einträge bekommen einen Bereich. Das lässt sich vollständig rückgängig machen.", result_area: "Bereich gesetzt",
+  abort_area_not_allowed: "Home Assistant erlaubt diesen Bereich nicht. Setze ihn am Gerät.",
+});
+Object.assign(TEXT.en, {
+  fselArea: "Assign area", state_area: "Assign area", areaChoose: "Area", areaSuggest: "Per entry, as suggested", areaNone: "There is no area yet. Create one in Home Assistant.",
+  areaNoItems: "Select entities or devices.", areaSuggested: "suggested", areaNote: "The suggestion comes from the device or the integration, never from the name.",
+  reason_no_suggestion: "No safe suggestion. Choose an area.", reason_area_missing: "That area does not exist.", reason_has_area: "Has an area now.",
+  check_area_set: "Area is set", confirmedSummaryArea: "{count} entries get an area. This can be fully undone.", result_area: "Area set",
+  abort_area_not_allowed: "Home Assistant does not allow this area here. Set it on the device.",
+});
+
+class AreaAssignMixin {
+  // What the bulk forms act on: the ticked rows of the policy list. Each is { id, type }.
+  bulkTargets() {
+    const items = (this.policies?.rules || []).flatMap(rule => rule.items.map(item => ({ ...item, rule: rule.id })));
+    return [...(this.polSel || [])].map(key => items.find(i => i.key === key)).filter(Boolean).map(i => ({ id: i.object_id, type: i.object_type }));
+  }
+
+  // The bar over the policy list: how many are ticked and what can be done with them.
+  polSelBar() {
+    const n = this.polSel?.size || 0;
+    return `<div class="toolbar${n ? "" : " nosel"}"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-pol-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns"><button class="btn" data-pol-bulk="area" ${n ? "" : "disabled"}>${this.t("fselArea")}</button><button class="btn" data-pol-bulk="rename" ${n ? "" : "disabled"}>${this.t("fselRename")}</button></div></div>${this.bulk && ["area", "rename"].includes(this.bulk.kind) ? this.bulkForm() : ""}`;
+  }
+
+  polSelBox(item) {
+    if (item.ignored || !["entity", "device"].includes(item.object_type)) return "";
+    return `<input type="checkbox" class="selbox" data-pol-sel="${this.esc(item.key)}" ${this.polSel?.has(item.key) ? "checked" : ""} aria-label="${this.esc(item.name)}">`;
+  }
+
+  bindPolSel(root) {
+    root.querySelectorAll("[data-pol-sel]").forEach(el => el.onchange = () => { (this.polSel ||= new Set())[el.checked ? "add" : "delete"](el.dataset.polSel); this.render(); });
+    root.querySelector("[data-pol-sel-clear]")?.addEventListener("click", () => { this.polSel = new Set(); this.bulk = null; this.render(); });
+    root.querySelectorAll("[data-pol-bulk]").forEach(el => el.addEventListener("click", () => { this.bulk = { kind: el.dataset.polBulk, mode: "strip", find: "", with: "", area: "", error: "" }; this.render(); }));
+  }
+
+  areaForm() {
+    const b = this.bulk;
+    const areas = (this.data.objects || []).filter(o => o.object_type === "area").sort((x, y) => String(x.name).localeCompare(String(y.name)));
+    if (!areas.length) return `<div class="polform bulkform"><small>${this.t("areaNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
+    return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_area")}</strong>
+      <select data-bulk-area aria-label="${this.esc(this.t("areaChoose"))}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${b.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
+      <button type="submit" class="btn primary">${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      <small class="factnote">${this.t("areaNote")}</small>
+      ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
+  }
+
+  async makeAreaPlan() {
+    const b = this.bulk;
+    const ids = [...new Set(this.bulkTargets().filter(t => ["entity", "device"].includes(t.type)).map(t => t.id))];
+    if (!ids.length) { b.error = "areaNoItems"; this.render(); return; }
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "set_area", object_id, ...(b.area ? { target: b.area } : {}) })) });
+      this.openNewPlan(plan);
+      this.bulk = null; this.polSel = new Set();
+    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    this.render();
+  }
+}
+
+// Renaming entity IDs with their references: the form under the selection bar, the plan, the row button. Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  fselRename: "Umbenennen", state_rename: "Umbenennen mit Verweisen", renameMode: "Wie", renameStrip: "Zahl am Ende entfernen (_2, _3 …)", renameReplace: "Text ersetzen",
+  renameFind: "Suchen", renameWith: "Ersetzen durch", renameNoItems: "Wähle Entitäten aus.", renameNothing: "Mit dieser Angabe ändert sich keine ID.", renamePreview: "{count} IDs ändern sich:",
+  renameMore: "und {count} weitere", renameButton: "Umbenennen vorbereiten", renameNote: "Die Verweise in Automationen, Skripten, Szenen und Dashboards ziehen mit. Das Backup davor ist klein, ohne Datenbank.",
+  reason_not_registered: "Die Entität steht nicht in der Registry und lässt sich nicht umbenennen.", reason_bad_new_id: "Die neue ID ist ungültig oder hat eine andere Domain.", reason_target_taken: "Die neue ID ist schon vergeben.",
+  reason_rename_unwritable: "Ein Verweis steht in einer Quelle, die Housekeeper nicht schreiben darf (zum Beispiel ein Paket). Er würde brechen.", reason_rename_templates: "Eine Vorlage nennt die ID als Text. Sie würde brechen und muss von Hand angepasst werden.",
+  check_entity_renamed: "Neue ID ist da, alte ist weg", confirmedSummaryRename: "{count} Entitäten bekommen eine neue ID, Verweise werden umgeschrieben. Rückgängig ist möglich, solange die Dateien unverändert sind.", result_renamed: "Umbenannt",
+  abort_rename_failed: "Home Assistant konnte die ID nicht ändern; die Dateien wurden zurückgesetzt.", confirmWordRename: "UMBENENNEN",
+});
+Object.assign(TEXT.en, {
+  fselRename: "Rename", state_rename: "Rename with references", renameMode: "How", renameStrip: "Remove the trailing number (_2, _3 …)", renameReplace: "Replace text",
+  renameFind: "Find", renameWith: "Replace with", renameNoItems: "Select entities.", renameNothing: "With this input no ID changes.", renamePreview: "{count} IDs change:",
+  renameMore: "and {count} more", renameButton: "Prepare rename", renameNote: "References in automations, scripts, scenes and dashboards follow. The backup before it is small, without the database.",
+  reason_not_registered: "The entity is not in the registry and cannot be renamed.", reason_bad_new_id: "The new ID is invalid or has another domain.", reason_target_taken: "The new ID is taken already.",
+  reason_rename_unwritable: "A reference sits in a source Housekeeper may not write (a package, for example). It would break.", reason_rename_templates: "A template names the ID as text. It would break and has to be changed by hand.",
+  check_entity_renamed: "New ID exists, old one is gone", confirmedSummaryRename: "{count} entities get a new ID, references are rewritten. Undo works while the files are unchanged.", result_renamed: "Renamed",
+  abort_rename_failed: "Home Assistant could not change the ID; the files were put back.", confirmWordRename: "RENAME",
+});
+
+class RenameMixin {
+  // The new ID of one entity under the chosen rule, or "" when nothing changes. Only the part after the dot is touched.
+  renameTarget(id, b) {
+    const [domain, ...rest] = id.split("."), name = rest.join(".");
+    const next = b.mode === "replace" ? (b.find ? name.split(b.find).join(b.with || "") : name) : name.replace(/_\d+$/, "");
+    return next && next !== name ? `${domain}.${next}` : "";
+  }
+
+  renameItems() {
+    const b = this.bulk;
+    const ids = [...new Set(this.bulkTargets().filter(t => t.type === "entity").map(t => t.id))];
+    return ids.map(id => [id, this.renameTarget(id, b)]).filter(([, to]) => to);
+  }
+
+  renameForm() {
+    const b = this.bulk, items = this.renameItems();
+    const shown = items.slice(0, 5).map(([from, to]) => `<code>${this.esc(from)}</code> → <code>${this.esc(to)}</code>`).join("<br>");
+    const rest = items.length > 5 ? `<br>${this.t("renameMore", { count: items.length - 5 })}` : "";
+    const preview = items.length ? `<small class="factnote">${this.t("renamePreview", { count: items.length })}<br>${shown}${rest}</small>` : `<small class="factnote">${this.t("renameNothing")}</small>`;
+    return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_rename")}</strong>
+      <select data-bulk-rename-mode aria-label="${this.esc(this.t("renameMode"))}"><option value="strip" ${b.mode !== "replace" ? "selected" : ""}>${this.t("renameStrip")}</option><option value="replace" ${b.mode === "replace" ? "selected" : ""}>${this.t("renameReplace")}</option></select>
+      ${b.mode === "replace" ? `<input data-bulk-rename-find value="${this.esc(b.find || "")}" placeholder="${this.esc(this.t("renameFind"))}" aria-label="${this.esc(this.t("renameFind"))}"><input data-bulk-rename-with value="${this.esc(b.with || "")}" placeholder="${this.esc(this.t("renameWith"))}" aria-label="${this.esc(this.t("renameWith"))}">` : ""}
+      <button type="submit" class="btn primary" ${items.length ? "" : "disabled"}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      ${preview}<small class="factnote">${this.t("renameNote")}</small>
+      ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
+  }
+
+  async makeRenamePlan() {
+    const b = this.bulk, items = this.renameItems();
+    if (!items.length) { b.error = "renameNothing"; this.render(); return; }
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: items.map(([object_id, target]) => ({ kind: "rename_entity", object_id, target })) });
+      this.openNewPlan(plan);
+      this.bulk = null; this.polSel = new Set();
+    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    this.render();
+  }
+
+  // On the violation "ID ends in a number": ticks it and opens the form with the number removed.
+  renameButton(item) {
+    if (item.rule !== "entity_id_suffix" || item.ignored) return "";
+    return `<button class="btn" data-rename-start="${this.esc(item.key)}">${this.t("renameButton")}</button>`;
+  }
+
+  bindRename(root) {
+    root.querySelectorAll("[data-rename-start]").forEach(el => el.addEventListener("click", () => {
+      this.polSel = new Set([el.dataset.renameStart]); this.bulk = { kind: "rename", mode: "strip", find: "", with: "", error: "" }; this.render();
+    }));
+    const mode = root.querySelector("[data-bulk-rename-mode]");
+    if (mode) mode.onchange = ev => { this.bulk.mode = ev.target.value; this.render(); };
+    const find = root.querySelector("[data-bulk-rename-find]"), repl = root.querySelector("[data-bulk-rename-with]");
+    if (find) find.onchange = ev => { this.bulk.find = ev.target.value; this.render(); };
+    if (repl) repl.onchange = ev => { this.bulk.with = ev.target.value; this.render(); };
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -9316,6 +9467,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindBatteryCare(root);
     this.bindCriteriaHistory(root);
     this.bindBackupCleanup(root);
+    this.bindRename(root);
+    this.bindPolSel(root);
     this.bindCounter(root);
     this.bindPicker(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
@@ -9518,7 +9671,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, CriteriaHistoryMixin, BackupCleanupMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, SparklineMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, RenameMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, SparklineMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

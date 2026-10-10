@@ -76,6 +76,8 @@ class FindingStatusMixin {
   bulkForm() {
     const b = this.bulk;
     if (!b) return "";
+    if (b.kind === "area") return this.areaForm();
+    if (b.kind === "rename") return this.renameForm();
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
@@ -113,6 +115,8 @@ class FindingStatusMixin {
     const b = this.bulk;
     if (!b) return;
     if (b.kind === "label") return this.makeLabelPlan();
+    if (b.kind === "area") return this.makeAreaPlan();
+    if (b.kind === "rename") return this.makeRenamePlan();
     if (b.kind === "known" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
     const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
     try {
@@ -153,6 +157,8 @@ class FindingStatusMixin {
       if (reason) reason.oninput = ev => { this.bulk.reason = ev.target.value; };
       const label = form.querySelector("[data-bulk-label]");
       if (label) label.onchange = ev => { this.bulk.label = ev.target.value; };
+      const area = form.querySelector("[data-bulk-area]");
+      if (area) area.onchange = ev => { this.bulk.area = ev.target.value; };
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
       form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };

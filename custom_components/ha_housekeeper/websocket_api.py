@@ -15,7 +15,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import label_registry as lr
 from homeassistant.util import dt as dt_util
 
-from . import battery_trend, battery_voltage, counter_repair
+from . import area_assign, battery_trend, battery_voltage, counter_repair, rename
 from . import refactor as refactor_module
 from .audit_report import build_report
 from .automation_delete import preview as preview_automation_delete
@@ -25,6 +25,7 @@ from .battery_care import BatteryError
 from .blueprints import async_blueprints
 from .cleanup import (
     ACTION_KINDS,
+    AREA_KINDS,
     DELETE_AUTOMATION_KINDS,
     DELETE_BACKUP_KINDS,
     LABEL_KINDS,
@@ -35,6 +36,7 @@ from .cleanup import (
     RECORDER_CHOICES,
     REFACTOR_KINDS,
     REFERENCE_KINDS,
+    RENAME_KINDS,
     REPAIR_KINDS,
     TRIM_KINDS,
     attach_history,
@@ -385,6 +387,21 @@ async def _plan_from_requests(
                 "fingerprint": registry_fingerprint(entry) if entry else None,
             }
 
+    rename_data = {}
+    for action in requests:
+        if action["kind"] in RENAME_KINDS:
+            key = (action["object_id"], action.get("target") or "")
+            if key not in rename_data:
+                rename_data[key] = await rename.prepare(hass, snapshot, *key)
+
+    area_data = {
+        action["object_id"]: area_assign.prepare(
+            hass, action["object_id"], action.get("target") or ""
+        )
+        for action in requests
+        if action["kind"] in AREA_KINDS
+    }
+
     backup_data: dict[str, dict[str, Any]] = {}
     if any(a["kind"] in DELETE_BACKUP_KINDS for a in requests):
         listing = await list_backups(hass, scanner_plans(hass), datetime.now(UTC))
@@ -436,6 +453,8 @@ async def _plan_from_requests(
         refactor_enabled=refactor_enabled,
         counter_data=counter_data,
         label_data=label_data,
+        area_data=area_data,
+        rename_data=rename_data,
         trim_data=trim_data,
         backup_data=backup_data,
         delete_data=delete_data,

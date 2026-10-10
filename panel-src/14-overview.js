@@ -221,6 +221,7 @@ class OverviewMixin {
 
   // Quick links to the hint views; counts exclude hidden findings.
   cleanupCard() {
+    this.ensureBatteryTrend();
     const open = this.data.findings.filter(f => !f.ignored);
     const items = [
       ["batteries", "mdi:battery-alert-variant-outline", "batteries", this.lowBatteries().length, "batteries"],

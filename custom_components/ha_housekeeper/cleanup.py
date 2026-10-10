@@ -26,6 +26,7 @@ USAGE_RELATIONS = frozenset(
 ENTITY_KINDS = frozenset({"disable_entity", "remove_entity"})
 DEVICE_KINDS = frozenset({"disable_device", "remove_device", "forget_device"})
 REFERENCE_KINDS = frozenset({"replace_references"})
+RENAME_KINDS = frozenset({"rename_entity"})  # a new entity ID, with every reference carried along
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
@@ -40,6 +41,7 @@ DELETE_AUTOMATION_KINDS = frozenset(
 )  # removes one automation from its YAML file
 REPAIR_KINDS = frozenset({"repair_counter", "repair_range"})
 LABEL_KINDS = frozenset({"add_label"})  # adds one existing label to an entity; Home Assistant only
+AREA_KINDS = frozenset({"set_area"})  # gives an entity or device without an area an existing one
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
 RECORDER_CHOICES = ("keep", "statistics", "states")
@@ -48,6 +50,7 @@ ACTION_KINDS = (
     ENTITY_KINDS
     | DEVICE_KINDS
     | REFERENCE_KINDS
+    | RENAME_KINDS
     | METER_KINDS
     | PURGE_KINDS
     | TRIM_KINDS
@@ -56,6 +59,7 @@ ACTION_KINDS = (
     | REFACTOR_KINDS
     | REPAIR_KINDS
     | LABEL_KINDS
+    | AREA_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
@@ -66,6 +70,7 @@ BACKUP_KINDS = frozenset(
         "remove_device",
         "forget_device",
         "replace_references",
+        "rename_entity",
         "migrate_meter",
         "purge_statistics",
         "trim_history",
@@ -342,6 +347,14 @@ BLOCKING_REASONS = frozenset(
         "fixed_outside",
         "label_missing",
         "already_labelled",
+        "no_suggestion",
+        "not_registered",
+        "bad_new_id",
+        "target_taken",
+        "rename_unwritable",
+        "rename_templates",
+        "area_missing",
+        "has_area",
         "nothing_found",
         "too_many_rows",
         "schema_unknown",
@@ -510,6 +523,51 @@ def judge_reference_action(
     if action["has_statistics"]:
         reasons.append("has_statistics")
     reasons.append("config_rewrite")
+    _verdict(action)
+    return action
+
+
+def judge_rename_action(
+    object_id: str,
+    target: str | None,
+    objects: dict[str, dict[str, Any]],
+    edges: list[dict[str, Any]],
+    info: dict[str, Any],
+) -> dict[str, Any]:
+    """Judge giving one entity a new ID and rewriting every reference to it.
+
+    A reference that cannot be written (a package, a blueprint input) or that sits in a template
+    would break silently, so either one blocks the plan. A rename that changes files is at least
+    ``review``; one without references only changes the registry and needs no review.
+    """
+    action: dict[str, Any] = {
+        "kind": "rename_entity",
+        "object_id": object_id,
+        "object_type": "entity",
+        "target": target,
+        "name": (objects.get(object_id) or {}).get("name") or object_id,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": _used_by(edges, f"entity:{object_id}"),
+        "has_statistics": bool((objects.get(object_id) or {}).get("has_statistics")),
+        "sources": info.get("sources") or [],
+    }
+    reasons = action["reasons"]
+    if not info.get("registered"):
+        reasons.append("not_registered")
+    elif target == object_id:
+        reasons.append("same_entity")
+    elif not info.get("valid"):
+        reasons.append("bad_new_id")
+    elif not info.get("free"):
+        reasons.append("target_taken")
+    sources = action["sources"]
+    if any(not source["writable"] for source in sources):
+        reasons.append("rename_unwritable")
+    if any(source["manual"] for source in sources):
+        reasons.append("rename_templates")
+    if any(source["writable"] and source["changes"] for source in sources):
+        reasons.append("config_rewrite")
     _verdict(action)
     return action
 
@@ -814,6 +872,36 @@ def judge_label_action(
     return action
 
 
+def judge_area_action(object_id: str, name: str, info: dict[str, Any]) -> dict[str, Any]:
+    """Judge giving one entity or device without an area one that exists.
+
+    ``info`` is what ``area_assign.prepare`` found. An area that is set already is never replaced,
+    so a plan that is not blocked changes nothing but an empty field and needs no review.
+    """
+    action: dict[str, Any] = {
+        "kind": "set_area",
+        "object_id": object_id,
+        "object_type": info.get("object_type", "entity"),
+        "name": name,
+        "target": info.get("target"),
+        "area_name": info.get("area_name"),
+        "suggested": bool(info.get("suggested")),
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+    }
+    reasons = action["reasons"]
+    if not info.get("exists"):
+        reasons.append("not_found")
+    elif info.get("current"):
+        reasons.append("has_area")
+    elif info.get("target") is None:
+        reasons.append("no_suggestion" if info.get("suggested") else "area_missing")
+    _verdict(action)
+    return action
+
+
 def judge_meter_action(
     object_id: str,
     target: str | None,
@@ -960,6 +1048,8 @@ def build_plan(
     refactor_enabled: bool = False,
     counter_data: dict[tuple[str, str], dict[str, Any]] | None = None,
     label_data: dict[tuple[str, str], dict[str, Any]] | None = None,
+    area_data: dict[str, dict[str, Any]] | None = None,
+    rename_data: dict[tuple[str, str], dict[str, Any]] | None = None,
     trim_data: dict[tuple[str, int], dict[str, Any] | None] | None = None,
     backup_data: dict[str, dict[str, Any]] | None = None,
     delete_data: dict[str, dict[str, Any]] | None = None,
@@ -1041,6 +1131,11 @@ def build_plan(
                 bool(snapshot["meta"].get("recorder_available")),
             )
             action["fingerprint"] = None
+        elif kind in AREA_KINDS:
+            info = (area_data or {}).get(object_id, {})
+            entry = objects.get(object_id) or devices.get(object_id) or {}
+            action = judge_area_action(object_id, entry.get("name") or object_id, info)
+            action["fingerprint"] = info.get("fingerprint")
         elif kind in LABEL_KINDS:
             label_id = request.get("target") or ""
             info = (label_data or {}).get((object_id, label_id), {})
@@ -1086,6 +1181,11 @@ def build_plan(
                 meter={**meter, "mode": mode},
             )
             action["fingerprint"] = meter.get("fingerprint")
+        elif kind in RENAME_KINDS:
+            target = request.get("target") or ""
+            found = (rename_data or {}).get((object_id, target), {})
+            action = judge_rename_action(object_id, target, objects, snapshot["edges"], found)
+            action["fingerprint"] = found.get("fingerprint")
         elif kind in REFERENCE_KINDS:
             target = request.get("target") or ""
             reference_print, sources = (reference_data or {}).get((object_id, target), (None, []))

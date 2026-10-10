@@ -3355,3 +3355,55 @@ test("housekeeper backups: the list marks protected ones, the rule picks the res
   assert.ok(el.autoDeleteButton({ rule_id: "automation.stale", object_id: "automation.old" }).includes("data-auto-delete"));
   assert.equal(el.autoDeleteButton({ rule_id: "entity.stale", object_id: "sensor.x" }), "");
 });
+
+function policyPanel(calls) {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "area", object_id: "kitchen", name: "Kitchen" }] };
+  el.policies = { rules: [
+    { id: "entity_area", enabled: true, count: 1, items: [{ object_type: "entity", object_id: "sensor.a", name: "A", key: "ka", ignored: false }] },
+    { id: "entity_id_suffix", enabled: true, count: 2, items: [
+      { object_type: "entity", object_id: "light.hall_2", name: "Hall", key: "kb", ignored: false },
+      { object_type: "entity", object_id: "light.room_3", name: "Room", key: "kc", ignored: false }] },
+  ] };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan_id: "p2", status: "dry_run", actions: [], summary: { total: 1, ok: 1, review: 0, blocked: 0 } }; } };
+  return el;
+}
+
+test("ticked policy violations get an area through a plan, by suggestion or by choice", async () => {
+  const calls = [];
+  const el = policyPanel(calls);
+  el.polSel = new Set(["ka"]);
+  el.bulk = { kind: "area", area: "", error: "" };
+  const bar = el.polSelBar();
+  assert.ok(bar.includes("Per entry, as suggested") && bar.includes('value="kitchen"'));
+  await el.commitBulk();
+  assert.equal(JSON.stringify(calls[0].actions), JSON.stringify([{ kind: "set_area", object_id: "sensor.a" }]));
+  el.polSel = new Set(["ka"]); el.bulk = { kind: "area", area: "kitchen", error: "" };
+  await el.commitBulk();
+  assert.equal(calls[1].actions[0].target, "kitchen");
+  assert.equal(el.view, "cleanup");
+});
+
+test("renaming strips the number or replaces text, shows the new IDs and plans one rename each", async () => {
+  const calls = [];
+  const el = policyPanel(calls);
+  el.polSel = new Set(["kb", "kc"]);
+  el.bulk = { kind: "rename", mode: "strip", find: "", with: "", error: "" };
+  assert.ok(el.polSelBar().includes("light.hall") && el.polSelBar().includes("2 IDs change"));
+  await el.commitBulk();
+  assert.equal(JSON.stringify(calls[0].actions.map(a => [a.kind, a.object_id, a.target])),
+    JSON.stringify([["rename_entity", "light.hall_2", "light.hall"], ["rename_entity", "light.room_3", "light.room"]]));
+  el.polSel = new Set(["kb"]); el.bulk = { kind: "rename", mode: "replace", find: "hall", with: "flur", error: "" };
+  await el.commitBulk();
+  assert.equal(calls[1].actions[0].target, "light.flur_2");
+  el.polSel = new Set(["kb"]); el.bulk = { kind: "rename", mode: "replace", find: "", with: "", error: "" };
+  assert.ok(el.polSelBar().includes("no ID changes"));
+});
+
+test("the overview counts batteries that report volts as low too", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const entity = DATA.objects.find(o => o.object_type === "entity");
+  el.batteryTrend = { voltage: { rows: [{ entity_id: entity.object_id, level: 2.1, state: "low" }] } };
+  assert.ok(el.lowBatteries().some(r => r.volt));
+});
