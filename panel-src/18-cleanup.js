@@ -173,7 +173,8 @@ class CleanupMixin {
   }
 
   // Creates a fresh preview with the same objects as an earlier plan, for example one that was aborted.
-  async repeatPlan(plan) {
+  // `full`: the small backup failed and the person chose the full one (as the backup settings say).
+  async repeatPlan(plan, full = false) {
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
       const actions = plan.actions.map(a => {
@@ -183,7 +184,7 @@ class CleanupMixin {
         if (a.kind === "trim_history") r.keep_days = a.keep_days;
         return r;
       });
-      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions, ...(full ? { full_backup: true } : {}) });
       this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [fresh, ...(this.journal || [])];
       this._scrollPlan = true;
@@ -292,7 +293,7 @@ class CleanupMixin {
     if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
     else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error), this.t("backupFailHint")].join(" · ") });
     else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
-    else if (open) steps.push({ id: "stepBackup", state: "todo" });
+    else if (open) steps.push({ id: "stepBackup", state: "todo", note: plan.full_backup ? this.t("backupFullPlanned") : null });
     else {
       const job = plan.backup?.job_id ? this.t("stepBackupJob", { id: plan.backup.job_id }) : "";
       steps.push({ id: "stepBackup", state: "done", note: plan.backup?.at ? this.t("stepBackupDone", { date: this.formatDate(plan.backup.at), job }) : null });
@@ -380,7 +381,11 @@ class CleanupMixin {
     }
     else if (open && conf) control = `<div class="setrow planfoot"><button class="btn" data-plan-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("wzBack")}</button><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn ${plan.actions.some(a => a.executable && (REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind))) ? "danger" : "primary"}" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")} (${conf.execute.length})</button></div></div>`;
-    else if (plan.status === "aborted") control = `<div class="setrow planfoot"><small style="margin:0">${this.t("repeatHint")}</small><button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
+    else if (plan.status === "aborted") {
+      const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
+      const full = small ? `<button class="btn" data-plan-repeat-full="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:backup-restore"></ha-icon>${this.t("repeatFull")}</button>` : "";
+      control = `<div class="setrow planfoot"><small style="margin:0">${this.t(small ? "repeatFullHint" : "repeatHint")}</small>${full}<button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
+    }
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
     else if (plan.actions.some(a => a.result?.state === "done" && !PURGE_KINDS.includes(a.kind))) control = this.undoAsk === "all"
       ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`

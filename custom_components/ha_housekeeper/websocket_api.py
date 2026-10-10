@@ -481,6 +481,8 @@ async def _plan_from_requests(
             ],
             vol.Length(min=1, max=MAX_ACTIONS),
         ),
+        # Asked for after the small backup failed: back up as the automatic backup settings say.
+        vol.Optional("full_backup", default=False): bool,
     }
 )
 @websocket_api.async_response
@@ -503,6 +505,8 @@ async def websocket_plan_create(
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
     plan = await _plan_from_requests(hass, snapshot, msg["actions"], scanner.refactor.enabled)
+    if msg["full_backup"]:
+        plan["full_backup"] = True
     scanner.journal.add(plan)
     connection.send_result(msg["id"], _versioned(public_plan(plan)))
 

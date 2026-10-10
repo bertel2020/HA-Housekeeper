@@ -139,7 +139,7 @@ const TEXT = {
     quarantineSince: "seit {date} · {days} Tagen", quarantineWait: "Noch {days} Tage", quarantineReady: "Frühestens entfernbar", quarantineFact: "seit {date} ({days} Tage)",
     confirmWordRemove: "ENTFERNEN", confirmedSummaryRemove: "{count} Entitäten werden entfernt. Vorher legt Housekeeper ein Home-Assistant-Backup an (das kann dauern) und startet nur, wenn es erfolgreich ist. Wiederherstellen geht, solange die Entitäts-ID frei ist und die Integration noch existiert.",
     reason_not_quarantined: "Nicht in Quarantäne: erst deaktivieren, nach der Quarantänezeit entfernen.", reason_quarantine_too_short: "Die Quarantäne ist noch zu kurz.", reason_not_restorable: "Nicht wiederherstellbar: Die Integration existiert nicht mehr, das Entfernen wäre endgültig.",
-    abort_backup_failed: "Das Backup ist fehlgeschlagen – es wurde nichts geändert.", abort_interrupted: "Der Lauf wurde unterbrochen (Neustart von Home Assistant); dieser Schritt lief nicht.", abort_backup_unavailable: "Die Backup-Komponente ist nicht verfügbar – es wurde nichts geändert.", abort_no_backup_agent: "Es ist kein Backup-Ziel eingerichtet (Einstellungen → System → Backups) – es wurde nichts geändert.",
+    abort_backup_failed: "Das Backup ist fehlgeschlagen – es wurde nichts geändert.", abort_backup_small_failed: "Das Backup nur von Home Assistant ist fehlgeschlagen – es wurde nichts geändert.", repeatFull: "Mit vollem Backup wiederholen", repeatFullHint: "Ein volles Backup nach deinen Backup-Einstellungen (mit Apps und Ordnern) dauert länger, zählt aber nicht als automatisches Backup. Oder wiederhole den Plan mit dem kleinen Backup.", backupFullPlanned: "Volles Backup nach deinen Backup-Einstellungen", abort_interrupted: "Der Lauf wurde unterbrochen (Neustart von Home Assistant); dieser Schritt lief nicht.", abort_backup_unavailable: "Die Backup-Komponente ist nicht verfügbar – es wurde nichts geändert.", abort_no_backup_agent: "Es ist kein Backup-Ziel eingerichtet (Einstellungen → System → Backups) – es wurde nichts geändert.",
     result_removed: "Entfernt", undo_restored: "wiederhergestellt (wieder in Quarantäne)", undo_conflict_taken: "nicht wiederhergestellt: Entitäts-ID inzwischen belegt", undo_conflict_unrestorable: "nicht wiederhergestellt: Integration existiert nicht mehr",
     check_removed: "Entität ist entfernt", plan_status_backup: "Backup läuft", backupRunning: "Backup läuft … das kann etwas dauern.", daysLeftShort: "noch {days} Tage", removalCandidatesHint: "Entitäten in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", removalReady: "Bereit", waitingShort: "Wartet",
     perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
@@ -318,7 +318,7 @@ const TEXT = {
     quarantineSince: "since {date} · {days} days", quarantineWait: "{days} days to go", quarantineReady: "Removable at the earliest", quarantineFact: "since {date} ({days} days)",
     confirmWordRemove: "REMOVE", confirmedSummaryRemove: "{count} entities will be removed. Housekeeper creates a Home Assistant backup first (this can take a while) and only continues if it succeeds. Restoring works while the entity ID is free and the integration still exists.",
     reason_not_quarantined: "Not in quarantine: disable first, remove after the quarantine period.", reason_quarantine_too_short: "The quarantine is still too short.", reason_not_restorable: "Not restorable: the integration no longer exists, so the removal would be final.",
-    abort_backup_failed: "The backup failed – nothing was changed.", abort_interrupted: "The run was cut off (Home Assistant restarted); this step did not run.", abort_backup_unavailable: "The backup component is not available – nothing was changed.", abort_no_backup_agent: "No backup location is set up (Settings → System → Backups) – nothing was changed.",
+    abort_backup_failed: "The backup failed – nothing was changed.", abort_backup_small_failed: "The backup of Home Assistant only failed – nothing was changed.", repeatFull: "Repeat with a full backup", repeatFullHint: "A full backup as your backup settings say (with apps and folders) takes longer but does not count as an automatic backup. Or repeat the plan with the small backup.", backupFullPlanned: "Full backup as your backup settings say", abort_interrupted: "The run was cut off (Home Assistant restarted); this step did not run.", abort_backup_unavailable: "The backup component is not available – nothing was changed.", abort_no_backup_agent: "No backup location is set up (Settings → System → Backups) – nothing was changed.",
     result_removed: "Removed", undo_restored: "restored (back in quarantine)", undo_conflict_taken: "not restored: entity ID is taken now", undo_conflict_unrestorable: "not restored: the integration no longer exists",
     check_removed: "Entity is removed", plan_status_backup: "Backup running", backupRunning: "Backup running … this can take a while.", daysLeftShort: "{days} days to go", removalCandidatesHint: "Entities in quarantine. Removal is possible only after {days} days.", removalReady: "Ready", waitingShort: "Waiting",
     perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
@@ -374,7 +374,7 @@ const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replac
 const PURGE_KINDS = ["purge_statistics", "trim_history", "delete_backup"];
 const REPAIR_KINDS = ["repair_counter", "repair_range"];
 const IMPACT_RANK = { none: 0, low: 1, medium: 2, high: 3 };
-const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent"];
+const BACKUP_FAILURES = ["backup_failed", "backup_small_failed", "backup_unavailable", "no_backup_agent"];
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
@@ -2584,7 +2584,8 @@ class CleanupMixin {
   }
 
   // Creates a fresh preview with the same objects as an earlier plan, for example one that was aborted.
-  async repeatPlan(plan) {
+  // `full`: the small backup failed and the person chose the full one (as the backup settings say).
+  async repeatPlan(plan, full = false) {
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
       const actions = plan.actions.map(a => {
@@ -2594,7 +2595,7 @@ class CleanupMixin {
         if (a.kind === "trim_history") r.keep_days = a.keep_days;
         return r;
       });
-      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions, ...(full ? { full_backup: true } : {}) });
       this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [fresh, ...(this.journal || [])];
       this._scrollPlan = true;
@@ -2703,7 +2704,7 @@ class CleanupMixin {
     if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
     else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error), this.t("backupFailHint")].join(" · ") });
     else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
-    else if (open) steps.push({ id: "stepBackup", state: "todo" });
+    else if (open) steps.push({ id: "stepBackup", state: "todo", note: plan.full_backup ? this.t("backupFullPlanned") : null });
     else {
       const job = plan.backup?.job_id ? this.t("stepBackupJob", { id: plan.backup.job_id }) : "";
       steps.push({ id: "stepBackup", state: "done", note: plan.backup?.at ? this.t("stepBackupDone", { date: this.formatDate(plan.backup.at), job }) : null });
@@ -2791,7 +2792,11 @@ class CleanupMixin {
     }
     else if (open && conf) control = `<div class="setrow planfoot"><button class="btn" data-plan-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("wzBack")}</button><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn ${plan.actions.some(a => a.executable && (REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind))) ? "danger" : "primary"}" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")} (${conf.execute.length})</button></div></div>`;
-    else if (plan.status === "aborted") control = `<div class="setrow planfoot"><small style="margin:0">${this.t("repeatHint")}</small><button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
+    else if (plan.status === "aborted") {
+      const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
+      const full = small ? `<button class="btn" data-plan-repeat-full="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:backup-restore"></ha-icon>${this.t("repeatFull")}</button>` : "";
+      control = `<div class="setrow planfoot"><small style="margin:0">${this.t(small ? "repeatFullHint" : "repeatHint")}</small>${full}<button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
+    }
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
     else if (plan.actions.some(a => a.result?.state === "done" && !PURGE_KINDS.includes(a.kind))) control = this.undoAsk === "all"
       ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`
@@ -9402,6 +9407,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-undo-one-yes]").forEach(el => el.onclick = () => this.undoPlan([el.dataset.undoOneYes]));
     root.querySelectorAll("[data-undo-no]").forEach(el => el.onclick = () => { this.undoAsk = null; this.render(); });
     root.querySelectorAll("[data-plan-repeat]").forEach(el => el.addEventListener("click", () => this.repeatPlan([this.plan, ...(this.journal || [])].find(x => x?.plan_id === el.dataset.planRepeat))));
+    root.querySelectorAll("[data-plan-repeat-full]").forEach(el => el.addEventListener("click", () => this.repeatPlan([this.plan, ...(this.journal || [])].find(x => x?.plan_id === el.dataset.planRepeatFull), true)));
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelector("[data-repl-old]")?.addEventListener("change", e => { this.replOld = e.target.value.trim(); if (this.replNew && this.replNew.split(".")[0] !== this.replOld.split(".")[0]) this.replNew = ""; this.render(); });
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });

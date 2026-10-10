@@ -497,35 +497,35 @@ class CleanupRunner:
             self._backup_failed(plan, "no_backup_agent")
             return
         _event(plan, "backup_started")
-        scope = "database" if with_database else "config"
+        # A plan asks for the full backup only after the small one failed and the person chose it
+        # (a new preview with ``full_backup``). It follows the contents of the user's automatic
+        # backup settings but is a manual backup: no retention, no effect on the schedule.
+        full = bool(plan.get("full_backup"))
+        scope = "full" if full else "database" if with_database else "config"
         try:
             async with asyncio.timeout(BACKUP_TIMEOUT):
                 created = await manager.async_create_backup(
                     agent_ids=list(settings.agent_ids),
                     extra_metadata={"housekeeper": True, "housekeeper_scope": scope},
-                    include_addons=None,
-                    include_all_addons=False,
-                    include_database=with_database,
-                    include_folders=None,
+                    include_addons=list(getattr(settings, "include_addons", None) or [])
+                    if full
+                    else None,
+                    include_all_addons=bool(getattr(settings, "include_all_addons", False))
+                    and full,
+                    include_database=True if full else with_database,
+                    include_folders=list(getattr(settings, "include_folders", None) or [])
+                    if full
+                    else None,
                     include_homeassistant=True,
                     name=f"Housekeeper {plan['plan_id'][:8]}",
                     password=getattr(settings, "password", None),
                 )
         except Exception as err:
-            # The smaller backup is a convenience: when this installation refuses it, the full
-            # automatic backup of the user's own settings still protects the plan.
-            _LOGGER.warning(
-                "The small backup before a plan failed, trying the full one", exc_info=True
-            )
-            _event(plan, "backup_small_failed", error=f"{type(err).__name__}: {err}")
-            scope = "full"
-            try:
-                async with asyncio.timeout(BACKUP_TIMEOUT):
-                    created = await manager.async_create_automatic_backup()
-            except Exception as err2:
-                _LOGGER.warning("The full backup before a plan failed too", exc_info=True)
-                self._backup_failed(plan, "backup_failed", error=f"{type(err2).__name__}: {err2}")
-                return
+            # No automatic way out: a full backup takes much longer, so the person decides.
+            _LOGGER.warning("The backup before a plan failed (%s)", scope, exc_info=True)
+            reason = "backup_failed" if full else "backup_small_failed"
+            self._backup_failed(plan, reason, error=f"{type(err).__name__}: {err}")
+            return
         plan["backup"] = {
             "job_id": getattr(created, "backup_job_id", None),
             "at": _now().isoformat(),

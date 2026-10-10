@@ -314,16 +314,28 @@ async def run_removal(scanner, hass, entity_id, manager, acknowledged=()):
     return plan
 
 
-async def test_a_refused_small_backup_falls_back_to_the_full_one(hass: HomeAssistant) -> None:
+async def test_a_refused_small_backup_stops_and_a_full_one_runs_only_when_asked_for(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import AsyncMock, patch
+
     scanner = await make_scanner(hass)
     entry, _ = await quarantined_entity(hass, scanner, "fallback")
-    manager, _ = fake_backup(error=RuntimeError("not on this installation"), full_ok=True)
+    manager, _ = fake_backup(error=RuntimeError("not on this installation"))
 
     plan = await run_removal(scanner, hass, entry.entity_id, manager)
+    assert plan["status"] == "aborted"
+    assert plan["actions"][0]["result"]["reason"] == "backup_small_failed"
+    manager.async_create_automatic_backup.assert_not_called()  # no full backup on its own
 
-    assert plan["status"] == "verified" and plan["backup"]["scope"] == "full"
-    assert plan["backup"]["job_id"] == "job-full"
-    assert "backup_small_failed" in [event["type"] for event in plan["events"]]
+    manager.async_create_backup = AsyncMock(return_value=type("B", (), {"backup_job_id": "j"})())
+    with patch("homeassistant.components.backup.async_get_manager", return_value=manager):
+        again = await make_plan(scanner, hass, entry.entity_id, kind="remove_entity")
+        again["full_backup"] = True  # what the panel asks for with "Repeat with a full backup"
+        await run(scanner, again)
+    assert again["status"] == "verified" and again["backup"]["scope"] == "full"
+    kwargs = manager.async_create_backup.call_args.kwargs
+    assert kwargs["include_database"] is True and kwargs["include_homeassistant"] is True
 
 
 async def test_removal_waits_for_a_backup_removes_and_can_be_restored(hass: HomeAssistant) -> None:
@@ -415,7 +427,7 @@ async def test_removal_needs_a_finished_quarantine(hass: HomeAssistant) -> None:
 @pytest.mark.parametrize(
     ("manager_kwargs", "reason"),
     [
-        ({"error": RuntimeError("disk full")}, "backup_failed"),
+        ({"error": RuntimeError("disk full")}, "backup_small_failed"),
         ({"agent_ids": ()}, "no_backup_agent"),
     ],
 )
