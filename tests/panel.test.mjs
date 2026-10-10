@@ -1337,6 +1337,18 @@ test("scan progress updates the button and the status line without rebuilding th
   assert.ok(shadow.innerHTML.includes('class="shell"'));
 });
 
+test("a later render swaps the page through a template, not outerHTML (WebKit, issue #7)", () => {
+  const tpl = { innerHTML: "", content: {} };
+  const { el, shadow } = panel("en", { document: { createElement: tag => (tag === "template" ? tpl : { click() {}, remove() {} }), body: { appendChild() {} } } });
+  el.render();
+  let swapped = null;
+  const current = { replaceWith: node => { swapped = node; }, set outerHTML(_) { throw new Error("NoModificationAllowedError"); } };
+  shadow.querySelector = selector => (selector === ".shell" ? current : selector === "style[data-hk]" ? {} : null);
+  el.render();
+  assert.equal(swapped, tpl.content);
+  assert.ok(tpl.innerHTML.startsWith('<div class="shell'));
+});
+
 test("derived lists follow the data: cache, search, ignore flag and edge index", () => {
   const { el } = panel("en");
   const first = el.filtered();

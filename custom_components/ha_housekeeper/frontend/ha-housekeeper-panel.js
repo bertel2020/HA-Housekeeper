@@ -9261,7 +9261,10 @@ class HAHousekeeperPanel extends HTMLElement {
     const shell = `<div class="shell${this.dense ? " dense" : ""}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
-    if (current && this._styleKey === css && root.querySelector("style[data-hk]")) current.outerHTML = shell;
+    if (current && this._styleKey === css && root.querySelector("style[data-hk]")) {
+      // WebKit refuses outerHTML on a child of the shadow root, so the new page goes in through a template.
+      const tpl = document.createElement("template"); tpl.innerHTML = shell; current.replaceWith(tpl.content);
+    }
     else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
     this.restoreFocus(focus);
     this.bind();
