@@ -106,3 +106,32 @@ async def test_the_purge_waits_for_a_running_query_and_gives_up_without_deleting
     )
     assert removed == ["sensor.gone"] and error is None and cleared == [["sensor.gone"]]
     assert not lock.locked()
+
+
+async def test_trimming_waits_for_every_batch_and_stops_when_nothing_moves(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from homeassistant.components import recorder
+
+    from custom_components.ha_housekeeper import recorder_purge
+
+    hass, _ = _recorder(monkeypatch)
+    rows = {"n": 9000, "batch": 4000}
+
+    async def done():  # each wait lets the recorder run one more batch
+        rows["n"] = max(0, rows["n"] - rows["batch"])
+
+    recorder.get_instance(hass).async_block_till_done = done
+
+    async def call(*args, **kwargs):
+        return None
+
+    async def counted(hass_, ids, keep_days):
+        return {i: {"rows": rows["n"], "oldest": None} for i in ids}
+
+    hass.services = type("S", (), {"async_call": staticmethod(call)})()
+    monkeypatch.setattr(recorder_purge, "count_older", counted)
+    assert await recorder_purge.trim_states(hass, "sensor.power", 14) == (0, None)
+
+    rows.update(n=5000, batch=0)  # a recorder that stops deleting
+    assert await recorder_purge.trim_states(hass, "sensor.power", 14) == (5000, None)

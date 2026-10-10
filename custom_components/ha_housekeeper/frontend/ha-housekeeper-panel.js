@@ -5909,13 +5909,13 @@ Object.assign(TEXT.de, {
   purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Aufräumen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
   reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
   check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an. Das lässt sich nur mit dem Backup zurücknehmen.",
-  abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.",
+  abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.", abort_states_left: "Nach dem Löschen gab es noch gespeicherte Zustände.",
 });
 Object.assign(TEXT.en, {
   purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
   reason_irreversible: "Reversible only from the backup.", reason_with_states: "Also deletes the stored states.", reason_entity_exists: "An entity carries this ID again.", reason_not_orphaned: "The ID is not an orphaned statistic.", reason_in_energy: "The Energy dashboard uses this statistic.",
   check_statistics_gone: "Statistic is deleted", result_purged: "Deleted", undo_irreversible: "not undone: only with the backup", confirmedSummaryPurge: "{count} statistics will be deleted. Housekeeper creates a Home Assistant backup first. It can only be taken back with that backup.",
-  abort_recorder_busy: "The recorder was busy with a query for 30 seconds; nothing was deleted.", abort_still_there: "The statistic was still there after deleting.",
+  abort_recorder_busy: "The recorder was busy with a query for 30 seconds; nothing was deleted.", abort_still_there: "The statistic was still there after deleting.", abort_states_left: "Stored states were still there after deleting.",
 });
 
 // Device exchange, follow-up, audit report and end state simulation of a plan (see device_pairs.py, followup.py, audit_report.py, simulation.py); mixed into the panel in 99-register.js.

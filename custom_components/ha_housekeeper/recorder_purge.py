@@ -16,6 +16,28 @@ from .const import DOMAIN
 
 MAX_IDS = 50
 QUERY_WAIT = 30  # seconds to wait for a running recorder query before giving up
+PURGE_WAIT = 600  # seconds one purge_entities may take for all its batches
+
+
+async def _settle(instance: Any, remaining: Any) -> int | None:
+    """Wait until ``purge_entities`` has deleted everything; returns the rows still left.
+
+    The recorder deletes in batches of a few thousand rows and queues the next batch behind
+    whoever waits, so one ``async_block_till_done`` only covers the first batch. Each round waits
+    for one more and counts again (``remaining`` is an async count, None when it cannot count). It
+    stops when nothing is left, when a round deletes nothing or after ``PURGE_WAIT`` seconds.
+    """
+    left: int | None = None
+    try:
+        async with asyncio.timeout(PURGE_WAIT):
+            while True:
+                await instance.async_block_till_done()
+                now = await remaining()
+                if not now or now == left:
+                    return now
+                left = now
+    except TimeoutError:
+        return left
 
 
 async def statistics_left(hass: HomeAssistant, statistic_ids: list[str]) -> set[str]:
@@ -51,11 +73,20 @@ async def delete_statistics(
         instance = get_instance(hass)
         instance.async_clear_statistics(statistic_ids)
         await instance.async_block_till_done()
+        states_left: dict[str, dict[str, Any]] = {}
         if states:
             await hass.services.async_call(
                 "recorder", "purge_entities", {"entity_id": statistic_ids}, blocking=True
             )
-            await instance.async_block_till_done()
+
+            async def remaining() -> int | None:
+                nonlocal states_left
+                # keep_days 0: every state row of these IDs counts
+                found = await count_older(hass, statistic_ids, 0)
+                states_left = found or {}
+                return None if found is None else sum(v["rows"] for v in found.values())
+
+            await _settle(instance, remaining)
         left = await statistics_left(hass, statistic_ids)
     finally:
         lock.release()
@@ -64,7 +95,12 @@ async def delete_statistics(
         store.get("query_cache", {}).clear()  # cost and statistics answers are out of date now
     return (
         removed,
-        [{"id": sid, "reason": "still_there"} for sid in statistic_ids if sid in left],
+        [{"id": sid, "reason": "still_there"} for sid in statistic_ids if sid in left]
+        + [
+            {"id": sid, "reason": "states_left"}
+            for sid in statistic_ids
+            if sid not in left and (states_left.get(sid) or {}).get("rows")
+        ],
         None,
     )
 
@@ -166,8 +202,9 @@ async def trim_states(
 ) -> tuple[int | None, str | None]:
     """Delete the state rows of one entity older than ``keep_days`` days; statistics stay.
 
-    Holds the shared recorder query lock. Returns the rows left that are still too old (None when
-    they cannot be counted) and ``recorder_busy`` when the lock stayed taken (nothing was deleted).
+    Holds the shared recorder query lock until the recorder has deleted every batch. Returns the
+    rows left that are still too old (None when they cannot be counted) and ``recorder_busy`` when
+    the lock stayed taken (nothing was deleted).
     """
     from homeassistant.components.recorder import get_instance
 
@@ -185,9 +222,13 @@ async def trim_states(
             {"entity_id": [entity_id], "keep_days": keep_days},
             blocking=True,
         )
-        await get_instance(hass).async_block_till_done()
+
+        async def remaining() -> int | None:
+            found = await count_older(hass, [entity_id], keep_days)
+            return None if found is None else found[entity_id]["rows"]
+
+        left = await _settle(get_instance(hass), remaining)
     finally:
         lock.release()
     store.get("query_cache", {}).clear()
-    left = await count_older(hass, [entity_id], keep_days)
-    return (None if left is None else left[entity_id]["rows"]), None
+    return left, None
