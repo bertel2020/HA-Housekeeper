@@ -51,6 +51,7 @@ from .db_health import database_first, db_health, growth
 from .device_pairs import pair_devices
 from .dry_run import Context as DryRunContext
 from .dry_run import dry_run as run_dry
+from .entity_recorder import entity_recorder
 from .exposure import exposure
 from .goals import CATALOG as GOAL_CATALOG
 from .goals import evaluate as evaluate_goals
@@ -950,6 +951,27 @@ async def websocket_database_first(
             result = await database_first(hass)
     except Exception as err:
         connection.send_error(msg["id"], "database_first_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/entity_recorder",
+        vol.Required("entity_id"): vol.All(str, vol.Length(max=255)),
+    }
+)
+@websocket_api.async_response
+async def websocket_entity_recorder(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Rows and time span of one entity in the recorder tables. Read-only; kept for two minutes."""
+    try:
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            result = await entity_recorder(hass, msg["entity_id"])
+    except Exception as err:
+        connection.send_error(msg["id"], "entity_recorder_failed", f"{type(err).__name__}: {err}")
         return
     connection.send_result(msg["id"], _versioned(result))
 
@@ -2303,6 +2325,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_db_health)
     websocket_api.async_register_command(hass, websocket_statistics_last)
     websocket_api.async_register_command(hass, websocket_database_first)
+    websocket_api.async_register_command(hass, websocket_entity_recorder)
     websocket_api.async_register_command(hass, websocket_counter_scan)
     websocket_api.async_register_command(hass, websocket_range_series)
     websocket_api.async_register_command(hass, websocket_policies)

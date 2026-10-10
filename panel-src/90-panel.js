@@ -720,6 +720,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     this.bindStale(root);
+    this.bindEntityRecorder(root);
     this.bindGoals(root);
     this.bindExchange(root);
     this.bindDiagnostics(root);

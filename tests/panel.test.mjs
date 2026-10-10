@@ -3108,3 +3108,16 @@ test("batteries in volts are not read as percent and sit in the same list with t
   const html = el.batteriesView();
   assert.ok(html.includes("2.86 V") && html.includes("3 V cell") && html.includes("2.50 V") && html.includes("sensor.pct"));
 });
+
+test("the recorder card of an entity counts on request and shows rows per table", async () => {
+  const { el } = panel("en");
+  el._hass.callWS = async () => ({ available: true, busy: false, keep_days: 10, states: { rows: 51405, first: 1.7e9, last: 1.7e9 + 864000 }, short: { rows: 0, first: null, last: null }, long: { rows: 0, first: null, last: null } });
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true } };
+  const item = { object_type: "entity", object_id: "light.a" };
+  assert.ok(el.entityRecorderCard(item).includes('data-erec="light.a"'));
+  await el.loadEntityRecorder("light.a");
+  const html = el.entityRecorderCard(item);
+  assert.ok(html.includes("51,405") || html.includes("51.405"));
+  assert.ok(html.includes("nothing stored") && html.includes("retention: 10 days"));
+  assert.equal(el.entityRecorderCard({ object_type: "device", object_id: "d" }), "");
+});
