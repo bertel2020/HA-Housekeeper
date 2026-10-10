@@ -25,11 +25,14 @@ const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); r
 const runChrome = async (file, args, options) => { try { return await run(file, args, options); } catch (err) { if (!/^timeout/.test(err.message)) throw err; return run(file, args, options); } };
 // Chrome gets no stdin: with the open pipe that execFile hands to it, it never starts in some
 // environments (no connection to the page, no screenshot, no exit).
-const run = (file, args, { timeout = 60000, maxBuffer = 1024 * 1024, encoding = "utf8" } = {}) => new Promise((resolve, reject) => {
+// ``until`` ends the run early once it holds: a headless Chrome may write its screenshot and then
+// never exit, so the finished file counts as success.
+const run = (file, args, { timeout = 60000, maxBuffer = 1024 * 1024, encoding = "utf8", until } = {}) => new Promise((resolve, reject) => {
   const child = spawn(file, args, { stdio: ["ignore", "pipe", "pipe"], detached: true }); // own process group, so a kill takes the helpers along
   const kill = () => { try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); } };
   let stdout = "", stderr = "", done = false;
-  const finish = (fn, value) => { if (!done) { done = true; clearTimeout(timer); fn(value); } };
+  const finish = (fn, value) => { if (!done) { done = true; clearTimeout(timer); clearInterval(poll); fn(value); } };
+  const poll = until ? setInterval(() => { if (until()) { kill(); finish(resolve, { stdout, stderr }); } }, 250) : null;
   const timer = setTimeout(() => { kill(); finish(reject, new Error(`timeout after ${timeout} ms: ${path.basename(file)}`)); }, timeout);
   child.stdout.on("data", chunk => { stdout += chunk; if (stdout.length > maxBuffer) { kill(); finish(reject, new Error("output too large")); } });
   child.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-4000); });
@@ -38,6 +41,8 @@ const run = (file, args, { timeout = 60000, maxBuffer = 1024 * 1024, encoding = 
   child.on("exit", kill);
   child.on("close", code => code === 0 ? finish(resolve, { stdout, stderr }) : finish(reject, new Error(`${path.basename(file)} exited with ${code}: ${stderr.slice(-300)}`)));
 });
+// True once the file exists and its size held still between two looks.
+const written = file => { let last = -1; return () => { const size = fs.existsSync(file) ? fs.statSync(file).size : 0; const done = size > 0 && size === last; last = size; return done; }; };
 const flag = name => process.argv.includes(`--${name}`);
 const language = arg("lang", "de") === "en" ? "en" : "de";
 
@@ -271,7 +276,10 @@ try {
   for (const view of views) for (const viewport of viewports) for (const scheme of SCHEMES) shots.push({ view, viewport, scheme });
   const files = await pool(shots, jobsParallel, ({ view, viewport, scheme }) => withProfile(async profile => {
     const size = VIEWPORTS[viewport], [w, h] = windowSize(size), file = path.join(out, `${view}-${viewport}-${scheme}.png`);
-    await runChrome(chrome, [...chromeArgs(profile, w, h), `--screenshot=${file}`, pageUrl(port, view, size, scheme)], { timeout: 30000 });
+    fs.rmSync(file, { force: true });
+    // Some views never go idle in headless Chrome, so the virtual time budget never ends;
+    // --timeout makes Chrome take the shot after 15 s, well inside the 45 s this script waits.
+    await runChrome(chrome, [...chromeArgs(profile, w, h), "--timeout=15000", `--screenshot=${file}`, pageUrl(port, view, size, scheme)], { timeout: 45000, until: written(file) });
     return file;
   }));
   for (const file of files.sort()) console.log(file);
