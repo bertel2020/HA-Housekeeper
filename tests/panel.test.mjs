@@ -1129,8 +1129,11 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   assert.ok(html.includes("12,000 stored states") && html.includes("5 MB") && html.includes("kept 10 days"));
   assert.ok(html.includes("&lt;b&gt;Noisy&lt;/b&gt;") && !html.includes("<b>Noisy</b>"), "names are escaped");
   assert.ok(html.includes("can be excluded") && html.includes("already excluded") && html.includes("3 uses"));
-  assert.equal(el.exclusionSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.noisy\n");
-  assert.ok(html.includes("Suggestion for configuration.yaml") && html.includes("- sensor.noisy") && !html.includes("- sensor.used"));
+  assert.ok(html.includes("Suggestion for configuration.yaml") && html.includes("Nothing selected yet.") && html.includes("Select all suggested"));
+  el.excludeSel.add("sensor.noisy");
+  assert.equal(el.excludeSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.noisy\n");
+  el.render();
+  assert.ok(shadow.innerHTML.includes("- sensor.noisy") && !shadow.innerHTML.includes("- sensor.used") && shadow.innerHTML.includes("1 selected"));
 });
 
 test("the recorder costs rank by the current rate, switch to the total and ask for a refresh", async () => {
@@ -3120,4 +3123,20 @@ test("the recorder card of an entity counts on request and shows rows per table"
   assert.ok(html.includes("51,405") || html.includes("51.405"));
   assert.ok(html.includes("nothing stored") && html.includes("retention: 10 days"));
   assert.equal(el.entityRecorderCard({ object_type: "device", object_id: "d" }), "");
+});
+
+test("the loudest entities offer ticks, mark what can be excluded and share the selection with the costs", () => {
+  const { el, shadow } = panel("en");
+  const ent = (id, stats) => ({ object_id: id, object_type: "entity", name: id, has_statistics: stats, status: "active" });
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [ent("light.a", false), ent("sensor.s", true)], edges: [] };
+  el._edgeIndex = null;
+  el.storms = { available: true, busy: false, findings: [], integrations: [], events: [], entities: [
+    { entity_id: "light.a", name: "A", rows: 5000, per_day: 5000, no_new_state: 1, attr_bytes: 100 },
+    { entity_id: "sensor.s", name: "S", rows: 4000, per_day: 4000, no_new_state: 0, attr_bytes: 100 },
+  ], total_rows: 9000, per_day: 9000, entity_count: 2, event_total: 0 };
+  el.view = "recorder"; el.viewTab = { recorder: "entities" };
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('data-exsel="light.a"') && html.includes("can be excluded") && html.includes("has statistics"));
+  assert.deepEqual(el._exSuggested, ["light.a"]);
 });

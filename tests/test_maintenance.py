@@ -57,12 +57,15 @@ def test_rank_costs_suggests_excluding_only_what_nothing_uses() -> None:
         "keep_days": 10,
         "recorded": lambda entity_id: entity_id != "sensor.quiet",
     }
-    result = rank_costs(
-        raw,
-        snapshot_with(
-            "sensor.noisy", "sensor.noisy_but_used", "sensor.quiet", used=("sensor.noisy_but_used",)
-        ),
+    snapshot = snapshot_with(
+        "sensor.noisy", "sensor.noisy_but_used", "sensor.quiet", used=("sensor.noisy_but_used",)
     )
+    # A device or an area that holds the entity is no use of it.
+    snapshot["edges"] += [
+        {"source": "device:d", "target": "entity:sensor.noisy", "relation": "PROVIDES"},
+        {"source": "area:a", "target": "entity:sensor.noisy", "relation": "CONTAINS"},
+    ]
+    result = rank_costs(raw, snapshot)
     by_id = {e["entity_id"]: e for e in result["entities"]}
     assert by_id["sensor.noisy"]["per_day"] == 400.0 and by_id["sensor.noisy"]["share"] == 80.0
     assert by_id["sensor.noisy"]["suggest_exclude"] is True

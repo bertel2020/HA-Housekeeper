@@ -4099,9 +4099,6 @@ class MaintenanceMixin {
 
   suggestedExclusions() { return (this.costs?.entities || []).filter(e => e.suggest_exclude && !e.excluded).map(e => e.entity_id); }
 
-  // A recorder exclusion for configuration.yaml; Housekeeper never writes it.
-  exclusionSnippet() { return `recorder:\n  exclude:\n    entities:\n${this.suggestedExclusions().map(id => `      - ${id}`).join("\n")}\n`; }
-
   recorderCard() {
     this.ensureCosts();
     const c = this.costs;
@@ -4122,12 +4119,12 @@ class MaintenanceMixin {
         e.suggest_exclude && !e.excluded ? `<span class="pill warn">${this.t("recorderSuggest")}</span>` : "",
       ].join("");
       const inner = `<span class="tile ${e.suggest_exclude && !e.excluded ? "warn" : "mute"}"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong><small>${this.esc(e.entity_id)} · ${this.formatNumber(e.states)} · ${this.t("recorderWindows", { day: this.formatNumber(e.states_24h ?? 0), week: this.formatNumber(e.states_7d ?? 0), avg: this.formatNumber(e.per_day_avg ?? e.per_day) })} · ${this.t("recorderShare", { share: e.share })}</small><span class="bar" style="margin-top:4px"><i style="width:${Math.min(100, Math.round(e.share))}%"></i></span></span><span style="display:flex;gap:6px;flex-wrap:wrap">${tags}</span>`;
-      return obj ? `<button class="row rel" data-object="${this.esc(`entity:${e.entity_id}`)}">${inner}</button>` : `<div class="row rel">${inner}</div>`;
+      const open = obj ? `<button class="row rel" data-object="${this.esc(`entity:${e.entity_id}`)}">${inner}</button>` : `<div class="row rel">${inner}</div>`;
+      return `<div class="rowwrap">${this.excludeBox(e.entity_id)}${open}</div>`;
     }).join("");
     const statRows = (c.statistics || []).slice(0, 10).map(s => `<div class="row rel"><span class="tile mute"><ha-icon icon="mdi:chart-line"></ha-icon></span><span class="row-text"><strong>${this.esc(s.statistic_id)}</strong><small>${this.formatNumber(s.rows)}</small></span></div>`).join("");
-    const suggested = this.suggestedExclusions();
-    const snippet = suggested.length ? `<div class="panel" style="margin:14px 16px"><div class="panelhead"><div><h3>${this.t("recorderSnippetTitle")}</h3><p>${this.t("recorderSnippetHint")}</p></div><button class="btn" data-copy-snippet>${this.snippetCopied ? this.t("recorderCopied") : this.t("recorderCopy")}</button></div><pre class="code">${this.esc(this.exclusionSnippet())}</pre></div>` : "";
-    return `<div class="panel">${head(`${sortButtons}<button class="btn" data-costs-load data-refresh>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.esc(summary)}</p>${rows}${snippet}${statRows ? `<div class="panelhead" style="border-top:1px solid var(--hk-border)"><div><h3>${this.t("recorderStats")}</h3></div></div>${statRows}` : ""}</div>`;
+    const snippet = this.excludeCard(this.suggestedExclusions());
+    return `<div class="panel">${head(`${sortButtons}<button class="btn" data-costs-load data-refresh>${this.t("recorderReload")}</button>`)}<p class="factnote">${this.esc(summary)}</p>${snippet}${rows}${statRows ? `<div class="panelhead" style="border-top:1px solid var(--hk-border)"><div><h3>${this.t("recorderStats")}</h3></div></div>${statRows}` : ""}</div>`;
   }
 
   // One line per check; `level` decides the colour.
@@ -4722,7 +4719,8 @@ class StormsMixin {
     if (item.no_new_state >= 0.1) parts.push(this.t("stormNoNewShort", { share: Math.round(item.no_new_state * 100) }));
     if (item.attr_bytes !== null && item.attr_bytes !== undefined) parts.push(this.t("stormAttr", { kb: this.formatNumber(Math.round(item.attr_bytes / 102.4) / 10) }));
     if (item.peak_hour) parts.push(this.t("stormPeak", { n: this.formatNumber(item.peak_hour) }));
-    return `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}</small><small>${this.esc(parts.join(" · "))}</small></span><span class="pill mute">${this.formatNumber(item.per_day)} ${this.t("stormPerDay")}</span></button>`;
+    const info = this.excludeInfo(item.entity_id, item.per_day);
+    return `<div class="rowwrap">${this.excludeBox(item.entity_id)}<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:database-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}</small><small>${this.esc(parts.join(" · "))}</small></span><span class="pill mute">${this.formatNumber(item.per_day)} ${this.t("stormPerDay")}</span>${info.tags}</button></div>`;
   }
 
   // A bar needs a text next to it: the percentage stands in the row, the bar is decoration.
@@ -4774,7 +4772,7 @@ class StormsMixin {
     const summary = `<p class="factnote">${this.t("stormSummary", { rows: this.formatNumber(r.total_rows), perDay: this.formatNumber(r.per_day), entities: this.formatNumber(r.entity_count), events: this.formatNumber(r.event_total) })}</p>`;
     const foundEntities = this.searchList("stormentities", r.entities, item => [item.name, item.entity_id].join(" "));
     const entityPage = this.paginate("stormentities", foundEntities.rows);
-    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${foundEntities.bar}${foundEntities.none}${entityPage.rows.map(item => this.stormEntityRow(item)).join("")}${entityPage.footer}</div>` : "";
+    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${this.excludeCard(r.entities.filter(item => this.excludeInfo(item.entity_id, item.per_day).suggest).map(item => item.entity_id))}${foundEntities.bar}${foundEntities.none}${entityPage.rows.map(item => this.stormEntityRow(item)).join("")}${entityPage.footer}</div>` : "";
     const foundShares = this.searchList("stormshares", r.integrations, item => [item.title, item.domain].join(" "));
     const shares = r.integrations.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormShares")}</h2><p>${this.t("stormSharesHint")}</p></div></div>${foundShares.bar}${foundShares.none}${foundShares.rows.map(item => this.stormShareRow(item)).join("")}</div>` : "";
     const events = r.events.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormEvents")}</h2><p>${this.t("stormEventsHint")}</p></div></div>${r.events.map(e => `<div class="row"><span class="tile mute"><ha-icon icon="mdi:flash-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(e.type)}</strong></span><span class="pill mute">${this.formatNumber(e.count)}</span></div>`).join("")}${this.howCounted("stormFootnote")}</div>` : "";
@@ -7614,6 +7612,61 @@ class EntityRecorderMixin {
   }
 }
 
+// Pick entities in the recorder views and get the exclusion for configuration.yaml; Housekeeper never writes it.
+// Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  exTitle: "Vorschlag für die configuration.yaml", exHint: "Häkchen in der Liste setzen; der Block baut sich daraus. Das ändert nichts in Home Assistant, es ist nur Text zum Einfügen. Ausgeschlossene Entitäten haben danach keinen Verlauf mehr.",
+  exCount: "{count} ausgewählt", exEmpty: "Noch nichts ausgewählt.", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Auswahl leeren",
+  exSuggest: "Ausschluss möglich", exHasStats: "Statistik vorhanden", exUsedBy: "{count} Verwendungen",
+});
+Object.assign(TEXT.en, {
+  exTitle: "Suggestion for configuration.yaml", exHint: "Tick entities in the list; the block builds from them. This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
+  exCount: "{count} selected", exEmpty: "Nothing selected yet.", exPickSuggested: "Select all suggested", exClear: "Clear selection",
+  exSuggest: "can be excluded", exHasStats: "has statistics", exUsedBy: "{count} uses",
+});
+
+const EXCLUDE_MIN_PER_DAY = 100; // rows per day from which an unused entity is worth excluding
+
+class ExcludeMixin {
+  // What speaks for or against excluding one entity, from the inventory.
+  excludeInfo(entityId, perDay) {
+    const obj = this.findObject(`entity:${entityId}`);
+    if (!obj) return { suggest: false, tags: "" };
+    const uses = this.edgesTo(`entity:${entityId}`).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
+    const suggest = !uses && !obj.has_statistics && perDay >= EXCLUDE_MIN_PER_DAY;
+    const tag = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
+    const tags = suggest ? tag("warn", this.t("exSuggest")) : [obj.has_statistics ? tag("mute", this.t("exHasStats")) : "", uses ? tag("mute", this.t("exUsedBy", { count: uses })) : ""].join("");
+    return { suggest, tags };
+  }
+
+  excludeBox(entityId) {
+    return `<input type="checkbox" class="selbox" data-exsel="${this.esc(entityId)}" ${this.excludeSel.has(entityId) ? "checked" : ""} aria-label="${this.esc(entityId)}">`;
+  }
+
+  excludeSnippet() {
+    return `recorder:\n  exclude:\n    entities:\n${[...this.excludeSel].sort().map(id => `      - ${id}`).join("\n")}\n`;
+  }
+
+  // `suggested` are the entity ids of the list in view that the Suggest button ticks.
+  excludeCard(suggested) {
+    this._exSuggested = suggested;
+    const n = this.excludeSel.size;
+    const body = n ? `<pre class="code">${this.esc(this.excludeSnippet())}</pre>` : `<p class="factnote">${this.t("exEmpty")}</p>`;
+    return `<div class="panel" style="margin:14px 16px"><div class="panelhead"><div><h3>${this.t("exTitle")}</h3><p>${this.t("exHint")}</p></div><div class="actions"><span class="factnote">${this.t("exCount", { count: n })}</span>${suggested.length ? `<button class="btn" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${n ? `<button class="btn" data-ex-clear>${this.t("exClear")}</button><button class="btn" data-copy-snippet>${this.snippetCopied ? this.t("recorderCopied") : this.t("recorderCopy")}</button>` : ""}</div></div>${body}</div>`;
+  }
+
+  bindExclude(root) {
+    root.querySelectorAll("[data-exsel]").forEach(el => el.onchange = () => { el.checked ? this.excludeSel.add(el.dataset.exsel) : this.excludeSel.delete(el.dataset.exsel); this.render(); });
+    root.querySelector("[data-ex-suggested]")?.addEventListener("click", () => { (this._exSuggested || []).forEach(id => this.excludeSel.add(id)); this.render(); });
+    root.querySelector("[data-ex-clear]")?.addEventListener("click", () => { this.excludeSel.clear(); this.render(); });
+    root.querySelector("[data-copy-snippet]")?.addEventListener("click", async () => {
+      try { await globalThis.navigator?.clipboard?.writeText(this.excludeSnippet()); this.snippetCopied = true; } catch (_) { this.snippetCopied = false; }
+      this.render();
+      setTimeout(() => { this.snippetCopied = false; this.render(); }, 1500);
+    });
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -7648,7 +7701,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.findSel = new Set();
-    this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = true; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
+    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = true; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
@@ -8336,6 +8389,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     this.bindStale(root);
+    this.bindExclude(root);
     this.bindEntityRecorder(root);
     this.bindGoals(root);
     this.bindExchange(root);
@@ -8483,11 +8537,6 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
     root.querySelector("[data-pf-save]")?.addEventListener("click", () => this.loadPreflight("save"));
     root.querySelector("[data-pf-clear]")?.addEventListener("click", () => this.loadPreflight("clear"));
-    root.querySelector("[data-copy-snippet]")?.addEventListener("click", async () => {
-      try { await globalThis.navigator?.clipboard?.writeText(this.exclusionSnippet()); this.snippetCopied = true; } catch (_) { this.snippetCopied = false; }
-      this.render();
-      setTimeout(() => { this.snippetCopied = false; this.render(); }, 1500);
-    });
     root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => this.openPlan(el.dataset.planOpen));
     root.querySelectorAll("[data-merge-sel]").forEach(el => el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.checked ? this.mergeSel.add(el.dataset.mergeSel) : this.mergeSel.delete(el.dataset.mergeSel); this.render(); });
@@ -8549,7 +8598,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

@@ -32,7 +32,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.findSel = new Set();
-    this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = true; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
+    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = true; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
@@ -720,6 +720,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     this.bindStale(root);
+    this.bindExclude(root);
     this.bindEntityRecorder(root);
     this.bindGoals(root);
     this.bindExchange(root);
@@ -867,11 +868,6 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
     root.querySelector("[data-pf-save]")?.addEventListener("click", () => this.loadPreflight("save"));
     root.querySelector("[data-pf-clear]")?.addEventListener("click", () => this.loadPreflight("clear"));
-    root.querySelector("[data-copy-snippet]")?.addEventListener("click", async () => {
-      try { await globalThis.navigator?.clipboard?.writeText(this.exclusionSnippet()); this.snippetCopied = true; } catch (_) { this.snippetCopied = false; }
-      this.render();
-      setTimeout(() => { this.snippetCopied = false; this.render(); }, 1500);
-    });
     root.querySelector("[data-plan-close]")?.addEventListener("click", () => { this.plan = null; this.render(); });
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = () => this.openPlan(el.dataset.planOpen));
     root.querySelectorAll("[data-merge-sel]").forEach(el => el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.checked ? this.mergeSel.add(el.dataset.mergeSel) : this.mergeSel.delete(el.dataset.mergeSel); this.render(); });

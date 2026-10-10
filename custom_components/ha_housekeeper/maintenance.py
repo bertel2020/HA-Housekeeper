@@ -22,6 +22,9 @@ from .meter import recorder_ready
 from .queries import ReplyStore, cached_query, kept_reply
 
 COST_LIMIT = 40  # entities listed per ranking; totals stay exact
+USAGE_RELATIONS = frozenset(
+    {"TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"}
+)  # what counts as "used"; device and area links do not
 SUGGEST_MIN_PER_DAY = 100  # states per day from which an unused entity is worth excluding
 COST_CACHE_SECONDS = 300  # the ranking is expensive on a large database, so it is kept briefly
 DAY = 86400
@@ -130,7 +133,11 @@ def rank_costs(raw: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
     }
     used: dict[str, int] = {}
     for edge in snapshot["edges"]:
-        if edge["target"].startswith("entity:") and edge.get("confidence", "certain") == "certain":
+        if (
+            edge["target"].startswith("entity:")
+            and edge["relation"] in USAGE_RELATIONS
+            and edge.get("confidence", "certain") == "certain"
+        ):
             used[edge["target"][7:]] = used.get(edge["target"][7:], 0) + 1
     total = raw["total_states"] or 0
     entity_filter = raw.get("recorded")
