@@ -437,19 +437,37 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
-    const shell = `<div class="shell${this.dense ? " dense" : ""}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    // A view that throws shows a message under the top bar instead of freezing the panel on the last page.
+    let page;
+    try { page = this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
+    const shell = `<div class="shell${this.dense ? " dense" : ""}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${page}</main><div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
+    let swapped = false;
     if (current && this._styleKey === css && root.querySelector("style[data-hk]")) {
       // WebKit refuses outerHTML on a child of the shadow root, so the new page goes in through a template.
-      const tpl = document.createElement("template"); tpl.innerHTML = shell; current.replaceWith(tpl.content);
+      // Should a browser refuse that too, the whole root is rebuilt below rather than keeping the old page.
+      try { const tpl = document.createElement("template"); tpl.innerHTML = shell; current.replaceWith(tpl.content); swapped = true; } catch (err) { this.logRenderError(err); }
     }
-    else { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
+    if (!swapped) { root.innerHTML = `${this.styles()}${shell}`; this._styleKey = css; }
     this.restoreFocus(focus);
     this.bind();
     if (this._scrollPlan) { this._scrollPlan = false; setTimeout(() => root.querySelector("[data-plan-card]")?.scrollIntoView?.({ block: "start", behavior: "smooth" }), 30); }
     if (started !== null) console.debug(`[ha_housekeeper] render ${this.selected ? "detail" : this.view}: ${(globalThis.performance.now() - started).toFixed(1)} ms`);
     if (this.data) { this.syncGuard(); this.syncUrl(); }
+  }
+
+  renderFailed(err) {
+    this.logRenderError(err);
+    return `<div class="error" role="alert"><strong>${this.t("renderError")}</strong><br>${this.esc(err?.message || String(err))}<br><button class="btn" data-view="overview">${this.t("overview")}</button></div>`;
+  }
+
+  // Once per message, so a view that fails on every render does not flood the log.
+  logRenderError(err) {
+    const text = err?.message || String(err);
+    if ((this._renderErrors ||= new Set()).has(text)) return;
+    this._renderErrors.add(text);
+    console.error("[ha_housekeeper] render failed:", err);
   }
 
   // Deep links: /ha-housekeeper?view=findingsNav&filter=orphaned or ?object=entity:sensor.x

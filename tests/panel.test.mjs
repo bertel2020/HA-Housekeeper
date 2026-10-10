@@ -1350,6 +1350,21 @@ test("a later render swaps the page through a template, not outerHTML (WebKit, i
   assert.ok(tpl.innerHTML.startsWith('<div class="shell'));
 });
 
+test("a view that throws shows a message, and a refused swap rebuilds the page instead of freezing", () => {
+  const errors = [];
+  const { el, shadow } = panel("en", { console: { error: (...a) => errors.push(a), debug() {} } });
+  el.content = () => { throw new Error("broken view"); };
+  el.render(); el.render();
+  assert.ok(shadow.innerHTML.includes("This view could not be shown.") && shadow.innerHTML.includes("broken view") && shadow.innerHTML.includes('data-view="overview"'));
+  assert.equal(errors.length, 1, "logged once");
+  delete el.content;
+  const current = { replaceWith() { throw new Error("NoModificationAllowedError"); } };
+  shadow.querySelector = selector => (selector === ".shell" ? current : selector === "style[data-hk]" ? {} : null);
+  shadow.innerHTML = "";
+  el.render();
+  assert.ok(shadow.innerHTML.includes('class="shell'));
+});
+
 test("derived lists follow the data: cache, search, ignore flag and edge index", () => {
   const { el } = panel("en");
   const first = el.filtered();
