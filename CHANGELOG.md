@@ -1,5 +1,53 @@
 # Changelog
 
+## 1.2.0 - 2026-10-10
+
+Mehr Aufräumen direkt an der Entität, ein klarerer Recorder-Ausschluss und ein Panel, das bei Fehlern nicht mehr einfriert.
+
+### Neu
+
+- **Umbenennen und Bereich zuweisen** auch auf der Detailseite einer Entität oder eines Geräts, je als Plan mit Vorschau und Rückgängig; in der Richtlinienliste für viele auf einmal.
+- **Recorder-Ausschluss:** eine schmale Leiste statt eines großen Kastens, mit YAML zum Kopieren und den Schritten danach. „Last im Recorder“ und „Recorder-Kosten“ zeigen, was der Recorder schon ausschließt; ausgeschlossene Entitäten lassen sich zum Kürzen des alten Verlaufs wählen.
+- **Sparklines** in den Kacheln der Befundliste; ein eigener Reiter für die Housekeeper-Backups in der Wartung.
+- **Labels** auch für Skripte und Szenen.
+- **Einstellungen:** Die Angaben für eine Fehlermeldung (Versionen, Browser oder App, letzte Fehler) lassen sich kopieren; eine Vorlage für Fehlermeldungen fragt danach.
+- **Export:** alle Entitäten mit einem Klick wählen.
+
+### Behoben
+
+- In Safari und der Companion-App blieb das Panel auf „Scanning…“ stehen (#7).
+- Ein neuer Plan aus der Befundliste oder der Detailseite öffnete die Seite nicht am Plan (#8).
+- Eine Ansicht, die einen Fehler wirft, zeigt eine Meldung mit Weg zurück, statt das Panel einzufrieren; eine fehlgeschlagene Aktion ersetzt die Seite nicht mehr.
+- Ein Doppelklick erzeugt keinen zweiten Plan mehr.
+- Die Karte „Gerät austauschen“ zeigte den Titel der Recorder-Auswahl.
+- Listen mit Entitäten zeigen überall Name, ID und Zusatzangaben gleich; Richtlinienliste, Listenwerkzeuge und Trennlinien sauber ausgerichtet.
+- Die Statuskachel der Befundliste zeigt dieselbe Größe wie ihre Linie.
+- Das Backup vor dem Löschen im Recorder enthält die Datenbank.
+
+### English
+
+More tidying right at the entity, a clearer recorder exclusion, and a panel that no longer freezes on errors.
+
+#### New
+
+- **Rename and assign an area** on the detail page of an entity or device too, each as a plan with preview and undo; for many at once in the policy list.
+- **Recorder exclusion:** a slim bar instead of a large box, with YAML to copy and the steps afterwards. "Recorder load" and "Recorder costs" show what the recorder already excludes; excluded entities can be picked to trim their old history.
+- **Sparklines** in the tiles of the findings list; its own tab for Housekeeper backups in Maintenance.
+- **Labels** for scripts and scenes too.
+- **Settings:** the details for a bug report (versions, browser or app, last errors) can be copied; an issue template asks for them.
+- **Export:** select all entities with one click.
+
+#### Fixed
+
+- In Safari and the Companion app the panel stayed on "Scanning…" (#7).
+- A new plan from the findings list or the detail page did not open the page at the plan (#8).
+- A view that throws shows a message with a way back instead of freezing the panel; a failed action no longer replaces the page.
+- A double click no longer creates a second plan.
+- The "Exchange device" card showed the title of the recorder selection.
+- Entity lists show name, ID and extra facts the same way everywhere; the policy list, the list tools and the separators are aligned cleanly.
+- The status tile of the findings list shows the same quantity as its line.
+- The backup before deleting in the recorder includes the database.
+
 ## 1.1.0 - 2026-10-10
 
 Aufräumen wird mächtiger: Pläne als Assistent, Verlauf kürzen, Backups und Automationen löschen, Entitäten umbenennen und Bereiche zuweisen. Dazu Batterien mit Typ und Einkaufsliste.
