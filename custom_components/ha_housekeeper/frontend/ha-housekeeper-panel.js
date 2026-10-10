@@ -2938,7 +2938,7 @@ class CleanupMixin {
     this.ensureJournal();
     const journalFound = this.searchList("journal", this.journal || [], plan => `${this.formatDate(plan.created_at)} ${this.t(`plan_status_${plan.status || "dry_run"}`)}`);
     const journalPage = this.paginate("journal", journalFound.rows);
-    const journal = journalPage.rows.map(plan => `<div class="row jrow">${this.mergeable(plan) ? `<input type="checkbox" data-merge-sel="${this.esc(plan.plan_id)}" ${this.mergeSel?.has(plan.plan_id) ? "checked" : ""} aria-label="${this.esc(this.t("mergeSelect"))}">` : ""}<span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}</small></span>
+    const journal = journalPage.rows.map(plan => `<div class="row jrow">${this.mergeable(plan) ? `<input type="checkbox" data-merge-sel="${this.esc(plan.plan_id)}" ${this.mergeSel?.has(plan.plan_id) ? "checked" : ""} aria-label="${this.esc(this.t("mergeSelect"))}">` : ""}<span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}${plan.file_snapshot_dropped ? ` · ${this.esc(this.t("snapshotDropped"))}` : ""}${plan.followup === "watching" && plan.followup_until ? ` · ${this.esc(this.t("fuWatching", { date: this.formatDate(plan.followup_until) }))}` : ""}</small></span>
       <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>${plan.followup ? `<span class="pill ${this.followupTone(plan.followup?.state ?? plan.followup)}">${this.t(`fu_${plan.followup?.state ?? plan.followup}`)}</span>` : ""}
       <span class="jbtns"><button class="btn" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button>${plan.executed || plan.run ? "" : `<button class="btn dangersoft" data-plan-delete="${this.esc(plan.plan_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("deletePlan")}</button>`}</span></div>`).join("");
     const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${(this.journal || []).length})</h2><p>${this.t("journalHint")}</p></div><div class="actions"><button class="btn" data-merge ${(this.mergeSel?.size || 0) >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: this.mergeSel?.size || 0 })}</button></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${journalFound.bar}${journal || journalFound.none || `<div class="emptymsg mute"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon><strong>${this.t("journalEmpty")}</strong>${this.t("journalEmptyNext")}<button class="btn" data-jump="repair">${this.t("repair")}</button></div>`}${journalPage.footer}</div>`;
@@ -6610,7 +6610,7 @@ class SafetyMixin {
       items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "journal"]);
     }
     const watching = plans.filter(p => p.followup === "watching").length;
-    if (watching) items.push(["watch", "warn", this.t("safeWatching", { n: watching }), "journal"]);
+    if (watching) items.push(["watch", "warn", this.t(watching === 1 ? "safeWatching1" : "safeWatching", { n: watching }), "journal"]);
     const regress = plans.filter(p => p.followup === "regression").length;
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
     return items;
@@ -6646,7 +6646,7 @@ class SafetyMixin {
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
   safeLast: "Letzte Änderung: {when}", safeUndo: "Rückgängig möglich", safeNoUndo: "Rückgängig nicht mehr möglich, nur Backup-Restore",
-  safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Nachbeobachtung läuft", safeRegression: "{n} Rückfall nach Änderung",
+  safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
   causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards",
@@ -6654,7 +6654,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
   safeLast: "Last change: {when}", safeUndo: "Undo available", safeNoUndo: "Undo no longer possible, backup restore only",
-  safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} follow-up running", safeRegression: "{n} regression after a change",
+  safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",

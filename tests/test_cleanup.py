@@ -233,3 +233,18 @@ def test_not_restorable_removals_need_review() -> None:
     risky = judge_action("remove_entity", "sensor.old", index, [], quarantine, False, NOW)
     assert fine["verdict"] == "ok"
     assert risky["verdict"] == "review" and "not_restorable" in risky["reasons"]
+
+
+def test_the_journal_list_says_until_when_a_plan_is_watched() -> None:
+    from custom_components.ha_housekeeper.cleanup import plan_summary
+
+    plan = {
+        "plan_id": "p",
+        "actions": [],
+        "followup": {"state": "watching", "until": "2026-10-11T10:00:00+00:00", "baseline": ["f"]},
+    }
+    listed = plan_summary(plan)
+    assert (
+        listed["followup"] == "watching" and listed["followup_until"] == "2026-10-11T10:00:00+00:00"
+    )
+    assert plan_summary({"plan_id": "q", "actions": []})["followup_until"] is None

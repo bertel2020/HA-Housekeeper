@@ -1066,6 +1066,7 @@ def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
         "summary": plan.get("summary"),
         "file_snapshot_dropped": bool(plan.get("file_snapshot_dropped")),
         "followup": (plan.get("followup") or {}).get("state"),
+        "followup_until": (plan.get("followup") or {}).get("until"),
         "objects": sorted({a["object_id"] for a in plan.get("actions", []) if a.get("object_id")})[
             :OBJECT_LIST_LIMIT
         ],

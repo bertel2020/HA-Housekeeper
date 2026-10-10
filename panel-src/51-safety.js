@@ -19,7 +19,7 @@ class SafetyMixin {
       items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "journal"]);
     }
     const watching = plans.filter(p => p.followup === "watching").length;
-    if (watching) items.push(["watch", "warn", this.t("safeWatching", { n: watching }), "journal"]);
+    if (watching) items.push(["watch", "warn", this.t(watching === 1 ? "safeWatching1" : "safeWatching", { n: watching }), "journal"]);
     const regress = plans.filter(p => p.followup === "regression").length;
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
     return items;
@@ -55,7 +55,7 @@ class SafetyMixin {
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
   safeLast: "Letzte Änderung: {when}", safeUndo: "Rückgängig möglich", safeNoUndo: "Rückgängig nicht mehr möglich, nur Backup-Restore",
-  safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Nachbeobachtung läuft", safeRegression: "{n} Rückfall nach Änderung",
+  safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
   causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards",
@@ -63,7 +63,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
   safeLast: "Last change: {when}", safeUndo: "Undo available", safeNoUndo: "Undo no longer possible, backup restore only",
-  safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} follow-up running", safeRegression: "{n} regression after a change",
+  safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",

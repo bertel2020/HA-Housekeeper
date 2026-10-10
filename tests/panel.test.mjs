@@ -2852,7 +2852,7 @@ test("the health card names the score and the count; the safety line shows backu
   const html = shadow.innerHTML;
   assert.ok(html.includes("class=\"statushead\"") && /tasks are waiting for you|All good/.test(html));
   assert.ok(html.includes("of 3 rated objects affected"));
-  assert.ok(html.includes("Last backup: 5 h ago") && html.includes("Undo available") && html.includes("1 follow-up running") && html.includes("1 regression after a change"));
+  assert.ok(html.includes("Last backup: 5 h ago") && html.includes("Undo available") && html.includes("1 plan is being watched") && html.includes("1 regression after a change"));
   el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
   assert.ok(el.safetyBar().includes("backup restore only"));
   el.data = { ...DATA, causes: [{ id: "integration_down:x", kind: "integration_down", object_type: "config_entry", object_id: "x", name: "Zigbee", follower_count: 47, consumers: { automation: 12, dashboard: 2 } }] };
@@ -3247,4 +3247,14 @@ test("own entries sit in the history between the scans, are saved and deleted ov
   assert.equal(el.noteCard({ object_type: "dashboard", object_id: "d" }), "");
   // the correlation words it as "at about the same time"
   assert.ok(el.corrText({ kind: "note", title: "Zigbee <i>" }).includes("Zigbee &lt;i&gt;"));
+});
+
+test("the journal names the end of a follow-up and the safety line counts the watched plans", () => {
+  const { el, shadow } = panel("en");
+  const plan = (id, followup) => ({ plan_id: id, created_at: "2026-10-10T10:00:00+00:00", status: "verified", executed: true, summary: { total: 1, ok: 1, review: 0, blocked: 0 }, followup, followup_until: followup === "watching" ? "2026-10-11T10:00:00+00:00" : null });
+  el.journal = [plan("a", "watching"), plan("b", "clean")];
+  el.view = "journal"; el.render();
+  const html = shadow.innerHTML;
+  assert.equal((html.match(/Follow-up running until/g) || []).length, 1, "only the watched plan names its end");
+  assert.ok(el.t("safeWatching", { n: 8 }).includes("8 plans are being watched") && el.t("safeWatching1").includes("1 plan is being watched"));
 });
