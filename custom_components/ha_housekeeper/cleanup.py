@@ -42,7 +42,6 @@ DELETE_AUTOMATION_KINDS = frozenset(
 REPAIR_KINDS = frozenset({"repair_counter", "repair_range"})
 LABEL_KINDS = frozenset({"add_label"})  # adds one existing label to an entity; Home Assistant only
 AREA_KINDS = frozenset({"set_area"})  # gives an entity or device without an area an existing one
-REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
 RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})

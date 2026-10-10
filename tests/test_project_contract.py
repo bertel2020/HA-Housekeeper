@@ -177,3 +177,24 @@ def test_no_two_panel_parts_define_a_method_of_the_same_name() -> None:
         for name in set(names) - {"if", "for", "while", "switch", "catch"}:
             assert name not in seen, f"{name} is defined in {seen[name]} and {part.name}"
             seen[name] = part.name
+
+
+def test_the_panel_knows_the_same_action_kinds_as_the_backend() -> None:
+    """The panel keeps its own copies of the kind sets; they must not drift from the backend."""
+    pytest.importorskip("homeassistant")
+    from custom_components.ha_housekeeper import cleanup, protection
+
+    source = (ROOT / "panel-src" / "02-constants.js").read_text(encoding="utf-8")
+
+    def js(name: str) -> set[str]:
+        match = re.search(rf"^const {name} = \[([^\]]*)\];", source, re.MULTILINE)
+        assert match, name
+        return set(re.findall(r'"([a-z_]+)"', match.group(1)))
+
+    assert js("REMOVAL_KINDS") == cleanup.REMOVAL_KINDS
+    assert js("BACKUP_KINDS") == cleanup.BACKUP_KINDS
+    assert js("PURGE_KINDS") == protection.IRREVERSIBLE_KINDS
+    assert js("REPAIR_KINDS") == cleanup.REPAIR_KINDS
+    assert js("DEVICE_KINDS") == cleanup.DEVICE_KINDS
+    assert js("CLEANUP_KINDS") == cleanup.ENTITY_KINDS | cleanup.DEVICE_KINDS
+    assert f"const MAX_PLAN_ACTIONS = {cleanup.MAX_ACTIONS};" in source
