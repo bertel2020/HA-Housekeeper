@@ -29,6 +29,8 @@ REFERENCE_KINDS = frozenset({"replace_references"})
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
+TRIM_KINDS = frozenset({"trim_history"})  # deletes old state rows of one entity; statistics stay
+TRIM_DAYS = (1, 3650)
 REPAIR_KINDS = frozenset({"repair_counter", "repair_range"})
 LABEL_KINDS = frozenset({"add_label"})  # adds one existing label to an entity; Home Assistant only
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
@@ -41,6 +43,7 @@ ACTION_KINDS = (
     | REFERENCE_KINDS
     | METER_KINDS
     | PURGE_KINDS
+    | TRIM_KINDS
     | REFACTOR_KINDS
     | REPAIR_KINDS
     | LABEL_KINDS
@@ -56,13 +59,16 @@ BACKUP_KINDS = frozenset(
         "replace_references",
         "migrate_meter",
         "purge_statistics",
+        "trim_history",
         "refactor_automation",
         "repair_counter",
         "repair_range",
     }
 )
 # Kinds that write into the recorder database: their backup contains it, all others get one without.
-DATABASE_KINDS = frozenset({"repair_counter", "repair_range", "purge_statistics", "migrate_meter"})
+DATABASE_KINDS = frozenset(
+    {"repair_counter", "repair_range", "purge_statistics", "trim_history", "migrate_meter"}
+)
 # Kinds that remove something: they get the strongest confirmation word.
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
 QUARANTINE_KINDS = {"disable_entity": "entity", "disable_device": "device"}
@@ -303,6 +309,9 @@ BLOCKING_REASONS = frozenset(
         "target_not_working",
         "nothing_to_replace",
         "stats_missing_old",
+        "bad_keep_days",
+        "not_counted",
+        "nothing_to_trim",
         "stats_unit_differs",
         "stats_type_differs",
         "stats_nothing_to_import",
@@ -591,6 +600,45 @@ def judge_purge_action(
     return action
 
 
+def judge_trim_action(
+    entity_id: str,
+    keep_days: int,
+    objects: dict[str, dict[str, Any]],
+    counted: dict[str, Any] | None,
+    recorder: bool,
+) -> dict[str, Any]:
+    """Judge deleting the state rows of one entity that are older than ``keep_days`` days.
+
+    ``counted`` is ``{"rows", "oldest"}`` from the recorder, None when it could not be counted.
+    Statistics are not touched. The deletion cannot be undone except from the backup, so a plan
+    that may run is always ``review``.
+    """
+    action: dict[str, Any] = {
+        "kind": "trim_history",
+        "object_id": entity_id,
+        "object_type": "entity",
+        "name": (objects.get(entity_id) or {}).get("name") or entity_id,
+        "keep_days": keep_days,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+        "trim": counted,
+    }
+    reasons = action["reasons"]
+    if not recorder:
+        reasons.append("no_recorder")
+    elif not TRIM_DAYS[0] <= keep_days <= TRIM_DAYS[1]:
+        reasons.append("bad_keep_days")
+    elif counted is None:
+        reasons.append("not_counted")
+    elif not counted["rows"]:
+        reasons.append("nothing_to_trim")
+    reasons.append("irreversible")
+    _verdict(action)
+    return action
+
+
 def counter_key(request: dict[str, Any]) -> tuple[Any, ...]:
     """Identifies the preview of a repair request: the sensor, the mode and the picked range."""
     rng = request.get("range") or {}
@@ -821,6 +869,7 @@ def build_plan(
     refactor_enabled: bool = False,
     counter_data: dict[tuple[str, str], dict[str, Any]] | None = None,
     label_data: dict[tuple[str, str], dict[str, Any]] | None = None,
+    trim_data: dict[tuple[str, int], dict[str, Any] | None] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -866,6 +915,16 @@ def build_plan(
                 {i["statistic_id"]: i for i in snapshot.get("orphaned_statistics", [])},
                 bool(statistic_exists and statistic_exists(object_id)),
                 bool(request.get("states")),
+                bool(snapshot["meta"].get("recorder_available")),
+            )
+            action["fingerprint"] = None
+        elif kind in TRIM_KINDS:
+            keep_days = int(request.get("keep_days") or 0)
+            action = judge_trim_action(
+                object_id,
+                keep_days,
+                objects,
+                (trim_data or {}).get((object_id, keep_days)),
                 bool(snapshot["meta"].get("recorder_available")),
             )
             action["fingerprint"] = None
@@ -1002,6 +1061,8 @@ def merge_requests(
                 request["states"] = bool(action.get("states"))
             if action.get("recorder"):
                 request["recorder"] = action["recorder"]
+            if action["kind"] in TRIM_KINDS:
+                request["keep_days"] = action["keep_days"]
             if action["kind"] in REFACTOR_KINDS:
                 request["fix"], request["values"] = action["fix"], action.get("values") or {}
             known = requests.get(request["object_id"])

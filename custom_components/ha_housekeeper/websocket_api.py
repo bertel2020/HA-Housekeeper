@@ -31,6 +31,7 @@ from .cleanup import (
     REFACTOR_KINDS,
     REFERENCE_KINDS,
     REPAIR_KINDS,
+    TRIM_KINDS,
     attach_history,
     build_plan,
     counter_key,
@@ -71,7 +72,7 @@ from .protection import MODES as PROTECTION_MODES
 from .quality import build as build_quality
 from .queries import cached_query
 from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
-from .recorder_purge import count_history
+from .recorder_purge import TRIM_MAX_DAYS, count_history, count_older
 from .references import preview_replacement
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
@@ -368,6 +369,19 @@ async def _plan_from_requests(
                 "fingerprint": registry_fingerprint(entry) if entry else None,
             }
 
+    trim_data: dict[tuple[str, int], dict[str, Any] | None] = {}
+    for days in {
+        a["keep_days"] for a in requests if a["kind"] in TRIM_KINDS and a.get("keep_days")
+    }:
+        found = await count_older(
+            hass, [a["object_id"] for a in requests if a.get("keep_days") == days], days
+        )
+        for a in requests:
+            if a["kind"] in TRIM_KINDS and a.get("keep_days") == days:
+                trim_data[(a["object_id"], days)] = (
+                    None if found is None else found.get(a["object_id"])
+                )
+
     def statistic_exists(statistic_id: str) -> bool:
         return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
 
@@ -395,6 +409,7 @@ async def _plan_from_requests(
         refactor_enabled=refactor_enabled,
         counter_data=counter_data,
         label_data=label_data,
+        trim_data=trim_data,
     )
     await _add_history(hass, snapshot, plan)
     return plan
@@ -417,6 +432,7 @@ async def _plan_from_requests(
                         vol.Optional("fixed"): vol.Coerce(float),
                     },
                     vol.Optional("states"): bool,
+                    vol.Optional("keep_days"): vol.All(int, vol.Range(min=1, max=TRIM_MAX_DAYS)),
                     vol.Optional("recorder"): vol.In(RECORDER_CHOICES),
                     vol.Optional("fix"): vol.In(refactor_module.FIXES),
                     vol.Optional("values"): {

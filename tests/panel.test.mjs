@@ -3270,3 +3270,25 @@ test("the sparkline shows the change over the whole period, and a hint while the
   el.series = { points: [{ at: day(1), findings: 5 }, { at: day(2), findings: 6 }] };
   assert.ok(el.sparkline("findings", "bad").includes("appears after a few scans") && !el.sparkline("findings", "bad").includes("<svg"));
 });
+
+test("the selection can be trimmed: a plan with a day count for each entity, and the plan shows rows and cannot be undone", async () => {
+  const { el } = panel("en");
+  el.excludeSel.add("sensor.hue");
+  el.excludeSel.add("sensor.hue2");
+  el.trimDays = 30;
+  assert.ok(el.excludeCard([]).includes("Trim the old history of the selection"));
+  let sent;
+  el._hass.callWS = async msg => {
+    sent = msg;
+    return { plan_id: "p1", status: "dry_run", actions: [], summary: {} };
+  };
+  el.render = () => {};
+  await el.trimPlan();
+  assert.equal(sent.type, "ha_housekeeper/plan_create");
+  assert.equal(JSON.stringify(sent.actions.map(a => [a.kind, a.object_id, a.keep_days])), JSON.stringify([["trim_history", "sensor.hue", 30], ["trim_history", "sensor.hue2", 30]]));
+  assert.equal(el.view, "cleanup");
+  const action = { kind: "trim_history", object_id: "sensor.hue", name: "Hue", object_type: "entity", verdict: "review", executable: true, reasons: ["irreversible"], keep_days: 30, trim: { rows: 5000 } };
+  const plan = { plan_id: "p2", status: "dry_run", actions: [action], summary: {} };
+  assert.ok(el.planCard(plan).includes("older than 30 days: 5000 rows"));
+  assert.equal(el.undoBadge(action).includes("mdi:backup-restore"), true);
+});

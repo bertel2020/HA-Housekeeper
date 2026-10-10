@@ -73,6 +73,7 @@ from .cleanup import (
     REFERENCE_KINDS,
     REMOVAL_KINDS,
     REPAIR_KINDS,
+    TRIM_KINDS,
     device_fingerprint,
     device_support,
     get_main_device,
@@ -83,7 +84,7 @@ from .cleanup import (
 from .const import DOMAIN, MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 from .meter import analyse, prepare_meter, read_series, recorder_ready
 from .protection import allows, allows_undo
-from .recorder_purge import delete_statistics, statistics_left
+from .recorder_purge import count_older, delete_statistics, statistics_left, trim_states
 from .references import (
     ENERGY_PARTS,
     SourceError,
@@ -575,6 +576,8 @@ class CleanupRunner:
             return await self._migrate_meter(action), "meter_migrated"
         if kind in PURGE_KINDS:
             return await self._purge_statistics(action), "statistics_purged"
+        if kind in TRIM_KINDS:
+            return await self._trim_history(action), "history_trimmed"
         if kind in LABEL_KINDS:
             registry = er.async_get(self.hass)
             entry = registry.async_get(object_id)
@@ -625,6 +628,21 @@ class CleanupRunner:
             "purge", _now(), requested=1, removed=len(removed), skipped=0, states=states
         )
         return {"states": states, "irreversible": True}
+
+    async def _trim_history(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Delete the state rows of one entity older than ``keep_days``; noted, never undone."""
+        entity_id, keep_days = action["object_id"], action["keep_days"]
+        left, error = await trim_states(self.hass, entity_id, keep_days)
+        if error:
+            raise StepAbort(error)
+        if left:
+            raise StepAbort("trim_left")
+        self.scanner.replies.clear()
+        rows = (action.get("trim") or {}).get("rows", 0)
+        self.scanner.events.record(
+            "purge", _now(), requested=1, removed=0, skipped=0, states=True, rows=rows
+        )
+        return {"keep_days": keep_days, "rows": rows, "irreversible": True}
 
     # -- counters --------------------------------------------------------------------------
 
@@ -1191,6 +1209,13 @@ class CleanupRunner:
             if found.get("error") or action.get("fingerprint") != found["fingerprint"]:
                 return "counter_changed"
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
+        if kind in TRIM_KINDS:
+            found = await count_older(self.hass, [object_id], action["keep_days"])
+            if found is None or not recorder_ready(self.hass):
+                return "no_recorder"
+            if not found[object_id]["rows"]:
+                return "now_blocked"
+            return None if object_id in context["acknowledged"] else "needs_acknowledgement"
         if kind in PURGE_KINDS:
             verdict = judge_purge_action(
                 object_id,
@@ -1336,6 +1361,10 @@ class CleanupRunner:
                 checks.append({"check": "counter_clean", "object_id": object_id, "ok": ok})
             elif kind in REFACTOR_KINDS:
                 checks.append(await self._verify_refactor(action))
+            elif kind in TRIM_KINDS:
+                found = await count_older(self.hass, [object_id], action["keep_days"])
+                ok = found is not None and not found[object_id]["rows"]
+                checks.append({"check": "history_trimmed", "object_id": object_id, "ok": ok})
             elif kind in PURGE_KINDS:
                 gone = object_id not in await statistics_left(self.hass, [object_id])
                 checks.append({"check": "statistics_gone", "object_id": object_id, "ok": gone})
@@ -1472,7 +1501,7 @@ class CleanupRunner:
                     outcome = await self._undo_counter(result)
                 except StepAbort as stop:
                     outcome = stop.reason
-            elif kind in PURGE_KINDS:
+            elif kind in PURGE_KINDS | TRIM_KINDS:
                 outcome = "irreversible"
             else:
                 outcome = self._reenable(registry, action["object_id"], result)

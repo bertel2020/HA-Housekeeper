@@ -608,3 +608,99 @@ async def test_adding_a_label_runs_is_verified_and_the_undo_keeps_other_labels(
     result = await scanner.cleanup.undo(plan["plan_id"], None)
     assert result["results"] == [{"object_id": entry.entity_id, "outcome": "undone"}]
     assert registry.async_get(entry.entity_id).labels == {old}
+
+
+async def test_trimming_the_history_of_one_entity_is_judged_run_verified_and_not_undone(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from unittest.mock import patch
+
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.ha_housekeeper import async_setup
+
+    assert await async_setup(hass, {})
+    scanner = await make_scanner(hass)
+    assert await async_setup_component(hass, "websocket_api", {})
+    client = await hass_ws_client(hass)
+    await scanner.async_scan()
+    scanner.snapshot["meta"]["recorder_available"] = True
+    manager, _ = fake_backup()
+    trimmed: list[tuple[str, int]] = []
+
+    async def counted(hass_, ids, days):
+        return {i: {"rows": 0 if trimmed else 5000, "oldest": 1.0} for i in ids}
+
+    async def trim(hass_, entity_id, days):
+        trimmed.append((entity_id, days))
+        return 0, None
+
+    web = "custom_components.ha_housekeeper.websocket_api"
+    module = "custom_components.ha_housekeeper.cleanup_exec"
+    with (
+        patch(f"{web}.count_older", counted),
+        patch(f"{module}.count_older", counted),
+        patch(f"{module}.trim_states", trim),
+        patch(f"{module}.recorder_ready", lambda hass_: True),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        await client.send_json_auto_id(
+            {
+                "type": "ha_housekeeper/plan_create",
+                "actions": [
+                    {"kind": "trim_history", "object_id": "sensor.hue", "keep_days": 14},
+                    {"kind": "trim_history", "object_id": "sensor.bad", "keep_days": 0},
+                ],
+            }
+        )
+        refused = await client.receive_json()
+        assert not refused["success"]  # 0 days is refused by the schema
+        await client.send_json_auto_id(
+            {
+                "type": "ha_housekeeper/plan_create",
+                "actions": [{"kind": "trim_history", "object_id": "sensor.hue", "keep_days": 14}],
+            }
+        )
+        plan = (await client.receive_json())["result"]
+        action = plan["actions"][0]
+        assert action["verdict"] == "review" and action["trim"]["rows"] == 5000
+        assert plan["simulation"]["trimmed"] == 1 and plan["simulation"]["purge_rows"] == 5000
+        await client.send_json_auto_id(
+            {
+                "type": "ha_housekeeper/plan_confirm",
+                "plan_id": plan["plan_id"],
+                "acknowledged": ["sensor.hue"],
+            }
+        )
+        confirmation = (await client.receive_json())["result"]
+        await client.send_json_auto_id(
+            {
+                "type": "ha_housekeeper/plan_execute",
+                "plan_id": plan["plan_id"],
+                "token": confirmation["token"],
+            }
+        )
+        assert (await client.receive_json())["result"] == {"started": True}
+        await scanner.cleanup._task
+    stored = scanner.journal.get(plan["plan_id"])
+    assert trimmed == [("sensor.hue", 14)]
+    assert stored["actions"][0]["result"]["state"] == "done"
+    assert stored["actions"][0]["result"]["irreversible"] is True
+    assert "history_trimmed" in {c["check"] for c in stored["verification"]["checks"]}
+    undone = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert undone["results"][0]["outcome"] == "irreversible"
+
+
+def test_judging_a_trim_names_what_blocks_it() -> None:
+    from custom_components.ha_housekeeper.cleanup import judge_trim_action
+
+    ok = judge_trim_action("sensor.a", 30, {}, {"rows": 3, "oldest": 1.0}, True)
+    assert ok["verdict"] == "review" and ok["reasons"] == ["irreversible"]
+    for days, found, recorder, reason in (
+        (30, {"rows": 0, "oldest": None}, True, "nothing_to_trim"),
+        (30, None, True, "not_counted"),
+        (0, {"rows": 3, "oldest": 1.0}, True, "bad_keep_days"),
+        (30, {"rows": 3, "oldest": 1.0}, False, "no_recorder"),
+    ):
+        judged = judge_trim_action("sensor.a", days, {}, found, recorder)
+        assert judged["verdict"] == "blocked" and reason in judged["reasons"]

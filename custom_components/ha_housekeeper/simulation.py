@@ -24,6 +24,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     meters = 0
     repaired = 0
     purged: set[str] = set()
+    trimmed = 0
     certain: set[tuple[str, str]] = set()
     uncertain: set[tuple[str, str]] = set()
     statistics: set[str] = set()
@@ -49,6 +50,9 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
                 purge_rows += history["statistics"] + (
                     history["states"] if action.get("states") else 0
                 )
+        elif kind == "trim_history":
+            trimmed += 1
+            purge_rows += (action.get("trim") or {}).get("rows", 0)
         elif kind in REMOVING and history:
             choice = action.get("recorder")
             if choice:
@@ -88,6 +92,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
         "meters": meters,
         "repaired": repaired,
         "purged": len(purged),
+        "trimmed": trimmed,
         "remaining_certain": len(certain),
         "remaining_uncertain": len(uncertain) + manual,
         "remaining_sources": sorted({source for source, _ in certain})[:SHOWN],
