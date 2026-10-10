@@ -298,6 +298,11 @@ def websocket_set_options(
     msg: dict[str, Any],
 ) -> None:
     """Change Housekeeper's own options. The entry reloads afterwards to apply them."""
+    scanner = _scanner(hass)
+    if write_holder(hass) or (scanner is not None and scanner.cleanup.running):
+        # The reload would drop the running plan's runner and journal while it still writes.
+        connection.send_error(msg["id"], "busy", "A plan, undo or purge is running")
+        return
     entries = hass.config_entries.async_entries(DOMAIN)
     changes = {key: msg[key] for key in OPTION_LIMITS if key in msg}
     if not entries or not changes:

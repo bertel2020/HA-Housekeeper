@@ -76,6 +76,7 @@ from .cleanup import (
     TRIM_KINDS,
     device_fingerprint,
     device_support,
+    end_interrupted,
     get_main_device,
     judge_action,
     judge_purge_action,
@@ -297,6 +298,11 @@ class CleanupRunner:
         """Stop after the current step."""
         self._cancel = True
 
+    async def flush_journal(self) -> None:
+        """Write the journal now instead of after the save delay (before an unload)."""
+        journal = self.scanner.journal
+        await journal.store.async_save(journal.data())
+
     def confirm(self, plan_id: str, acknowledged: list[str], user_id: str | None) -> dict[str, Any]:
         """Select the actions that may run and hand out a short-lived confirmation token."""
         plan = self._plan(plan_id)
@@ -400,6 +406,9 @@ class CleanupRunner:
                 await self._backup(plan, with_database=bool(kinds & DATABASE_KINDS))
             if plan["status"] == "running":
                 await self._execute(plan, object_ids)
+        except asyncio.CancelledError:  # Home Assistant stops: the journal must not say "running"
+            end_interrupted(plan, _now().isoformat())
+            raise
         except Exception as err:  # Never leave the plan in "running".
             _event(plan, "failed", error=f"{type(err).__name__}: {err}")
             plan["status"] = "partial" if plan["executed"] else "aborted"

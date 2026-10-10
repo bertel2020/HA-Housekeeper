@@ -248,3 +248,33 @@ def test_the_journal_list_says_until_when_a_plan_is_watched() -> None:
         listed["followup"] == "watching" and listed["followup_until"] == "2026-10-11T10:00:00+00:00"
     )
     assert plan_summary({"plan_id": "q", "actions": []})["followup_until"] is None
+
+
+async def test_a_run_cut_off_by_a_restart_loads_as_partial_or_aborted(hass, hass_storage) -> None:
+    """A plan still marked as running on disk was stopped from outside; it must not stay running."""
+    from custom_components.ha_housekeeper.cleanup import JournalStore
+    from custom_components.ha_housekeeper.const import JOURNAL_STORAGE_KEY
+
+    def plan(plan_id, status, executed):
+        done = {"state": "done", "at": "x"}
+        return {
+            "plan_id": plan_id,
+            "status": status,
+            "executed": executed,
+            "run": {"started_at": "x", "finished_at": None},
+            "events": [],
+            "actions": [{"object_id": "a", "result": done} if executed else {"object_id": "a"}]
+            + [{"object_id": "b"}],
+        }
+
+    hass_storage[JOURNAL_STORAGE_KEY] = {
+        "version": 1,
+        "data": {"plans": [plan("1", "running", True), plan("2", "backup", False)]},
+    }
+    journal = JournalStore(hass)
+    await journal.async_load()
+    ran, backed = journal.plans
+    assert ran["status"] == "partial" and backed["status"] == "aborted"
+    assert ran["actions"][0]["result"]["state"] == "done"
+    assert ran["actions"][1]["result"]["reason"] == "interrupted"
+    assert ran["run"]["finished_at"] and ran["events"][-1]["type"] == "interrupted"

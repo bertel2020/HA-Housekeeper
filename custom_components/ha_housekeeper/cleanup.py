@@ -1164,6 +1164,23 @@ def public_plan(plan: dict[str, Any]) -> dict[str, Any]:
     return shown
 
 
+RUN_STATES = ("backup", "running")  # a plan in one of these has a run going right now
+
+
+def end_interrupted(plan: dict[str, Any], at: str) -> None:
+    """End a run that was stopped from outside (restart, crash): partial or aborted, never running.
+
+    Steps without a result did not run; the done ones keep their restore data for an undo.
+    """
+    plan["status"] = "partial" if plan.get("executed") else "aborted"
+    run = plan.get("run")
+    if isinstance(run, dict) and not run.get("finished_at"):
+        run["finished_at"] = at
+    plan.setdefault("events", []).append({"at": at, "type": "interrupted"})
+    for action in plan.get("actions", []):
+        action.setdefault("result", {"state": "not_run", "at": at, "reason": "interrupted"})
+
+
 class JournalStore:
     """Journal of dry-run plans, newest first. Stored by Housekeeper only."""
 
@@ -1179,6 +1196,22 @@ class JournalStore:
             self._plans = data["plans"]
         if isinstance(data, dict) and isinstance(data.get("purges"), list):
             self.purges = [p for p in data["purges"] if isinstance(p, dict)][:MAX_PURGES]
+        # Nothing runs right after loading: a plan still marked as running was cut off.
+        stopped = [p for p in self._plans if isinstance(p, dict) and p.get("status") in RUN_STATES]
+        now = datetime.now(UTC).isoformat()
+        for plan in stopped:
+            end_interrupted(plan, now)
+        if stopped:
+            self._save()
+
+    @property
+    def store(self) -> Store[dict[str, Any]]:
+        """The storage file; only the runner writes it at once (``CleanupRunner.flush_journal``)."""
+        return self._store
+
+    def data(self) -> dict[str, Any]:
+        """What is stored."""
+        return {"plans": self._plans, "purges": self.purges}
 
     def add_purge(self, entry: dict[str, Any]) -> None:
         """Record a recorder purge, newest first. It cannot be undone, so it is only noted."""
@@ -1250,6 +1283,4 @@ class JournalStore:
         self._save()
 
     def _save(self) -> None:
-        self._store.async_delay_save(
-            lambda: {"plans": self._plans, "purges": self.purges}, SAVE_DELAY
-        )
+        self._store.async_delay_save(self.data, SAVE_DELAY)

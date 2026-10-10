@@ -556,6 +556,13 @@ async def test_options_can_be_changed_from_the_panel(hass: HomeAssistant, hass_w
     await client.send_json_auto_id({"type": "ha_housekeeper/set_options"})
     assert (await client.receive_json())["success"] is False
 
+    # No reload while something writes: it would drop the runner and journal of the running plan.
+    hass.data[DOMAIN]["write_holder"] = "plan"
+    await client.send_json_auto_id({"type": "ha_housekeeper/set_options", "stale_hours": 12})
+    busy = await client.receive_json()
+    assert busy["error"]["code"] == "busy" and "stale_hours" not in entry.options
+    hass.data[DOMAIN]["write_holder"] = None
+
 
 async def test_energy_dashboard_counts_as_a_user_of_its_entities(hass: HomeAssistant) -> None:
     """Entities used by the Energy dashboard show up as used and are never cleanup-safe."""

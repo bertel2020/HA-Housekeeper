@@ -25,6 +25,9 @@
           "history_days": "Verlauf aufbewahren (Tage)"
         }
       }
+    },
+    "abort": {
+      "busy": "Gerade läuft ein Plan, ein Rückgängigmachen oder eine Löschung. Die Optionen lassen sich danach ändern."
     }
   },
   "issues": {

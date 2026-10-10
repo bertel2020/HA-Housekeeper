@@ -25,6 +25,9 @@
           "history_days": "Keep scan history for (days)"
         }
       }
+    },
+    "abort": {
+      "busy": "A plan, an undo or a purge is running. The options can be changed afterwards."
     }
   },
   "issues": {

@@ -248,9 +248,17 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload the integration."""
+    scanner = hass.data[DOMAIN].get("scanner")
+    if scanner is not None and scanner.cleanup.running:
+        # The run is not tied to the entry: stop it after the current step and let it finish,
+        # so the next setup does not load a journal that is still being written.
+        scanner.cleanup.cancel()
+        await scanner.cleanup.wait()
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
         frontend.async_remove_panel(hass, PANEL_URL)
         hass.data[DOMAIN].pop("scanner", None)
+        if scanner is not None:
+            await scanner.cleanup.flush_journal()
         async_clear_issues(hass)
     return unloaded
