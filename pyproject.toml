@@ -19,4 +19,8 @@ files = [
     "custom_components/ha_housekeeper/notes.py",
     "custom_components/ha_housekeeper/entity_recorder.py",
     "custom_components/ha_housekeeper/stale.py",
+    "custom_components/ha_housekeeper/cleanup.py",
+    "custom_components/ha_housekeeper/cleanup_exec.py",
+    "custom_components/ha_housekeeper/recorder_purge.py",
+    "custom_components/ha_housekeeper/ws_common.py",
 ]
