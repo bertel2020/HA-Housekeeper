@@ -4,7 +4,7 @@ Object.assign(TEXT.de, {
   xpButton: "Exportieren", xpTitle: "Exportieren", xpStepsLabel: "Schritte des Exports", xpCancel: "Abbrechen", xpBack: "Zurück", xpNext: "Weiter",
   xpStep0: "Auswahl", xpStep1: "Angaben", xpStep2: "Format", xpStep3: "Vorschau",
   xpSelTitle: "Was soll in den Export?", xpSelHint: "Wähle Entitäten aus dem Bestand. Schnellwahlen setzen mehrere Häkchen auf einmal.",
-  xpQuickFiltered: "Aktuelles Filterergebnis ({n})", xpQuickShown: "Suchtreffer ({n})", xpQuickClear: "Leeren",
+  xpQuickAll: "Alle Entitäten ({n})", xpQuickFiltered: "Aktuelles Filterergebnis ({n})", xpQuickShown: "Suchtreffer ({n})", xpQuickClear: "Leeren",
   xpPickArea: "Bereich …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "In den Entitäten suchen …",
   xpSelected: "{n} ausgewählt", xpNeedOne: "Wähle mindestens eine Entität.", xpNone: "Keine Treffer.", xpNoEntities: "Dazu gibt es keine Entitäten zum Exportieren.",
   xpFieldsTitle: "Welche Angaben?", xpFieldsHint: "Pro Gruppe ein Häkchen. Eine Voreinstellung setzt sie für dich.",
@@ -24,7 +24,7 @@ Object.assign(TEXT.en, {
   xpButton: "Export", xpTitle: "Export", xpStepsLabel: "Steps of the export", xpCancel: "Cancel", xpBack: "Back", xpNext: "Next",
   xpStep0: "Selection", xpStep1: "Fields", xpStep2: "Format", xpStep3: "Preview",
   xpSelTitle: "What goes into the export?", xpSelHint: "Pick entities from the inventory. Quick picks tick several at once.",
-  xpQuickFiltered: "Current filter result ({n})", xpQuickShown: "Search hits ({n})", xpQuickClear: "Clear",
+  xpQuickAll: "All entities ({n})", xpQuickFiltered: "Current filter result ({n})", xpQuickShown: "Search hits ({n})", xpQuickClear: "Clear",
   xpPickArea: "Area …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "Search the entities …",
   xpSelected: "{n} selected", xpNeedOne: "Pick at least one entity.", xpNone: "No hits.", xpNoEntities: "There are no entities to export for this.",
   xpFieldsTitle: "Which fields?", xpFieldsHint: "One tick per group. A preset sets them for you.",
@@ -212,7 +212,7 @@ class ExportMixin {
     const pickRows = hits.map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}${this.areaName(o) ? ` · ${this.esc(this.areaName(o))}` : ""}</small></span></label>`);
     const pickPage = this.paginate("xppick", pickRows), rows = pickPage.rows.join("") + pickPage.footer;
     return `<h3>${this.t("xpSelTitle")}</h3><p class="factnote">${this.t("xpSelHint")}</p>
-      <div class="chips"><button class="chip" data-xp-quick="filtered">${this.t("xpQuickFiltered", { n: this.formatNumber(filtered.length) })}</button>${q ? `<button class="chip" data-xp-quick="shown">${this.t("xpQuickShown", { n: this.formatNumber(hits.length) })}</button>` : ""}<button class="chip" data-xp-quick="clear">${this.t("xpQuickClear")}</button></div>
+      <div class="chips"><button class="chip" data-xp-quick="all">${this.t("xpQuickAll", { n: this.formatNumber(all.length) })}</button><button class="chip" data-xp-quick="filtered">${this.t("xpQuickFiltered", { n: this.formatNumber(filtered.length) })}</button>${q ? `<button class="chip" data-xp-quick="shown">${this.t("xpQuickShown", { n: this.formatNumber(hits.length) })}</button>` : ""}<button class="chip" data-xp-quick="clear">${this.t("xpQuickClear")}</button><span class="factnote" role="status">${this.t("xpSelected", { n: this.formatNumber(x.sel.size) })}</span></div>
       <div class="filters"><select data-xp-add="area" aria-label="${this.esc(this.t("xpPickArea"))}">${options(this.t("xpPickArea"), [...areas].sort(byName))}</select><select data-xp-add="domain" aria-label="${this.esc(this.t("xpPickDomain"))}">${options(this.t("xpPickDomain"), [...domains].sort().map(d => [d, d]))}</select><select data-xp-add="platform" aria-label="${this.esc(this.t("xpPickPlatform"))}">${options(this.t("xpPickPlatform"), [...platforms].sort().map(p => [p, p]))}</select></div>
       <input type="search" data-xp-q value="${this.esc(x.q)}" placeholder="${this.esc(this.t("xpSearch"))}">
       ${rows || `<div class="emptymsg">${this.t("xpNone")}</div>`}`;
@@ -274,6 +274,7 @@ class ExportMixin {
     root.querySelectorAll("[data-xp-quick]").forEach(el => el.onclick = () => {
       const kind = el.dataset.xpQuick, q = x.q.trim().toLowerCase();
       if (kind === "clear") x.sel.clear();
+      else if (kind === "all") this.xpEntities().forEach(o => x.sel.add(o.object_id));
       else if (kind === "filtered") this.filtered().filter(o => o.object_type === "entity").forEach(o => x.sel.add(o.object_id));
       else this.xpEntities().filter(o => !q || this.haystack(o).includes(q)).forEach(o => x.sel.add(o.object_id));
       x.msg = ""; go();
