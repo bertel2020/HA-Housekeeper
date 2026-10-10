@@ -90,9 +90,10 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 
 1. Use the first button to open the Housekeeper repository in HACS.
 2. Download **HA Housekeeper** and restart Home Assistant.
-3. Use the second button to add the integration. Alternatively, open
+3. **Add the integration** (important): use the second button, or open
    **Settings → Devices & services → Add integration → HA Housekeeper** in
-   Home Assistant.
+   Home Assistant and finish the dialog. Downloading in HACS alone is not enough;
+   without this step no sidebar entry appears.
 4. Then open **Housekeeper** in the sidebar while signed in as an administrator.
 
 If the first button does not work, add

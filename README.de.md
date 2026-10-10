@@ -90,9 +90,10 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 
 1. Über den ersten Button das Housekeeper-Repository in HACS öffnen.
 2. **HA Housekeeper** herunterladen und Home Assistant neu starten.
-3. Über den zweiten Button die Integration hinzufügen. Alternativ in Home
-   Assistant **Einstellungen → Geräte & Dienste → Integration hinzufügen →
-   HA Housekeeper** öffnen.
+3. **Integration hinzufügen** (wichtig): Über den zweiten Button oder in Home
+   Assistant unter **Einstellungen → Geräte & Dienste → Integration hinzufügen →
+   HA Housekeeper** und den Dialog abschließen. Der Download in HACS allein reicht
+   nicht; ohne diesen Schritt erscheint kein Menüpunkt.
 4. Anschließend als Administrator **Housekeeper** in der Seitenleiste öffnen.
 
 Falls der erste Button nicht funktioniert, in HACS unter **Integrationen →
