@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.0.4 - 2026-10-10
+
+Neue Erkennung für Sensoren, die nichts mehr melden. Automatisiert getestet, aber **noch
+nicht auf einer echten Instanz**.
+
+### Neu
+
+- **„Meldet nicht mehr“:** Ein Sensor, der seinen letzten Wert behält, aber länger als das
+  Limit nichts Neues meldet, erscheint als Befund. Standard 48 Stunden (Option
+  `stale_hours`, 0 = aus), nur für Sensoren mit Messwerten; pro Sensor einstellbar in der
+  Übersicht der Entität, auch für andere Entitäten.
+- **Befunde:** In „Ausgeblendet“, „Bekannt“ und „Zurückgestellt“ gibt es „Wieder
+  einblenden“.
+- **Datenbank:** Die Karte zeigt den ältesten Eintrag im Recorder.
+
+### English
+
+New detection for sensors that stopped reporting. Automatically tested, but **not yet on a
+real instance**.
+
+#### New
+
+- **"Stops reporting":** a sensor that keeps its last value but reports nothing new for
+  longer than the limit appears as a finding. Default 48 hours (option `stale_hours`,
+  0 = off), for sensors with measurements only; adjustable per sensor on the entity's
+  overview, also for other entities.
+- **Findings:** "Show again" in "Hidden", "Known" and "Snoozed".
+- **Database:** the card shows the oldest entry in the recorder.
+
 ## 1.0.3 - 2026-10-09
 
 Bedienung und Lesbarkeit. Automatisiert getestet, aber **noch nicht auf einer echten
