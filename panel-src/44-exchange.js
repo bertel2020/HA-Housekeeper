@@ -99,12 +99,12 @@ class ExchangeMixin {
     const planDone = ["executed", "verified"].includes(this.plan?.status) && ex.planned && ex.planned === ex.oldDev;
     const rows = ex.result ? (ex.result.pairs.length ? ex.result.pairs.map(p => this.pairRow(p)).join("") : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : "";
     const unmatched = ex.result?.unmatched_new?.length ? `<p class="factnote">${this.t("exUnmatched", { list: this.esc(ex.result.unmatched_new.slice(0, 10).join(", ")) })}</p>` : "";
-    const create = ex.result ? `<div class="setrow planfoot"><small style="margin:0">${this.t("exChosen", { count: chosen })} · ${this.t("cleanupDryRun")}</small><button class="btn primary" data-ex-create ${chosen && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("exCreate", { count: chosen })}</button></div>` : "";
-    const disable = planDone ? `<div class="setrow planfoot"><small style="margin:0">${this.t("exDisableHint")}</small><button class="btn" data-ex-disable>${this.t("exDisableOld")}</button></div>` : "";
+    const create = ex.result ? `<div class="setrow planfoot"><small class="u-m0">${this.t("exChosen", { count: chosen })} · ${this.t("cleanupDryRun")}</small><button class="btn primary" data-ex-create ${chosen && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("exCreate", { count: chosen })}</button></div>` : "";
+    const disable = planDone ? `<div class="setrow planfoot"><small class="u-m0">${this.t("exDisableHint")}</small><button class="btn" data-ex-disable>${this.t("exDisableOld")}</button></div>` : "";
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("exTitle")}</h2><p>${this.t("exHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
       <div class="setrow"><div><label>${this.t("exOld")}</label></div><select data-ex-old style="max-width:360px">${this.deviceOptions(ex.oldDev, ex.newDev)}</select></div>
       <div class="setrow"><div><label>${this.t("exNew")}</label></div><select data-ex-new style="max-width:360px">${this.deviceOptions(ex.newDev, ex.oldDev)}</select></div>
-      <div class="setrow planfoot"><small style="margin:0">${this.esc(ex.error)}</small><button class="btn" data-ex-load ${ex.oldDev && ex.newDev && !ex.loading ? "" : "disabled"}>${ex.loading ? this.t("exLoading") : this.t("exLoad")}</button></div>
+      <div class="setrow planfoot"><small class="u-m0">${this.esc(ex.error)}</small><button class="btn" data-ex-load ${ex.oldDev && ex.newDev && !ex.loading ? "" : "disabled"}>${ex.loading ? this.t("exLoading") : this.t("exLoad")}</button></div>
       ${rows}${unmatched}${create}${disable}</div>`;
   }
 
@@ -130,7 +130,7 @@ class ExchangeMixin {
     if (!f) return "";
     const key = { watching: "fuWatching", clean: "fuClean", regression: "fuRegression", stopped: "fuStopped" }[f.state];
     const date = this.formatDate(f.state === "watching" ? f.until : f.at || f.until);
-    const items = (f.new || []).map(n => `<small style="display:block">${this.esc(this.t(`fu_class_${n.classification}`))}: ${this.esc(n.object_id)}</small>`).join("");
+    const items = (f.new || []).map(n => `<small class="u-block">${this.esc(this.t(`fu_class_${n.classification}`))}: ${this.esc(n.object_id)}</small>`).join("");
     return `<p class="factnote"><span class="pill ${this.followupTone(f.state)}">${this.t(`fu_${f.state}`)}</span> ${this.esc(this.t(key, { date, count: f.new_count ?? 0 }))}${items}</p>`;
   }
 

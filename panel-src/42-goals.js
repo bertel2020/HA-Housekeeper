@@ -67,9 +67,9 @@ class GoalsMixin {
     if (compact) {
       const missed = r.goals.filter(g => g.state === "missed");
       const body = missed.length ? missed.map(g => this.goalRow(g, false)).join("") : `<div class="pad"><small>${this.t("goalsAllMet", { n: r.met })}</small></div>`;
-      return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-goals"><div class="panelhead"><div><h2 id="hk-goals">${this.t("goalsTitle")}</h2></div><span class="date">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</span><button class="btn quiet" data-goals-settings>${this.t("goalsAdjust")}</button></div>${body}</section>`;
+      return `<section class="panel u-mb14" aria-labelledby="hk-goals"><div class="panelhead"><div><h2 id="hk-goals">${this.t("goalsTitle")}</h2></div><span class="date">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</span><button class="btn quiet" data-goals-settings>${this.t("goalsAdjust")}</button></div>${body}</section>`;
     }
-    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-goals"><div class="panelhead"><div><h2 id="hk-goals">${this.t("goalsTitle")}</h2><p>${this.t("goalsSub")}</p></div><span class="date">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</span></div>${r.goals.map(g => this.goalRow(g)).join("")}</section>`;
+    return `<section class="panel u-mb14" aria-labelledby="hk-goals"><div class="panelhead"><div><h2 id="hk-goals">${this.t("goalsTitle")}</h2><p>${this.t("goalsSub")}</p></div><span class="date">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</span></div>${r.goals.map(g => this.goalRow(g)).join("")}</section>`;
   }
 
   openGoal(id) {

@@ -255,7 +255,7 @@ class ExportMixin {
     const next = x.step < 3 ? `<button class="btn primary" data-xp-next>${this.t("xpNext")}</button>` : `<button class="btn" data-xp-download><ha-icon icon="mdi:download"></ha-icon>${this.t("xpDownload")}</button><button class="btn primary" data-xp-copy><ha-icon icon="mdi:content-copy"></ha-icon>${x.copied ? this.t("xpCopied") : this.t("xpCopy")}</button>`;
     const hint = x.msg && x.step === 0 ? x.msg : x.step === 0 ? this.t("xpSelected", { n: this.formatNumber(x.sel.size) }) : "";
     return `<div class="stack"><div class="panel xpwiz"><div class="panelhead"><div><h2>${this.t("xpTitle")}</h2></div><button class="btn" data-xp-cancel>${this.t("xpCancel")}</button></div>${this.xpBar()}<div class="xpbody">${body}</div>
-      <div class="setrow planfoot"><button class="btn" data-xp-back ${x.step === 0 ? "hidden" : ""}>${this.t("xpBack")}</button><small style="margin:0" role="status">${this.esc(hint)}</small><span class="xpact">${next}</span></div></div></div>`;
+      <div class="setrow planfoot"><button class="btn" data-xp-back ${x.step === 0 ? "hidden" : ""}>${this.t("xpBack")}</button><small class="u-m0" role="status">${this.esc(hint)}</small><span class="xpact">${next}</span></div></div></div>`;
   }
 
   xpBind(root) {
