@@ -75,3 +75,16 @@ def test_limits_can_be_changed_and_a_goal_switched_off() -> None:
     assert goals["broken_references"]["state"] == "off"
     result = evaluate(measured, {})
     assert (result["met"], result["missed"]) == (0, 2)
+
+
+def test_the_four_recurring_problem_goals() -> None:
+    snapshot = {
+        "findings": [{"classification": "stale", "ignored": False}] * 2,
+        "meta": {"recurring_devices": 0, "orphaned_statistics": 3},
+    }
+    goals = _goals(measure(snapshot, None, None, None, 1))
+    assert goals["stale_sensors"]["value"] == 2 and goals["stale_sensors"]["state"] == "missed"
+    assert goals["recurring_devices"]["state"] == "met"
+    assert goals["orphaned_statistics"]["value"] == 3
+    assert goals["automation_errors"]["state"] == "missed"
+    assert _goals(measure(snapshot, None, None, None))["automation_errors"]["state"] == "unknown"

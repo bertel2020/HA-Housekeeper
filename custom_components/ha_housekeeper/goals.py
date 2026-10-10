@@ -25,6 +25,10 @@ CATALOG: dict[str, tuple[str, int, int, int]] = {
     "recorder_growth": ("mb_per_day", 50, 1, 1000000),
     "weak_batteries": ("count", 0, 0, 100000),
     "devices_without_area": ("count", 5, 0, 100000),
+    "stale_sensors": ("count", 0, 0, 100000),
+    "recurring_devices": ("count", 0, 0, 100000),
+    "automation_errors": ("count", 0, 0, 100000),
+    "orphaned_statistics": ("count", 0, 0, 1000000),
 }
 
 
@@ -79,6 +83,7 @@ def measure(
     backup: dict[str, Any] | None,
     growth: dict[str, Any] | None,
     policy_rules: list[dict[str, Any]] | None,
+    automation_errors: int | None = None,
 ) -> dict[str, Any]:
     """The current value of each goal: a number, ``NEVER``, or ``None`` when it cannot be told."""
     findings = [f for f in snapshot["findings"] if not f.get("ignored")]
@@ -86,6 +91,10 @@ def measure(
         "broken_references": sum(f["classification"] == "broken_reference" for f in findings),
         "unavailable": sum(f["classification"] == "unavailable" for f in findings),
         "weak_batteries": snapshot["meta"].get("low_batteries"),
+        "stale_sensors": sum(f["classification"] == "stale" for f in findings),
+        "recurring_devices": snapshot["meta"].get("recurring_devices"),
+        "orphaned_statistics": snapshot["meta"].get("orphaned_statistics"),
+        "automation_errors": automation_errors,
     }
     newest = _check(backup, "newest")
     if newest and newest["level"] != "unknown":

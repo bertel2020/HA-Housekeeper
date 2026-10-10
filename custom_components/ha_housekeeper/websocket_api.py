@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import voluptuous as vol
@@ -1840,7 +1840,16 @@ async def websocket_goals(
             scanner.low_battery_percent,
         )["rules"]
         grown = growth(scanner.events.sizes, datetime.now(UTC).date())
-        measured = measure_goals(snapshot, backup, grown, rules)
+        month = (datetime.now(UTC) - timedelta(days=30)).date().isoformat()
+        errors = (
+            sum(
+                key.startswith("automation.") and scanner.runs.errors_since(key, month) > 0
+                for key in scanner.runs.items
+            )
+            if scanner.runs.since
+            else None
+        )
+        measured = measure_goals(snapshot, backup, grown, rules, errors)
         result = evaluate_goals(measured, scanner.goals.items)
     except Exception as err:
         connection.send_error(msg["id"], "goals_failed", f"{type(err).__name__}: {err}")
