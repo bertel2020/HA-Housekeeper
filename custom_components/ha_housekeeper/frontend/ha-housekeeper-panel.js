@@ -4002,7 +4002,7 @@ class DiagnosisMixin {
       const cards = this.propertyCards(item);
       return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
     }
-    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.actionsCard(item, key)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}${this.entityRecorderCard(item)}${this.staleCard(item)}${this.noteCard(item)}</div></div>`;
+    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.actionsCard(item, key)}${this.detailEditCard(item)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}${this.entityRecorderCard(item)}${this.staleCard(item)}${this.noteCard(item)}</div></div>`;
   }
 }
 
@@ -8755,6 +8755,70 @@ class RenameMixin {
   }
 }
 
+// Renaming one entity and giving an entity or device an area, from its detail page. Both end in a plan
+// like the bulk forms of the policy list. Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  deTitle: "Umbenennen und Bereich", deNewId: "Neue ID", deBadId: "Erlaubt sind a–z, 0–9 und _.", deRename: "Umbenennen vorbereiten", deAssign: "Bereich zuweisen",
+  deArea: "Bereich", deNoArea: "Kein Bereich", deAreaNow: "Heute: {area}", deRenameNote: "Verweise in Automationen, Skripten und Szenen schreibt Housekeeper mit um.",
+});
+Object.assign(TEXT.en, {
+  deTitle: "Rename and area", deNewId: "New ID", deBadId: "Only a–z, 0–9 and _ are allowed.", deRename: "Prepare rename", deAssign: "Assign area",
+  deArea: "Area", deNoArea: "No area", deAreaNow: "Now: {area}", deRenameNote: "Housekeeper rewrites references in automations, scripts and scenes as well.",
+});
+
+const DETAIL_ID_RULE = /^[a-z0-9_]+$/;
+
+class DetailEditMixin {
+  // The card on the overview tab of an entity or a device; empty for every other kind of object.
+  detailEditCard(item) {
+    if (!["entity", "device"].includes(item.object_type)) return "";
+    const e = this.detailEdit?.id === item.object_id ? this.detailEdit : (this.detailEdit = { id: item.object_id, value: item.object_id.split(".").slice(1).join("."), area: item.area_id || "", error: "" });
+    const areas = (this.data.objects || []).filter(o => o.object_type === "area").sort((x, y) => String(x.name).localeCompare(String(y.name)));
+    const now = this.areaName(item);
+    const rename = item.object_type === "entity" ? `<form class="polform" data-de-rename><label for="de-id"><strong>${this.t("deNewId")}</strong></label>
+        <span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="de-id" data-de-id value="${this.esc(e.value)}" autocomplete="off" spellcheck="false">
+        <button type="submit" class="btn primary" data-de-rename-btn ${this.detailIdOk(item, e.value) ? "" : "disabled"}>${this.t("deRename")}</button>
+        <small class="factnote">${this.t("deRenameNote")}</small></form>` : "";
+    const suggest = !item.area_id;
+    const assign = areas.length ? `<form class="polform" data-de-area><label for="de-area"><strong>${this.t("deArea")}</strong></label>
+        <select id="de-area" data-de-area-select>${suggest ? `<option value="">${this.t("areaSuggest")}</option>` : ""}${areas.map(a => `<option value="${this.esc(a.object_id)}" ${e.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
+        <button type="submit" class="btn primary" data-de-area-btn ${suggest || e.area !== item.area_id ? "" : "disabled"}>${this.t("deAssign")}</button>
+        <small class="factnote">${this.t("deAreaNow", { area: now || this.t("deNoArea") })}${suggest ? ` · ${this.t("areaNote")}` : ""}</small></form>` : `<small class="factnote">${this.t("areaNone")}</small>`;
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("deTitle")}</h2></div><div class="pad">${rename}${assign}${e.error ? `<small class="error" role="alert">${this.esc(this.t(e.error))}</small>` : ""}</div></section>`;
+  }
+
+  // The part after the dot must change and keep to what an ID may hold; whether it is free is the plan's business.
+  detailIdOk(item, value) {
+    return DETAIL_ID_RULE.test(value) && value !== item.object_id.split(".").slice(1).join(".");
+  }
+
+  async makeDetailPlan(action) {
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [action] });
+      this.openNewPlan(plan);
+    } catch (err) { this.error = err?.message || String(err); }
+    this.render();
+  }
+
+  bindDetailEdit(root) {
+    const item = this.selected, e = this.detailEdit;
+    if (!item || !e || e.id !== item.object_id) return;
+    const input = root.querySelector("[data-de-id]"), btn = root.querySelector("[data-de-rename-btn]");
+    if (input) input.oninput = () => { e.value = input.value.trim().toLowerCase(); if (btn) btn.disabled = !this.detailIdOk(item, e.value); };
+    root.querySelector("[data-de-rename]")?.addEventListener("submit", ev => {
+      ev.preventDefault();
+      if (!this.detailIdOk(item, e.value)) { e.error = "deBadId"; this.render(); return; }
+      this.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `${item.object_id.split(".")[0]}.${e.value}` });
+    });
+    const select = root.querySelector("[data-de-area-select]"), areaBtn = root.querySelector("[data-de-area-btn]");
+    if (select) select.onchange = () => { e.area = select.value; if (areaBtn) areaBtn.disabled = !!item.area_id && e.area === item.area_id; };
+    root.querySelector("[data-de-area]")?.addEventListener("submit", ev => {
+      ev.preventDefault();
+      this.makeDetailPlan({ kind: "set_area", object_id: item.object_id, ...(e.area ? { target: e.area } : {}) });
+    });
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -9492,6 +9556,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindCriteriaHistory(root);
     this.bindBackupCleanup(root);
     this.bindRename(root);
+    this.bindDetailEdit(root);
     this.bindPolSel(root);
     this.bindCounter(root);
     this.bindPicker(root);
@@ -9695,7 +9760,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, RenameMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, SparklineMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, RenameMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, SparklineMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

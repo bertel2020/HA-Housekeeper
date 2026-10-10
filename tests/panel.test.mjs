@@ -3424,3 +3424,16 @@ test("an entity row shows the id in mono under the name and the extra facts in a
   assert.equal(el.rowId("sensor.a<b", "3 · x"), '<span class="id">sensor.a&lt;b</span><small>3 · x</small>');
   assert.equal(el.rowId("sensor.a"), '<span class="id">sensor.a</span>');
 });
+
+test("the detail page offers a rename and an area for one entity and sends one action each", async () => {
+  const calls = [];
+  const el = policyPanel(calls);
+  const item = { object_type: "entity", object_id: "light.hall_2", name: "Hall", area_id: "", device_id: null };
+  const html = el.detailEditCard(item);
+  assert.ok(html.includes('value="hall_2"') && html.includes("Per entry, as suggested") && html.includes('value="kitchen"') && html.includes("data-de-rename-btn disabled"));
+  assert.ok(!el.detailIdOk(item, "hall_2") && !el.detailIdOk(item, "Hall") && !el.detailIdOk(item, "") && el.detailIdOk(item, "hall"));
+  assert.equal(el.detailEditCard({ object_type: "automation", object_id: "automation.a" }), "");
+  await el.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: "light.hall" });
+  await el.makeDetailPlan({ kind: "set_area", object_id: item.object_id, target: "kitchen" });
+  assert.equal(JSON.stringify(calls.map(c => c.actions[0].kind)), JSON.stringify(["rename_entity", "set_area"]));
+});
