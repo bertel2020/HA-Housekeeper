@@ -15,16 +15,18 @@ class SparklineMixin {
       const result = await this._hass.callWS({ type: "ha_housekeeper/history_series" });
       if (this.data !== data) return;
       this.series = Array.isArray(result?.points) ? result : null;
-      if (this.view === "overview" && !this.selected) this.render();
+      if (["overview", "findingsNav"].includes(this.view) && !this.selected) this.render();
     } catch (_) { if (this.data === data) this.series = null; }
   }
 
   // Line, end point and the change over the period for one key of the series ("objects", "findings",
   // "unavailable"). "rising" says whether more is worse; without it the colour stays neutral.
   sparkline(key, rising) {
-    const points = (this.series?.points || []).filter(p => Number.isFinite(p[key]));
+    // "class:<name>" reads the open findings of one class; a day that stored classes without it had none.
+    const read = p => key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined) : p[key];
+    const points = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
     if (points.length < SPARK_MIN_POINTS) return `<span class="spark-hint">${this.t("sparkBuilding")}</span>`;
-    const values = points.map(p => p[key]), n = values.length;
+    const values = points.map(read), n = values.length;
     const first = values[0], last = values[n - 1], change = last - first;
     const days = Math.max(1, Math.round((new Date(points[n - 1].at) - new Date(points[0].at)) / 864e5));
     const w = 200, h = 36, pad = 4;

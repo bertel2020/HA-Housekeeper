@@ -28,15 +28,42 @@ def _valid_checkpoint(value: Any) -> dict[str, Any] | None:
     return None
 
 
+HEALTH_TYPES = ("entity", "automation", "script", "scene")
+
+
+def _share_without_finding(snapshot: dict[str, Any]) -> int:
+    """The share of objects without an open finding, as the panel reads it (rounded down)."""
+    known = {
+        f"{item['object_type']}:{item['object_id']}"
+        for item in snapshot["objects"]
+        if item["object_type"] in HEALTH_TYPES
+    }
+    affected = {
+        f"{finding['rule_id'].split('.')[0]}:{finding['object_id']}"
+        for finding in snapshot["findings"]
+        if not finding.get("ignored")
+    } & known
+    return max(0, int(100 * (1 - len(affected) / len(known)))) if known else 100
+
+
 def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
     """Reduce a snapshot to what a later comparison needs."""
     objects: dict[str, dict[str, str]] = {}
     for item in snapshot["objects"]:
         objects.setdefault(item["object_type"], {})[item["object_id"]] = item["status"]
+    open_findings = [f for f in snapshot["findings"] if not f.get("ignored")]
+    classes: dict[str, int] = {}
+    for finding in open_findings:
+        name = str(finding.get("classification") or "")
+        classes[name] = classes.get(name, 0) + 1
     return {
         "at": snapshot["meta"]["scanned_at"],
         "objects": objects,
         "findings": sorted({_finding_key(f) for f in snapshot["findings"]}),
+        # For the sparklines: open findings, per class, and the share of objects without one.
+        "open": len(open_findings),
+        "classes": classes,
+        "share": _share_without_finding(snapshot),
     }
 
 
@@ -175,6 +202,9 @@ class ScanHistory:
                 {
                     "at": cp["at"],
                     **checkpoint_counts(cp),
+                    "open": cp.get("open"),
+                    "classes": cp.get("classes"),
+                    "share": cp.get("share"),
                     "unavailable": sum(
                         1
                         for objs in cp["objects"].values()

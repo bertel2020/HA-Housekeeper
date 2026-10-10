@@ -138,3 +138,37 @@ def test_series_lists_the_days_and_the_latest_scan_with_unavailable(hass) -> Non
         ("2026-10-05", 1, 0),
         ("2026-10-06", 1, 1),
     ]
+
+
+def test_series_carries_open_findings_classes_and_the_share_for_the_sparklines(hass) -> None:
+    def snap(at: str, findings: list[dict]) -> dict:
+        base = _snapshot(at, [("entity", "x.a", "active"), ("entity", "x.b", "active")])
+        base["findings"] = findings
+        return base
+
+    def finding(rule: str, object_id: str, classification: str, ignored: bool = False) -> dict:
+        return {
+            "rule_id": rule,
+            "object_id": object_id,
+            "classification": classification,
+            "ignored": ignored,
+        }
+
+    history = ScanHistory(hass)
+    history.record(snap("2026-10-05T08:00:00+00:00", []))
+    history.record(
+        snap(
+            "2026-10-06T08:00:00+00:00",
+            [
+                finding("entity.unused", "x.a", "unused"),
+                finding("entity.broken", "x.a", "broken_reference"),
+                finding("entity.unused", "x.b", "unused", ignored=True),
+            ],
+        )
+    )
+    points = history.series()["points"]
+    assert [(p["open"], p["share"]) for p in points] == [(0, 100), (2, 50)]
+    assert points[0]["classes"] == {} and points[1]["classes"] == {
+        "unused": 1,
+        "broken_reference": 1,
+    }

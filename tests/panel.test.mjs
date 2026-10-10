@@ -3407,3 +3407,13 @@ test("the overview counts batteries that report volts as low too", () => {
   el.batteryTrend = { voltage: { rows: [{ entity_id: entity.object_id, level: 2.1, state: "low" }] } };
   assert.ok(el.lowBatteries().some(r => r.volt));
 });
+
+test("the findings tiles carry a sparkline for the status, the total and each class", () => {
+  const { el } = panel("en");
+  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused } });
+  el.series = { points: [day(1, 90, 4, 2), day(2, 80, 6, 3), day(3, 70, 8, 5)] };
+  const html = el.findingsView();
+  assert.ok((html.match(/class="spark"/g) || []).length >= 3);
+  assert.ok(el.sparkline("class:unused", "bad").includes("+3"));
+  assert.ok(el.sparkline("class:missing", "bad").includes("±0"));
+});

@@ -1974,14 +1974,16 @@ class FindingsMixin {
     const bar = this.listBar("findings", { sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, { name: "impact", all: this.t("allImpacts"), options: ["high", "medium", "low", "none"].map(x => [x, this.t(`impact_${x}`)]) }] });
     const pg = this.paginate("findings", list);
     const h = this.health();
+    this.ensureSeries();
+    const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
     const classTone = c => { const tone = this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
     this.ensureCorrelations();
     const afterCount = all.filter(f => this.corr?.by_key?.[f.key]).length;
     const tiles = this.sumTiles([
-      { label: this.t("health"), value: `${h.percent} %`, sub: this.t("findSumAffected", { n: this.formatNumber(h.affected), m: this.formatNumber(h.base) }), tone: h.tone },
-      { label: this.t("all"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok", filter: "", active: !this.findingFilter },
+      { label: this.t("health"), value: `${h.percent} %`, sub: this.t("findSumAffected", { n: this.formatNumber(h.affected), m: this.formatNumber(h.base) }), tone: h.tone, spark: spark("share", "good") },
+      { label: this.t("all"), value: this.formatNumber(all.length), tone: all.length ? "warn" : "ok", filter: "", active: !this.findingFilter, spark: spark("open", "bad") },
       afterCount ? { label: this.t("corrTile"), value: this.formatNumber(afterCount), sub: this.t("corrTileSub"), tone: "warn", attr: ["data-finding-after", "1"], active: this.findingAfter } : null,
-      ...classes.map(c => ({ label: this.t(c), value: this.formatNumber(all.filter(f => f.classification === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c })),
+      ...classes.map(c => ({ label: this.t(c), value: this.formatNumber(all.filter(f => f.classification === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c, spark: spark(`class:${c}`, "bad") })),
     ]);
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
     const followers = this.followerCount();
@@ -5231,7 +5233,7 @@ class LayoutMixin {
   // A row of key figures. tile: { label, value, sub, tone ("ok"|"warn"|"red"|"mute"), tab, filter } where tab ("view|id") makes it a button.
   sumTiles(tiles) {
     const cells = tiles.filter(Boolean).map(t => {
-      const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}`;
+      const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}${t.spark ? `<span class="spark-row">${t.spark}</span>` : ""}`;
       if (t.filter !== undefined) return `<button class="sumtile ${t.tone || "mute"}" data-finding-filter="${this.esc(t.filter)}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
       if (t.attr) return `<button class="sumtile ${t.tone || "mute"}" ${t.attr[0]}="${this.esc(t.attr[1])}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
       if (t.unref) return `<button class="sumtile ${t.tone || "mute"}" data-unref-tab="${t.unref}" aria-pressed="${Boolean(t.active)}">${inner}</button>`;
@@ -8275,16 +8277,18 @@ class SparklineMixin {
       const result = await this._hass.callWS({ type: "ha_housekeeper/history_series" });
       if (this.data !== data) return;
       this.series = Array.isArray(result?.points) ? result : null;
-      if (this.view === "overview" && !this.selected) this.render();
+      if (["overview", "findingsNav"].includes(this.view) && !this.selected) this.render();
     } catch (_) { if (this.data === data) this.series = null; }
   }
 
   // Line, end point and the change over the period for one key of the series ("objects", "findings",
   // "unavailable"). "rising" says whether more is worse; without it the colour stays neutral.
   sparkline(key, rising) {
-    const points = (this.series?.points || []).filter(p => Number.isFinite(p[key]));
+    // "class:<name>" reads the open findings of one class; a day that stored classes without it had none.
+    const read = p => key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined) : p[key];
+    const points = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
     if (points.length < SPARK_MIN_POINTS) return `<span class="spark-hint">${this.t("sparkBuilding")}</span>`;
-    const values = points.map(p => p[key]), n = values.length;
+    const values = points.map(read), n = values.length;
     const first = values[0], last = values[n - 1], change = last - first;
     const days = Math.max(1, Math.round((new Date(points[n - 1].at) - new Date(points[0].at)) / 864e5));
     const w = 200, h = 36, pad = 4;
