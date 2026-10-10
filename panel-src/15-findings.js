@@ -27,7 +27,10 @@ class FindingsMixin {
     const share = base ? Math.max(0, Math.floor(100 * (1 - affected.size / base))) : 100;
     // The status is the worse of two readings: the share of objects without a finding, and what the to-do list still asks for
     // (broken integrations, a missed goal, a problem with the backup or the database).
-    const open = this.todoItems(), red = open.filter(i => i.tone === "red").length, tasks = open.length;
+    // The same number in every view: what it counts is fetched here, not only when the overview opens. The database
+    // check stays out of it, because it reads the recorder and only runs once Maintenance is opened.
+    this.ensureBackup?.(); this.ensureTrend?.();
+    const open = this.todoItems().filter(i => i.key !== "db"), red = open.filter(i => i.tone === "red").length, tasks = open.length;
     const byShare = share >= 95 ? "ok" : share >= 80 ? "warn" : "red";
     // The number takes the open tasks off the share: 4 points for each, 10 for an urgent one.
     const percent = Math.max(0, share - open.reduce((sum, item) => sum + (item.tone === "red" ? 10 : 4), 0));

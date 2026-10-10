@@ -303,6 +303,8 @@ test("the status counts affected objects once, only of the base types, and not h
   const many = Array.from({ length: 1000 }, (_, i) => entity(`sensor.m${i}`));
   el.data = { ...DATA, objects: many, findings: [finding("entity.state_missing", "sensor.m0")] };
   assert.equal(el.health().percent, 99, "one in a thousand never reads as 100");
+  el.dbHealth = { available: true, findings: [{ level: "problem", kind: "gaps" }] };
+  assert.equal(el.health().percent, 99, "the database check only runs in Maintenance, so it never moves the number");
   assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("scripts and scenes"));
 });
 
