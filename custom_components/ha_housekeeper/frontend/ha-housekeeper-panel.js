@@ -1193,6 +1193,7 @@ class StylesMixin {
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:break-word;hyphens:auto}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .wz{display:flex;gap:6px;list-style:none;margin:0;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.wz li{flex:1;display:flex;flex-direction:column;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);min-width:0}.wz li i{display:block;height:3px;border-radius:2px;background:var(--hk-border)}.wz li.done i{background:var(--hk-green)}.wz li.cur{color:var(--hk-text);font-weight:600}.wz li.cur i{background:var(--hk-blue)}@media (max-width:520px){.wz li:not(.cur){font-size:0}.wz li:not(.cur) i{margin-top:0}}.wzflow{margin:8px 16px}.wzprog{height:8px;border-radius:4px;background:var(--hk-border);overflow:hidden;margin:12px 16px}.wzprog i{display:block;height:100%;background:var(--hk-blue);transition:width .3s}
+      .wz .wzbtn{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;cursor:pointer;width:100%}.wz .wzbtn:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px;border-radius:4px}.xpbody{padding:14px 16px}.xpbody h3{margin:0 0 4px}.xpbody .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.xprow{cursor:pointer}.xpgrp{border:1px solid var(--hk-border);border-radius:8px;padding:10px 12px;margin:8px 0}.xpgrp>label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.xpgrp small{display:block;color:var(--hk-muted)}.xpfmts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.xpfmt{flex:1;min-width:150px;border:1px solid var(--hk-border);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}.xpfmt input{position:absolute;opacity:0;pointer-events:none}.xpfmt.on{border:2px solid var(--hk-blue);padding:9px 11px}.xpfmt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.xprowline{display:flex;gap:8px;margin-top:8px}.xprowline input{flex:1}.xpmeta{display:flex;justify-content:space-between;gap:8px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.xppre{max-height:320px;overflow:auto;white-space:pre-wrap}.xpact{display:flex;gap:8px}.chip.tpl{display:inline-flex;gap:4px;padding:0}.chip.tpl button{all:unset;cursor:pointer;padding:4px 8px}.chip.tpl button:focus-visible{outline:2px solid var(--hk-blue);border-radius:4px}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
       .qlight{display:none;gap:3px;margin-top:4px}.qlight i{width:9px;height:9px;border-radius:50%;background:var(--hk-muted)}.qlight i.ok{background:var(--hk-ok,#3f7d4e)}.qlight i.warn{background:var(--hk-warn,#b8860b)}.qlight i.red{background:var(--hk-red,#b3392f)}@media(max-width:700px){.qualitytable th:not(:first-child):not(:last-child),.qualitytable td:not(:first-child):not(:last-child){display:none}.qlight{display:flex}}.foldhead{width:100%}.foldbody{margin:0 0 6px 28px;border-left:2px solid var(--hk-line,rgba(128,128,128,.25))}.foldadvice{margin:6px 16px 2px}.foldhd,.expohd{margin:14px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.08em;text-transform:uppercase;color:var(--hk-muted)}.rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
@@ -3034,6 +3035,7 @@ class InventoryMixin {
   }
 
   inventory() {
+    if (this.xp?.open) return this.xpView();
     const rows = this.filtered();
     const pg = this.paginate("inventory", rows);
     const visibleRows = pg.rows;
@@ -3051,7 +3053,7 @@ class InventoryMixin {
     ]);
     const hid = key => this.colHidden("inventory", key);
     this.setExporter("inventory", "inventory", [this.t("name"), "ID", this.t("type"), this.t("status"), this.t("reason"), this.t("since")], () => rows.map(i => [i.name, i.object_id, this.t(i.object_type), this.statusLabel(i.status), i.reason ? this.t(i.reason) : i.missing_reference_count ? `${i.missing_reference_count} ${this.t("missingReferences")}` : "", i.status_since || ""]));
-    const tools = `<div class="listtools">${this.listTools("inventory", ["type", "status", "reason", "since"].map(k => ({ key: k, label: k })))}</div>`;
+    const tools = `<div class="listtools">${this.listTools("inventory", ["type", "status", "reason", "since"].map(k => ({ key: k, label: k })))}<button type="button" class="btn" data-xp-open><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button></div>`;
     return `<div class="stack">${tiles}<div class="panel"><div class="filters"><input id="query" type="search" value="${this.esc(this.query)}" placeholder="${this.t("search")}"><select id="typeFilter" aria-label="${this.t("type")}"><option value="">${this.t("all")}</option>${types.map(x => `<option value="${x}" ${this.typeFilter === x ? "selected" : ""}>${this.t(x)}</option>`).join("")}</select><select id="statusFilter" aria-label="${this.t("status")}"><option value="">${this.t("allStatus")}</option>${statuses.map(x => `<option value="${x}" ${this.statusFilter === x ? "selected" : ""}>${this.statusLabel(x)}</option>`).join("")}</select>
         <div class="mobsort"><select id="sortKey" aria-label="${this.t("sortBy")}">${[["name", "sortName"], ["type", "sortType"], ["status", "sortStatus"], ["since", "sortSince"]].map(([key, label]) => `<option value="${key}" ${this.sort === key ? "selected" : ""}>${this.t(label)}</option>`).join("")}</select><button class="btn" id="sortDir" aria-label="${this.t("sortBy")}">${this.sortDir === "desc" ? "▼" : "▲"}</button></div></div>${tools}
       <div class="tablewrap inv"><table><thead><tr>${this.th("name", "name")}${hid("type") ? "" : this.th("type", "type")}${hid("status") ? "" : this.th("status", "status")}${hid("reason") ? "" : `<th>${this.t("reason")}</th>`}${hid("since") ? "" : this.th("since", "since")}</tr></thead><tbody>${visibleRows.map(item => `<tr data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"><td><span class="object">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}${this.nameCell(item.name, item.object_id, "span")}</span></td>${hid("type") ? "" : `<td data-label="${this.esc(this.t("type"))}">${this.t(item.object_type)}</td>`}${hid("status") ? "" : `<td data-label="${this.esc(this.t("status"))}">${this.pill(item.status)}</td>`}${hid("reason") ? "" : `<td data-label="${this.esc(this.t("reason"))}">${this.esc(item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "—")}</td>`}${hid("since") ? "" : `<td data-label="${this.esc(this.t("since"))}">${this.formatDate(item.status_since)}</td>`}</tr>`).join("")}</tbody></table>${rows.length ? "" : `<div class="emptymsg">${this.t("noResults")}</div>`}</div>
@@ -3921,7 +3923,7 @@ class DiagnosisMixin {
     const tablist = tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div>${this.pill(item.status)}<h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
-      <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div></div>
+      <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
       <div class="panel sumline">${summary}</div>
       <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>
       <div role="tabpanel" id="hk-tabpanel" aria-labelledby="hk-tab-${tab}" tabindex="0">${this.detailPanel(tab, item, key)}</div>`;
@@ -7725,6 +7727,330 @@ class PlanWizardMixin {
   }
 }
 
+// Export of chosen entities as CSV, Markdown or JSON, as a wizard: pick, fields, format, preview.
+// Only reads the inventory and `hass.states`; nothing leaves the browser. Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  xpButton: "Exportieren", xpTitle: "Exportieren", xpStepsLabel: "Schritte des Exports", xpCancel: "Abbrechen", xpBack: "Zurück", xpNext: "Weiter",
+  xpStep0: "Auswahl", xpStep1: "Angaben", xpStep2: "Format", xpStep3: "Vorschau",
+  xpSelTitle: "Was soll in den Export?", xpSelHint: "Wähle Entitäten aus dem Bestand. Schnellwahlen setzen mehrere Häkchen auf einmal.",
+  xpQuickFiltered: "Aktuelles Filterergebnis ({n})", xpQuickShown: "Suchtreffer ({n})", xpQuickClear: "Leeren",
+  xpPickArea: "Bereich …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "In den Entitäten suchen …",
+  xpSelected: "{n} ausgewählt", xpNeedOne: "Wähle mindestens eine Entität.", xpMoreHits: "{n} weitere Treffer; eine engere Suche zeigt sie.", xpNone: "Keine Treffer.", xpNoEntities: "Dazu gibt es keine Entitäten zum Exportieren.",
+  xpFieldsTitle: "Welche Angaben?", xpFieldsHint: "Pro Gruppe ein Häkchen. Eine Voreinstellung setzt sie für dich.",
+  xpPresetMin: "Minimal", xpPresetDoc: "Dokumentation", xpPresetState: "Mit Zuständen", xpMyTemplates: "Meine Vorlagen", xpTplDelete: "Vorlage „{name}“ löschen",
+  xpGBasis: "Basis", xpGBasisD: "Entity-ID, Name, Domain, Status", xpGZuord: "Zuordnung", xpGZuordD: "Bereich, Gerät, Integration, Geräteklasse, Einheit",
+  xpGRel: "Wer verwendet was", xpGRelD: "Automationen, Skripte, Szenen und Dashboards, die die Entität nutzen", xpGState: "Aktueller Zustand", xpGStateD: "Aus, weil Werte privat sein können.",
+  xpGAttr: "Attribute", xpGAttrD: "Nur die, die du anhakst. Namen, die nach Zugangsdaten oder Standort aussehen, werden nicht angeboten.", xpNoAttrs: "Die gewählten Entitäten haben keine anbietbaren Attribute.",
+  xpFormatTitle: "Format und Datenschutz", xpFormatHint: "Alles passiert in diesem Browser. Es wird nichts hochgeladen.",
+  xpFmtCsv: "CSV", xpFmtCsvD: "Tabelle, für Tabellenkalkulationen", xpFmtMd: "Markdown", xpFmtMdD: "lesbar, nach Bereich gruppiert", xpFmtJson: "JSON", xpFmtJsonD: "für Skripte und Werkzeuge",
+  xpPh: "Namen und IDs durch Platzhalter ersetzen", xpPhD: "Für Exporte, die du weitergibst. Zustände und Attribute werden nicht ersetzt.", xpSort: "Nach Bereich und Name sortieren",
+  xpSaveTpl: "Einstellungen als Vorlage speichern", xpTplName: "Name der Vorlage", xpTplSave: "Speichern", xpTplSaved: "Vorlage „{name}“ gespeichert (nur in diesem Browser).", xpTplFull: "Es sind höchstens 10 Vorlagen möglich.",
+  xpPreviewTitle: "Vorschau", xpPreviewHint: "So sieht die Datei aus. Prüfe sie, bevor du sie weitergibst.", xpSummary: "{n} Entitäten, {c} Angaben", xpSize: "{n} Zeichen",
+  xpTruncated: "Die Vorschau ist gekürzt; die Datei enthält alles.", xpSafe: "Nur die gewählten Angaben. Zugangsdaten und Attribute ohne Haken werden nie ausgegeben.",
+  xpCopy: "Kopieren", xpCopied: "Kopiert", xpDownload: "Herunterladen",
+});
+Object.assign(TEXT.en, {
+  xpButton: "Export", xpTitle: "Export", xpStepsLabel: "Steps of the export", xpCancel: "Cancel", xpBack: "Back", xpNext: "Next",
+  xpStep0: "Selection", xpStep1: "Fields", xpStep2: "Format", xpStep3: "Preview",
+  xpSelTitle: "What goes into the export?", xpSelHint: "Pick entities from the inventory. Quick picks tick several at once.",
+  xpQuickFiltered: "Current filter result ({n})", xpQuickShown: "Search hits ({n})", xpQuickClear: "Clear",
+  xpPickArea: "Area …", xpPickDomain: "Domain …", xpPickPlatform: "Integration …", xpSearch: "Search the entities …",
+  xpSelected: "{n} selected", xpNeedOne: "Pick at least one entity.", xpMoreHits: "{n} more hits; a narrower search shows them.", xpNone: "No hits.", xpNoEntities: "There are no entities to export for this.",
+  xpFieldsTitle: "Which fields?", xpFieldsHint: "One tick per group. A preset sets them for you.",
+  xpPresetMin: "Minimal", xpPresetDoc: "Documentation", xpPresetState: "With states", xpMyTemplates: "My templates", xpTplDelete: "Delete template “{name}”",
+  xpGBasis: "Basics", xpGBasisD: "Entity ID, name, domain, status", xpGZuord: "Placement", xpGZuordD: "Area, device, integration, device class, unit",
+  xpGRel: "Who uses what", xpGRelD: "Automations, scripts, scenes and dashboards that use the entity", xpGState: "Current state", xpGStateD: "Off, because values can be private.",
+  xpGAttr: "Attributes", xpGAttrD: "Only the ones you tick. Names that look like credentials or locations are not offered.", xpNoAttrs: "The chosen entities have no attributes that can be offered.",
+  xpFormatTitle: "Format and privacy", xpFormatHint: "Everything happens in this browser. Nothing is uploaded.",
+  xpFmtCsv: "CSV", xpFmtCsvD: "table, for spreadsheets", xpFmtMd: "Markdown", xpFmtMdD: "readable, grouped by area", xpFmtJson: "JSON", xpFmtJsonD: "for scripts and tools",
+  xpPh: "Replace names and IDs with placeholders", xpPhD: "For exports you pass on. States and attributes are not replaced.", xpSort: "Sort by area and name",
+  xpSaveTpl: "Save these settings as a template", xpTplName: "Template name", xpTplSave: "Save", xpTplSaved: "Template “{name}” saved (in this browser only).", xpTplFull: "At most 10 templates are possible.",
+  xpPreviewTitle: "Preview", xpPreviewHint: "This is what the file looks like. Check it before you pass it on.", xpSummary: "{n} entities, {c} fields", xpSize: "{n} characters",
+  xpTruncated: "The preview is shortened; the file holds everything.", xpSafe: "Only the chosen fields. Credentials and attributes without a tick are never written.",
+  xpCopy: "Copy", xpCopied: "Copied", xpDownload: "Download",
+});
+
+const XP_SHOWN = 100; // entities listed in the pick step
+const XP_PREVIEW_CHARS = 6000;
+const XP_TEMPLATES_KEY = "ha_housekeeper.export_templates";
+const XP_TEMPLATES_MAX = 10;
+// Attribute names that are never offered: they tend to hold credentials, places or addresses.
+const XP_SENSITIVE_ATTR = /token|password|passwd|secret|key|pin\b|code|credential|auth|latitude|longitude|gps|location|address|ssid|mac\b|ip\b|url|picture|email|phone/i;
+const XP_PRESETS = {
+  min: { zuord: false, rel: false, state: false, attr: false },
+  doc: { zuord: true, rel: true, state: false, attr: false },
+  state: { zuord: true, rel: true, state: true, attr: false },
+};
+
+class ExportMixin {
+  xpFresh(ids = []) {
+    return { open: true, step: 0, sel: new Set(ids), q: "", g: { ...XP_PRESETS.doc }, attrs: new Set(), fmt: "csv", ph: false, sort: true, tplName: "", msg: "", copied: false };
+  }
+
+  // Opens the wizard in the inventory view; `ids` are entities that are ticked from the start.
+  xpOpen(ids = []) {
+    this.xp = this.xpFresh(ids);
+    this.view = "inventory"; this.selected = null; this.trail = [];
+    this.render();
+  }
+
+  // The entities that belong to an object of the detail page: itself, its entities, or what it uses.
+  xpEntitiesOf(key) {
+    const item = this.findObject(key);
+    if (!item) return [];
+    const entities = this.data.objects.filter(o => o.object_type === "entity");
+    if (item.object_type === "entity") return [item.object_id];
+    if (item.object_type === "device") return entities.filter(o => o.device_id === item.object_id).map(o => o.object_id);
+    if (item.object_type === "area") return entities.filter(o => this.xpAreaId(o) === item.object_id).map(o => o.object_id);
+    return [...new Set(this.data.edges.filter(e => e.source === key && e.target.startsWith("entity:") && USAGE_RELATIONS.includes(e.relation)).map(e => e.target.slice(7)))];
+  }
+
+  xpAreaId(item) {
+    return item.area_id || (item.device_id ? this.findObject(`device:${item.device_id}`)?.area_id : "") || "";
+  }
+
+  xpEntities() { return this.data.objects.filter(o => o.object_type === "entity"); }
+
+  xpTemplates() {
+    try {
+      const list = JSON.parse(globalThis.localStorage?.getItem(XP_TEMPLATES_KEY) || "[]");
+      return Array.isArray(list) ? list.filter(t => t && typeof t.name === "string" && t.g && typeof t.g === "object").slice(0, XP_TEMPLATES_MAX) : [];
+    } catch (_) { return []; }
+  }
+
+  xpSaveTemplates(list) {
+    try { globalThis.localStorage?.setItem(XP_TEMPLATES_KEY, JSON.stringify(list)); } catch (_) { /* kept until the page closes */ }
+  }
+
+  xpApplyTemplate(t) {
+    const x = this.xp;
+    x.g = { zuord: Boolean(t.g.zuord), rel: Boolean(t.g.rel), state: Boolean(t.g.state), attr: Boolean(t.g.attr) };
+    x.attrs = new Set(Array.isArray(t.attrs) ? t.attrs.filter(a => typeof a === "string").slice(0, 50) : []);
+    x.fmt = ["csv", "md", "json"].includes(t.fmt) ? t.fmt : "csv"; x.ph = Boolean(t.ph); x.sort = t.sort !== false;
+  }
+
+  // Attribute names of the chosen entities, most common first, without the ones that look sensitive.
+  xpOfferedAttrs() {
+    const counts = {};
+    for (const id of this.xp.sel) for (const k of Object.keys(this._hass?.states?.[id]?.attributes || {})) if (!XP_SENSITIVE_ATTR.test(k)) counts[k] = (counts[k] || 0) + 1;
+    return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 30).map(([k]) => k);
+  }
+
+  xpValueText(value) {
+    const text = typeof value === "string" ? value : JSON.stringify(value);
+    return text.length > 200 ? `${text.slice(0, 200)}…` : text;
+  }
+
+  // The rows of the export: one object per entity with plain keys; placeholders are applied here.
+  xpRows() {
+    const x = this.xp, g = x.g;
+    let items = this.xpEntities().filter(o => x.sel.has(o.object_id)).map(o => ({ o, area: g.zuord || x.sort ? this.areaName(o) : "" }));
+    const collator = new Intl.Collator(this.lang === "en" ? "en" : "de", { numeric: true });
+    items.sort((a, b) => (x.sort ? collator.compare(a.area, b.area) : 0) || collator.compare(a.o.name || a.o.object_id, b.o.name || b.o.object_id) || collator.compare(a.o.object_id, b.o.object_id));
+    const labels = { area: new Map(), device: new Map(), used: new Map() };
+    const label = (kind, key, word) => { const m = labels[kind]; if (!m.has(key)) m.set(key, `${word} ${m.size + 1}`); return m.get(key); };
+    const usedWord = { automation: "Automation", script: "Script", scene: "Scene", dashboard: "Dashboard" };
+    const attrs = g.attr ? [...x.attrs] : [];
+    return items.map(({ o, area }, i) => {
+      const row = { entity_id: x.ph ? `entity_${i + 1}` : o.object_id, name: x.ph ? `Object ${i + 1}` : o.name, domain: o.object_id.split(".")[0], status: o.status };
+      if (g.zuord) {
+        const device = o.device_id ? this.findObject(`device:${o.device_id}`) : null;
+        row.area = area ? (x.ph ? label("area", area, "Area") : area) : "";
+        row.device = device ? (x.ph ? label("device", device.object_id, "Device") : device.name) : "";
+        Object.assign(row, { integration: o.platform || "", device_class: o.device_class || "", unit: o.unit || "" });
+      }
+      if (g.rel) {
+        const users = this.edgesTo(`entity:${o.object_id}`).filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => e.source);
+        row.used_by = [...new Set(users)].map(source => (x.ph ? label("used", source, usedWord[source.split(":")[0]] || "Object") : this.findObject(source)?.name || source.split(":").slice(1).join(":")));
+      }
+      const live = this._hass?.states?.[o.object_id];
+      if (g.state) row.state = live ? live.state : "";
+      if (attrs.length) row.attributes = Object.fromEntries(attrs.filter(k => live && k in live.attributes).map(k => [k, live.attributes[k]]));
+      return row;
+    });
+  }
+
+  xpColumns(rows) {
+    const cols = ["entity_id", "name", "domain", "status"];
+    const has = key => rows.some(r => key in r);
+    for (const key of ["area", "device", "integration", "device_class", "unit", "used_by", "state"]) if (has(key)) cols.push(key);
+    for (const k of this.xp.g.attr ? [...this.xp.attrs] : []) cols.push(`attr.${k}`);
+    return cols;
+  }
+
+  xpCell(row, col) {
+    if (col.startsWith("attr.")) { const v = row.attributes?.[col.slice(5)]; return v === undefined ? "" : this.xpValueText(v); }
+    const v = row[col];
+    return Array.isArray(v) ? v.join("; ") : v ?? "";
+  }
+
+  xpMdEscape(text) { return String(text ?? "").replace(/([\\`*_{}[\]<>#|])/g, "\\$1"); }
+
+  xpBuild() {
+    const rows = this.xpRows(), cols = this.xpColumns(rows), fmt = this.xp.fmt;
+    let text, ext, mime;
+    if (fmt === "json") {
+      text = JSON.stringify(rows.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, k === "attributes" ? Object.fromEntries(Object.entries(v).map(([a, val]) => [a, typeof val === "string" && val.length > 200 ? `${val.slice(0, 200)}…` : val])) : v]))), null, 2);
+      ext = "json"; mime = "application/json";
+    } else if (fmt === "md") {
+      const lines = []; let last = null;
+      for (const r of rows) {
+        if (this.xp.g.zuord && (r.area || "") !== last) { last = r.area || ""; lines.push(`${lines.length ? "\n" : ""}## ${this.xpMdEscape(last || "–")}`); }
+        const parts = [`${r.domain}, ${r.status}`];
+        if (r.device) parts.push(`${this.t("xpGZuord")}: ${this.xpMdEscape(r.device)}`);
+        for (const key of ["integration", "device_class", "unit"]) if (r[key]) parts.push(`${key}: ${this.xpMdEscape(r[key])}`);
+        if (r.used_by?.length) parts.push(`used by: ${r.used_by.map(n => this.xpMdEscape(n)).join(", ")}`);
+        if ("state" in r) parts.push(`state: ${this.xpMdEscape(r.state)}`);
+        for (const [k, v] of Object.entries(r.attributes || {})) parts.push(`${this.xpMdEscape(k)}: ${this.xpMdEscape(this.xpValueText(v))}`);
+        lines.push(`- \`${r.entity_id}\` ${this.xpMdEscape(r.name)} (${parts.join(" · ")})`);
+      }
+      text = `${lines.join("\n")}\n`; ext = "md"; mime = "text/markdown";
+    } else {
+      const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
+      text = "﻿" + [cols, ...rows.map(r => cols.map(c => this.xpCell(r, c)))].map(r => r.map(cell).join(",")).join("\r\n") + "\r\n";
+      ext = "csv"; mime = "text/csv;charset=utf-8";
+    }
+    return { text, ext, mime, count: rows.length, fields: cols.length };
+  }
+
+  xpDownload() {
+    const out = this.xpBuild();
+    const url = URL.createObjectURL(new Blob([out.text], { type: out.mime }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `ha-housekeeper-export.${out.ext}`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  xpBar() {
+    const x = this.xp;
+    const items = [0, 1, 2, 3].map(i => {
+      const inner = `<i aria-hidden="true"></i>${i + 1}. ${this.t(`xpStep${i}`)}`;
+      return `<li class="${i < x.step ? "done" : i === x.step ? "cur" : ""}"${i === x.step ? ' aria-current="true"' : ""}>${i < x.step ? `<button type="button" class="wzbtn" data-xp-step="${i}">${inner}</button>` : inner}</li>`;
+    }).join("");
+    return `<ol class="wz" aria-label="${this.esc(this.t("xpStepsLabel"))}">${items}</ol>`;
+  }
+
+  xpPickStep() {
+    const x = this.xp, all = this.xpEntities();
+    const q = x.q.trim().toLowerCase();
+    const hits = q ? all.filter(o => this.haystack(o).includes(q)) : all;
+    const areas = new Map(), domains = new Set(), platforms = new Set();
+    for (const o of all) { const a = this.xpAreaId(o); if (a) areas.set(a, this.findObject(`area:${a}`)?.name || a); domains.add(o.object_id.split(".")[0]); if (o.platform) platforms.add(o.platform); }
+    const options = (label, values) => `<option value="">${this.esc(label)}</option>${values.map(([v, text]) => `<option value="${this.esc(v)}">${this.esc(text)}</option>`).join("")}`;
+    const byName = (a, b) => a[1].localeCompare(b[1]);
+    const filtered = this.filtered().filter(o => o.object_type === "entity");
+    const rows = hits.slice(0, XP_SHOWN).map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(o.object_id)}${this.areaName(o) ? ` · ${this.esc(this.areaName(o))}` : ""}</small></span></label>`).join("");
+    const more = hits.length > XP_SHOWN ? `<p class="factnote">${this.t("xpMoreHits", { n: this.formatNumber(hits.length - XP_SHOWN) })}</p>` : "";
+    return `<h3>${this.t("xpSelTitle")}</h3><p class="factnote">${this.t("xpSelHint")}</p>
+      <div class="chips"><button class="chip" data-xp-quick="filtered">${this.t("xpQuickFiltered", { n: this.formatNumber(filtered.length) })}</button>${q ? `<button class="chip" data-xp-quick="shown">${this.t("xpQuickShown", { n: this.formatNumber(hits.length) })}</button>` : ""}<button class="chip" data-xp-quick="clear">${this.t("xpQuickClear")}</button></div>
+      <div class="filters"><select data-xp-add="area" aria-label="${this.esc(this.t("xpPickArea"))}">${options(this.t("xpPickArea"), [...areas].sort(byName))}</select><select data-xp-add="domain" aria-label="${this.esc(this.t("xpPickDomain"))}">${options(this.t("xpPickDomain"), [...domains].sort().map(d => [d, d]))}</select><select data-xp-add="platform" aria-label="${this.esc(this.t("xpPickPlatform"))}">${options(this.t("xpPickPlatform"), [...platforms].sort().map(p => [p, p]))}</select></div>
+      <input type="search" data-xp-q value="${this.esc(x.q)}" placeholder="${this.esc(this.t("xpSearch"))}">
+      ${rows || `<div class="emptymsg">${this.t("xpNone")}</div>`}${more}`;
+  }
+
+  xpFieldsStep() {
+    const x = this.xp, g = x.g;
+    const group = (key, title, hint, extra = "") => `<div class="xpgrp"><label><input type="checkbox" data-xp-g="${key}" ${key === "basis" || g[key] ? "checked" : ""} ${key === "basis" ? "disabled" : ""}><span><strong>${this.t(title)}</strong><small>${this.t(hint)}</small></span></label>${extra}</div>`;
+    const offered = g.attr ? this.xpOfferedAttrs() : [];
+    const attrs = g.attr ? `<div class="chips">${offered.length ? offered.map(k => `<button type="button" class="chip ${x.attrs.has(k) ? "active" : ""}" data-xp-attr="${this.esc(k)}" aria-pressed="${x.attrs.has(k)}">${this.esc(k)}</button>`).join("") : `<small>${this.t("xpNoAttrs")}</small>`}</div>` : "";
+    const templates = this.xpTemplates();
+    const mine = templates.length ? `<div class="chips"><small>${this.t("xpMyTemplates")}:</small>${templates.map((t, i) => `<span class="chip tpl"><button type="button" data-xp-tpl="${i}">${this.esc(t.name)}</button><button type="button" data-xp-tpl-del="${i}" aria-label="${this.esc(this.t("xpTplDelete", { name: t.name }))}">×</button></span>`).join("")}</div>` : "";
+    return `<h3>${this.t("xpFieldsTitle")}</h3><p class="factnote">${this.t("xpFieldsHint")}</p>
+      <div class="chips">${[["min", "xpPresetMin"], ["doc", "xpPresetDoc"], ["state", "xpPresetState"]].map(([id, label]) => `<button type="button" class="chip" data-xp-preset="${id}">${this.t(label)}</button>`).join("")}</div>${mine}
+      ${group("basis", "xpGBasis", "xpGBasisD")}${group("zuord", "xpGZuord", "xpGZuordD")}${group("rel", "xpGRel", "xpGRelD")}${group("state", "xpGState", "xpGStateD")}${group("attr", "xpGAttr", "xpGAttrD", attrs)}`;
+  }
+
+  xpFormatStep() {
+    const x = this.xp;
+    const fmt = (id, name, hint) => `<label class="xpfmt ${x.fmt === id ? "on" : ""}"><input type="radio" name="xpfmt" data-xp-fmt="${id}" ${x.fmt === id ? "checked" : ""}><strong>${this.t(name)}</strong><small>${this.t(hint)}</small></label>`;
+    const tplCount = this.xpTemplates().length;
+    return `<h3>${this.t("xpFormatTitle")}</h3><p class="factnote">${this.t("xpFormatHint")}</p>
+      <div class="xpfmts">${fmt("csv", "xpFmtCsv", "xpFmtCsvD")}${fmt("md", "xpFmtMd", "xpFmtMdD")}${fmt("json", "xpFmtJson", "xpFmtJsonD")}</div>
+      <div class="xpgrp"><label><input type="checkbox" data-xp-ph ${x.ph ? "checked" : ""}><span><strong>${this.t("xpPh")}</strong><small>${this.t("xpPhD")}</small></span></label></div>
+      <div class="xpgrp"><label><input type="checkbox" data-xp-sort ${x.sort ? "checked" : ""}><span><strong>${this.t("xpSort")}</strong></span></label></div>
+      <form class="xpgrp xptpl" data-xp-save><label for="xp-tpl-name"><strong>${this.t("xpSaveTpl")}</strong></label><div class="xprowline"><input id="xp-tpl-name" type="text" maxlength="40" data-xp-tpl-name value="${this.esc(x.tplName)}" placeholder="${this.esc(this.t("xpTplName"))}" autocomplete="off"><button type="submit" class="btn">${this.t("xpTplSave")}</button></div>${tplCount >= XP_TEMPLATES_MAX ? `<small>${this.t("xpTplFull")}</small>` : ""}${x.msg ? `<small role="status">${this.esc(x.msg)}</small>` : ""}</form>`;
+  }
+
+  xpPreviewStep() {
+    const out = this.xpBuild(), cut = out.text.length > XP_PREVIEW_CHARS;
+    return `<h3>${this.t("xpPreviewTitle")}</h3><p class="factnote">${this.t("xpPreviewHint")}</p>
+      <div class="xpmeta"><span>${this.t("xpSummary", { n: this.formatNumber(out.count), c: out.fields })}</span><span>${this.t("xpSize", { n: this.formatNumber(out.text.length) })}</span></div>
+      <pre class="code xppre">${this.esc(cut ? out.text.slice(0, XP_PREVIEW_CHARS) : out.text)}</pre>${cut ? `<p class="factnote">${this.t("xpTruncated")}</p>` : ""}
+      <p class="factnote">${this.t("xpSafe")}</p>`;
+  }
+
+  xpView() {
+    const x = this.xp;
+    const body = [() => this.xpPickStep(), () => this.xpFieldsStep(), () => this.xpFormatStep(), () => this.xpPreviewStep()][x.step]();
+    const next = x.step < 3 ? `<button class="btn primary" data-xp-next>${this.t("xpNext")}</button>` : `<button class="btn" data-xp-download><ha-icon icon="mdi:download"></ha-icon>${this.t("xpDownload")}</button><button class="btn primary" data-xp-copy><ha-icon icon="mdi:content-copy"></ha-icon>${x.copied ? this.t("xpCopied") : this.t("xpCopy")}</button>`;
+    const hint = x.msg && x.step === 0 ? x.msg : x.step === 0 ? this.t("xpSelected", { n: this.formatNumber(x.sel.size) }) : "";
+    return `<div class="stack"><div class="panel xpwiz"><div class="panelhead"><div><h2>${this.t("xpTitle")}</h2></div><button class="btn" data-xp-cancel>${this.t("xpCancel")}</button></div>${this.xpBar()}<div class="xpbody">${body}</div>
+      <div class="setrow planfoot"><button class="btn" data-xp-back ${x.step === 0 ? "hidden" : ""}>${this.t("xpBack")}</button><small style="margin:0" role="status">${this.esc(hint)}</small><span class="xpact">${next}</span></div></div></div>`;
+  }
+
+  xpBind(root) {
+    const x = this.xp;
+    if (!x?.open) return;
+    const go = () => this.render();
+    root.querySelectorAll("[data-xp-step]").forEach(el => el.onclick = () => { x.step = Number(el.dataset.xpStep); x.msg = ""; go(); });
+    root.querySelector("[data-xp-next]")?.addEventListener("click", () => {
+      if (x.step === 0 && !x.sel.size) { x.msg = this.t("xpNeedOne"); go(); return; }
+      x.step += 1; x.msg = ""; x.copied = false; go();
+    });
+    root.querySelector("[data-xp-back]")?.addEventListener("click", () => { x.step = Math.max(0, x.step - 1); x.msg = ""; go(); });
+    root.querySelector("[data-xp-cancel]")?.addEventListener("click", () => { this.xp = null; go(); });
+    root.querySelector("[data-xp-q]")?.addEventListener("input", ev => { x.q = ev.target.value; this.scheduleRender(); });
+    root.querySelectorAll("[data-xp-pick]").forEach(el => el.onchange = () => { el.checked ? x.sel.add(el.dataset.xpPick) : x.sel.delete(el.dataset.xpPick); x.msg = ""; go(); });
+    root.querySelectorAll("[data-xp-quick]").forEach(el => el.onclick = () => {
+      const kind = el.dataset.xpQuick, q = x.q.trim().toLowerCase();
+      if (kind === "clear") x.sel.clear();
+      else if (kind === "filtered") this.filtered().filter(o => o.object_type === "entity").forEach(o => x.sel.add(o.object_id));
+      else this.xpEntities().filter(o => !q || this.haystack(o).includes(q)).forEach(o => x.sel.add(o.object_id));
+      x.msg = ""; go();
+    });
+    root.querySelectorAll("[data-xp-add]").forEach(el => el.onchange = () => {
+      const kind = el.dataset.xpAdd, value = el.value;
+      if (!value) return;
+      this.xpEntities().filter(o => kind === "area" ? this.xpAreaId(o) === value : kind === "domain" ? o.object_id.startsWith(`${value}.`) : o.platform === value).forEach(o => x.sel.add(o.object_id));
+      x.msg = ""; go();
+    });
+    root.querySelectorAll("[data-xp-preset]").forEach(el => el.onclick = () => { x.g = { ...XP_PRESETS[el.dataset.xpPreset] }; x.attrs = new Set(); go(); });
+    root.querySelectorAll("[data-xp-g]").forEach(el => el.onchange = () => { x.g[el.dataset.xpG] = el.checked; if (el.dataset.xpG === "attr" && !el.checked) x.attrs = new Set(); go(); });
+    root.querySelectorAll("[data-xp-attr]").forEach(el => el.onclick = () => { x.attrs.has(el.dataset.xpAttr) ? x.attrs.delete(el.dataset.xpAttr) : x.attrs.add(el.dataset.xpAttr); go(); });
+    root.querySelectorAll("[data-xp-tpl]").forEach(el => el.onclick = () => { const t = this.xpTemplates()[Number(el.dataset.xpTpl)]; if (t) this.xpApplyTemplate(t); go(); });
+    root.querySelectorAll("[data-xp-tpl-del]").forEach(el => el.onclick = () => { const list = this.xpTemplates(); list.splice(Number(el.dataset.xpTplDel), 1); this.xpSaveTemplates(list); go(); });
+    root.querySelectorAll("[data-xp-fmt]").forEach(el => el.onchange = () => { x.fmt = el.dataset.xpFmt; go(); });
+    root.querySelector("[data-xp-ph]")?.addEventListener("change", ev => { x.ph = ev.target.checked; go(); });
+    root.querySelector("[data-xp-sort]")?.addEventListener("change", ev => { x.sort = ev.target.checked; go(); });
+    root.querySelector("[data-xp-tpl-name]")?.addEventListener("input", ev => { x.tplName = ev.target.value; });
+    root.querySelector("[data-xp-save]")?.addEventListener("submit", ev => {
+      ev.preventDefault();
+      const name = x.tplName.trim().slice(0, 40), list = this.xpTemplates().filter(t => t.name !== name);
+      if (!name) return;
+      if (list.length >= XP_TEMPLATES_MAX) { x.msg = this.t("xpTplFull"); go(); return; }
+      list.push({ name, g: { ...x.g }, attrs: [...x.attrs], fmt: x.fmt, ph: x.ph, sort: x.sort });
+      this.xpSaveTemplates(list); x.msg = this.t("xpTplSaved", { name }); x.tplName = ""; go();
+    });
+    root.querySelector("[data-xp-download]")?.addEventListener("click", () => this.xpDownload());
+    root.querySelector("[data-xp-copy]")?.addEventListener("click", async () => {
+      try { await globalThis.navigator?.clipboard?.writeText(this.xpBuild().text.replace(/^﻿/, "")); x.copied = true; } catch (_) { x.copied = false; }
+      go();
+      setTimeout(() => { x.copied = false; if (this.xp === x) this.render(); }, 1500);
+    });
+  }
+
+  bindExport(root) {
+    root.querySelectorAll("[data-xp-open]").forEach(el => el.onclick = () => this.xpOpen());
+    root.querySelectorAll("[data-xp-from]").forEach(el => el.onclick = () => {
+      const ids = this.xpEntitiesOf(el.dataset.xpFrom);
+      this.xpOpen(ids);
+      if (!ids.length) { this.xp.msg = this.t("xpNoEntities"); this.render(); }
+    });
+    this.xpBind(root);
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -8447,6 +8773,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     this.bindStale(root);
+    this.bindExport(root);
     this.bindPlanWizard(root);
     this.bindExclude(root);
     this.bindEntityRecorder(root);
@@ -8657,7 +8984,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

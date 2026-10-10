@@ -3162,3 +3162,50 @@ test("a plan runs as a wizard: review, confirm with a way back, run, result; lon
   el.confirmation = null; el.render();
   assert.ok(shadow.innerHTML.includes("data-plan-confirm") && !shadow.innerHTML.includes("data-plan-back"));
 });
+
+test("the export wizard builds CSV, Markdown and JSON from the chosen fields only and keeps credentials out", () => {
+  const { el, shadow, downloads } = panel("en", { localStorage: fakeStorage() });
+  const ent = (id, name, extra = {}) => ({ object_type: "entity", object_id: id, name, status: "active", platform: "hue", device_id: "d1", area_id: null, device_class: null, unit: null, ...extra });
+  el.data = { ...DATA, meta: { ...DATA.meta }, objects: [
+    ent("light.a", "=Lamp *A*", { unit: "lm" }), ent("sensor.b", "Sensor B"), ent("light.c", "C"),
+    { object_type: "device", object_id: "d1", name: "Hub", status: "active", area_id: "a1" },
+    { object_type: "area", object_id: "a1", name: "Living", status: "active" },
+    { object_type: "automation", object_id: "auto1", name: "Evening", status: "active" },
+  ], edges: [{ source: "automation:auto1", target: "entity:light.a", relation: "TRIGGERS_ON", confidence: "certain" }] };
+  el._rev = (el._rev || 0) + 1;
+  el._hass = { language: "en", states: { "light.a": { state: "on", attributes: { brightness: 200, access_token: "SECRET", friendly_name: "A" } }, "sensor.b": { state: "5", attributes: {} } } };
+  assert.equal(JSON.stringify([...el.xpEntitiesOf("device:d1")].sort()), JSON.stringify(["light.a", "light.c", "sensor.b"]));
+  assert.equal(JSON.stringify(el.xpEntitiesOf("automation:auto1")), JSON.stringify(["light.a"]));
+  el.xpOpen(["light.a", "sensor.b"]);
+  assert.equal(el.view, "inventory");
+  assert.ok(shadow.innerHTML.includes("1. Selection") && shadow.innerHTML.includes("2 selected") && shadow.innerHTML.includes('data-xp-pick="light.c"'));
+  // CSV: header, escaping of formulas, related names, no state and no attributes without a tick
+  let out = el.xpBuild();
+  assert.equal(out.ext, "csv");
+  assert.ok(out.text.includes('"entity_id","name","domain","status","area","device","integration","device_class","unit","used_by"') && out.text.includes("\"'=Lamp *A*\"") && out.text.includes("Living") && out.text.includes("Evening"));
+  assert.ok(!out.text.includes('"on"') && !out.text.includes("SECRET") && !out.text.includes("brightness"));
+  // attributes: offered without the sensitive one, written only when ticked
+  el.xp.g.attr = true;
+  assert.deepEqual(el.xpOfferedAttrs(), ["brightness", "friendly_name"]);
+  el.xp.attrs.add("brightness"); el.xp.g.state = true; el.xp.fmt = "json";
+  const json = JSON.parse(el.xpBuild().text);
+  assert.equal(json[0].attributes.brightness, 200); assert.equal(json[0].state, "on"); assert.deepEqual(json[0].used_by, ["Evening"]);
+  assert.ok(!JSON.stringify(json).includes("SECRET"));
+  // Markdown: grouped by area, markdown characters in names escaped
+  el.xp.fmt = "md";
+  const md = el.xpBuild().text;
+  assert.ok(md.includes("## Living") && md.includes("`light.a` =Lamp \\*A\\*") && md.includes("used by: Evening"));
+  // placeholders replace names, IDs, areas, devices and users everywhere
+  el.xp.ph = true;
+  const hidden = el.xpBuild().text;
+  assert.ok(!hidden.includes("light.a") && !hidden.includes("Living") && !hidden.includes("Hub") && !hidden.includes("Evening") && hidden.includes("entity_1") && hidden.includes("Automation 1"));
+  // templates stay in this browser, and the wizard walks through its four steps
+  el.xp.ph = false; el.xp.fmt = "csv";
+  el.xpSaveTemplates([{ name: "Docs", g: { zuord: true, rel: false, state: false, attr: false }, attrs: [], fmt: "md", ph: true, sort: false }]);
+  el.xpApplyTemplate(el.xpTemplates()[0]);
+  assert.equal(el.xp.fmt, "md"); assert.equal(el.xp.ph, true); assert.equal(el.xp.g.rel, false);
+  for (const step of [1, 2, 3]) { el.xp.step = step; el.render(); assert.ok(shadow.innerHTML.includes(`aria-current="true"`), `step ${step}`); }
+  assert.ok(shadow.innerHTML.includes("data-xp-copy") && shadow.innerHTML.includes("data-xp-download"));
+  el.xpDownload();
+  assert.equal(downloads.length, 1);
+});
