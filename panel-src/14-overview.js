@@ -97,7 +97,7 @@ class OverviewMixin {
       ? `<h3 class="foldhd">${this.t("actNow")}</h3>${urgent.map(row).join("")}${this.fold("todo_later", { tone: "warn", title: this.t("actSoon"), pill: this.formatNumber(later.length) }, later.map(row).join(""), false)}`
       : items.map(row).join(""))
       : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
-    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}${this.goalsLine()}</section>`;
+    return `<section class="panel" style="margin-bottom:14px" aria-labelledby="hk-todo" id="hk-todo-card" tabindex="-1"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div></div>${body}${this.goalsLine()}</section>`;
   }
 
   // The comparison with the previous scan is fetched once per data set; the overview shows it when it is there.
@@ -161,7 +161,7 @@ class OverviewMixin {
     this.ensureTrend();
     this.ensureBackup();
     const kpi = ([label, value, tone, view, status]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong></button>`;
-    const headline = health.tasks ? this.t("statusTasks", { count: this.formatNumber(health.tasks) }) : this.t("statusAllGood");
+    const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.t("statusTasks", { count: this.formatNumber(health.tasks) })}</button>` : this.t("statusAllGood");
     return `<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><span class="ring ${health.tone}" style="--p:${health.percent}"><b>${health.percent}</b></span>
       <div class="statustext"><h2>${headline}</h2><p>${this.t("health")} · ${this.t(`healthWord_${health.tone}`)} · ${this.t("healthAffected", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })}</p></div>
       <div class="kpis">${[["objects", m.object_count, "", "inventory"], ["openFindings", findings.length, findings.length ? "warn" : "", "findingsNav"], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable"]].map(kpi).join("")}</div></section>

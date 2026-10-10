@@ -2949,6 +2949,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("counter_scan") ? found : { ...REPAIR_PLAN }; } };
   el.render();
   assert.ok(shadow.innerHTML.includes("A counter must never fall") && shadow.innerHTML.includes("data-counter-scan") && shadow.innerHTML.includes("data-range-pick"));
+  assert.equal((shadow.innerHTML.match(/data-counter-scan/g) || []).length, 1, "one button starts the check, also before the first one");
   await el.loadCounterScan(true);
   assert.ok(shadow.innerHTML.includes("sensor.water") && shadow.innerHTML.includes("data-counter-pick"));
   el.counterSel = "sensor.water"; el.counterMode = "interpolate";
