@@ -904,6 +904,11 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
   html = shadow.innerHTML;
   assert.ok(html.includes("Executed and verified") && html.includes("Disabled") && html.includes("changed after the preview") && html.includes("data-undo-all") && html.includes('data-undo-one="sensor.a"'));
   assert.ok(html.includes("✓ Entity is disabled") && !html.includes("data-plan-delete"));
+  // Deleted statistics come back only from the backup: no undo buttons for them, undo stays for the rest.
+  current = { ...current, actions: [action("sensor.old", "ok", { kind: "purge_statistics", result: { state: "done" } })] };
+  el.plan = current;
+  el.render();
+  assert.ok(shadow.innerHTML.includes("sensor.old") && !shadow.innerHTML.includes("data-undo-all") && !shadow.innerHTML.includes('data-undo-one="sensor.old"'));
   await el.undoPlan();
   assert.ok(el.undoMessage.includes("sensor.a: enabled again"));
   assert.equal(el.plan.status, "undone");
