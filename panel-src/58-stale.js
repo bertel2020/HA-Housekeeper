@@ -38,7 +38,7 @@ class StaleMixin {
     try {
       await this._hass.callWS({ type: "ha_housekeeper/set_stale_limit", entity_id: entityId, hours });
       await this.refreshData();
-    } catch (err) { this.error = this.t("staleFailed", { reason: err?.message || String(err) }); }
+    } catch (err) { this.toast(this.t("staleFailed", { reason: this.errText(err) }), true); }
     this.render();
   }
 

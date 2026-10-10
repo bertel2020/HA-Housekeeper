@@ -52,7 +52,7 @@ class RenameMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: items.map(([object_id, target]) => ({ kind: "rename_entity", object_id, target })) });
       this.openNewPlan(plan);
       this.bulk = null; this.polSel = new Set();
-    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
 

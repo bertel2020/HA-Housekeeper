@@ -36,7 +36,7 @@ const TEXT = {
     state_missing: "Entität ist registriert, besitzt aber keinen Zustand",
     state_unavailable: "Integration meldet den Zustand unavailable",
     state_unknown: "Integration meldet den Zustand unknown", state_available: "Zustand ist verfügbar",
-    loading: "Inventar wird geladen …", loadError: "Inventar konnte nicht geladen werden",
+    loading: "Inventar wird geladen …", loadError: "Inventar konnte nicht geladen werden", actionFailed: "Das hat nicht geklappt: {detail}",
     total: "Gesamt",
     recentFindings: "Aktuelle Befunde", affected: "Betroffenes Objekt",
     systemState: "Systemzustand", health: "Housekeeping-Status", healthGood: "Gut", healthCheck: "Prüfen",
@@ -215,7 +215,7 @@ const TEXT = {
     state_missing: "Entity is registered but has no state",
     state_unavailable: "Integration reports unavailable",
     state_unknown: "Integration reports unknown", state_available: "State is available",
-    loading: "Loading inventory …", loadError: "Could not load inventory",
+    loading: "Loading inventory …", loadError: "Could not load inventory", actionFailed: "That did not work: {detail}",
     total: "Total",
     recentFindings: "Current findings", affected: "Affected object",
     systemState: "System health", health: "Housekeeping status", healthGood: "Good", healthCheck: "Review",
@@ -1164,7 +1164,7 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
-      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.copybtn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;padding:4px;border:1px solid var(--hk-border);border-radius:6px;background:var(--hk-surface);color:var(--hk-muted);cursor:pointer;opacity:0;--mdc-icon-size:14px}tr:hover .copybtn,.copybtn:focus-visible,.namecell:hover .copybtn{opacity:1}.copybtn.done{color:var(--hk-green);opacity:1}@media (hover:none){.copybtn{opacity:.7}}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.btcart,.btsuggest{margin:14px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent)}.btcart strong{display:block;margin-bottom:2px}.btsuggest{background:color-mix(in srgb,var(--hk-green) 11%,transparent);border-color:color-mix(in srgb,var(--hk-green) 30%,transparent)}.btsuggest h3{margin:0 0 4px}.btrepl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}.btrepl .row-text{flex:1;min-width:200px}.btctl,.btedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 16px 0 8px}.btedit{flex-basis:100%;margin:0;padding:8px 16px 12px}.rowwrap:has(.btedit){flex-wrap:wrap}.chcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;padding:0 16px}.chcols>div{padding:8px 0}.chcols .big{font-size:22px;font-weight:700}.chbars{display:flex;gap:3px;align-items:flex-end;height:54px;padding:8px 16px 4px}.chbars i{flex:1;max-width:14px;min-width:3px;border-radius:3px 3px 0 0;background:var(--hk-green);display:block}.chbars i.m{background:var(--hk-red)}.chaxis{display:flex;justify-content:space-between;padding:0 16px 12px;color:var(--hk-muted);font-size:12px}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
+      .rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.copybtn{position:absolute;right:0;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;padding:4px;border:1px solid var(--hk-border);border-radius:6px;background:var(--hk-surface);color:var(--hk-muted);cursor:pointer;opacity:0;--mdc-icon-size:14px}tr:hover .copybtn,.copybtn:focus-visible,.namecell:hover .copybtn{opacity:1}.copybtn.done{color:var(--hk-green);opacity:1}@media (hover:none){.copybtn{opacity:.7}}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.toast.bad{border-left:5px solid var(--hk-red);max-width:min(560px,calc(100vw - 32px))}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.btcart,.btsuggest{margin:14px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent)}.btcart strong{display:block;margin-bottom:2px}.btsuggest{background:color-mix(in srgb,var(--hk-green) 11%,transparent);border-color:color-mix(in srgb,var(--hk-green) 30%,transparent)}.btsuggest h3{margin:0 0 4px}.btrepl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}.btrepl .row-text{flex:1;min-width:200px}.btctl,.btedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 16px 0 8px}.btedit{flex-basis:100%;margin:0;padding:8px 16px 12px}.rowwrap:has(.btedit){flex-wrap:wrap}.chcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;padding:0 16px}.chcols>div{padding:8px 0}.chcols .big{font-size:22px;font-weight:700}.chbars{display:flex;gap:3px;align-items:flex-end;height:54px;padding:8px 16px 4px}.chbars i{flex:1;max-width:14px;min-width:3px;border-radius:3px 3px 0 0;background:var(--hk-green);display:block}.chbars i.m{background:var(--hk-red)}.chaxis{display:flex;justify-content:space-between;padding:0 16px 12px;color:var(--hk-muted);font-size:12px}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
@@ -1361,16 +1361,21 @@ class ListsMixin {
   }
 
   // A short message at the bottom of the page for small actions; it goes away by itself.
-  toast(text) {
+  toast(text, error = false) {
     const root = this.shadowRoot;
     if (!root?.querySelector || typeof document === "undefined") return;
     try {
       root.querySelector(".toast")?.remove();
       const el = document.createElement("div");
-      el.className = "toast"; el.setAttribute("role", "status"); el.textContent = text;
+      el.className = error ? "toast bad" : "toast"; el.setAttribute("role", error ? "alert" : "status"); el.textContent = text;
       root.appendChild(el);
-      setTimeout(() => el.remove(), 2600);
+      setTimeout(() => el.remove(), error ? 8000 : 2600);
     } catch (_) { /* a missing message is no loss */ }
+  }
+
+  // A click that failed says so and leaves the page as it is; only a failed load replaces the page.
+  failed(err) {
+    this.toast(this.t("actionFailed", { detail: this.errText(err) }), true);
   }
 
   // "No matches" with a way out: clears search text and filters of that list.
@@ -2022,7 +2027,7 @@ class FindingsMixin {
         if (finding) { finding.ignored = false; finding.ignored_by = null; finding.ignore_info = null; done += 1; }
       }
       this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.findSel.clear();
     this.render();
     this.toast(this.t("findUnhidden", { n: done }));
@@ -2037,7 +2042,7 @@ class FindingsMixin {
         if (finding) { finding.ignored = true; finding.ignored_by = "user"; }
       }
       this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.findSel.clear();
     this.render();
   }
@@ -2090,7 +2095,7 @@ class FindingsMixin {
         this._rev++;
       }
       this.decide = null;
-    } catch (err) { this.error = err?.message || String(err); this.decide = null; }
+    } catch (err) { this.failed(err); this.decide = null; }
     this.render();
   }
 
@@ -2124,7 +2129,7 @@ class ChangesMixin {
     try {
       this.compare = await this._hass.callWS({ type: "ha_housekeeper/compare", baseline: this.compareBaseline });
     } catch (err) {
-      this.compare = null; this.error = err?.message || String(err);
+      this.compare = null; this.failed(err);
     }
     this.compareLoading = false; this.render();
   }
@@ -5752,7 +5757,7 @@ class MarksMixin {
     try {
       await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") });
       await this.refreshData();
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 
@@ -6679,7 +6684,7 @@ class SafetyMixin {
 
   async setProtection(mode) {
     try { await this._hass.callWS({ type: "ha_housekeeper/protection_set", mode }); this.data.meta.protection = mode; }
-    catch (err) { this.error = err?.message || String(err); }
+    catch (err) { this.failed(err); }
     this.render();
   }
 
@@ -7268,7 +7273,7 @@ class FindingStatusMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "add_label", object_id, target: label })) });
       this.openNewPlan(plan);
       this.bulk = null; this.findSel.clear();
-    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
 
@@ -7292,7 +7297,7 @@ class FindingStatusMixin {
         }
       }
       this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.bulk = null; this.findSel.clear();
     this.render();
   }
@@ -7303,7 +7308,7 @@ class FindingStatusMixin {
       await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("notDuplicateReason") });
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.ignore_info = { kind: "keep", reason: this.t("notDuplicateReason"), until: null, at: new Date().toISOString() }; this._rev++; }
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 
@@ -7396,7 +7401,7 @@ class DetailActionsMixin {
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "add_label", object_id: entityId, target: label }] });
       this.openNewPlan(plan); this.selected = null;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 
@@ -7622,7 +7627,7 @@ class StaleMixin {
     try {
       await this._hass.callWS({ type: "ha_housekeeper/set_stale_limit", entity_id: entityId, hours });
       await this.refreshData();
-    } catch (err) { this.error = this.t("staleFailed", { reason: err?.message || String(err) }); }
+    } catch (err) { this.toast(this.t("staleFailed", { reason: this.errText(err) }), true); }
     this.render();
   }
 
@@ -8278,7 +8283,7 @@ class NotesMixin {
       const res = await this._hass.callWS({ type: "ha_housekeeper/note_set", action: "delete", note_id: id });
       this.data = { ...this.data, notes: res.notes };
       this._corrRequested = false; this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 
@@ -8702,7 +8707,7 @@ class AreaAssignMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "set_area", object_id, ...(b.area ? { target: b.area } : {}) })) });
       this.openNewPlan(plan);
       this.bulk = null; this.polSel = new Set();
-    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
 }
@@ -8761,7 +8766,7 @@ class RenameMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: items.map(([object_id, target]) => ({ kind: "rename_entity", object_id, target })) });
       this.openNewPlan(plan);
       this.bulk = null; this.polSel = new Set();
-    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
 
@@ -8815,7 +8820,7 @@ class DetailEditMixin {
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [action] });
       this.openNewPlan(plan);
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 
@@ -9556,7 +9561,7 @@ class HAHousekeeperPanel extends HTMLElement {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
         if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
-      } catch (err) { this.error = err?.message || String(err); }
+      } catch (err) { this.failed(err); }
       this.render();
     });
     root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
@@ -9634,7 +9639,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
       try { await this._hass.callWS({ type: "ha_housekeeper/notify_set", enabled: ev.target.checked }); this.data.meta.notify = ev.target.checked; }
-      catch (err) { this.error = err?.message || String(err); }
+      catch (err) { this.failed(err); }
       this.render();
     });
     root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this.blueprints = null; this.render(); });

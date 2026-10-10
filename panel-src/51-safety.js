@@ -41,7 +41,7 @@ class SafetyMixin {
 
   async setProtection(mode) {
     try { await this._hass.callWS({ type: "ha_housekeeper/protection_set", mode }); this.data.meta.protection = mode; }
-    catch (err) { this.error = err?.message || String(err); }
+    catch (err) { this.failed(err); }
     this.render();
   }
 

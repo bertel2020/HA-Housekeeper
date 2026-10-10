@@ -105,7 +105,7 @@ class FindingStatusMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "add_label", object_id, target: label })) });
       this.openNewPlan(plan);
       this.bulk = null; this.findSel.clear();
-    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
 
@@ -129,7 +129,7 @@ class FindingStatusMixin {
         }
       }
       this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.bulk = null; this.findSel.clear();
     this.render();
   }
@@ -140,7 +140,7 @@ class FindingStatusMixin {
       await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("notDuplicateReason") });
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.ignore_info = { kind: "keep", reason: this.t("notDuplicateReason"), until: null, at: new Date().toISOString() }; this._rev++; }
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 

@@ -39,7 +39,7 @@ class DetailEditMixin {
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [action] });
       this.openNewPlan(plan);
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 

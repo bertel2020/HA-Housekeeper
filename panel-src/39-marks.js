@@ -73,7 +73,7 @@ class MarksMixin {
     try {
       await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") });
       await this.refreshData();
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 

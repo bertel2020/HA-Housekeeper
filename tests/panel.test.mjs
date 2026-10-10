@@ -3034,6 +3034,17 @@ test("selected findings get a label through a plan that opens under Cleanup", as
   assert.deepEqual(scrolls, [true, true], "both open the page at the new plan (issue #8)");
 });
 
+test("a failed action shows a message and keeps the page, a failed load still replaces it", async () => {
+  const { el } = panel("en");
+  const toasts = [];
+  el.toast = (text, error) => toasts.push([text, error]);
+  el._hass = { language: "en", callWS: async () => { throw new Error("boom"); } };
+  await el.planLabel("sensor.a", "review");
+  assert.ok(!el.error);
+  assert.deepEqual(toasts, [["That did not work: boom", true]]);
+  assert.ok(!el.content().includes("Could not load inventory"));
+});
+
 test("every new plan opens through openNewPlan, so none is left out of view (issue #8)", () => {
   const dir = new URL("../panel-src/", import.meta.url);
   for (const name of fs.readdirSync(dir).filter(n => n.endsWith(".js"))) {

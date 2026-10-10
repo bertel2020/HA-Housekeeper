@@ -716,7 +716,7 @@ class HAHousekeeperPanel extends HTMLElement {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
         if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
-      } catch (err) { this.error = err?.message || String(err); }
+      } catch (err) { this.failed(err); }
       this.render();
     });
     root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
@@ -794,7 +794,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
       try { await this._hass.callWS({ type: "ha_housekeeper/notify_set", enabled: ev.target.checked }); this.data.meta.notify = ev.target.checked; }
-      catch (err) { this.error = err?.message || String(err); }
+      catch (err) { this.failed(err); }
       this.render();
     });
     root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this.blueprints = null; this.render(); });

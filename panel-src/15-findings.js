@@ -156,7 +156,7 @@ class FindingsMixin {
         if (finding) { finding.ignored = false; finding.ignored_by = null; finding.ignore_info = null; done += 1; }
       }
       this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.findSel.clear();
     this.render();
     this.toast(this.t("findUnhidden", { n: done }));
@@ -171,7 +171,7 @@ class FindingsMixin {
         if (finding) { finding.ignored = true; finding.ignored_by = "user"; }
       }
       this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.findSel.clear();
     this.render();
   }
@@ -224,7 +224,7 @@ class FindingsMixin {
         this._rev++;
       }
       this.decide = null;
-    } catch (err) { this.error = err?.message || String(err); this.decide = null; }
+    } catch (err) { this.failed(err); this.decide = null; }
     this.render();
   }
 

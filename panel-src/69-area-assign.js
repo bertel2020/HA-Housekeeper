@@ -58,7 +58,7 @@ class AreaAssignMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "set_area", object_id, ...(b.area ? { target: b.area } : {}) })) });
       this.openNewPlan(plan);
       this.bulk = null; this.polSel = new Set();
-    } catch (err) { b.error = ""; this.error = err?.message || String(err); }
+    } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
 }

@@ -57,7 +57,7 @@ class DetailActionsMixin {
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "add_label", object_id: entityId, target: label }] });
       this.openNewPlan(plan); this.selected = null;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 

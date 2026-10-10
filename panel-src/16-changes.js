@@ -5,7 +5,7 @@ class ChangesMixin {
     try {
       this.compare = await this._hass.callWS({ type: "ha_housekeeper/compare", baseline: this.compareBaseline });
     } catch (err) {
-      this.compare = null; this.error = err?.message || String(err);
+      this.compare = null; this.failed(err);
     }
     this.compareLoading = false; this.render();
   }

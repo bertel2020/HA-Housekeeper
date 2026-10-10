@@ -95,7 +95,7 @@ class NotesMixin {
       const res = await this._hass.callWS({ type: "ha_housekeeper/note_set", action: "delete", note_id: id });
       this.data = { ...this.data, notes: res.notes };
       this._corrRequested = false; this._rev++;
-    } catch (err) { this.error = err?.message || String(err); }
+    } catch (err) { this.failed(err); }
     this.render();
   }
 

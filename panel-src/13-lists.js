@@ -56,16 +56,21 @@ class ListsMixin {
   }
 
   // A short message at the bottom of the page for small actions; it goes away by itself.
-  toast(text) {
+  toast(text, error = false) {
     const root = this.shadowRoot;
     if (!root?.querySelector || typeof document === "undefined") return;
     try {
       root.querySelector(".toast")?.remove();
       const el = document.createElement("div");
-      el.className = "toast"; el.setAttribute("role", "status"); el.textContent = text;
+      el.className = error ? "toast bad" : "toast"; el.setAttribute("role", error ? "alert" : "status"); el.textContent = text;
       root.appendChild(el);
-      setTimeout(() => el.remove(), 2600);
+      setTimeout(() => el.remove(), error ? 8000 : 2600);
     } catch (_) { /* a missing message is no loss */ }
+  }
+
+  // A click that failed says so and leaves the page as it is; only a failed load replaces the page.
+  failed(err) {
+    this.toast(this.t("actionFailed", { detail: this.errText(err) }), true);
   }
 
   // "No matches" with a way out: clears search text and filters of that list.
