@@ -1260,7 +1260,7 @@ def merge_requests(
     decided for the person.
     """
     requests: dict[str, dict[str, Any]] = {}
-    conflicts: dict[str, dict[str, str]] = {}
+    conflicts: dict[str, dict[str, Any]] = {}
     dropped = 0
     for plan in plans:
         for action in plan["actions"]:

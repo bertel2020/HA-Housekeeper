@@ -4244,15 +4244,17 @@ class MaintenanceMixin {
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
       { id: "backup", icon: "mdi:backup-restore", label: this.t("backupTitle"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
+      { id: "backups", icon: "mdi:delete-sweep-outline", label: this.t("bkcTab"), hint: "maintHintBkc", pill: this.bkc?.available && this.bkc.rows?.length ? this.formatNumber(this.bkc.rows.length) : "", tone: "mute" },
       { id: "preflight", icon: "mdi:rocket-launch-outline", label: this.t("preflightTitle"), hint: "maintHintPreflight", pill: !pf ? "" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
       { id: "devices", icon: "mdi:devices", label: this.t("lifeRemovedTab"), hint: "maintHintDevices", pill: this.removed?.length ? this.formatNumber(this.removed.length) : "", tone: "mute" },
       { id: "window", icon: "mdi:calendar-clock-outline", label: this.t("winTab"), hint: "maintHintWindow", pill: "", tone: "mute" },
       { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
+    this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
     const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok" })), open, this.t("maintenance"));
-    return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : this.backupCard() + this.backupCleanupCard()}</div>`;
+    return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "window" ? this.windowCard() : open === "backups" ? this.backupCleanupCard() : this.backupCard()}</div>`;
   }
 }
 
@@ -8478,6 +8480,7 @@ class CriteriaHistoryMixin {
 // Housekeeper's own safety backups: list, rule, deletion plan; and "delete automation" from the findings.
 // Mixed into the panel in 99-register.js. Deleting is planned like everything else under Cleanup.
 Object.assign(TEXT.de, {
+  bkcTab: "Backups aufräumen", maintHintBkc: "Eigene Housekeeper-Backups löschen.",
   bkcTitle: "Housekeeper-Backups aufräumen", bkcHint: "Housekeeper legt vor riskanten Plänen ein eigenes Backup an. Home Assistant löscht diese nicht von selbst. Deine regulären Backups werden nie angezeigt und nie angefasst.",
   bkcCount: "Housekeeper-Backups", bkcBytes: "belegt", bkcSuggested: "zum Löschen vorgeschlagen", bkcRule: "Was behalten wird", bkcKeepLast: "Die letzten", bkcKeepDays: "Backups und alle aus den letzten", bkcDays: "Tagen.", bkcReset: "Auf Vorschlag zurücksetzen",
   bkcProtectNote: "Ältere Backups sind zum Löschen vorausgewählt; du kannst die Auswahl unten ändern. Nie auswählbar sind Backups von Plänen, die noch beobachtet werden, und das jüngste Backup eines Plans, der sich noch rückgängig machen lässt.", bkcSelSum: "{count} ausgewählt · {bytes}",
@@ -8494,6 +8497,7 @@ Object.assign(TEXT.de, {
   abort_file_too_large: "Die Datei ist zu groß für eine Sicherung; nichts wurde geändert.", abort_not_in_yaml: "Die Automation steht nicht in der automations.yaml.",
 });
 Object.assign(TEXT.en, {
+  bkcTab: "Tidy backups", maintHintBkc: "Delete Housekeeper's own backups.",
   bkcTitle: "Tidy up Housekeeper backups", bkcHint: "Housekeeper makes its own backup before risky plans. Home Assistant does not delete these by itself. Your regular backups are never shown and never touched.",
   bkcCount: "Housekeeper backups", bkcBytes: "used", bkcSuggested: "suggested for deleting", bkcRule: "What is kept", bkcKeepLast: "The last", bkcKeepDays: "backups and all from the last", bkcDays: "days.", bkcReset: "Reset to the suggestion",
   bkcProtectNote: "Older backups are preselected for deleting; you can change the selection below. Never selectable are backups of plans that are still watched, and the newest backup of a plan that can still be undone.", bkcSelSum: "{count} selected · {bytes}",

@@ -48,7 +48,7 @@ import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from homeassistant import loader
 from homeassistant.core import HomeAssistant
@@ -628,14 +628,14 @@ class CleanupRunner:
                 "after": registry_fingerprint(updated),
             }, "disabled"
         if kind == "disable_device":
-            registry = dr.async_get(self.hass)
-            entry = get_main_device(registry, object_id)
-            updated = registry.async_update_device(
+            devices = dr.async_get(self.hass)
+            device = get_main_device(devices, object_id)
+            disabled = devices.async_update_device(
                 object_id, disabled_by=dr.DeviceEntryDisabler.USER
             )
             return {
-                "before": device_fingerprint(entry),
-                "after": device_fingerprint(updated),
+                "before": device_fingerprint(device),
+                "after": device_fingerprint(disabled),
             }, "device_disabled"
         if kind == "remove_device":
             return await self._remove_device(action), "device_removed"
@@ -658,6 +658,8 @@ class CleanupRunner:
         if kind in LABEL_KINDS:
             registry = er.async_get(self.hass)
             entry = registry.async_get(object_id)
+            if entry is None:
+                raise StepAbort("entity_gone")
             updated = registry.async_update_entity(
                 object_id, labels=set(entry.labels) | {action["target"]}
             )
@@ -851,6 +853,8 @@ class CleanupRunner:
         """Regular removal: the integration behind the device is asked and may refuse."""
         registry = dr.async_get(self.hass)
         entry = get_main_device(registry, action["object_id"])
+        if entry is None:
+            raise StepAbort("device_gone")
         restore = self._device_restore(entry)
         config_entry = self.hass.config_entries.async_get_entry(entry.config_entry_id)
         if config_entry is None or not config_entry.supports_remove_device:
@@ -873,6 +877,8 @@ class CleanupRunner:
         """Force Forget: drop the registry entry, then let the integrations load again."""
         registry = dr.async_get(self.hass)
         entry = get_main_device(registry, action["object_id"])
+        if entry is None:
+            raise StepAbort("device_gone")
         restore = self._device_restore(entry)
         registry.async_remove_device(entry.id)
         reloaded = []
@@ -1003,14 +1009,14 @@ class CleanupRunner:
                 datetime.fromtimestamp(row["last_reset"], UTC) if row.get("last_reset") else None
             )
             data.append(point)
-        async_import_statistics(self.hass, metadata, data)
+        async_import_statistics(self.hass, cast(Any, metadata), cast(Any, data))
         offset = analysis["offset"]
         if offset is not None and switch is not None:
             instance.async_adjust_statistics(
                 new,
                 datetime.fromtimestamp(switch, UTC),
                 offset,
-                metadata.get("unit_of_measurement"),
+                cast(str, metadata.get("unit_of_measurement")),
             )
         await instance.async_block_till_done()
         _, after = await instance.async_add_executor_job(read_series, self.hass, new)
@@ -1280,7 +1286,11 @@ class CleanupRunner:
 
         manager = await async_get_manager(self.hass)
         before = copy.deepcopy(
-            {key: manager.data[key] for key in ENERGY_PARTS if manager.data and key in manager.data}
+            {
+                key: parts[key]
+                for key in ENERGY_PARTS
+                if (parts := cast(Any, manager.data)) and key in parts
+            }
         )
         await manager.async_update(item)
         return before, {}
@@ -1410,10 +1420,10 @@ class CleanupRunner:
                 return "now_blocked"
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
         if kind in TRIM_KINDS:
-            found = await count_older(self.hass, [object_id], action["keep_days"])
-            if found is None or not recorder_ready(self.hass):
+            older = await count_older(self.hass, [object_id], action["keep_days"])
+            if older is None or not recorder_ready(self.hass):
                 return "no_recorder"
-            if not found[object_id]["rows"]:
+            if not older[object_id]["rows"]:
                 return "now_blocked"
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
         if kind in PURGE_KINDS:
@@ -1512,7 +1522,12 @@ class CleanupRunner:
                 "at": _now().isoformat(),
                 "reason": reason if remaining_id == (object_id or remaining[0]) else "aborted",
             }
-        _event(plan, "aborted", reason=reason, object_id=object_id or (remaining or [None])[0])
+        _event(
+            plan,
+            "aborted",
+            reason=reason,
+            object_id=object_id or (remaining[0] if remaining else None),
+        )
         plan["status"] = "partial" if plan["executed"] else "aborted"
 
     async def _verify(self, plan: dict[str, Any]) -> None:
@@ -1546,8 +1561,8 @@ class CleanupRunner:
                 ok = entry is not None and entry.disabled_by is not None
                 checks.append({"check": "disabled", "object_id": object_id, "ok": ok})
             elif kind == "disable_device":
-                entry = device_registry.async_get(object_id)
-                ok = entry is not None and entry.disabled_by is not None
+                device = device_registry.async_get(object_id)
+                ok = device is not None and device.disabled_by is not None
                 checks.append({"check": "device_disabled", "object_id": object_id, "ok": ok})
             elif kind in {"remove_device", "forget_device"}:
                 gone = device_registry.async_get(object_id) is None
@@ -1613,8 +1628,8 @@ class CleanupRunner:
                     gone = True
                 checks.append({"check": "automation_gone", "object_id": object_id, "ok": gone})
             elif kind in TRIM_KINDS:
-                found = await count_older(self.hass, [object_id], action["keep_days"])
-                ok = found is not None and not found[object_id]["rows"]
+                older = await count_older(self.hass, [object_id], action["keep_days"])
+                ok = older is not None and not older[object_id]["rows"]
                 checks.append({"check": "history_trimmed", "object_id": object_id, "ok": ok})
             elif kind in PURGE_KINDS:
                 gone = object_id not in await statistics_left(self.hass, [object_id])

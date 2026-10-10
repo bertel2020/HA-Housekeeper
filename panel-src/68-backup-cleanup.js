@@ -1,6 +1,7 @@
 // Housekeeper's own safety backups: list, rule, deletion plan; and "delete automation" from the findings.
 // Mixed into the panel in 99-register.js. Deleting is planned like everything else under Cleanup.
 Object.assign(TEXT.de, {
+  bkcTab: "Backups aufräumen", maintHintBkc: "Eigene Housekeeper-Backups löschen.",
   bkcTitle: "Housekeeper-Backups aufräumen", bkcHint: "Housekeeper legt vor riskanten Plänen ein eigenes Backup an. Home Assistant löscht diese nicht von selbst. Deine regulären Backups werden nie angezeigt und nie angefasst.",
   bkcCount: "Housekeeper-Backups", bkcBytes: "belegt", bkcSuggested: "zum Löschen vorgeschlagen", bkcRule: "Was behalten wird", bkcKeepLast: "Die letzten", bkcKeepDays: "Backups und alle aus den letzten", bkcDays: "Tagen.", bkcReset: "Auf Vorschlag zurücksetzen",
   bkcProtectNote: "Ältere Backups sind zum Löschen vorausgewählt; du kannst die Auswahl unten ändern. Nie auswählbar sind Backups von Plänen, die noch beobachtet werden, und das jüngste Backup eines Plans, der sich noch rückgängig machen lässt.", bkcSelSum: "{count} ausgewählt · {bytes}",
@@ -17,6 +18,7 @@ Object.assign(TEXT.de, {
   abort_file_too_large: "Die Datei ist zu groß für eine Sicherung; nichts wurde geändert.", abort_not_in_yaml: "Die Automation steht nicht in der automations.yaml.",
 });
 Object.assign(TEXT.en, {
+  bkcTab: "Tidy backups", maintHintBkc: "Delete Housekeeper's own backups.",
   bkcTitle: "Tidy up Housekeeper backups", bkcHint: "Housekeeper makes its own backup before risky plans. Home Assistant does not delete these by itself. Your regular backups are never shown and never touched.",
   bkcCount: "Housekeeper backups", bkcBytes: "used", bkcSuggested: "suggested for deleting", bkcRule: "What is kept", bkcKeepLast: "The last", bkcKeepDays: "backups and all from the last", bkcDays: "days.", bkcReset: "Reset to the suggestion",
   bkcProtectNote: "Older backups are preselected for deleting; you can change the selection below. Never selectable are backups of plans that are still watched, and the newest backup of a plan that can still be undone.", bkcSelSum: "{count} selected · {bytes}",
