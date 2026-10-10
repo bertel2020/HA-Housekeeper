@@ -1,5 +1,53 @@
 # Changelog
 
+## 1.1.0 - 2026-10-10
+
+Aufräumen wird mächtiger: Pläne als Assistent, Verlauf kürzen, Backups und Automationen löschen, Entitäten umbenennen und Bereiche zuweisen. Dazu Batterien mit Typ und Einkaufsliste.
+
+### Neu
+
+- **Pläne als Assistent:** Prüfen, Bestätigen, Ausführen, Ergebnis in vier Schritten; ein Plan ohne ausführbare Aktion zeigt nur den Grund.
+- **Verlauf kürzen:** Gespeicherte Zustände ausgewählter Entitäten löschen, die älter als eine gewählte Zahl von Tagen sind (endgültig, mit Backup davor).
+- **Housekeeper-Backups aufräumen:** Liste der eigenen Backups mit Regel „letzte N behalten und alles jünger als M Tage“; Backups beobachteter Pläne und das jüngste mit Rückgängig sind geschützt.
+- **Automationen löschen:** Ungenutzte Automationen aus `automations.yaml` als Plan entfernen, mit Vorschau, Prüfung und Rückgängig.
+- **Umbenennen mit Verweisen:** Neue Entitäts-ID, Verweise in Automationen, Skripten, Szenen und Dashboards ziehen mit; Rückgängig stellt Dateien und ID wieder her.
+- **Bereich zuweisen:** Für Entitäten und Geräte ohne Bereich, mit Vorschlag aus Gerät oder Integration.
+- **Batterien:** Batterietyp je Gerät mit Einkaufsliste für 30 Tage, erkannter Batteriewechsel zum Eintragen; Spannungsbatterien zählen in der Übersicht mit.
+- **Automationsziele:** Verlauf je Automation und ein Befund, wenn ein Ziel wiederholt verfehlt wird.
+- **Recorder:** Karte „Im Recorder“ je Entität und Auswahl für den Ausschluss in `configuration.yaml`.
+- **Export** aus dem Inventar als CSV, Markdown oder JSON; eigene Einträge im Verlauf der Änderungen; Sparklines in den Kopfkacheln.
+
+### Behoben
+
+- Recorder-Löschungen warten auf jeden Block, bevor gezählt wird.
+- Während ein Plan schreibt, lädt Housekeeper nicht neu; ein durch Neustart unterbrochener Lauf endet als teilweise oder abgebrochen.
+- Die Statuszahl ist in jeder Ansicht gleich.
+- Scheitert das kleine Backup, bietet Housekeeper ein vollständiges als neue Vorschau an, statt es von selbst zu starten.
+
+### English
+
+Cleanup gets more capable: plans as a guided flow, trimming history, deleting backups and automations, renaming entities and assigning areas. Plus batteries with type and a shopping list.
+
+#### New
+
+- **Plans as a guided flow:** check, confirm, run, result in four steps; a plan with nothing to run shows only the reason.
+- **Trim history:** delete stored states of selected entities older than a chosen number of days (final, with a backup first).
+- **Tidy Housekeeper backups:** list of its own backups with the rule "keep the last N and everything younger than M days"; backups of watched plans and the newest one with undo are protected.
+- **Delete automations:** remove unused automations from `automations.yaml` as a plan, with preview, verification and undo.
+- **Rename with references:** new entity ID, references in automations, scripts, scenes and dashboards follow; undo restores files and ID.
+- **Assign an area:** for entities and devices without one, suggested from the device or the integration.
+- **Batteries:** battery type per device with a 30-day shopping list, a detected battery change to log; batteries in volts count in the overview.
+- **Automation goals:** history per automation and a finding when a goal is missed repeatedly.
+- **Recorder:** an "In the recorder" card per entity and a selection for the exclusion in `configuration.yaml`.
+- **Export** from the inventory as CSV, Markdown or JSON; own entries in the change history; sparklines in the header tiles.
+
+#### Fixed
+
+- Recorder deletions wait for every block before counting.
+- Housekeeper does not reload while a plan writes; a run cut off by a restart ends as partial or aborted.
+- The status number is the same in every view.
+- If the small backup fails, Housekeeper offers a full one as a new preview instead of starting it on its own.
+
 ## 1.0.5 - 2026-10-10
 
 Zwei Fehler behoben, die in 1.0.3 und 1.0.4 steckten, und vier neue Wartungsziele.
