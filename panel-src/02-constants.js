@@ -114,3 +114,11 @@ const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
 
 // Object types the housekeeping status is calculated from.
 const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
+
+// One CSV cell, quoted. Text a spreadsheet would run as a formula (leading =, +, -, @) gets a leading
+// apostrophe; numbers, also negative ones as text such as "-3.5", stay numbers.
+const csvCell = v => {
+  let t = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(t) && !/^[+-]?\d+([.,]\d+)?([eE][+-]?\d+)?$/.test(t)) t = "'" + t;
+  return `"${t.replace(/"/g, '""')}"`;
+};

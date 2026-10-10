@@ -102,8 +102,7 @@ class FindingsMixin {
     } else {
       const cols = Object.keys(rows[0] || { rule_id: 0, classification: 0, confidence: 0, object_id: 0, name: 0, affected_object: 0, first_detected_at: 0, location: 0 });
       // Leading =,+,-,@ would be evaluated as a formula by spreadsheet tools.
-      const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-      body = "\ufeff" + [cols.join(","), ...rows.map(r => cols.map(c => cell(r[c])).join(","))].join("\r\n");
+      body = "\ufeff" + [cols.join(","), ...rows.map(r => cols.map(c => csvCell(r[c])).join(","))].join("\r\n");
       type = "text/csv";
     }
     const url = URL.createObjectURL(new Blob([body], { type: `${type};charset=utf-8` }));

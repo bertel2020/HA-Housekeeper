@@ -478,6 +478,14 @@ const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
 // Object types the housekeeping status is calculated from.
 const HEALTH_TYPES = ["entity", "automation", "script", "scene"];
 
+// One CSV cell, quoted. Text a spreadsheet would run as a formula (leading =, +, -, @) gets a leading
+// apostrophe; numbers, also negative ones as text such as "-3.5", stay numbers.
+const csvCell = v => {
+  let t = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(t) && !/^[+-]?\d+([.,]\d+)?([eE][+-]?\d+)?$/.test(t)) t = "'" + t;
+  return `"${t.replace(/"/g, '""')}"`;
+};
+
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
   changesFiltered: "Der Filter blendet alle {n} Einträge dieses Abschnitts aus.",
@@ -1422,8 +1430,7 @@ class ListsMixin {
 
   // A list as CSV: every row of the current search and filters, all columns. Same formula guard as the findings export.
   downloadRows(name, header, rows) {
-    const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-    const body = "\ufeff" + [header, ...rows].map(r => r.map(cell).join(",")).join("\r\n");
+    const body = "\ufeff" + [header, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
     const url = URL.createObjectURL(new Blob([body], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url; a.download = `ha-housekeeper-${name}.csv`;
@@ -1946,8 +1953,7 @@ class FindingsMixin {
     } else {
       const cols = Object.keys(rows[0] || { rule_id: 0, classification: 0, confidence: 0, object_id: 0, name: 0, affected_object: 0, first_detected_at: 0, location: 0 });
       // Leading =,+,-,@ would be evaluated as a formula by spreadsheet tools.
-      const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-      body = "\ufeff" + [cols.join(","), ...rows.map(r => cols.map(c => cell(r[c])).join(","))].join("\r\n");
+      body = "\ufeff" + [cols.join(","), ...rows.map(r => cols.map(c => csvCell(r[c])).join(","))].join("\r\n");
       type = "text/csv";
     }
     const url = URL.createObjectURL(new Blob([body], { type: `${type};charset=utf-8` }));
@@ -7968,8 +7974,7 @@ class ExportMixin {
       }
       text = `${lines.join("\n")}\n`; ext = "md"; mime = "text/markdown";
     } else {
-      const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-      text = "﻿" + [cols, ...rows.map(r => cols.map(c => this.xpCell(r, c)))].map(r => r.map(cell).join(",")).join("\r\n") + "\r\n";
+      text = "﻿" + [cols, ...rows.map(r => cols.map(c => this.xpCell(r, c)))].map(r => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
       ext = "csv"; mime = "text/csv;charset=utf-8";
     }
     return { text, ext, mime, count: rows.length, fields: cols.length };

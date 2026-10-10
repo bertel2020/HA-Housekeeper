@@ -176,8 +176,7 @@ class ExportMixin {
       }
       text = `${lines.join("\n")}\n`; ext = "md"; mime = "text/markdown";
     } else {
-      const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-      text = "﻿" + [cols, ...rows.map(r => cols.map(c => this.xpCell(r, c)))].map(r => r.map(cell).join(",")).join("\r\n") + "\r\n";
+      text = "﻿" + [cols, ...rows.map(r => cols.map(c => this.xpCell(r, c)))].map(r => r.map(csvCell).join(",")).join("\r\n") + "\r\n";
       ext = "csv"; mime = "text/csv;charset=utf-8";
     }
     return { text, ext, mime, count: rows.length, fields: cols.length };

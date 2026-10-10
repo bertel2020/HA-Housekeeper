@@ -26,8 +26,8 @@ function loadPanel(extra = {}) {
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, setTimeout: () => 0,
     ...extra,
   };
-  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS; this.OPTION_FIELDS = OPTION_FIELDS;", context);
-  return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, OPTION_FIELDS: context.OPTION_FIELDS, shadow };
+  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS; this.OPTION_FIELDS = OPTION_FIELDS; this.csvCell = csvCell;", context);
+  return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, OPTION_FIELDS: context.OPTION_FIELDS, csvCell: context.csvCell, shadow };
 }
 
 const DATA = {
@@ -159,6 +159,7 @@ test("CSV export neutralises formulas and respects the filter", () => {
   const csv = downloads[0].text;
   assert.ok(csv.startsWith("﻿"));
   assert.ok(csv.includes(`"'=HYPERLINK(""x"")"`), csv);
+  assert.deepEqual(["-3.5", -2, "+1e3", "-x"].map(loadPanel().csvCell), ['"-3.5"', '"-2"', '"+1e3"', `"'-x"`]); // numbers stay numbers
   assert.equal(csv.split("\r\n").length, 3);
 
   el.findingFilter = "nothing";

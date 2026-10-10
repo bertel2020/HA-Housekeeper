@@ -134,8 +134,7 @@ class ListsMixin {
 
   // A list as CSV: every row of the current search and filters, all columns. Same formula guard as the findings export.
   downloadRows(name, header, rows) {
-    const cell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"`; };
-    const body = "\ufeff" + [header, ...rows].map(r => r.map(cell).join(",")).join("\r\n");
+    const body = "\ufeff" + [header, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
     const url = URL.createObjectURL(new Blob([body], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url; a.download = `ha-housekeeper-${name}.csv`;
