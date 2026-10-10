@@ -13,6 +13,12 @@ const REPAIR_KINDS = ["repair_counter", "repair_range"];
 const IMPACT_RANK = { none: 0, low: 1, medium: 2, high: 3 };
 const BACKUP_FAILURES = ["backup_failed", "backup_small_failed", "backup_unavailable", "no_backup_agent"];
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
+// What a finished action says it did; kinds not listed just say "done".
+const DONE_RESULTS = Object.fromEntries([
+  ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
+  ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
+  ["add_label", "labeled"], ["set_area", "area"], ["rename_entity", "renamed"],
+]);
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
 const PREFS_KEY = "ha_housekeeper.prefs";

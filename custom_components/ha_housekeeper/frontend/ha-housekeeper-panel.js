@@ -376,6 +376,12 @@ const REPAIR_KINDS = ["repair_counter", "repair_range"];
 const IMPACT_RANK = { none: 0, low: 1, medium: 2, high: 3 };
 const BACKUP_FAILURES = ["backup_failed", "backup_small_failed", "backup_unavailable", "no_backup_agent"];
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
+// What a finished action says it did; kinds not listed just say "done".
+const DONE_RESULTS = Object.fromEntries([
+  ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
+  ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
+  ["add_label", "labeled"], ["set_area", "area"], ["rename_entity", "renamed"],
+]);
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
 const PREFS_KEY = "ha_housekeeper.prefs";
@@ -2773,7 +2779,7 @@ class CleanupMixin {
       const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
-      const resultPill = result ? `<span class="pill ${result.state === "done" ? "ok" : result.state === "undone" ? "mute" : "warn"}">${this.t(result.state === "done" && REMOVAL_KINDS.includes(a.kind) ? "result_removed" : result.state === "done" && a.kind === "replace_references" ? "result_replaced" : result.state === "done" && a.kind === "refactor_automation" ? "result_refactored" : result.state === "done" && a.kind === "migrate_meter" ? "result_migrated" : result.state === "done" && REPAIR_KINDS.includes(a.kind) ? "result_repaired" : result.state === "done" && a.kind === "add_label" ? "result_labeled" : result.state === "done" && a.kind === "set_area" ? "result_area" : result.state === "done" && a.kind === "rename_entity" ? "result_renamed" : result.state === "done" && (PURGE_KINDS.includes(a.kind) || a.kind === "delete_automation") ? "result_purged" : `result_${result.state}`)}</span>` : "";
+      const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
       const sub0 = a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.t("trimSub", { days: a.keep_days, rows: a.trim?.rows ?? "?" }) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
