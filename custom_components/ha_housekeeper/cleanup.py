@@ -29,8 +29,15 @@ REFERENCE_KINDS = frozenset({"replace_references"})
 METER_KINDS = frozenset({"migrate_meter"})
 METER_MODES = ("both", "statistics", "id")
 PURGE_KINDS = frozenset({"purge_statistics"})
+DELETE_CANDIDATE_RULES = frozenset(
+    {"automation.never_triggered", "automation.stale", "automation.disabled_long"}
+)
 TRIM_KINDS = frozenset({"trim_history"})  # deletes old state rows of one entity; statistics stay
 TRIM_DAYS = (1, 3650)
+DELETE_BACKUP_KINDS = frozenset({"delete_backup"})  # deletes one of Housekeeper's own backups
+DELETE_AUTOMATION_KINDS = frozenset(
+    {"delete_automation"}
+)  # removes one automation from its YAML file
 REPAIR_KINDS = frozenset({"repair_counter", "repair_range"})
 LABEL_KINDS = frozenset({"add_label"})  # adds one existing label to an entity; Home Assistant only
 REMOVAL_KINDS = frozenset({"remove_entity", "remove_device", "forget_device"})
@@ -44,6 +51,8 @@ ACTION_KINDS = (
     | METER_KINDS
     | PURGE_KINDS
     | TRIM_KINDS
+    | DELETE_BACKUP_KINDS
+    | DELETE_AUTOMATION_KINDS
     | REFACTOR_KINDS
     | REPAIR_KINDS
     | LABEL_KINDS
@@ -60,6 +69,7 @@ BACKUP_KINDS = frozenset(
         "migrate_meter",
         "purge_statistics",
         "trim_history",
+        "delete_automation",
         "refactor_automation",
         "repair_counter",
         "repair_range",
@@ -83,6 +93,8 @@ MAX_ACTIONS = 200
 MAX_OPEN_PREVIEWS = 20
 MAX_PURGES = 100  # recorder purges kept in the journal
 JOURNAL_MAX_BYTES = 8 * 1024 * 1024
+JOURNAL_KEEP_DAYS = 365  # plans that ran and ended longer ago than this are dropped ...
+JOURNAL_MAX_PLANS = 300  # ... and the oldest of them once there are more plans than this
 SAVE_DELAY = 5
 
 
@@ -310,6 +322,12 @@ BLOCKING_REASONS = frozenset(
         "nothing_to_replace",
         "stats_missing_old",
         "bad_keep_days",
+        "backup_missing",
+        "not_housekeeper_backup",
+        "backup_protected",
+        "not_a_candidate",
+        "not_in_yaml",
+        "file_too_large",
         "not_counted",
         "nothing_to_trim",
         "stats_unit_differs",
@@ -639,6 +657,79 @@ def judge_trim_action(
     return action
 
 
+def judge_backup_deletion(backup_id: str, row: dict[str, Any] | None) -> dict[str, Any]:
+    """Judge deleting one of Housekeeper's own backups; ``row`` is its entry of the listing.
+
+    Deleting is final, so a plan that may run is always ``review``. A protected backup (its plan is
+    still watched, or it is the newest one that still allows an undo) is never deleted.
+    """
+    action: dict[str, Any] = {
+        "kind": "delete_backup",
+        "object_id": backup_id,
+        "object_type": "backup",
+        "name": (row or {}).get("name") or backup_id,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+        "backup": row,
+    }
+    reasons = action["reasons"]
+    if row is None:
+        reasons.append("backup_missing")
+    elif row.get("protected"):
+        reasons.append("backup_protected")
+    else:
+        reasons.append("irreversible")
+        if row.get("only_return"):
+            reasons.append("only_return")
+    _verdict(action)
+    return action
+
+
+def judge_automation_deletion(
+    entity_id: str,
+    objects: dict[str, dict[str, Any]],
+    edges: list[dict[str, Any]],
+    candidates: set[str],
+    source: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Judge removing one automation from its YAML file.
+
+    Only an automation with a finding that calls it unused or switched off for long, defined in
+    ``automations.yaml``, qualifies. Mentions elsewhere (scripts, scenes, dashboards) do not block,
+    but they are listed and the plan is always ``review``. Undo puts the whole file back.
+    """
+    item = objects.get(entity_id)
+    action: dict[str, Any] = {
+        "kind": "delete_automation",
+        "object_id": entity_id,
+        "object_type": "automation",
+        "name": (item or {}).get("name") or entity_id,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": _used_by(edges, f"entity:{entity_id}"),
+        "has_statistics": False,
+        "yaml": (source or {}).get("text"),
+        "sources": [
+            {"source": (source or {}).get("source"), "hash": (source or {}).get("fingerprint")}
+        ],
+    }
+    reasons = action["reasons"]
+    if item is None:
+        reasons.append("not_found")
+    elif entity_id not in candidates:
+        reasons.append("not_a_candidate")
+    elif source is None or source.get("error"):
+        reasons.append((source or {}).get("error") or "not_in_yaml")
+    else:
+        reasons.append("deletes_config")
+        if action["used_by"]:
+            reasons.append("used_by_mentions")
+    _verdict(action)
+    return action
+
+
 def counter_key(request: dict[str, Any]) -> tuple[Any, ...]:
     """Identifies the preview of a repair request: the sensor, the mode and the picked range."""
     rng = request.get("range") or {}
@@ -870,6 +961,8 @@ def build_plan(
     counter_data: dict[tuple[str, str], dict[str, Any]] | None = None,
     label_data: dict[tuple[str, str], dict[str, Any]] | None = None,
     trim_data: dict[tuple[str, int], dict[str, Any] | None] | None = None,
+    backup_data: dict[str, dict[str, Any]] | None = None,
+    delete_data: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -918,6 +1011,26 @@ def build_plan(
                 bool(snapshot["meta"].get("recorder_available")),
             )
             action["fingerprint"] = None
+        elif kind in DELETE_BACKUP_KINDS:
+            action = judge_backup_deletion(object_id, (backup_data or {}).get(object_id))
+            action["fingerprint"] = None
+        elif kind in DELETE_AUTOMATION_KINDS:
+            automations = {
+                o["object_id"]: o for o in snapshot["objects"] if o["object_type"] == "automation"
+            }
+            found = (delete_data or {}).get(object_id)
+            action = judge_automation_deletion(
+                object_id,
+                automations,
+                snapshot["edges"],
+                {
+                    f["object_id"]
+                    for f in snapshot.get("findings", [])
+                    if f["rule_id"] in DELETE_CANDIDATE_RULES
+                },
+                found,
+            )
+            action["fingerprint"] = (found or {}).get("fingerprint")
         elif kind in TRIM_KINDS:
             keep_days = int(request.get("keep_days") or 0)
             action = judge_trim_action(
@@ -1234,8 +1347,29 @@ class JournalStore:
     def _is_open_preview(plan: dict[str, Any]) -> bool:
         return not plan.get("executed") and not plan.get("run")
 
+    @staticmethod
+    def _still_needed(plan: dict[str, Any], now: str) -> bool:
+        """A plan that ran but must stay: running, watched after the run, or holding a quarantine.
+
+        Whether a quarantined item is still disabled only the live inventory knows, so a plan with
+        a done disable step stays until that step is undone.
+        """
+        if plan.get("status") in RUN_STATES:
+            return True
+        if ((plan.get("followup") or {}).get("until") or "") > now:
+            return True
+        return any(
+            action.get("kind") in QUARANTINE_KINDS
+            and (action.get("result") or {}).get("state") == "done"
+            for action in plan.get("actions", [])
+        )
+
     def _trim(self) -> None:
-        """Limit the previews by number and the whole journal by size; never drop a plan that ran."""
+        """Limit the previews by number, the plans that ran by age and number, the journal by size.
+
+        A plan that ran goes after ``JOURNAL_KEEP_DAYS`` days, or earlier when there are more than
+        ``JOURNAL_MAX_PLANS`` plans (oldest first), unless it is still needed (see above).
+        """
         previews = 0
         kept = []
         for plan in self._plans:
@@ -1244,7 +1378,21 @@ class JournalStore:
                 if previews > MAX_OPEN_PREVIEWS:
                     continue
             kept.append(plan)
-        self._plans[:] = kept
+        now = datetime.now(UTC)
+        cutoff = (now - timedelta(days=JOURNAL_KEEP_DAYS)).isoformat()
+        count, dropped = len(kept), set()
+        for plan in reversed(kept):  # oldest first
+            ended = (plan.get("run") or {}).get("finished_at") or plan.get("created_at")
+            if (
+                self._is_open_preview(plan)
+                or not ended
+                or self._still_needed(plan, now.isoformat())
+            ):
+                continue
+            if count > JOURNAL_MAX_PLANS or ended < cutoff:
+                dropped.add(id(plan))
+                count -= 1
+        self._plans[:] = [plan for plan in kept if id(plan) not in dropped]
         self._compact_to(JOURNAL_MAX_BYTES)
 
     def _compact_to(self, limit: int) -> None:

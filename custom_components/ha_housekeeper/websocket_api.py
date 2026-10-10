@@ -18,11 +18,15 @@ from homeassistant.util import dt as dt_util
 from . import battery_trend, battery_voltage, counter_repair
 from . import refactor as refactor_module
 from .audit_report import build_report
+from .automation_delete import preview as preview_automation_delete
+from .backup_cleanup import KEEP_DAYS, KEEP_LAST, MAX_DAYS, MAX_LAST, list_backups
 from .backup_health import ATTEST_KINDS, backup_health
 from .battery_care import BatteryError
 from .blueprints import async_blueprints
 from .cleanup import (
     ACTION_KINDS,
+    DELETE_AUTOMATION_KINDS,
+    DELETE_BACKUP_KINDS,
     LABEL_KINDS,
     MAX_ACTIONS,
     MAX_MERGE,
@@ -98,6 +102,12 @@ RELIABILITY_TIMEOUT = 120  # seconds; the recorder query is slow on a large data
 def _scanner(hass: HomeAssistant) -> InventoryScanner | None:
     """Return the configured scanner, or None while the entry is not loaded."""
     return hass.data.get(DOMAIN, {}).get("scanner")
+
+
+def scanner_plans(hass: HomeAssistant) -> list[dict[str, Any]]:
+    """The plans of the journal, or none while the entry is not loaded."""
+    scanner = _scanner(hass)
+    return scanner.journal.plans if scanner else []
 
 
 def _versioned(result: dict[str, Any]) -> dict[str, Any]:
@@ -375,6 +385,17 @@ async def _plan_from_requests(
                 "fingerprint": registry_fingerprint(entry) if entry else None,
             }
 
+    backup_data: dict[str, dict[str, Any]] = {}
+    if any(a["kind"] in DELETE_BACKUP_KINDS for a in requests):
+        listing = await list_backups(hass, scanner_plans(hass), datetime.now(UTC))
+        backup_data = {r["backup_id"]: r for r in listing["rows"]}
+    delete_data: dict[str, dict[str, Any]] = {}
+    for action in requests:
+        if action["kind"] in DELETE_AUTOMATION_KINDS:
+            delete_data[action["object_id"]] = await preview_automation_delete(
+                hass, snapshot, action["object_id"]
+            )
+
     trim_data: dict[tuple[str, int], dict[str, Any] | None] = {}
     for days in {
         a["keep_days"] for a in requests if a["kind"] in TRIM_KINDS and a.get("keep_days")
@@ -416,6 +437,8 @@ async def _plan_from_requests(
         counter_data=counter_data,
         label_data=label_data,
         trim_data=trim_data,
+        backup_data=backup_data,
+        delete_data=delete_data,
     )
     await _add_history(hass, snapshot, plan)
     return plan
@@ -1655,6 +1678,31 @@ async def websocket_battery_trend(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/backup_cleanup",
+        vol.Optional("keep_last", default=KEEP_LAST): vol.All(int, vol.Range(min=0, max=MAX_LAST)),
+        vol.Optional("keep_days", default=KEEP_DAYS): vol.All(int, vol.Range(min=0, max=MAX_DAYS)),
+    }
+)
+@websocket_api.async_response
+async def websocket_backup_cleanup(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Housekeeper's own backups with the suggestion of the rule. Reads only."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    result = await list_backups(
+        hass, scanner.journal.plans, datetime.now(UTC), msg["keep_last"], msg["keep_days"]
+    )
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/battery_type_set",
         vol.Required("entity_id"): str,
         vol.Required("battery_type"): str,
@@ -2521,6 +2569,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_notify_set)
     websocket_api.async_register_command(hass, websocket_purge_statistics)
     websocket_api.async_register_command(hass, websocket_battery_type_set)
+    websocket_api.async_register_command(hass, websocket_backup_cleanup)
     websocket_api.async_register_command(hass, websocket_battery_replaced)
     websocket_api.async_register_command(hass, websocket_blueprints)
     websocket_api.async_register_command(hass, websocket_window_reload)

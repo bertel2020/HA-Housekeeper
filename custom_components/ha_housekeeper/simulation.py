@@ -25,6 +25,9 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     repaired = 0
     purged: set[str] = set()
     trimmed = 0
+    backups_deleted = 0
+    backup_bytes = 0
+    automations_deleted = 0
     certain: set[tuple[str, str]] = set()
     uncertain: set[tuple[str, str]] = set()
     statistics: set[str] = set()
@@ -49,6 +52,15 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
             if history:
                 purge_rows += history["statistics"] + (
                     history["states"] if action.get("states") else 0
+                )
+        elif kind == "delete_backup":
+            backups_deleted += 1
+            backup_bytes += (action.get("backup") or {}).get("size") or 0
+        elif kind == "delete_automation":
+            automations_deleted += 1
+            for use in action.get("used_by") or []:
+                (certain if use["confidence"] == "certain" else uncertain).add(
+                    (use["source"], object_id)
                 )
         elif kind == "trim_history":
             trimmed += 1
@@ -93,6 +105,9 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
         "repaired": repaired,
         "purged": len(purged),
         "trimmed": trimmed,
+        "backups_deleted": backups_deleted,
+        "backup_bytes": backup_bytes,
+        "automations_deleted": automations_deleted,
         "remaining_certain": len(certain),
         "remaining_uncertain": len(uncertain) + manual,
         "remaining_sources": sorted({source for source, _ in certain})[:SHOWN],

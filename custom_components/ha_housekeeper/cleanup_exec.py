@@ -60,9 +60,14 @@ from homeassistant.util.yaml import dump, parse_yaml
 
 from . import counter_repair, followup
 from . import refactor as refactor_module
+from .automation_delete import preview as preview_automation_delete
+from .backup_cleanup import backup_exists, delete_backup, list_backups
 from .cleanup import (
     BACKUP_KINDS,
     DATABASE_KINDS,
+    DELETE_AUTOMATION_KINDS,
+    DELETE_BACKUP_KINDS,
+    DELETE_CANDIDATE_RULES,
     DEVICE_KINDS,
     EXECUTABLE_KINDS,
     LABEL_KINDS,
@@ -88,6 +93,7 @@ from .protection import allows, allows_undo
 from .recorder_purge import count_older, delete_statistics, statistics_left, trim_states
 from .references import (
     ENERGY_PARTS,
+    YAML_FILES,
     SourceError,
     find_yaml_item,
     load_file,
@@ -257,6 +263,37 @@ def _write_yaml_item(
         except UnicodeDecodeError:
             extra = {}
     return before, extra
+
+
+def _delete_yaml_item(
+    path: str, kind: str, ref: str, expected_hash: str
+) -> tuple[str, dict[str, Any]]:
+    """Blocking: remove one item from a YAML file if it is still as it was read.
+
+    The whole old file is kept for the undo (writing the file again loses comments and formatting),
+    so a file that is too large or not text is refused before anything is written.
+    """
+    data, _ = load_file(path)
+    current = find_yaml_item(kind, data, ref)
+    if current is None or yaml_hash(current) != expected_hash:
+        raise StepAbort("source_changed")
+    raw = Path(path).read_bytes()
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as err:
+        raise StepAbort("file_too_large") from err
+    if len(raw) > MAX_FILE_BACKUP:
+        raise StepAbort("file_too_large")
+    before = dump(current)
+    if kind == "script":
+        del data[ref]
+    else:
+        del data[next(i for i, existing in enumerate(data) if existing is current)]
+    write_utf8_file_atomic(path, dump(data))
+    return before, {
+        "file_before": text,
+        "file_after_hash": _bytes_hash(Path(path).read_bytes()),
+    }
 
 
 def _restore_yaml_file(path: str, text_before: str, expected_hash: str) -> bool:
@@ -587,6 +624,10 @@ class CleanupRunner:
             return await self._purge_statistics(action), "statistics_purged"
         if kind in TRIM_KINDS:
             return await self._trim_history(action), "history_trimmed"
+        if kind in DELETE_BACKUP_KINDS:
+            return await self._delete_backup(action), "backup_deleted"
+        if kind in DELETE_AUTOMATION_KINDS:
+            return await self._delete_automation(action), "automation_deleted"
         if kind in LABEL_KINDS:
             registry = er.async_get(self.hass)
             entry = registry.async_get(object_id)
@@ -637,6 +678,80 @@ class CleanupRunner:
             "purge", _now(), requested=1, removed=len(removed), skipped=0, states=states
         )
         return {"states": states, "irreversible": True}
+
+    async def _delete_backup(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Delete one of Housekeeper's own backups; final."""
+        reason = await delete_backup(self.hass, action["object_id"])
+        if reason:
+            raise StepAbort(reason)
+        return {"size": (action.get("backup") or {}).get("size"), "irreversible": True}
+
+    async def _delete_automation(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Remove one automation from automations.yaml, reload, and drop its registry entry.
+
+        The old file is kept whole, so the undo puts it back byte for byte while it is unchanged.
+        """
+        entity_id, planned = action["object_id"], action["sources"][0]
+        try:
+            loaded = await load_source(self.hass, self.scanner.snapshot, planned["source"])
+        except SourceError as err:
+            raise StepAbort(str(err)) from err
+        if loaded["hash"] != planned["hash"]:
+            raise StepAbort("source_changed")
+        registry = er.async_get(self.hass)
+        entry = registry.async_get(entity_id)
+        before, extra = await self.hass.async_add_executor_job(
+            _delete_yaml_item, loaded["path"], "automation", loaded["ref"], planned["hash"]
+        )
+        source = {
+            "source": loaded["source"],
+            "type": "automation",
+            "format": "yaml",
+            "before": before,
+            "after_hash": None,
+            "state": "done",
+            "deleted": True,
+            **extra,
+        }
+        info = (
+            {
+                "unique_id": entry.unique_id,
+                "area_id": entry.area_id,
+                "labels": sorted(entry.labels),
+                "name": entry.name,
+                "icon": entry.icon,
+            }
+            if entry
+            else None
+        )
+        try:
+            await self._reload(loaded)
+            if registry.async_get(entity_id) is not None:
+                registry.async_remove(entity_id)
+        except Exception as err:
+            outcome = await self._revert_source(source)
+            raise StepAbort(
+                "source_write_failed" if outcome == "undone" else "rollback_incomplete",
+                {"before": action["fingerprint"], "sources": [source], "registry": info},
+            ) from err
+        return {"before": action["fingerprint"], "sources": [source], "registry": info}
+
+    async def _undo_automation_delete(self, result: dict[str, Any]) -> str:
+        """Put the file back, then give the automation its area, labels and name again."""
+        outcome = await self._undo_references(result)
+        info = result.get("registry")
+        if outcome == "undone" and info:
+            registry = er.async_get(self.hass)
+            entity_id = registry.async_get_entity_id("automation", "automation", info["unique_id"])
+            if entity_id:
+                registry.async_update_entity(
+                    entity_id,
+                    area_id=info["area_id"],
+                    labels=set(info["labels"]),
+                    name=info["name"],
+                    icon=info["icon"],
+                )
+        return outcome
 
     async def _trim_history(self, action: dict[str, Any]) -> dict[str, Any]:
         """Delete the state rows of one entity older than ``keep_days``; noted, never undone."""
@@ -1146,6 +1261,21 @@ class CleanupRunner:
 
     async def _revert_source(self, source: dict[str, Any]) -> str:
         """Put one rewritten source back while it is exactly as Housekeeper left it."""
+        if source.get("deleted"):
+            path = self.hass.config.path(YAML_FILES[source["type"]])
+            try:
+                restored = await self.hass.async_add_executor_job(
+                    _restore_yaml_file, path, source["file_before"], source["file_after_hash"]
+                )
+            except Exception:
+                return "conflict_unrestorable"
+            if not restored:
+                return "conflict_changed"
+            source["state"] = "undone"
+            source["restored_as"] = "file"
+            with contextlib.suppress(Exception):
+                await self.hass.services.async_call(source["type"], "reload", blocking=True)
+            return "undone"
         try:
             loaded = await load_source(self.hass, self.scanner.snapshot, source["source"])
         except SourceError:
@@ -1217,6 +1347,25 @@ class CleanupRunner:
             )
             if found.get("error") or action.get("fingerprint") != found["fingerprint"]:
                 return "counter_changed"
+            return None if object_id in context["acknowledged"] else "needs_acknowledgement"
+        if kind in DELETE_BACKUP_KINDS:
+            now_rows = {
+                r["backup_id"]: r
+                for r in (await list_backups(self.hass, self.scanner.journal.plans, _now()))["rows"]
+            }
+            row = now_rows.get(object_id)
+            if row is None or row["protected"]:
+                return "now_blocked"
+            return None if object_id in context["acknowledged"] else "needs_acknowledgement"
+        if kind in DELETE_AUTOMATION_KINDS:
+            found = await preview_automation_delete(self.hass, snapshot, object_id)
+            if found["error"] or found["fingerprint"] != action["sources"][0]["hash"]:
+                return "source_changed"
+            if not any(
+                f["object_id"] == object_id and f["rule_id"] in DELETE_CANDIDATE_RULES
+                for f in snapshot.get("findings", [])
+            ):
+                return "now_blocked"
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
         if kind in TRIM_KINDS:
             found = await count_older(self.hass, [object_id], action["keep_days"])
@@ -1370,6 +1519,21 @@ class CleanupRunner:
                 checks.append({"check": "counter_clean", "object_id": object_id, "ok": ok})
             elif kind in REFACTOR_KINDS:
                 checks.append(await self._verify_refactor(action))
+            elif kind in DELETE_BACKUP_KINDS:
+                checks.append(
+                    {
+                        "check": "backup_deleted",
+                        "object_id": object_id,
+                        "ok": await backup_exists(self.hass, object_id) is False,
+                    }
+                )
+            elif kind in DELETE_AUTOMATION_KINDS:
+                try:
+                    await load_source(self.hass, snapshot, f"automation:{object_id}")
+                    gone = False
+                except SourceError:
+                    gone = True
+                checks.append({"check": "automation_gone", "object_id": object_id, "ok": gone})
             elif kind in TRIM_KINDS:
                 found = await count_older(self.hass, [object_id], action["keep_days"])
                 ok = found is not None and not found[object_id]["rows"]
@@ -1510,7 +1674,9 @@ class CleanupRunner:
                     outcome = await self._undo_counter(result)
                 except StepAbort as stop:
                     outcome = stop.reason
-            elif kind in PURGE_KINDS | TRIM_KINDS:
+            elif kind in DELETE_AUTOMATION_KINDS:
+                outcome = await self._undo_automation_delete(result)
+            elif kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS:
                 outcome = "irreversible"
             else:
                 outcome = self._reenable(registry, action["object_id"], result)

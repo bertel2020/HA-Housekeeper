@@ -3322,3 +3322,35 @@ test("batteries: the shopping list counts the types, a detected replacement is o
   const line = el.goalLine({ evidence: [{ missed: 5, reached: 2, window_days: 7 }] });
   assert.equal(line, "Goal missed 5 of 7 times in the last 7 days · criterion set by you");
 });
+
+test("housekeeper backups: the list marks protected ones, the rule picks the rest, the plan has no undo; an automation finding offers deleting", async () => {
+  const { el } = panel("en");
+  el.render = () => {};
+  el.bkc = {
+    available: true,
+    rows: [
+      { backup_id: "b1", name: "Housekeeper aaaa1111", date: "2026-10-08T10:00:00+00:00", age_days: 2, size: 1000, with_database: true, plan_id: "p1", protected: "watching", only_return: false, suggested: false },
+      { backup_id: "b2", name: "Housekeeper bbbb2222", date: "2026-08-30T10:00:00+00:00", age_days: 41, size: 900, with_database: true, plan_id: "p2", protected: null, only_return: true, suggested: true },
+    ],
+    total: { count: 2, bytes: 1900 },
+    suggested: { count: 1, bytes: 900 },
+  };
+  el.bkcSel = new Set(["b2"]);
+  const html = el.backupCleanupCard();
+  assert.ok(html.includes("protected: being watched") && html.includes("41 days old") && html.includes("only way to get back"));
+  assert.ok(html.includes('data-bkc-sel="b1"') && /data-bkc-sel="b1"[^>]*disabled/.test(html), "a protected backup cannot be ticked");
+  assert.ok(html.includes("Create a plan to delete (1)"));
+  let sent;
+  el._hass.callWS = async msg => { sent = msg; return { plan_id: "p9", status: "dry_run", actions: [], summary: {} }; };
+  await el.backupDeletePlan();
+  assert.equal(JSON.stringify(sent.actions), JSON.stringify([{ kind: "delete_backup", object_id: "b2" }]));
+  assert.equal(el.view, "cleanup");
+  const action = { kind: "delete_backup", object_id: "b2", name: "Housekeeper bbbb2222", object_type: "backup", verdict: "review", executable: true, reasons: ["irreversible", "only_return"], backup: { date: "2026-08-30T10:00:00+00:00", size: 900 } };
+  assert.ok(el.undoBadge(action).includes("final"));
+  assert.equal(el.planWord({ actions: [action] }), el.t("purgeWord"));
+  const auto = { kind: "delete_automation", object_id: "automation.old", name: "Old", object_type: "automation", verdict: "review", executable: true, reasons: ["deletes_config"], yaml: "alias: Old\ntrigger: []\n", used_by: [] };
+  const card = el.planCard({ plan_id: "p8", status: "dry_run", actions: [auto], summary: {} });
+  assert.ok(card.includes("- alias: Old") && card.includes("removed from the file"));
+  assert.ok(el.autoDeleteButton({ rule_id: "automation.stale", object_id: "automation.old" }).includes("data-auto-delete"));
+  assert.equal(el.autoDeleteButton({ rule_id: "entity.stale", object_id: "sensor.x" }), "");
+});

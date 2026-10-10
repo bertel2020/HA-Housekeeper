@@ -1027,3 +1027,76 @@ def test_refactoring_hints_name_device_triggers_long_delays_and_dead_branches() 
     assert found["hint_dead_branch"]["entities"] == ["x.gone"]
     assert "hint_dead_branch" not in {p["fix"] for p in refactor.propose(item)}
     assert not set(found) & set(refactor.FIXES) - {"set_mode"}, "hints have no fix behind them"
+
+
+NEVER = {
+    "rule_id": "automation.never_triggered",
+    "object_id": "automation.heating",
+    "classification": "unused",
+    "confidence": 0.6,
+    "first_detected_at": None,
+    "evidence": [],
+}
+
+
+async def test_an_unused_automation_is_removed_from_its_file_and_the_undo_puts_the_file_back(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper import automation_delete
+
+    make_entities(hass)
+    path = write_config(hass, "automations.yaml", AUTOMATIONS)
+    reloads = reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    hygiene = "custom_components.ha_housekeeper.inventory.automation_hygiene_findings"
+    with (
+        automation_scanner_state(hass, scanner),
+        patch(hygiene, lambda *args: [dict(NEVER)]),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        snapshot = await scanner.async_scan()
+        found = await automation_delete.preview(hass, snapshot, "automation.heating")
+        assert found["error"] is None and "alias: Heating" in found["text"]
+        request = [{"kind": "delete_automation", "object_id": "automation.heating"}]
+        plan = build_plan(
+            snapshot,
+            request,
+            datetime.now(UTC),
+            delete_data={"automation.heating": found},
+        )
+        action = plan["actions"][0]
+        assert action["verdict"] == "review" and action["executable"], action["reasons"]
+        assert (
+            action["reasons"] == ["deletes_config"]
+            and plan["simulation"]["automations_deleted"] == 1
+        )
+        scanner.journal.add(plan)
+
+        before = Path(path).read_text(encoding="utf-8")
+        await run(scanner, plan, ["automation.heating"])
+        text = Path(path).read_text(encoding="utf-8")
+        assert "auto-1" not in text and "auto-2" in text and reloads == ["automation"]
+        assert plan["actions"][0]["result"]["state"] == "done"
+        assert "automation_gone" in [c["check"] for c in plan["verification"]["checks"]]
+
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"][0]["outcome"] == "undone"
+        assert Path(path).read_text(encoding="utf-8") == before
+
+        # an automation without such a finding, or one that is not in the file, is never offered
+        not_listed = build_plan(
+            {**snapshot, "findings": []},
+            request,
+            datetime.now(UTC),
+            delete_data={"automation.heating": found},
+        )
+        assert "not_a_candidate" in not_listed["actions"][0]["reasons"]
+        missing = build_plan(
+            snapshot,
+            request,
+            datetime.now(UTC),
+            delete_data={"automation.heating": {"error": "not_in_yaml", "fingerprint": None}},
+        )
+        assert missing["actions"][0]["verdict"] == "blocked"
+        assert "not_in_yaml" in missing["actions"][0]["reasons"]

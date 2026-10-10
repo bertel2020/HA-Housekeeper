@@ -278,3 +278,32 @@ async def test_a_run_cut_off_by_a_restart_loads_as_partial_or_aborted(hass, hass
     assert ran["actions"][0]["result"]["state"] == "done"
     assert ran["actions"][1]["result"]["reason"] == "interrupted"
     assert ran["run"]["finished_at"] and ran["events"][-1]["type"] == "interrupted"
+
+
+def test_plans_that_ran_go_after_a_year_or_beyond_the_count_unless_they_hold_a_quarantine() -> None:
+    from custom_components.ha_housekeeper.cleanup import JOURNAL_MAX_PLANS
+
+    def ran(plan_id: str, ended: str, kind: str = "remove_entity"):
+        done = {"state": "done", "at": ended}
+        return {
+            "plan_id": plan_id,
+            "executed": True,
+            "status": "verified",
+            "run": {"started_at": ended, "finished_at": ended},
+            "actions": [{"kind": kind, "object_id": "sensor.a", "result": done}],
+        }
+
+    old, recent = "2020-01-01T00:00:00+00:00", datetime.now(UTC).isoformat()
+    journal = _journal()
+    journal._plans = [ran("old", old), ran("quarantine", old, "disable_entity")]
+    journal.add(ran("new", recent))
+    assert [p["plan_id"] for p in journal.plans] == ["new", "quarantine"]
+
+    journal._plans = [ran(str(n), recent) for n in range(JOURNAL_MAX_PLANS)]  # newest first
+    journal.add(ran("one more", recent))
+    ids = [p["plan_id"] for p in journal.plans]
+    assert (
+        len(ids) == JOURNAL_MAX_PLANS
+        and ids[0] == "one more"
+        and str(JOURNAL_MAX_PLANS - 1) not in ids
+    )

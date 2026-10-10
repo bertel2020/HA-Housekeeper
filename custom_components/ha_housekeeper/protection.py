@@ -18,7 +18,7 @@ from .const import PROTECTION_STORAGE_KEY, STORAGE_VERSION
 MODES = ("read_only", "quarantine", "confirmed", "full")
 DEFAULT_MODE = "full"
 QUARANTINE_KINDS = frozenset({"disable_entity", "disable_device"})
-IRREVERSIBLE_KINDS = frozenset({"purge_statistics", "trim_history"})
+IRREVERSIBLE_KINDS = frozenset({"purge_statistics", "trim_history", "delete_backup"})
 # Rewrites rows of the recorder database: only in the mode that allows anything.
 RECORDER_WRITE_KINDS = frozenset({"repair_counter", "repair_range"})
 

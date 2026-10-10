@@ -6,9 +6,9 @@ const ICONS = {
 
 const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
-const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter", "purge_statistics", "trim_history", "refactor_automation", "repair_counter", "repair_range"];
+const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
 // Deleting recorder rows: cannot be undone, only the backup brings them back.
-const PURGE_KINDS = ["purge_statistics", "trim_history"];
+const PURGE_KINDS = ["purge_statistics", "trim_history", "delete_backup"];
 const REPAIR_KINDS = ["repair_counter", "repair_range"];
 const IMPACT_RANK = { none: 0, low: 1, medium: 2, high: 3 };
 const BACKUP_FAILURES = ["backup_failed", "backup_unavailable", "no_backup_agent"];
