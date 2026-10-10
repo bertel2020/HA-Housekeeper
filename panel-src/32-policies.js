@@ -63,10 +63,11 @@ class PoliciesMixin {
     const due = item.resurfaced ? `<span class="pill warn">${this.t("dueLabel")}</span>` : "";
     const button = item.by === "label" ? ""
       : item.ignored ? `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="0">${this.t("polShow")}</button>`
-      : `${this.renameButton(item)}<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
+      : `<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
     const decision = item.ignored && item.by === "user" ? `<small>${this.esc(this.decisionLabel(item))}</small>` : "";
     const form = this.decide?.key === item.key ? this.decideForm(item) : "";
-    return `<div class="row politem">${this.polSelBox(item)}<span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}${decision}</span>${due}${pill}${button}</div>${form}`;
+    const box = this.polSelBox(item);
+    return `${box ? `<div class="rowwrap">${box}` : ""}<div class="row politem">${""}<span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text">${item.object_type === "recorder" ? `<strong>${this.esc(item.name)}</strong>` : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"><strong>${this.esc(item.name)}</strong></button>`}<small>${this.esc(item.object_id)}${item.rule ? ` · ${this.esc(this.t(`polRule_${item.rule}`))}` : ""}</small>${this.polItemNote(item)}${decision}</span>${due}${pill}${button}</div>${box ? "</div>" : ""}${form}`;
   }
 
   // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
@@ -91,6 +92,7 @@ class PoliciesMixin {
       .filter(item => this.policyShowHidden || !item.ignored);
     const found = this.searchList("policies", items, item => [item.name, item.object_id, ...(item.also || [])].join(" "));
     const pg = this.paginate("polviol", found.rows);
+    this._polPage = pg.rows.filter(i => !i.ignored && ["entity", "device"].includes(i.object_type)).map(i => i.key);
     const rows = pg.rows.map(item => this.polItemRow(item)).join("");
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
     const note = hidden && !this.policyShowHidden ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(hidden) })}</p>` : "";

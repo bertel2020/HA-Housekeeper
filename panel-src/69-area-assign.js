@@ -24,7 +24,7 @@ class AreaAssignMixin {
   // The bar over the policy list: how many are ticked and what can be done with them.
   polSelBar() {
     const n = this.polSel?.size || 0;
-    return `<div class="toolbar${n ? "" : " nosel"}"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-pol-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns"><button class="btn" data-pol-bulk="area" ${n ? "" : "disabled"}>${this.t("fselArea")}</button><button class="btn" data-pol-bulk="rename" ${n ? "" : "disabled"}>${this.t("fselRename")}</button></div></div>${this.bulk && ["area", "rename"].includes(this.bulk.kind) ? this.bulkForm() : ""}`;
+    return `<div class="toolbar${n ? "" : " nosel"}"><span class="date">${this.t("selectedCount", { count: n })}</span><button class="btn quiet" data-pol-sel-page>${this.t("selectPage")}</button><button class="btn quiet" data-pol-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns"><button class="btn" data-pol-bulk="area" ${n ? "" : "disabled"}>${this.t("fselArea")}</button><button class="btn" data-pol-bulk="rename" ${n ? "" : "disabled"}>${this.t("fselRename")}</button></div></div>${this.bulk && ["area", "rename"].includes(this.bulk.kind) ? this.bulkForm() : ""}`;
   }
 
   polSelBox(item) {
@@ -34,6 +34,7 @@ class AreaAssignMixin {
 
   bindPolSel(root) {
     root.querySelectorAll("[data-pol-sel]").forEach(el => el.onchange = () => { (this.polSel ||= new Set())[el.checked ? "add" : "delete"](el.dataset.polSel); this.render(); });
+    root.querySelector("[data-pol-sel-page]")?.addEventListener("click", () => { this.polSel = new Set([...(this.polSel || []), ...(this._polPage || [])]); this.render(); });
     root.querySelector("[data-pol-sel-clear]")?.addEventListener("click", () => { this.polSel = new Set(); this.bulk = null; this.render(); });
     root.querySelectorAll("[data-pol-bulk]").forEach(el => el.addEventListener("click", () => { this.bulk = { kind: el.dataset.polBulk, mode: "strip", find: "", with: "", area: "", error: "" }; this.render(); }));
   }
