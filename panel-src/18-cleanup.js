@@ -548,6 +548,18 @@ class CleanupMixin {
     if (view) { this.noteJump?.(view); this.view = view; this.pages = {}; }
   }
 
+  // For the paths without a busy flag of their own: one request at a time, and their buttons are off
+  // meanwhile. Returns null when a request is still running; an error goes to the caller.
+  async newPlan(actions, view = "cleanup") {
+    if (this.planBusy) return null;
+    this.planBusy = true; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.openNewPlan(plan, view);
+      return plan;
+    } finally { this.planBusy = false; }
+  }
+
   // The dry-run note, an error from the last request and the plan that is open, on top of every view that can finish one.
   planHeader() {
     return `<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>${this.plan ? this.planCard(this.plan) : ""}`;

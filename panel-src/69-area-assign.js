@@ -45,7 +45,7 @@ class AreaAssignMixin {
     if (!areas.length) return `<div class="polform bulkform"><small>${this.t("areaNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
     return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_area")}</strong>
       <select data-bulk-area aria-label="${this.esc(this.t("areaChoose"))}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${b.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
-      <button type="submit" class="btn primary">${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      <button type="submit" class="btn primary" ${this.planBusy ? "disabled" : ""}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
       <small class="factnote">${this.t("areaNote")}</small>
       ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
   }
@@ -55,8 +55,7 @@ class AreaAssignMixin {
     const ids = [...new Set(this.bulkTargets().filter(t => ["entity", "device"].includes(t.type)).map(t => t.id))];
     if (!ids.length) { b.error = "areaNoItems"; this.render(); return; }
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "set_area", object_id, ...(b.area ? { target: b.area } : {}) })) });
-      this.openNewPlan(plan);
+      if (!await this.newPlan(ids.map(object_id => ({ kind: "set_area", object_id, ...(b.area ? { target: b.area } : {}) })))) return;
       this.bulk = null; this.polSel = new Set();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();

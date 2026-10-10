@@ -78,7 +78,7 @@ class RefactorMixin {
         const mode = r.mode || p.mode;
         input = `<div class="setrow"><label>${this.t("refactorMode")} <select data-refactor-mode>${["single", "restart", "queued", "parallel"].map(m => `<option value="${m}" ${m === mode ? "selected" : ""}>${this.esc(this.t(`mode_${m}`))}</option>`).join("")}</select></label>${mode === "queued" || mode === "parallel" ? `<label>${this.t("refactorMax")} <input type="number" min="2" max="100" data-refactor-max value="${this.esc(String(r.max || p.max || 10))}"></label>` : ""}</div>${overlap ? `<small class="error">${this.t("refactorOverlap")}</small>` : ""}`;
       }
-      return `<div class="pad polform"><strong>${this.t(`refactorFix_${p.fix}`)}</strong><small class="u-block">${this.esc(hint)}</small>${input}<button class="btn" data-refactor-plan="${this.esc(p.fix)}">${this.t("refactorPlan")}</button></div>`;
+      return `<div class="pad polform"><strong>${this.t(`refactorFix_${p.fix}`)}</strong><small class="u-block">${this.esc(hint)}</small>${input}<button class="btn" data-refactor-plan="${this.esc(p.fix)}" ${this.planBusy ? "disabled" : ""}>${this.t("refactorPlan")}</button></div>`;
     }).join("");
     return `<div class="pad"><small>${this.t("refactorHint")}</small></div>${rows || `<div class="pad"><small>${this.t("refactorNothing")}</small></div>`}${note}${off}`;
   }
@@ -104,8 +104,8 @@ class RefactorMixin {
       : {};
     r.message = "";
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "refactor_automation", object_id: entityId, fix, values }] });
-      this.repairTask = null; this.openNewPlan(plan, "repair");
+      if (!await this.newPlan([{ kind: "refactor_automation", object_id: entityId, fix, values }], "repair")) return;
+      this.repairTask = null;
     } catch (err) { r.message = this.t("refactorFailed", { reason: err?.message || String(err) }); }
     this.render();
   }

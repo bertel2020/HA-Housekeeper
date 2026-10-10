@@ -83,7 +83,7 @@ class FindingStatusMixin {
       if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
       return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_label")}</strong>
         <select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
-        <button type="submit" class="btn primary">${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+        <button type="submit" class="btn primary" ${this.planBusy ? "disabled" : ""}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
         ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
     }
     const days = [7, 30, 90, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("decideDays", { n })}</option>`).join("");
@@ -102,8 +102,7 @@ class FindingStatusMixin {
     if (!ids.length) { b.error = "labelNoEntities"; this.render(); return; }
     const label = b.label || (this.data.objects || []).find(o => o.object_type === "label")?.object_id;
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "add_label", object_id, target: label })) });
-      this.openNewPlan(plan);
+      if (!await this.newPlan(ids.map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
       this.bulk = null; this.findSel.clear();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();

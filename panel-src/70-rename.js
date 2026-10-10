@@ -40,7 +40,7 @@ class RenameMixin {
     return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_rename")}</strong>
       <select data-bulk-rename-mode aria-label="${this.esc(this.t("renameMode"))}"><option value="strip" ${b.mode !== "replace" ? "selected" : ""}>${this.t("renameStrip")}</option><option value="replace" ${b.mode === "replace" ? "selected" : ""}>${this.t("renameReplace")}</option></select>
       ${b.mode === "replace" ? `<input data-bulk-rename-find value="${this.esc(b.find || "")}" placeholder="${this.esc(this.t("renameFind"))}" aria-label="${this.esc(this.t("renameFind"))}"><input data-bulk-rename-with value="${this.esc(b.with || "")}" placeholder="${this.esc(this.t("renameWith"))}" aria-label="${this.esc(this.t("renameWith"))}">` : ""}
-      <button type="submit" class="btn primary" ${items.length ? "" : "disabled"}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      <button type="submit" class="btn primary" ${items.length && !this.planBusy ? "" : "disabled"}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
       ${preview}<small class="factnote">${this.t("renameNote")}</small>
       ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
   }
@@ -49,8 +49,7 @@ class RenameMixin {
     const b = this.bulk, items = this.renameItems();
     if (!items.length) { b.error = "renameNothing"; this.render(); return; }
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: items.map(([object_id, target]) => ({ kind: "rename_entity", object_id, target })) });
-      this.openNewPlan(plan);
+      if (!await this.newPlan(items.map(([object_id, target]) => ({ kind: "rename_entity", object_id, target })))) return;
       this.bulk = null; this.polSel = new Set();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();

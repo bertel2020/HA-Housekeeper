@@ -3031,7 +3031,7 @@ test("selected findings get a label through a plan that opens under Cleanup", as
   assert.equal(JSON.stringify(sent.actions.map(a => [a.kind, a.target])), JSON.stringify([["add_label", "review"]]));
   assert.equal(el.view, "cleanup");
   await el.planLabel(sent.actions[0].object_id, "review"); // the same from the detail page
-  assert.deepEqual(scrolls, [true, true], "both open the page at the new plan (issue #8)");
+  assert.equal(scrolls.filter(Boolean).length, 2, "both open the page at the new plan (issue #8)");
 });
 
 test("a failed action shows a message and keeps the page, a failed load still replaces it", async () => {
@@ -3043,6 +3043,19 @@ test("a failed action shows a message and keeps the page, a failed load still re
   assert.ok(!el.error);
   assert.deepEqual(toasts, [["That did not work: boom", true]]);
   assert.ok(!el.content().includes("Could not load inventory"));
+});
+
+test("a second click while a plan is being made sends no second request", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  let finish;
+  el._hass = { language: "en", callWS: msg => { if (!msg.type.endsWith("/plan_create")) return Promise.resolve({}); calls.push(msg); return new Promise(resolve => { finish = () => resolve({ plan_id: "p1", status: "dry_run", actions: [] }); }); } };
+  const first = el.planLabel("sensor.a", "review");
+  assert.ok(el.planBusy);
+  await el.planLabel("sensor.a", "review");
+  finish(); await first;
+  assert.equal(calls.length, 1);
+  assert.ok(!el.planBusy && el.plan.plan_id === "p1");
 });
 
 test("every new plan opens through openNewPlan, so none is left out of view (issue #8)", () => {
@@ -3407,7 +3420,7 @@ function policyPanel(calls) {
       { object_type: "entity", object_id: "light.hall_2", name: "Hall", key: "kb", ignored: false },
       { object_type: "entity", object_id: "light.room_3", name: "Room", key: "kc", ignored: false }] },
   ] };
-  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan_id: "p2", status: "dry_run", actions: [], summary: { total: 1, ok: 1, review: 0, blocked: 0 } }; } };
+  el._hass = { language: "en", callWS: async msg => { if (msg.type.endsWith("/plan_create")) calls.push(msg); return { plan_id: "p2", status: "dry_run", actions: [], summary: { total: 1, ok: 1, review: 0, blocked: 0 } }; } };
   return el;
 }
 

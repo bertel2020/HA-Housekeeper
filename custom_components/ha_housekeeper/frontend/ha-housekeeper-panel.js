@@ -2980,6 +2980,18 @@ class CleanupMixin {
     if (view) { this.noteJump?.(view); this.view = view; this.pages = {}; }
   }
 
+  // For the paths without a busy flag of their own: one request at a time, and their buttons are off
+  // meanwhile. Returns null when a request is still running; an error goes to the caller.
+  async newPlan(actions, view = "cleanup") {
+    if (this.planBusy) return null;
+    this.planBusy = true; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.openNewPlan(plan, view);
+      return plan;
+    } finally { this.planBusy = false; }
+  }
+
   // The dry-run note, an error from the last request and the plan that is open, on top of every view that can finish one.
   planHeader() {
     return `<div class="panel"><p class="factnote">${this.t("cleanupDryRun")}</p>${this.cleanupError ? `<div class="error">${this.t("planError")}: ${this.esc(this.cleanupError)}</div>` : ""}</div>${this.plan ? this.planCard(this.plan) : ""}`;
@@ -6597,7 +6609,7 @@ class RefactorMixin {
         const mode = r.mode || p.mode;
         input = `<div class="setrow"><label>${this.t("refactorMode")} <select data-refactor-mode>${["single", "restart", "queued", "parallel"].map(m => `<option value="${m}" ${m === mode ? "selected" : ""}>${this.esc(this.t(`mode_${m}`))}</option>`).join("")}</select></label>${mode === "queued" || mode === "parallel" ? `<label>${this.t("refactorMax")} <input type="number" min="2" max="100" data-refactor-max value="${this.esc(String(r.max || p.max || 10))}"></label>` : ""}</div>${overlap ? `<small class="error">${this.t("refactorOverlap")}</small>` : ""}`;
       }
-      return `<div class="pad polform"><strong>${this.t(`refactorFix_${p.fix}`)}</strong><small class="u-block">${this.esc(hint)}</small>${input}<button class="btn" data-refactor-plan="${this.esc(p.fix)}">${this.t("refactorPlan")}</button></div>`;
+      return `<div class="pad polform"><strong>${this.t(`refactorFix_${p.fix}`)}</strong><small class="u-block">${this.esc(hint)}</small>${input}<button class="btn" data-refactor-plan="${this.esc(p.fix)}" ${this.planBusy ? "disabled" : ""}>${this.t("refactorPlan")}</button></div>`;
     }).join("");
     return `<div class="pad"><small>${this.t("refactorHint")}</small></div>${rows || `<div class="pad"><small>${this.t("refactorNothing")}</small></div>`}${note}${off}`;
   }
@@ -6623,8 +6635,8 @@ class RefactorMixin {
       : {};
     r.message = "";
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "refactor_automation", object_id: entityId, fix, values }] });
-      this.repairTask = null; this.openNewPlan(plan, "repair");
+      if (!await this.newPlan([{ kind: "refactor_automation", object_id: entityId, fix, values }], "repair")) return;
+      this.repairTask = null;
     } catch (err) { r.message = this.t("refactorFailed", { reason: err?.message || String(err) }); }
     this.render();
   }
@@ -7251,7 +7263,7 @@ class FindingStatusMixin {
       if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
       return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_label")}</strong>
         <select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
-        <button type="submit" class="btn primary">${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+        <button type="submit" class="btn primary" ${this.planBusy ? "disabled" : ""}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
         ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
     }
     const days = [7, 30, 90, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("decideDays", { n })}</option>`).join("");
@@ -7270,8 +7282,7 @@ class FindingStatusMixin {
     if (!ids.length) { b.error = "labelNoEntities"; this.render(); return; }
     const label = b.label || (this.data.objects || []).find(o => o.object_type === "label")?.object_id;
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "add_label", object_id, target: label })) });
-      this.openNewPlan(plan);
+      if (!await this.newPlan(ids.map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
       this.bulk = null; this.findSel.clear();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();
@@ -7376,7 +7387,7 @@ class DetailActionsMixin {
     const chosen = this.actLabel && labels.some(l => l.object_id === this.actLabel) ? this.actLabel : labels[0].object_id;
     return `<div class="labelbox"><span class="tile"><ha-icon icon="mdi:label-outline"></ha-icon></span><div class="labeltext"><strong>${this.t("actLabelTitle")}</strong><small>${this.t("actLabelHint")}</small></div>
       <select data-act-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${chosen === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
-      <button class="btn primary" data-act-label-plan="${this.esc(item.object_id)}">${this.t("actLabelPreview")}</button></div>`;
+      <button class="btn primary" data-act-label-plan="${this.esc(item.object_id)}" ${this.planBusy ? "disabled" : ""}>${this.t("actLabelPreview")}</button></div>`;
   }
 
   actionsCard(item, key) {
@@ -7399,8 +7410,8 @@ class DetailActionsMixin {
 
   async planLabel(entityId, label) {
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "add_label", object_id: entityId, target: label }] });
-      this.openNewPlan(plan); this.selected = null;
+      if (!await this.newPlan([{ kind: "add_label", object_id: entityId, target: label }])) return;
+      this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
   }
@@ -8620,8 +8631,7 @@ class BackupCleanupMixin {
 
   async automationDeletePlan(entityId) {
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "delete_automation", object_id: entityId }] });
-      this.openNewPlan(plan);
+      if (!await this.newPlan([{ kind: "delete_automation", object_id: entityId }])) return;
     } catch (err) { this.toast?.(this.t("autoDeleteFailed", { detail: err?.message || String(err) })); }
     this.render();
   }
@@ -8634,7 +8644,7 @@ class BackupCleanupMixin {
 
   autoDeleteButton(finding) {
     if (!["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(finding.rule_id)) return "";
-    return `<button class="btn quiet" data-auto-delete="${this.esc(finding.object_id)}">${this.t("autoDelete")}</button>`;
+    return `<button class="btn quiet" data-auto-delete="${this.esc(finding.object_id)}" ${this.planBusy ? "disabled" : ""}>${this.t("autoDelete")}</button>`;
   }
 
   bindBackupCleanup(root) {
@@ -8694,7 +8704,7 @@ class AreaAssignMixin {
     if (!areas.length) return `<div class="polform bulkform"><small>${this.t("areaNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
     return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_area")}</strong>
       <select data-bulk-area aria-label="${this.esc(this.t("areaChoose"))}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${b.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
-      <button type="submit" class="btn primary">${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      <button type="submit" class="btn primary" ${this.planBusy ? "disabled" : ""}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
       <small class="factnote">${this.t("areaNote")}</small>
       ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
   }
@@ -8704,8 +8714,7 @@ class AreaAssignMixin {
     const ids = [...new Set(this.bulkTargets().filter(t => ["entity", "device"].includes(t.type)).map(t => t.id))];
     if (!ids.length) { b.error = "areaNoItems"; this.render(); return; }
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "set_area", object_id, ...(b.area ? { target: b.area } : {}) })) });
-      this.openNewPlan(plan);
+      if (!await this.newPlan(ids.map(object_id => ({ kind: "set_area", object_id, ...(b.area ? { target: b.area } : {}) })))) return;
       this.bulk = null; this.polSel = new Set();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();
@@ -8754,7 +8763,7 @@ class RenameMixin {
     return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_rename")}</strong>
       <select data-bulk-rename-mode aria-label="${this.esc(this.t("renameMode"))}"><option value="strip" ${b.mode !== "replace" ? "selected" : ""}>${this.t("renameStrip")}</option><option value="replace" ${b.mode === "replace" ? "selected" : ""}>${this.t("renameReplace")}</option></select>
       ${b.mode === "replace" ? `<input data-bulk-rename-find value="${this.esc(b.find || "")}" placeholder="${this.esc(this.t("renameFind"))}" aria-label="${this.esc(this.t("renameFind"))}"><input data-bulk-rename-with value="${this.esc(b.with || "")}" placeholder="${this.esc(this.t("renameWith"))}" aria-label="${this.esc(this.t("renameWith"))}">` : ""}
-      <button type="submit" class="btn primary" ${items.length ? "" : "disabled"}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+      <button type="submit" class="btn primary" ${items.length && !this.planBusy ? "" : "disabled"}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
       ${preview}<small class="factnote">${this.t("renameNote")}</small>
       ${b.error ? `<small class="error" role="alert">${this.esc(this.t(b.error))}</small>` : ""}</form>`;
   }
@@ -8763,8 +8772,7 @@ class RenameMixin {
     const b = this.bulk, items = this.renameItems();
     if (!items.length) { b.error = "renameNothing"; this.render(); return; }
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: items.map(([object_id, target]) => ({ kind: "rename_entity", object_id, target })) });
-      this.openNewPlan(plan);
+      if (!await this.newPlan(items.map(([object_id, target]) => ({ kind: "rename_entity", object_id, target })))) return;
       this.bulk = null; this.polSel = new Set();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();
@@ -8801,12 +8809,12 @@ class DetailEditMixin {
     const now = this.areaName(item);
     const rename = item.object_type === "entity" ? `<form class="polform" data-de-rename><label for="de-id"><strong>${this.t("deNewId")}</strong></label>
         <span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="de-id" data-de-id value="${this.esc(e.value)}" autocomplete="off" spellcheck="false">
-        <button type="submit" class="btn primary" data-de-rename-btn ${this.detailIdOk(item, e.value) ? "" : "disabled"}>${this.t("deRename")}</button>
+        <button type="submit" class="btn primary" data-de-rename-btn ${this.detailIdOk(item, e.value) && !this.planBusy ? "" : "disabled"}>${this.t("deRename")}</button>
         <small class="factnote">${this.t("deRenameNote")}</small></form>` : "";
     const suggest = !item.area_id;
     const assign = areas.length ? `<form class="polform" data-de-area><label for="de-area"><strong>${this.t("deArea")}</strong></label>
         <select id="de-area" data-de-area-select>${suggest ? `<option value="">${this.t("areaSuggest")}</option>` : ""}${areas.map(a => `<option value="${this.esc(a.object_id)}" ${e.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
-        <button type="submit" class="btn primary" data-de-area-btn ${suggest || e.area !== item.area_id ? "" : "disabled"}>${this.t("deAssign")}</button>
+        <button type="submit" class="btn primary" data-de-area-btn ${(suggest || e.area !== item.area_id) && !this.planBusy ? "" : "disabled"}>${this.t("deAssign")}</button>
         <small class="factnote">${this.t("deAreaNow", { area: now || this.t("deNoArea") })}${suggest ? ` · ${this.t("areaNote")}` : ""}</small></form>` : `<small class="factnote">${this.t("areaNone")}</small>`;
     return `<section class="panel"><div class="panelhead"><h2>${this.t("deTitle")}</h2></div><div class="pad">${rename}${assign}${e.error ? `<small class="error" role="alert">${this.esc(this.t(e.error))}</small>` : ""}</div></section>`;
   }
@@ -8818,8 +8826,7 @@ class DetailEditMixin {
 
   async makeDetailPlan(action) {
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [action] });
-      this.openNewPlan(plan);
+      if (!await this.newPlan([action])) return;
     } catch (err) { this.failed(err); }
     this.render();
   }

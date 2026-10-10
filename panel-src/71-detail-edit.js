@@ -20,12 +20,12 @@ class DetailEditMixin {
     const now = this.areaName(item);
     const rename = item.object_type === "entity" ? `<form class="polform" data-de-rename><label for="de-id"><strong>${this.t("deNewId")}</strong></label>
         <span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="de-id" data-de-id value="${this.esc(e.value)}" autocomplete="off" spellcheck="false">
-        <button type="submit" class="btn primary" data-de-rename-btn ${this.detailIdOk(item, e.value) ? "" : "disabled"}>${this.t("deRename")}</button>
+        <button type="submit" class="btn primary" data-de-rename-btn ${this.detailIdOk(item, e.value) && !this.planBusy ? "" : "disabled"}>${this.t("deRename")}</button>
         <small class="factnote">${this.t("deRenameNote")}</small></form>` : "";
     const suggest = !item.area_id;
     const assign = areas.length ? `<form class="polform" data-de-area><label for="de-area"><strong>${this.t("deArea")}</strong></label>
         <select id="de-area" data-de-area-select>${suggest ? `<option value="">${this.t("areaSuggest")}</option>` : ""}${areas.map(a => `<option value="${this.esc(a.object_id)}" ${e.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
-        <button type="submit" class="btn primary" data-de-area-btn ${suggest || e.area !== item.area_id ? "" : "disabled"}>${this.t("deAssign")}</button>
+        <button type="submit" class="btn primary" data-de-area-btn ${(suggest || e.area !== item.area_id) && !this.planBusy ? "" : "disabled"}>${this.t("deAssign")}</button>
         <small class="factnote">${this.t("deAreaNow", { area: now || this.t("deNoArea") })}${suggest ? ` · ${this.t("areaNote")}` : ""}</small></form>` : `<small class="factnote">${this.t("areaNone")}</small>`;
     return `<section class="panel"><div class="panelhead"><h2>${this.t("deTitle")}</h2></div><div class="pad">${rename}${assign}${e.error ? `<small class="error" role="alert">${this.esc(this.t(e.error))}</small>` : ""}</div></section>`;
   }
@@ -37,8 +37,7 @@ class DetailEditMixin {
 
   async makeDetailPlan(action) {
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [action] });
-      this.openNewPlan(plan);
+      if (!await this.newPlan([action])) return;
     } catch (err) { this.failed(err); }
     this.render();
   }

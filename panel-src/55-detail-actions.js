@@ -32,7 +32,7 @@ class DetailActionsMixin {
     const chosen = this.actLabel && labels.some(l => l.object_id === this.actLabel) ? this.actLabel : labels[0].object_id;
     return `<div class="labelbox"><span class="tile"><ha-icon icon="mdi:label-outline"></ha-icon></span><div class="labeltext"><strong>${this.t("actLabelTitle")}</strong><small>${this.t("actLabelHint")}</small></div>
       <select data-act-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${chosen === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
-      <button class="btn primary" data-act-label-plan="${this.esc(item.object_id)}">${this.t("actLabelPreview")}</button></div>`;
+      <button class="btn primary" data-act-label-plan="${this.esc(item.object_id)}" ${this.planBusy ? "disabled" : ""}>${this.t("actLabelPreview")}</button></div>`;
   }
 
   actionsCard(item, key) {
@@ -55,8 +55,8 @@ class DetailActionsMixin {
 
   async planLabel(entityId, label) {
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "add_label", object_id: entityId, target: label }] });
-      this.openNewPlan(plan); this.selected = null;
+      if (!await this.newPlan([{ kind: "add_label", object_id: entityId, target: label }])) return;
+      this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
   }

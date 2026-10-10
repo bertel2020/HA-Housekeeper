@@ -97,8 +97,7 @@ class BackupCleanupMixin {
 
   async automationDeletePlan(entityId) {
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "delete_automation", object_id: entityId }] });
-      this.openNewPlan(plan);
+      if (!await this.newPlan([{ kind: "delete_automation", object_id: entityId }])) return;
     } catch (err) { this.toast?.(this.t("autoDeleteFailed", { detail: err?.message || String(err) })); }
     this.render();
   }
@@ -111,7 +110,7 @@ class BackupCleanupMixin {
 
   autoDeleteButton(finding) {
     if (!["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(finding.rule_id)) return "";
-    return `<button class="btn quiet" data-auto-delete="${this.esc(finding.object_id)}">${this.t("autoDelete")}</button>`;
+    return `<button class="btn quiet" data-auto-delete="${this.esc(finding.object_id)}" ${this.planBusy ? "disabled" : ""}>${this.t("autoDelete")}</button>`;
   }
 
   bindBackupCleanup(root) {
