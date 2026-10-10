@@ -103,13 +103,6 @@ class BackupCleanupMixin {
     this.render();
   }
 
-  // The plan is made here and run under Cleanup, like every other plan.
-  openNewPlan(plan) {
-    this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-    this.journal = [plan, ...(this.journal || [])];
-    this._scrollPlan = true; this.view = "cleanup"; this.pages = {};
-  }
-
   // What leaves the file: the whole block of the automation, line by line.
   deleteDiff(a) {
     if (!a.yaml) return "";

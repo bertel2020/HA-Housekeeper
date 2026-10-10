@@ -75,8 +75,7 @@ class ExchangeMixin {
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
+      this.openNewPlan(plan, null);
       this.exchangeState().planned = this.exchangeState().oldDev;
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();

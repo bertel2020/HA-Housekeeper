@@ -2595,9 +2595,7 @@ class CleanupMixin {
         : this.cleanupKind === "repair_counter" ? [this.counterRangeReq ? { kind: "repair_range", object_id: this.counterSel, mode: this.counterRangeReq.mode, range: this.counterRangeReq.range } : { kind: "repair_counter", object_id: this.counterSel, mode: this.counterMode || "hold" }]
         : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.cleanupRecorder && this.cleanupRecorder !== "keep" ? { recorder: this.cleanupRecorder } : {}) }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this._scrollPlan = true; this.toast(this.t("previewReady"));
+      this.openNewPlan(plan, null); this.toast(this.t("previewReady"));
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -2615,9 +2613,7 @@ class CleanupMixin {
         return r;
       });
       const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions, ...(full ? { full_backup: true } : {}) });
-      this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [fresh, ...(this.journal || [])];
-      this._scrollPlan = true;
+      this.openNewPlan(fresh, null);
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -2968,6 +2964,15 @@ class CleanupMixin {
 
   ensureJournal() {
     if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
+  }
+
+  // Every new plan opens the same way: it becomes the open plan, goes on top of the journal and the
+  // page scrolls to its card. `view` switches to the page that shows it; null stays on the current one.
+  openNewPlan(plan, view = "cleanup") {
+    this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+    this.journal = [plan, ...(this.journal || [])];
+    this._scrollPlan = true;
+    if (view) { this.noteJump?.(view); this.view = view; this.pages = {}; }
   }
 
   // The dry-run note, an error from the last request and the plan that is open, on top of every view that can finish one.
@@ -3538,10 +3543,8 @@ class UnusedMixin {
       const chosen = [...this.purgeSel], now = chosen.slice(0, MAX_PLAN_ACTIONS);
       const actions = now.map(object_id => ({ kind: "purge_statistics", object_id, states: this.purgeStates }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); this.purgeOpen = false; this._scrollPlan = true; this.purgeWord = "";
-      this.view = "cleanup"; this.pages = {};
+      this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); this.purgeOpen = false; this.purgeWord = "";
+      this.openNewPlan(plan);
     } catch (err) { this.purgeResult = { removed: [], skipped: [], error: "failed", detail: err?.message || String(err) }; }
     this.purgeBusy = false;
     this.render();
@@ -6035,8 +6038,7 @@ class ExchangeMixin {
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
+      this.openNewPlan(plan, null);
       this.exchangeState().planned = this.exchangeState().oldDev;
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
@@ -6617,9 +6619,7 @@ class RefactorMixin {
     r.message = "";
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "refactor_automation", object_id: entityId, fix, values }] });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this.noteJump?.("repair"); this.view = "repair"; this.repairTask = null; this.pages = {}; this._scrollPlan = true;
+      this.repairTask = null; this.openNewPlan(plan, "repair");
     } catch (err) { r.message = this.t("refactorFailed", { reason: err?.message || String(err) }); }
     this.render();
   }
@@ -7266,7 +7266,7 @@ class FindingStatusMixin {
     const label = b.label || (this.data.objects || []).find(o => o.object_type === "label")?.object_id;
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "add_label", object_id, target: label })) });
-      this.noteJump?.("cleanup"); this.openNewPlan(plan);
+      this.openNewPlan(plan);
       this.bulk = null; this.findSel.clear();
     } catch (err) { b.error = ""; this.error = err?.message || String(err); }
     this.render();
@@ -7395,7 +7395,7 @@ class DetailActionsMixin {
   async planLabel(entityId, label) {
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "add_label", object_id: entityId, target: label }] });
-      this.noteJump?.("cleanup"); this.openNewPlan(plan); this.selected = null;
+      this.openNewPlan(plan); this.selected = null;
     } catch (err) { this.error = err?.message || String(err); }
     this.render();
   }
@@ -7793,9 +7793,7 @@ class ExcludeMixin {
       const keep_days = this.trimDays || 14;
       const actions = [...this.excludeSel].slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this._scrollPlan = true; this.view = "cleanup"; this.pages = {};
+      this.openNewPlan(plan);
     } catch (err) { this.trimError = err?.message || String(err); }
     this.trimBusy = false;
     this.render();
@@ -8621,13 +8619,6 @@ class BackupCleanupMixin {
       this.openNewPlan(plan);
     } catch (err) { this.toast?.(this.t("autoDeleteFailed", { detail: err?.message || String(err) })); }
     this.render();
-  }
-
-  // The plan is made here and run under Cleanup, like every other plan.
-  openNewPlan(plan) {
-    this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-    this.journal = [plan, ...(this.journal || [])];
-    this._scrollPlan = true; this.view = "cleanup"; this.pages = {};
   }
 
   // What leaves the file: the whole block of the automation, line by line.

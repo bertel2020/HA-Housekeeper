@@ -3034,6 +3034,16 @@ test("selected findings get a label through a plan that opens under Cleanup", as
   assert.deepEqual(scrolls, [true, true], "both open the page at the new plan (issue #8)");
 });
 
+test("every new plan opens through openNewPlan, so none is left out of view (issue #8)", () => {
+  const dir = new URL("../panel-src/", import.meta.url);
+  for (const name of fs.readdirSync(dir).filter(n => n.endsWith(".js"))) {
+    const src = fs.readFileSync(new URL(name, dir), "utf8");
+    for (const m of src.matchAll(/type: "ha_housekeeper\/plan_create"/g)) {
+      assert.ok(src.slice(m.index, m.index + 400).split("\n").slice(0, 3).join("\n").includes("openNewPlan("), `${name}: plan_create without openNewPlan`);
+    }
+  }
+});
+
 test("the overview of an object offers its actions: decide a finding, replace a missing entity, disable, label", () => {
   const { el } = panel("en");
   el.lv = {}; el.render = () => {};

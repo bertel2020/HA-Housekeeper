@@ -180,10 +180,8 @@ class UnusedMixin {
       const chosen = [...this.purgeSel], now = chosen.slice(0, MAX_PLAN_ACTIONS);
       const actions = now.map(object_id => ({ kind: "purge_statistics", object_id, states: this.purgeStates }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); this.purgeOpen = false; this._scrollPlan = true; this.purgeWord = "";
-      this.view = "cleanup"; this.pages = {};
+      this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); this.purgeOpen = false; this.purgeWord = "";
+      this.openNewPlan(plan);
     } catch (err) { this.purgeResult = { removed: [], skipped: [], error: "failed", detail: err?.message || String(err) }; }
     this.purgeBusy = false;
     this.render();

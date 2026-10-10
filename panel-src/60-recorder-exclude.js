@@ -95,9 +95,7 @@ class ExcludeMixin {
       const keep_days = this.trimDays || 14;
       const actions = [...this.excludeSel].slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this._scrollPlan = true; this.view = "cleanup"; this.pages = {};
+      this.openNewPlan(plan);
     } catch (err) { this.trimError = err?.message || String(err); }
     this.trimBusy = false;
     this.render();

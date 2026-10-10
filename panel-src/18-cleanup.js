@@ -168,9 +168,7 @@ class CleanupMixin {
         : this.cleanupKind === "repair_counter" ? [this.counterRangeReq ? { kind: "repair_range", object_id: this.counterSel, mode: this.counterRangeReq.mode, range: this.counterRangeReq.range } : { kind: "repair_counter", object_id: this.counterSel, mode: this.counterMode || "hold" }]
         : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.cleanupRecorder && this.cleanupRecorder !== "keep" ? { recorder: this.cleanupRecorder } : {}) }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this._scrollPlan = true; this.toast(this.t("previewReady"));
+      this.openNewPlan(plan, null); this.toast(this.t("previewReady"));
     } catch (err) { this.cleanupError = err?.message || String(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -188,9 +186,7 @@ class CleanupMixin {
         return r;
       });
       const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions, ...(full ? { full_backup: true } : {}) });
-      this.plan = fresh; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [fresh, ...(this.journal || [])];
-      this._scrollPlan = true;
+      this.openNewPlan(fresh, null);
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
   }
@@ -541,6 +537,15 @@ class CleanupMixin {
 
   ensureJournal() {
     if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
+  }
+
+  // Every new plan opens the same way: it becomes the open plan, goes on top of the journal and the
+  // page scrolls to its card. `view` switches to the page that shows it; null stays on the current one.
+  openNewPlan(plan, view = "cleanup") {
+    this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
+    this.journal = [plan, ...(this.journal || [])];
+    this._scrollPlan = true;
+    if (view) { this.noteJump?.(view); this.view = view; this.pages = {}; }
   }
 
   // The dry-run note, an error from the last request and the plan that is open, on top of every view that can finish one.
