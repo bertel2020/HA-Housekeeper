@@ -103,9 +103,7 @@ class FindingStatusMixin {
     const label = b.label || (this.data.objects || []).find(o => o.object_type === "label")?.object_id;
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: ids.map(object_id => ({ kind: "add_label", object_id, target: label })) });
-      this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
-      this.journal = [plan, ...(this.journal || [])];
-      this.noteJump?.("cleanup"); this.view = "cleanup"; this.pages = {};
+      this.noteJump?.("cleanup"); this.openNewPlan(plan);
       this.bulk = null; this.findSel.clear();
     } catch (err) { b.error = ""; this.error = err?.message || String(err); }
     this.render();

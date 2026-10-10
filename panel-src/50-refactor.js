@@ -107,7 +107,7 @@ class RefactorMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [{ kind: "refactor_automation", object_id: entityId, fix, values }] });
       this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || [])];
-      this.noteJump?.("repair"); this.view = "repair"; this.repairTask = null; this.pages = {};
+      this.noteJump?.("repair"); this.view = "repair"; this.repairTask = null; this.pages = {}; this._scrollPlan = true;
     } catch (err) { r.message = this.t("refactorFailed", { reason: err?.message || String(err) }); }
     this.render();
   }

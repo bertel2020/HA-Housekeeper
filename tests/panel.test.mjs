@@ -2252,7 +2252,11 @@ test("the improve block asks for the switch, offers fixes and turns one into a p
   const card = el.refactorCard("automation.hall");
   assert.ok(card.includes('data-refactor-plan="add_description"') && card.includes("2 triggers are exactly the same"));
   el.refactorState().text.add_description = "  Warms the hall ";
+  const render = el.render.bind(el); let scrolled = false;
+  el.render = () => { scrolled ||= Boolean(el._scrollPlan); render(); };
   await el.makeRefactorPlan("automation.hall", "add_description");
+  el.render = render;
+  assert.ok(scrolled, "the page opens at the new plan");
   const create = calls.find(c => c.type.endsWith("/plan_create"));
   assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "refactor_automation", object_id: "automation.hall", fix: "add_description", values: { description: "Warms the hall" } }]));
   assert.equal(el.view, "repair");
@@ -3020,10 +3024,14 @@ test("selected findings get a label through a plan that opens under Cleanup", as
   el.findSel = new Set(["k1"]);
   el.bulk = { kind: "label", label: "review", reason: "", days: 30, error: "" };
   assert.ok(el.bulkForm().includes('value="review"'));
+  const scrolls = [], render = el.render.bind(el);
+  el.render = () => { scrolls.push(Boolean(el._scrollPlan)); render(); };
   await el.commitBulk();
   const sent = calls.find(c => c.type === "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(sent.actions.map(a => [a.kind, a.target])), JSON.stringify([["add_label", "review"]]));
   assert.equal(el.view, "cleanup");
+  await el.planLabel(sent.actions[0].object_id, "review"); // the same from the detail page
+  assert.deepEqual(scrolls, [true, true], "both open the page at the new plan (issue #8)");
 });
 
 test("the overview of an object offers its actions: decide a finding, replace a missing entity, disable, label", () => {
