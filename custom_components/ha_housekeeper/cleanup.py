@@ -80,7 +80,8 @@ BACKUP_KINDS = frozenset(
         "repair_range",
     }
 )
-# Kinds that write into the recorder database: their backup contains it, all others get one without.
+# Kinds that always write into the recorder database. Removal actions additionally require it
+# when their optional ``recorder`` deletion is selected.
 DATABASE_KINDS = frozenset(
     {"repair_counter", "repair_range", "purge_statistics", "trim_history", "migrate_meter"}
 )

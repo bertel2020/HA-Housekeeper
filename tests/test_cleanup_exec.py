@@ -376,7 +376,7 @@ async def test_a_removal_can_delete_the_recorder_data_and_says_it_cannot_be_undo
 
     scanner = await make_scanner(hass)
     entry, _ = await quarantined_entity(hass, scanner, "retired")
-    manager, _ = fake_backup()
+    manager, create = fake_backup()
     delete = AsyncMock(return_value=([entry.entity_id], [], None))
 
     with (
@@ -392,6 +392,9 @@ async def test_a_removal_can_delete_the_recorder_data_and_says_it_cannot_be_undo
         )
         await run(scanner, plan, [entry.entity_id])
 
+    asked = create.await_args.kwargs
+    assert asked["include_homeassistant"] and asked["include_database"]
+    assert plan["backup"]["scope"] == "database"
     delete.assert_awaited_once()
     assert delete.await_args.args[1] == [entry.entity_id] and delete.await_args.kwargs == {
         "states": True

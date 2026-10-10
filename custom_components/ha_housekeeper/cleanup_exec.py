@@ -456,9 +456,13 @@ class CleanupRunner:
         journal.save()
         try:
             by_id = {action["object_id"]: action for action in plan["actions"]}
-            kinds = {by_id[object_id]["kind"] for object_id in object_ids}
+            selected = [by_id[object_id] for object_id in object_ids]
+            kinds = {action["kind"] for action in selected}
             if kinds & BACKUP_KINDS:
-                await self._backup(plan, with_database=bool(kinds & DATABASE_KINDS))
+                writes_recorder = bool(kinds & DATABASE_KINDS) or any(
+                    action.get("recorder") for action in selected
+                )
+                await self._backup(plan, with_database=writes_recorder)
             if plan["status"] == "running":
                 await self._execute(plan, object_ids)
         except asyncio.CancelledError:  # Home Assistant stops: the journal must not say "running"
