@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -99,12 +100,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN]["scanner"] = scanner
 
     frontend_dir = Path(__file__).parent / "frontend"
+    bundle = frontend_dir / "ha-housekeeper-panel.js"
+    # The URL names the content: browsers may cache the bundle for good and still load every
+    # new build at once, also a local one without a new version number.
+    digest = await hass.async_add_executor_job(
+        lambda: hashlib.sha256(bundle.read_bytes()).hexdigest()[:12]
+    )
     if not hass.data[DOMAIN].get("static_path_registered"):
         await hass.http.async_register_static_paths(
             [
-                StaticPathConfig(
-                    FRONTEND_URL, str(frontend_dir / "ha-housekeeper-panel.js"), False
-                ),
+                StaticPathConfig(FRONTEND_URL, str(bundle), True),
                 StaticPathConfig(LOGO_URL, str(Path(__file__).parent / "brand" / "logo.png"), True),
                 StaticPathConfig(FONTS_URL, str(Path(__file__).parent / "fonts"), True),
             ]
@@ -114,7 +119,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass,
         webcomponent_name=PANEL_ELEMENT,
         frontend_url_path=PANEL_URL,
-        module_url=FRONTEND_URL,
+        module_url=f"{FRONTEND_URL}?v={digest}",
         sidebar_title="Housekeeper",
         sidebar_icon="mdi:broom",
         require_admin=True,

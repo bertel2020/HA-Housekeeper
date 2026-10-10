@@ -719,6 +719,17 @@ class InventoryScanner:
         return {} if known else None
 
     async def _async_build_snapshot(self, preliminary: bool = False) -> dict[str, Any]:
+        # Seconds per phase, in the snapshot and the debug log: the scan runs in the event loop,
+        # so a slow phase on a large installation shows here first.
+        timing: dict[str, float] = {}
+        mark = time.monotonic()
+
+        def lap(phase: str) -> None:
+            nonlocal mark
+            now = time.monotonic()
+            timing[phase] = round(now - mark, 3)
+            mark = now
+
         entity_registry = er.async_get(self.hass)
         device_registry = dr.async_get(self.hass)
         area_registry = ar.async_get(self.hass)
@@ -747,6 +758,7 @@ class InventoryScanner:
             )
             for entry in _registry_entries(entity_registry.entities)
         ]
+        lap("entities")
         self.status.update(phase="devices", progress=30)
         await asyncio.sleep(0)
 
@@ -774,6 +786,7 @@ class InventoryScanner:
             for entry in config_entries
         ]
 
+        lap("devices")
         self.status.update(phase="automations", progress=60)
         await asyncio.sleep(0)
         # One view of what exists for the whole reference analysis of this scan.
@@ -882,6 +895,7 @@ class InventoryScanner:
         apply_impact(objects, edges, findings)
         causes = apply_causes(objects, edges, findings)
 
+        lap("analysis")
         self.status.update(phase="finalizing", progress=90)
 
         storage = await self.hass.async_add_executor_job(storage_sizes, self.hass)
@@ -890,8 +904,11 @@ class InventoryScanner:
         except Exception:  # noqa: BLE001 - the overview works without the size of the database
             database = None
 
+        lap("finalizing")
+        _LOGGER.debug("Scan took %.2f s: %s", sum(timing.values()), timing)
         return {
             "meta": {
+                "scan_timing": timing,
                 "storage": storage,
                 "database": database,
                 "scanned_at": observed_at.isoformat(),
