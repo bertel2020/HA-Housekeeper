@@ -569,7 +569,7 @@ Object.assign(TEXT.de, {
   propIntegration: "Integration", propDeviceOf: "Gerät", propArea: "Bereich", propAreaInherited: "{area} (vom Gerät)", propLabels: "Labels", propNone: "–",
   propDomain: "Typ", propDeviceClass: "Geräteklasse", propStateClass: "Zustandsklasse", propUnit: "Einheit", propCategory: "Kategorie", propOriginalName: "Originalname", propAliases: "Aliase", propIcon: "Symbol",
   propDisabledBy: "Deaktiviert durch", propHiddenBy: "Ausgeblendet durch", propEntityId: "Entitäts-ID", propUniqueId: "Eindeutige ID", propPlatform: "Plattform",
-  propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe des Recorders; gemessen ohne Abfrage der Tabellen.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
+  propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe des Recorders; gemessen ohne Abfrage der Tabellen.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvFirst: "Ältester Eintrag", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
   propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
   propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Aufräumen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
   propMoreEntities: "… und {count} weitere (siehe Beziehungen)", propNoEntities: "Dieses Gerät hat keine Entitäten.",
@@ -581,7 +581,7 @@ Object.assign(TEXT.en, {
   propIntegration: "Integration", propDeviceOf: "Device", propArea: "Area", propAreaInherited: "{area} (from the device)", propLabels: "Labels", propNone: "–",
   propDomain: "Type", propDeviceClass: "Device class", propStateClass: "State class", propUnit: "Unit", propCategory: "Category", propOriginalName: "Original name", propAliases: "Aliases", propIcon: "Icon",
   propDisabledBy: "Disabled by", propHiddenBy: "Hidden by", propEntityId: "Entity ID", propUniqueId: "Unique ID", propPlatform: "Platform",
-  propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Size of the recorder; measured without querying the tables.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details in Recorder",
+  propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Size of the recorder; measured without querying the tables.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvFirst: "Oldest entry", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details in Recorder",
   propManufacturer: "Manufacturer", propModel: "Model", propSerial: "Serial number", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Kind", propUserName: "Custom name", propOriginalDeviceName: "Name from the integration",
   propKind: "Kind", propKindChild: "Child device", propParent: "Parent device", propCleanupBlock: "Cleanup blocked", propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
   propMoreEntities: "… and {count} more (see relations)", propNoEntities: "This device has no entities.",
@@ -1775,15 +1775,31 @@ class OverviewMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("inventoryStatus")}</h2><p>${this.t("invHint")}</p></div></div><div class="legend invlegend">${rows}</div><div class="bar">${bar}</div></div>`;
   }
 
+  // The start of the oldest recorder data, read once (the backend keeps it for an hour); the card shows it when it arrives.
+  ensureDbFirst() {
+    if (this._dbFirstAsked) return;
+    this._dbFirstAsked = true;
+    setTimeout(async () => {
+      try {
+        const r = await this._hass.callWS({ type: "ha_housekeeper/database_first" });
+        if (r?.busy) { this._dbFirstAsked = false; return; }
+        this.dbFirst = r?.first || 0;
+      } catch (_) { return; }
+      if (this.dbFirst && this.view === "overview") this.render();
+    }, 0);
+  }
+
   // Size of the recorder database from two file stats taken during the scan; the table queries stay in the Recorder view.
   databaseCard() {
     const d = this.data.meta.database;
     if (!d) return "";
+    this.ensureDbFirst();
     const measured = d.db_bytes !== null && d.db_bytes !== undefined;
     const rows = measured ? [
       [this.t("dbOvSize"), this.formatBytes(d.db_bytes)],
       [this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)],
       ...(d.keep_days ? [[this.t("dbOvKeep"), this.t("dbOvKeepDays", { n: this.formatNumber(d.keep_days) })]] : []),
+      ...(this.dbFirst ? [[this.t("dbOvFirst"), `${this.esc(this.formatDate(new Date(this.dbFirst * 1000).toISOString()))}<small>${this.esc(this.relTime(new Date(this.dbFirst * 1000).toISOString()))}</small>`]] : []),
       [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, d.per_day)) }) : this.t("dbOvObserving")],
     ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(d.dialect || "?") })]];
     const purgeOff = d.auto_purge === false ? `<p class="factnote">${this.t("dbOvPurgeOff")}</p>` : "";

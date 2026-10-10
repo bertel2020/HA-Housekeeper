@@ -412,6 +412,32 @@ def recorder_retention(hass: HomeAssistant) -> dict[str, Any]:
     }
 
 
+def query_first(hass: HomeAssistant) -> dict[str, float | None]:
+    """Blocking: the oldest long-term statistic and the oldest state (epoch seconds); both columns are indexed."""
+    from homeassistant.components.recorder.db_schema import States, Statistics
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import func, select
+
+    with session_scope(hass=hass, read_only=True) as session:
+        statistics = session.execute(select(func.min(Statistics.start_ts))).scalar()
+        states = session.execute(select(func.min(States.last_updated_ts))).scalar()
+    return {
+        "statistics": float(statistics) if statistics is not None else None,
+        "states": float(states) if states is not None else None,
+    }
+
+
+async def database_first(hass: HomeAssistant) -> dict[str, Any]:
+    """When the oldest data in the recorder starts, i.e. since when this installation has records."""
+    if not recorder_ready(hass):
+        return {"available": False, "busy": False, "first": None}
+    found = await cached_query(hass, "database_first", 3600, lambda: query_first(hass))
+    if found.busy:
+        return {"available": True, "busy": True, "first": None}
+    dates = [value for value in found.raw.values() if value is not None]
+    return {"available": True, "busy": False, "first": min(dates) if dates else None}
+
+
 async def database_summary(hass: HomeAssistant, events: Any) -> dict[str, Any] | None:
     """Size, WAL and growth per day for the overview: two file stats and the stored daily sizes.
 

@@ -187,15 +187,31 @@ class OverviewMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("inventoryStatus")}</h2><p>${this.t("invHint")}</p></div></div><div class="legend invlegend">${rows}</div><div class="bar">${bar}</div></div>`;
   }
 
+  // The start of the oldest recorder data, read once (the backend keeps it for an hour); the card shows it when it arrives.
+  ensureDbFirst() {
+    if (this._dbFirstAsked) return;
+    this._dbFirstAsked = true;
+    setTimeout(async () => {
+      try {
+        const r = await this._hass.callWS({ type: "ha_housekeeper/database_first" });
+        if (r?.busy) { this._dbFirstAsked = false; return; }
+        this.dbFirst = r?.first || 0;
+      } catch (_) { return; }
+      if (this.dbFirst && this.view === "overview") this.render();
+    }, 0);
+  }
+
   // Size of the recorder database from two file stats taken during the scan; the table queries stay in the Recorder view.
   databaseCard() {
     const d = this.data.meta.database;
     if (!d) return "";
+    this.ensureDbFirst();
     const measured = d.db_bytes !== null && d.db_bytes !== undefined;
     const rows = measured ? [
       [this.t("dbOvSize"), this.formatBytes(d.db_bytes)],
       [this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)],
       ...(d.keep_days ? [[this.t("dbOvKeep"), this.t("dbOvKeepDays", { n: this.formatNumber(d.keep_days) })]] : []),
+      ...(this.dbFirst ? [[this.t("dbOvFirst"), `${this.esc(this.formatDate(new Date(this.dbFirst * 1000).toISOString()))}<small>${this.esc(this.relTime(new Date(this.dbFirst * 1000).toISOString()))}</small>`]] : []),
       [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, d.per_day)) }) : this.t("dbOvObserving")],
     ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(d.dialect || "?") })]];
     const purgeOff = d.auto_purge === false ? `<p class="factnote">${this.t("dbOvPurgeOff")}</p>` : "";

@@ -47,7 +47,7 @@ from .cleanup_exec import CleanupError, entity_restorable
 from .const import API_SCHEMA, DOMAIN, OPTION_LIMITS
 from .correlation import correlate
 from .criteria import THRESHOLDS as CRITERIA_LIMITS
-from .db_health import db_health, growth
+from .db_health import database_first, db_health, growth
 from .device_pairs import pair_devices
 from .dry_run import Context as DryRunContext
 from .dry_run import dry_run as run_dry
@@ -934,6 +934,22 @@ async def websocket_statistics_last(
             result = await statistics_last(hass, snapshot, msg.get("ids"), refresh=msg["refresh"])
     except Exception as err:
         connection.send_error(msg["id"], "statistics_last_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/database_first"})
+@websocket_api.async_response
+async def websocket_database_first(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """The start of the oldest data in the recorder. Read-only; kept for an hour."""
+    try:
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            result = await database_first(hass)
+    except Exception as err:
+        connection.send_error(msg["id"], "database_first_failed", f"{type(err).__name__}: {err}")
         return
     connection.send_result(msg["id"], _versioned(result))
 
@@ -2277,6 +2293,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_storms)
     websocket_api.async_register_command(hass, websocket_db_health)
     websocket_api.async_register_command(hass, websocket_statistics_last)
+    websocket_api.async_register_command(hass, websocket_database_first)
     websocket_api.async_register_command(hass, websocket_counter_scan)
     websocket_api.async_register_command(hass, websocket_range_series)
     websocket_api.async_register_command(hass, websocket_policies)
