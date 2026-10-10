@@ -467,6 +467,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const text = err?.message || String(err);
     if ((this._renderErrors ||= new Set()).has(text)) return;
     this._renderErrors.add(text);
+    this.noteError?.("render", err);
     console.error("[ha_housekeeper] render failed:", err);
   }
 
@@ -808,6 +809,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
+    root.querySelector("[data-diag-copy]")?.addEventListener("click", () => this.copyIssueText());
     root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
     root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {

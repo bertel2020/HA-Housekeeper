@@ -70,7 +70,14 @@ class ListsMixin {
 
   // A click that failed says so and leaves the page as it is; only a failed load replaces the page.
   failed(err) {
+    this.noteError("action", err);
     this.toast(this.t("actionFailed", { detail: this.errText(err) }), true);
+  }
+
+  // The last ten errors of this session, for the diagnostics: where, when and the message only.
+  noteError(where, err) {
+    (this._recentErrors ||= []).push({ at: new Date().toISOString(), where, message: String(err?.message || err).slice(0, 300) });
+    if (this._recentErrors.length > 10) this._recentErrors.shift();
   }
 
   // "No matches" with a way out: clears search text and filters of that list.

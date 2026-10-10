@@ -3073,6 +3073,15 @@ test("a second click while a plan is being made sends no second request", async 
   assert.ok(!el.planBusy && el.plan.plan_id === "p1");
 });
 
+test("the details for a bug report hold versions, browser and the last panel errors", () => {
+  const { el } = panel("en");
+  el.toast = () => {};
+  el.failed(new Error("plan refused"));
+  const text = el.issueText();
+  assert.ok(text.includes("**Home Assistant:**") && text.includes("**Browser / app:**") && /action: plan refused/.test(text));
+  assert.equal(el.diagnosticsData().recent_errors.length, 1);
+});
+
 test("every new plan opens through openNewPlan, so none is left out of view (issue #8)", () => {
   const dir = new URL("../panel-src/", import.meta.url);
   for (const name of fs.readdirSync(dir).filter(n => n.endsWith(".js"))) {
