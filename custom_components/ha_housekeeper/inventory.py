@@ -22,6 +22,7 @@ from homeassistant.loader import IntegrationNotFound, async_get_integration, asy
 
 from . import followup
 from .automation_analysis import (
+    is_concrete_id,
     missing_references,
     summarize_automation_config,
     summarize_script_config,
@@ -1104,7 +1105,8 @@ class InventoryScanner:
             }
             for kind, object_ids in runtime_sets.items():
                 for object_id in object_ids:
-                    if (kind, object_id) not in explicit_markers:
+                    # Home Assistant may hand over unevaluated Template objects here.
+                    if is_concrete_id(object_id) and (kind, object_id) not in explicit_markers:
                         references.append(
                             {
                                 "kind": kind,

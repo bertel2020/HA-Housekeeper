@@ -80,7 +80,7 @@ class ListsMixin {
   }
 
   // A range of ticks with Shift-click: from the last ticked row to this one, within the shown page.
-  pickRange(key, id, checked, set, page) {
+  pickRows(key, id, checked, set, page) {
     const last = this._lastPick?.[key], list = page || [];
     const a = list.indexOf(last), b = list.indexOf(id);
     const ids = this._shift && a >= 0 && b >= 0 && last !== id ? list.slice(Math.min(a, b), Math.max(a, b) + 1) : [id];

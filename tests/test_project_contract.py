@@ -159,3 +159,15 @@ def test_every_finding_module_publishes_its_limits_as_numbers() -> None:
         assert module.THRESHOLDS, module.__name__
         for name, value in module.THRESHOLDS.items():
             assert isinstance(value, int | float) and not isinstance(value, bool), (module, name)
+
+
+def test_no_two_panel_parts_define_a_method_of_the_same_name() -> None:
+    """The parts are mixed into one class; a later one silently replaces an earlier one."""
+    seen: dict[str, str] = {}
+    for part in sorted((ROOT / "panel-src").glob("*.js")):
+        names = re.findall(
+            r"^  (?:async )?([A-Za-z_]\w*)\(.*\) \{$", part.read_text(encoding="utf-8"), re.M
+        )
+        for name in set(names) - {"if", "for", "while", "switch", "catch"}:
+            assert name not in seen, f"{name} is defined in {seen[name]} and {part.name}"
+            seen[name] = part.name

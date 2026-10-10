@@ -20,7 +20,7 @@ REFERENCE_KEYS = {
 SELECTOR_VALUES = frozenset({"all", "none"})
 
 
-def _is_concrete_id(reference: Any) -> bool:
+def is_concrete_id(reference: Any) -> bool:
     """Return whether a value names one object instead of a selector or template."""
     return (
         isinstance(reference, str)
@@ -71,7 +71,7 @@ def extract_references(config: Mapping[str, Any] | None) -> list[dict[str, str]]
                 if kind:
                     values = child if isinstance(child, list) else [child]
                     for reference in values:
-                        if not _is_concrete_id(reference):
+                        if not is_concrete_id(reference):
                             continue
                         marker = (kind, reference, child_path)
                         if marker not in seen:

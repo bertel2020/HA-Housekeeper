@@ -113,3 +113,11 @@ def test_selector_values_and_blueprint_inputs_are_not_references() -> None:
     )
 
     assert [(item["kind"], item["object_id"]) for item in references] == [("entity", "light.hall")]
+
+
+def test_a_template_object_is_no_concrete_id() -> None:
+    class Template:  # Home Assistant may hand over unevaluated template objects
+        pass
+
+    assert not analysis.is_concrete_id(Template())
+    assert analysis.is_concrete_id("light.kitchen")
