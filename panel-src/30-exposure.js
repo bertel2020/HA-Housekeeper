@@ -33,7 +33,7 @@ class ExposureMixin {
     const matching = (f.items || []).filter(item => !q || [item.name, item.entity_id, ...(item.assistants || [])].join(" ").toLowerCase().includes(q));
     const all = !!this.expoAll?.[f.kind];
     const shown = all || q ? matching : matching.slice(0, 10);
-    const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong><small>${this.esc(item.entity_id)}${item.assistants?.length ? ` · ${this.esc(this.expoAssistantList(item.assistants))}` : ""}</small></span></button>`).join("");
+    const rows = shown.map(item => `<button class="row" data-object="entity:${this.esc(item.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(item.name || item.entity_id)}</strong>${this.rowId(item.entity_id, item.assistants?.length ? this.expoAssistantList(item.assistants) : "")}</span></button>`).join("");
     const total = q ? matching.length : f.count;
     const more = total > shown.length ? `<p class="factnote"><button class="link" data-expo-all="${this.esc(f.kind)}">${this.t("expoShowAll", { n: this.formatNumber(total) })}</button></p>` : "";
     const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${rows}${more}`;
@@ -63,7 +63,7 @@ class ExposureMixin {
     const pg = this.paginate(`expo_${source.id}`, found.rows);
     const rows = pg.rows.map(e => {
       const others = e.assistants.filter(id => id !== source.id);
-      return `<button class="row" data-object="entity:${this.esc(e.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong><small>${this.esc(e.entity_id)}${others.length ? ` · ${this.esc(this.t("expoAlso", { list: this.expoAssistantList(others) }))}` : ""}</small></span></button>`;
+      return `<button class="row" data-object="entity:${this.esc(e.entity_id)}"><span class="tile mute"><ha-icon icon="mdi:chevron-right"></ha-icon></span><span class="row-text"><strong>${this.esc(e.name)}</strong>${this.rowId(e.entity_id, others.length ? this.t("expoAlso", { list: this.expoAssistantList(others) }) : "")}</span></button>`;
     }).join("");
     const where = source.titles?.length ? ` (${this.esc(source.titles.join(", "))})` : "";
     const capped = r.exposed_total > (r.exposed_entities || []).length ? `<p class="factnote">${this.t("expoCapped", { n: this.formatNumber(r.exposed_entities.length) })}</p>` : "";

@@ -181,6 +181,11 @@ class ListsMixin {
     return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}<button type="button" class="copybtn" data-copy="${this.esc(sub || name)}" title="${this.esc(this.t("copyId"))}" aria-label="${this.esc(this.t("copyId"))}"><ha-icon icon="mdi:content-copy"></ha-icon></button></${tag}>`;
   }
 
+  // The id line of a list row: the id in mono under the name, extra facts in a line of their own below it.
+  rowId(id, extra = "") {
+    return `<span class="id">${this.esc(id)}</span>${extra ? `<small>${this.esc(extra)}</small>` : ""}`;
+  }
+
   // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.
   ageCell(iso) {
     if (!iso) return `<span class="muted">–</span>`;

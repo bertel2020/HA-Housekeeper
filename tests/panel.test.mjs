@@ -3418,3 +3418,9 @@ test("the findings tiles carry a sparkline for the status, the total and each cl
   assert.ok(el.sparkline("class:missing", "bad").includes("±0"));
   assert.ok(html.includes(`${el.health().share} %`), "the tile shows the share its line draws, not the number with the tasks taken off");
 });
+
+test("an entity row shows the id in mono under the name and the extra facts in a line of their own", () => {
+  const { el } = panel("en");
+  assert.equal(el.rowId("sensor.a<b", "3 · x"), '<span class="id">sensor.a&lt;b</span><small>3 · x</small>');
+  assert.equal(el.rowId("sensor.a"), '<span class="id">sensor.a</span>');
+});

@@ -90,7 +90,7 @@ class ExchangeMixin {
     }).join("");
     const locked = !pair.used && !pair.meter;
     const how = choice.target && pair.meter ? `<select data-ex-how="${this.esc(pair.object_id)}" aria-label="${this.t("exHow")}">${EXCHANGE_HOW.map(h => `<option value="${h}" ${(choice.how || "replace") === h ? "selected" : ""}>${this.t(`exHow_${h}`)}</option>`).join("")}</select>` : "";
-    return `<div class="row"><span class="row-text"><strong>${this.esc(pair.name)}</strong><small>${this.esc(pair.object_id)} · ${this.esc(pair.used ? this.t("exUsed", { count: pair.used }) : this.t("exUnused"))}</small></span>
+    return `<div class="row"><span class="row-text"><strong>${this.esc(pair.name)}</strong>${this.rowId(pair.object_id, pair.used ? this.t("exUsed", { count: pair.used }) : this.t("exUnused"))}</span>
       <span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select data-ex-target="${this.esc(pair.object_id)}" aria-label="${this.esc(pair.name)}" ${locked ? "disabled" : ""}><option value="">${this.t("exNoTarget")}</option>${candidates}</select>${how}</span></div>`;
   }
 
