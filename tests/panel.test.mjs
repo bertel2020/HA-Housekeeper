@@ -3257,4 +3257,5 @@ test("the journal names the end of a follow-up and the safety line counts the wa
   const html = shadow.innerHTML;
   assert.equal((html.match(/Follow-up running until/g) || []).length, 1, "only the watched plan names its end");
   assert.ok(el.t("safeWatching", { n: 8 }).includes("8 plans are being watched") && el.t("safeWatching1").includes("1 plan is being watched"));
+  assert.ok(el.safetyBar().includes("24 hours after the run"), "the safety line explains the watching in a tooltip");
 });

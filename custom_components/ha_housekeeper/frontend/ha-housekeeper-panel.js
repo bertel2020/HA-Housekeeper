@@ -6640,13 +6640,13 @@ class SafetyMixin {
     if (!this.data) return "";
     const items = this.safetyItems();
     if (!items.length) return "";
-    return `<div class="safebar" role="region" aria-label="${this.esc(this.t("safeLabel"))}">${items.map(([key, tone, text, view]) => `<button class="safeitem ${tone}" data-safe="${view}" data-safe-key="${key}"><span class="dot ${tone}" aria-hidden="true"></span>${this.esc(text)}</button>`).join("")}</div>`;
+    return `<div class="safebar" role="region" aria-label="${this.esc(this.t("safeLabel"))}">${items.map(([key, tone, text, view]) => `<button class="safeitem ${tone}" data-safe="${view}" data-safe-key="${key}"${key === "watch" ? ` title="${this.esc(this.t("safeWatchingTip"))}"` : ""}><span class="dot ${tone}" aria-hidden="true"></span>${this.esc(text)}</button>`).join("")}</div>`;
   }
 }
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
   safeLast: "Letzte Änderung: {when}", safeUndo: "Rückgängig möglich", safeNoUndo: "Rückgängig nicht mehr möglich, nur Backup-Restore",
-  safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeRegression: "{n} Rückfall nach Änderung",
+  safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeWatchingTip: "Bis 24 Stunden nach der Ausführung prüft Housekeeper bei jedem Scan, ob neue Befunde dazugekommen sind.", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
   causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards",
@@ -6654,7 +6654,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
   safeLast: "Last change: {when}", safeUndo: "Undo available", safeNoUndo: "Undo no longer possible, backup restore only",
-  safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeRegression: "{n} regression after a change",
+  safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeWatchingTip: "For up to 24 hours after the run, Housekeeper checks at every scan whether new findings appeared.", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",
