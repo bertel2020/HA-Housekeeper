@@ -60,8 +60,14 @@ def test_frontend_bundle_is_packaged() -> None:
     assert "customElements.define" in bundle.read_text(encoding="utf-8")
 
 
+def _websocket_source() -> str:
+    """The WebSocket commands: the core module and its parts by area."""
+    paths = [COMPONENT / "websocket_api.py", *sorted(COMPONENT.glob("ws_*.py"))]
+    return "".join(path.read_text(encoding="utf-8") for path in paths)
+
+
 def test_websocket_api_is_read_only() -> None:
-    source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    source = _websocket_source()
     assert "ha_housekeeper/inventory" not in source  # assembled from DOMAIN
     assert "async_remove" not in source
     assert "async_update_entity" not in source
@@ -99,7 +105,7 @@ def test_only_the_cleanup_runner_changes_the_registry() -> None:
 
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
-    source = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    source = _websocket_source()
     assert source.count("@websocket_api.websocket_command") == 70
     assert source.count("@websocket_api.require_admin") == 70
     assert "connection.require_admin" not in source
