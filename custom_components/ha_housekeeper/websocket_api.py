@@ -64,6 +64,7 @@ from .maintenance import preflight_report, recorder_costs
 from .marks import KINDS as MARK_KINDS
 from .marks import OBJECT_TYPES as MARK_TYPES
 from .meter import prepare_meter, recorder_ready
+from .notes import NoteError
 from .policies import RULES as POLICY_RULES
 from .policies import policies
 from .protection import MODES as PROTECTION_MODES
@@ -1606,6 +1607,50 @@ async def websocket_battery_trend(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/note_set",
+        vol.Required("action"): vol.In(["save", "delete"]),
+        vol.Optional("note_id"): str,
+        vol.Optional("title"): str,
+        vol.Optional("at"): str,
+        vol.Optional("target", default=""): str,
+        vol.Optional("note", default=""): str,
+    }
+)
+@callback
+def websocket_note_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Save or delete an entry of your own in the history. Only Housekeeper's own list changes."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    try:
+        if msg["action"] == "save":
+            scanner.notes.upsert(
+                msg.get("note_id"),
+                msg.get("title", ""),
+                msg.get("at", ""),
+                msg["target"],
+                msg["note"],
+                datetime.now(UTC),
+            )
+        else:
+            scanner.notes.delete(msg.get("note_id", ""))
+    except NoteError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    view = scanner.notes.view()
+    if scanner._snapshot is not None:
+        scanner._snapshot["notes"] = view
+    connection.send_result(msg["id"], _versioned({"notes": view}))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/reminder_set",
         vol.Required("action"): vol.In(["save", "done", "delete"]),
         vol.Optional("reminder_id"): str,
@@ -2229,7 +2274,7 @@ async def websocket_correlations(
         connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
         return
     snapshot = await scanner.async_get_snapshot()
-    result = correlate(snapshot["findings"], scanner.events.recent())
+    result = correlate(snapshot["findings"], [*scanner.events.recent(), *scanner.notes.as_events()])
     connection.send_result(msg["id"], _versioned(result))
 
 
@@ -2362,3 +2407,4 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_protection_set)
     websocket_api.async_register_command(hass, websocket_battery_trend)
     websocket_api.async_register_command(hass, websocket_reminder_set)
+    websocket_api.async_register_command(hass, websocket_note_set)

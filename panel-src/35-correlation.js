@@ -16,7 +16,7 @@ class CorrelationMixin {
   }
 
   corrText(group) {
-    const vars = { domain: this.esc(group.domain || ""), from: this.esc(group.from ?? ""), to: this.esc(group.to ?? "") };
+    const vars = { title: this.esc(group.title || ""), domain: this.esc(group.domain || ""), from: this.esc(group.from ?? ""), to: this.esc(group.to ?? "") };
     return this.t(`corr_${group.kind}`, vars);
   }
 
@@ -34,7 +34,7 @@ class CorrelationMixin {
     if (!groups.length) return "";
     const rows = groups.map(g => {
       const names = g.keys.slice(0, 6).map(k => { const f = this.data.findings.find(x => x.key === k); return f ? (this.findObject(this.findingKey(f))?.name || f.object_id) : ""; }).filter(Boolean).map(n => this.esc(n)).join(", ");
-      return `<div class="row rel"><span class="tile ${g.only_group ? "mute" : "warn"}"><ha-icon icon="${g.kind === "start" ? "mdi:restart" : g.kind === "plan" ? "mdi:broom" : g.kind === "purge" ? "mdi:database-remove" : "mdi:package-up"}"></ha-icon></span><span class="row-text"><strong>${this.corrText(g)}</strong><small>${this.esc(this.formatDate(g.at))}${names ? ` · ${names}` : ""}</small></span><span class="pill ${g.only_group ? "mute" : "warn"}">${this.t("corrCount", { n: this.formatNumber(g.total) })}</span></div>`;
+      return `<div class="row rel"><span class="tile ${g.only_group ? "mute" : "warn"}"><ha-icon icon="${g.kind === "start" ? "mdi:restart" : g.kind === "plan" ? "mdi:broom" : g.kind === "purge" ? "mdi:database-remove" : g.kind === "note" ? "mdi:pin-outline" : "mdi:package-up"}"></ha-icon></span><span class="row-text"><strong>${this.corrText(g)}</strong><small>${this.esc(this.formatDate(g.at))}${names ? ` · ${names}` : ""}</small></span><span class="pill ${g.only_group ? "mute" : "warn"}">${this.t("corrCount", { n: this.formatNumber(g.total) })}</span></div>`;
     }).join("");
     return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("corrTitle")}</h2><p>${this.t("corrHint")}</p></div></div>${rows}</section>`;
   }

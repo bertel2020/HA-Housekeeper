@@ -3214,3 +3214,37 @@ test("tables and lists grow with their content: no height limit and no scrolling
   assert.ok(!/\.tablewrap[^{}]*\{[^{}]*max-height/.test(css), "no table has a height limit");
   assert.ok(!/\.tablewrap\{[^{}]*overflow:auto/.test(css), "a table scrolls sideways only");
 });
+
+test("own entries sit in the history between the scans, are saved and deleted over the websocket and show on the object", async () => {
+  const { el, shadow } = panel("en");
+  const sent = [];
+  const entry = { id: "n1", title: "Zigbee stick replaced", at: "2026-10-08T18:05:00+00:00", target: "entity:light.a", note: "new <b>stick</b>" };
+  el.data = { ...DATA, notes: [entry], objects: [...DATA.objects, { object_type: "entity", object_id: "light.a", name: "Lamp A", status: "active" }] };
+  el._rev = (el._rev || 0) + 1;
+  el._hass.callWS = async msg => { sent.push(msg); return { notes: msg.action === "delete" ? [] : [entry, { ...entry, id: "n2", title: msg.title }] }; };
+  el.compare = { ...COMPARE, current: { objects: 10, findings: 2 }, retention_days: 30 };
+  el.view = "changes"; el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Zigbee stick replaced") && html.includes("Own entry") && html.includes("Concerns: Lamp A") && html.includes("new &lt;b&gt;stick&lt;/b&gt;") && !html.includes("<b>stick</b>"), "an entry shows, escaped");
+  assert.ok(html.includes("data-note-add") && html.includes('data-note-edit="n1"'));
+  // the form: no title is refused, a title is saved with an ISO time
+  el.noteOpen(); el.render();
+  assert.ok(shadow.innerHTML.includes("data-note-form"));
+  await el.noteSave();
+  assert.ok(el.noteDraft.error.includes("title") && sent.length === 0);
+  el.noteDraft.title = "Router update"; el.noteDraft.at = "2026-10-10T20:15";
+  await el.noteSave();
+  assert.equal(sent[0].type, "ha_housekeeper/note_set"); assert.equal(sent[0].action, "save"); assert.equal(sent[0].title, "Router update"); assert.ok(sent[0].at.endsWith("Z"));
+  assert.equal(el.noteDraft, null); assert.equal(el.data.notes.length, 2);
+  // delete asks first
+  el.noteAsk = "n1"; el.render();
+  assert.ok(shadow.innerHTML.includes("data-note-del-yes"));
+  await el.noteDeleteConfirmed("n1");
+  assert.equal(sent[1].action, "delete"); assert.equal(el.data.notes.length, 0);
+  // on the details page of the object
+  el.data = { ...el.data, notes: [entry] };
+  assert.ok(el.noteCard({ object_type: "entity", object_id: "light.a" }).includes("Zigbee stick replaced"));
+  assert.equal(el.noteCard({ object_type: "dashboard", object_id: "d" }), "");
+  // the correlation words it as "at about the same time"
+  assert.ok(el.corrText({ kind: "note", title: "Zigbee <i>" }).includes("Zigbee &lt;i&gt;"));
+});

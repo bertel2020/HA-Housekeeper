@@ -720,6 +720,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     this.bindStale(root);
+    this.bindNotes(root);
     root.querySelector("[data-todo-jump]")?.addEventListener("click", () => { const card = root.querySelector("#hk-todo-card"); card?.scrollIntoView?.({ block: "start", behavior: "smooth" }); card?.focus?.({ preventScroll: true }); });
     this.bindExport(root);
     this.bindPlanWizard(root);

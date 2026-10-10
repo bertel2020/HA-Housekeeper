@@ -7,6 +7,10 @@ class PickerMixin {
         get: () => this.counterId || "", set: v => { this.counterId = v; }, min: 1, types: ["entity"],
         filter: o => o.has_statistics && o.object_id.startsWith("sensor."), pick: o => { this.counterId = o.object_id; },
       },
+      note: {
+        get: () => this.noteDraft?.targetText ?? "", set: v => { if (this.noteDraft) { this.noteDraft.targetText = v; this.noteDraft.target = ""; } }, min: 2, types: null, limit: 15,
+        pick: o => { this.noteDraft.target = this.objectKey(o); this.noteDraft.targetText = o.name; },
+      },
       graph: {
         get: () => this.graphQuery, set: v => { this.graphQuery = v; }, min: 2, types: null, limit: 15,
         pick: o => { this.noteGraphStep(o); this.graphSelected = o; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; },

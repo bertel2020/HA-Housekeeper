@@ -16,7 +16,7 @@ GROUP_ONLY = ("start", "plan", "purge")  # too common to name as a reason on a s
 GROUP_LIMIT = 50
 KEYS_PER_GROUP = 50
 BY_KEY_LIMIT = 2000
-FIELDS = ("kind", "at", "domain", "from", "to", "down_seconds")
+FIELDS = ("kind", "at", "domain", "from", "to", "down_seconds", "title")
 
 
 def _parse(value: Any) -> datetime | None:

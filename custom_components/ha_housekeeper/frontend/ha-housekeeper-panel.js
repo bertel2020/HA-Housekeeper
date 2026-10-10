@@ -1193,6 +1193,7 @@ class StylesMixin {
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:break-word;hyphens:auto}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
       .wz{display:flex;gap:6px;list-style:none;margin:0;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.wz li{flex:1;display:flex;flex-direction:column;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);min-width:0}.wz li i{display:block;height:3px;border-radius:2px;background:var(--hk-border)}.wz li.done i{background:var(--hk-green)}.wz li.cur{color:var(--hk-text);font-weight:600}.wz li.cur i{background:var(--hk-blue)}@media (max-width:520px){.wz li:not(.cur){font-size:0}.wz li:not(.cur) i{margin-top:0}}.wzflow{margin:8px 16px}.wzprog{height:8px;border-radius:4px;background:var(--hk-border);overflow:hidden;margin:12px 16px}.wzprog i{display:block;height:100%;background:var(--hk-blue);transition:width .3s}
+      .noteform{display:grid;gap:10px}.noteform label{display:block;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);margin-bottom:4px}.noteform input,.noteform textarea{width:100%;box-sizing:border-box}.notetwo{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media (max-width:560px){.notetwo{grid-template-columns:1fr}}.noteact{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.noteact span{display:flex;gap:8px}
       .headlink{all:unset;cursor:pointer;color:inherit;font:inherit}.headlink:hover{text-decoration:underline}.headlink:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px;border-radius:4px}#hk-todo-card:focus{outline:none}
       .wz .wzbtn{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;cursor:pointer;width:100%}.wz .wzbtn:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px;border-radius:4px}.xpbody{padding:14px 16px}.xpbody h3{margin:0 0 4px}.xpbody .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.xprow{cursor:pointer}.xpgrp{border:1px solid var(--hk-border);border-radius:8px;padding:10px 12px;margin:8px 0}.xpgrp>label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.xpgrp small{display:block;color:var(--hk-muted)}.xpfmts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.xpfmt{flex:1;min-width:150px;border:1px solid var(--hk-border);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}.xpfmt input{position:absolute;opacity:0;pointer-events:none}.xpfmt.on{border:2px solid var(--hk-blue);padding:9px 11px}.xpfmt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.xprowline{display:flex;gap:8px;margin-top:8px}.xprowline input{flex:1}.xpmeta{display:flex;justify-content:space-between;gap:8px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.xppre{max-height:320px;overflow:auto;white-space:pre-wrap}.xpact{display:flex;gap:8px}.chip.tpl{display:inline-flex;gap:4px;padding:0}.chip.tpl button{all:unset;cursor:pointer;padding:4px 8px}.chip.tpl button:focus-visible{outline:2px solid var(--hk-blue);border-radius:4px}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
@@ -2098,18 +2099,20 @@ class ChangesMixin {
 
   // One row per stored scan (newest first) with its totals; a click picks it as the comparison base.
   historyTimeline(c, baselines) {
-    if (baselines.length < 2) return "";
-    const rows = [{ id: "", at: this.data?.meta?.scanned_at, ...c.current, now: true }, ...baselines];
+    const rows = baselines.length >= 2 ? [{ id: "", at: this.data?.meta?.scanned_at, ...c.current, now: true }, ...baselines] : [];
     const max = Math.max(1, ...rows.map(r => r.findings || 0));
-    const body = rows.map((r, i) => {
+    const scans = rows.map((r, i) => {
       const older = rows[i + 1], delta = older ? (r.findings || 0) - (older.findings || 0) : 0;
       const pill = delta ? `<span class="pill ${delta > 0 ? "red" : "ok"}">${delta > 0 ? "+" : ""}${delta}</span>` : "";
       const selected = !r.now && r.id === this.compareBaseline;
       const label = r.now ? this.t("currentScan") : r.id === "previous" ? this.t("previousScan") : this.t("storedScan");
       const inner = `<span class="tile ${selected ? "" : "mute"}"><ha-icon icon="${r.now ? "mdi:clock-check-outline" : "mdi:history"}"></ha-icon></span><span class="row-text"><strong>${label} · ${this.esc(this.formatDate(r.at))}</strong><small>${this.t("historyCounts", { objects: this.formatNumber(r.objects || 0), findings: this.formatNumber(r.findings || 0) })}</small><span class="bar" style="margin-top:4px"><i style="width:${Math.round(((r.findings || 0) / max) * 100)}%"></i></span></span>${pill}`;
-      return r.now ? `<div class="row rel">${inner}</div>` : `<button class="row rel ${selected ? "sel" : ""}" data-baseline="${this.esc(r.id)}">${inner}</button>`;
-    }).join("");
-    return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("historyTitle")}</h2><p>${this.t("historyHint", { days: c.retention_days ?? 30 })}</p></div></div>${body}</section>`;
+      return { at: r.at, html: r.now ? `<div class="row rel">${inner}</div>` : `<button class="row rel ${selected ? "sel" : ""}" data-baseline="${this.esc(r.id)}">${inner}</button>` };
+    });
+    const mine = this.notesList().map(n => ({ at: n.at, html: this.noteRow(n) }));
+    const timeline = [...scans, ...mine].sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0));
+    const pg = this.paginate("history", timeline.map(e => e.html));
+    return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("historyTitle")}</h2><p>${this.t("historyHint", { days: c.retention_days ?? 30 })}</p></div><div class="actions">${this.noteHeadButton()}</div></div>${this.noteForm()}${pg.rows.join("")}${pg.footer}</section>`;
   }
 
   // The report of the changes as Markdown, for the baseline closest to a week back (loaded first when another is set).
@@ -2148,7 +2151,7 @@ class ChangesMixin {
     const baselines = c.baselines || [];
     const options = baselines.map(b => `<option value="${this.esc(b.id)}" ${b.id === this.compareBaseline ? "selected" : ""}>${b.id === "previous" ? `${this.t("previousScan")} · ` : ""}${this.esc(this.formatDate(b.at))}</option>`).join("");
     const hint = baselines.length <= 1 ? `<p class="factnote" style="margin:10px 0 0">${this.t("historyBuilding", { days: c.retention_days ?? 30 })}</p>` : "";
-    const picker = options ? `<div class="panel" style="margin-bottom:14px"><div class="filters" style="grid-template-columns:auto minmax(220px,360px)"><label style="align-self:center;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))">${this.t("compareWith")}</label><select id="baseline">${options}</select></div>${hint}</div>${this.historyTimeline(c, baselines)}` : "";
+    const picker = options ? `<div class="panel" style="margin-bottom:14px"><div class="filters" style="grid-template-columns:auto minmax(220px,360px)"><label style="align-self:center;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))">${this.t("compareWith")}</label><select id="baseline">${options}</select></div>${hint}</div>` : "";
     if (!c.available) {
       const meta = this.data?.meta || {};
       const why = meta.preliminary ? this.t("noBaselinePreliminary") : this.t("noBaselineOneScan", { hours: meta.scan_interval_hours || 24 });
@@ -2190,7 +2193,7 @@ class ChangesMixin {
       removedObjects: paged("removedObjects", c.removed_objects.items, o => objectRow(o, `${this.t(o.object_type)} · ${this.t("gone")}`, "")),
     };
     const panels = sections.filter(([, , part]) => part.total).map(([label, , part]) => `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><h2>${this.t(label)}</h2><span class="date">${this.formatNumber(part.total)}</span></div>${body[label]}${more(part)}</section>`).join("");
-    return `${picker}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b> <button class="btn quiet" data-weekly title="${this.esc(this.t("weeklyHint"))}">${this.t("weeklyBtn")}</button></p>${cards}${this.corrGroupsCard()}${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
+    return `${picker}${this.historyTimeline(c, baselines)}<p class="sub" style="margin:0 0 14px">${this.t("comparedWith")} <b>${this.formatDate(c.baseline_at)}</b> <button class="btn quiet" data-weekly title="${this.esc(this.t("weeklyHint"))}">${this.t("weeklyBtn")}</button></p>${cards}${this.corrGroupsCard()}${total ? `<div class="panel" style="margin-bottom:14px">${bar}</div>${panels}` : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("noChanges")}</div></div>`}`;
   }
 }
 
@@ -3956,7 +3959,7 @@ class DiagnosisMixin {
       const cards = this.propertyCards(item);
       return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
     }
-    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.actionsCard(item, key)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}${this.entityRecorderCard(item)}${this.staleCard(item)}</div></div>`;
+    return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.actionsCard(item, key)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}${this.entityRecorderCard(item)}${this.staleCard(item)}${this.noteCard(item)}</div></div>`;
   }
 }
 
@@ -5389,7 +5392,7 @@ class CorrelationMixin {
   }
 
   corrText(group) {
-    const vars = { domain: this.esc(group.domain || ""), from: this.esc(group.from ?? ""), to: this.esc(group.to ?? "") };
+    const vars = { title: this.esc(group.title || ""), domain: this.esc(group.domain || ""), from: this.esc(group.from ?? ""), to: this.esc(group.to ?? "") };
     return this.t(`corr_${group.kind}`, vars);
   }
 
@@ -5407,7 +5410,7 @@ class CorrelationMixin {
     if (!groups.length) return "";
     const rows = groups.map(g => {
       const names = g.keys.slice(0, 6).map(k => { const f = this.data.findings.find(x => x.key === k); return f ? (this.findObject(this.findingKey(f))?.name || f.object_id) : ""; }).filter(Boolean).map(n => this.esc(n)).join(", ");
-      return `<div class="row rel"><span class="tile ${g.only_group ? "mute" : "warn"}"><ha-icon icon="${g.kind === "start" ? "mdi:restart" : g.kind === "plan" ? "mdi:broom" : g.kind === "purge" ? "mdi:database-remove" : "mdi:package-up"}"></ha-icon></span><span class="row-text"><strong>${this.corrText(g)}</strong><small>${this.esc(this.formatDate(g.at))}${names ? ` · ${names}` : ""}</small></span><span class="pill ${g.only_group ? "mute" : "warn"}">${this.t("corrCount", { n: this.formatNumber(g.total) })}</span></div>`;
+      return `<div class="row rel"><span class="tile ${g.only_group ? "mute" : "warn"}"><ha-icon icon="${g.kind === "start" ? "mdi:restart" : g.kind === "plan" ? "mdi:broom" : g.kind === "purge" ? "mdi:database-remove" : g.kind === "note" ? "mdi:pin-outline" : "mdi:package-up"}"></ha-icon></span><span class="row-text"><strong>${this.corrText(g)}</strong><small>${this.esc(this.formatDate(g.at))}${names ? ` · ${names}` : ""}</small></span><span class="pill ${g.only_group ? "mute" : "warn"}">${this.t("corrCount", { n: this.formatNumber(g.total) })}</span></div>`;
     }).join("");
     return `<section class="panel" style="margin-bottom:14px"><div class="panelhead"><div><h2>${this.t("corrTitle")}</h2><p>${this.t("corrHint")}</p></div></div>${rows}</section>`;
   }
@@ -7462,6 +7465,10 @@ class PickerMixin {
         get: () => this.counterId || "", set: v => { this.counterId = v; }, min: 1, types: ["entity"],
         filter: o => o.has_statistics && o.object_id.startsWith("sensor."), pick: o => { this.counterId = o.object_id; },
       },
+      note: {
+        get: () => this.noteDraft?.targetText ?? "", set: v => { if (this.noteDraft) { this.noteDraft.targetText = v; this.noteDraft.target = ""; } }, min: 2, types: null, limit: 15,
+        pick: o => { this.noteDraft.target = this.objectKey(o); this.noteDraft.targetText = o.name; },
+      },
       graph: {
         get: () => this.graphQuery, set: v => { this.graphQuery = v; }, min: 2, types: null, limit: 15,
         pick: o => { this.noteGraphStep(o); this.graphSelected = o; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; },
@@ -8058,6 +8065,126 @@ class ExportMixin {
       if (!ids.length) { this.xp.msg = this.t("xpNoEntities"); this.render(); }
     });
     this.xpBind(root);
+  }
+}
+
+// Entries you write yourself in the history of the changes ("Zigbee stick replaced"); mixed into the panel in 99-register.js.
+// They are kept by Housekeeper only and count as an event for the correlation, always worded "at about the same time".
+Object.assign(TEXT.de, {
+  noteAdd: "Eigener Eintrag", noteMine: "Eigener Eintrag", noteEdit: "Bearbeiten", noteDelete: "Löschen",
+  noteAskDelete: "Diesen Eintrag löschen?", noteYes: "Ja, löschen", noteNo: "Abbrechen",
+  noteFormTitle: "Titel", noteTitlePh: "z. B. Zigbee-Stick getauscht", noteWhen: "Wann", noteTarget: "Betrifft (optional)", noteTargetPh: "Entität, Gerät, Integration, Bereich",
+  noteText: "Notiz (optional)", noteTextPh: "Was genau hast du geändert?", noteSave: "Speichern", noteCancel: "Abbrechen",
+  noteNeedTitle: "Gib dem Eintrag einen Titel.", noteBadTime: "Die Zeit ist ungültig oder liegt zu weit in der Zukunft.", noteFailed: "Der Eintrag konnte nicht gespeichert werden: {reason}",
+  noteConcerns: "Betrifft: {name}", noteHint: "Nur für dich: Housekeeper ändert nichts in Home Assistant. Die Einträge erscheinen nicht im Prüfbericht.",
+  noteDetailTitle: "Deine Einträge", noteDetailNone: "Noch kein Eintrag zu diesem Objekt.", noteAddHere: "Eintrag dazu",
+  corr_note: "deinem Eintrag „{title}“",
+});
+Object.assign(TEXT.en, {
+  noteAdd: "Own entry", noteMine: "Own entry", noteEdit: "Edit", noteDelete: "Delete",
+  noteAskDelete: "Delete this entry?", noteYes: "Yes, delete", noteNo: "Cancel",
+  noteFormTitle: "Title", noteTitlePh: "e.g. Zigbee stick replaced", noteWhen: "When", noteTarget: "Concerns (optional)", noteTargetPh: "Entity, device, integration, area",
+  noteText: "Note (optional)", noteTextPh: "What exactly did you change?", noteSave: "Save", noteCancel: "Cancel",
+  noteNeedTitle: "Give the entry a title.", noteBadTime: "The time is invalid or too far in the future.", noteFailed: "The entry could not be saved: {reason}",
+  noteConcerns: "Concerns: {name}", noteHint: "Only for you: Housekeeper changes nothing in Home Assistant. The entries do not appear in the audit report.",
+  noteDetailTitle: "Your entries", noteDetailNone: "No entry for this object yet.", noteAddHere: "Add an entry",
+  corr_note: "your entry “{title}”",
+});
+
+class NotesMixin {
+  notesList() { return this.data?.notes || []; }
+
+  // `<input type="datetime-local">` speaks local time without a zone.
+  noteLocal(iso) {
+    const d = new Date(iso), p = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  noteOpen(note = null, target = "") {
+    const obj = target ? this.findObject(target) : null;
+    this.noteDraft = note
+      ? { id: note.id, title: note.title, at: this.noteLocal(note.at), target: note.target, targetText: this.findObject(note.target)?.name || note.target || "", note: note.note, error: "" }
+      : { id: null, title: "", at: this.noteLocal(new Date().toISOString()), target, targetText: obj?.name || "", note: "", error: "" };
+    this.noteAsk = null;
+  }
+
+  noteTargetName(target) {
+    return target ? this.findObject(target)?.name || target.split(":").slice(1).join(":") : "";
+  }
+
+  noteRow(n) {
+    const name = this.noteTargetName(n.target), obj = n.target ? this.findObject(n.target) : null;
+    const asking = this.noteAsk === n.id;
+    const sub = [this.esc(this.formatDate(n.at)), name ? (obj ? `<button class="link" data-object="${this.esc(n.target)}">${this.esc(this.t("noteConcerns", { name }))}</button>` : this.esc(this.t("noteConcerns", { name }))) : "", n.note ? this.esc(n.note) : ""].filter(Boolean).join(" · ");
+    const actions = asking
+      ? `<span class="askrow"><span>${this.t("noteAskDelete")}</span><button class="btn danger" data-note-del-yes="${this.esc(n.id)}">${this.t("noteYes")}</button><button class="btn" data-note-del-no>${this.t("noteNo")}</button></span>`
+      : `<span class="pill violet">${this.t("noteMine")}</span><button class="link" data-note-edit="${this.esc(n.id)}">${this.t("noteEdit")}</button><button class="link" data-note-del="${this.esc(n.id)}">${this.t("noteDelete")}</button>`;
+    return `<div class="row rel"><span class="tile"><ha-icon icon="mdi:pin-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(n.title)}</strong><small>${sub}</small></span><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${actions}</span></div>`;
+  }
+
+  noteForm() {
+    const d = this.noteDraft;
+    if (!d) return "";
+    return `<form class="pad polform noteform" data-note-form>
+      <div><label for="hk-note-title">${this.t("noteFormTitle")}</label><input id="hk-note-title" type="text" maxlength="80" data-note-title value="${this.esc(d.title)}" placeholder="${this.esc(this.t("noteTitlePh"))}" autocomplete="off"></div>
+      <div class="notetwo"><div><label for="hk-note-at">${this.t("noteWhen")}</label><input id="hk-note-at" type="datetime-local" data-note-at value="${this.esc(d.at)}"></div>
+      <div><label>${this.t("noteTarget")}</label>${this.pickerBox("note", this.t("noteTargetPh"))}</div></div>
+      <div><label for="hk-note-text">${this.t("noteText")}</label><textarea id="hk-note-text" rows="2" maxlength="500" data-note-text placeholder="${this.esc(this.t("noteTextPh"))}">${this.esc(d.note)}</textarea></div>
+      ${d.error ? `<div class="error" role="alert">${this.esc(d.error)}</div>` : ""}
+      <div class="noteact"><small>${this.t("noteHint")}</small><span><button type="button" class="btn" data-note-cancel>${this.t("noteCancel")}</button><button type="submit" class="btn primary">${this.t("noteSave")}</button></span></div></form>`;
+  }
+
+  noteHeadButton() { return `<button class="btn" data-note-add><ha-icon icon="mdi:plus"></ha-icon>${this.t("noteAdd")}</button>`; }
+
+  // On the details page of an object: what you wrote about it, and a way to add an entry.
+  noteCard(item) {
+    if (!["entity", "device", "config_entry", "area", "automation", "script"].includes(item.object_type)) return "";
+    const key = this.objectKey(item), mine = this.notesList().filter(n => n.target === key);
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("noteDetailTitle")}</h2><button class="btn" data-note-add-for="${this.esc(key)}"><ha-icon icon="mdi:plus"></ha-icon>${this.t("noteAddHere")}</button></div>${mine.length ? mine.map(n => this.noteRow(n)).join("") : `<p class="factnote">${this.t("noteDetailNone")}</p>`}</section>`;
+  }
+
+  async noteSave() {
+    const d = this.noteDraft;
+    if (!d) return;
+    const title = d.title.trim();
+    if (!title) { d.error = this.t("noteNeedTitle"); this.render(); return; }
+    const when = new Date(d.at);
+    if (Number.isNaN(when.getTime())) { d.error = this.t("noteBadTime"); this.render(); return; }
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/note_set", action: "save", ...(d.id ? { note_id: d.id } : {}), title, at: when.toISOString(), target: d.target || "", note: d.note.trim() });
+      this.data = { ...this.data, notes: res.notes };
+      this._corrRequested = false;
+      this.noteDraft = null; this._rev++;
+    } catch (err) { d.error = this.t("noteFailed", { reason: err?.message || String(err) }); }
+    this.render();
+  }
+
+  async noteDeleteConfirmed(id) {
+    this.noteAsk = null;
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/note_set", action: "delete", note_id: id });
+      this.data = { ...this.data, notes: res.notes };
+      this._corrRequested = false; this._rev++;
+    } catch (err) { this.error = err?.message || String(err); }
+    this.render();
+  }
+
+  bindNotes(root) {
+    root.querySelectorAll("[data-note-add]").forEach(el => el.onclick = () => { this.noteOpen(); this.render(); });
+    root.querySelectorAll("[data-note-add-for]").forEach(el => el.onclick = () => {
+      this.noteOpen(null, el.dataset.noteAddFor);
+      this.view = "changes"; this.selected = null; this.trail = []; this.pages = {};
+      this.render();
+    });
+    root.querySelectorAll("[data-note-edit]").forEach(el => el.onclick = () => { const n = this.notesList().find(x => x.id === el.dataset.noteEdit); if (n) { this.noteOpen(n); this.render(); } });
+    root.querySelectorAll("[data-note-del]").forEach(el => el.onclick = () => { this.noteAsk = el.dataset.noteDel; this.render(); });
+    root.querySelectorAll("[data-note-del-yes]").forEach(el => el.onclick = () => this.noteDeleteConfirmed(el.dataset.noteDelYes));
+    root.querySelectorAll("[data-note-del-no]").forEach(el => el.onclick = () => { this.noteAsk = null; this.render(); });
+    root.querySelector("[data-note-cancel]")?.addEventListener("click", () => { this.noteDraft = null; this.render(); });
+    root.querySelector("[data-note-title]")?.addEventListener("input", ev => { this.noteDraft.title = ev.target.value; this.noteDraft.error = ""; });
+    root.querySelector("[data-note-at]")?.addEventListener("input", ev => { this.noteDraft.at = ev.target.value; });
+    root.querySelector("[data-note-text]")?.addEventListener("input", ev => { this.noteDraft.note = ev.target.value; });
+    root.querySelector("[data-note-form]")?.addEventListener("submit", ev => { ev.preventDefault(); this.noteSave(); });
   }
 }
 
@@ -8783,6 +8910,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     this.bindStale(root);
+    this.bindNotes(root);
     root.querySelector("[data-todo-jump]")?.addEventListener("click", () => { const card = root.querySelector("#hk-todo-card"); card?.scrollIntoView?.({ block: "start", behavior: "smooth" }); card?.focus?.({ preventScroll: true }); });
     this.bindExport(root);
     this.bindPlanWizard(root);
@@ -8995,7 +9123,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

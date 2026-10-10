@@ -73,6 +73,7 @@ from .issues import async_sync_issues
 from .lifecycle import LifecycleStore
 from .maintenance import PreflightStore
 from .marks import MarkStore, apply_marks, mark_key
+from .notes import NoteStore
 from .notify import NotifyStore, async_announce
 from .observations import ObservationStore
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
@@ -536,6 +537,7 @@ class InventoryScanner:
         self.signals = SignalStore(hass)
         self.entry_states = EntryStateHistory(hass)
         self.reminders = ReminderStore(hass)
+        self.notes = NoteStore(hass)
         self.window = WindowStore(hass)
         self.notify = NotifyStore(hass)
         self.runs = RunStore(hass)
@@ -586,6 +588,7 @@ class InventoryScanner:
         await self.signals.async_load()
         await self.entry_states.async_load()
         await self.reminders.async_load()
+        await self.notes.async_load()
         await self.window.async_load()
         await self.notify.async_load()
         await self.runs.async_load()
@@ -911,6 +914,7 @@ class InventoryScanner:
             "findings": findings,
             "causes": causes,
             "reminders": self.reminders.view(datetime.now(UTC).date()),
+            "notes": self.notes.view(),
             "regressions": [],
             "criteria_alerts": [],
             "orphaned_statistics": orphaned_statistics,
