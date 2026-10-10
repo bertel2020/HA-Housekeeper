@@ -3145,3 +3145,20 @@ test("the loudest entities offer ticks, mark what can be excluded and share the 
   assert.ok(html.includes('data-exsel="light.a"') && html.includes("can be excluded") && html.includes("has statistics"));
   assert.deepEqual(el._exSuggested, ["light.a"]);
 });
+
+test("a plan runs as a wizard: review, confirm with a way back, run, result; long plans fold their rows", () => {
+  const { el, shadow } = panel("en");
+  const action = id => ({ kind: "disable_entity", object_id: id, name: id, verdict: "ok", executable: true, reasons: [] });
+  const plan = (status, extra = {}) => ({ plan_id: "p", status, created_at: "2026-10-10T10:00:00Z", summary: { total: 12, ok: 12, review: 0, blocked: 0 }, actions: Array.from({ length: 12 }, (_, i) => action(`sensor.s${i}`)), ...extra });
+  const stage = (p, confirming = false) => el.planStage(p, confirming);
+  assert.deepEqual([stage(plan("dry_run")), stage(plan("dry_run"), true), stage(plan("running")), stage(plan("executed")), stage(plan("verified", { verification: { ok: true, checks: [] } })), stage(plan("aborted"))], [0, 1, 2, 2, 3, 3]);
+  el.plan = plan("dry_run"); el.view = "cleanup"; el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("1. Review") && html.includes("sensor.s0") && !html.includes("sensor.s11") && html.includes("… and 4 more") && html.includes("data-plan-all"));
+  el.planShowAll = true; el.render();
+  assert.ok(shadow.innerHTML.includes("sensor.s11"));
+  el.confirmation = { plan_id: "p", token: "t", execute: ["sensor.s0"], needs_acknowledgement: [] }; el.render();
+  assert.ok(shadow.innerHTML.includes("data-plan-back") && shadow.innerHTML.includes("data-plan-execute"));
+  el.confirmation = null; el.render();
+  assert.ok(shadow.innerHTML.includes("data-plan-confirm") && !shadow.innerHTML.includes("data-plan-back"));
+});

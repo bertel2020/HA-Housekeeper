@@ -1192,6 +1192,7 @@ class StylesMixin {
       .taskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}.taskcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);padding:14px;cursor:pointer;color:var(--hk-text);font:inherit}.taskcard:hover,.taskcard.on{background:var(--hk-soft)}.taskcard.on{border-color:var(--hk-blue)}.compactgrid{padding:0 0 14px}.setgrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}.setgrid .taskcard{display:grid;grid-template-rows:auto auto 24px 1fr;align-content:start;justify-items:start}.setpill{min-height:24px;display:flex;align-items:center}.compactgrid .taskcard{padding:12px}.taskcard ha-icon{--mdc-icon-size:22px;color:var(--hk-blue)}.taskcard strong{font-size:calc(14px*var(--hk-fs,1));font-weight:600}.taskcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.45}.repairhead{font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin:10px 0 6px}
       .propgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:break-word;hyphens:auto}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
+      .wz{display:flex;gap:6px;list-style:none;margin:0;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.wz li{flex:1;display:flex;flex-direction:column;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);min-width:0}.wz li i{display:block;height:3px;border-radius:2px;background:var(--hk-border)}.wz li.done i{background:var(--hk-green)}.wz li.cur{color:var(--hk-text);font-weight:600}.wz li.cur i{background:var(--hk-blue)}@media (max-width:520px){.wz li:not(.cur){font-size:0}.wz li:not(.cur) i{margin-top:0}}.wzflow{margin:8px 16px}.wzprog{height:8px;border-radius:4px;background:var(--hk-border);overflow:hidden;margin:12px 16px}.wzprog i{display:block;height:100%;background:var(--hk-blue);transition:width .3s}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
       .qlight{display:none;gap:3px;margin-top:4px}.qlight i{width:9px;height:9px;border-radius:50%;background:var(--hk-muted)}.qlight i.ok{background:var(--hk-ok,#3f7d4e)}.qlight i.warn{background:var(--hk-warn,#b8860b)}.qlight i.red{background:var(--hk-red,#b3392f)}@media(max-width:700px){.qualitytable th:not(:first-child):not(:last-child),.qualitytable td:not(:first-child):not(:last-child){display:none}.qlight{display:flex}}.foldhead{width:100%}.foldbody{margin:0 0 6px 28px;border-left:2px solid var(--hk-line,rgba(128,128,128,.25))}.foldadvice{margin:6px 16px 2px}.foldhd,.expohd{margin:14px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.08em;text-transform:uppercase;color:var(--hk-muted)}.rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
@@ -2729,7 +2730,7 @@ class CleanupMixin {
   planCard(plan) {
     const sm = plan.summary || {};
     const open = plan.status === "dry_run";
-    const rows = plan.actions.map(a => {
+    const rowList = plan.actions.map(a => {
       const settled = a.result?.state === "done";
       const tone = settled ? "ok" : { ok: "ok", review: "warn", blocked: "red" }[a.verdict] || "mute";
       const uses = (a.used_by || []).slice(0, 4).map(u => {
@@ -2752,7 +2753,7 @@ class CleanupMixin {
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${settled || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
         <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc([sub, reasons, abort.replace(/^ · /, "")].filter(Boolean).join(" · "))}</small>${ack}${sources || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${sources}${uses ? `<span class="chips" style="padding:6px 0 0;border:0">${uses}${more}</span>` : ""}</details>` : ""}</span>
         <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${resultPill}${undo}${a.executable && (result || !(a.reasons || []).includes("irreversible")) ? this.undoBadge(a) : ""}${result ? "" : `<span class="pill ${tone}">${this.t(a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
-    }).join("");
+    });
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
     const word = this.planWord(plan), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
@@ -2764,7 +2765,7 @@ class CleanupMixin {
       const reviewBox = review.length ? `<label class="factnote reportopt"><input type="checkbox" data-ack-all ${all ? "checked" : ""}><span><strong>${this.t("acknowledgeAll", { count: review.length })}</strong><small>${this.t("acknowledgeAllHint")}</small></span></label>` : "";
       control = `<div class="setrow planfoot">${reviewBox || `<small style="margin:0">${this.t("cleanupDryRun")}</small>`}<button class="btn primary" data-plan-confirm>${this.t("confirmPlan")}</button></div>`;
     }
-    else if (open && conf) control = `<div class="setrow planfoot"><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
+    else if (open && conf) control = `<div class="setrow planfoot"><button class="btn" data-plan-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("wzBack")}</button><div><strong>${this.t("confirmPlanTitle")}</strong><small>${this.confirmSummary(plan, conf.execute.length)}</small>${conf.needs_acknowledgement.length ? `<small>${this.t("skippedUnacknowledged", { count: conf.needs_acknowledgement.length })}</small>` : ""}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><label class="factnote" style="margin:0">${this.t("confirmTypeWord", { word })}</label><input type="text" data-confirm-word value="${this.esc(this.confirmWord)}" style="max-width:180px" autocomplete="off"><button class="btn ${plan.actions.some(a => a.executable && (REMOVAL_KINDS.includes(a.kind) || a.kind === "purge_statistics")) ? "danger" : "primary"}" data-plan-execute ${this.confirmWord.trim().toUpperCase() === word ? "" : "disabled"}>${this.t("runNow")} (${conf.execute.length})</button></div></div>`;
     else if (plan.status === "aborted") control = `<div class="setrow planfoot"><small style="margin:0">${this.t("repeatHint")}</small><button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small style="margin:0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
@@ -2772,8 +2773,16 @@ class CleanupMixin {
       ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`
       : `<div class="setrow planfoot"><small style="margin:0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<div class="checkrow"><b>${this.t("verification")}</b>${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div>` : "";
+    const stage = this.planStage(plan, Boolean(conf));
+    const rows = this.planRowsShown(rowList);
+    const summary = `<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>`;
+    const flow = `<details class="rowdetails wzflow"><summary>${this.t("wzFlow")}</summary>${this.planStepper(plan, Boolean(conf))}</details>`;
+    const body = stage === 0 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`
+      : stage === 1 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`
+      : stage === 2 ? `${this.planOutcome(plan)}${this.planProgressBar()}${control}`
+      : `${this.planOutcome(plan)}${summary}${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}`;
     return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      ${this.planOutcome(plan)}${this.planStepper(plan, Boolean(conf))}<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}${this.reportBlock(plan)}</section>`;
+      ${this.wizardBar(stage)}${flow}${body}${this.reportBlock(plan)}</section>`;
   }
 
   kindSelect() {
@@ -7667,6 +7676,55 @@ class ExcludeMixin {
   }
 }
 
+// The plan as a wizard: Review, Confirm, Run, Result. The stage follows from the state of the plan, nothing is stored.
+// Mixed into the panel in 99-register.js; the plan card itself is built in 18-cleanup.js.
+Object.assign(TEXT.de, {
+  wzLabel: "Schritte des Plans", wzReview: "Prüfen", wzConfirm: "Bestätigen", wzRun: "Ausführen", wzResult: "Ergebnis",
+  wzFlow: "Ablauf im Detail", wzBack: "Zurück", wzMore: "… und {count} weitere", wzShowAll: "Alle zeigen", wzShowLess: "Weniger zeigen",
+});
+Object.assign(TEXT.en, {
+  wzLabel: "Steps of the plan", wzReview: "Review", wzConfirm: "Confirm", wzRun: "Run", wzResult: "Result",
+  wzFlow: "Flow in detail", wzBack: "Back", wzMore: "… and {count} more", wzShowAll: "Show all", wzShowLess: "Show less",
+});
+
+const PLAN_ROWS_SHOWN = 8; // rows of a long plan shown before "Show all"
+
+class PlanWizardMixin {
+  // 0 review, 1 confirm, 2 run (also while the check afterwards is still pending), 3 result.
+  planStage(plan, confirming) {
+    if (plan.status === "dry_run") return confirming ? 1 : 0;
+    if (plan.status === "backup" || plan.status === "running") return 2;
+    if (plan.status === "executed" && !plan.verification) return 2;
+    return 3;
+  }
+
+  wizardBar(stage) {
+    const names = ["wzReview", "wzConfirm", "wzRun", "wzResult"];
+    const items = names.map((name, i) => `<li class="${i < stage ? "done" : i === stage ? "cur" : ""}"${i === stage ? ' aria-current="true"' : ""}><i aria-hidden="true"></i>${i + 1}. ${this.t(name)}</li>`).join("");
+    return `<ol class="wz" aria-label="${this.esc(this.t("wzLabel"))}">${items}</ol>`;
+  }
+
+  // A long plan shows its first rows; the rest is one click away.
+  planRowsShown(rowList) {
+    const long = rowList.length > PLAN_ROWS_SHOWN + 2;
+    const all = !long || this.planShowAll;
+    const more = long ? `<div class="setrow"><small style="margin:0">${all ? "" : this.t("wzMore", { count: rowList.length - PLAN_ROWS_SHOWN })}</small><button class="btn" data-plan-all>${this.t(all ? "wzShowLess" : "wzShowAll")}</button></div>` : "";
+    return (all ? rowList : rowList.slice(0, PLAN_ROWS_SHOWN)).join("") + more;
+  }
+
+  planProgressBar() {
+    const p = this.planProgress;
+    if (!p?.total) return "";
+    const share = Math.max(0, Math.min(100, Math.round((p.done / p.total) * 100)));
+    return `<div class="wzprog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${share}"><i style="width:${share}%"></i></div>`;
+  }
+
+  bindPlanWizard(root) {
+    root.querySelector("[data-plan-back]")?.addEventListener("click", () => { this.confirmation = null; this.confirmWord = ""; this.render(); });
+    root.querySelector("[data-plan-all]")?.addEventListener("click", () => { this.planShowAll = !this.planShowAll; this.render(); });
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -8389,6 +8447,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
     this.bindStale(root);
+    this.bindPlanWizard(root);
     this.bindExclude(root);
     this.bindEntityRecorder(root);
     this.bindGoals(root);
@@ -8598,7 +8657,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, ExcludeMixin, PlanWizardMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }
