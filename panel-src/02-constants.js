@@ -15,7 +15,7 @@ const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 const PREFS_KEY = "ha_housekeeper.prefs";
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
 const USER_DATA_KEY = "ha_housekeeper";
-const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], history_days: [1, 365] };
+const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 // The dependency graph shows this many nodes per side at first; "more" adds another step.
@@ -27,6 +27,7 @@ const OPTION_FIELDS = [
   ["unused_automation_days", "optUnusedAutomationTitle", "optUnusedAutomationHint", "unitDays", 90],
   ["scan_interval_hours", "optScanIntervalTitle", "optScanIntervalHint", "unitHours", 24],
   ["low_battery_percent", "optLowBatteryTitle", "optLowBatteryHint", "unitPercent", 20],
+  ["stale_hours", "optStaleTitle", "optStaleHint", "unitHours", 48],
   ["history_days", "optHistoryDaysTitle", "optHistoryDaysHint", "unitDays", 30],
 ];
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
@@ -102,7 +103,7 @@ const FONT_CSS = `@font-face{font-family:"IBM Plex Sans";font-weight:400 700;fon
 
 const STATUS_TONE = {
   active: "ok", orphaned: "warn", unavailable: "red", problem: "red", broken_reference: "red",
-  disabled: "mute", empty: "mute", unknown: "violet", ignored: "mute", possible_duplicate: "violet", unused: "mute",
+  disabled: "mute", empty: "mute", unknown: "violet", ignored: "mute", possible_duplicate: "violet", unused: "mute", stale: "warn",
 };
 
 // Finding classes that call for action when they are new.

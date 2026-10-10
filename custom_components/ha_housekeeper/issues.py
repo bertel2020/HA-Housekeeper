@@ -34,6 +34,7 @@ def async_sync_issues(hass: HomeAssistant, findings: list[dict[str, Any]]) -> No
         if not finding.get("ignored") and finding["classification"] not in {
             "possible_duplicate",
             "unused",
+            "stale",
         }:
             counts[_category(finding)] += 1
 

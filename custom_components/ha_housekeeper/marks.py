@@ -135,7 +135,7 @@ def apply_marks(
             item["marked_keep"] = True
     for finding in findings:
         finding.pop("mark", None)
-        if finding["classification"] != "unavailable":
+        if finding["classification"] not in ("unavailable", "stale"):
             continue
         entity_id = finding["object_id"]
         keys = (

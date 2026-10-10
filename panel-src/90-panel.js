@@ -719,6 +719,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
+    this.bindStale(root);
     this.bindGoals(root);
     this.bindExchange(root);
     this.bindDiagnostics(root);

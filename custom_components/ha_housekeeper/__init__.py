@@ -27,11 +27,13 @@ from .const import (
     CONF_LOW_BATTERY_PERCENT,
     CONF_MIN_UNAVAILABLE_DAYS,
     CONF_SCAN_INTERVAL_HOURS,
+    CONF_STALE_HOURS,
     CONF_UNUSED_AUTOMATION_DAYS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
+    DEFAULT_STALE_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
     DOMAIN,
     FONTS_URL,
@@ -88,6 +90,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scanner.low_battery_percent = entry.options.get(
         CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT
     )
+    scanner.stale_hours = entry.options.get(CONF_STALE_HOURS, DEFAULT_STALE_HOURS)
     scanner.scan_interval_hours = entry.options.get(
         CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS
     )

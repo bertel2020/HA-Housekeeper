@@ -34,6 +34,7 @@ from .const import (
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
+    DEFAULT_STALE_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
     DOMAIN,
     IGNORE_LABEL,
@@ -82,6 +83,7 @@ from .reminders import ReminderStore
 from .runs import RunStore
 from .signals import SignalStore, situations
 from .signals import fire as signal_fire
+from .stale import StaleStore
 from .window import WindowStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -523,6 +525,8 @@ class InventoryScanner:
         self.events = EventLog(hass)
         self.lifecycle = LifecycleStore(hass)
         self.marks = MarkStore(hass)
+        self.stale = StaleStore(hass)
+        self._started = datetime.now(UTC)
         self.goals = GoalStore(hass)
         self.criteria = CriteriaStore(hass)
         self.coverage = CoverageStore(hass)
@@ -545,6 +549,7 @@ class InventoryScanner:
         self.min_unavailable_days = DEFAULT_MIN_UNAVAILABLE_DAYS
         self.unused_automation_days = DEFAULT_UNUSED_AUTOMATION_DAYS
         self.low_battery_percent = DEFAULT_LOW_BATTERY_PERCENT
+        self.stale_hours = DEFAULT_STALE_HOURS
         self.scan_interval_hours = DEFAULT_SCAN_INTERVAL_HOURS
         self.version: str | None = None
         self.status: dict[str, Any] = {
@@ -571,6 +576,7 @@ class InventoryScanner:
         await self.events.async_load()
         await self.lifecycle.async_load()
         await self.marks.async_load()
+        await self.stale.async_load()
         await self.goals.async_load()
         await self.criteria.async_load()
         await self.coverage.async_load()
@@ -796,6 +802,15 @@ class InventoryScanner:
             item["status_since"] = self.observations.since(
                 f"{kind}:{item['object_id']}", item["status"]
             )
+        if not preliminary:
+            self.stale.observe(
+                entities,
+                observed_at,
+                self._started,
+                self._started + timedelta(seconds=WARMUP_SECONDS),
+                self.stale_hours,
+            )
+        self.stale.annotate(entities, observed_at, self.stale_hours)
         statistics = await self._statistics()
         statistic_ids = {item["statistic_id"] for item in statistics}
         for item in entities:
@@ -819,6 +834,7 @@ class InventoryScanner:
                 entities,
                 lambda item: _long_enough(item, observed_at, self.min_unavailable_days),
             )
+            + ([] if preliminary else self.stale.findings(entities, observed_at, self.stale_hours))
             + automation_hygiene_findings(automations, observed_at, self.unused_automation_days)
             + automation_findings
             + dashboard_findings
@@ -882,6 +898,7 @@ class InventoryScanner:
                 "ha_version": HA_VERSION,
                 "scan_interval_hours": self.scan_interval_hours,
                 "low_battery_percent": self.low_battery_percent,
+                "stale_hours": self.stale_hours,
                 "history_days": self.history.retention_days,
                 "low_batteries": len(low_battery_ids(entities, self.low_battery_percent)),
                 "object_count": len(objects),
@@ -990,6 +1007,20 @@ class InventoryScanner:
         ):
             return "too_many"
         self._refresh_marks()
+        return None
+
+    async def set_stale_limit(self, entity_id: str, hours: int | None) -> str | None:
+        """Set the "no new report" limit of one sensor (0 = off, ``None`` = default); the failure, or None."""
+        known = {
+            item["object_id"]
+            for item in (self._snapshot or {}).get("objects", [])
+            if item["object_type"] == "entity"
+        }
+        if entity_id not in known:
+            return "not_found"
+        if not self.stale.set_limit(entity_id, hours):
+            return "too_many"
+        await self.async_scan()
         return None
 
     def clear_mark(self, object_type: str, object_id: str) -> bool:

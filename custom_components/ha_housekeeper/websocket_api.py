@@ -1774,6 +1774,30 @@ def websocket_mark_set(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/set_stale_limit",
+        vol.Required("entity_id"): str,
+        vol.Required("hours"): vol.Any(None, vol.All(int, vol.Range(min=0, max=8760))),
+    }
+)
+@websocket_api.async_response
+async def websocket_set_stale_limit(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Set after how many hours without a new report one sensor counts as silent (0 = never)."""
+    scanner = _scanner(hass)
+    if scanner is None:
+        connection.send_error(msg["id"], "not_loaded", "HA Housekeeper is not loaded")
+        return
+    error = await scanner.set_stale_limit(msg["entity_id"], msg["hours"])
+    if error:
+        connection.send_error(msg["id"], error, f"Limit not set: {error}")
+        return
+    connection.send_result(msg["id"], {"set": True})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/goals"})
 @websocket_api.async_response
 async def websocket_goals(
@@ -2271,6 +2295,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_lifecycle_note)
     websocket_api.async_register_command(hass, websocket_mark_set)
     websocket_api.async_register_command(hass, websocket_mark_clear)
+    websocket_api.async_register_command(hass, websocket_set_stale_limit)
     websocket_api.async_register_command(hass, websocket_goals)
     websocket_api.async_register_command(hass, websocket_goal_set)
     websocket_api.async_register_command(hass, websocket_correlations)
