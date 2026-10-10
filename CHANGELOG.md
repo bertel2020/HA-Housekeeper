@@ -2,8 +2,7 @@
 
 ## 1.0.4 - 2026-10-10
 
-Neue Erkennung für Sensoren, die nichts mehr melden. Automatisiert getestet, aber **noch
-nicht auf einer echten Instanz**.
+Neue Erkennung für Sensoren, die nichts mehr melden.
 
 ### Neu
 
@@ -17,8 +16,7 @@ nicht auf einer echten Instanz**.
 
 ### English
 
-New detection for sensors that stopped reporting. Automatically tested, but **not yet on a
-real instance**.
+New detection for sensors that stopped reporting.
 
 #### New
 
@@ -31,8 +29,7 @@ real instance**.
 
 ## 1.0.3 - 2026-10-09
 
-Bedienung und Lesbarkeit. Automatisiert getestet, aber **noch nicht auf einer echten
-Instanz**.
+Bedienung und Lesbarkeit.
 
 ### Neu
 
@@ -55,7 +52,7 @@ Instanz**.
 
 ### English
 
-Usability and readability. Automatically tested, but **not yet on a real instance**.
+Usability and readability.
 
 #### New
 
@@ -77,8 +74,7 @@ Usability and readability. Automatically tested, but **not yet on a real instanc
 
 ## 1.0.2 - 2026-10-09
 
-Neue Navigation mit Kacheln und einige Korrekturen. Automatisiert getestet, aber
-**noch nicht auf einer echten Instanz**.
+Neue Navigation mit Kacheln und einige Korrekturen.
 
 ### Neu
 
@@ -100,8 +96,7 @@ Neue Navigation mit Kacheln und einige Korrekturen. Automatisiert getestet, aber
 
 ### English
 
-New tile navigation and some fixes. Automatically tested, but **not yet on a real
-instance**.
+New tile navigation and some fixes.
 
 #### New
 
@@ -122,8 +117,7 @@ instance**.
 
 ## 1.0.1 - 2026-10-09
 
-Korrekturen und eine Oberfläche, die aufgeräumter ist. Automatisiert getestet, aber
-**noch nicht auf einer echten Instanz**.
+Korrekturen und eine Oberfläche, die aufgeräumter ist.
 
 ### Geändert
 
@@ -142,7 +136,7 @@ Korrekturen und eine Oberfläche, die aufgeräumter ist. Automatisiert getestet,
 
 ### English
 
-Fixes and a tidier interface. Automatically tested, but **not yet on a real instance**.
+Fixes and a tidier interface.
 
 #### Changed
 
@@ -161,9 +155,7 @@ Fixes and a tidier interface. Automatically tested, but **not yet on a real inst
 
 ## 1.0.0 - 2026-10-09
 
-Erste veröffentlichte Version von HA Housekeeper. Automatisiert getestet, aber **noch
-nicht auf einer echten Instanz** und nicht in jedem Farbschema und auf schmalen
-Bildschirmen angesehen. Lege vor dem Aufräumen ein Home-Assistant-Backup an, es gibt
+Erste veröffentlichte Version von HA Housekeeper. Lege vor dem Aufräumen ein Home-Assistant-Backup an, es gibt
 keine Gewährleistung (siehe Haftungsausschluss in der README).
 
 ### Enthalten
@@ -180,8 +172,7 @@ keine Gewährleistung (siehe Haftungsausschluss in der README).
 
 ### English
 
-First published version of HA Housekeeper. Automatically tested, but **not yet on a
-real instance** and not checked in every colour scheme or on narrow screens. Make a
+First published version of HA Housekeeper. Make a
 Home Assistant backup before cleaning up; there is no warranty (see the disclaimer
 in the README).
 
