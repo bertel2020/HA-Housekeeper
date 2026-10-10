@@ -384,6 +384,13 @@ class CleanupMixin {
       : `<div class="setrow planfoot"><small style="margin:0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<div class="checkrow"><b>${this.t("verification")}</b>${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div>` : "";
     const stage = this.planStage(plan, Boolean(conf));
+    // Nothing can run: no steps and no confirmation, one clear band and the reasons.
+    if (open && !executable) {
+      const blocked = plan.actions.filter(a => a.verdict === "blocked").length;
+      const why = blocked && blocked === plan.actions.length ? this.t("wzIdleBlocked", { n: blocked }) : this.t("wzIdleNone");
+      return `<section class="panel" data-plan-card data-plan-idle><div class="panelhead"><div><h2>${this.t("planResult")} · <span class="pill mute">${this.t("plan_status_dry_run")}</span></h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
+        <div class="outcome warn" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><span><strong>${this.t("wzIdleTitle")}</strong><small>${this.esc(why)}</small></span></div>${rowList.join("")}${this.reportBlock(plan)}</section>`;
+    }
     const rows = this.planRowsShown(rowList);
     const summary = `<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>`;
     const flow = `<details class="rowdetails wzflow"><summary>${this.t("wzFlow")}</summary>${this.planStepper(plan, Boolean(conf))}</details>`;

@@ -2,11 +2,11 @@
 // Mixed into the panel in 99-register.js; the plan card itself is built in 18-cleanup.js.
 Object.assign(TEXT.de, {
   wzLabel: "Schritte des Plans", wzReview: "Prüfen", wzConfirm: "Bestätigen", wzRun: "Ausführen", wzResult: "Ergebnis",
-  wzFlow: "Ablauf im Detail", wzBack: "Zurück", wzMore: "… und {count} weitere", wzShowAll: "Alle zeigen", wzShowLess: "Weniger zeigen",
+  wzFlow: "Ablauf im Detail", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück", wzMore: "… und {count} weitere", wzShowAll: "Alle zeigen", wzShowLess: "Weniger zeigen",
 });
 Object.assign(TEXT.en, {
   wzLabel: "Steps of the plan", wzReview: "Review", wzConfirm: "Confirm", wzRun: "Run", wzResult: "Result",
-  wzFlow: "Flow in detail", wzBack: "Back", wzMore: "… and {count} more", wzShowAll: "Show all", wzShowLess: "Show less",
+  wzFlow: "Flow in detail", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back", wzMore: "… and {count} more", wzShowAll: "Show all", wzShowLess: "Show less",
 });
 
 const PLAN_ROWS_SHOWN = 8; // rows of a long plan shown before "Show all"
