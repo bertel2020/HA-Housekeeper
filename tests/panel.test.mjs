@@ -3927,7 +3927,7 @@ test("broken references of one dashboard card form one row with a readable place
   assert.ok(diag.hint.includes("custom:charger-card") && diag.hint.includes("3 of 4"), "the diagnosis names the abandoned card");
 });
 
-// ---------------------------------------------------------------- Storage & system, access & data flow
+// ---------------------------------------------------------------- Storage & system, tokens & secrets, access & data flow
 
 const SYSTEM = {
   supervisor: true,
@@ -3943,6 +3943,10 @@ const SYSTEM = {
   cards_total: 4e5,
   blueprints: [{ domain: "automation", path: "me/a.yaml", name: "Motion light", author: "me", bytes: 2048 }],
 };
+const CREDENTIALS = {
+  entries: 1,
+  credentials: [{ entry_id: "E1", domain: "fritz", title: "<i>Box</i>", source: "data", key: "password", masked: "••••••••", length: 8 }],
+};
 const ACCESS = {
   with_access: 1, external: 1, high: 1,
   entries: [
@@ -3955,9 +3959,10 @@ const ACCESS = {
 function systemPanel(lang = "en") {
   const env = panel(lang);
   const calls = [];
-  env.el._hass = { language: lang, callWS: async msg => { calls.push(msg); throw new Error("unexpected"); } };
+  env.el._hass = { language: lang, callWS: async msg => { calls.push(msg); if (msg.type === "ha_housekeeper/credential_reveal") return { value: "s3cr3t<x>" }; throw new Error("unexpected"); } };
   env.el._sys = {
     storage: { data: SYSTEM, requested: true, loading: false, error: "", at: null },
+    secrets: { data: CREDENTIALS, requested: true, loading: false, error: "", at: null },
     dataflow: { data: ACCESS, requested: true, loading: false, error: "", at: null },
   };
   return { ...env, calls };
@@ -3966,13 +3971,13 @@ function systemPanel(lang = "en") {
 test("the three new pages sit under Explore and render in both languages", () => {
   const { NAV_GROUPS, TEXT } = loadPanel();
   const explore = NAV_GROUPS.find(([label]) => label === "navGroupExplore")[1];
-  for (const view of ["storage", "dataflow"]) {
+  for (const view of ["storage", "secrets", "dataflow"]) {
     assert.ok(explore.includes(view), view);
     for (const lang of ["de", "en"]) assert.ok(TEXT[lang][view] && TEXT[lang][`${view}Subtitle`], `${lang} ${view}`);
   }
   for (const lang of ["de", "en"]) {
     const { el, shadow } = systemPanel(lang);
-    for (const view of ["storage", "dataflow"]) {
+    for (const view of ["storage", "secrets", "dataflow"]) {
       el.view = view;
       el.render();
       assert.ok(shadow.innerHTML.includes(el.t(`${view}Subtitle`)), `${lang} ${view} heading`);
@@ -4002,6 +4007,24 @@ test("without a Supervisor the categories and apps tiles are switched off and th
   const html = shadow.innerHTML;
   assert.equal((html.match(/taskcard t-mute off/g) || []).length, 2);
   assert.ok(html.includes("Recorder database"), "the consumers under /config are the first list");
+});
+
+test("secrets are listed masked and a value is fetched for one field on a click, then forgotten", async () => {
+  const { el, shadow, calls } = systemPanel();
+  el.view = "secrets";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("••••••••") && !shadow.innerHTML.includes("<i>Box</i>"));
+  assert.ok(!shadow.innerHTML.includes("data-export-list"), "credentials are never offered as a CSV");
+  await el.secReveal("E1|data|password");
+  assert.equal(JSON.stringify(calls.at(-1)), JSON.stringify({ type: "ha_housekeeper/credential_reveal", entry_id: "E1", source: "data", key: "password" }));
+  el.render();
+  assert.ok(shadow.innerHTML.includes("s3cr3t&lt;x&gt;"), "the value shows, escaped");
+  el.view = "storage";
+  el.render();
+  assert.equal(el.secShown, null, "leaving the page forgets revealed values");
+  el.view = "secrets";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("s3cr3t"));
 });
 
 test("access and data flow show system access and the cloud on one page", () => {

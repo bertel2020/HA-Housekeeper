@@ -50,7 +50,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", secrets: "view=secrets", dataflow: "view=dataflow", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -173,6 +173,12 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         apps_memory: 21 * MB, cards_total: 100 * MB,
         cards: [{ id: "1", type: "module", url: "/hacsfiles/button-card/button-card.js?hacstag=1", bytes: 1.2 * MB, scope: "folder" }, { id: "2", type: "module", url: "/local/my-card.js", bytes: 40 * 1024, scope: "file" }, { id: "3", type: "module", url: "https://cdn.example.org/x.js", bytes: null, scope: null }],
         blueprints: [{ domain: "automation", path: "homeassistant/motion_light.yaml", name: "Motion-activated Light", author: "Home Assistant", bytes: 1800 }, { domain: "script", path: "homeassistant/confirmable_notification.yaml", name: "Confirmable Notification", author: "Home Assistant", bytes: 2400 }] };
+      if (t.endsWith("/credentials")) return { schema: 1, entries: 3, credentials: [
+        { entry_id: "e1", domain: "bambu_lab", title: "P1S", source: "options", key: "auth_token", masked: "AACY••••••••••••••••••••hN-M", length: 28 },
+        { entry_id: "e2", domain: "dreame_vacuum", title: "Dreame F9", source: "data", key: "password", masked: "12J0•••84!!", length: 11 },
+        { entry_id: "e2", domain: "dreame_vacuum", title: "Dreame F9", source: "data", key: "token", masked: "5941••••••••••••••••••7073", length: 26 },
+        { entry_id: "e3", domain: "fritz", title: "FRITZ!Box", source: "data", key: "password", masked: "••••••••", length: 8 }] };
+      if (t.endsWith("/credential_reveal")) return { value: "example-value-1234" };
       if (t.endsWith("/access")) return { schema: 1, with_access: 3, external: 3, high: 3, entries: [
         { entry_id: "e4", domain: "hassio", title: "Supervisor", iot_class: "local_polling", disabled: false, access: [{ kind: "system_root", detail: "Supervisor" }], flows: ["local", "system"], gps: false, camera: false, external: false, risk: "high" },
         { entry_id: "e5", domain: "mobile_app", title: "Pixel", iot_class: "local_push", disabled: false, access: [{ kind: "location", detail: "Companion App" }], flows: ["external", "gps", "local"], gps: true, camera: false, external: true, risk: "high" },

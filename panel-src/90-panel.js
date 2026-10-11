@@ -600,6 +600,7 @@ class HAHousekeeperPanel extends HTMLElement {
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
       policies: [this.t("policies"), this.t("policiesSubtitle")],
       storage: [this.t("storage"), this.t("storageSubtitle")],
+      secrets: [this.t("secrets"), this.t("secretsSubtitle")],
       dataflow: [this.t("dataflow"), this.t("dataflowSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
@@ -617,6 +618,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   content() {
+    if (this.view !== "secrets") this.secShown = null; // revealed values are gone once the page is left
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
     if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
@@ -636,6 +638,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "policies") return this.policiesView();
     if (this.view === "runs") return this.runsView();
     if (this.view === "storage") return this.storageView();
+    if (this.view === "secrets") return this.secretsView();
     if (this.view === "dataflow") return this.dataflowView();
     if (this.view === "graph") return this.graph();
     return this.overview();
@@ -795,6 +798,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindCounter(root);
     this.bindPicker(root);
     this.bindSystem(root);
+    this.bindCredentials(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };

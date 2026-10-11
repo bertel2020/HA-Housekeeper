@@ -452,6 +452,7 @@ const NAV = [
   ["repair", "mdi:tools"],
   ["journal", "mdi:clipboard-text-clock-outline"],
   ["storage", "mdi:harddisk"],
+  ["secrets", "mdi:key-chain-variant"],
   ["dataflow", "mdi:transit-connection-variant"],
   ["maintenance", "mdi:wrench-clock"],
   ["exposure", "mdi:shield-search"],
@@ -469,7 +470,7 @@ const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav", "cleanup", "repair"]],
   ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies", "exposure"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
-  ["navGroupExplore", ["inventory", "graph", "changes", "journal", "storage", "dataflow"]],
+  ["navGroupExplore", ["inventory", "graph", "changes", "journal", "storage", "secrets", "dataflow"]],
 ];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
@@ -1361,6 +1362,7 @@ class StylesMixin {
       button.ring{border:0;padding:0;cursor:pointer;color:inherit;font:inherit}button.ring:focus-visible{outline:2px solid var(--hk-blue);outline-offset:3px}.healthwhy{display:grid;gap:6px;max-width:560px;margin:-4px 0 14px;padding:14px 16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-soft)}.healthwhy .row{display:flex;justify-content:space-between;gap:16px;padding:0;border:0;background:transparent}.healthwhy .row.minus{color:var(--hk-muted)}.healthwhy .row.total{border-top:1px solid var(--hk-border);padding-top:6px;font-weight:700}.healthwhy small{color:var(--hk-muted)}.healthwhy .btn{justify-self:start}
       .btn.small{padding:5px 11px;font-size:calc(13px*var(--hk-fs,1))}.notehint{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 16px}.notehint small{display:block;color:var(--hk-muted)}.row.seeall{justify-content:flex-start;color:var(--hk-blue-text);font-weight:600}.logfilters{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.logfilters .chip{cursor:pointer}.logfilters .chip.on{border-color:var(--hk-blue);color:var(--hk-blue-text)}.logsuggest{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 9%,transparent)}
       .hamenu{display:grid;place-items:center;flex:none;width:40px;height:40px;margin:0 -10px 0 -6px;padding:0;border:0;border-radius:50%;background:none;color:inherit}.hamenu:hover{background:var(--hk-soft)}.hamenu:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.hamenu ha-icon{--mdc-icon-size:24px}.sysmeter{display:block;height:6px;margin-top:6px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysmeter i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.sysmeter.warn i{background:var(--hk-amber)}.sysmeter.red i{background:var(--hk-red)}.sysmeter.mute i{background:var(--hk-gray)}.sysshare{display:block;width:100%;min-width:120px;height:8px;margin-top:2px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysshare i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.tablewrap.lt.acc td{white-space:normal}.pills{display:flex;flex-wrap:wrap;gap:4px}@media(min-width:641px){.sysnav .navtiles{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1300px){.sysnav .navtiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
+      .tablewrap.lt.secrets td{white-space:normal}.seccell{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.secval,.secfield{font-family:var(--hk-mono,ui-monospace,SFMono-Regular,monospace);font-size:calc(12px*var(--hk-fs,1))}.secval{word-break:break-all;max-width:min(520px,60vw)}.secval.shown{padding:1px 4px;border-radius:4px;color:var(--hk-text);background:color-mix(in srgb,var(--hk-amber) 16%,transparent)}.secbtns{display:inline-flex;gap:2px}.secbtns .btn{min-height:30px;padding:4px 8px}
       ${this.themeCss()}
     </style>`;
   }
@@ -10614,6 +10616,28 @@ class SystemMixin {
   }
 }
 
+// Texts for the page "Tokens & secrets"; merged into TEXT.
+Object.assign(TEXT.de, {
+  secrets: "Tokens & Secrets", secretsSubtitle: "Zugangsdaten, die Integrationen gespeichert haben: API-Keys, Tokens und Passwörter. Maskiert; den vollen Wert gibt es nur auf Klick.",
+  secTitle: "Tokens & Secrets", secHint: "API-Keys, Tokens und Passwörter der Integrationen", secLoading: "Die Zugangsdaten werden gelesen …",
+  secIntro: "Hier siehst du, welche Zugangsdaten deine Integrationen gespeichert haben. Die Werte sind maskiert; „Anzeigen“ holt den vollen Wert eines einzelnen Feldes. Öffne Werte nur, wenn niemand mitliest.",
+  secSumFields: "Felder", secSumEntries: "Integrationen", secSumData: "in den Daten", secSumOptions: "in den Optionen",
+  secColIntegration: "Integration", secColSource: "Quelle", secColField: "Feld", secColValue: "Wert", secSource_data: "Daten", secSource_options: "Optionen",
+  secShow: "Anzeigen", secHide: "Verbergen", secShowTitle: "Den vollen Wert dieses Feldes anzeigen", secFailed: "Der Wert konnte nicht gelesen werden.",
+  secNone: "Keine gespeicherten Zugangsdaten gefunden.", secAllDomains: "Alle Integrationen", secAllSources: "Alle Quellen",
+  secFootnote: "Housekeeper sucht in den Daten und Optionen jedes Integrationseintrags nach Feldern, deren Name auf Zugangsdaten deutet (key, token, secret, password, pin, webhook …). Öffentliche Schlüssel, die Art eines Tokens und Ablaufzeiten zählen nicht. Die Liste enthält nur maskierte Werte. Den vollen Wert liefert Home Assistant nur einem Administrator und nur für ein Feld auf einmal; Housekeeper speichert und protokolliert ihn nicht, und er verschwindet, sobald du die Seite verlässt.",
+});
+Object.assign(TEXT.en, {
+  secrets: "Tokens & secrets", secretsSubtitle: "Credentials that integrations have stored: API keys, tokens and passwords. Masked; the full value only on a click.",
+  secTitle: "Tokens & secrets", secHint: "API keys, tokens and passwords of the integrations", secLoading: "Reading the credentials …",
+  secIntro: "Here you see which credentials your integrations have stored. The values are masked; \"Show\" fetches the full value of one field. Only reveal values when nobody is looking over your shoulder.",
+  secSumFields: "Fields", secSumEntries: "Integrations", secSumData: "in the data", secSumOptions: "in the options",
+  secColIntegration: "Integration", secColSource: "Source", secColField: "Field", secColValue: "Value", secSource_data: "Data", secSource_options: "Options",
+  secShow: "Show", secHide: "Hide", secShowTitle: "Show the full value of this field", secFailed: "The value could not be read.",
+  secNone: "No stored credentials found.", secAllDomains: "All integrations", secAllSources: "All sources",
+  secFootnote: "Housekeeper looks through the data and options of every integration entry for fields whose name suggests a credential (key, token, secret, password, pin, webhook …). Public keys, the type of a token and expiry times do not count. The list only holds masked values. Home Assistant hands the full value only to an administrator and only for one field at a time; Housekeeper neither stores nor logs it, and it is gone as soon as you leave the page.",
+});
+
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
@@ -10760,6 +10784,74 @@ class PolicyRowMixin {
       const area = this.polDraft(item).area;
       this.makeDetailPlan({ kind: "set_area", object_id: item.object_id, ...(area ? { target: area } : {}) });
     }));
+  }
+}
+
+// CredentialsMixin: the page "Tokens & secrets" under Explore; mixed in by 99-register.js.
+// Stored credentials of the integrations, masked; the full value of one field only on a click.
+// It uses the loader and the list of SystemMixin (73-system.js).
+SYS_COMMANDS.secrets = "credentials";
+
+class CredentialsMixin {
+  secKey(c) { return `${c.entry_id}|${c.source}|${c.key}`; }
+
+  secretsView() {
+    return this.sysFrame("secrets", "secTitle", "secHint", "secLoading", (r, head) => {
+      const list = r.credentials || [];
+      if (this._secData !== r) { this._secData = r; this.secShown = null; } // a fresh list starts masked
+      const shown = this.secShown || new Map();
+      const tiles = this.sumTiles([
+        { label: this.t("secSumFields"), value: this.esc(this.formatNumber(list.length)), tone: "mute" },
+        { label: this.t("secSumEntries"), value: this.esc(this.formatNumber(r.entries || 0)), tone: "mute" },
+        { label: this.t("secSumData"), value: this.esc(this.formatNumber(list.filter(c => c.source === "data").length)), tone: "mute" },
+        { label: this.t("secSumOptions"), value: this.esc(this.formatNumber(list.filter(c => c.source === "options").length)), tone: "mute" },
+      ]);
+      const domains = [...new Set(list.map(c => c.domain))].sort();
+      const value = c => {
+        const key = this.secKey(c), plain = shown.get(key);
+        const text = plain === undefined ? `<code class="secval">${this.esc(c.masked)}</code>` : `<code class="secval shown">${this.esc(plain)}</code>`;
+        const copy = plain === undefined ? "" : `<button type="button" class="btn quiet" data-copy="${this.esc(plain)}" title="${this.esc(this.t("copyId"))}" aria-label="${this.esc(this.t("copyId"))}"><ha-icon icon="mdi:content-copy"></ha-icon></button>`;
+        const toggle = plain === undefined
+          ? `<button type="button" class="btn quiet" data-sec-show="${this.esc(key)}" title="${this.esc(this.t("secShowTitle"))}"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("secShow")}</button>`
+          : `<button type="button" class="btn quiet" data-sec-hide="${this.esc(key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("secHide")}</button>`;
+        return `<div class="seccell">${text}<span class="secbtns">${toggle}${copy}</span></div>`;
+      };
+      const table = this.sysList("secrets", list, {
+        sort: "domain", dir: "asc",
+        sorts: [{ key: "domain", label: "secColIntegration", dir: "asc", get: c => `${c.domain} ${c.title}` }, { key: "field", label: "secColField", dir: "asc", get: c => c.key }, { key: "source", label: "secColSource", dir: "asc", get: c => c.source }],
+        filters: [
+          { name: "domain", all: this.t("secAllDomains"), options: domains.map(d => [d, d]) },
+          { name: "source", all: this.t("secAllSources"), options: [["data", this.t("secSource_data")], ["options", this.t("secSource_options")]] },
+        ],
+        filterFns: { domain: (c, v) => c.domain === v, source: (c, v) => c.source === v },
+        text: c => `${c.domain} ${c.title} ${c.key}`, tie: c => this.secKey(c), empty: "secNone", cls: "secrets",
+        columns: [
+          { key: "domain", label: "secColIntegration", cell: c => this.nameCell(c.title || c.domain, c.domain) },
+          { key: "source", label: "secColSource", cell: c => `<span class="pill mute">${this.t(`secSource_${c.source}`)}</span>` },
+          { key: "field", label: "secColField", cell: c => `<code class="secfield">${this.esc(c.key)}</code>` },
+          { key: "value", label: "secColValue", sortable: false, cell: value },
+        ],
+        // No export: a file with credentials should not come from a click on a list.
+      });
+      return `<div class="stack"><div class="panel">${head}<div class="pad"><p class="factnote">${this.t("secIntro")}</p></div></div>${tiles}<div class="panel">${table}${this.howCounted("secFootnote")}</div></div>`;
+    });
+  }
+
+  async secReveal(key) {
+    const [entryId, source, ...rest] = String(key).split("|");
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/credential_reveal", entry_id: entryId, source, key: rest.join("|") });
+      (this.secShown ||= new Map()).set(key, String(res?.value ?? ""));
+      this.render();
+    } catch (err) {
+      this.noteError("action", err);
+      this.toast(this.t("secFailed"), true);
+    }
+  }
+
+  bindCredentials(root) {
+    root.querySelectorAll("[data-sec-show]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.secReveal(el.dataset.secShow); });
+    root.querySelectorAll("[data-sec-hide]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.secShown?.delete(el.dataset.secHide); this.render(); });
   }
 }
 
@@ -11534,6 +11626,7 @@ class HAHousekeeperPanel extends HTMLElement {
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
       policies: [this.t("policies"), this.t("policiesSubtitle")],
       storage: [this.t("storage"), this.t("storageSubtitle")],
+      secrets: [this.t("secrets"), this.t("secretsSubtitle")],
       dataflow: [this.t("dataflow"), this.t("dataflowSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
@@ -11551,6 +11644,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   content() {
+    if (this.view !== "secrets") this.secShown = null; // revealed values are gone once the page is left
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
     if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
@@ -11570,6 +11664,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "policies") return this.policiesView();
     if (this.view === "runs") return this.runsView();
     if (this.view === "storage") return this.storageView();
+    if (this.view === "secrets") return this.secretsView();
     if (this.view === "dataflow") return this.dataflowView();
     if (this.view === "graph") return this.graph();
     return this.overview();
@@ -11729,6 +11824,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindCounter(root);
     this.bindPicker(root);
     this.bindSystem(root);
+    this.bindCredentials(root);
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
@@ -11936,7 +12032,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, SparklineMixin, BrokenCardsMixin, SystemMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, LayoutMixin, FlowMixin, CorrelationMixin, LifecycleMixin, WindowMixin, BlueprintsMixin, MarksMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, CredentialsMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

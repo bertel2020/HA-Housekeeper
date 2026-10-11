@@ -87,6 +87,7 @@ const NAV = [
   ["repair", "mdi:tools"],
   ["journal", "mdi:clipboard-text-clock-outline"],
   ["storage", "mdi:harddisk"],
+  ["secrets", "mdi:key-chain-variant"],
   ["dataflow", "mdi:transit-connection-variant"],
   ["maintenance", "mdi:wrench-clock"],
   ["exposure", "mdi:shield-search"],
@@ -104,7 +105,7 @@ const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav", "cleanup", "repair"]],
   ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies", "exposure"]],
   ["navGroupOperation", ["reliability", "runs", "recorder"]],
-  ["navGroupExplore", ["inventory", "graph", "changes", "journal", "storage", "dataflow"]],
+  ["navGroupExplore", ["inventory", "graph", "changes", "journal", "storage", "secrets", "dataflow"]],
 ];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
