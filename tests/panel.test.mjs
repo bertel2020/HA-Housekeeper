@@ -62,7 +62,7 @@ test("Slovak localization covers English keys and preserves interpolation", () =
   const { TEXT } = loadPanel();
   const missing = Object.keys(TEXT.en).filter(key => !(key in TEXT.sk));
   assert.deepEqual(missing, []);
-  const placeholders = text => [...new Set([...String(text).matchAll(/\\{(\\w+)\\}/g)].map(m => m[1]))].sort();
+  const placeholders = text => [...new Set([...String(text).matchAll(/\{(\w+)\}/g)].map(m => m[1]))].sort();
   for (const [key, original] of Object.entries(TEXT.en)) {
     const translated = TEXT.sk[key];
     for (const value of (typeof translated === "string" ? [translated] : Object.values(translated))) {
