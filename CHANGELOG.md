@@ -1,5 +1,57 @@
 # Changelog
 
+## 1.7.0 - 2026-10-14
+
+### Neu
+
+- **Hausfunktionen:** Wichtige Funktionen des Hauses aus direkt gewählten Entitäten, Geräten, Automationen, Szenen, Skripten, Integrationen und Apps/Add-ons zusammenstellen. Die gemeinsame Objektsuche gruppiert Treffer nach Typ und schlägt bekannte Abhängigkeiten vor; nur ausdrücklich hinzugefügte Objekte werden überwacht. Für Entitäten lassen sich Aktualisierungsfrist, Mindestwert und eine Dauer für „nicht verfügbar“ festlegen. Der kompakte Editor hat eine mitwachsende Beschreibung, zeigt eine Vorschau der letzten Scanbewertung und lässt Funktionen vorübergehend deaktivieren. Die Seite unterscheidet belegte Defekte, Prüflücken, unauffällige und deaktivierte Funktionen; die Übersicht meldet aktive Probleme und nennt sonst die zuletzt beeinträchtigte Funktion. Zustandswechsel stehen als HA-Ereignis und Event-Entität bereit, jede Funktion hat einen Sensor, dessen Attribute auch letzten Defekt, Vorfälle, Ausfallminuten und Verfügbarkeit der letzten 30 Tage nennen. Dauerhafte HA-Mitteilungen sind pro Funktion einstellbar. Zugeordnete Objekte sind anklickbar, auch beim Anlegen und Bearbeiten. Jede Funktion hat einen Verlauf mit Zustandswechseln und Änderungen (mit Suche, Filter und Seiten, auch Pläne zu den Objekten; schnelles Hin und Her wird zu einer Zeile zusammengefasst) und zeigt die Verfügbarkeit der letzten 30 Tage mit Vorfällen und einem Feld je Tag; die Aufbewahrung (1 bis 365 Tage, Standard 30) gilt auch für den Scan-Verlauf und steht unter Einstellungen.
+
+- **Vermerk mit Zeitfenster:** Ein Vermerk wie „Absichtlich offline“ gilt auf Wunsch nur zu festen Uhrzeiten oder bei Dunkelheit (Sonnenstand aus Home Assistant), mit einer Anlaufzeit danach (Standard 30 Minuten). Außerhalb des Fensters wird das Objekt wieder überwacht, zum Beispiel ein solarbetriebener Gartensensor tagsüber.
+
+- **Beobachtung nach Updates:** Nach einem Update von Home Assistant oder einer Integration scannt Housekeeper einen Tag lang zusätzlich (30 Minuten, 2 und 6 Stunden danach und am Ende) und vergleicht mit dem Stand vor dem Neustart. Ein Band zeigt, solange es läuft, wie viele Objekte betroffen sind; die Karte auf der Befundseite nennt, was seither ausfiel, kurz gestört war oder wieder läuft, und sagt „unbekannt“, wenn ein Vergleich nicht möglich ist. Das ist ein zeitlicher Zusammenhang, keine Ursache. Dauer unter Einstellungen (0 schaltet aus).
+
+- **Eigener Update-Status:** Unter Einstellungen, Info vergleicht Housekeeper seine tatsächlich geladene Version mit dem Stand von HACS. Die Karte erkennt ein verfügbares Update, abweichende oder fehlende HACS-Daten und besonders eine frühere Commit-Installation, bei der HACS den Wechsel auf Releases übersehen kann. Sie erklärt den passenden nächsten Schritt und öffnet das Housekeeper-Repository direkt in HACS; GitHub wird dafür nicht zusätzlich abgefragt.
+
+- **Entitäten im Inventar gesammelt umschalten:** Die Entitätenzeilen des Inventars haben ein Kästchen. Die Leiste darüber deaktiviert, aktiviert, blendet aus oder ein, bis zu 200 Entitäten pro Plan, mit Vorschau und Rückgängig. Eine Entität, die etwas sicher benutzt, wird nicht deaktiviert; nur selbst Deaktiviertes wird wieder aktiviert.
+
+### Behoben
+
+- **Oberfläche:** Korrekturen und kleine Verbesserungen an Listen, Tabellen, Dialogen und der Bedienung: einheitlichere Listen und Tabellen auf allen Seiten (Suche, Sortierung, Filter, Seiten und CSV-Export, die ganze Zeile klickbar, kompakte Zeilen), Seitenauswahl im Inventar, ein Reiter „Aktionen“ mit festem Aufbau für alle Objekte (auch Apps), Pläne in einem Schritt bestätigen oder abbrechen, ein Menü „Exportieren“ im Inventar (Liste als CSV oder geführter Export), Spaltenauswahl mit Name links und Kästchen rechts, sauber ausgerichtete Aktionen sowie bessere Tastatur- und Screenreader-Unterstützung.
+
+- **Speicher und System:** Die Messung der Ordner stoppt nach 20 Sekunden (etwa bei einer langsamen Netzfreigabe unter /config); die Seite nennt die Größen dann Mindestwerte.
+
+- **Ausfälle:** Die Detailseite einer ausgefallenen Integration nennt, wie lange der Ausfall dauert und wann er schwerer wiegt.
+
+- **Fehlender Blueprint:** Eine Automation oder ein Skript, dessen Blueprint nicht mehr existiert, wird als Befund gemeldet; fehlt er für mehrere, steht er als gemeinsame Ursache in der Liste. Die Blueprint-Seite zählt solche Pfade jetzt auch.
+
+- **Scan von außen starten:** Neuer Dienst `ha_housekeeper.scan` (mit „Auf das Ende warten“ liefert er die Zahlen zurück) und ein Knopf „Scan starten“ für Dashboards. Mehrere Aufrufe ergeben einen Scan, kurz nach einem Scan startet keiner, und während eines Plans oder beim Start von Home Assistant wird abgelehnt.
+
+### English
+
+#### New
+
+- **Home functions:** Group important functions of your home from directly selected entities, devices, automations, scenes, scripts, integrations and apps/add-ons. The shared object search groups results by type and suggests known dependencies; only explicitly added objects are monitored. Entities support update deadlines, minimum values and a grace period for unavailability. The compact editor has a description field that grows with its text, previews the latest scan evaluation and lets functions be temporarily disabled. The page distinguishes confirmed faults, check gaps, healthy and disabled functions; the overview highlights active problems and otherwise names the function impaired last. State changes are available as HA events and an event entity, with one sensor per function whose attributes also give the last fault, incidents, downtime minutes and availability of the last 30 days. Persistent HA notifications are configurable per function. Assigned objects are clickable, also while creating and editing. Each function has a history of state changes and edits (with search, filter and paging, also plans for the objects; quick back and forth is folded into one line) and shows the availability of the last 30 days with incidents and one square per day; the retention (1 to 365 days, default 30) also applies to the scan history and is set in Settings.
+
+- **Mark with a time window:** A mark such as “Offline on purpose” can apply only at fixed hours or in the dark (position of the sun from Home Assistant), with a grace period after it (30 minutes by default). Outside the window the object is watched again, for example a solar-powered garden sensor by day.
+
+- **Watch after updates:** After an update of Home Assistant or an integration, Housekeeper scans extra for a day (30 minutes, 2 and 6 hours later, and at the end) and compares with the state before the restart. A band shows how many objects are affected while it runs; the card on the findings page lists what failed since, was briefly disturbed or works again, and says "unknown" when no comparison is possible. This is a link in time, not a cause. The duration is in Settings (0 switches it off).
+
+- **Own update status:** Under Settings, Info, Housekeeper compares the version actually loaded with the state stored by HACS. The card detects an available update, mismatching or missing HACS data and, in particular, an earlier commit installation for which HACS can miss the move to releases. It explains the appropriate next step and opens the Housekeeper repository directly in HACS; no additional GitHub request is made.
+
+- **Switch entities in bulk from the inventory:** Entity rows of the Inventory have a checkbox. The bar above disables, enables, hides or shows them, up to 200 entities per plan, with a preview and undo. An entity that something certainly uses is not disabled; only what you disabled yourself is enabled again.
+
+#### Fixed
+
+- **Interface:** Corrections and small improvements to lists, tables, dialogs and handling: more consistent lists and tables on every page (search, sorting, filters, pages and CSV export, the whole row clickable, compact rows), page selection in the inventory, an Actions tab with a fixed layout for every object (apps too), confirming or cancelling plans in one step, an Export menu in the inventory (list as CSV or guided export), column pickers with the name left and the checkbox right, cleanly aligned actions and better keyboard and screen reader support.
+
+- **Storage and system:** The folder measurement stops after 20 seconds (for example on a slow network share under /config); the page then calls the sizes minimums.
+
+- **Outages:** The detail page of a failed integration says how long the outage has lasted and when it becomes more serious.
+
+- **Missing blueprint:** An automation or script whose blueprint no longer exists is reported as a finding; when several lack it, it shows as a shared cause in the list. The blueprints page now counts such paths too.
+
+- **Start a scan from outside:** New service `ha_housekeeper.scan` (with “Wait for the end” it returns the counts) and a “Start scan” button for dashboards. Several calls make one scan, none starts right after a scan, and it is refused during a plan or while Home Assistant starts.
+
 ## 1.6.0 - 2026-10-13
 
 ### Geändert

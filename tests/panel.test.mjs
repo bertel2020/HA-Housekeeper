@@ -53,6 +53,26 @@ function panel(lang = "en", extra = {}) {
   return { el, ...env };
 }
 
+test("the overview has one findings link and shows active policy violations among hints", () => {
+  const { el } = panel("de");
+  el.findingEntries = () => Array.from({ length: 6 }, (_, i) => ({ finding: { id: i } }));
+  el.overviewFinding = () => '<div class="row">Befund</div>';
+  el.findingTotal = () => 6;
+  el.todoItems = () => [];
+  const todo = el.todoCard();
+  assert.equal((todo.match(/Alle Befunde \(6\)/g) || []).length, 1);
+  el.ensureBatteryTrend = () => {};
+  el.ensurePolicies = () => {};
+  el.policies = { available: true, rules: [
+    { enabled: true, count: 3, ignored: 2 },
+    { enabled: false, count: 8, ignored: 0 },
+  ] };
+  const hints = el.cleanupCard();
+  assert.match(hints, /data-jump="policies"[^>]*>[\s\S]*?Richtlinienverstöße[\s\S]*?1 Regel aktiv[\s\S]*?>3<\/span>/);
+  assert.ok(!hints.includes('>8</span>'), "disabled rules do not contribute violations");
+  assert.equal(el.t("dbOvHint"), "Größe und Wachstum des Recorders.");
+});
+
 test("German and English texts define the same keys", () => {
   const { TEXT } = loadPanel();
   assert.deepEqual(Object.keys(TEXT.de).sort(), Object.keys(TEXT.en).sort());
@@ -81,6 +101,239 @@ test("Slovak is selected automatically and counts use Slovak grammatical forms",
   assert.equal(el.t("deviceEntities", { count: 10 }), "10 entít");
 });
 
+test("home functions show a confirmed fault, a scan gap, and escapes function names", () => {
+  const { el, NAV_GROUPS } = panel("de");
+  assert.ok(NAV_GROUPS.find(([group]) => group === "navGroupOperation")[1].includes("monitor"));
+  el.data = { ...DATA, monitor: [
+    { id: "one", name: "<img src=x>", description: "", state: "problem", reason: "unavailable", reason_key: "entity:sensor.a", scanned_at: DATA.meta.scanned_at, members: [], incident_open: true },
+    { id: "two", name: "Türklingel", description: "", state: "unverified", reason: "source_unread", scanned_at: DATA.meta.scanned_at, members: [], incident_open: false },
+  ] };
+  const html = el.monitorView();
+  assert.match(html, /Beeinträchtigt/);
+  assert.match(html, /Unbekannt/);
+  assert.match(html, /&lt;img src=x&gt;/);
+  assert.doesNotMatch(html, /<img src=x>/);
+  assert.ok(html.includes('data-monitor-open="one"') && html.includes('data-lsort="monitor|state|asc"') && html.includes('class="tablewrap lt'), "the functions are a table; a row opens the function");
+  el.monitorFilter = "unverified";
+  assert.ok(el.monitorView().includes("Türklingel") && !el.monitorView().includes("&lt;img src=x&gt;") && el.lv.monitor.f.state === "unverified", "the deep-link filter lands in the list filter");
+  el.monitorFilter = "";
+  assert.ok(el.monitorView().includes("&lt;img src=x&gt;") && !el.lv.monitor.f.state, "clearing it shows every function again");
+  el.monitorSelected = "one";
+  assert.match(el.monitorDetail(), /Letzter Scan/);
+});
+
+test("the home functions history shows a flapping run as one line and filters by kind", () => {
+  const { el } = panel("de");
+  const at = "2026-10-14T09:00:00+00:00";
+  el.data = { ...DATA, monitor: [{ id: "one", name: "Wasser", description: "", state: "ok", scanned_at: at, members: [{ object_key: "entity:sensor.x", required: true, rules: [] }], incident_open: false }] };
+  el.monitorSelected = "one";
+  el.journal = [{ plan_id: "p1", created_at: new Date().toISOString(), status: "verified", objects: ["sensor.x", "sensor.other"], summary: { total: 1, ok: 1 } }];
+  el.monitorHistory = { one: { sig: "ok|" + at + "|undefined", retention_days: 30, entries: [
+    { at, until: at, kind: "flapping", count: 7, state: "ok" }, { at, kind: "edited", added: ["entity:sensor.x"] },
+  ] } };
+  el.monitorHistory.one.availability = { window_days: 30, since: at, observed_seconds: 1000, ok_seconds: 999, problem_seconds: 1, unknown_seconds: 0, unstable_seconds: 0, incidents: 1, longest_seconds: 1, days: [{ date: "2026-10-14", state: "problem" }] };
+  const html = el.monitorDetail();
+  assert.match(html, /Unauffällig: 99,9 %/);
+  assert.match(html, /data-plan-open="p1"/);
+  assert.ok(html.includes('data-lsort="monitor-history|time|desc"') && html.includes('data-lsort="monitor-members|state|asc"') && html.includes('data-object="entity:sensor.x"') === false, "history and objects are tables (the object is not in the inventory here, so its row opens nothing)");
+  el.data.monitor[0].last_problem_at = new Date(Date.now() - 2 * 86400000).toISOString();
+  assert.match(el.monitorLastProblemLine(), /Zuletzt beeinträchtigt.*Wasser.*2/);
+  el.data.monitor[0].state = "problem";
+  assert.equal(el.monitorLastProblemLine(), "");
+  assert.match(html, /Wechselt häufig/);
+  assert.match(html, /7 Wechsel/);
+  el.lvState("monitor-history", "", "asc").f.kind = "config";
+  const filtered = el.monitorDetail();
+  assert.doesNotMatch(filtered, /7 Wechsel/);
+  assert.match(filtered, /Geändert/);
+});
+
+test("a disabled home function remains editable but does not appear as an overview alarm", () => {
+  const { el } = panel("de");
+  el.data = { ...DATA, monitor: [{ id: "paused", name: "Wasseralarm", description: "", enabled: false, state: "disabled", reason: "disabled", members: [], incident_open: false }] };
+  assert.match(el.monitorView(), /Deaktiviert/);
+  el.monitorFilter = "disabled";
+  assert.match(el.monitorView(), /Wasseralarm/);
+  el.monitorSelected = "paused";
+  assert.match(el.monitorDetail(), /Deaktiviert/);
+  el.monitorForm = { id: "paused", name: "Wasseralarm", description: "", enabled: false, notify: true, members: [] };
+  assert.match(el.monitorEditor(), /data-monitor-enabled /);
+  assert.doesNotMatch(el.monitorEditor(), /data-monitor-enabled checked/);
+  assert.ok(!el.todoItems().some(item => item.key.startsWith("monitor_")));
+});
+
+test("home functions editor keeps required members and offers only direct inventory objects", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [...DATA.objects.map(o => o.object_id === "sensor.b" ? { ...o, area_id: "bedroom" } : o),
+    { object_type: "scene", object_id: "scene.home", name: "Home", status: "active" },
+    { object_type: "script", object_id: "script.start", name: "Start", status: "active" },
+    { object_type: "app", object_id: "mqtt", name: "MQTT", status: "stopped" },
+    { object_type: "area", object_id: "bedroom", name: "Bedroom", status: "active" },
+  ] };
+  el.monitorForm = { name: "Water", description: "", notify: true, members: [{ object_key: "entity:sensor.b", required: false }] };
+  assert.match(el.monitorEditor(), /Enter at least two characters/);
+  assert.doesNotMatch(el.monitorEditor(), /data-monitor-pick=/);
+  el.monitorQuery = "automation";
+  const html = el.monitorEditor();
+  assert.match(html, /data-monitor-required="0"/);
+  assert.match(html, /data-monitor-pick="automation:automation.c"/);
+  assert.doesNotMatch(html, /data-monitor-pick="entity:sensor.b"/);
+  assert.match(html, /class="row monitor-choice"/);
+  assert.match(el.styles(), /\.row\.monitor-choice\{grid-template-columns:auto minmax\(0,1fr\) auto\}/);
+  assert.match(html, /data-monitor-type="scene"/);
+  el.monitorQuery = "home";
+  assert.match(el.monitorEditor(), /data-monitor-pick="scene:scene.home"/);
+  el.monitorType = "other";
+  el.monitorQuery = "start";
+  assert.match(el.monitorEditor(), /data-monitor-pick="script:script.start"/);
+  el.monitorQuery = "mqtt";
+  assert.match(el.monitorEditor(), /data-monitor-pick="app:mqtt"/);
+  el.monitorQuery = "bedroom";
+  assert.doesNotMatch(el.monitorEditor(), /data-monitor-pick="area:/);
+  el.monitorType = "";
+  assert.match(el.monitorEditor(), /data-monitor-pick="entity:sensor.b" disabled/);
+  el.monitorQuery = "sensor.b";
+  assert.match(el.monitorEditor(), /Hinzugefügt|Added/);
+  assert.match(el.monitorEditor(), /data-monitor-pick="entity:sensor.b" disabled/);
+});
+
+test("home functions suggest known dependencies and shows entity rules", () => {
+  const { el } = panel("de");
+  el.data = { ...DATA, objects: [...DATA.objects,
+    { object_type: "device", object_id: "d1", name: "Gerät", status: "active" },
+    { object_type: "config_entry", object_id: "c1", name: "Integration", status: "active" },
+    { object_type: "app", object_id: "mqtt", name: "MQTT", status: "active" },
+  ], edges: [
+    { source: "automation:automation.c", target: "entity:sensor.b", relation: "TARGETS", confidence: "certain" },
+    { source: "device:d1", target: "entity:sensor.b", relation: "PROVIDES", confidence: "certain" },
+    { source: "config_entry:c1", target: "entity:sensor.b", relation: "PROVIDES", confidence: "certain" },
+    { source: "config_entry:c1", target: "app:mqtt", relation: "CONNECTED", confidence: "probable" },
+  ] };
+  el.monitorForm = { name: "Test", description: "", notify: true, members: [
+    { object_key: "automation:automation.c", required: true, rules: [] },
+    { object_key: "entity:sensor.a", required: true, rules: [{ kind: "min_value", value: 20 }] },
+  ] };
+  const keys = el.monitorSuggestions().map(item => item.key);
+  assert.equal(keys.slice().sort().join(","), ["app:mqtt", "config_entry:c1", "device:d1", "entity:sensor.b"].sort().join(","));
+  const html = el.monitorEditor();
+  assert.match(html, /data-monitor-rule-toggle="1:min_value" checked/);
+  assert.match(html, /data-monitor-pick="app:mqtt"/);
+  assert.match(html, /vermutlich/);
+});
+
+test("home functions preview requests the backend evaluation without saving", async () => {
+  let run, request;
+  const { el } = panel("en", { setTimeout: fn => { run = fn; return 1; }, clearTimeout: () => {} });
+  el.monitorForm = { name: "Test", description: "", notify: false, members: [{ object_key: "entity:sensor.b", required: true, rules: [{ kind: "freshness", value: 24 }] }] };
+  el._hass.callWS = async msg => { request = msg; return { preview: { state: "problem", reason: "rule_stale", reason_key: "entity:sensor.b", members: [{ object_key: "entity:sensor.b", state: "problem", reason: "rule_stale" }] } }; };
+  el.queueMonitorPreview();
+  await run();
+  assert.equal(request.type, "ha_housekeeper/monitor_preview");
+  assert.equal(request.members[0].rules[0].value, 24);
+  assert.match(el.monitorPreviewHtml(), /Not updated in time/);
+});
+
+test("home functions overview counts a known finding only once", () => {
+  const { el } = panel("de");
+  el.ensureSysLight = el.ensureGoals = el.ensurePolicies = () => {};
+  el.staleScan = () => null;
+  el.causeList = () => [];
+  const problem = { id: "one", name: "Water", state: "problem", reason: "orphaned", reason_key: "entity:sensor.a", scanned_at: DATA.meta.scanned_at, incident_open: true };
+  el.data = { ...DATA, monitor: [problem], quarantine: [] };
+  assert.equal(el.todoItems().find(i => i.key === "monitor_problem").area, "findings");
+  el.data = { ...DATA, monitor: [{ ...problem, reason_key: "entity:sensor.b" }], quarantine: [] };
+  assert.equal(el.todoItems().find(i => i.key === "monitor_problem").area, "state");
+});
+
+test("shared list search keeps an accessible name after its placeholder disappears", () => {
+  for (const lang of ["de", "en"]) {
+    const { el } = panel(lang);
+    el.lvState("findings", "name", "asc");
+    const html = el.listBar("findings", { sorts: [] });
+    assert.match(html, /<input type="search" data-lq="findings"[^>]+aria-label="[^"]+"/);
+  }
+});
+
+test("paging brings the new list page into view and announces its position", () => {
+  const { el, shadow } = panel("de");
+  el.pageSize = 20;
+  el.pages = { findings: 2 };
+  assert.match(el.paginate("findings", Array.from({ length: 45 }, (_, i) => i)).footer, /data-lpage-footer="findings" data-page-count="3"/);
+  const calls = [];
+  const region = {
+    setAttribute: (key, value) => calls.push([key, value]),
+    scrollIntoView: opts => calls.push(["scroll", opts.block]),
+    focus: opts => calls.push(["focus", opts.preventScroll]),
+  };
+  const footer = { dataset: { lpageFooter: "findings", pageCount: "3" }, closest: () => region };
+  shadow.querySelectorAll = () => [footer];
+  el.focusListPage("findings");
+  assert.deepEqual(calls, [["tabindex", "-1"], ["aria-label", "Seite 2 von 3"], ["scroll", "start"], ["focus", true]]);
+});
+
+test("modal focus stays in the top dialog and the page behind it is inert", () => {
+  const { el } = panel();
+  const focused = [];
+  const control = name => ({
+    name, focus: () => { root.activeElement = controls[name]; focused.push(name); },
+    closest: () => null, getClientRects: () => [1],
+  });
+  const controls = { no: control("no"), yes: control("yes") };
+  const dialog = { setAttribute() {}, focus() {} };
+  const handlers = {};
+  const top = {
+    dataset: { confirmModal: "" },
+    querySelector: () => dialog,
+    querySelectorAll: () => [controls.no, controls.yes],
+    contains: item => item === controls.no || item === controls.yes,
+    addEventListener: (name, fn) => { handlers[name] = fn; },
+  };
+  const lower = { dataset: { noteModal: "" }, inert: false };
+  const background = { inert: false };
+  const root = {
+    activeElement: controls.no,
+    querySelectorAll: () => [lower, top],
+    querySelector: () => background,
+  };
+  assert.equal(el.modalKey(top), "confirmModal");
+  el.bindModalFocus(root);
+  assert.equal(background.inert, true);
+  assert.equal(lower.inert, true);
+  const key = (shiftKey, target) => {
+    root.activeElement = target;
+    let prevented = false;
+    handlers.keydown({ key: "Tab", shiftKey, preventDefault: () => { prevented = true; } });
+    return prevented;
+  };
+  assert.equal(key(true, controls.no), true);
+  assert.equal(key(false, controls.yes), true);
+  assert.deepEqual(focused, ["yes", "no"]);
+});
+
+test("closing a confirmation dialog restores focus to its opener", () => {
+  const { el, shadow } = panel();
+  const opener = { selector: '[data-plan-delete="p1"]', start: null, end: null };
+  const cancel = { selector: "[data-confirm-no]", start: null, end: null };
+  const modal = { dataset: { confirmModal: "" } };
+  let shown = false, focused = opener;
+  const restored = [];
+  Object.defineProperty(shadow, "innerHTML", { configurable: true, set: html => { shown = html.includes("data-confirm-modal"); }, get: () => "" });
+  shadow.querySelectorAll = () => shown ? [modal] : [];
+  shadow.querySelector = () => null;
+  el.captureFocus = () => focused;
+  el.restoreFocus = saved => { if (saved) restored.push(saved.selector); };
+  el.bind = () => { if (shown) focused = cancel; };
+  el.bindModalFocus = () => {};
+  el.fitNav = () => {};
+  el.syncGuard = () => {};
+  el.syncUrl = () => {};
+  el.confirmAsk("Run?", () => {});
+  assert.equal(el._modalReturnFocus.get("confirmModal"), opener);
+  el.confirmClose();
+  assert.equal(restored.at(-1), opener.selector);
+  assert.equal(el._modalReturnFocus.size, 0);
+});
+
 test("every view renders without throwing and escapes object names", () => {
   const { el, shadow } = panel("de");
   for (const view of ["overview", "inventory", "findingsNav", "graph"]) {
@@ -98,6 +351,30 @@ test("detail page renders for an orphaned entity and escapes the name", () => {
   assert.ok(shadow.innerHTML.includes("&lt;img src=x"));
   assert.ok(!shadow.innerHTML.includes("<img src=x"));
   assert.ok(shadow.innerHTML.includes('data-action="back"'));
+});
+
+test("inventory header selects and clears only the entities on the current page", () => {
+  const { el } = panel();
+  el.typeFilter = "entity";
+  assert.match(el.inventory(), /data-inv-sel-page/);
+  el.typeFilter = "automation";
+  assert.doesNotMatch(el.inventory(), /data-inv-sel-page/);
+  el._invPage = ["sensor.a", "sensor.b"];
+  el.invSel = new Set(["sensor.a", "sensor.other"]);
+  assert.match(el.invHeadBox(), /data-partial/);
+  const box = { checked: true, hasAttribute: name => name === "data-partial" };
+  const root = { querySelector: selector => selector === "[data-inv-sel-page]" ? box : null, querySelectorAll: () => [] };
+  el.render = () => {};
+  el.bindInvSel(root);
+  assert.equal(box.indeterminate, true);
+  box.onchange();
+  assert.deepEqual([...el.invSel].sort(), ["sensor.a", "sensor.b", "sensor.other"]);
+  assert.match(el.invHeadBox(), /checked/);
+  box.checked = false;
+  box.onchange();
+  assert.deepEqual([...el.invSel], ["sensor.other"]);
+  el._invPage = [];
+  assert.equal(el.invHeadBox(), "");
 });
 
 test("navigation keeps a trail and goes back", () => {
@@ -486,6 +763,62 @@ test("findings can be searched, filtered by type, and sorted; export follows", (
   assert.ok(shadow.innerHTML.includes("No matches"));
 });
 
+test("findings render as a sortable table and compact rows change its layout", () => {
+  const storage = fakeStorage();
+  const { el } = panel("en", { localStorage: storage });
+  el.data = { ...DATA, causes: [], findings: DATA.findings.map((f, i) => ({ ...f, key: `finding-${i}`, impact: i ? "low" : "high" })) };
+  let html = el.findingsView();
+  assert.match(html, /class="tablewrap lt findings-table"/);
+  assert.match(html, /<th scope="col" aria-sort="descending"><button type="button" class="thbtn" data-lsort="findings\|impact\|desc"/);
+  assert.match(html, /data-lsort="findings\|id\|asc"/);
+  assert.match(html, /data-dense="findings" aria-pressed="false"/);
+  assert.match(html, /<span class="listbar-actions">/);
+  assert.match(html, /<td data-label="Severity">/);
+  assert.equal((html.match(/class="finding-data/g) || []).length, 2);
+  el.render = () => {};
+  el.toggleDenseList("findings");
+  html = el.findingsView();
+  assert.match(html, /class="tablewrap lt findings-table dense-list"/);
+  assert.equal(JSON.parse(storage.getItem("ha_housekeeper.dense_lists")).findings, true);
+});
+
+test("cause and dashboard groups use the findings table columns in both densities", () => {
+  const { el } = panel("en");
+  const cause = { id: "outage-z", kind: "integration_down", object_type: "config_entry", object_id: "z", name: "Cloud", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high" };
+  const follower = { key: "follower", rule_id: "entity.state_unavailable", object_id: "sensor.b", classification: "unavailable", confidence: 0.9, impact: "medium", cause_id: cause.id, ignored: false };
+  el.data = { ...DATA, causes: [cause], findings: [follower] };
+  let html = el.findingsView();
+  assert.match(html, /class="finding-data finding-cause"/);
+  assert.match(html, /data-fold="cause_outage-z"/);
+  assert.doesNotMatch(html, /class="finding-group"/);
+  el.folds = { "cause_outage-z": true };
+  el.denseLists().findings = true;
+  html = el.findingsView();
+  assert.match(html, /class="tablewrap lt findings-table dense-list"/);
+  assert.match(html, /class="finding-detail"/);
+  const place = { view: "Archive", card: "Card", card_path: "views/0/cards/0", card_refs: 3, card_missing: 2 };
+  const broken = i => ({ key: `broken-${i}`, rule_id: "dashboard.missing_entity", object_id: "dash", classification: "broken_reference", confidence: 0.9, impact: "low", affected_object: `sensor.${i}`, evidence: [{ location: `views/0/cards/0/${i}`, place }] });
+  el.data = { ...DATA, causes: [], findings: [broken(1), broken(2)] };
+  html = el.findingsView();
+  assert.match(html, /class="finding-data finding-cause"/);
+  assert.match(html, /data-fsel-group="dash\|views\/0\/cards\/0"/);
+});
+
+test("grouped causes and single findings obey the same table sort", () => {
+  const { el } = panel("en");
+  const cause = { id: "outage-z", kind: "integration_down", object_type: "config_entry", object_id: "z", name: "Zulu", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high" };
+  const single = { key: "single", rule_id: "entity.state_missing", object_id: "sensor.a", classification: "orphaned", confidence: 0.8, impact: "low", ignored: false };
+  const follower = { ...single, key: "follower", object_id: "sensor.z", cause_id: cause.id };
+  el.data = { ...DATA, causes: [cause], findings: [single, follower] };
+  el.lvState("findings", "impact", "desc");
+  el.lv.findings.sort = "name"; el.lv.findings.dir = "asc";
+  let html = el.findingsView();
+  assert.ok(html.indexOf('data-fsel="single"') < html.indexOf("Integration Zulu is not loaded"));
+  el.lv.findings.dir = "desc";
+  html = el.findingsView();
+  assert.ok(html.indexOf("Integration Zulu is not loaded") < html.indexOf('data-fsel="single"'));
+});
+
 test("batteries and unreferenced lists filter by area and sort", () => {
   const { el } = panel("en");
   const ent = (id, name, area, extra = {}) => ({ object_type: "entity", object_id: id, name, area_id: area, status: "active", device_class: "battery", state: "50", unit: "%", ...extra });
@@ -510,6 +843,35 @@ function fakeStorage(initial = {}) {
   const store = { ...initial };
   return { store, getItem: key => (key in store ? store[key] : null), setItem: (key, value) => { store[key] = String(value); } };
 }
+
+test("compact rows belong to each eligible table and keep their own browser state", () => {
+  const storage = fakeStorage();
+  const { el } = panel("en", { localStorage: storage });
+  const columns = [{ key: "name", label: "utName", cell: item => el.nameCell(item.name, item.id) }];
+  const rows = [{ name: "Sensor", id: "sensor.a" }];
+  for (const id of ["unreferenced", "batteries", "runs", "orphanstats"]) el.lvState(id, "name", "asc");
+  const bar = id => el.listBar(id, { sorts: [], dense: true });
+  assert.match(bar("unreferenced"), /data-dense="unreferenced" aria-pressed="false"/);
+  assert.match(bar("orphanstats"), /data-dense="orphanstats"/, "every table offers compact rows");
+  el.render = () => {};
+  el.toggleDenseList("unreferenced");
+  assert.match(bar("unreferenced"), /data-dense="unreferenced" aria-pressed="true"/);
+  assert.match(el.listTable("unreferenced", columns, rows), /class="tablewrap lt dense-list"/);
+  assert.doesNotMatch(el.listTable("batteries", columns, rows), /dense-list/);
+  assert.doesNotMatch(el.listTable("orphanstats", columns, rows), /dense-list/);
+  el.toggleDenseList("batteries");
+  assert.equal(JSON.parse(storage.getItem("ha_housekeeper.dense_lists")).runs, undefined, "only lists that are on are kept");
+  const { el: reopened } = panel("en", { localStorage: storage });
+  assert.equal(reopened.isDenseList("unreferenced"), true);
+  assert.equal(reopened.isDenseList("batteries"), true);
+  assert.equal(reopened.isDenseList("runs"), false);
+  assert.equal(reopened.isDenseList("orphanstats"), false);
+  const legacy = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.dense": "1" }) }).el;
+  assert.equal(legacy.isDenseList("unreferenced"), true);
+  assert.equal(legacy.isDenseList("runs"), true);
+  assert.equal(legacy.isDenseList("findings"), false);
+  assert.equal(legacy.isDenseList("orphanstats"), false);
+});
 
 test("settings are available before data has loaded", () => {
   const { el, shadow } = panel("de");
@@ -696,6 +1058,7 @@ test("unused entities are a table with columns that sort and filters for domain,
   el.render();
   let html = shadow.innerHTML;
   for (const head of ["Name", "Domain", "Device", "Area", "Integration", "Last change", "Last report", "Observed since", "Statistics"]) assert.ok(html.includes(`>${head}`), head);
+  assert.ok(html.includes('class="sortgroup table-sort"') && html.includes('data-lsort="unreferenced|id|asc"'), "the mobile sort control keeps ID sorting available in the desktop table header");
   assert.ok(html.includes("data-lsort=\"unreferenced|changed|desc\"") && html.includes('aria-sort="ascending"'));
   assert.ok(html.includes("3 days ago") && html.includes("30 days ago") && html.includes("Kitchen"));
   const order = () => [...shadow.innerHTML.matchAll(/<span class="id cut"[^>]*>([a-z_.]+)<\/span>/g)].map(m => m[1]);
@@ -928,6 +1291,10 @@ test("the recorder load header shows rows, entities and events as figures and na
   assert.ok(html.includes("2 hidden") && html.includes("1 down all the time") && !html.includes("0 disabled"));
   el.storms = { ...STORMS, excluded: {} };
   assert.ok(el.stormsView().includes("in the last 24 hours") && !el.stormsView().includes('class="exchips"'));
+  el.viewTab = { recload: "shares" };
+  assert.ok(el.stormsView().includes('data-lsort="stormshares|load|desc"') && el.stormsView().includes("41.5 %"), "the integration shares are a table with the load share");
+  el.viewTab = { recload: "events" };
+  assert.ok(el.stormsView().includes('data-lsort="stormevents|count|desc"') && el.stormsView().includes("state_changed"), "the events are a table with count and share");
 });
 
 test("a dry-run plan is confirmed, typed, executed with progress, and can be undone", async () => {
@@ -953,17 +1320,15 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
   } };
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("data-plan-confirm") && html.includes('data-ack-all') && !html.includes("data-plan-execute"));
-  el.ack.add("sensor.b");
+  assert.ok(html.includes("data-plan-confirm") && html.includes("data-plan-close>Cancel") && html.includes('data-ack-all') && !html.includes("data-plan-execute"));
+  el.ack.add("sensor.b"); el.render();
+  assert.ok(shadow.innerHTML.includes("2 entities will be disabled") && shadow.innerHTML.includes('data-count="2"'), "the preview already names what runs");
   await el.confirmPlan();
   const confirm = sent.find(m => m.type === "ha_housekeeper/plan_confirm");
   assert.equal(JSON.stringify(confirm.acknowledged), JSON.stringify(["sensor.b"]));
   el.render();
   html = shadow.innerHTML;
-  assert.ok(html.includes("2 entities will be disabled") && html.includes("Type “DISABLE”") && html.includes("data-plan-execute") && html.includes("disabled>Run now"));
-  el.confirmWord = "disable";
-  el.render();
-  assert.ok(!shadow.innerHTML.includes("disabled>Run now"));
+  assert.ok(!html.includes("data-confirm-word") && !html.includes("data-plan-execute"), "one step: no second screen and no word to type");
   current = { ...base, status: "verified", executed: true, run: { started_at: "x" }, verification: { ok: true, checks: [{ check: "disabled", object_id: "sensor.a", ok: true }, { check: "no_new_broken_references", ok: true }] },
     actions: [action("sensor.a", "ok", { result: { state: "done" } }), action("sensor.b", "review", { result: { state: "not_run", reason: "entity_changed" } })] };
   await el.executePlan();
@@ -999,13 +1364,8 @@ test("a blocked removal cannot be confirmed; a ready one asks for the removal wo
   el.plan = plan(true, []);
   el._hass = { language: "en", callWS: async () => ({ plan_id: "p2", token: "t", expires_at: "x", execute: ["sensor.a"], removals: ["sensor.a"], needs_acknowledgement: [], skipped: [] }) };
   el.render();
-  assert.ok(shadow.innerHTML.includes("data-plan-confirm"));
-  await el.confirmPlan();
-  el.render();
-  assert.ok(shadow.innerHTML.includes("Type “REMOVE”") && shadow.innerHTML.includes("creates a Home Assistant backup first"));
-  el.confirmWord = "remove";
-  el.render();
-  assert.ok(!shadow.innerHTML.includes("disabled>Run now"));
+  assert.ok(shadow.innerHTML.includes("data-plan-confirm") && shadow.innerHTML.includes('data-risky="true"'));
+  assert.ok(!shadow.innerHTML.includes("data-confirm-word") && shadow.innerHTML.includes("creates a Home Assistant backup first"));
 });
 
 test("removal candidates are the quarantined entities and wait for the quarantine period", () => {
@@ -1022,6 +1382,11 @@ test("removal candidates are the quarantined entities and wait for the quarantin
   assert.ok(html.includes("Candidates (2)") && html.includes("Ready") && html.includes("12 days to go") && html.includes("Removal is possible only after 14 days"));
   assert.ok(/data-sel="sensor.new"[^>]*disabled/.test(html) && !/data-sel="sensor.old"[^>]*disabled/.test(html));
   assert.equal(JSON.stringify(el._cleanupVisible), JSON.stringify(["sensor.old"]));
+  assert.ok(html.includes('<input type="checkbox" class="selbox" data-sel-page') && html.includes("<table") && html.includes('data-lsort="cleanup|status|asc"'), "candidates are a table with a page box in its head");
+  el.cleanupSel.add("sensor.old");
+  el.render();
+  assert.ok(/data-sel-page checked/.test(shadow.innerHTML), "the page box is checked once every pickable row is");
+  el.cleanupSel.clear();
   el.lv.cleanup.f.readiness = "waiting";
   el.render();
   assert.ok(shadow.innerHTML.includes("sensor.new") && !shadow.innerHTML.includes('data-sel="sensor.old"'));
@@ -1231,6 +1596,7 @@ test("the recorder costs are a sortable table with a bar column, clickable tiles
   let html = shadow.innerHTML;
   assert.ok(html.indexOf("sensor.loud") < html.indexOf("sensor.history"), "current rate first");
   assert.ok(html.includes("calculated in 1,234 ms") && html.includes('data-lf-set="costlist|state|suggest"') && html.includes("sysshare") && html.includes("3,000"));
+  assert.ok(html.indexOf('class="sumtiles"') < html.indexOf('<div class="panel">'), "the tiles stand free above the card of the list, not inside it");
   assert.ok(!html.includes("data-cost-sort") && !html.includes("data-ex-only"));
   el.lv.costlist.sort = "states"; el.lv.costlist.dir = "desc"; el.render();
   html = shadow.innerHTML;
@@ -1285,7 +1651,7 @@ test("the backup card says when the component is missing or the call fails", asy
   assert.ok(shadow.innerHTML.includes("kaputt") && !shadow.innerHTML.includes("nicht verfügbar"));
 });
 
-test("the two confirmations are saved with their date and can be taken back", async () => {
+test("backup confirmations are inline, saved with a date, and can be taken back", async () => {
   const { el, shadow } = panel("en");
   const sent = [];
   el._hass = { language: "en", callWS: async msg => { sent.push(JSON.stringify(msg)); return BACKUP_REPORT; } };
@@ -1296,10 +1662,15 @@ test("the two confirmations are saved with their date and can be taken back", as
   el.shadowRoot.querySelector = selector => { const m = /data-bh-date="(\w+)"/.exec(selector); return m ? dates[m[1]] || null : null; };
   el.render();
   assert.ok(shadow.innerHTML.includes('data-bh-open="emergency_kit"') && !shadow.innerHTML.includes("data-bh-save"), "the form opens only on a click");
+  assert.ok(shadow.innerHTML.includes('data-bh-open="targets"'), "storage locations can be confirmed");
+  assert.match(shadow.innerHTML, /<span class="bhactions"><button class="bhopen" data-bh-open="targets"[^>]*>[^<]+<\/button><span class="pill warn">Note<\/span>/, "the confirmation sits before the badge, which stays the right-hand status column");
+  assert.match(shadow.innerHTML, /<\/div><div class="panel"><div class="sectionlabel">Latest backups<\/div>/, "recent backups have their own card");
   el.bhForm = "emergency_kit"; el.render();
   assert.ok(shadow.innerHTML.includes('data-bh-save="emergency_kit"') && !shadow.innerHTML.includes('data-bh-clear="emergency_kit"'), "only a recorded one can be taken back");
   el.bhForm = "restore_test"; el.render();
   assert.ok(shadow.innerHTML.includes('data-bh-clear="restore_test"'));
+  el.bhForm = "targets"; el.render();
+  assert.ok(shadow.innerHTML.includes('data-bh-save="targets"'));
   sent.length = 0;
   kit.onclick();
   await Promise.resolve();
@@ -1331,7 +1702,7 @@ test("inventory rows and sortable headers can be used with the keyboard", () => 
   el.render();
   const html = shadow.innerHTML;
   assert.ok(/<tr data-object="[^"]+" tabindex="0" role="button" aria-label="[^"]+">/.test(html), "rows are focusable");
-  assert.ok(/<th data-sort="name" aria-sort="[a-z]+"><button type="button" class="thbtn" data-sortbtn="name">/.test(html), "headers hold a real button");
+  assert.ok(/<th scope="col" aria-sort="[a-z]+"><button type="button" class="thbtn" data-lsort="inventory\|name\|asc">/.test(html), "headers hold a real button");
   const key = (k, target = row) => { const ev = { key: k, target, prevented: false, preventDefault() { this.prevented = true; } }; row.onkeydown(ev); return ev; };
   assert.ok(key("Enter").prevented && row.clicked === 1);
   assert.ok(key(" ").prevented && row.clicked === 2);
@@ -1357,8 +1728,8 @@ test("typing in a search field changes the state at once and renders once after 
   el.view = "inventory";
   const queued = [];
   el.defer = fn => { queued.push(fn); return queued.length; };
-  const input = { value: "" };
-  shadow.querySelector = selector => (selector === "#query" ? input : null);
+  const input = { value: "", dataset: { lq: "inventory" } };
+  shadow.querySelectorAll = selector => (selector === "[data-lq]" ? [input] : []);
   el.render(); // binds the field
   let renders = 0;
   const render = el.render.bind(el);
@@ -1526,6 +1897,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
 test("jumping from a to-do row to the inventory sets its type and status filter", () => {
   const { el, shadow } = panel("en");
   const row = { dataset: { jump: "inventory", type: "config_entry", status: "problem" } };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "config_entry", object_id: "E9", name: "Broken", domain: "hue", status: "problem" }] };
   shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [row] : []);
   el.render();
   el.statusFilter = "x"; el.typeFilter = "y";
@@ -1620,6 +1992,27 @@ test("the address carries the selected detail tab and a deep link opens it", () 
 const stepStates = steps => steps.map(s => `${s.id.replace("step", "")}:${s.state}`).join(" ");
 const act = (kind, extra = {}) => ({ kind, object_id: `sensor.${kind}`, name: kind, verdict: "ok", executable: true, reasons: [], used_by: [], ...extra });
 const planOf = (status, actions, extra = {}) => ({ plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status, executed: false, summary: { total: actions.length, ok: actions.length, review: 0, blocked: 0 }, actions, ...extra });
+
+test("a plan with many rows has a search box for its rows, and the editors share the delete style and the place of the error", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  const many = Array.from({ length: 8 }, (_, i) => act("disable_entity", { object_id: `sensor.row_${i}`, name: `Row ${i}` }));
+  let html = el.planCard(planOf("dry_run", many));
+  assert.ok(html.includes('data-lq="planrows"') && (html.match(/class="row planrow/g) || []).length === 8, "the box shows from six rows on");
+  el.lvState("planrows", "", "asc").q = "row 3"; el._planqFor = "p1";
+  html = el.planCard(planOf("dry_run", many));
+  assert.equal((html.match(/class="row planrow/g) || []).length, 1, "the search narrows the rows");
+  html = el.planCard(planOf("dry_run", many, { plan_id: "p2" }));
+  assert.equal((html.match(/class="row planrow/g) || []).length, 8, "another plan starts without the old search text");
+  assert.ok(!el.planCard(planOf("dry_run", many.slice(0, 2))).includes('data-lq="planrows"'), "a short plan has no box");
+  el.noteOpen(null, ""); el.noteDraft.error = "Give the entry a title.";
+  const note = el.noteEditor();
+  assert.ok(note.indexOf('role="alert"') > note.indexOf("note-actions") && !note.includes('<div class="error" role="alert">'), "the error stands in the bottom bar");
+  el.noteOpen({ id: "n1", title: "t", at: "2026-10-08T18:05:00+00:00", target: "", note: "", source: "me", ref: "" });
+  assert.ok(el.noteEditor().includes("btn quiet danger-t"), "delete is the quiet red button");
+  el.monitorForm = { id: "f1", name: "x", description: "", enabled: true, notify: true, members: [] };
+  assert.ok(el.monitorEditor().includes("btn quiet danger-t") && !el.monitorEditor().includes("btn danger"), "the same in the home functions editor");
+});
 
 test("the plan card shows the steps with text, marks undo kinds and folds the details", () => {
   const { el } = panel("en");
@@ -2005,10 +2398,7 @@ test("the whole confirmation flow works end to end against a scripted backend", 
 
   await el.confirmPlan();
   assert.equal(el.confirmation.token, "tok");
-  assert.ok(shadow.innerHTML.includes("data-confirm-word") && /data-plan-execute\s+disabled/.test(shadow.innerHTML), "running stays locked until the word is typed");
-  el.confirmWord = el.planWord(el.plan);
-  el.render();
-  assert.ok(!/data-plan-execute\s+disabled/.test(shadow.innerHTML));
+  assert.ok(!shadow.innerHTML.includes("data-confirm-word") && !shadow.innerHTML.includes("data-plan-execute"), "one step, no word is typed");
 
   await el.executePlan();
   for (let i = 0; i < 100 && el._polling; i++) await new Promise(resolve => setTimeout(resolve, 0));
@@ -2146,6 +2536,7 @@ test("conflicts and loops show their stage and escape names", () => {
     { kind: "loop", stage: "static", days: 0, entities: ["sensor.x", "sensor.y"], automations: [{ entity_id: "automation.a", name: "A" }] }] } });
   assert.ok(html.includes("repeated") && html.includes("possible") && html.includes("sensor.x</code> → <code>sensor.y"));
   assert.ok(!html.includes("<i>x</i>") && html.includes('data-object="automation:automation.on"'));
+  assert.ok(html.includes('data-lsort="runs_conflicts|stage|asc"') && html.includes('class="tablewrap lt') && html.includes("Opposing") && html.includes("Loop"), "the conflicts are a table with stage and kind");
   assert.equal(el.conflictsPanel({}), "");
 });
 
@@ -2255,7 +2646,7 @@ test("reliability and the unstable entities can be searched and filtered", () =>
   let html = el.reliabilityView();
   assert.ok(html.includes('data-lq="relentries"') && !html.includes('data-lq="relunstable"'), "the open tab holds its list");
   el.viewTab = { reliability: "unstable" };
-  assert.ok(el.reliabilityView().includes('data-lq="relunstable"'));
+  assert.ok(el.reliabilityView().includes('data-lq="relunstable"') && el.reliabilityView().includes('data-lf-set="relunstable|level|unstable"'), "the unstable tab has tiles that set the level filter");
   el.viewTab = {};
   assert.ok(html.indexOf("Box 6") < html.indexOf("Box 0"), "worst availability first");
   el.lvState("relentries", "avail", "asc").f = { state: "outages" };
@@ -2286,20 +2677,27 @@ test("the load view, the policies and the exposure view have a search box once t
   el.policies = { available: true, enabled: 1, violations: 12, prefixes: {}, rules: [{ id: "entity_area", enabled: true, count: 12, ignored: 0, items }] };
   el._policiesRequested = true;
   html = el.policiesView();
-  assert.ok(html.includes('data-lq="policies"'), "the violations list has a search box");
-  el.lvState("policies", "", "asc").q = "lampe 11";
+  assert.ok(html.includes('data-lq="polviol"') && html.includes('data-dense="polviol"') && html.includes('data-lsort="polviol|rule|asc"'), "the violations table has search, density control and sortable columns");
+  assert.ok(html.includes("data-pol-page") && html.includes('data-lf="polviol|rule"') && html.includes('class="tablewrap lt pols'), "page box in the head, filter by rule");
+  el.lvState("polviol", "", "asc").q = "lampe 11";
   html = el.policiesView();
   assert.ok(html.includes("Lampe 11") && !html.includes("Lampe 3"));
   el.exposure = { ...EXPO, findings: [{ kind: "alias_duplicate", level: "warn", assistant: "conversation", alias: "Küche", count: 6, items: Array.from({ length: 6 }, (_, i) => ({ entity_id: `light.k${i}`, name: `Küche ${i}` })) }, EXPO.findings[0]] };
-  assert.ok(el.exposureView().includes('data-lq="exposure"'));
-  el.lvState("exposure", "", "asc").q = "küche 2";
+  el.folds = { expo_alias_duplicate: true };
   html = el.exposureView();
-  assert.ok(html.includes("light.k2") && !html.includes("light.k4") && !html.includes("Door"), "only findings with a matching entity");
-  el.lv.exposure.q = "nothing like this";
+  assert.ok(html.includes('data-lq="expofind_alias_duplicate"') && html.includes('data-lsort="expofind_alias_duplicate|name|asc"') && !html.includes('data-lq="exposure"'), "an open finding lists its entities as a table with search and sorting; no search over the page");
+  const exposed = { ...EXPO, exposed_entities: Array.from({ length: 7 }, (_, i) => ({ entity_id: `light.ex${i}`, name: `Light ${i}`, assistants: ["conversation"] })) };
+  html = el.expoSourceTab(exposed, { id: "conversation", label: "Assist", status: "ok", count: 7 });
+  assert.ok(html.includes('data-lq="expo_conversation"') && html.includes('data-dense="expo_conversation"'), "a table of a source offers compact rows");
+  assert.ok(html.includes("<table") && html.includes('data-lf="expo_conversation|domain"') && html.includes("mdi:lightbulb-outline") && !html.includes("mdi:chevron-right"), "a source is a table with a domain filter and domain symbols, no arrow");
+  el.lvState("expofind_alias_duplicate", "", "asc").q = "küche 2";
+  html = el.exposureView();
+  assert.ok(html.includes("light.k2") && !html.includes("light.k4"), "the search of a finding cuts its table");
+  el.lv.expofind_alias_duplicate.q = "nothing like this";
   assert.ok(el.exposureView().includes("No matches for these filters."));
 });
 
-test("exposure findings fold: all closed at first, the head toggles and a click shows all", () => {
+test("exposure findings fold: all closed at first, the head toggles and the open one lists its entities in a table", () => {
   const { el } = panel("en");
   el.data = { ...DATA }; el._exposureRequested = true;
   const items = n => Array.from({ length: n }, (_, i) => ({ entity_id: `light.x${i}`, name: `X ${i}` }));
@@ -2313,16 +2711,15 @@ test("exposure findings fold: all closed at first, the head toggles and a click 
   assert.ok(html.includes('aria-expanded="false"'));
   el.folds = { expo_stale_exposed: true };
   html = el.exposureView();
-  assert.ok(html.includes("light.x9") && !html.includes("light.x10") && html.includes('data-expo-all="stale_exposed"'), "ten entities");
-  el.expoAll = { stale_exposed: true }; el.folds = { expo_stale_exposed: true, expo_diagnostic_exposed: true };
+  assert.ok(html.includes("light.x9") && html.includes("light.x13") && !html.includes("data-expo-all") && html.includes('data-lq="expofind_stale_exposed"'), "all entities of an open finding sit in its table, no show-all link");
+  el.folds = { expo_stale_exposed: true, expo_diagnostic_exposed: true };
   html = el.exposureView();
   assert.ok(html.includes("light.x13") && html.includes("sensor.diag"));
 });
 
 test("polish: the to-do list groups by urgency, the cleanup view has tabs, the quality list filters", () => {
   const { el } = panel("en");
-  el.data = { ...DATA, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }] };
-  el.staleScan = () => null;
+  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: new Date().toISOString() }, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }] };
   const card = el.todoCard();
   assert.ok(card.includes(">Findings<") && card.includes('data-fold="todo_care"') && !card.includes(">State<"), "areas without rows are left out, maintenance folds while something else is open");
   el.view = "cleanup"; el.journal = []; el._journalRequested = true; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
@@ -2354,7 +2751,14 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   el.render();
   assert.ok(shadow.innerHTML.includes('data-merge-sel="a"') && shadow.innerHTML.includes('data-merge-sel="b"') && !shadow.innerHTML.includes('data-merge-sel="c"'));
   assert.ok(/data-merge disabled/.test(shadow.innerHTML), "needs two");
+  assert.ok(shadow.innerHTML.includes('data-merge-page="a,b"') && shadow.innerHTML.includes("<table"), "the journal is a table with a page box for the plans that can be merged");
+  assert.ok(/<tr data-plan-open="a" tabindex="0" role="button"/.test(shadow.innerHTML) && !/<button class="btn" data-plan-open/.test(shadow.innerHTML) && shadow.innerHTML.includes('class="jsum"'), "the row opens the plan, there is no open button, the check column wraps");
+  el.toggleDenseList("journal");
+  assert.ok(!el.journalView().includes('class="jsum"'), "the compact row leaves the check column out");
+  el.toggleDenseList("journal");
   el.mergeSel = new Set(["a", "b"]);
+  el.render();
+  assert.ok(/data-merge-page="a,b" checked/.test(shadow.innerHTML), "the page box is checked once both are");
   await el.mergePlans();
   assert.equal(JSON.stringify(calls[0].plan_ids), '["a","b"]');
   assert.equal(el.plan.plan_id, "n");
@@ -2448,7 +2852,8 @@ test("an orphaned statistic names likely successors by domain, unit and name, an
   const html = shadow.innerHTML;
   assert.ok(html.includes("Possible successors:") && html.includes('data-object="entity:sensor.wohnzimmer_energie_neu"'));
   assert.ok(!html.includes("energie_zaehler") && !html.includes("energie_alt2") && !html.includes('data-object="entity:light.'), "other unit, disabled and other domain are not suggested");
-  assert.equal(html.split("Possible successors:").length - 1, 1, "no suggestion without a similar name");
+  assert.equal(html.split('<small class="statsucc">Possible successors:').length - 1, 1, "no suggestion without a similar name");
+  assert.ok(html.includes('data-tip-sub="Possible successors: sensor.wohnzimmer_energie_neu"'), "the tooltip of the name holds them for the compact rows");
   assert.ok(html.includes("Meter change (continue statistics)") && html.includes("Developer tools → Statistics"));
 });
 
@@ -2655,7 +3060,7 @@ test("the search opens the chosen object and closes; the keyboard moves through 
 test("a list view can be saved under a name, applied again, overwritten and deleted", () => {
   const storage = fakeStorage({});
   const { el } = panel("en", { localStorage: storage });
-  const save = name => { el.saveView("inv"); assert.ok(el.viewsControl("inv").includes("data-lview-form")); el.commitView("inv", name); };
+  const save = name => { el.saveView("inv"); assert.ok(el.viewsControl("inv").includes('class="viewform"')); el.commitView("inv", name); };
   const read = () => JSON.parse(storage.getItem("ha_housekeeper.views"));
   el.data = DATA;
   const st = el.lvState("inv", "name", "asc");
@@ -2719,13 +3124,21 @@ test("the old load link opens the Recorder view", () => {
 test("a list can hide columns and offers its rows as CSV", () => {
   const { el, shadow } = panel("en");
   el.data = DATA; el.view = "inventory"; el.render();
-  assert.ok(shadow.innerHTML.includes('data-export-list="inventory"') && shadow.innerHTML.includes('data-col-open="inventory"'));
+  assert.ok(shadow.innerHTML.includes('data-exp-menu="inventory"') && shadow.innerHTML.includes('data-col-open="inventory"'), "the inventory has one export menu in the list bar");
+  assert.ok(!shadow.innerHTML.includes('data-export-list="inventory"') && !shadow.innerHTML.includes("data-xp-open"), "no separate download button and no extra row");
+  assert.ok(!shadow.innerHTML.includes('data-exp-csv'), "the menu is closed at first");
+  el._expOpen = "inventory"; el.render();
+  assert.ok(shadow.innerHTML.includes('data-exp-csv="inventory"') && shadow.innerHTML.includes("data-exp-guided"), "the open menu offers the CSV and the guided export");
+  el._expOpen = "";
   assert.ok(shadow.innerHTML.includes(">Type<"));
   el.toggleCol("inventory", "type");
-  assert.ok(!shadow.innerHTML.includes('<th scope="col"') && !shadow.innerHTML.includes('data-sort="type"'));
+  assert.ok(!shadow.innerHTML.includes('data-lsort="inventory|type|asc"'), "a hidden column has no header");
   assert.ok(el.colHidden("inventory", "type") && !el.colHidden("inventory", "status"));
   const ex = el._exporters.inventory;
   assert.equal(ex.rows().length, el.filtered().length);
+  el._colOpen = "inventory"; el.render();
+  const pop = shadow.innerHTML.match(/class="colpop"[\s\S]*?<\/span><\/span>/)[0];
+  assert.ok((pop.match(/<label><span>[^<]*<\/span><input type="checkbox" data-col="inventory\|/g) || []).length >= 3, "every column has a row with the name left and the checkbox right");
 });
 
 test("the flow tab shows triggers, conditions and nested actions and marks missing objects", () => {
@@ -2754,7 +3167,34 @@ test("findings that began with an update get a line, a tile and a filter", () =>
   assert.deepEqual(el.visibleFindings().length, 2);
   el.findingAfter = true;
   assert.deepEqual(el.visibleFindings().map(f => f.key), ["k1"]);
-  assert.ok(el.findingsView().includes('data-finding-after="1"') && el.corrGroupsCard().includes("Update of hue"));
+  assert.ok(el.findingsView().includes('data-finding-after="1"') && el.findingsView().includes('data-fold="corr"'));
+  assert.ok(!el.corrGroupsCard().includes("Update of hue"));
+  el.folds = { corr: true, "corr_g": true };
+  const card = el.corrGroupsCard();
+  assert.ok(card.includes("Update of hue 1 → 2") && card.includes("1× ") && card.includes('data-object="entity:light.a"'));
+});
+
+test("the watch after an update shows a band while it runs and a card with what failed since", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" }], edges: [], findings: [] };
+  el._watchRequested = true; el._watchKey = el.data.meta.scanned_at || "";
+  const result = { verdict: "worse", new: ["entity:light.a"], fixed: [], transient: [], new_findings: [] };
+  const trigger = [{ kind: "ha_version", from: "2026.10.1", to: "2026.10.2" }];
+  const running = { id: "w1", started_at: "2026-10-14T03:00:00+00:00", until: new Date(Date.now() + 5 * 3600000).toISOString(), triggers: trigger, before: { at: "2026-10-13T20:00:00+00:00" }, samples: [{}], closed_at: null, result };
+  el.watch = { hours: 24, watches: [running] };
+  const meta = { started_at: running.started_at, until: running.until, triggers: trigger, samples: 1, new: 1 };
+  el.data = { ...el.data, meta: { ...el.data.meta, watch: meta } };
+  assert.ok(el.watchBand().includes("Home Assistant update 2026.10.1 → 2026.10.2") && el.watchBand().includes("1 objects affected"));
+  el.data = { ...el.data, meta: { ...el.data.meta, watch: { ...meta, samples: 0, new: 0 } } };
+  assert.ok(el.watchBand().includes("first check comes 30 minutes"));
+  el.data = { ...el.data, meta: { ...el.data.meta, watch: null } };
+  assert.equal(el.watchBand(), "");
+  el.watch = { hours: 24, watches: [{ ...running, closed_at: "2026-10-15T03:00:00+00:00", result }] };
+  el.folds = { watch: true, watch_w1: true };
+  const card = el.watchCard();
+  assert.ok(card.includes("Worse") && card.includes("Failed since (1)") && card.includes("Hall lamp") && card.includes('data-object="entity:light.a"'));
+  el.watch = { hours: 24, watches: [] };
+  assert.equal(el.watchCard(), "");
 });
 
 test("a device has a history tab with its steps and no note; removed devices show their logbook entry in Maintenance", () => {
@@ -2796,6 +3236,7 @@ test("missing statistics hours say what all series lack, name the periods and li
   assert.ok(text.includes("20 hours are missing from all series at once") && text.includes("single sensors have gaps of their own"));
   const extra = el.dbFindingExtra(f);
   assert.ok(extra.includes("The recorder was not running") && extra.includes("B &lt;i&gt;") && !extra.includes("<i>"));
+  assert.ok(extra.includes('data-lsort="dbgaps|start|desc"'), "the gaps are a table");
   assert.ok(el.dbFindingExtra({ kind: "growth" }) === "");
 });
 
@@ -3018,6 +3459,11 @@ test("the exchange assistant preselects nothing and turns only confirmed pairs i
   el.ex.choices["sensor.a_power"] = { target: "sensor.b_power" };
   el.ex.choices["sensor.a_total"] = { target: "sensor.b_total", how: "statistics" };
   assert.ok(el.exchangeCard().includes("data-ex-how"));
+  el.lv.exchangepairs.f.pick = "chosen";
+  html = el.exchangeCard();
+  assert.ok(html.includes('data-ex-target="sensor.a_power"') && !html.includes('data-ex-target="switch.a"'), "the pair list filters by what was chosen");
+  el.lv.exchangepairs.f.pick = "";
+  assert.equal(el.exchangeActions().length, 2, "the choices survive the filter");
   await el.createExchangePlan();
   const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
   assert.deepEqual(create.actions, [{ kind: "replace_references", object_id: "sensor.a_power", target: "sensor.b_power" }, { kind: "migrate_meter", object_id: "sensor.a_total", target: "sensor.b_total", mode: "statistics" }]);
@@ -3191,19 +3637,19 @@ test("deleting asks in a dialog first; the deletion runs only from its confirmat
   el.confirmClose();
   assert.equal(el.confirmState, null);
   assert.equal(ran, 0, "cancel deletes nothing");
-  assert.ok(el.t("confirmPlan", { date: "x" }).includes("no longer possible") && el.t("confirmRemDay", { date: "d", name: "n" }).includes("due day stays"));
+  assert.ok(el.t("confirmPlanDelete", { date: "x" }).includes("no longer possible") && el.t("confirmPlan") === "Confirm" && el.t("confirmRemDay", { date: "d", name: "n" }).includes("due day stays"));
 });
 
-test("the logbook dialog names the object it was opened for and offers the picker only when none is set or on request", () => {
+test("the logbook editor names the object it was opened for and offers the picker only when none is set or on request", () => {
   const { el } = panel("en");
   el.data = { ...DATA, notes: [] };
   el.noteOpen(null, "entity:sensor.a");
-  let html = el.noteDialog();
-  assert.ok(html.includes("data-note-retarget") && !html.includes('data-picker="note"') && html.includes("New entry") && !html.includes("audit report"));
+  let html = el.noteEditor();
+  assert.ok(html.includes("data-note-retarget") && !html.includes('data-picker="note"') && el.logbookView().includes("New entry") && !html.includes("audit report"));
   el.noteDraft.changeTarget = true;
-  assert.ok(el.noteDialog().includes('data-picker="note"'), "after 'change' the picker shows");
+  assert.ok(el.noteEditor().includes('data-picker="note"'), "after 'change' the picker shows");
   el.noteOpen(null, "");
-  html = el.noteDialog();
+  html = el.noteEditor();
   assert.ok(html.includes('data-picker="note"') && !html.includes("data-note-retarget"), "from the global logbook the object is chosen here");
 });
 
@@ -3230,7 +3676,7 @@ test("the batteries view shows the forecast with groups and the reminders, which
   el._btRequested = true; el._sysLightFor = el.data;
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { reminders: [] }; } };
   const forecast = el.batteryNeed();
-  assert.ok(forecast.includes("Batteries needed in the next 30 days") && forecast.includes("20 days"));
+  assert.ok(forecast.includes("When which battery runs out") && forecast.includes("no type"));
   const reminders = el.remindersCard();
   assert.ok(reminders.includes("Water filter") && reminders.includes("10 days overdue"));
   assert.ok(el.todoItems().some(i => i.key === "reminders"));
@@ -3239,9 +3685,16 @@ test("the batteries view shows the forecast with groups and the reminders, which
   assert.equal(calls[0].type, "ha_housekeeper/reminder_set");
   assert.equal(el.remDraft, null);
   el.remOpen = ["r1"];
-  assert.ok(el.reminderRow({ id: "r1", name: "Water filter", interval_days: 90, last_done: "2026-07-01", history: ["2026-07-01"], due: "2026-09-29", days_left: -10, state: "due", note: "" }).includes("data-rem-hdel=\"r1|2026-07-01\""));
+  assert.ok(el.reminderHistory({ id: "r1", name: "Water filter", interval_days: 90, last_done: "2026-07-01", history: ["2026-07-01"], due: "2026-09-29", days_left: -10, state: "due", note: "" }).includes("data-rem-hdel=\"r1|2026-07-01\""));
+  el.view = "reminders";
   el.remDraft = el.remBlank();
-  assert.ok(el.remDialog().includes("data-rem-save") && el.remDialog().includes("New reminder") && !el.remindersCard().includes("data-rem-save"), "the form is a dialog, the card keeps its button");
+  const editor = el.remindersView();
+  assert.ok(editor.includes("data-rem-form") && editor.includes("New reminder") && editor.includes("page-editor") && !editor.includes('role="dialog"'), "the reminder uses a page editor");
+  assert.ok(!editor.includes("data-rem-new") && !el.remindersCard().includes("data-rem-save"));
+  el.remDraft = { ...el.remDraft, id: "r1" };
+  assert.ok(el.remindersView().includes("Edit reminder"));
+  el.remDraft = null;
+  assert.ok(el.remindersView().includes("data-rem-new") && !el.remindersView().includes("data-rem-form"));
   const row = el.relRowBody({ title: "Hue", domain: "hue", entities: 3, availability: 99, setup: { count: 2, days: 7, last: "2026-10-08T10:00:00+00:00", state: "setup_retry" } });
   assert.ok(row.includes("Setup failures: 2 in 7 days") && row.includes("Currently in state setup_retry"));
   assert.equal(el.relSetupHint({ availability: 90, setup: { count: 3, days: 7 } }), "relHintOffline");
@@ -3299,7 +3752,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   el.confirmation = { plan_id: "r1", token: "t", execute: ["sensor.water"], needs_acknowledgement: [] };
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes("<polyline") && html.includes("5-minute rows") && html.includes("REPAIR"));
+  assert.ok(html.includes("<polyline") && html.includes("5-minute rows") && !html.includes("data-confirm-word"));
   // A range picked by hand becomes a repair_range request with seconds since 1970.
   el.counterId = "sensor.water"; el.rangeFrom = "2026-10-01T10:00"; el.rangeTo = "2026-10-01T12:00"; el.rangeMode = "fixed"; el.rangeFixed = "91,7";
   el.pickRange(shadow);
@@ -3416,6 +3869,29 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   assert.equal(el.repairTask, "replace_references");
   assert.equal(el.replOld, "sensor.gone");
   assert.ok(!el.detailPanel("relations", el.findObject("entity:sensor.a"), "entity:sensor.a").includes("data-decide-open"), "findings moved off the dependencies tab");
+  const rel = el.relationsCard("entity:sensor.a");
+  assert.ok(rel.includes("<table") || rel.includes("noRelations") || rel.includes("factnote"), "the relations are a table or the empty note");
+  assert.ok(!rel.includes("style="), "no inline style");
+});
+
+test("the relations of an object are one table: rows open known objects, a missing target is marked, the kind filter and the export follow", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.rel", name: "Rel", status: "active" }, { object_type: "automation", object_id: "automation.rel", name: "Rel auto", status: "active" }, { object_type: "device", object_id: "drel", name: "Rel device", status: "active" }],
+    edges: [
+      { source: "device:drel", target: "entity:sensor.rel", relation: "PROVIDES", confidence: "certain" },
+      { source: "automation:automation.rel", target: "entity:sensor.rel", relation: "TARGETS", confidence: "certain" },
+      { source: "entity:sensor.rel", target: "entity:sensor.gone", relation: "TARGETS", confidence: "certain", location: "a" },
+      { source: "entity:sensor.rel", target: "entity:sensor.gone", relation: "TARGETS", confidence: "certain", location: "b" }],
+    findings: [{ key: "kg", rule_id: "x", classification: "broken_reference", affected_object: "sensor.gone", object_id: "sensor.rel" }] };
+  const rel = el.relationsCard("entity:sensor.rel");
+  assert.ok(rel.includes("<table") && rel.includes('data-lsort="relations|name'), "a table");
+  assert.ok(rel.includes('data-object="automation:automation.rel"') && rel.includes('data-object="device:drel"'), "a known object opens");
+  assert.ok(!rel.includes('data-object="entity:sensor.gone"') && rel.includes('class="pill red">Missing'), "a missing target is marked and does not open");
+  assert.ok(rel.includes("2 places"), "the same relation at two places is one row");
+  const rows = () => el._exporters.relations.rows();
+  assert.equal(rows().length, 3);
+  el.lvState("relations", "name", "asc").f.group = "origin"; el.relationsCard("entity:sensor.rel");
+  assert.equal(JSON.stringify(rows().map(r => r[1])), '["device:drel"]', "the kind filter keeps only the origin rows");
 });
 
 test("the repair view offers its tasks as tiles; one opens its assistant and the plan is finished there", () => {
@@ -3547,7 +4023,7 @@ test("a plan runs as a wizard: review, confirm with a way back, run, result; lon
   let html = shadow.innerHTML;
   assert.ok(html.includes("1. Review") && html.includes("sensor.s0") && html.includes("sensor.s19") && !html.includes("sensor.s20") && html.includes("data-lpage"), "a long plan comes in pages");
   el.confirmation = { plan_id: "p", token: "t", execute: ["sensor.s0"], needs_acknowledgement: [] }; el.render();
-  assert.ok(shadow.innerHTML.includes("data-plan-back") && shadow.innerHTML.includes("data-plan-execute"));
+  assert.ok(!shadow.innerHTML.includes("data-plan-back") && !shadow.innerHTML.includes("data-plan-execute"), "no second screen");
   el.confirmation = null; el.render();
   assert.ok(shadow.innerHTML.includes("data-plan-confirm") && !shadow.innerHTML.includes("data-plan-back"));
 });
@@ -3605,7 +4081,17 @@ test("tables and lists grow with their content: no height limit and no scrolling
   assert.ok(!/\.tablewrap\{[^{}]*overflow:auto/.test(css), "a table scrolls sideways only");
 });
 
-test("the logbook has its own tab, entries are written in a dialog, an action can suggest one and the object shows its latest", async () => {
+test("table sorting uses column headers on desktop and the sort control on mobile", () => {
+  const { el } = panel("en");
+  el.lvState("unreferenced", "name", "asc");
+  el.lvState("cleanup", "name", "asc");
+  const sorts = [{ key: "name", label: "sortName", dir: "asc" }];
+  assert.ok(el.listBar("unreferenced", { table: true, sorts }).includes('class="sortgroup table-sort"'));
+  assert.ok(el.listBar("cleanup", { sorts }).includes('class="sortgroup"'), "row lists keep visible sorting");
+  assert.ok(fs.readFileSync(SOURCE, "utf8").includes('@media(min-width:861px){.listbar .sortgroup.table-sort{display:none}}'));
+});
+
+test("the logbook has its own tab, entries use page editors, an action can suggest one and the object shows its latest", async () => {
   const { el, shadow } = panel("en");
   const sent = [];
   const entry = { id: "n1", title: "Zigbee stick replaced", at: "2026-10-08T18:05:00+00:00", target: "entity:light.a", note: "new <b>stick</b>", source: "me", ref: "" };
@@ -3617,19 +4103,25 @@ test("the logbook has its own tab, entries are written in a dialog, an action ca
   assert.ok(!shadow.innerHTML.includes("Zigbee stick replaced"), "the scan comparison no longer mixes in the entries");
   el.pickViewTab("changes|logbook");
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Zigbee stick replaced") && html.includes("Concerns: Lamp A") && html.includes("new &lt;b&gt;stick&lt;/b&gt;") && !html.includes("<b>stick</b>"), "an entry shows, escaped");
+  assert.ok(html.includes("Zigbee stick replaced") && html.includes('data-label="Concerns">Lamp A') && html.includes("new &lt;b&gt;stick&lt;/b&gt;") && !html.includes("<b>stick</b>"), "an entry shows, escaped");
   assert.ok(html.includes("data-note-add") && html.includes('data-note-edit="n1"'));
-  // the dialog: chips fill the title, no title is refused, the buttons close it
+  assert.ok(/<tr[^>]*data-note-edit="n1"[^>]*role="button"/.test(html) && html.includes('data-lsort="logbook|at'), "the whole row opens the entry in a sortable table");
+  el.lvState("logbook", "at", "desc").f.object = "entity:light.a"; el.lvState("logbook", "at", "desc").f.source = "housekeeper"; el.render();
+  assert.ok(!shadow.innerHTML.includes('data-note-edit="n1"') && shadow.innerHTML.includes('data-lf-set="logbook||"'), "the source and the object filter the list and show the shared note");
+  el.lvState("logbook", "at", "desc").f = { object: "entity:light.a" }; el.render();
+  assert.ok(shadow.innerHTML.includes('data-note-edit="n1"') && el._exporters.logbook.rows().length === 1, "the object filter keeps its entry and the export follows");
+  el.lvState("logbook", "at", "desc").f = {}; el.render();
+  // The editor replaces the global logbook list; chips, validation and actions stay available.
   el.noteOpen(); el.render();
-  assert.ok(shadow.innerHTML.includes("data-note-modal") && shadow.innerHTML.includes("data-note-chip"));
-  assert.ok(shadow.innerHTML.indexOf("data-note-cancel") < shadow.innerHTML.indexOf('type="submit"'), "Cancel left of Save, both in the right-aligned group");
+  assert.ok(shadow.innerHTML.includes("page-editor") && shadow.innerHTML.includes("data-note-form") && shadow.innerHTML.includes("data-note-chip") && !shadow.innerHTML.includes("data-note-modal"));
+  assert.ok(shadow.innerHTML.indexOf("data-note-cancel") < shadow.innerHTML.indexOf('type="submit"'), "Cancel sits left of Save");
   await el.noteSave();
   assert.ok(el.noteDraft.error.includes("title") && sent.length === 0);
   el.noteDraft.title = "Router update"; el.noteDraft.at = "2026-10-10T20:15";
   await el.noteSave();
   assert.equal(sent[0].type, "ha_housekeeper/note_set"); assert.equal(sent[0].action, "save"); assert.equal(sent[0].title, "Router update"); assert.ok(sent[0].at.endsWith("Z"));
   assert.equal(el.noteDraft, null); assert.equal(el.data.notes.length, 2);
-  // deleting is offered in the dialog and asks in the confirmation dialog first
+  // Deleting is offered in the editor and asks in the confirmation dialog first.
   el.noteOpen(entry); el.render();
   assert.ok(shadow.innerHTML.includes('data-note-del="n1"') && !shadow.innerHTML.includes("data-note-del-yes"));
   await el.noteDeleteConfirmed("n1");
@@ -3639,6 +4131,13 @@ test("the logbook has its own tab, entries are written in a dialog, an action ca
   el.data = { ...el.data, notes: [entry] };
   const card = el.noteCard({ object_type: "entity", object_id: "light.a" });
   assert.ok(card.includes("Zigbee stick replaced") && card.includes("data-note-edit"));
+  el.selected = el.findObject("entity:light.a");
+  el.noteOpen(null, "entity:light.a");
+  const editingCard = el.noteCard(el.selected);
+  assert.ok(editingCard.startsWith('<section class="panel">') && editingCard.includes('class="note-editor inline"') && editingCard.includes("data-note-form") && !editingCard.includes("data-note-add-for") && !editingCard.includes("data-note-modal"), "the object editor stays inside its logbook card");
+  assert.ok(!editingCard.includes('data-note-edit="n1"'), "the editor replaces the rows within the card");
+  el.noteDraft = null;
+  el.selected = null;
   assert.equal(el.noteCard({ object_type: "dashboard", object_id: "d" }), "");
   // a finished replace offers an entry; accepting saves it as suggested by Housekeeper with the plan as reference
   const plan = { plan_id: "p1", status: "verified", actions: [{ kind: "replace_references", object_id: "sensor.old", target: "sensor.new", result: { state: "done" } }] };
@@ -3652,7 +4151,7 @@ test("the logbook has its own tab, entries are written in a dialog, an action ca
   assert.ok(el.corrText({ kind: "note", title: "Zigbee <i>" }).includes("Zigbee &lt;i&gt;"));
 });
 
-test("an own scan point sits in the history of the scans with its name, is set through a dialog after a scan and deleted after asking", async () => {
+test("an own scan point is created inside the scan history, keeps its name on failure and is deleted after asking", async () => {
   const { el, shadow } = panel("en");
   const sent = [];
   el._hass.callWS = async msg => { sent.push(msg); return msg.type === "ha_housekeeper/scan" ? el.data : { baselines: [] }; };
@@ -3663,7 +4162,10 @@ test("an own scan point sits in the history of the scans with its name, is set t
   assert.ok(html.includes("Before the &lt;rebuild&gt;") && html.includes("Own point") && html.includes(`data-baseline="${pin.id}"`) && !html.includes("<rebuild>"), "the point shows by its name, escaped");
   assert.ok(html.indexOf("Previous scan") < html.indexOf("Before the &lt;rebuild&gt;"), "newest first");
   el.pinOpen(); el.render();
-  assert.ok(shadow.innerHTML.includes("data-pin-modal") && shadow.innerHTML.includes("data-pin-chip"));
+  html = shadow.innerHTML;
+  assert.ok(html.includes("data-pin-form") && html.includes("data-pin-chip") && !html.includes("data-pin-modal"));
+  assert.ok(html.indexOf("data-pin-form") < html.indexOf(`data-baseline="${pin.id}"`), "the editor stays inside the history card above its rows");
+  assert.ok(!html.includes("data-pin-add"), "the add button is hidden while editing");
   el.pinDraft.name = "Before the update";
   el.load = async fresh => { sent.push({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" }); };
   await el.pinSave();
@@ -3675,6 +4177,34 @@ test("an own scan point sits in the history of the scans with its name, is set t
   el.compareBaseline = pin.id;
   await el.pinDelete(pin.id);
   assert.equal(sent.at(-2).action, "delete"); assert.equal(sent.at(-2).baseline, pin.id); assert.equal(el.compareBaseline, "previous");
+  el.compare = { ...COMPARE, baselines: [pin], current: { objects: 6, findings: 1 }, retention_days: 30 };
+  el.pinOpen(); el.pinDraft.name = "Keep this name";
+  let finishScan;
+  el.load = async () => { await new Promise(resolve => { finishScan = resolve; }); el.error = "Scan failed"; };
+  const before = sent.length;
+  const saving = el.pinSave();
+  assert.equal(el.pinDraft.busy, true);
+  assert.ok(shadow.innerHTML.includes('data-pin-form') && shadow.innerHTML.includes('value="Keep this name"') && shadow.innerHTML.includes('aria-busy="true"'), "the editor remains visible and cannot be submitted twice during the scan");
+  finishScan();
+  await saving;
+  assert.equal(el.pinDraft.name, "Keep this name");
+  assert.equal(el.pinDraft.busy, false);
+  assert.ok(shadow.innerHTML.includes("Scan failed") && shadow.innerHTML.includes("Keep this name"));
+  assert.equal(sent.length, before, "a failed scan creates no saved scan point");
+});
+
+test("a newer scan comparison wins when an older request finishes last", async () => {
+  const { el } = panel("en");
+  el.view = "changes"; el.compare = COMPARE;
+  const pending = [];
+  el._hass.callWS = () => new Promise(resolve => pending.push(resolve));
+  const older = el.loadCompare();
+  const newer = el.loadCompare();
+  const fresh = { ...COMPARE, baseline: "fresh" };
+  pending[1](fresh); await newer;
+  pending[0]({ ...COMPARE, baseline: "old" }); await older;
+  assert.equal(el.compare.baseline, "fresh");
+  assert.equal(el.compareLoading, false);
 });
 
 test("the entity page sums up what is known in groups with the source of each line; recorder values come on request", () => {
@@ -3727,11 +4257,17 @@ test("devices, automations and integrations share the layout: the overview reads
   const tabs = o => el.detailTabs(o, el.objectKey(o)).map(([id]) => id);
   assert.ok(tabs(device).includes("actions"), "a device offers the exchange and an area");
   assert.ok(tabs(auto).includes("actions"), "an automation can get a label");
-  assert.ok(!tabs(entry).includes("actions"), "an integration without findings has nothing to do");
+  assert.ok(tabs(entry).includes("actions"), "a healthy integration can still get a mark (what to expect of it)");
+  assert.ok(el.detailPanel("actions", entry, "config_entry:c1").includes("Notes"));
+  assert.ok(el.detailPanel("actions", entry, "config_entry:c1").includes("Here you say what is normal"), "a tab with only the mark says what it is for");
+  assert.ok(!el.detailPanel("actions", device, "device:d1").includes("Here you say what is normal"), "not when there is more");
   const overview = el.detailPanel("overview", device, "device:d1");
   assert.ok(!overview.includes("data-de-area") && !overview.includes("data-act-exchange"), "no forms on the overview");
   const actions = el.detailPanel("actions", device, "device:d1");
   assert.ok(actions.includes("data-act-exchange") && actions.includes("data-de-area") && actions.includes("Name and classify"));
+  const at = text => actions.indexOf(`>${text}<`);
+  assert.ok(!actions.includes(">Recommended<"), "the exchange is no answer to a finding, so nothing is recommended");
+  assert.ok(at("Notes") > 0 && at("Notes") < at("More actions") && at("More actions") < at("Name and classify"), "fixed order: notes, more actions, name");
   assert.ok(el.detailPanel("actions", auto, "automation:a1").includes("data-act-label-plan"));
 });
 
@@ -3757,6 +4293,11 @@ test("devices, integrations, automations and scripts sum up what is known in gro
   assert.ok(aut.includes('class="ksrc">Runs'), "the runs are named as the source");
   // the facts card keeps scenes and other objects
   assert.ok(el.factsCard({ object_type: "scene", object_id: "scene.x", name: "S", status: "active" }, "scene:scene.x").includes(el.t("facts")));
+  // an outage names its length and when it becomes more serious
+  const down = { rule_id: "config_entry.not_loaded", object_id: "e1", classification: "problem", confidence: 1, first_detected_at: new Date(Date.now() - 6 * 3.6e6).toISOString(), ignored: false };
+  el.data = { ...el.data, findings: [down], meta: { ...el.data.meta, min_unavailable_days: 7 } };
+  const outage = el.factsCard({ object_type: "config_entry", object_id: "e1", name: "MQTT", status: "active" }, "config_entry:e1");
+  assert.ok(outage.includes(el.t("chip_outage")) && outage.includes("6 ") && outage.includes(el.t("chip_medium")), "the length and the next level stand in the facts");
 });
 
 test("the export started from a detail page returns to that page", () => {
@@ -3909,6 +4450,29 @@ test("batteries: the shopping list counts the types, a detected replacement is o
   assert.equal(line, "Goal missed 5 of 7 times in the last 7 days · criterion set by you");
 });
 
+test("battery shopping list includes current low levels without a forecast and low voltage batteries", () => {
+  const { el } = panel("en");
+  const battery = (id, state, unit = "%") => ({ object_type: "entity", object_id: id, name: id, status: "active", device_class: "battery", unit, state });
+  el.data = { ...DATA, objects: [battery("sensor.empty", "0"), battery("sensor.future", "40"), battery("sensor.volt", "2.37", "V")] };
+  el.batteryTrend = {
+    available: true, busy: false, types: { "sensor.empty": "2× AAA", "sensor.volt": "CR2450" },
+    rows: [
+      { entity_id: "sensor.empty", name: "Empty", state: "stable", days_left: null, level: 25 },
+      { entity_id: "sensor.future", name: "Future", state: "falling", days_left: 10, level: 40 },
+    ],
+    voltage: { rows: [{ entity_id: "sensor.volt", name: "Volt", type: "coin3", limit: 2.75, level: 2.37, state: "low", days_left: 0 }] },
+  };
+  const rows = el.batteryNeedRows();
+  assert.equal(rows.length, 3);
+  assert.equal(rows.filter(r => r.state === "low").map(r => r.entity_id).join(), "sensor.empty,sensor.volt");
+  const html = el.batteryNeed();
+  assert.ok(html.includes("Low now") && html.includes("In 0 to 13 days") && html.includes("data-fold=\"bt_now\""));
+  assert.ok(html.includes("2×") && html.includes("AAA") && html.includes("CR2450"));
+  assert.ok(html.includes("0 %") && html.includes("2.37 V"));
+  el.batteryTrend = { available: false, busy: false, rows: [], types: {} };
+  assert.ok(el.batteryNeed().includes("sensor.empty") && el.batteryNeed().includes("no forecast without a recorder"));
+});
+
 test("housekeeper backups: the list marks protected ones, the rule picks the rest, the plan has no undo; an automation finding offers deleting", async () => {
   const { el } = panel("en");
   el.render = () => {};
@@ -3926,6 +4490,7 @@ test("housekeeper backups: the list marks protected ones, the rule picks the res
   assert.ok(html.includes("protected: being watched") && html.includes("41 days old") && html.includes("only way to get back"));
   assert.ok(html.includes('data-bkc-sel="b1"') && /data-bkc-sel="b1"[^>]*disabled/.test(html), "a protected backup cannot be ticked");
   assert.ok(html.includes("Create a plan to delete (1)"));
+  assert.ok(html.includes("<table") && html.includes('data-bkc-page="b2"') && !html.includes('data-bkc-page="b1'), "the backups are a table whose head box covers the ones that can be ticked");
   let sent;
   el._hass.callWS = async msg => { sent = msg; return { plan_id: "p9", status: "dry_run", actions: [], summary: {} }; };
   await el.backupDeletePlan();
@@ -4107,10 +4672,13 @@ test("origin filter keeps only core or custom config entries", () => {
     { object_type: "config_entry", object_id: "E1", name: "Core", domain: "hue", custom: false, status: "active", entity_count: 2 },
     { object_type: "config_entry", object_id: "E2", name: "Cust", domain: "hacs", custom: true, integration_version: "2.0", status: "active", entity_count: 5 },
   ] };
+  el.typeFilter = "config_entry";
   el.originFilter = "custom";
   assert.deepEqual(el.filtered().map(o => o.object_id), ["E2"]);
   el.originFilter = "core";
   assert.deepEqual(el.filtered().map(o => o.object_id), ["E1"]);
+  el.typeFilter = "entity";
+  assert.equal(el.originFilter, "", "the origin goes with any other type than integration");
 });
 
 test("helper filter keeps helper entries and entities and counts what uses them", () => {
@@ -4139,7 +4707,7 @@ test("the idle helper hint needs no use and a change older than the chosen days"
   el.typeFilter = "helper";
   el.helperIdle = "180";
   assert.deepEqual(el.filtered().map(o => o.object_id), ["input_boolean.idle"]);
-  assert.ok(el.inventory().includes('id="helperIdle"') && el.inventory().includes("Housekeeper"), "the select and the hint show in helper mode");
+  assert.ok(el.inventory().includes('data-lf="inventory|idle"') && el.inventory().includes("Housekeeper"), "the select and the hint show in helper mode");
   el.helperIdle = "";
   assert.equal(el.filtered().length, 4);
 });
@@ -4199,6 +4767,14 @@ test("apps and integrations groups config entries by domain and opens the page o
   el.render();
   assert.ok(shadow.innerHTML.includes(el.t("components")));
   assert.ok(!shadow.innerHTML.includes(el.t("renderError")));
+  assert.ok(shadow.innerHTML.includes('data-sys-refresh="storage"'), "the page has the refresh bar");
+  el.viewTab = { components: "custom" };
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-comp-open="demo"') && !shadow.innerHTML.includes('class="compentry"'), "an integration with two entries folds out; closed it shows none");
+  el.compOpen = ["demo"];
+  el.render();
+  assert.equal((shadow.innerHTML.match(/class="compentry"/g) || []).length, 2, "opened, one row per entry");
+  el.compOpen = [];
   el.data = { ...el.data, objects: [...el.data.objects, { object_type: "app", object_id: "core_ssh", name: "SSH", slug: "core_ssh", state: "started", status: "active", version: "1.0", version_latest: "1.7", update_available: true }] };
   el.viewTab = { components: "apps" };
   el.render();
@@ -4255,8 +4831,10 @@ test("storage shows the key figures, a red disk at 96 % and the Supervisor categ
   assert.ok(html.includes("Speicher belegt") && html.includes("4 Kerne") && html.includes("frei"));
   assert.ok(html.includes('<span class="sumlabel">Swap</span>') && !html.includes('sumlabel">Speicher frei'), "swap is a tile, free space sits in the disk tile");
   assert.ok(html.includes("&lt;b&gt;apps&lt;/b&gt;") && !html.includes("<b>apps</b>"), "Supervisor labels are escaped");
-  el.storageBy = "misc";
+  el.viewTab = { storage: "misc" };
   el.render();
+  assert.ok(shadow.innerHTML.includes('data-fold="sysmisc_0"') && shadow.innerHTML.includes('data-fold="sysmisc_2"') && !shadow.innerHTML.includes("Motion light"), "the three lists are folds, the first one open");
+  el.folds = { sysmisc_1: true, sysmisc_2: true }; el.render();
   assert.ok(shadow.innerHTML.includes("card.js") && shadow.innerHTML.includes("Ordner") && shadow.innerHTML.includes("Motion light") && shadow.innerHTML.includes(".storage"), "cards, blueprints and the other entries share one tab");
 });
 
@@ -4275,7 +4853,7 @@ test("without a Supervisor only the folders show and there is nothing to switch"
   el.view = "storage";
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(!html.includes('data-storage-by="category"'), "no category chip without categories");
+  assert.ok(!html.includes('data-view-tab="storage|category"'), "no category chip without categories");
   assert.ok(html.includes("Recorder database"), "the folders under /config are shown");
   assert.ok(html.includes('data-view="components"'), "a note points to Apps & integrations");
 });
@@ -4296,9 +4874,9 @@ test("access and data flow show one list at a time, chosen by the tiles, and the
   assert.ok(html.includes("cloud, polls"), "the IoT class is translated");
   el.lvState("accsys", "risk", "asc").f.risk = "high"; el.pickViewTab("dataflow|sys");
   html = shadow.innerHTML;
-  assert.ok(html.includes('data-acc-clear="accsys"'), "the filter shows as a chip");
+  assert.ok(html.includes('data-lf-set="accsys||"') && !html.includes("data-acc-clear"), "the filter shows once, as the shared note of the list");
   el.lvState("accsys", "risk", "asc").f.risk = ""; el.render();
-  assert.ok(!shadow.innerHTML.includes("data-acc-clear"));
+  assert.ok(!shadow.innerHTML.includes('data-lf-set="accsys||"'));
   html = shadow.innerHTML;
   assert.ok(!html.includes("Hue</strong>"), "an integration without access or cloud is not listed");
 });
@@ -4312,9 +4890,9 @@ test("the credential overview shows kind and set or empty, links to Home Assista
   assert.ok(html.includes('data-ha-path="/config/integrations/integration/demo_cloud"'), "a row opens the integration in Home Assistant");
   assert.ok(html.includes("&lt;i&gt;Demo&lt;/i&gt;") && !html.includes("<i>Demo</i>"), "titles are escaped");
   assert.ok(!/reveal|credential_reveal/i.test(html), "nothing to reveal");
-  assert.ok(!html.includes("Hinterlegt: mit leeren Feldern"), "no filter chip by default");
+  assert.ok(!html.includes('class="filteron"'), "no filter note by default");
   el.lvState("seclist", "name", "asc").f.state = "gap"; el.render();
-  assert.ok(shadow.innerHTML.includes("Hinterlegt: mit leeren Feldern ✕"), "the filter shows as a chip");
+  assert.ok(shadow.innerHTML.includes('class="filteron"') && shadow.innerHTML.includes('data-lf-set="seclist||"') && !shadow.innerHTML.includes('class="pill warn" data-sec-show'), "the filter shows once, as the shared note of the list");
 });
 
 test("the rights of the apps show under access and data flow, or why they are missing", () => {
@@ -4393,7 +4971,10 @@ test("an app is an object of its own: status, detail tabs with rights and load, 
   el._sys.dataflow.data = { ...ACCESS, apps_available: true, apps: [{ slug: "core_ssh", name: "SSH", state: "started", checked: true, risk: "high", access: [{ kind: "full_access", detail: null, level: "high" }] }] };
   assert.equal(el.tone("stopped"), "mute", "a stopped app is not a problem");
   assert.equal(el.haPath(app), "/hassio/addon/core_ssh/info");
-  assert.equal(JSON.stringify(el.detailTabs(app, "app:core_ssh").map(t => t[0])), JSON.stringify(["overview", "access", "storage", "technical"]));
+  assert.equal(JSON.stringify(el.detailTabs(app, "app:core_ssh").map(t => t[0])), JSON.stringify(["overview", "actions", "access", "storage", "technical"]));
+  const appActions = el.detailPanel("actions", app, "app:core_ssh");
+  assert.ok(appActions.includes("Notizen") && appActions.includes("data-mark-open"), "the mark of an app is in the Actions tab");
+  assert.ok(!el.detailPanel("overview", app, "app:core_ssh").includes("data-mark-open"), "no longer a card on the overview");
   assert.equal(el.accessTone(app), "", "an integration helper is not used for apps");
   assert.equal(el.appAccessTone(app), "red");
   const overview = el.appOverview(app);
@@ -4435,8 +5016,8 @@ test("with a Supervisor the usage tab switches between categories and folders", 
   const { el, shadow } = systemPanel();
   el.view = "storage";
   el.render();
-  assert.ok(shadow.innerHTML.includes('data-storage-by="folder"') && !shadow.innerHTML.includes("Recorder database"));
-  el.storageBy = "folder"; el.render();
+  assert.ok(shadow.innerHTML.includes('data-view-tab="storage|folder"') && !shadow.innerHTML.includes("Recorder database"));
+  el.viewTab = { storage: "folder" }; el.render();
   assert.ok(shadow.innerHTML.includes("Recorder database"));
 });
 
@@ -4465,6 +5046,16 @@ test("the settings list every file Housekeeper keeps with size and purpose, grou
   assert.ok(html.includes("Journal") && html.includes("Logbook") && html.includes("Observations") && html.includes("brandnew"));
   assert.ok(html.includes("Audit trail") && html.includes("Your entries and settings") && html.includes("Other"));
   assert.ok(el.storedFiles({ storage: {} }).includes("No data stored yet"));
+  assert.ok(html.includes("<table") && html.includes("Audit trail") && el._exporters.storedfiles.rows()[0].length === 5, "the files are a table with an export");
+});
+
+test("the settings list the hidden findings as a table with a filter by kind, and the event list has no inline style", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [{ key: "h1", rule_id: "r", object_id: "sensor.a", ignored: true, ignored_by: "label" }, { key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true }] };
+  const html = el.hiddenCard();
+  assert.ok(html.includes('data-lsort="hidden|name') && html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"'), "only a manual decision can be shown again");
+  assert.ok(el._exporters.hidden && html.includes("Hidden findings (2)"));
+  assert.ok(el.eventsCard().includes('class="factnote evlist"') && !el.eventsCard().includes("style="));
 });
 
 test("a long history of scans shows only the newest rows until asked, keeps the chosen base visible and has the choice in its head", () => {
@@ -4550,6 +5141,28 @@ test("the info page lists the phases of the last scan, longest first, and the re
   assert.equal(el.sysState("storage").at, "2026-10-12T20:00:00+00:00", "the page shows when the sizes were read");
 });
 
+test("the info page explains Housekeeper's own HACS update state and links to its repository", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, version: "1.5.1", hacs_available: true, hacs_housekeeper: { id: "123", installed_version: "33ccdad", installed_kind: "commit", available_version: "1.6.0", pending_update: false, last_fetched: "2026-10-14T10:30:00+00:00" } } };
+  let html = el.housekeeperUpdateCard();
+  assert.ok(html.includes("HACS is still tracking a commit") && html.includes("Redownload") && html.includes('data-ha-path="/hacs/repository/123"'));
+  assert.ok(html.includes("33ccdad") && html.includes("1.6.0"));
+
+  el.data.meta.hacs_housekeeper = { id: "123", installed_version: "v1.6.0", installed_kind: "release", available_version: "v1.6.0", pending_update: false };
+  el.data.meta.version = "1.6.0";
+  html = el.housekeeperUpdateCard();
+  assert.ok(html.includes("Up to date") && html.includes('class="tile ok"'));
+
+  el.data.meta.version = "1.5.1";
+  el.data.meta.hacs_housekeeper = { id: "123", installed_version: "1.5.1", installed_kind: "release", available_version: "v1.6.0", pending_update: false };
+  assert.ok(el.housekeeperUpdateCard().includes("Update available"), "the versions reveal an update even when HACS did not set its pending flag");
+
+  el.data.meta.hacs_housekeeper = null;
+  assert.ok(el.housekeeperUpdateCard().includes("Not managed by HACS"));
+  el.data.meta.hacs_available = false;
+  assert.ok(el.housekeeperUpdateCard().includes("HACS not available"));
+});
+
 test("the open menu list of a narrow window scrolls instead of outgrowing the sticky bar", () => {
   const { el } = panel("en");
   assert.match(el.styles(), /\.top\.open \.topnav\{display:flex;max-height:[^}]*overflow-y:auto/);
@@ -4578,7 +5191,7 @@ test("a top bar that does not fit changes into the menu button instead of being 
 test("the search finds pages, settings tabs and finding filters, puts the better matching block first, and opens them", () => {
   const { el } = panel("en");
   const known = { rule_id: "entity.state_unavailable", object_id: "sensor.spare", classification: "unavailable", confidence: 0.75, key: "k1", ignored: true, ignored_by: "user", ignore_info: { kind: "keep", reason: "Spare" } };
-  el.data = { ...DATA, meta: { ...DATA.meta, status_counts: { active: 2, unavailable: 4 } }, findings: [...DATA.findings, known] };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.u", name: "U", status: "unavailable" }], meta: { ...DATA.meta, status_counts: { active: 2, unavailable: 4 } }, findings: [...DATA.findings, known] };
   const kinds = query => { el.quickQuery = query; return el.quickEntries().map(e => `${e.kind}:${e.label || e.item?.object_id}`); };
   assert.equal(kinds("k").length, 0, "one letter does not search");
   const known1 = kinds("known");
@@ -4620,8 +5233,14 @@ test("an integration outage is a reason of its own, with a tile and a filter of 
   assert.equal(el.findingReason(el.data.findings[0]), "outage");
   assert.equal(el.findingReason(el.data.findings[1]), "orphaned");
   const html = el.findingsView();
-  assert.ok(html.includes("All reasons") && html.includes("Outage"));
+  assert.ok(html.includes("Outage") && html.includes("All findings") && !html.includes("All reasons"), "the reason is set by the tiles only");
+  assert.ok(html.includes('data-lf="findings|fresh"') && !html.includes('data-fstatus="new"'), "new and in work are a filter of the list bar, not chips");
   el.findingFilter = "outage";
+  assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
+  el.findingFilter = "";
+  el.data.findings[1].first_detected_at = "2020-01-01T00:00:00Z";
+  el.data.findings[0].first_detected_at = new Date().toISOString();
+  el.lvState("findings", "impact", "desc").f.fresh = "new";
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
 });
 
@@ -4633,4 +5252,83 @@ test("the finding of an outage is a row of its own as soon as a status or a filt
   assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "once in the grouped list");
   el.findingFilter = "outage";
   assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "and once under a filter");
+});
+
+test("object lists share one table: device entities, integration entries, reminders and backups sort, filter and show the state", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, reminders: [{ id: "r1", name: "Filter", interval_days: 30, last_done: "", history: [], due: "2026-11-01", days_left: 5, state: "soon", note: "" }] };
+  const html = el.objectTable("t-objs", [
+    { key: "entity:light.a", type: "entity", name: "A", sub: "light.a", tone: "ok", state: "active", stateLabel: "Active", pill: "<b>ok</b>", value: "on" },
+    { key: "entity:light.b", type: "entity", name: "B", sub: "light.b", tone: "red", state: "unavailable", stateLabel: "Unavailable", pill: "<b>bad</b>", value: "" },
+  ], { min: 1, extras: [{ key: "value", label: "objColState", get: r => r.value, cell: r => r.value }] });
+  assert.ok(html.includes('data-object="entity:light.a"') && html.includes('data-lf="t-objs|state"') && html.includes("<table") && !html.includes("mdi:chevron-right"));
+  const rem = el.remindersCard();
+  assert.ok(rem.includes('data-lsort="reminders|due') && rem.includes('data-rem-open="r1"') && rem.includes('data-lf="reminders|state"'));
+  assert.ok(el.bhBackups([{ date: "2026-10-01T10:00:00+00:00", size: 1000, agents: ["backup.local"], protected: true }]).includes('data-lsort="bhbackups|size'));
+  assert.ok(rem.includes('data-rem-row="r1"') && rem.includes('role="button"'), "the row opens the history");
+  assert.ok(rem.includes('data-lf-set="reminders|state|soon"') && rem.includes('data-lf-set="reminders||"'), "the key figures set the state filter");
+  assert.ok(rem.includes('data-export-list="reminders"') && el._exporters.reminders.rows()[0][0] === "Filter", "the list exports to CSV");
+});
+
+test("the changes page counts what a filter shows, says so, and lists objects as tables", () => {
+  const { el, shadow } = panel("en");
+  el.view = "changes";
+  el.compare = COMPARE;
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Search and filter apply to all sections."));
+  assert.ok(shadow.innerHTML.includes("<table"), "table");
+  assert.ok(!shadow.innerHTML.includes('style="margin'), "inline");
+  el.lvState("changes", "", "asc").q = "gone";
+  el.openFolds = {};
+  el.changesCat = "removedObjects";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("1 of 1") && shadow.innerHTML.includes("of 1"), "the sections show how many of all");
+});
+
+test("the inventory is the shared list: origin only for integrations, core and custom under integration, helper columns, selection and compact rows", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [
+    ...DATA.objects,
+    { object_type: "config_entry", object_id: "E1", name: "Core", domain: "hue", custom: false, status: "active", entity_count: 2 },
+    { object_type: "config_entry", object_id: "E2", name: "Cust", domain: "hacs", custom: true, integration_version: "2.0", status: "active", entity_count: 5 },
+    { object_type: "entity", object_id: "input_boolean.h", name: "H", platform: "input_boolean", status: "active" },
+  ] };
+  el.view = "inventory"; el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes('data-lf="inventory|type"') && html.includes("All types") && !html.includes('data-lf="inventory|origin"'), "no origin filter without the integration type");
+  assert.ok(html.includes('data-inv-filter="config_entry||custom"') && html.includes("of which custom") && html.includes("data-inv-sel-page"), "sub rows under integration, selection always there");
+  assert.ok(html.includes('data-dense="inventory"') && html.includes('data-lsort="inventory|reason|asc"'));
+  el.typeFilter = "config_entry"; el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes('data-lf="inventory|origin"') && html.includes('data-lsort="inventory|version|asc"'));
+  el.typeFilter = "helper"; el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes('data-lf="inventory|idle"') && html.includes('data-lsort="inventory|usedByCol|desc"') && !html.includes('data-lf="inventory|origin"'));
+});
+
+test("the mark form offers a time window and the mark line says when it applies", () => {
+  const { el } = panel("en");
+  const window = { mode: "time", from: "21:00", to: "06:00" };
+  assert.ok(el.markLine({ kind: "expected_offline", window, grace: 30 }).includes("21:00–06:00, then 30 min grace"));
+  assert.ok(el.markLine({ kind: "expected_offline", window: { mode: "sun" }, grace: 0 }).includes("in the dark"));
+  const form = f => el.markFormHtml({ kind: "expected_offline", reason: "", target: "", days: 0, wmode: "", from: "21:00", to: "06:00", grace: 30, ...f }, "config_entry:x");
+  assert.ok(!form({}).includes("data-mark-from"), "no window, no clock fields");
+  assert.ok(form({ wmode: "time" }).includes("data-mark-from") && form({ wmode: "time" }).includes("data-mark-grace"));
+  assert.ok(!form({ wmode: "sun" }).includes("data-mark-from") && form({ wmode: "sun" }).includes("data-mark-grace"));
+  assert.ok(!form({ kind: "keep", wmode: "sun" }).includes("data-mark-wmode"), "keep has no window");
+});
+
+test("the mark form warns when the sun entity is missing", () => {
+  const { el } = panel("en");
+  const form = states => { el._hass = { states }; return el.markFormHtml({ kind: "expected_offline", reason: "", target: "", days: 0, wmode: "sun", from: "21:00", to: "06:00", grace: 30 }, "config_entry:x"); };
+  assert.ok(form({}).includes("sun.sun"), "no sun.sun: the form says so");
+  assert.ok(!form({ "sun.sun": { state: "below_horizon" } }).includes('role="alert"'));
+});
+
+test("the delete button of a list row is the bin only, with the name as tooltip, and says why it is disabled", () => {
+  const { el } = panel("en");
+  const on = el.deleteButton('data-x="1"', "Delete");
+  assert.ok(on.includes('data-x="1"') && on.includes('title="Delete"') && on.includes('aria-label="Delete"') && on.includes("mdi:delete-outline") && !on.includes(">Delete<"));
+  const off = el.deleteButton('data-x="1"', "Delete", { why: "In use" });
+  assert.ok(off.includes("disabled") && off.includes('title="In use"') && !off.includes('data-x="1"'), "no action while disabled");
 });

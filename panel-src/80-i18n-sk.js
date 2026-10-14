@@ -143,7 +143,7 @@ Object.assign(TEXT.sk, {
   "automation": "Automatizácia",
   "script": "Skript",
   "scene": "Scéna",
-  "dashboard": "Dashboard",
+  "dashboard": "Nástenka",
   "SHOWS": "zobrazuje",
   "entity_disabled": "Entita bola vypnutá",
   "floor": "Podlažie",
@@ -1843,7 +1843,7 @@ Object.assign(TEXT.sk, {
   "sysReading": "Načítava sa…",
   "sysAsOf": "Stav k {time}",
   "sysFree": "voľné: {n}",
-  "sysSwapLabel": "Swap",
+  "sysSwapLabel": "Výmena",
   "sysChecked": "Skontrolovaných integrácií: {n}",
   "accTabHigh": "Vysoké riziko: {n}",
   "accTabOpen": "Otvorené: {n}",
@@ -3033,8 +3033,8 @@ Object.assign(TEXT.sk, {
   "verdictNothing": "Bez zmien",
   "wzIdleNone": "Tento plán neobsahuje žiadnu vykonateľnú akciu.",
   "wzBack": "Späť",
-  "xpButton": "Export",
-  "xpTitle": "Export",
+  "xpButton": "Exportovať",
+  "xpTitle": "Exportovať údaje",
   "xpStepsLabel": "Kroky exportu",
   "xpCancel": "Zrušiť",
   "xpBack": "Späť",
@@ -3502,7 +3502,6 @@ Object.assign(TEXT.sk, {
 // Overrides for keys whose final English values are redefined later in the bundle.
 Object.assign(TEXT.sk, {
   "actNone": "Žiadne naliehavé úlohy. Všetko vyzerá v poriadku.",
-  "confirmPlan": "Plán z {date} sa vymaže z denníka. Plán, ktorý už bol vykonaný, zostane v Home Assistante účinný, ale po vymazaní už nebude možné jeho zmeny vrátiť.",
   "cause_device_missing": "Zariadenie {name}, na ktoré entita odkazuje, už nie je v registri zariadení. Záznam entity je pravdepodobne pozostatkom."
 });
 Object.assign(TEXT.sk, {

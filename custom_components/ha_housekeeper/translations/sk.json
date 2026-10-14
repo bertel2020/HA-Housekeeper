@@ -22,12 +22,36 @@
           "low_battery_percent": "Hlásiť nízky stav batérie pri hodnote (%) alebo nižšej",
           "scan_interval_hours": "Automaticky kontrolovať každých (hodiny, 0 = vypnuté)",
           "stale_hours": "Hlásiť senzory bez nových hodnôt po (hodiny, 0 = vypnuté)",
-          "history_days": "Uchovávať históriu kontrol (dni)"
+          "history_days": "Uchovávať históriu kontrol (dni)",
+          "watch_hours": "Sledovať po aktualizácii (hodiny, 0 = vypnuté)"
         }
       }
     },
     "abort": {
       "busy": "Prebieha vykonávanie plánu, vrátenie zmien alebo čistenie údajov. Nastavenia možno zmeniť po dokončení."
+    }
+  },
+  "exceptions": {
+    "not_loaded": {
+      "message": "HA Housekeeper nie je načítaný."
+    },
+    "cleanup_busy": {
+      "message": "Prebieha plán a jeho vlastná kontrola. Skús to znova neskôr."
+    },
+    "starting": {
+      "message": "Home Assistant sa ešte spúšťa. Kontrola by bola predbežná a neuložila by sa."
+    }
+  },
+  "services": {
+    "scan": {
+      "name": "Spustiť kontrolu",
+      "description": "Spustí kontrolu Housekeepera. Viac volaní sa spojí do jednej kontroly; bezprostredne po predchádzajúcej sa ďalšia nespustí.",
+      "fields": {
+        "wait": {
+          "name": "Počkať na dokončenie",
+          "description": "Počká na dokončenie kontroly a vráti počty. Bez tejto voľby sa kontrola iba spustí."
+        }
+      }
     }
   },
   "issues": {
@@ -53,6 +77,11 @@
     }
   },
   "entity": {
+    "button": {
+      "scan": {
+        "name": "Spustiť kontrolu"
+      }
+    },
     "sensor": {
       "findings": {
         "name": "Nálezy"

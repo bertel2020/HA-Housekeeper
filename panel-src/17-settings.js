@@ -81,13 +81,25 @@ class SettingsMixin {
 
   hiddenCard() {
     const hidden = (this.data?.findings || []).filter(f => f.ignored);
-    const pg = this.paginate("hidden", hidden);
-    const hiddenRow = f => {
-      const object = this.findObject(this.findingKey(f));
-      const action = f.ignored_by === "label" || f.ignored_by === "mark" ? `<span class="pill mute">${this.t(f.ignored_by === "mark" ? "mark_" + f.mark.kind : "ignoredByLabel")}</span>` : `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0">${this.t("showFinding")}</button>`;
-      return `<div class="row"><span class="tile mute"><ha-icon icon="mdi:eye-off-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || f.object_id)}</strong><small>${this.esc(f.object_id)} · ${this.esc(this.findingTitle(f))}${f.ignore_info ? ` · ${this.esc(this.decisionLabel(f))}` : ""}${f.mark ? ` · ${this.esc(this.markLine(f.mark))}` : ""}</small></span>${action}</div>`;
-    };
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${hidden.length ? pg.rows.map(hiddenRow).join("") : `<div class="emptymsg"><ha-icon icon="mdi:eye-check-outline"></ha-icon>${this.t("hiddenNone")}</div>`}${pg.footer}</section>`;
+    const by = f => (f.ignored_by === "label" || f.ignored_by === "mark" ? f.ignored_by : "manual");
+    const objectName = f => this.findObject(this.findingKey(f))?.name || f.object_id;
+    const decision = f => (f.ignore_info ? this.decisionLabel(f) : "") + (f.mark ? ` ${this.markLine(f.mark)}` : "");
+    const action = f => (by(f) === "manual" ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0">${this.t("showFinding")}</button>` : `<span class="pill mute">${this.t(f.ignored_by === "mark" ? "mark_" + f.mark.kind : "ignoredByLabel")}</span>`);
+    const table = this.sysList("hidden", hidden, {
+      sort: "name", dir: "asc", cls: "hid", tie: f => f.key, empty: "hiddenNone", exportName: "hidden-findings",
+      sorts: [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }],
+      text: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f)].join(" "),
+      filters: [{ name: "by", all: this.t("hidAllWays"), options: [["manual", this.t("hidByManual")], ["label", this.t("hidByLabel")], ["mark", this.t("hidByMark")]] }],
+      filterFns: { by: (f, v) => by(f) === v },
+      columns: [
+        { key: "name", label: "hidColObject", dir: "asc", cell: f => `<strong>${this.esc(objectName(f))}</strong><small>${this.esc(f.object_id)}</small>` },
+        { key: "finding", label: "hidColFinding", dir: "asc", cell: f => this.esc(this.findingTitle(f)) },
+        { key: "why", label: "hidColDecision", sortable: false, cell: f => this.esc(decision(f).trim() || "–") },
+        { key: "act", label: "hidColAction", sortable: false, cell: action },
+      ],
+      header: [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("hidColDecision")], rows: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f).trim()],
+    });
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${table}</section>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
@@ -96,11 +108,12 @@ class SettingsMixin {
     const { storage, database } = m;
     return {
       housekeeper: m.version, home_assistant: m.ha_version, scanned_at: m.scanned_at, preliminary: Boolean(m.preliminary),
-      scan_interval_hours: m.scan_interval_hours, history_days: m.history_days, recorder_available: m.recorder_available,
+      scan_interval_hours: m.scan_interval_hours, history_days: m.history_days, watch_hours: m.watch_hours, recorder_available: m.recorder_available,
       object_count: m.object_count, type_counts: m.type_counts, status_counts: m.status_counts, edge_count: (this.data?.edges || []).length,
       findings_by_rule: count(this.data?.findings || [], f => f.rule_id), findings_by_classification: count(this.data?.findings || [], f => f.classification),
       policies_on: this.policies ? this.policies.rules.filter(r => r.enabled).map(r => r.id) : null,
       storage: storage || null, database: database || null,
+      hacs_housekeeper: m.hacs_housekeeper || null,
       panel: { language: this.lang, size: this.prefs?.size, mode: this.prefs?.mode, scheme: this.prefs?.scheme, page_size: this.pageSize },
       browser: globalThis.navigator?.userAgent || null, recent_errors: this._recentErrors || [],
     };
@@ -126,19 +139,49 @@ class SettingsMixin {
     const all = Object.values(files);
     if (!all.length) return `<p class="factnote">${this.t("storeNone")}</p>`;
     const total = all.reduce((sum, item) => sum + (item.bytes || 0), 0);
-    const row = name => {
-      const item = files[name];
-      const title = this.t(`store_${name}`) === `store_${name}` ? this.esc(name) : this.t(`store_${name}`);
-      const text = this.t(`storeText_${name}`) === `storeText_${name}` ? "" : this.t(`storeText_${name}`, { days: m.history_days ?? 30 });
-      const changed = item.changed ? ` · ${this.t("storeChanged")} ${this.formatDate(new Date(item.changed * 1000).toISOString())}` : "";
-      return `<div class="row"><span class="tile mute"><ha-icon icon="mdi:database-outline"></ha-icon></span><span class="row-text"><strong>${title}</strong><small>${text}${changed}</small></span><span class="pill mute">${this.formatBytes(item.bytes || 0)}</span></div>`;
-    };
+    const items = groups.flatMap(([group, names]) => names.map(name => ({ name, group, ...files[name] })));
+    const title = f => (this.t(`store_${f.name}`) === `store_${f.name}` ? f.name : this.t(`store_${f.name}`));
+    const text = f => (this.t(`storeText_${f.name}`) === `storeText_${f.name}` ? "" : this.t(`storeText_${f.name}`, { days: m.history_days ?? 30 }));
+    const groupName = f => this.t(`storeGroup_${f.group}`);
     const facts = `<div class="facts"><div class="fact"><span>${this.t("storeTotal")}</span><b>${this.formatBytes(total)}</b></div><div class="fact"><span>${this.t("storeCount")}</span><b>${this.formatNumber(all.length)}</b></div></div>`;
-    const body = groups.filter(([, names]) => names.length).map(([group, names]) => {
-      const size = names.reduce((sum, name) => sum + (files[name].bytes || 0), 0);
-      return `<details class="storegrp"><summary><strong>${this.t(`storeGroup_${group}`)}</strong> <span class="pill mute">${this.formatBytes(size)}</span></summary>${names.map(row).join("")}</details>`;
-    }).join("");
-    return facts + body;
+    const table = this.sysList("storedfiles", items, {
+      sort: "group", dir: "asc", cls: "sto", tie: f => f.name, exportName: "stored-files",
+      sorts: [{ key: "group", label: "stoColGroup", dir: "asc", get: f => groups.findIndex(([g]) => g === f.group) }, { key: "name", label: "stoColFile", dir: "asc", get: title }, { key: "size", label: "stoColSize", dir: "desc", get: f => f.bytes || 0 }, { key: "changed", label: "stoColChanged", dir: "desc", get: f => f.changed || 0 }],
+      text: f => [title(f), f.name, text(f), groupName(f)].join(" "),
+      filters: [{ name: "group", all: this.t("stoAllGroups"), options: groups.filter(([, n]) => n.length).map(([g]) => [g, this.t(`storeGroup_${g}`)]) }],
+      filterFns: { group: (f, v) => f.group === v },
+      columns: [
+        { key: "name", label: "stoColFile", dir: "asc", cell: f => `<strong>${this.esc(title(f))}</strong>${text(f) ? `<small>${text(f)}</small>` : ""}` },
+        { key: "group", label: "stoColGroup", dir: "asc", cell: f => this.esc(groupName(f)) },
+        { key: "size", label: "stoColSize", dir: "desc", cell: f => this.formatBytes(f.bytes || 0) },
+        { key: "changed", label: "stoColChanged", dir: "desc", cell: f => (f.changed ? this.esc(this.formatDate(new Date(f.changed * 1000).toISOString())) : "–") },
+      ],
+      header: [this.t("stoColFile"), "ID", this.t("stoColGroup"), this.t("stoColSize"), this.t("stoColChanged")], rows: f => [title(f), f.name, groupName(f), f.bytes || 0, f.changed ? new Date(f.changed * 1000).toISOString() : ""],
+    });
+    return facts + table;
+  }
+
+  housekeeperUpdateCard() {
+    const m = this.data?.meta || {}, h = m.hacs_housekeeper;
+    const fact = (label, value) => `<div class="fact"><span>${this.t(label)}</span><b>${this.esc(value || "–")}</b></div>`;
+    const sameVersion = (left, right) => Boolean(left && right && String(left).replace(/^v/i, "") === String(right).replace(/^v/i, ""));
+    const newerVersion = (candidate, current) => {
+      const parts = value => /^v?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/i.exec(String(value || ""))?.slice(1, 4).map(Number);
+      const a = parts(candidate), b = parts(current);
+      if (!a || !b) return false;
+      return a.some((value, index) => value !== b[index] && a.slice(0, index).every((before, at) => before === b[at]) && value > b[index]);
+    };
+    let tone = "mute", title = "hkUpdateUnknown", hint = "hkUpdateUnknownHint";
+    if (!m.hacs_available) [title, hint] = ["hkUpdateNoHacs", "hkUpdateNoHacsHint"];
+    else if (!h) [title, hint] = ["hkUpdateUntracked", "hkUpdateUntrackedHint"];
+    else if (h.installed_kind === "commit" && h.available_version) [tone, title, hint] = ["warn", "hkUpdateCommit", "hkUpdateCommitHint"];
+    else if (h.blocked) [tone, title, hint] = ["warn", "hkUpdateBlocked", "hkUpdateBlockedHint"];
+    else if (h.pending_update || newerVersion(h.available_version, m.version)) [tone, title, hint] = ["warn", "hkUpdateAvailable", "hkUpdateAvailableHint"];
+    else if (m.version && h.installed_version && !sameVersion(m.version, h.installed_version)) [tone, title, hint] = ["warn", "hkUpdateMismatch", "hkUpdateMismatchHint"];
+    else if (sameVersion(m.version, h.available_version)) [tone, title, hint] = ["ok", "hkUpdateCurrent", "hkUpdateCurrentHint"];
+    const facts = [fact("hkUpdateLoaded", m.version), h ? fact("hkUpdateHacsInstalled", h.installed_version) : "", h ? fact("hkUpdateLatest", h.available_version) : "", h?.last_fetched ? fact("hkUpdateChecked", this.formatDate(h.last_fetched)) : ""].join("");
+    const open = h?.id ? `<button class="btn" data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(h.id)}`)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("intHacsOpen")}</button>` : "";
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hkUpdateTitle")}</h2><p>${this.t("hkUpdateHint")}</p></div>${open}</div><div class="facts">${facts}</div><div class="row"><span class="tile ${tone}"><ha-icon icon="${tone === "ok" ? "mdi:check-circle-outline" : tone === "warn" ? "mdi:alert-outline" : "mdi:information-outline"}"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(hint)}</small></span></div></section>`;
   }
 
   infoCard() {
@@ -148,7 +191,7 @@ class SettingsMixin {
       fact(this.t("lastScan"), m.scanned_at ? this.formatDate(m.scanned_at) : "–"), fact(this.t("objects"), this.formatNumber(m.object_count ?? 0))].join("");
     const link = (icon, href, label, hint) => `<a class="row" href="${href}" target="_blank" rel="noopener noreferrer"><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${label}</strong>${hint ? `<small>${hint}</small>` : ""}</span><ha-icon icon="mdi:open-in-new"></ha-icon></a>`;
     const kept = this.storedFiles(m);
-    return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div></section>
+    return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div></section>${this.housekeeperUpdateCard()}
       ${this.scanCoverageCard()}${this.scanTimingCard()}
       <section class="panel"><div class="panelhead"><div><h2>${this.t("setKeptTitle")}</h2><p>${this.t("setKeptHint")} ${this.t("storeHintBytes")}</p></div></div>${kept}<p class="factnote">${this.t("setPrivacy")}</p></section>
       <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}

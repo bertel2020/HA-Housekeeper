@@ -1,12 +1,14 @@
 // ListsMixin: methods of the panel element, mixed into the class in 99-register.js.
 const VIEWS_KEY = "ha_housekeeper.views";
 const VIEWS_LIMIT = 10;
+const DENSE_LISTS_KEY = "ha_housekeeper.dense_lists";
+const DENSE_LIST_ID = /^[\w:.-]{1,80}$/, DENSE_LISTS_MAX = 80; // any list that offers compact rows
+const DENSE_LEGACY_IDS = ["unreferenced", "batteries", "runs"];
+
+// Lists whose export has a guided dialog next to the CSV download.
+const GUIDED_EXPORT_LISTS = ["inventory"];
 
 class ListsMixin {
-  th(key, label) {
-    const on = this.sort === key;
-    return `<th data-sort="${key}" aria-sort="${on ? (this.sortDir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-sortbtn="${key}">${this.t(label)}${on ? ` <span aria-hidden="true">${this.sortDir === "desc" ? "▼" : "▲"}</span>` : ""}</button></th>`;
-  }
 
   // Shared list controls: per-list search, filters and sort kept in this.lv[id].
   // The sort and the filters of a list come back at the next visit (this browser only); the search text does not.
@@ -101,10 +103,10 @@ class ListsMixin {
   }
 
   // A search box over a list that keeps its own order. The box shows from `min` items on, or while a text is set.
-  searchList(id, items, text, min = 6) {
+  searchList(id, items, text, min = 6, barOptions = {}) {
     const st = this.lvState(id, "", "asc"), q = st.q.trim().toLowerCase();
     const rows = q ? items.filter(item => text(item).toLowerCase().includes(q)) : items;
-    return { rows, bar: items.length >= min || st.q ? this.listBar(id, { sorts: [] }) : "", none: q && !rows.length ? `<div class="emptymsg">${this.t("noMatches")}</div>` : "" };
+    return { rows, bar: items.length >= min || st.q ? this.listBar(id, { sorts: [], ...barOptions }) : "", none: q && !rows.length ? `<div class="emptymsg">${this.t("noMatches")}</div>` : "" };
   }
 
   // The line above a list that tells which filters are on and clears them: labels = texts of the filters, resetAttr = attribute of the button.
@@ -118,7 +120,7 @@ class ListsMixin {
     requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: "nearest" }));
   }
 
-  listBar(id, { sorts, filters = [], columns = [] }) {
+  listBar(id, { sorts, filters = [], columns = [], dense = false, table = false }) {
     const st = this.lv[id];
     for (const f of filters) if (st.f[f.name] && !f.options.some(([v]) => v === st.f[f.name])) delete st.f[f.name]; // a kept value this list no longer offers
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
@@ -127,13 +129,19 @@ class ListsMixin {
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}${st.sort === x.key ? (desc ? " ↓" : " ↑") : ""}</option>`).join("");
     const on = filters.filter(f => st.f[f.name]).map(f => `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`);
     const note = this.filterNote(on, `data-lf-set="${id}||"`);
-    return `${note}<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup"><select data-ls="${id}" aria-label="${this.t("sortBy")}" title="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}${this.viewsControl(id)}${this.denseButton()}${this.listTools(id, columns)}</div>`;
+    return `${note}<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}" aria-label="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup${table ? " table-sort" : ""}"><select data-ls="${id}" aria-label="${this.t("sortBy")}" title="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}<span class="listbar-actions">${this.viewsControl(id)}${dense ? this.denseButton(id) : ""}${this.listTools(id, columns)}</span></div>`;
   }
 
   // Column picker and CSV export of a list; both are optional. `columns` are the switchable columns: { key, label }.
   listTools(id, columns = []) {
     const open = this._colOpen === id;
-    const picker = columns.length ? `<span class="colwrap"><button type="button" class="dirbtn ${open ? "on" : ""}" data-col-open="${id}" aria-expanded="${open}" title="${this.esc(this.t("colsLabel"))}" aria-label="${this.esc(this.t("colsLabel"))}"><ha-icon icon="mdi:table-column"></ha-icon></button>${open ? `<span class="colpop" role="group" aria-label="${this.esc(this.t("colsLabel"))}">${columns.map(c => `<label><input type="checkbox" data-col="${id}|${c.key}" ${this.colHidden(id, c.key) ? "" : "checked"}> ${this.t(c.label)}</label>`).join("")}</span>` : ""}</span>` : "";
+    const picker = columns.length ? `<span class="colwrap"><button type="button" class="dirbtn ${open ? "on" : ""}" data-col-open="${id}" aria-expanded="${open}" title="${this.esc(this.t("colsLabel"))}" aria-label="${this.esc(this.t("colsLabel"))}"><ha-icon icon="mdi:table-column"></ha-icon></button>${open ? `<span class="colpop" role="group" aria-label="${this.esc(this.t("colsLabel"))}">${columns.map(c => `<label><span>${this.t(c.label)}</span><input type="checkbox" data-col="${id}|${c.key}" ${this.colHidden(id, c.key) ? "" : "checked"}></label>`).join("")}</span>` : ""}</span>` : "";
+    // Lists with a guided export get one menu (list as CSV, guided export); the others keep the plain download button.
+    if (this._exporters?.[id] && GUIDED_EXPORT_LISTS.includes(id)) {
+      const expOpen = this._expOpen === id;
+      const menu = expOpen ? `<span class="colpop exppop" role="menu"><button type="button" class="expitem" role="menuitem" data-exp-csv="${id}"><strong>${this.t("exportCsvItem")}</strong><small>${this.t("exportCsvHint")}</small></button><button type="button" class="expitem" role="menuitem" data-exp-guided><strong>${this.t("xpGuided")}</strong><small>${this.t("xpGuidedHint")}</small></button></span>` : "";
+      return `${picker}<span class="colwrap"><button type="button" class="btn expbtn ${expOpen ? "on" : ""}" data-exp-menu="${id}" aria-haspopup="menu" aria-expanded="${expOpen}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}<ha-icon icon="mdi:chevron-down"></ha-icon></button>${menu}</span>`;
+    }
     const download = this._exporters?.[id] ? `<button type="button" class="dirbtn" data-export-list="${id}" title="${this.esc(this.t("exportListTitle"))}" aria-label="${this.esc(this.t("exportListTitle"))}"><ha-icon icon="mdi:download"></ha-icon></button>` : "";
     return picker + download;
   }
@@ -176,34 +184,97 @@ class ListsMixin {
 
   setExporter(id, name, header, rows) { (this._exporters ||= {})[id] = { name, header, rows }; }
 
-  // Compact lists show the first line of every row; one switch for all lists, kept in this browser.
-  denseButton() {
-    if (this.dense === undefined) { try { this.dense = globalThis.localStorage?.getItem("ha_housekeeper.dense") === "1"; } catch (_) { this.dense = false; } }
-    const label = this.t(this.dense ? "denseOff" : "denseOn");
-    return `<button type="button" class="dirbtn" data-dense aria-pressed="${this.dense}" title="${label}" aria-label="${label}"><ha-icon icon="${this.dense ? "mdi:format-line-spacing" : "mdi:view-agenda-outline"}"></ha-icon></button>`;
+  // Tables offer compact rows (one line, no ID line), saved separately per list.
+  denseLists() {
+    if (this._denseLists) return this._denseLists;
+    let saved = {};
+    try {
+      const raw = globalThis.localStorage?.getItem(DENSE_LISTS_KEY);
+      saved = raw ? JSON.parse(raw) : globalThis.localStorage?.getItem("ha_housekeeper.dense") === "1" ? Object.fromEntries(DENSE_LEGACY_IDS.map(id => [id, true])) : {};
+    } catch (_) { saved = {}; }
+    return (this._denseLists = saved && typeof saved === "object" && !Array.isArray(saved) ? Object.fromEntries(Object.entries(saved).filter(([id, on]) => on === true && DENSE_LIST_ID.test(id)).slice(0, DENSE_LISTS_MAX)) : {});
+  }
+
+  isDenseList(id) { return this.denseLists()[id] === true; }
+
+  toggleDenseList(id) {
+    if (!DENSE_LIST_ID.test(id)) return;
+    const lists = this.denseLists();
+    if (lists[id]) delete lists[id]; else if (Object.keys(lists).length < DENSE_LISTS_MAX) lists[id] = true;
+    try { globalThis.localStorage?.setItem(DENSE_LISTS_KEY, JSON.stringify(lists)); } catch (_) { /* kept until the page closes */ }
+    this.render();
+  }
+
+  denseButton(id) {
+    const on = this.isDenseList(id), label = this.t(on ? "denseOff" : "denseOn");
+    return `<button type="button" class="dirbtn" data-dense="${this.esc(id)}" aria-pressed="${on}" title="${label}" aria-label="${label}"><ha-icon icon="${on ? "mdi:format-line-spacing" : "mdi:view-agenda-outline"}"></ha-icon></button>`;
   }
 
   // A sortable table for a list built with lvState/refine: header buttons set sort and direction, the phone shows cards.
   // columns: [{ key, label, cell(item) -> html, sortable, dir, narrow, allBox(rows) }]; narrow is a checkbox column with a fixed small width; allBox puts a box that ticks the page in its head; rowAttrs(item) adds attributes to the row.
-  listTable(id, columns, rows, { rowAttrs = () => "", cls = "" } = {}) {
+  listTable(id, columns, rows, { rowAttrs = () => "", cls = "", after = () => "" } = {}) {
     const st = this.lv[id];
     columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
-      const on = st.sort === c.key;
+      const on = st.sort === c.key, sortedHere = on || c.sortKeys?.includes(st.sort);
       const inner = c.allBox ? c.allBox(rows) : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-      return `<th scope="col"${c.narrow ? ' class="selcol"' : ""} aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}</th>`;
+      return `<th scope="col"${c.narrow ? ' class="selcol"' : ""} aria-sort="${sortedHere ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}${c.headSuffix ? c.headSuffix() : ""}</th>`;
     }).join("");
     const body = rows.map(item => {
       const attrs = rowAttrs(item);
-      return `<tr ${attrs}>${columns.map((c, i) => `<td${c.narrow ? ' class="selcol"' : ""}${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("")}</tr>`;
+      return `<tr ${attrs}>${columns.map((c, i) => `<td${c.narrow ? ' class="selcol"' : ""}${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("")}</tr>${after(item)}`;
     }).join("");
-    return `<div class="tablewrap lt ${cls}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+    return `<div class="${["tablewrap", "lt", cls, this.isDenseList(id) ? "dense-list" : ""].filter(Boolean).join(" ")}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  }
+
+  // A table of objects (entities, entries, automations): name with id, type when mixed, state, plus extra columns.
+  // rows: [{ key: "entity:light.a", type, name, sub, tone, state, stateLabel, pill, rank, open }]; open: false makes a row that opens nothing; bar: false leaves the bar to the caller (the header still sorts); extras: [{ key, label, dir, get, cell(row) }].
+  // The bar shows from `min` rows on; a row opens its object.
+  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
+    if (!rows.length) return empty ? `<div class="emptymsg">${empty}</div>` : "";
+    this.lvState(id, "name", "asc");
+    const types = [...new Set(rows.map(r => r.type))].sort();
+    const tones = ["red", "warn", "violet", "blue", "mute", "ok"], rank = r => (r.rank ?? tones.indexOf(r.tone));
+    const sorts = [
+      { key: "name", label: "sortName", dir: "asc", get: r => r.name },
+      ...(types.length > 1 ? [{ key: "type", label: "sortType", dir: "asc", get: r => this.t(r.type) }] : []),
+      { key: "status", label: "sortStatus", dir: "asc", get: rank },
+      ...extras.map(x => ({ key: x.key, label: x.label, dir: x.dir || "asc", get: x.get })),
+    ];
+    const filters = [
+      ...(types.length > 1 ? [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }] : []),
+      { name: "state", all: this.t("objAllStatus"), options: [...new Map(rows.map(r => [r.state, r.stateLabel])).entries()].sort((a, b) => String(a[1]).localeCompare(String(b[1]), this.lang)) },
+    ];
+    const st = this.lv[id];
+    const bar = withBar && (rows.length >= min || st.q) ? this.listBar(id, { table: true, dense: true, sorts, filters }) : "";
+    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => r.key });
+    const pg = this.paginate(id, shown);
+    const columns = [
+      { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${tile(r)}<div>${this.nameCell(r.name, r.sub)}</div></div>` },
+      ...(types.length > 1 ? [{ key: "type", label: "sortType", dir: "asc", cell: r => this.esc(this.t(r.type)) }] : []),
+      ...extras.map(x => ({ key: x.key, label: x.label, dir: x.dir || "asc", cell: x.cell })),
+      { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill },
+    ];
+    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
+    return `${bar}${table}${pg.footer}`;
+  }
+
+  // The arrow of a row that unfolds in place (a history, a detail): the look of a fold's arrow, as a button of its own; attr is the data attribute the click handler listens to.
+  expandBtn(attr, key, open, label) {
+    const text = this.esc(label);
+    return `<span class="tile mute"><button type="button" class="chevbtn" ${attr}="${this.esc(key)}" aria-expanded="${open}" aria-label="${text}" title="${text}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button></span>`;
   }
 
   // Name over id for a table cell: both are cut at the column width and shown in full in the tooltip (see showTip).
-  nameCell(name, id, tag = "div") {
+  // The one delete button of a list row: the bin only, with the name as tooltip and for screen readers. `why` disables it and says why.
+  deleteButton(attr, label, { small = false, why = "" } = {}) {
+    const text = this.esc(why || label);
+    return `<button type="button" class="btn dangersoft delbtn${small ? " small" : ""}" ${why ? "disabled" : attr} title="${text}" aria-label="${this.esc(label)}"><ha-icon icon="mdi:delete-outline"></ha-icon></button>`;
+  }
+
+  nameCell(name, id, tag = "div", tipSub = null) {
     const sub = id || "";
-    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}</${tag}>`;
+    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(tipSub ?? sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}</${tag}>`;
   }
 
   // The id line of a list row: the id in mono under the name, extra facts in a line of their own below it.
@@ -245,7 +316,7 @@ class ListsMixin {
     const dirty = shape(st.q, st.f, st.sort, st.dir) !== (view ? shape(view.q, view.f, view.sort, view.dir) : shape("", {}, st.base?.sort ?? st.sort, st.base?.dir ?? st.dir));
     if (!saved.length && !dirty) return "";
     if (this.viewNaming === id) {
-      return `<form class="viewgroup" data-lview-form="${id}"><input data-lview-name="${id}" maxlength="40" autocomplete="off" value="${this.esc(this.viewDraft)}" aria-label="${this.esc(this.t("viewName"))}" placeholder="${this.esc(this.t("viewName"))}"><button type="submit" class="btn">${this.t("viewSave")}</button><button type="button" class="btn quiet" data-lview-cancel="${id}">${this.t("cancelRun")}</button></form>`;
+      return `<span class="colwrap viewwrap"><button type="button" class="dirbtn on" data-lview-cancel="${id}" aria-expanded="true" title="${this.esc(this.t("cancelRun"))}" aria-label="${this.esc(this.t("cancelRun"))}"><ha-icon icon="mdi:star-outline"></ha-icon></button><form class="viewform" data-lview-form="${id}"><strong>${this.t("viewSave")}</strong><label for="view-name-${id}">${this.t("viewName")}</label><input id="view-name-${id}" data-lview-name="${id}" maxlength="40" autocomplete="off" value="${this.esc(this.viewDraft)}" placeholder="${this.esc(this.t("viewName"))}"><small>${this.t("viewLocalHint")}</small><span class="viewform-actions"><button type="button" class="btn quiet" data-lview-cancel="${id}">${this.t("cancelRun")}</button><button type="submit" class="btn accent">${this.t("viewSave")}</button></span></form></span>`;
     }
     const save = `<button type="button" class="viewitem" data-lview-save="${id}"><ha-icon icon="mdi:star-plus-outline"></ha-icon>${this.t("viewSave")}</button>`;
     // Nothing saved yet: the star is the save button itself.
@@ -310,7 +381,7 @@ class ListsMixin {
     const rows = items.slice(from, from + this.pageSize);
     if (items.length <= 20) return { rows, footer: "" };
     const sizes = [20, 50, 100].map(n => `<option value="${n}" ${n === this.pageSize ? "selected" : ""}>${n}</option>`).join("");
-    const footer = `<div class="tablefoot"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select data-pagesize aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
+    const footer = `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select data-pagesize aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
     return { rows, footer };
   }
 

@@ -16,7 +16,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.event import async_call_later, async_track_time_interval
+from homeassistant.helpers.event import (
+    async_call_later,
+    async_track_state_change_event,
+    async_track_time_interval,
+)
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
@@ -31,12 +35,14 @@ from .const import (
     CONF_SCAN_INTERVAL_HOURS,
     CONF_STALE_HOURS,
     CONF_UNUSED_AUTOMATION_DAYS,
+    CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_STALE_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
+    DEFAULT_WATCH_HOURS,
     DOMAIN,
     FONTS_URL,
     FRONTEND_URL,
@@ -51,6 +57,8 @@ from .issues import async_clear_issues
 from .maintenance import recorder_costs
 from .runs import run_key
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, retryable_gaps
+from .scan_trigger import ScanRefused
+from .services import async_register_services
 from .system_usage import system_light
 from .websocket_api import async_register as async_register_websocket
 
@@ -58,7 +66,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.EVENT, Platform.BUTTON]
 REPLY_PAUSE = 20  # seconds between two prepared views
 
 
@@ -74,6 +82,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up global API handlers once."""
     hass.data.setdefault(DOMAIN, {})
     async_register_websocket(hass)
+    async_register_services(hass)
     return True
 
 
@@ -99,6 +108,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         CONF_SCAN_INTERVAL_HOURS, DEFAULT_SCAN_INTERVAL_HOURS
     )
     scanner.history.retention_days = entry.options.get(CONF_HISTORY_DAYS, DEFAULT_HISTORY_DAYS)
+    scanner.watch_hours = entry.options.get(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS)
+    scanner.monitor.retention_days = scanner.history.retention_days
     await scanner.async_initialize()
     hass.data[DOMAIN]["scanner"] = scanner
 
@@ -183,6 +194,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         scanner.events.beat(datetime.now(UTC))
 
     entry.async_on_unload(async_track_time_interval(hass, _heartbeat, timedelta(minutes=5)))
+
+    async def _watch_tick(_: Any) -> None:
+        await scanner.async_watch_tick()
+
+    entry.async_on_unload(async_track_time_interval(hass, _watch_tick, timedelta(minutes=5)))
+
+    async def _mark_windows(_: Any) -> None:
+        if scanner.refresh_marks_on_window_change():
+            try:  # an outage counts from the end of the window: the scan grades it anew
+                await scanner.async_request_scan()
+            except ScanRefused:  # a plan or the start is in the way
+                return
+
+    # A mark with a window hides only inside it: look again when the clock or the sun moves it.
+    entry.async_on_unload(async_track_time_interval(hass, _mark_windows, timedelta(minutes=5)))
+    entry.async_on_unload(async_track_state_change_event(hass, ["sun.sun"], _mark_windows))
 
     async def _sample_load(_: Any) -> None:
         # A sample that cannot be taken is a gap in the line, nothing more.

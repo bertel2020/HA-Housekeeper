@@ -100,8 +100,8 @@ def test_cleanup_plans_never_change_home_assistant() -> None:
     assert "executed" in source
 
 
-def test_only_the_cleanup_runner_changes_the_registry() -> None:
-    """Writes live in cleanup_exec.py: registries, configuration files, dashboards, Energy."""
+def test_only_the_cleanup_runner_and_monitor_sensor_change_the_registry() -> None:
+    """Cleanup writes use the runner; a deleted monitor also removes its own sensor."""
     runner = (COMPONENT / "cleanup_exec.py").read_text(encoding="utf-8")
     writes = (
         "async_update_entity",
@@ -116,17 +116,21 @@ def test_only_the_cleanup_runner_changes_the_registry() -> None:
     )
     assert all(write in runner for write in writes)
     for path in COMPONENT.glob("*.py"):
-        if path.name == "cleanup_exec.py":
+        if path.name in {"cleanup_exec.py", "sensor.py"}:
             continue
         source = path.read_text(encoding="utf-8")
         for write in writes:
             assert write not in source, f"{path.name}: {write}"
+    sensor = (COMPONENT / "sensor.py").read_text(encoding="utf-8")
+    assert sensor.count("registry.async_remove(") == 1
+    assert 'registry.async_get_entity_id("sensor", DOMAIN, self.unique_id)' in sensor
 
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = _websocket_source()
-    assert source.count("@websocket_api.websocket_command") == 76
-    assert source.count("@websocket_api.require_admin") == 76
+    commands = source.count("@websocket_api.websocket_command")
+    assert commands > 0
+    assert source.count("@websocket_api.require_admin") == commands
     assert "connection.require_admin" not in source
 
 
@@ -171,7 +175,7 @@ def test_every_optional_component_that_is_imported_is_an_after_dependency() -> N
         used |= set(
             re.findall(r"homeassistant\.components\.(\w+)", path.read_text(encoding="utf-8"))
         )
-    # homeassistant is the core component, sensor is an entity platform and http/websocket_api/frontend are core; Hassfest accepts them
+    # These are core components or entity platforms and need no manifest dependency.
     assert used - {"websocket_api", "frontend", "http", "sensor", "homeassistant"} <= declared, (
         used - declared
     )
