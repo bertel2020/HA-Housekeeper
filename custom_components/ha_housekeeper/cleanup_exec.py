@@ -663,11 +663,18 @@ class CleanupRunner:
 
     def _write_logbook(self, plan: dict[str, Any], action: dict[str, Any]) -> None:
         """Enter a removed or forgotten device in the logbook; the entry outlives the device."""
-        german = str(self.hass.config.language).startswith("de")
+        language = str(self.hass.config.language).lower().split("-")[0].split("_")[0]
         name = str(action.get("name") or action["object_id"])
-        text = "Gerät „{}“ {}" if german else "Device “{}” {}"
         forgot = action["kind"] == "forget_device"
-        words = ("vergessen", "entfernt") if german else ("forgotten", "removed")
+        if language == "sk":
+            text = "Zariadenie „{}“ {}"
+            words = ("zabudnuté", "odstránené")
+        elif language == "de":
+            text = "Gerät „{}“ {}"
+            words = ("vergessen", "entfernt")
+        else:
+            text = "Device “{}” {}"
+            words = ("forgotten", "removed")
         try:
             self.scanner.notes.upsert(
                 None,
