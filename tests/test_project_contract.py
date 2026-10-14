@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -54,6 +55,22 @@ def test_german_and_english_translation_keys_match() -> None:
     assert _leaf_paths(german) == _leaf_paths(english)
     slovak = _json(COMPONENT / "translations" / "sk.json")
     assert _leaf_paths(slovak) == _leaf_paths(english)
+
+
+def test_slovak_audit_report_keys_and_websocket_language() -> None:
+    source = (COMPONENT / "audit_report.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    texts = next(
+        stmt.value
+        for stmt in module.body
+        if isinstance(stmt, ast.AnnAssign)
+        and isinstance(stmt.target, ast.Name)
+        and stmt.target.id == "TEXTS"
+    )
+    languages = ast.literal_eval(texts)
+    assert set(languages["sk"]) == set(languages["en"])
+    websocket = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    assert 'vol.In(["de", "en", "sk"])' in websocket
 
 
 def test_frontend_bundle_is_packaged() -> None:
