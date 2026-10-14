@@ -52,6 +52,8 @@ def test_german_and_english_translation_keys_match() -> None:
     german = _json(COMPONENT / "translations" / "de.json")
     english = _json(COMPONENT / "translations" / "en.json")
     assert _leaf_paths(german) == _leaf_paths(english)
+    slovak = _json(COMPONENT / "translations" / "sk.json")
+    assert _leaf_paths(slovak) == _leaf_paths(english)
 
 
 def test_frontend_bundle_is_packaged() -> None:
