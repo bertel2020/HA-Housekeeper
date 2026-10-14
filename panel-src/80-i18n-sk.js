@@ -3499,3 +3499,9 @@ Object.assign(TEXT.sk, {
   "intHacsGitHub": "Repozitár na GitHube",
   "intHacsNote": "Údaje z pamäte HACS; GitHub sa nekontaktuje a nič sa neinštaluje."
 });
+// Overrides for keys whose final English values are redefined later in the bundle.
+Object.assign(TEXT.sk, {
+  "actNone": "Žiadne naliehavé úlohy. Všetko vyzerá v poriadku.",
+  "confirmPlan": "Plán z {date} sa vymaže z denníka. Plán, ktorý už bol vykonaný, zostane v Home Assistante účinný, ale po vymazaní už nebude možné jeho zmeny vrátiť.",
+  "cause_device_missing": "Zariadenie {name}, na ktoré entita odkazuje, už nie je v registri zariadení. Záznam entity je pravdepodobne pozostatkom."
+});
