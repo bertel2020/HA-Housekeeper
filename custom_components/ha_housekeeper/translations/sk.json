@@ -1,0 +1,92 @@
+{
+  "title": "HA Housekeeper",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nastavenie HA Housekeeper",
+        "description": "Pridá panel Housekeeper dostupný správcom. Najprv vykoná analýzu; zmeny sa vykonajú až po tvojom výslovnom potvrdení."
+      }
+    },
+    "abort": {
+      "already_configured": "HA Housekeeper je už nastavený."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Nastavenia HA Housekeeper",
+        "description": "Krátke výpadky, napríklad po reštarte, sa nehlásia (0 znamená hlásiť každú nedostupnú entitu). Vypnuté automatizácie a automatizácie, ktoré sa počas zadaného počtu dní nespustili, sa označia ako nepoužívané. Pravidelné kontroly udržiavajú históriu a odporúčania na opravu aktuálne.",
+        "data": {
+          "min_unavailable_days": "Hlásiť nedostupné entity po (dni)",
+          "unused_automation_days": "Hlásiť nepoužívané automatizácie po (dni, 0 = vypnuté)",
+          "low_battery_percent": "Hlásiť nízky stav batérie pri hodnote (%) alebo nižšej",
+          "scan_interval_hours": "Automaticky kontrolovať každých (hodiny, 0 = vypnuté)",
+          "stale_hours": "Hlásiť senzory bez nových hodnôt po (hodiny, 0 = vypnuté)",
+          "history_days": "Uchovávať históriu kontrol (dni)"
+        }
+      }
+    },
+    "abort": {
+      "busy": "Prebieha vykonávanie plánu, vrátenie zmien alebo čistenie údajov. Nastavenia možno zmeniť po dokončení."
+    }
+  },
+  "issues": {
+    "orphaned_entities": {
+      "title": "Osirotené entity: {count}",
+      "description": "Housekeeper našiel osirotené entity (počet: {count}), ktorým chýba pôvodné zariadenie, konfigurácia integrácie alebo aktuálny stav. [Zobraziť v Housekeeperi]({link}). Nič sa nemení automaticky."
+    },
+    "unavailable_entities": {
+      "title": "Dlhodobo nedostupné entity: {count}",
+      "description": "Housekeeper našiel dlhodobo nedostupné entity (počet: {count}), ktorých nedostupnosť presiahla nastavený limit. [Zobraziť v Housekeeperi]({link}). Nič sa nemení automaticky."
+    },
+    "broken_automations": {
+      "title": "Nálezy s neplatnými odkazmi: {count}",
+      "description": "Housekeeper našiel neplatné odkazy na entity, zariadenia alebo oblasti (počet nálezov: {count}) v automatizáciách, skriptoch, scénach, dashboardoch, skupinách alebo pomocníkoch. [Zobraziť v Housekeeperi]({link}). Nič sa nemení automaticky."
+    },
+    "scan_failing": {
+      "title": "Kontroly Housekeepera opakovane zlyhávajú",
+      "description": "Posledné kontroly zlyhali vo fáze „{phase}“ ({kind}). Počty a nálezy pochádzajú z poslednej úspešnej kontroly ({last}) a môžu byť zastarané. [Otvoriť Housekeeper]({link}) a pozrieť podrobnosti chyby. Nič sa nemení automaticky."
+    },
+    "scan_stale": {
+      "title": "Housekeeper už dlhšie nevykonal úspešnú kontrolu",
+      "description": "Od {last} neprebehla žiadna úspešná kontrola. Počty a nálezy môžu byť zastarané. [Otvoriť Housekeeper]({link}). Nič sa nemení automaticky."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "findings": {
+        "name": "Nálezy"
+      },
+      "orphaned_entities": {
+        "name": "Osirotené entity"
+      },
+      "unavailable_entities": {
+        "name": "Nedostupné entity"
+      },
+      "broken_references": {
+        "name": "Neplatné odkazy"
+      },
+      "possible_duplicates": {
+        "name": "Možné duplicity"
+      },
+      "unused_automations": {
+        "name": "Nepoužívané automatizácie"
+      },
+      "low_batteries": {
+        "name": "Slabé batérie"
+      },
+      "last_scan": {
+        "name": "Posledná kontrola"
+      },
+      "scan_health": {
+        "name": "Stav kontrol",
+        "state": {
+          "ok": "V poriadku",
+          "stale": "Zastaraný",
+          "failed": "Zlyhal",
+          "preliminary": "Predbežný"
+        }
+      }
+    }
+  }
+}
