@@ -116,14 +116,15 @@ def test_only_the_cleanup_runner_and_monitor_sensor_change_the_registry() -> Non
     )
     assert all(write in runner for write in writes)
     for path in COMPONENT.glob("*.py"):
-        if path.name in {"cleanup_exec.py", "sensor.py"}:
+        if path.name == "cleanup_exec.py":
             continue
         source = path.read_text(encoding="utf-8")
         for write in writes:
+            if path.name == "sensor.py" and write == "registry.async_remove(":
+                assert source.count(write) == 1
+                assert 'async_get_entity_id("sensor", DOMAIN, self.unique_id)' in source
+                continue
             assert write not in source, f"{path.name}: {write}"
-    sensor = (COMPONENT / "sensor.py").read_text(encoding="utf-8")
-    assert sensor.count("registry.async_remove(") == 1
-    assert 'registry.async_get_entity_id("sensor", DOMAIN, self.unique_id)' in sensor
 
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
@@ -175,10 +176,11 @@ def test_every_optional_component_that_is_imported_is_an_after_dependency() -> N
         used |= set(
             re.findall(r"homeassistant\.components\.(\w+)", path.read_text(encoding="utf-8"))
         )
-    # These are core components or entity platforms and need no manifest dependency.
-    assert used - {"websocket_api", "frontend", "http", "sensor", "homeassistant"} <= declared, (
-        used - declared
-    )
+    # homeassistant is the core component, sensor, button and event are entity platforms and http/websocket_api/frontend are core; Hassfest accepts them
+    assert (
+        used - {"websocket_api", "frontend", "http", "sensor", "button", "event", "homeassistant"}
+        <= declared
+    ), used - declared
 
 
 def test_every_finding_module_publishes_its_limits_as_numbers() -> None:

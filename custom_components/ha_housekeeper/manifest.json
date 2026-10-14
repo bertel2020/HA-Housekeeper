@@ -9,9 +9,7 @@
     "trace",
     "automation",
     "script",
-    "blueprint",
-    "button",
-    "event"
+    "blueprint"
   ],
   "codeowners": [
     "@bertel2020"
