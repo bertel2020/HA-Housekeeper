@@ -45,7 +45,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "state": "Stav",
         "result": "Výsledok",
         "ok": "v poriadku",
-        "failed": "zlyhalo"
+        "failed": "zlyhalo",
     },
     "de": {
         "title": "Prüfbericht zum Bereinigungsplan",
