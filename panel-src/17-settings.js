@@ -13,15 +13,11 @@ class SettingsMixin {
   // The tab ids of the settings page, in display order.
   // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
-    const hidden = (this.data?.findings || []).filter(f => f.ignored).length;
-    const m = this.data?.meta || {}, missed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
+    const m = this.data?.meta || {};
     return [
       ["look", "mdi:palette-outline", "setTabLook", "setHintLook", ""],
       ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`safeMode_${m.protection || "full"}`), (m.protection || "full") === "full" ? "ok" : "warn"],
       ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
-      ["notify", "mdi:bell-outline", "setTabNotify", "setHintNotify", this.t(m.notify ? "setOn" : "setOff"), m.notify ? "ok" : "mute"],
-      ["goals", "mdi:target", "setTabGoals", "setHintGoals", missed ? this.t("tilesMissed", { count: missed }) : "", "red"],
-      ["hidden", "mdi:eye-off-outline", "setTabHidden", "setHintHidden", hidden ? this.formatNumber(hidden) : "", "mute"],
       ["info", "mdi:information-outline", "setTabInfo", "setHintInfo", ""],
     ];
   }
@@ -42,14 +38,19 @@ class SettingsMixin {
       const c = SCHEMES[scheme][dark ? "dark" : "light"], bar = (w, col) => `<i style="width:${w}%;background:${col}"></i>`;
       return `<span class="schemeprev" aria-hidden="true" style="background:${c.bg};border-color:${c.border}"><span class="sp-card" style="background:${c.surface};border-color:${c.border}"><b style="background:${c.accent}"></b>${bar(60, c.text)}${bar(35, c.muted)}</span><span class="sp-row"><em style="background:${c.positive}"></em><em style="background:${c.warning}"></em><em style="background:${c.danger}"></em><u style="background:${c.accent}"></u></span></span>`;
     };
-    const schemes = [["standard", "schemeStandard"], ["housekeeper", "schemeHousekeeper"], ["modern", "schemeModern"]].map(([id, key]) => tile("scheme", id, this.t(key), mini(id))).join("");
+    const schemes = [["standard", "schemeStandard"], ["housekeeper", "schemeHousekeeper"], ["modern", "schemeModern"], ["aurora", "schemeAurora"], ["honey", "schemeHoney"], ["lagoon", "schemeLagoon"], ["emerald", "schemeEmerald"], ["frost", "schemeFrost"], ["midnight", "schemeMidnight"], ["olive", "schemeOlive"]].map(([id, key]) => tile("scheme", id, this.t(key), mini(id))).join("");
     const modes = [["auto", "modeAuto", "mdi:theme-light-dark"], ["light", "modeLight", "mdi:white-balance-sunny"], ["dark", "modeDark", "mdi:weather-night"]].map(([id, key, icon]) => tile("mode", id, this.t(key), `<ha-icon icon="${icon}"></ha-icon>`)).join("");
     const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("setLanguage")}</h2><p>${this.t("setLanguageHint")}</p></div></div>
       ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ["de", "Deutsch"], ["en", "English"], ["sk", "Slovenčina"]]))}
       <div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles schemetiles">${schemes}</div>
-      <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div>
-      <div class="panelhead"><h2>${this.t("setReadability")}</h2></div>
+      <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div></section>`;
+  }
+
+  // Font size, density and motion; sits in the right column of the look tab, above the behavior card.
+  readabilityCard() {
+    const row = (label, hint, control) => `<div class="setrow stackrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("setReadability")}</h2></div>
       ${row(this.t("fontSize"), "", this.segment("size", [["small", this.t("fontSmall")], ["normal", this.t("fontNormal")], ["large", this.t("fontLarge")]]))}
       ${row(this.t("density"), "", this.segment("density", [["normal", this.t("densityNormal")], ["compact", this.t("densityCompact")]]))}
       ${row(this.t("motion"), this.t("motionHint"), this.segment("motion", [["auto", this.t("motionAuto")], ["reduced", this.t("motionReduced")]]))}</section>`;
@@ -69,13 +70,16 @@ class SettingsMixin {
   scanCard() {
     const m = this.data?.meta || {};
     if (!this.data) return `${this.skeleton("loading")}`;
-    const cards = OPTION_FIELDS.map(([key, title, hint, unit, standard]) => {
+    const card = ([key, title, hint, unit, standard]) => {
       const [min, max] = OPTION_LIMITS[key];
-      return `<div class="optcard"><label for="opt-${key}"><strong>${this.t(title)}</strong></label><small>${this.t(hint)}</small>
-        <div class="unitrow"><input id="opt-${key}" type="number" data-opt="${key}" data-saved="${this.esc(m[key] ?? "")}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}"><span>${this.t(unit)}</span></div>
-        <small>${this.t("optDefault", { n: standard, unit: this.t(unit) })} · ${min}–${max}</small></div>`;
-    }).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div><div class="optgrid">${cards}</div>
+      return `<div class="optcard"><label for="opt-${key}"><strong>${this.t(title)}</strong></label><p>${this.t(hint)}</p>
+        <div class="unitrow"><input id="opt-${key}" type="number" data-opt="${key}" data-saved="${this.esc(m[key] ?? "")}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}"><span>${this.t(unit)}</span><em data-conv="${key}">${this.optConversion(unit, m[key])}</em></div>
+        <div class="optfoot"><span>${this.t("optDefault", { n: standard, min, max })}</span><button class="optreset" data-opt-reset="${key}" ${String(m[key]) === String(standard) ? "hidden" : ""}>${this.t("optToDefault")}</button></div></div>`;
+    };
+    const outage = OPTION_FIELDS.filter(f => OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
+    const other = OPTION_FIELDS.filter(f => !OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
+    const cards = `<div class="optgroup"><h3>${this.t("optGroupOutage")}</h3><p>${this.t("optGroupOutageHint")}</p></div><div class="optgrid optgrid4">${outage}</div><div class="optgroup"><h3>${this.t("optGroupOther")}</h3></div><div class="optgrid">${other}</div>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>${cards}
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save disabled>${this.t("saveOptions")}</button></div></section>`;
   }
 
@@ -209,8 +213,18 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${pill ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${pill ? `<span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}${this.behaviorCard()}</div>`, protection: () => this.protectionCard(), scan: () => `${this.scanCard()}${this.eventsCard()}`, notify: () => this.notifyCard(), goals: () => this.goalsCard(), hidden: () => this.hiddenCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => `${this.protectionCard()}${this.hiddenCard()}`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
+  }
+
+  // "168 h" read as "= 7 days": only where the unit is minutes or hours and the number is large enough to say more.
+  optConversion(unit, value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return "";
+    const round = x => this.formatNumber(Math.round(x * 10) / 10);
+    if (unit === "unitMinutes" && n >= 60) return this.t("optConvHours", { n: round(n / 60) });
+    if (unit === "unitHours" && n >= 24) return n === 24 ? this.t("optConvDay") : this.t("optConvDays", { n: round(n / 24) });
+    return "";
   }
 
   async saveOptions() {
@@ -220,12 +234,14 @@ class SettingsMixin {
       if (input.value === "" || !Number.isInteger(value) || value < min || value > max) { this.optionsMessage = this.t("optionsInvalid"); this.render(); return; }
       changes[input.dataset.opt] = value;
     }
+    const steps = [changes.outage_info_minutes / 60, changes.outage_low_hours, changes.outage_medium_hours, changes.outage_high_hours];
+    if (steps.every(Number.isFinite) && !steps.every((x, i) => i === 0 || steps[i - 1] < x)) { this.optionsMessage = this.t("optionsOrder"); this.render(); return; }
     try {
       await this._hass.callWS({ type: "ha_housekeeper/set_options", ...changes });
       this.optionsMessage = this.t("optionsSaved");
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
       setTimeout(() => { this.optionsMessage = ""; this.busy = false; this.load(false); }, 4000);
-    } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : err?.message || String(err); this.render(); }
+    } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : err?.code === "thresholds_order" ? this.t("optionsOrder") : this.errText(err); this.render(); }
   }
 }

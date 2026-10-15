@@ -22,7 +22,7 @@ class ReliabilityMixin {
   async loadReliability(refresh = false) {
     this.relLoading = true; this.relError = ""; this.render();
     try { this.reliability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, refresh, ...(this.relCompare ? { compare: true } : {}) }); }
-    catch (err) { this.relError = err?.message || String(err); }
+    catch (err) { this.relError = this.errText(err); }
     this.relLoading = false; this.render();
     this.followUp("reliability", "reliability", this.reliability, r => this.loadReliability(r), refresh);
   }
@@ -196,7 +196,7 @@ class ReliabilityMixin {
     this._stabRequested = this.relWindow;
     setTimeout(async () => {
       try { this.stability = await this._hass.callWS({ type: "ha_housekeeper/reliability", window_days: this.relWindow, cached_only: true }); } catch (_) { return; }
-      if (this.selected?.object_type === "entity") this.render();
+      if (this.selected?.object_type === "entity" || this.view === "findingsNav") this.render();
     }, 0);
   }
 

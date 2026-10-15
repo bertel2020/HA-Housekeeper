@@ -130,7 +130,7 @@ class DiagnosisMixin {
     const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:close-circle", mute: "mdi:minus-circle", violet: "mdi:help-circle" };
     const rows = d.rows.map(r => `<div class="check ${r.tone}"><ha-icon icon="${icon[r.tone] || icon.ok}"></ha-icon><b>${this.esc(r.label)}</b><span class="val">${this.esc(r.value)}</span><i class="pill ${r.tone}">${this.esc(r.badge)}</i></div>`).join("");
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagnosis")}</h2></div></div>
-      <div class="diagcard"><div class="checks">${rows}</div>
+      <div class="diagcard">${this.ratingBlock(item, this.objectKey(item))}<div class="checks">${rows}</div>
       ${d.cause ? `<div class="cause ${d.tone}"><ha-icon icon="mdi:text-search"></ha-icon><div><strong>${this.t("causeLabel")}</strong><p>${this.esc(d.cause)}</p></div></div>` : ""}
       ${d.hint ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><strong>${this.t("hintLabel")}</strong><p>${this.esc(d.hint)}</p></div></div>` : ""}</div></section>`;
   }
@@ -196,7 +196,7 @@ class DiagnosisMixin {
 
   factsCard(item, key) {
     const finding = this.data.findings.find(f => this.findingKey(f) === key);
-    const min = this.data.meta.min_unavailable_days || 0;
+    const info = this.data.meta.outage_info_minutes || 0;
     const facts = [];
     if (item.status_since) facts.push([this.t("since"), `${this.formatDate(item.status_since)}<small>${this.esc(this.relTime(item.status_since))} · ${this.t("firstSeenNote")}</small>`]);
     if (["entity", "automation", "script", "scene", "dashboard"].includes(item.object_type)) {
@@ -204,9 +204,9 @@ class DiagnosisMixin {
     }
     const quarantined = ["entity", "device"].includes(item.object_type) ? this.quarantineOf(item.object_id) : null;
     if (quarantined) facts.push([this.t("quarantine"), `${this.t("quarantineFact", { date: this.formatDate(quarantined.since), days: this.daysSince(quarantined.since) })}<span class="factaction">${this.releaseControl(quarantined)}</span>`]);
-    const outage = finding?.rule_id === "config_entry.not_loaded" ? this.outageLineOf(finding) : "";
+    const outage = finding && OUTAGE_RULES.includes(finding.rule_id) ? this.outageLineOf(finding) : "";
     if (outage) facts.push([this.t("chip_outage"), this.esc(outage)]);
-    const note = item.status === "unavailable" && !finding && min > 0 ? `<p class="factnote">${this.t("belowThreshold", { days: min })}</p>` : "";
+    const note = item.status === "unavailable" && !finding && info > 0 ? `<p class="factnote">${this.t("belowThreshold", { span: `${info} ${this.t("unitMin")}` })}</p>` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("facts")}</h2></div><div class="facts">${facts.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${note}</section>`;
   }
 
@@ -378,7 +378,8 @@ class DiagnosisMixin {
       const automation = ["automation", "script"].includes(item.object_type) && !this.detailLoading
         ? `<section class="panel"><div class="panelhead"><h2>${this.t("automationStructure")}</h2></div><div class="pad">${(item.object_type === "script" ? ["actions"] : ["triggers", "conditions", "actions"]).map(part => `<h4>${this.t(part)} (${item[part]?.length || 0})</h4><div class="code">${this.esc(JSON.stringify(item[part] || [], null, 2))}</div>`).join("")}</div></section>` : "";
       const cards = this.propertyCards(item);
-      return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
+      const labelOnly = ["automation", "script", "scene", "area"].includes(item.object_type);
+      return `<div class="stack">${cards ? `<div class="propgrid">${cards}</div>` : ""}${cards && !labelOnly ? "" : `<section class="panel"><div class="panelhead"><h2>${this.t("registry")}</h2></div><div class="pad"><dl class="kv"><dt>${this.t("type")}</dt><dd>${this.t(item.object_type)}</dd>${fields.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${this.esc(Array.isArray(v) ? v.join(", ") : v)}</dd>`).join("")}</dl></div></section>`}${automation}${this.detailLoading ? `<p class="sub">${this.t("loading")}</p>` : ""}</div>`;
     }
     if (ACTION_TYPES.includes(item.object_type)) return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.polObjectCard(item)}${this.nextStepBand(item, key)}${this.impactCard(item, key)}</div><div class="stack">${KNOWN_TYPES.includes(item.object_type) ? this.knownCard(item, key) : this.factsCard(item, key)}${this.entityRecorderCard(item)}</div></div>`;
     return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.polObjectCard(item)}${this.actionsCard(item, key)}${this.detailEditCard(item)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}${this.entityRecorderCard(item)}${this.entityTrimCard(item)}${this.staleCard(item)}</div></div>`;

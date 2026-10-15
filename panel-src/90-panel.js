@@ -92,13 +92,39 @@ class HAHousekeeperPanel extends HTMLElement {
     this._onResize = () => { globalThis.cancelAnimationFrame?.(this._fitFrame); this._fitFrame = globalThis.requestAnimationFrame?.(() => this.fitNav(this.shadowRoot)); };
     window.addEventListener?.("resize", this._onResize);
     this.installFonts();
+    this.startScanWatch();
     this.render();
+  }
+
+  // Scans also run in the background (every few hours); an open panel would keep showing the old one.
+  // Once a minute, and when the tab is shown again, the time of the last scan is asked for; a newer one reloads like after a scan of its own.
+  startScanWatch() {
+    this._onVisible = () => { if (!globalThis.document?.hidden) this.checkNewScan(); };
+    globalThis.document?.addEventListener?.("visibilitychange", this._onVisible);
+    this._scanWatch = globalThis.setInterval?.(() => this.checkNewScan(), SCAN_WATCH_MS);
+  }
+
+  stopScanWatch() {
+    globalThis.document?.removeEventListener?.("visibilitychange", this._onVisible);
+    if (this._scanWatch) globalThis.clearInterval?.(this._scanWatch);
+    this._scanWatch = null;
+  }
+
+  async checkNewScan() {
+    const shown = this.data?.meta?.scanned_at;
+    if (this._gone || this.busy || this._scanChecking || !this._hass?.callWS || !shown || this.data.meta.preliminary) return;
+    this._scanChecking = true;
+    try {
+      const s = await this._hass.callWS({ type: "ha_housekeeper/status" });
+      if (!s?.running && s?.scanned_at && s.scanned_at !== shown && !this.busy && !this._gone) await this.load(false);
+    } catch (_) { /* the next check asks again */ } finally { this._scanChecking = false; }
   }
 
   // Timers and late answers must not touch a panel that HA has taken out of the page.
   disconnectedCallback() {
     this._gone = true;
     this.stopWarmupTicker?.();
+    this.stopScanWatch();
     window.removeEventListener?.("popstate", this._onPop);
     window.removeEventListener?.("resize", this._onResize);
     for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer"]) {
@@ -709,7 +735,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
-    return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
+    return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
       <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}${this.watchBand()}`;
   }
 
@@ -851,6 +877,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; this.pages = {}; }
       this.render();
+      if (this.view === "changes" && !this.compare) this.loadCompare();
     });
     root.querySelectorAll("[data-tip]").forEach(el => { el.onmouseenter = () => this.showTip(el); el.onmouseleave = () => this.hideTip();
       const holder = el.closest?.("tr") || (el.hasAttribute?.("tabindex") || el.matches?.("button") ? el : null);
@@ -863,11 +890,9 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-col-open]").forEach(el => el.onclick = () => { this._colOpen = this._colOpen === el.dataset.colOpen ? "" : el.dataset.colOpen; this.render(); });
     root.querySelectorAll("[data-col]").forEach(el => el.onchange = () => { const [id, key] = el.dataset.col.split("|"); this.toggleCol(id, key); });
-    root.querySelectorAll("[data-export-list]").forEach(el => el.onclick = () => this.exportList(el.dataset.exportList));
     root.querySelectorAll("[data-exp-menu]").forEach(el => el.onclick = () => { this._expOpen = this._expOpen === el.dataset.expMenu ? "" : el.dataset.expMenu; this._colOpen = ""; this.render(); });
-    root.querySelectorAll("[data-exp-csv]").forEach(el => el.onclick = () => { this._expOpen = ""; this.exportList(el.dataset.expCsv); this.render(); });
+    root.querySelectorAll("[data-exp-fmt]").forEach(el => el.onclick = () => { const [id, fmt] = el.dataset.expFmt.split("|"); this._expOpen = ""; this.exportList(id, fmt); this.render(); });
     root.querySelectorAll("[data-exp-guided]").forEach(el => el.onclick = () => { this._expOpen = ""; this.xpOpen(); });
-    root.querySelectorAll("[data-win-act]").forEach(el => el.onclick = () => { const [name, ...rest] = el.dataset.winAct.split(":"); this.winAct(name, rest.join(":")); });
     root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status, origin = ""] = el.dataset.invFilter.split("|"), same = (type || status) && this.typeFilter === type && this.statusFilter === status && this.originFilter === origin; this.typeFilter = same ? "" : type; this.statusFilter = same ? "" : status; this.originFilter = same ? "" : origin; this.pages = {}; (this.folds ||= {}).inv_types = !(this.typeFilter || this.statusFilter); this.render(); this.showList(); });
     root.querySelectorAll("[data-inv-more]").forEach(el => el.onclick = () => { this.invAllTypes = !this.invAllTypes; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.originFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
@@ -926,6 +951,7 @@ class HAHousekeeperPanel extends HTMLElement {
       form.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.decide = null; this.render(); } };
     });
     root.querySelectorAll("[data-decide-cancel]").forEach(el => el.onclick = () => { this.decide = null; this.render(); });
+    root.querySelectorAll("[data-fold-all]").forEach(el => el.onclick = () => this.foldAllFindings(el.dataset.foldAll === "open"));
     root.querySelectorAll("[data-finding-after]").forEach(el => el.onclick = () => { this.findingAfter = !this.findingAfter; this.pages = {}; this.render(); this.showList(); });
     root.querySelectorAll("[data-lf-set]").forEach(el => el.onclick = () => {
       const [id, name, value] = el.dataset.lfSet.split("|"), st = this.lv[id];
@@ -993,7 +1019,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
     root.querySelectorAll("[data-repair-task]").forEach(el => el.onclick = () => { if (this.repairTask === el.dataset.repairTask) { this.repairTask = null; this.render(); return; } this.repairTask = el.dataset.repairTask; this.cleanupKind = this.repairTask; this.cleanupSel = new Set(); this.plan = null; this.render(); });
     root.querySelector("[data-ack-all]")?.addEventListener("change", e => { this.ack = new Set(e.target.checked ? this.plan.actions.filter(x => x.verdict === "review" && x.executable).map(x => x.object_id) : []); this.render(); });
-    root.querySelector("[data-plan-confirm]")?.addEventListener("click", ev => this.confirmAsk(this.confirmSummary(this.plan, Number(ev.currentTarget.dataset.count)), () => this.confirmAndRun(), { title: this.t("confirmRunTitle"), yes: this.t("runNow"), danger: ev.currentTarget.dataset.risky === "true" }));
+    root.querySelector("[data-plan-confirm]")?.addEventListener("click", ev => this.confirmAsk(this.confirmSummary(this.plan, Number(ev.currentTarget.dataset.count)), () => this.confirmAndRun(), { title: this.t("confirmRunTitle"), yes: this.t("runNow"), danger: ev.currentTarget.dataset.risky === "true", warn: this.largeRemovalWarning(this.plan) }));
     root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());
     root.querySelector("[data-undo-all]")?.addEventListener("click", () => { this.undoAsk = "all"; this.render(); });
     root.querySelector("[data-undo-all-yes]")?.addEventListener("click", () => this.undoPlan());
@@ -1038,6 +1064,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-policy-prefix-remove]").forEach(el => el.onclick = () => this.removePolicyPrefix(el.dataset.policyPrefixRemove));
     root.querySelectorAll("[data-policy-ignore]").forEach(el => el.onclick = () => this.changePolicy({ type: "ha_housekeeper/ignore", finding_key: el.dataset.policyIgnore, ignored: el.dataset.policyValue === "1" }));
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
+    root.querySelector("[data-db-check]")?.addEventListener("click", () => this.loadDbHealth(false, true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
     root.querySelectorAll("[data-bh-open]").forEach(el => el.onclick = () => { this.bhForm = this.bhForm === el.dataset.bhOpen ? null : el.dataset.bhOpen; this.render(); });
     root.querySelector("[data-bh-cancel]")?.addEventListener("click", () => { this.bhForm = null; this.render(); });
@@ -1045,23 +1072,37 @@ class HAHousekeeperPanel extends HTMLElement {
       const kind = el.dataset.bhSave, date = root.querySelector(`[data-bh-date="${kind}"]`)?.value;
       this.loadBackup({ type: "ha_housekeeper/backup_attest", kind, ...(date ? { date } : {}) });
     });
+    root.querySelector("[data-levels-ok]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.render(); });
+    root.querySelector("[data-levels-go]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.noteJump("settings"); this.settingsTab = "scan"; this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
+    this.bindOften(root);
+    root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.findingFilter = ""; this.findingAfter = false; this._impactOnce = el.dataset.whyLevel; this.render(); });
+    root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); const obj = this.findObject(el.dataset.watchMark); if (!obj) return; this._pendingTab = "actions"; await this.openObject(obj); this.openMark(el.dataset.watchMark); });
+    root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
+    root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));
     root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
-    root.querySelector("[data-pf-save]")?.addEventListener("click", () => this.loadPreflight("save"));
-    root.querySelector("[data-pf-clear]")?.addEventListener("click", () => this.loadPreflight("clear"));
     root.querySelectorAll("[data-plan-close]").forEach(el => el.addEventListener("click", () => { this.plan = null; this.render(); }));
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.openPlan(el.dataset.planOpen); });
     root.querySelectorAll("[data-merge-sel]").forEach(el => el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.checked ? this.mergeSel.add(el.dataset.mergeSel) : this.mergeSel.delete(el.dataset.mergeSel); this.render(); });
     root.querySelector("[data-merge]")?.addEventListener("click", () => this.mergePlans());
     root.querySelectorAll("[data-merge-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.dataset.mergePage.split(",").forEach(id => (el.checked ? this.mergeSel.add(id) : this.mergeSel.delete(id))); this.render(); }; });
+    root.querySelectorAll("[data-plan-renew]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.renewPlan(el.dataset.planRenew); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => { const id = el.dataset.planDelete, plan = (this.journal || []).find(p => p.plan_id === id) || this.plan; this.confirmAsk(this.t("confirmPlanDelete", { date: this.formatDate(plan?.created_at) }), () => this.deletePlan(id)); });
     root.querySelector("[data-opts-save]")?.addEventListener("click", () => this.saveOptions());
     // Saving stays off until a threshold differs from the saved one; typing must not rebuild the page.
     const optInputs = [...root.querySelectorAll("[data-opt]")];
     optInputs.forEach(el => el.oninput = () => {
+      const conv = root.querySelector(`[data-conv="${el.dataset.opt}"]`), field = OPTION_FIELDS.find(f => f[0] === el.dataset.opt);
+      if (conv && field) conv.textContent = this.optConversion(field[3], el.value);
+      const reset = root.querySelector(`[data-opt-reset="${el.dataset.opt}"]`);
+      if (reset && field) reset.hidden = String(el.value) === String(field[4]);
       const save = root.querySelector("[data-opts-save]");
       if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved);
+    });
+    root.querySelectorAll("[data-opt-reset]").forEach(el => el.onclick = () => {
+      const input = root.querySelector(`[data-opt="${el.dataset.optReset}"]`), field = OPTION_FIELDS.find(f => f[0] === el.dataset.optReset);
+      if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }
     });
     root.querySelectorAll("[data-set-tab]").forEach(el => {
       el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
@@ -1076,6 +1117,11 @@ class HAHousekeeperPanel extends HTMLElement {
       };
     });
     root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
+    root.querySelectorAll("[data-copy-event]").forEach(el => el.onclick = async () => {
+      try { await globalThis.navigator?.clipboard?.writeText(el.dataset.copyEvent); this.copiedEvent = el.dataset.copyEvent.replace("ha_housekeeper_", ""); } catch (_) { this.copiedEvent = ""; }
+      this.render();
+      setTimeout(() => { this.copiedEvent = ""; this.render(); }, 1500);
+    });
     root.querySelector("[data-copy-info]")?.addEventListener("click", async () => {
       try { await globalThis.navigator?.clipboard?.writeText(this.infoText()); this.copied = true; } catch (_) { this.copied = false; }
       this.render();
@@ -1108,6 +1154,14 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-dense]").forEach(el => el.onclick = () => this.toggleDenseList(el.dataset.dense));
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.persistLv(el.dataset.ld); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); this.focusListPage(id); });
+    root.querySelectorAll("[data-lpagesize]").forEach(el => el.onchange = () => { (this.listSizes ||= {})[el.dataset.lpagesize] = Number(el.value); this.pages[el.dataset.lpagesize] = 1; this.render(); });
+    root.querySelectorAll("[data-bh-more], [data-bh-row]").forEach(el => el.addEventListener("click", ev => {
+      const inner = ev.target?.closest?.("button, select, input, a, label");
+      if (el.dataset.bhRow !== undefined && inner && inner !== el && el.contains(inner)) return;
+      const key = el.dataset.bhMore ?? el.dataset.bhRow, open = this.bhOpen || [];
+      this.bhOpen = open.includes(key) ? open.filter(x => x !== key) : [...open, key];
+      this.render();
+    }));
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });
   }
 }

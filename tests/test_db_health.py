@@ -380,3 +380,156 @@ def test_missing_hours_tell_what_all_series_lack_from_what_only_one_lacks() -> N
         ("A", 20, 0),
     ]
     assert finding["own_series"] == 1  # A is explained by the shared gap alone
+
+
+def test_a_malformed_database_error_is_recognised_wrapped_or_not() -> None:
+    from custom_components.ha_housekeeper.db_health import is_corruption_error
+
+    assert is_corruption_error(
+        RuntimeError("(sqlite3.DatabaseError) database disk image is malformed")
+    )
+    assert not is_corruption_error(RuntimeError("database is locked"))
+
+
+def test_the_last_full_check_is_a_finding_when_damaged_and_lets_a_plan_skip_its_own_when_clean() -> (
+    None
+):
+    from datetime import UTC, datetime, timedelta
+    from types import SimpleNamespace
+
+    from custom_components.ha_housekeeper.db_health import integrity_fresh, with_integrity
+
+    now = datetime(2026, 10, 15, tzinfo=UTC)
+    hass = SimpleNamespace(data={})
+    reply = {"available": True, "findings": [{"kind": "growth", "level": "hint"}]}
+
+    damaged = SimpleNamespace(
+        integrity={"at": now.isoformat(), "state": "damaged", "lines": ["row 1 missing"]}
+    )
+    out = with_integrity(hass, reply, damaged)
+    assert out["findings"][0]["kind"] == "integrity" and out["findings"][0]["level"] == "problem"
+    assert out["integrity"]["state"] == "damaged" and not integrity_fresh(damaged, now)
+
+    clean = SimpleNamespace(integrity={"at": now.isoformat(), "state": "ok", "lines": []})
+    assert with_integrity(hass, reply, clean)["findings"] == reply["findings"]
+    assert integrity_fresh(clean, now + timedelta(days=2))
+    assert not integrity_fresh(clean, now + timedelta(days=4))
+    assert not integrity_fresh(SimpleNamespace(integrity=None), now)
+
+
+def test_files_the_recorder_set_aside_as_damaged_are_a_hint_and_found_next_to_the_database(
+    tmp_path,
+) -> None:
+    from custom_components.ha_housekeeper.db_health import corrupt_copies
+
+    (tmp_path / "home-assistant_v2.db").write_bytes(b"x")
+    (tmp_path / "home-assistant_v2.db.corrupt.2026-10-01").write_bytes(b"x" * 5)
+    (tmp_path / "other.db.corrupt.1").write_bytes(b"x")
+    found = corrupt_copies(str(tmp_path / "home-assistant_v2.db"))
+    assert found == [{"name": "home-assistant_v2.db.corrupt.2026-10-01", "bytes": 5}]
+    assert kinds(run(raw(corrupt=found))) == ["corrupt_files"]
+
+
+def test_little_free_disk_space_is_a_problem_from_a_gigabyte_or_five_percent() -> None:
+    assert kinds(run(raw(disk_free=2 * GB, disk_total=100 * GB))) == ["disk_low"]
+    assert kinds(run(raw(disk_free=10 * GB, disk_total=100 * GB))) == []
+    assert kinds(run(raw(disk_free=4 * GB, disk_total=100 * GB))) == ["disk_low"]
+    assert kinds(run(raw())) == []
+
+
+def _damaged_sqlite(path):
+    """A real SQLite file whose index no longer matches its table, like the one of issue 12."""
+    import re
+    import sqlite3
+
+    db = sqlite3.connect(path)
+    db.execute("CREATE TABLE states (id INTEGER PRIMARY KEY, entity TEXT, v TEXT)")
+    db.execute("CREATE INDEX ix_states_entity ON states (entity)")
+    db.executemany(
+        "INSERT INTO states (entity, v) VALUES (?, ?)",
+        [(f"sensor.e{i % 50}", str(i)) for i in range(20000)],
+    )
+    db.commit()
+    db.close()
+    raw = bytearray(path.read_bytes())
+    # Change one stored name without touching the index; stay clear of the first pages, where
+    # a change goes unnoticed.
+    hits = [m.start() for m in re.finditer(rb"sensor\.e17", raw) if m.start() > 50 * 4096]
+    raw[hits[0] + 9] = ord("8")
+    path.write_bytes(raw)
+
+
+def _use_file_database(monkeypatch, path):
+    from contextlib import contextmanager
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
+
+    engine = create_engine(f"sqlite:///{path}")
+
+    @contextmanager
+    def session_scope(**_):
+        with Session(engine) as session:
+            yield session
+
+    monkeypatch.setattr("homeassistant.components.recorder.util.session_scope", session_scope)
+    monkeypatch.setattr(module, "database_files", lambda hass: {"dialect": "sqlite"})
+    return engine
+
+
+def test_the_full_check_finds_a_real_index_damage_that_the_quick_check_misses(
+    tmp_path, monkeypatch
+) -> None:
+    from types import SimpleNamespace
+
+    from sqlalchemy import text
+
+    path = tmp_path / "home-assistant_v2.db"
+    _damaged_sqlite(path)
+    engine = _use_file_database(monkeypatch, path)
+    with engine.connect() as connection:
+        assert connection.execute(text("PRAGMA quick_check(1)")).scalars().all() == ["ok"]
+
+    hass = SimpleNamespace()
+    lines = module.integrity_lines(hass)
+    assert lines and "missing from index ix_states_entity" in lines[0]
+    assert module.integrity_problem(hass) == lines[0]
+
+
+async def test_a_damaged_file_is_recorded_as_damaged_and_a_sound_one_as_ok(
+    hass: HomeAssistant, tmp_path, monkeypatch
+) -> None:
+    import sqlite3
+
+    class Recorder:
+        def async_add_executor_job(self, *args):
+            return hass.async_add_executor_job(*args)
+
+    class Events:
+        integrity = None
+
+        def __init__(self) -> None:
+            self.states: list[tuple[str, list[str]]] = []
+
+        def record_integrity(self, at, state, lines) -> None:
+            self.states.append((state, lines))
+
+    monkeypatch.setattr("homeassistant.components.recorder.get_instance", lambda hass: Recorder())
+    monkeypatch.setattr(module, "async_sync_database_issue", lambda hass, found: None)
+    events = Events()
+
+    path = tmp_path / "damaged.db"
+    _damaged_sqlite(path)
+    _use_file_database(monkeypatch, path)
+    await module._check(hass, events)
+
+    sound = tmp_path / "sound.db"
+    db = sqlite3.connect(sound)
+    db.execute("CREATE TABLE t (a)")
+    db.commit()
+    db.close()
+    _use_file_database(monkeypatch, sound)
+    await module._check(hass, events)
+
+    assert events.states[0][0] == "damaged" and "missing from index" in events.states[0][1][0]
+    assert events.states[1] == ("ok", [])

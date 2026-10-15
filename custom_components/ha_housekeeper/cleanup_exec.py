@@ -63,7 +63,7 @@ from . import counter_repair, followup
 from . import refactor as refactor_module
 from . import rename as rename_module
 from .automation_delete import preview as preview_automation_delete
-from .backup_cleanup import backup_exists, delete_backup, list_backups
+from .backup_cleanup import backup_exists, delete_backup, list_backups, verify_backup
 from .cleanup import (
     AREA_KINDS,
     BACKUP_KINDS,
@@ -96,6 +96,16 @@ from .cleanup import (
     trim_is_plain,
 )
 from .const import DOMAIN, MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
+from .db_health import (
+    BACKUP_SPACE_SHARE,
+    DISK_STOP_BYTES,
+    database_files,
+    integrity_fresh,
+    integrity_problem,
+    is_corruption_error,
+    start_check,
+)
+from .issues import async_sync_database_issue
 from .meter import analyse, prepare_meter, read_series, recorder_ready
 from .notes import NoteError
 from .protection import allows, allows_undo
@@ -118,12 +128,20 @@ from .references import (
     rewrite,
     yaml_hash,
 )
+from .texts import pick
 from .writelock import WriteBusy, acquire_write, release_write, write_holder
 
 TOKEN_TTL = timedelta(minutes=5)
 ID_FREE_TIMEOUT = 10.0  # seconds to wait until Home Assistant has removed a renamed entity's state
 STATISTIC_KEYS = ("state", "sum", "min", "max", "mean")
 _LOGGER = logging.getLogger(__name__)
+
+# The logbook entry of a removed or forgotten device: the sentence and the two words (forgotten, removed).
+LOGBOOK_DEVICE = {
+    "de": ("Gerät „{}“ {}", ("vergessen", "entfernt")),
+    "en": ("Device “{}” {}", ("forgotten", "removed")),
+    "sk": ("Zariadenie „{}“ {}", ("zabudnuté", "odstránené")),
+}
 
 LOGBOOK_KINDS = ("remove_device", "forget_device")  # written to the logbook when done
 # Recorder steps do not depend on each other: one that fails must not hold back the others,
@@ -132,6 +150,11 @@ INDEPENDENT_KINDS = PURGE_KINDS | TRIM_KINDS
 GLOBAL_STOPS = {"recorder_busy", "no_recorder"}
 LOCAL_AGENT = "backup.local"
 BACKUP_TIMEOUT = 30 * 60  # seconds; large installations can take a while
+BUSY_BACKUP_STATES = {"create_backup", "receive_backup", "restore_backup", "blocked"}
+RECORDER_BACKLOG_STOP = 10_000  # queued recorder writes; the recorder normally keeps this near zero
+INTEGRITY_TIMEOUT = (
+    5 * 60
+)  # seconds; the check of a very large database is not worth waiting longer
 
 
 def backup_is_local_only(hass: HomeAssistant) -> bool:
@@ -353,7 +376,7 @@ class CleanupRunner:
     def __init__(self, hass: HomeAssistant, scanner: Any) -> None:
         self.hass = hass
         self.scanner = scanner
-        self._tokens: dict[str, tuple[str, datetime, list[str]]] = {}
+        self._tokens: dict[str, tuple[str, datetime, list[str], str | None]] = {}
         self._cancel = False
         self._lineage: dict[str, dict[str, str]] = {}
         self._task: asyncio.Task[None] | None = None
@@ -395,8 +418,15 @@ class CleanupRunner:
         journal = self.scanner.journal
         await journal.store.async_save(journal.data())
 
+    def _drop_expired_tokens(self) -> None:
+        """Forget confirmations nobody redeemed in time, so abandoned ones do not pile up."""
+        now = _now()
+        for plan_id in [key for key, saved in self._tokens.items() if saved[1] < now]:
+            del self._tokens[plan_id]
+
     def confirm(self, plan_id: str, acknowledged: list[str], user_id: str | None) -> dict[str, Any]:
         """Select the actions that may run and hand out a short-lived confirmation token."""
+        self._drop_expired_tokens()
         plan = self._plan(plan_id)
         if self.scanner.warming_up:
             raise CleanupError("warming_up")
@@ -418,7 +448,7 @@ class CleanupRunner:
             raise CleanupError("nothing_to_do")
         self._check_mode(plan, selected)
         token = secrets.token_urlsafe(16)
-        self._tokens[plan_id] = (token, _now() + TOKEN_TTL, selected)
+        self._tokens[plan_id] = (token, _now() + TOKEN_TTL, selected, user_id)
         plan["confirmed"] = {"at": _now().isoformat(), "user_id": user_id, "object_ids": selected}
         _event(plan, "confirmed", user_id=user_id, count=len(selected))
         self.scanner.journal.save()
@@ -449,12 +479,16 @@ class CleanupRunner:
 
     def start(self, plan_id: str, token: str, user_id: str | None) -> None:
         """Validate the token and run the plan in the background."""
+        self._drop_expired_tokens()
         if self.running or write_holder(self.hass):
             raise CleanupError("busy")
         plan = self._plan(plan_id)
         if self.scanner.warming_up:
             raise CleanupError("warming_up")
-        saved = self._tokens.pop(plan_id, None)
+        saved = self._tokens.get(plan_id)
+        if saved is not None and saved[3] != user_id:
+            raise CleanupError("wrong_user")
+        self._tokens.pop(plan_id, None)
         if saved is None or not secrets.compare_digest(saved[0], token) or saved[1] < _now():
             raise CleanupError("bad_token")
         if plan["status"] != "dry_run" or plan.get("run"):
@@ -481,8 +515,20 @@ class CleanupRunner:
         try:
             await self._run_plan(plan, object_ids, user_id)
             await self._verify(plan)
+            if self._deleted_from_recorder(plan):
+                # In the background, like the check on the Recorder page: a damage the run caused
+                # or ran into shows up as a finding and a repair hint, not at the next plan.
+                start_check(self.hass, self.scanner.events)
         finally:
             release_write(self.hass, "plan")  # whatever happens, the slot must not stay taken
+
+    @staticmethod
+    def _deleted_from_recorder(plan: dict[str, Any]) -> bool:
+        return any(
+            (action["kind"] in DATABASE_KINDS or action.get("recorder"))
+            and (action.get("result") or {}).get("state") == "done"
+            for action in plan["actions"]
+        )
 
     async def _run_plan(
         self, plan: dict[str, Any], object_ids: list[str], user_id: str | None
@@ -500,6 +546,12 @@ class CleanupRunner:
                 writes_recorder = bool(kinds & DATABASE_KINDS) or any(
                     action.get("recorder") for action in selected
                 )
+                if not await self._others_idle(plan, writes_recorder):
+                    return
+                if writes_recorder and not (
+                    await self._disk_has_room(plan) and await self._database_intact(plan)
+                ):
+                    return
                 await self._backup(plan, with_database=writes_recorder)
             if plan["status"] == "running":
                 await self._execute(plan, object_ids)
@@ -507,7 +559,24 @@ class CleanupRunner:
             end_interrupted(plan, _now().isoformat())
             raise
         except Exception as err:  # Never leave the plan in "running".
-            _event(plan, "failed", error=f"{type(err).__name__}: {err}")
+            corrupt = is_corruption_error(err)
+            _event(
+                plan,
+                "failed",
+                error=f"{type(err).__name__}: {err}",
+                **({"reason": "database_corrupt"} if corrupt else {}),
+            )
+            if corrupt:
+                self._note_damage(str(err))
+                for action in plan["actions"]:
+                    action.setdefault(
+                        "result",
+                        {
+                            "state": "not_run",
+                            "at": _now().isoformat(),
+                            "reason": "database_corrupt",
+                        },
+                    )
             plan["status"] = "partial" if plan["executed"] else "aborted"
         finally:
             plan["run"]["finished_at"] = _now().isoformat()
@@ -520,6 +589,95 @@ class CleanupRunner:
                 "total": 0,
             }
             journal.save()
+
+    async def _others_idle(self, plan: dict[str, Any], writes_recorder: bool) -> bool:
+        """Nothing is started while Home Assistant itself makes a backup or the recorder is struggling.
+
+        A plan that stops here has changed nothing and can be started again a little later.
+        What cannot be read (no backup component, no recorder) does not stop it.
+        """
+        try:
+            from homeassistant.components.backup import async_get_manager
+
+            state = getattr(getattr(async_get_manager(self.hass), "state", None), "value", None)
+        except Exception:
+            state = None
+        if state in BUSY_BACKUP_STATES:
+            return self._stop_before_start(plan, "backup_running", state=state)
+        if writes_recorder and recorder_ready(self.hass):
+            try:
+                from homeassistant.components.recorder import get_instance
+
+                instance = get_instance(self.hass)
+                migrating = getattr(instance, "migration_in_progress", False) is True
+                backlog = getattr(instance, "backlog", None)
+            except Exception:
+                return True
+            if migrating:
+                return self._stop_before_start(plan, "recorder_migrating")
+            if isinstance(backlog, int) and backlog >= RECORDER_BACKLOG_STOP:
+                return self._stop_before_start(plan, "recorder_backlog", backlog=backlog)
+        return True
+
+    def _stop_before_start(self, plan: dict[str, Any], reason: str, **detail: Any) -> bool:
+        _LOGGER.warning("A plan was not started: %s", reason)
+        self._backup_failed(plan, reason, **detail)
+        return False
+
+    async def _disk_has_room(self, plan: dict[str, Any]) -> bool:
+        """A nearly full disk stops the plan: SQLite needs room for its journal, the backup for a copy.
+
+        Less room than about half of the database stops it too.
+
+        A disk that cannot be measured (no recorder, another database) does not stop it.
+        """
+        if not recorder_ready(self.hass):
+            return True
+        try:
+            files = await self.hass.async_add_executor_job(database_files, self.hass)
+        except Exception:
+            return True
+        free = files.get("disk_free")
+        # The backup holds a copy of the database; it is packed, so about half of it is a guess.
+        needed = max(DISK_STOP_BYTES, int((files.get("db_bytes") or 0) * BACKUP_SPACE_SHARE))
+        if free is None or free >= needed:
+            return True
+        _LOGGER.warning("Too little free space for the recorder database (%s bytes)", free)
+        self._backup_failed(plan, "disk_low", free_bytes=free, needed_bytes=needed)
+        return False
+
+    def _note_damage(self, line: str) -> None:
+        """Keep a damage the plan ran into like the result of a check: a finding and a repair hint."""
+        self.scanner.events.record_integrity(_now(), "damaged", [line])
+        async_sync_database_issue(self.hass, self.scanner.events.integrity)
+
+    async def _database_intact(self, plan: dict[str, Any]) -> bool:
+        """Check the SQLite file (full integrity check) before anything is deleted; a damaged one stops the plan.
+
+        A check that cannot run (no recorder, another database, timeout) does not stop it.
+        """
+        if not recorder_ready(self.hass) or integrity_fresh(self.scanner.events, _now()):
+            return True  # a clean full check of the last days stands in for this one
+        from homeassistant.components.recorder import get_instance
+
+        self.status["phase"] = "check"
+        try:
+            async with asyncio.timeout(INTEGRITY_TIMEOUT):
+                problem = await get_instance(self.hass).async_add_executor_job(
+                    integrity_problem, self.hass
+                )
+        except Exception as err:
+            if is_corruption_error(err):
+                problem = str(err)
+            else:
+                _LOGGER.debug("The database check did not run", exc_info=True)
+                return True
+        if problem is None:
+            return True
+        _LOGGER.warning("The recorder database is damaged, nothing was changed: %s", problem)
+        self._note_damage(problem)
+        self._backup_failed(plan, "database_corrupt", error=problem)
+        return False
 
     async def _backup(self, plan: dict[str, Any], with_database: bool = True) -> None:
         """Create a Home Assistant backup and wait for it: Home Assistant only, no apps or folders.
@@ -548,6 +706,7 @@ class CleanupRunner:
         # A plan asks for the full backup only after the small one failed and the person chose it
         # (a new preview with ``full_backup``). It follows the contents of the user's automatic
         # backup settings but is a manual backup: no retention, no effect on the schedule.
+        name = f"Housekeeper {plan['plan_id'][:8]}"
         full = bool(plan.get("full_backup"))
         scope = "full" if full else "database" if with_database else "config"
         try:
@@ -565,7 +724,7 @@ class CleanupRunner:
                     if full
                     else None,
                     include_homeassistant=True,
-                    name=f"Housekeeper {plan['plan_id'][:8]}",
+                    name=name,
                     password=getattr(settings, "password", None),
                 )
         except Exception as err:
@@ -574,7 +733,13 @@ class CleanupRunner:
             reason = "backup_failed" if full else "backup_small_failed"
             self._backup_failed(plan, reason, error=f"{type(err).__name__}: {err}")
             return
+        if problem := await verify_backup(self.hass, name, full or with_database):
+            # The call came back but the backup is not in the list as it should be: do not rely on it.
+            _LOGGER.warning("The backup before a plan could not be verified (%s)", problem)
+            self._backup_failed(plan, "backup_unverified", problem=problem)
+            return
         plan["backup"] = {
+            "name": name,  # how to find it in Home Assistant's backup list when a restore is needed
             "job_id": getattr(created, "backup_job_id", None),
             "at": _now().isoformat(),
             "scope": scope,
@@ -674,18 +839,9 @@ class CleanupRunner:
 
     def _write_logbook(self, plan: dict[str, Any], action: dict[str, Any]) -> None:
         """Enter a removed or forgotten device in the logbook; the entry outlives the device."""
-        language = str(self.hass.config.language).lower().split("-")[0].split("_")[0]
         name = str(action.get("name") or action["object_id"])
+        text, words = pick(self.hass, LOGBOOK_DEVICE)
         forgot = action["kind"] == "forget_device"
-        if language == "sk":
-            text = "Zariadenie „{}“ {}"
-            words = ("zabudnuté", "odstránené")
-        elif language == "de":
-            text = "Gerät „{}“ {}"
-            words = ("vergessen", "entfernt")
-        else:
-            text = "Device “{}” {}"
-            words = ("forgotten", "removed")
         try:
             self.scanner.notes.upsert(
                 None,

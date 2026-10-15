@@ -121,10 +121,23 @@ def test_only_the_cleanup_runner_and_monitor_sensor_change_the_registry() -> Non
         source = path.read_text(encoding="utf-8")
         for write in writes:
             if path.name == "sensor.py" and write == "registry.async_remove(":
+                # The sensor of a home function that was deleted removes itself: Housekeeper's own entity.
                 assert source.count(write) == 1
                 assert 'async_get_entity_id("sensor", DOMAIN, self.unique_id)' in source
                 continue
             assert write not in source, f"{path.name}: {write}"
+
+
+def test_every_fixed_refusal_text_has_a_panel_translation() -> None:
+    """The panel shows a refusal in its own language: by its sentence (56-i18n-errors.js) or by its code."""
+    panel = "".join(path.read_text(encoding="utf-8") for path in (ROOT / "panel-src").glob("*.js"))
+    sentences = (ROOT / "panel-src" / "56-i18n-errors.js").read_text(encoding="utf-8")
+    sent = re.findall(
+        r'send_error\(\s*msg\["id"\],\s*"([a-z_]+)",\s*"([^"]+)"', _websocket_source()
+    )
+    assert sent
+    for code, text in sent:
+        assert f'"{text}":' in sentences or f"err_{code}:" in panel, f"{code}: {text}"
 
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:

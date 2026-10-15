@@ -188,11 +188,12 @@ async def test_options_flow_stores_threshold(hass: HomeAssistant) -> None:
     result = await hass.config_entries.options.async_init(entry.entry_id)
     assert result["type"] == FlowResultType.FORM
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {"min_unavailable_days": 7}
+        result["flow_id"], {"outage_high_hours": 168}
     )
     assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert entry.options["min_unavailable_days"] == 7
-    assert entry.options["scan_interval_hours"] == 24
+    assert entry.options["outage_high_hours"] == 168
+    assert entry.options["outage_info_minutes"] == 15
+    assert entry.options["scan_interval_hours"] == 6
     assert entry.options["unused_automation_days"] == 90
     assert entry.options["low_battery_percent"] == 20
     assert entry.options["history_days"] == 30
@@ -212,7 +213,7 @@ async def test_low_battery_threshold_is_configurable(hass: HomeAssistant) -> Non
     assert snapshot["meta"]["low_battery_percent"] == 20
     assert snapshot["meta"]["low_batteries"] == 0
     assert snapshot["meta"]["ha_version"]
-    assert snapshot["meta"]["scan_interval_hours"] == 24
+    assert snapshot["meta"]["scan_interval_hours"] == 6
 
     scanner.low_battery_percent = 50
     snapshot = await scanner.async_scan()
@@ -427,7 +428,7 @@ async def test_scan_flags_duplicates_and_keeps_hints_out_of_repairs(hass: HomeAs
     hass.states.async_set(twin.entity_id, "unavailable")
 
     scanner = InventoryScanner(hass)
-    scanner.min_unavailable_days = 0
+    scanner.outage_info_minutes = 0  # an outage counts at once
     snapshot = await scanner.async_scan()
 
     duplicate = next(f for f in snapshot["findings"] if f["rule_id"] == "entity.possible_duplicate")
@@ -889,13 +890,9 @@ async def test_manual_scans_are_refused_while_a_plan_runs(
     await scanner.async_scan()
 
     scanner.cleanup.status["running"] = True
-    for message in (
-        {"type": "ha_housekeeper/scan"},
-        {"type": "ha_housekeeper/preflight_save", "clear": False},
-    ):
-        await client.send_json_auto_id(message)
-        reply = await client.receive_json()
-        assert reply["success"] is False and reply["error"]["code"] == "cleanup_busy", message
+    await client.send_json_auto_id({"type": "ha_housekeeper/scan"})
+    reply = await client.receive_json()
+    assert reply["success"] is False and reply["error"]["code"] == "cleanup_busy"
 
     # Reading the last result stays possible, and the runner's own scan is not affected.
     await client.send_json_auto_id({"type": "ha_housekeeper/inventory"})
@@ -1228,7 +1225,7 @@ async def test_report_and_device_pairs_are_served_to_admins(
 async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
     hass: HomeAssistant, hass_ws_client
 ) -> None:
-    """A purge sits in its backup: a second purge and a plan execution both see busy."""
+    """A purge plan sits in its backup: a second purge plan and another plan both see busy."""
     import asyncio
     from unittest.mock import patch
 
@@ -1254,13 +1251,25 @@ async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
     async def nothing_left(hass_, ids):
         return set()
 
-    purge = {
-        "type": "ha_housekeeper/purge_statistics",
-        "statistic_ids": ["sensor.gone"],
-        "states": False,
-        "confirmed": True,
-    }
     module = "custom_components.ha_housekeeper.cleanup_exec"
+
+    async def make(kind: str, object_id: str) -> tuple[str, str]:
+        action = {"kind": kind, "object_id": object_id}
+        if kind == "purge_statistics":
+            action["states"] = False
+        await client.send_json_auto_id({"type": "ha_housekeeper/plan_create", "actions": [action]})
+        plan_id = (await client.receive_json())["result"]["plan_id"]
+        await client.send_json_auto_id(
+            {"type": "ha_housekeeper/plan_confirm", "plan_id": plan_id, "acknowledged": [object_id]}
+        )
+        return plan_id, (await client.receive_json())["result"]["token"]
+
+    async def execute(plan_id: str, token: str) -> dict:
+        await client.send_json_auto_id(
+            {"type": "ha_housekeeper/plan_execute", "plan_id": plan_id, "token": token}
+        )
+        return await client.receive_json()
+
     with (
         patch.object(scanner.cleanup, "_backup", slow_backup),
         patch(f"{module}.delete_statistics", deleted),
@@ -1271,35 +1280,21 @@ async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
             lambda *args: {"verdict": "review", "reasons": []},
         ),
     ):
-        await client.send_json_auto_id(purge)
+        first = await make("purge_statistics", "sensor.gone")
+        second = await make("purge_statistics", "sensor.gone")
+        disable = await make("disable_entity", orphan.entity_id)
+        assert (await execute(*first))["success"]
         await asyncio.sleep(0.1)
-        await client.send_json_auto_id(purge)
-        refused = await client.receive_json()
-        assert refused["error"]["code"] == "busy"
+        assert (await execute(*second))["error"]["code"] == "busy"
         await client.send_json_auto_id({"type": "ha_housekeeper/status"})
         assert (await client.receive_json())["result"]["writing"] == "plan"
-        await client.send_json_auto_id(
-            {
-                "type": "ha_housekeeper/plan_create",
-                "actions": [{"kind": "disable_entity", "object_id": orphan.entity_id}],
-            }
-        )
-        plan = (await client.receive_json())["result"]
-        await client.send_json_auto_id(
-            {"type": "ha_housekeeper/plan_confirm", "plan_id": plan["plan_id"]}
-        )
-        token = (await client.receive_json())["result"]["token"]
-        await client.send_json_auto_id(
-            {"type": "ha_housekeeper/plan_execute", "plan_id": plan["plan_id"], "token": token}
-        )
-        assert (await client.receive_json())["error"]["code"] == "busy"
+        assert (await execute(*disable))["error"]["code"] == "busy"
         gate.set()
-        done = await client.receive_json()
-        assert done["id"] == 1 and done["success"]
-        assert done["result"]["removed"] == ["sensor.gone"] and done["result"]["backup"]
+        await scanner.cleanup.wait()
     assert registry.async_get(orphan.entity_id).disabled_by is None
-    stored = scanner.journal.get(done["result"]["plan_id"])
+    stored = scanner.journal.get(first[0])
     assert stored["actions"][0]["kind"] == "purge_statistics" and stored["followup"]
+    assert stored["actions"][0]["result"]["state"] == "done" and stored["backup"]
 
 
 async def test_diagnostics_commands_answer_for_known_and_unknown_automations(
@@ -1384,43 +1379,41 @@ async def test_open_previews_merge_into_one_plan_and_conflicts_are_reported(
     assert (await client.receive_json())["error"]["code"] == "plan_not_open"
 
 
-async def test_the_window_reload_follows_the_rules_of_a_plan(
+async def test_an_open_preview_is_checked_against_the_current_state_and_renewed(
     hass: HomeAssistant, hass_ws_client
 ) -> None:
-    """A reload waits for the write slot, respects the protection mode and is noted in the plan."""
-    from unittest.mock import AsyncMock, patch
-
-    from custom_components.ha_housekeeper.writelock import acquire_write, release_write
-
+    """A check reports what changed since the preview; renewing replaces the preview."""
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="r-1", suggested_object_id="renew"
+    )
     scanner, client = await _ws_setup(hass, hass_ws_client)
     await scanner.async_scan()
-    plan = {"plan_id": "w1", "executed": True, "events": [], "actions": []}
-    scanner.journal.plans.append(plan)
-    scanner.window.state = {"plan_id": "w1"}
-    target = {"entry_id": "e1", "title": "T", "domain": "x"}
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/plan_create",
+            "actions": [{"kind": "disable_entity", "object_id": entry.entity_id}],
+        }
+    )
+    plan = (await client.receive_json())["result"]
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/plan_check", "plan_id": plan["plan_id"]}
+    )
+    assert (await client.receive_json())["result"] == {"current": True, "changed": []}
 
-    async def reload() -> dict:
-        await client.send_json_auto_id({"type": "ha_housekeeper/window_reload", "execute": True})
-        return await client.receive_json()
+    registry.async_update_entity(entry.entity_id, name="Changed")
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/plan_check", "plan_id": plan["plan_id"]}
+    )
+    result = (await client.receive_json())["result"]
+    assert result["current"] is False and result["changed"][0]["object_id"] == entry.entity_id
 
-    with (
-        patch.object(scanner.window, "current", return_value="reload"),
-        patch(
-            "custom_components.ha_housekeeper.websocket_api.reload_targets",
-            return_value=[dict(target)],
-        ),
-        patch.object(hass.config_entries, "async_reload", AsyncMock()) as reloaded,
-    ):
-        scanner.protection.mode = "quarantine"
-        assert (await reload())["error"]["code"] == "protection_mode"
-        scanner.protection.mode = "confirmed"
-        acquire_write(hass, "plan")
-        assert (await reload())["error"]["code"] == "busy"
-        release_write(hass, "plan")
-        reply = await reload()
-    assert reply["success"] and reply["result"]["targets"][0]["ok"] is True
-    reloaded.assert_awaited_once_with("e1")
-    assert [e["type"] for e in plan["events"]] == ["integration_reloaded"]
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/plan_renew", "plan_id": plan["plan_id"]}
+    )
+    renewed = (await client.receive_json())["result"]
+    assert renewed["plan_id"] != plan["plan_id"]
+    assert [p["plan_id"] for p in scanner.journal.plans] == [renewed["plan_id"]]
 
 
 async def test_reminders_are_saved_finished_and_deleted_over_the_websocket(
@@ -1489,3 +1482,41 @@ async def test_a_detected_battery_replacement_is_entered_once_and_updates_a_matc
         {"type": "ha_housekeeper/battery_custom_type", "action": "add", "name": "LR44"}
     )
     assert (await client.receive_json())["result"]["custom_types"] == ["LR44"]
+
+
+async def test_a_damaged_database_is_a_repair_hint_until_a_check_comes_back_clean(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers import issue_registry as ir
+
+    from custom_components.ha_housekeeper.issues import (
+        DATABASE_ISSUE_ID,
+        async_sync_database_issue,
+    )
+
+    registry = ir.async_get(hass)
+    damaged = {"state": "damaged", "at": "2026-10-15T06:00:00+00:00", "lines": ["row 1 missing"]}
+    async_sync_database_issue(hass, damaged)
+    issue = registry.async_get_issue(DOMAIN, DATABASE_ISSUE_ID)
+    assert issue is not None and issue.severity == ir.IssueSeverity.ERROR and not issue.is_fixable
+    async_sync_database_issue(hass, {**damaged, "state": "ok", "lines": []})
+    assert registry.async_get_issue(DOMAIN, DATABASE_ISSUE_ID) is None
+
+
+async def test_one_unreadable_saved_file_starts_only_that_part_empty(hass: HomeAssistant) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    from homeassistant.exceptions import UnsupportedStorageVersionError
+
+    scanner = InventoryScanner(hass)
+    with patch.object(scanner.notes, "async_load", AsyncMock(side_effect=ValueError("bad shape"))):
+        await scanner.async_initialize()
+    assert scanner.load_failures == ["notes"]
+
+    scanner = InventoryScanner(hass)
+    newer = AsyncMock(side_effect=UnsupportedStorageVersionError("housekeeper", 9, 1))
+    with (
+        patch.object(scanner.marks, "async_load", newer),
+        pytest.raises(UnsupportedStorageVersionError),
+    ):
+        await scanner.async_initialize()

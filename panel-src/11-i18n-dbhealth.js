@@ -41,3 +41,28 @@ Object.assign(TEXT.en, {
   dbColFrom: "From", dbColTo: "To", dbColHours: "Length", dbColCause: "Cause",
   stormTabFindings: "Findings", stormTabEntities: "Loudest entities", stormTabIntegrations: "Integrations", stormTabEvents: "Events", dbMissingShared: "{n} series have gaps in their hourly record. {hours} hours are missing from all series at once, in {count} periods; no statistics were compiled then.", dbMissingOwn: "On top of that, single sensors have gaps of their own (list below).", dbMissingOnlyShared: "All gaps fall into these shared periods.", dbMissingOwnOnly: "{n} sensors have gaps in their hourly record, all in the sensors themselves. There are no shared outages.", dbSeriesNone: "No sensors with gaps.", dbGapCause_restart: "Home Assistant was down (restart)", dbGapCause_recorder: "The recorder was not running or the statistics were not compiled", dbDetails: "Details: {gaps} shared periods, {series} series", dbGapsTitle: "Shared gaps (all series)", dbSeriesTitle: "Sensors with the most gaps ({n})", dbColSeries: "Sensor", dbColOwn: "Own", dbColShared: "Shared", dbColMissing: "Total",
 });
+
+Object.assign(TEXT.de, {
+  dbKind_disk_low: "Wenig freier Speicherplatz", dbDiskLow: "Auf dem Datenträger der Datenbank sind nur noch {free} von {total} frei.",
+  dbAdvice_disk_low: "Ein voller Datenträger beschädigt Datenbanken und lässt Backups scheitern. Schaffe Platz (alte Backups, große Dateien unter Speicher). Unter 512 MB stoppt Housekeeper Pläne, die in den Recorder schreiben.",
+  dbKind_corrupt_files: "Beschädigte Datenbank beiseitegelegt", dbCorruptFiles: "{n} Datei(en) mit {size}: {list}. Home Assistant hat die Datenbank schon einmal als beschädigt ersetzt.",
+  dbAdvice_corrupt_files: "Die Dateien liegen im Konfigurationsordner und werden nicht mehr benutzt. Lösche sie von Hand, wenn du sie nicht mehr brauchst; Housekeeper löscht sie nicht. Prüfe die Ursache (Datenträger, unsauberes Herunterfahren).",
+  dbIntegrityCrash: "Home Assistant wurde in den letzten 30 Tagen {n}-mal nicht sauber heruntergefahren (Absturz, Stromausfall): eine häufige Ursache.",
+  dbKind_integrity: "Datenbank beschädigt", dbIntegrity: "Die Prüfung vom {at} meldete: {lines}.",
+  dbAdvice_integrity: "Lege zuerst ein Backup an. Betroffene Indizes lassen sich mit REINDEX neu aufbauen (zum Beispiel in SQLite Web), sonst hilft ein Backup. Housekeeper löscht nichts, solange die Datenbank beschädigt ist.",
+  dbCheck: "Datenbank prüfen", dbChecking: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank Minuten dauern, die Seite bleibt benutzbar.",
+  dbCheckHint: "Prüft mit SQLite (integrity_check), ob Tabellen und Indizes zusammenpassen. Liest nur, belastet die Datenbank aber einige Minuten.",
+  dbCheckOk: "Zuletzt geprüft am {at}: in Ordnung.", dbCheckFailed: "Die Prüfung vom {at} ist nicht fertig geworden.", dbCheckNever: "Noch nie geprüft.",
+});
+Object.assign(TEXT.en, {
+  dbKind_disk_low: "Little free disk space", dbDiskLow: "Only {free} of {total} are free on the database's disk.",
+  dbAdvice_disk_low: "A full disk damages databases and makes backups fail. Free some space (old backups, large files under Storage). Below 512 MB Housekeeper stops plans that write into the recorder.",
+  dbKind_corrupt_files: "Damaged database set aside", dbCorruptFiles: "{n} file(s) with {size}: {list}. Home Assistant has replaced the database as damaged before.",
+  dbAdvice_corrupt_files: "The files lie in the configuration folder and are no longer used. Delete them by hand when you no longer need them; Housekeeper does not delete them. Look for the cause (storage, unclean shutdown).",
+  dbIntegrityCrash: "Home Assistant was not shut down cleanly {n} time(s) in the last 30 days (crash, power cut): a common cause.",
+  dbKind_integrity: "Database damaged", dbIntegrity: "The check of {at} reported: {lines}.",
+  dbAdvice_integrity: "Make a backup first. Affected indexes can be rebuilt with REINDEX (for example in SQLite Web), otherwise restore a backup. Housekeeper deletes nothing while the database is damaged.",
+  dbCheck: "Check database", dbChecking: "Checking the database. On a large database this can take minutes; the page stays usable.",
+  dbCheckHint: "Uses SQLite (integrity_check) to see whether tables and indexes match. Reads only, but loads the database for a few minutes.",
+  dbCheckOk: "Last checked {at}: fine.", dbCheckFailed: "The check of {at} did not finish.", dbCheckNever: "Never checked.",
+});

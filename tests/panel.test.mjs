@@ -595,19 +595,19 @@ test("the status counts affected objects once, only of the base types, and not h
   const finding = (rule, id, extra = {}) => ({ rule_id: rule, object_id: id, classification: "orphaned", confidence: 0.9, evidence: [], impact: "medium", ...extra });
   const base = { ...DATA, objects };
   el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.duplicate", "sensor.s0"), finding("entity.unavailable", "sensor.s0")] };
-  assert.deepEqual([el.health().affected, el.health().base, el.health().percent], [1, 8, 91]); // one object, three entries of three points each
+  assert.deepEqual([el.health().affected, el.health().base, el.health().percent, el.health().load], [1, 8, 93.7, 0.5]); // one object counts once, with its worst level: medium weighs a half
   el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.state_missing", "sensor.s1", { ignored: true })] };
   assert.equal(el.health().affected, 1); // hidden findings do not count
   el.data = { ...base, findings: [finding("dashboard.missing_entity", "dash")] };
   assert.equal(el.health().affected, 0); // other object types are listed but not part of the ring
   el.data = { ...DATA, objects: [], findings: [finding("entity.state_missing", "sensor.s0")] };
-  assert.equal(el.health().percent, 97); // the score does not depend on the number of objects
+  assert.equal(el.health().percent, 100); // no rated object, nothing to take off
   const many = Array.from({ length: 1000 }, (_, i) => entity(`sensor.m${i}`));
   el.data = { ...DATA, objects: many, findings: [finding("entity.state_missing", "sensor.m0")] };
-  assert.equal(el.health().percent, 97, "one entry takes its points, however many objects there are");
+  assert.equal(el.health().percent, 99.9, "one object takes its weight off the number of all objects");
   el.dbHealth = { available: true, findings: [{ level: "problem", kind: "gaps" }] };
-  assert.equal(el.health().percent, 97, "the database check only runs in Maintenance, so it never moves the number");
-  assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("findings list"));
+  assert.equal(el.health().percent, 99.9, "the database check only runs in Maintenance, so it never moves the number");
+  assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("objects in order"));
 });
 
 test("hidden findings are excluded from counts, lists and export unless shown", () => {
@@ -790,6 +790,7 @@ test("cause and dashboard groups use the findings table columns in both densitie
   let html = el.findingsView();
   assert.match(html, /class="finding-data finding-cause"/);
   assert.match(html, /data-fold="cause_outage-z"/);
+  assert.match(html, /<button[^>]*class="finding-fold"[^>]*data-fold="cause_outage-z"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="config_entry:z"/, "the arrow folds while the cause name opens its details");
   assert.doesNotMatch(html, /class="finding-group"/);
   el.folds = { "cause_outage-z": true };
   el.denseLists().findings = true;
@@ -802,6 +803,7 @@ test("cause and dashboard groups use the findings table columns in both densitie
   html = el.findingsView();
   assert.match(html, /class="finding-data finding-cause"/);
   assert.match(html, /data-fsel-group="dash\|views\/0\/cards\/0"/);
+  assert.match(html, /class="finding-fold"[^>]*data-fold="bg:dash\|views\/0\/cards\/0"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="dashboard:dash"/, "dashboard groups also keep separate fold and detail buttons");
 });
 
 test("grouped causes and single findings obey the same table sort", () => {
@@ -895,6 +897,8 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   assert.equal(el.pageSize, 50);
   const saved = JSON.parse(storage.store["ha_housekeeper.prefs"]);
   assert.equal(saved.scheme, "housekeeper");
+  el.setPref("scheme", "midnight");
+  assert.ok(el.themeCss().includes("--hk-blue:#5aa9ff"));
   assert.equal(saved.pageSize, 50);
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
@@ -966,7 +970,7 @@ test("cleanup view lists candidates, creates a dry-run plan and shows the verdic
   el._hass = { language: "en", callWS: async msg => {
     calls.push(msg);
     if (msg.type === "ha_housekeeper/plan_list") return { plans: [] };
-    return { plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 0, blocked: 1, uses: 1, statistics: 0 },
+    return { plan_id: "p1", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 0, blocked: 1, uses: 1, statistics: 0 },
       actions: [{ kind: "remove_entity", object_id: "sensor.old", name: "Old", verdict: "ok", reasons: [], used_by: [] },
         { kind: "remove_entity", object_id: "sensor.used", name: "Used", verdict: "blocked", reasons: ["used_certain"], used_by: [{ source: "automation:automation.a", relation: "TARGETS", confidence: "certain" }] }] };
   } };
@@ -1260,6 +1264,18 @@ test("the scan button is disabled while a plan runs", () => {
   assert.ok(el.t("err_cleanup_busy").includes("plan is running"));
 });
 
+test("a refusal of the backend is shown in the language of the panel", () => {
+  const refusal = (code, message) => Object.assign(new Error(message), { code });
+  for (const lang of ["de", "en"]) {
+    const { el } = panel(lang);
+    assert.equal(el.errText(refusal("not_found", "Plan not found")), el.t("err_plan_not_found"));
+    assert.equal(el.errText(refusal("days_required", "Putting a finding off needs days")), el.t("err_days_required"));
+    assert.equal(el.errText(refusal("scan_failed", "ValueError: boom")), el.t("err_failed", { detail: "boom" }));
+    assert.equal(el.errText(refusal("other", "Something new")), "Something new");
+  }
+  assert.notEqual(panel("de").el.errText(refusal("not_found", "Plan not found")), panel("en").el.errText(refusal("not_found", "Plan not found")));
+});
+
 test("preliminary data during the Home Assistant start shows a banner on every page", () => {
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, preliminary: false } };
@@ -1301,7 +1317,7 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
   const { el, shadow } = panel("en");
   el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "A", status: "orphaned" }, { object_type: "entity", object_id: "sensor.b", name: "B", status: "orphaned" }], edges: [], findings: [] };
   const action = (id, verdict, extra = {}) => ({ kind: "disable_entity", object_id: id, name: id, verdict, executable: verdict !== "blocked", reasons: [], used_by: [], ...extra });
-  const base = { plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 1, blocked: 0 },
+  const base = { plan_id: "p1", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 1, blocked: 0 },
     actions: [action("sensor.a", "ok"), action("sensor.b", "review", { reasons: ["has_statistics"] })] };
   el.plan = base;
   el.view = "cleanup";
@@ -1351,7 +1367,7 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
 test("a blocked removal cannot be confirmed; a ready one asks for the removal word and mentions the backup", async () => {
   const { el, shadow } = panel("en");
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
-  const plan = (executable, reasons) => ({ plan_id: "p2", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: executable ? 1 : 0, review: 0, blocked: executable ? 0 : 1 },
+  const plan = (executable, reasons) => ({ plan_id: "p2", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: executable ? 1 : 0, review: 0, blocked: executable ? 0 : 1 },
     actions: [{ kind: "remove_entity", object_id: "sensor.a", name: "A", verdict: executable ? "ok" : "blocked", executable, reasons, quarantine_days_left: 6, used_by: [] }] });
   el.view = "cleanup";
   el.journal = [];
@@ -1441,7 +1457,7 @@ test("the replace assistant previews sources and sends the new entity with the p
   assert.ok(offered.includes("sensor.new") && !offered.includes("light.live") && !/data-plan-create\s+disabled/.test(html));
   el.replNew = "sensor.new";
   const sent = [];
-  const plan = { plan_id: "r1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
+  const plan = { plan_id: "r1", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
     actions: [{ kind: "replace_references", object_type: "entity", object_id: "sensor.old", target: "sensor.new", name: "sensor.old", verdict: "review", executable: true, reasons: ["config_rewrite", "source_manual"], used_by: [],
       sources: [{ source: "automation:automation.heat", type: "automation", name: "Heating", writable: true, reason: null, change_count: 2, changes: [{ location: "trigger/0/entity_id", from: "sensor.old", to: "sensor.new" }], manual: ["action/0/data/message"] },
         { source: "dashboard:yamlboard", type: "dashboard", name: "yamlboard", writable: false, reason: "yaml_mode", change_count: 0, changes: [], manual: [] }] }] };
@@ -1454,6 +1470,18 @@ test("the replace assistant previews sources and sends the new entity with the p
   assert.ok(html.includes("To do by hand (2)") && html.includes("action/0/data/message") && html.includes("YAML dashboard") && html.includes("Rewrites configuration"));
   assert.equal(el.planWord(plan), "REPLACE");
   assert.ok(el.confirmSummary(plan, 1).startsWith("In 2 entity references"));
+});
+
+test("a plan that removes half of all entities or more warns before it runs", () => {
+  const { el } = panel("en");
+  const remove = n => Array.from({ length: n }, () => ({ kind: "remove_entity", executable: true, verdict: "ok" }));
+  const plan = n => ({ actions: remove(n), summary: { totals: { entity: 120, device: 10 } } });
+  el.ack = new Set();
+  assert.equal(el.largeRemovalWarning(plan(59)), null);
+  assert.ok(el.largeRemovalWarning(plan(66)).title.includes("66 of 120 entities (55 %)"));
+  const devices = { actions: [{ kind: "forget_device", executable: true, verdict: "ok" }, { kind: "disable_device", executable: true, verdict: "ok" }], summary: { totals: { entity: 120, device: 2 } } };
+  assert.ok(el.largeRemovalWarning(devices).title.includes("1 of 2 devices (50 %)"));
+  assert.equal(el.largeRemovalWarning({ actions: [{ kind: "disable_entity", executable: true, verdict: "ok" }], summary: { totals: { entity: 1 } } }), null);
 });
 
 test("removing a device asks for the removal word and says that its entities go with it", () => {
@@ -1494,7 +1522,7 @@ const propertyData = () => {
 };
 
 const METER_PLAN = {
-  plan_id: "m1", created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
+  plan_id: "m1", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
   actions: [{ kind: "migrate_meter", object_type: "entity", object_id: "sensor.meter_old", target: "sensor.meter_new", mode: "both", alt_id: "sensor.meter_old_alt", name: "Old meter", verdict: "review", executable: true,
     reasons: ["stats_write", "id_takeover", "stats_gap"], used_by: [],
     statistics: { import_count: 48, old_first: 1788220800, old_last: 1788390000, switch: 1788480000, offset: 47, unit: "kWh", dropped_overlap: 3, gap_hours: 24,
@@ -1555,7 +1583,7 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   const { el, shadow } = panel("en", { setTimeout: () => 0 });
   const sent = [];
   const state = { ha_version: "2026.2.3", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [{ issue_id: "old", domain: "demo" }], failed_entries: [], broken: [], pending_updates: [{ entity_id: "update.core", name: "Core", installed: "2026.2.3", latest: "2026.3.0" }] };
-  const report = { state, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "warn", count: 1 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
+  const report = { state, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "warn", count: 1 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], watch: { hours: 24, active: null } };
   el._hass = { language: "en", callWS: async msg => { sent.push(msg.type); return msg.type.endsWith("recorder_costs") ? COSTS : report; } };
   el.view = "maintenance"; el.viewTab = { maintenance: "preflight" };
   el.render();
@@ -1565,7 +1593,7 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   let html = shadow.innerHTML;
   assert.deepEqual(sent, ["ha_housekeeper/preflight"]);
   assert.ok(html.includes("Last backup 5 h ago") && html.includes("Open repairs") && html.includes("1 · old"));
-  assert.ok(html.includes("Core 2026.2.3 → 2026.3.0") && html.includes("No starting state saved yet."));
+  assert.ok(html.includes("Core 2026.2.3 → 2026.3.0") && html.includes("watches for 24 hours"));
   el.view = "recorder"; el.viewTab = { recorder: "costs" };
   el.render();
   assert.ok(shadow.innerHTML.includes("Start analysis"));
@@ -1619,6 +1647,7 @@ const BACKUP_REPORT = {
     { id: "emergency_kit", level: "note", values: { at: null, age_days: null } },
     { id: "restore_test", level: "ok", values: { at: "2026-09-01T00:00:00+00:00", age_days: 37 } },
     { id: "plan_backups", level: "note", values: { checked: 4, missing: 1 } },
+    { id: "own_backups", level: "note", values: { count: 12, size: 3145728000 } },
   ],
   backups: [{ date: "2026-10-05T10:00:00+00:00", size: 524288000, agents: ["hassio.local"], protected: false, automatic: true, failed_agents: [] }],
   attest: { emergency_kit: null, restore_test: "2026-09-01T00:00:00+00:00" },
@@ -1680,17 +1709,14 @@ test("backup confirmations are inline, saved with a date, and can be taken back"
   assert.equal(sent[1], JSON.stringify({ type: "ha_housekeeper/backup_attest", kind: "restore_test", clear: true }));
 });
 
-test("after an update the preflight lists what is new since the saved state", async () => {
+test("the preflight says what follows an update: the watch is on, running or off", () => {
   const { el, shadow } = panel("en");
   const state = { ha_version: "2026.3.0", backup: { available: false }, repairs: [], failed_entries: [], broken: [], pending_updates: [] };
-  const after = { from_version: "2026.2.3", to_version: "2026.3.0", new_repairs: [{ issue_id: "deprecated", domain: "hue", severity: "warning" }], new_failed_entries: [{ title: "Hub <x>", domain: "demo", entry_id: "e" }], new_broken: [],
-    inventory: { new_objects: { total: 2, items: [] }, removed_objects: { total: 0, items: [] }, status_changes: { total: 1, items: [] }, new_findings: { total: 0, items: [] }, resolved_findings: { total: 0, items: [] } } };
-  el.preflight = { state, checks: [{ check: "backup", level: "warn" }], record: { at: "2026-10-01T10:00:00+00:00", ha_version: "2026.2.3", repairs: 0, failed_entries: 0, broken: 0, objects: 40 }, after };
-  el.view = "maintenance"; el.viewTab = { maintenance: "preflight" }; el._pfRequested = true;
-  el.render();
-  const html = shadow.innerHTML;
-  assert.ok(html.includes("Since the update: Home Assistant 2026.2.3 → 2026.3.0") && html.includes("hue · deprecated") && html.includes("Hub &lt;x&gt; (demo)"));
-  assert.ok(html.includes("New objects") && html.includes("Backup component not available") && html.includes("Saved"));
+  const show = watch => { el.preflight = { state, checks: [{ check: "backup", level: "warn" }], watch }; el.view = "maintenance"; el.viewTab = { maintenance: "preflight" }; el._pfRequested = true; el.render(); return shadow.innerHTML; };
+  assert.ok(show({ hours: 24, active: null }).includes("watches for 24 hours") && !show({ hours: 24, active: null }).includes("data-watch-go"));
+  const running = show({ hours: 24, active: { id: "w1", until: new Date(Date.now() + 5 * 3600000).toISOString(), triggers: [{ kind: "ha_version", from: "1", to: "2" }], samples: 1, new: 2 } });
+  assert.ok(running.includes("2 findings so far") && running.includes('data-watch-go="w1"'));
+  assert.ok(show({ hours: 0, active: null }).includes("switched off"));
 });
 
 test("inventory rows and sortable headers can be used with the keyboard", () => {
@@ -2168,7 +2194,7 @@ test("blueprints tab, notification switch, diagnostics without names and the wee
   el._blueprintsRequested = true;
   el.render();
   assert.ok(shadow.innerHTML.includes("a/gone.yaml") && shadow.innerHTML.includes("Idle") && shadow.innerHTML.includes("data-bp-refresh"));
-  el.view = "settings"; el.settingsTab = "notify";
+  el.view = "settings"; el.settingsTab = "scan";
   el.data = { ...DATA, meta: { ...DATA.meta, notify: true } };
   el.render();
   assert.ok(/data-notify checked/.test(shadow.innerHTML));
@@ -2363,7 +2389,7 @@ test("a large installation renders every view within generous time limits", () =
 test("the whole confirmation flow works end to end against a scripted backend", async () => {
   const sent = [], snapshots = [];
   const action = { kind: "remove_entity", object_id: "sensor.old", name: "Old", verdict: "ok", executable: true, reasons: [], used_by: [] };
-  const plan = (status, extra = {}) => ({ plan_id: "p1", created_at: "2026-10-07T10:00:00+00:00", status, executed: status !== "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, actions: [{ ...action, ...(extra.result ? { result: extra.result } : {}) }], ...(extra.plan || {}) });
+  const plan = (status, extra = {}) => ({ plan_id: "p1", created_at: new Date().toISOString(), status, executed: status !== "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, actions: [{ ...action, ...(extra.result ? { result: extra.result } : {}) }], ...(extra.plan || {}) });
   const statuses = [
     { progress: { running: true, phase: "backup" }, plan: plan("backup") },
     { progress: { running: true, phase: "running", done: 0, total: 1 }, plan: plan("running", { plan: { backup: { job_id: "j1", at: "2026-10-07T10:01:00+00:00" } } }) },
@@ -2744,7 +2770,7 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   const { el, shadow } = panel("en");
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
   el.view = "journal";
-  const short = (id, extra = {}) => ({ plan_id: id, created_at: "2026-10-07T10:00:00+00:00", status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
+  const short = (id, extra = {}) => ({ plan_id: id, created_at: new Date().toISOString(), status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
   el.journal = [short("a"), short("b"), short("c", { executed: true, status: "verified" })];
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan: { ...short("n"), actions: [] }, merged: msg.plan_ids, conflicts: [{ object_id: "sensor.x", kinds: ["remove_entity", "replace_references"] }], dropped: 0 }; } };
@@ -2956,6 +2982,8 @@ test("the database card loads once per visit of Maintenance and asks the backend
   assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/db_health", refresh: false }));
   await el.loadDbHealth(true);
   assert.equal(calls.at(-1).refresh, true);
+  await el.loadDbHealth(false, true);
+  assert.equal(calls.at(-1).check, true);
 });
 
 test("only database problems reach the overview to-do list, and only once they were calculated", () => {
@@ -3121,14 +3149,32 @@ test("the old load link opens the Recorder view", () => {
   assert.equal(el.view, "recorder");
 });
 
+test("a page exports all its sections as one file in Markdown or JSON, and as CSV files per section", () => {
+  const { el } = panel("en");
+  const saved = [];
+  el.downloadText = (name, text) => saved.push([name, text]);
+  el.downloadRows = (name, header, rows) => saved.push([name, header, rows]);
+  el.setPageExporter("pg", "page", "Page", [
+    { name: "a", title: "A", header: ["Name", "N"], rows: () => [["x|y", 1]] },
+    { name: "b", title: "B", header: ["Id"], rows: () => [["z"]] },
+  ]);
+  assert.ok(el.pageBar({ exportId: "pg" }).includes('data-exp-menu="pg"'));
+  el.exportList("pg", "md");
+  assert.ok(saved[0][0] === "page.md" && saved[0][1].includes("## A") && saved[0][1].includes("x\\|y") && saved[0][1].includes("## B"));
+  el.exportList("pg", "json");
+  assert.deepEqual(JSON.parse(saved[1][1]), { a: [{ Name: "x|y", N: 1 }], b: [{ Id: "z" }] });
+  el.exportList("pg", "csv");
+  assert.equal(saved[2][0], "page-a");
+});
+
 test("a list can hide columns and offers its rows as CSV", () => {
   const { el, shadow } = panel("en");
   el.data = DATA; el.view = "inventory"; el.render();
   assert.ok(shadow.innerHTML.includes('data-exp-menu="inventory"') && shadow.innerHTML.includes('data-col-open="inventory"'), "the inventory has one export menu in the list bar");
   assert.ok(!shadow.innerHTML.includes('data-export-list="inventory"') && !shadow.innerHTML.includes("data-xp-open"), "no separate download button and no extra row");
-  assert.ok(!shadow.innerHTML.includes('data-exp-csv'), "the menu is closed at first");
+  assert.ok(!shadow.innerHTML.includes('data-exp-fmt'), "the menu is closed at first");
   el._expOpen = "inventory"; el.render();
-  assert.ok(shadow.innerHTML.includes('data-exp-csv="inventory"') && shadow.innerHTML.includes("data-exp-guided"), "the open menu offers the CSV and the guided export");
+  assert.ok(shadow.innerHTML.includes('data-exp-fmt="inventory|csv"') && shadow.innerHTML.includes('data-exp-fmt="inventory|json"') && shadow.innerHTML.includes("data-exp-guided"), "the open menu offers the formats and the guided export");
   el._expOpen = "";
   assert.ok(shadow.innerHTML.includes(">Type<"));
   el.toggleCol("inventory", "type");
@@ -3174,6 +3220,84 @@ test("findings that began with an update get a line, a tile and a filter", () =>
   assert.ok(card.includes("Update of hue 1 → 2") && card.includes("1× ") && card.includes('data-object="entity:light.a"'));
 });
 
+test("the findings page has an info button that opens the help with every number named", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [] };
+  el.view = "findingsNav"; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  assert.ok(el.heading().includes('data-fold="findings_help"') && !el.findingsView().includes("helpcard"));
+  el.folds = { findings_help: true };
+  const help = el.findingsView();
+  assert.ok(help.includes("helpcard") && help.includes("Certainty") && help.includes("n incidents"));
+});
+
+test("the follow-ups of a chain sit indented in one block, and one button opens or closes all chains", () => {
+  const { el } = panel("en");
+  const cause = { id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Keypad", follower_count: 2, total_followers: 2, consumers: {}, impact: "high", parent_id: null, child_ids: [], finding_key: "own" };
+  const f = (key, extra = {}) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "high", impact_facts: [], first_detected_at: new Date().toISOString(), ...extra });
+  el.data = { ...DATA, objects: [], edges: [], causes: [cause], findings: [f("own", { rule_id: "device.down", cause_id: "device_down:d1" }), f("x", { cause_id: "device_down:d1" }), f("y", { cause_id: "device_down:d1" })] };
+  assert.ok(!el.causeTableRow(cause).includes('class="kids"') && el.causeTableRow(cause).includes("mdi:chevron-right"));
+  el.foldAllFindings(true);
+  const open = el.causeTableRow(cause);
+  assert.ok(open.includes("mdi:chevron-down") && /class="kids"/.test(open));
+  el.foldAllFindings(false);
+  assert.ok(!el.causeTableRow(cause).includes('class="kids"'));
+});
+
+test("labels are always a row: the own ones, or a note that none are assigned", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "label", object_id: "l1", name: "Kitchen" }], edges: [], findings: [] };
+  const rows = item => el.labelRows(item)[0][1];
+  assert.ok(rows({ object_type: "automation", object_id: "automation.a", labels: ["l1"] }).includes("Kitchen"));
+  assert.ok(rows({ object_type: "automation", object_id: "automation.a", labels: [] }).includes("No labels assigned"));
+  assert.ok(rows({ object_type: "script", object_id: "script.a" }).includes("No labels assigned"));
+  assert.ok(el.propertyCards({ object_type: "scene", object_id: "scene.a", labels: [] }).includes("No labels assigned"));
+});
+
+test("the selection row of the findings list names the size of the view at its right end", () => {
+  const { el } = panel("en");
+  const f = key => ({ key, rule_id: "entity.stale", object_id: key, classification: "unused", confidence: 0.7, ignored: false, impact: "info", impact_facts: [] });
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c")] };
+  el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
+  assert.ok(/viewcount" role="status">3 in this view/.test(el.findingsView()));
+  el.findSel = new Set(["a"]);
+  assert.ok(/1 selected.*viewcount" role="status">3 in this view/s.test(el.findingsView()));
+});
+
+test("a reason tile counts what the list shows and names the follow-ups beside it", () => {
+  const { el } = panel("en");
+  const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", cause_id: cause });
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x"), f("d", "device:x")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  const html = el.findingsView();
+  assert.ok(html.includes("Unavailable") && /sumvalue">2<\/b><small>plus 2 follow-ups/.test(html));
+});
+
+test("the button for findings after an update counts what the list shows and names the follow-ups beside it", () => {
+  const { el } = panel("en");
+  const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", impact_facts: [], cause_id: cause });
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x")] };
+  el.corr = { groups: [{ id: "g", kind: "entry_version", at: "2026-10-01T10:05:00+00:00", domain: "hue", from: "1", to: "2", total: 3, keys: ["a", "b", "c"], only_group: false }], by_key: { a: "g", b: "g", c: "g" } };
+  el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
+  el.findingAfter = true;
+  const html = el.findingsView();
+  assert.ok(html.includes("2 findings began together with an update") && html.includes("plus 1 follow-ups") && html.includes("2 in this view"));
+});
+
+test("the detail page rates a finding: level with reasons, certainty, and what the next level takes", () => {
+  const { el } = panel("en");
+  const ago = h => new Date(Date.now() - h * 3600000).toISOString();
+  const out = { key: "o", rule_id: "entity.state_unavailable", object_id: "light.a", classification: "unavailable", confidence: 0.75, ignored: false, impact: "low", impact_facts: [], first_detected_at: ago(6) };
+  const dup = { key: "d", rule_id: "entity.possible_duplicate", object_id: "sensor.x_2", classification: "possible_duplicate", confidence: 0.7, ignored: false, impact: "info", impact_facts: [], first_detected_at: ago(100) };
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [out, dup] };
+  const a = el.ratingBlock({ object_type: "entity", object_id: "light.a" }, el.findingKey(out));
+  assert.ok(a.includes("for 6 h") && a.includes("75 %") && a.includes("rbar") && a.includes("Medium in 18 h or as soon as an active automation"));
+  const b = el.ratingBlock({ object_type: "entity", object_id: "sensor.x_2" }, el.findingKey(dup));
+  assert.ok(b.includes("Low as soon as a dashboard") && !b.includes("rbar") && b.includes("70 %"));
+  el.data.findings[0].impact = "high";
+  assert.ok(el.ratingBlock({ object_type: "entity", object_id: "light.a" }, el.findingKey(out)).includes("highest level"));
+  assert.equal(el.ratingBlock({ object_type: "entity", object_id: "light.zz" }, "entity:light.zz"), "");
+});
+
 test("the watch after an update shows a band while it runs and a card with what failed since", () => {
   const { el } = panel("en");
   el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" }], edges: [], findings: [] };
@@ -3189,12 +3313,33 @@ test("the watch after an update shows a band while it runs and a card with what 
   assert.ok(el.watchBand().includes("first check comes 30 minutes"));
   el.data = { ...el.data, meta: { ...el.data.meta, watch: null } };
   assert.equal(el.watchBand(), "");
+  el.corr = { groups: [], by_key: {} }; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  el.folds = { corr: true, corr_w_w1: true };
+  const live = el.corrGroupsCard();
+  assert.ok(live.includes("data-watch-end"), "a running watch can be ended from its row");
   el.watch = { hours: 24, watches: [{ ...running, closed_at: "2026-10-15T03:00:00+00:00", result }] };
-  el.folds = { watch: true, watch_w1: true };
-  const card = el.watchCard();
-  assert.ok(card.includes("Worse") && card.includes("Failed since (1)") && card.includes("Hall lamp") && card.includes('data-object="entity:light.a"'));
+  const card = el.corrGroupsCard();
+  assert.ok(card.includes("Worse") && card.includes("Failed since (1)") && card.includes("Hall lamp") && card.includes('data-object="entity:light.a"') && !card.includes("data-watch-end"));
   el.watch = { hours: 24, watches: [] };
-  assert.equal(el.watchCard(), "");
+  assert.equal(el.corrGroupsCard(), "");
+});
+
+test("a watch joins the incident that holds the same update, and ending it asks first", () => {
+  const { el } = panel("en");
+  const trigger = { kind: "ha_version", from: "2026.10.1", to: "2026.10.2" };
+  el.data = { ...DATA, objects: [], edges: [], findings: [] };
+  el._watchRequested = true; el._watchKey = el.data.meta.scanned_at || ""; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  el.corr = { groups: [{ id: "g1", kind: "entry_version", at: "2026-10-14T19:30:00+00:00", domain: "hue", from: "1", to: "2", total: 3, keys: [], only_group: false, also: [trigger] }], by_key: {} };
+  el.watch = { hours: 24, watches: [{ id: "w1", started_at: "2026-10-14T19:25:00+00:00", until: new Date(Date.now() + 3600000).toISOString(), triggers: [trigger], before: null, samples: [], closed_at: null, result: { verdict: "pending", new: [], fixed: [], transient: [], new_findings: [] } }] };
+  const items = el.incidents();
+  assert.equal(items.length, 1);
+  assert.ok(items[0].group && items[0].watch);
+  assert.equal(el.incidentFoldId("w1"), "corr_g1");
+  el.folds = { corr: true, corr_g1: true };
+  const card = el.corrGroupsCard();
+  assert.ok(card.includes("3 findings") && card.includes("Running") && card.includes("data-watch-end") && card.includes("incsec obs"));
+  el.askEndWatch();
+  assert.ok(el.confirmState && el.confirmState.text.includes("judged now"));
 });
 
 test("a device has a history tab with its steps and no note; removed devices show their logbook entry in Maintenance", () => {
@@ -3210,20 +3355,6 @@ test("a device has a history tab with its steps and no note; removed devices sho
   el.data = { ...DATA, notes: [{ id: "n1", title: "Device “Old plug” forgotten", at: "2026-03-02T00:00:00+00:00", target: "device:d8", note: "broken <b>", source: "housekeeper", ref: "forget_device:d8" }] };
   const list = el.removedCard();
   assert.ok(list.includes("Old hub") && list.includes("Removed by a plan") && list.includes("Device “Old plug” forgotten") && list.includes('data-note-edit="n1"') && list.includes("broken &lt;b&gt;") && !list.includes("<b>"));
-});
-
-test("the maintenance window is off until switched on, then shows the open step and builds a report", () => {
-  const { el } = panel("en");
-  el.data = DATA; el._winRequested = true; el.journal = [{ plan_id: "aabbccddeeff", created_at: "2026-10-01T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 2, ok: 2, review: 0, blocked: 0 } }]; el._journalRequested = true;
-  el.win = { enabled: false, state: null, current: null };
-  assert.ok(el.windowCard().includes("Switch on (experimental)") && !el.windowCard().includes("data-win-act=\"begin"));
-  el.win = { enabled: true, state: null, current: null };
-  assert.ok(el.windowCard().includes('data-win-act="begin:aabbccddeeff"'));
-  el.win = { enabled: true, current: "plan", state: { started_at: "2026-10-01T10:00:00+00:00", plan_id: "aabbccddeeff", done: ["preflight", "baseline"], log: [{ step: "preflight", at: "2026-10-01T10:01:00+00:00", note: "" }] } };
-  const html = el.windowCard();
-  assert.ok(html.includes('data-win-act="plan:aabbccddeeff"') && html.includes('data-win-act="next:plan"') && !html.includes("Restart (by you)</strong></span></div><div class=\"pad\">"));
-  const report = el.windowReport();
-  assert.ok(report.startsWith("# Maintenance window") && report.includes("1. Check first"));
 });
 
 test("missing statistics hours say what all series lack, name the periods and list the series", () => {
@@ -3774,7 +3905,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
 });
 
 const REPAIR_PLAN = {
-  plan_id: "r1", created_at: "2026-10-09T10:00:00+00:00", status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
+  plan_id: "r1", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 },
   actions: [{ kind: "repair_counter", object_type: "entity", object_id: "sensor.water", mode: "interpolate", name: "Water", verdict: "review", executable: true, reasons: ["counter_write"], used_by: [],
     counter: { unit: "m³", counts: { states: 3, short_term: 10, long_term: 10, tail_short_term: 40, tail_long_term: 30 }, skipped: {},
       findings: [{ bad_first: 1788220800, bad_last: 1788260800, low: 41.5, high: 41.5, good_before: 91.69, good_after: 91.8, series: [[1, 91, 91], [2, 41, 91], [3, 41, 91], [4, 91, 91]] }] } }],
@@ -3938,9 +4069,9 @@ test("detail, maintenance and settings offer their options as tiles that open on
   assert.equal(el.view, "repair"); assert.equal(el.repairTask, "repair_counter"); assert.equal(el.counterId, "sensor.water");
   assert.equal(sent.at(-1).type, "ha_housekeeper/range_series");
   el.view = "maintenance"; el.render();
-  for (const id of ["backup", "preflight", "blueprints", "devices", "window", "goals"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
+  for (const id of ["backup", "preflight", "blueprints", "devices", "goals"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
   el.view = "settings"; el.settingsTab = "protection"; el.render();
-  for (const id of ["look", "protection", "scan", "notify", "goals", "hidden", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
+  for (const id of ["look", "protection", "scan", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
   assert.ok(shadow.innerHTML.includes("data-protection") && !shadow.innerHTML.includes("data-notify"));
 });
 
@@ -4016,7 +4147,7 @@ test("the loudest entities offer ticks, mark what can be excluded and share the 
 test("a plan runs as a wizard: review, confirm with a way back, run, result; long plans come in pages", () => {
   const { el, shadow } = panel("en");
   const action = id => ({ kind: "disable_entity", object_id: id, name: id, verdict: "ok", executable: true, reasons: [] });
-  const plan = (status, extra = {}) => ({ plan_id: "p", status, created_at: "2026-10-10T10:00:00Z", summary: { total: 25, ok: 25, review: 0, blocked: 0 }, actions: Array.from({ length: 25 }, (_, i) => action(`sensor.s${i}`)), ...extra });
+  const plan = (status, extra = {}) => ({ plan_id: "p", status, created_at: new Date().toISOString(), summary: { total: 25, ok: 25, review: 0, blocked: 0 }, actions: Array.from({ length: 25 }, (_, i) => action(`sensor.s${i}`)), ...extra });
   const stage = (p, confirming = false) => el.planStage(p, confirming);
   assert.deepEqual([stage(plan("dry_run")), stage(plan("dry_run"), true), stage(plan("running")), stage(plan("executed")), stage(plan("verified", { verification: { ok: true, checks: [] } })), stage(plan("aborted"))], [0, 1, 2, 2, 3, 3]);
   el.plan = plan("dry_run"); el.view = "cleanup"; el.render();
@@ -4330,33 +4461,32 @@ test("the mark is a row of the Actions tab and a line of what is known, no longe
   assert.ok(el.markRows({ object_type: "automation", object_id: "automation.x" }).length === 0);
 });
 
-test("the status is a score: entries by impact, urgent state topics, followers not extra; the ring explains it", () => {
+test("the status is the share of objects in order: each object once by its worst level, urgent state topics keep the ring from green; the ring explains it", () => {
   const { el, shadow } = panel("en");
   const f = (id, impact, extra = {}) => ({ rule_id: "entity.state_missing", object_id: id, classification: "orphaned", confidence: 0.9, evidence: [], impact, key: id, ...extra });
-  el.data = { ...DATA, objects: [], causes: [{ id: "a", parent_id: null, impact: "high" }, { id: "b", parent_id: "a", impact: "high" }], findings: [f("x.1", "high", { cause_id: "a" }), f("x.2", "medium"), f("x.3", "low"), f("x.4", "low", { ignored: true })] };
+  const objects = Array.from({ length: 20 }, (_, i) => ({ object_type: "entity", object_id: `x.${i}`, name: `x.${i}`, status: "active" }));
+  const cause = (id, parent, impact) => ({ id, parent_id: parent, impact, object_type: "entity", object_id: "x.1" });
+  el.data = { ...DATA, objects, causes: [cause("a", null, "high"), cause("b", "a", "high")], findings: [f("x.1", "high", { cause_id: "a" }), f("x.2", "medium"), f("x.2", "low", { rule_id: "entity.unused" }), f("x.3", "low"), f("x.4", "low", { ignored: true }), f("x.5", "info")] };
   const items = [{ tone: "warn", key: "quarantine", area: "care", count: 2 }];
   el.todoItems = () => items;
   let h = el.health();
-  assert.equal(h.percent, 100 - 5 - 3 - 2, "the chain counts once at its top, the follower and the hidden finding not at all");
-  assert.equal(h.tone, "warn", "a high entry is at least yellow");
+  assert.equal(h.load, 1.7, "the chain counts once at its cause, an object with two findings once, the follower, the hidden finding and info not at all");
+  assert.equal(h.percent, 91.5);
+  assert.equal(h.tone, "warn", "a high object is at least yellow");
   assert.equal(el.statusHeadline(h), "1 topic open");
   el.data = { ...el.data, causes: [], findings: Array.from({ length: 9 }, (_, i) => f(`x.${i}`, "high")) };
-  h = el.health();
-  assert.equal(h.percent, 100 - 30, "high impact takes off at most 30");
-  assert.equal(h.tone, "warn", "70 is yellow");
   items.push({ tone: "red", key: "disk", area: "state" }, { tone: "red", key: "backup", area: "state" });
   h = el.health();
-  assert.equal(h.percent, 100 - 30 - 20); assert.equal(h.tone, "red");
-  assert.equal(h.red, 2);
+  assert.equal([h.percent, h.tone, h.red].join(), "55,red,2");
   el.data = { ...el.data, findings: [] };
   items.splice(0, 3, { tone: "red", key: "disk", area: "state" });
   h = el.health();
-  assert.equal([h.percent, h.tone].join(), "90,warn", "an urgent state topic is never green");
+  assert.equal([h.percent, h.tone].join(), "100,warn", "an urgent state topic is never green, and takes nothing off");
   // the calculation opens from the ring
   el.view = "overview"; el.render();
   assert.ok(shadow.innerHTML.includes("data-health-why") && !shadow.innerHTML.includes('class="healthwhy"'));
   el.healthWhy = true; el.render();
-  assert.ok(shadow.innerHTML.includes('class="healthwhy"') && shadow.innerHTML.includes("− 10"));
+  assert.ok(shadow.innerHTML.includes('class="healthwhy"') && shadow.innerHTML.includes("In order"));
   // the rows say what they count
   assert.equal(el.todoCount({ key: "outages", count: 8 }), "8 outages"); assert.equal(el.todoCount({ key: "quarantine", count: 1 }), "1 object");
 });
@@ -4578,12 +4708,14 @@ test("the overview counts batteries that report volts as low too", () => {
 
 test("the findings tiles carry a sparkline for the total and each class, the status line of the overview the one for the score", () => {
   const { el } = panel("en");
-  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused } });
+  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused } });
   el.series = { points: [day(1, 90, 4, 2), day(2, 80, 6, 3), day(3, 70, 8, 5)] };
   const html = el.findingsView();
   assert.ok((html.match(/class="spark"/g) || []).length >= 2);
   assert.ok(el.sparkline("class:unused", "bad").includes("+3"));
   assert.ok(el.sparkline("class:missing", "bad").includes("±0"));
+  assert.ok(el.sparkline("lead:unused", "bad").includes("+3"));
+  assert.ok(el.sparkline("lead:unused", "bad").includes("spark-hint") === false);
   assert.ok(!html.includes(`${el.health().percent} %`), "the score is not a tile of this page any more");
   el.view = "overview"; el.render();
   assert.ok(el.shadowRoot.innerHTML.includes("statustext") && /statustext[\s\S]*?class="spark"/.test(el.shadowRoot.innerHTML), "the score history sits under the headline");
@@ -5055,7 +5187,7 @@ test("the settings list the hidden findings as a table with a filter by kind, an
   const html = el.hiddenCard();
   assert.ok(html.includes('data-lsort="hidden|name') && html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"'), "only a manual decision can be shown again");
   assert.ok(el._exporters.hidden && html.includes("Hidden findings (2)"));
-  assert.ok(el.eventsCard().includes('class="factnote evlist"') && !el.eventsCard().includes("style="));
+  assert.ok(el.eventsCard().includes('class="evtable"') && !el.eventsCard().includes("style="));
 });
 
 test("a long history of scans shows only the newest rows until asked, keeps the chosen base visible and has the choice in its head", () => {
@@ -5267,7 +5399,7 @@ test("object lists share one table: device entities, integration entries, remind
   assert.ok(el.bhBackups([{ date: "2026-10-01T10:00:00+00:00", size: 1000, agents: ["backup.local"], protected: true }]).includes('data-lsort="bhbackups|size'));
   assert.ok(rem.includes('data-rem-row="r1"') && rem.includes('role="button"'), "the row opens the history");
   assert.ok(rem.includes('data-lf-set="reminders|state|soon"') && rem.includes('data-lf-set="reminders||"'), "the key figures set the state filter");
-  assert.ok(rem.includes('data-export-list="reminders"') && el._exporters.reminders.rows()[0][0] === "Filter", "the list exports to CSV");
+  assert.ok(rem.includes('data-exp-menu="reminders"') && !rem.includes("data-export-list") && el._exporters.reminders.rows()[0][0] === "Filter", "the list exports to CSV");
 });
 
 test("the changes page counts what a filter shows, says so, and lists objects as tables", () => {
@@ -5331,4 +5463,80 @@ test("the delete button of a list row is the bin only, with the name as tooltip,
   assert.ok(on.includes('data-x="1"') && on.includes('title="Delete"') && on.includes('aria-label="Delete"') && on.includes("mdi:delete-outline") && !on.includes(">Delete<"));
   const off = el.deleteButton('data-x="1"', "Delete", { why: "In use" });
   assert.ok(off.includes("disabled") && off.includes('title="In use"') && !off.includes('data-x="1"'), "no action while disabled");
+});
+
+test("an outdated preview is marked and renewed; a reopened one is checked before it is confirmed", async () => {
+  const { el } = panel("en");
+  const old = { plan_id: "o1", created_at: new Date(Date.now() - 25 * 3600e3).toISOString(), status: "dry_run", executed: false, actions: [{ kind: "disable_entity", object_id: "sensor.a", name: "A", verdict: "ok", executable: true, reasons: [], used_by: [] }], summary: { total: 1, ok: 1 } };
+  assert.ok(el.planStale(old) && !el.planStale({ ...old, created_at: new Date().toISOString() }) && !el.planStale({ ...old, status: "verified" }));
+  assert.ok(el.planCard(old).includes("data-plan-renew") && !el.planCard(old).includes("data-plan-confirm"));
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.type.split("/")[1]); return msg.type.endsWith("plan_check") ? { current: false, changed: [{ object_id: "sensor.a" }] } : {}; } };
+  el.plan = { ...old, plan_id: "o2", created_at: new Date().toISOString() };
+  el.reopenedPlanId = "o2";
+  await el.confirmAndRun();
+  assert.ok(calls.includes("plan_check") && !calls.includes("plan_confirm"));
+  assert.equal(el.planChanges.length, 1);
+});
+
+test("a quiet outage (info, low) stays off the overview counts and the line names the next level from the thresholds", () => {
+  const { el } = panel("en");
+  const meta = { ...DATA.meta, outage_info_minutes: 15, outage_low_hours: 1, outage_medium_hours: 24, outage_high_hours: 168 };
+  const quiet = { rule_id: "entity.state_unavailable", impact: "low", key: "k1", object_id: "sensor.a", classification: "unavailable", confidence: 0.75, first_detected_at: new Date(Date.now() - 2 * 3600000).toISOString() };
+  const loud = { ...quiet, key: "k2", object_id: "sensor.b", impact: "medium" };
+  const other = { rule_id: "automation.unused", impact: "low", key: "k3", object_id: "automation.x", classification: "unused", confidence: 0.7 };
+  el.data = { ...DATA, meta, findings: [quiet, loud, other], causes: [] };
+  assert.equal(el.isQuiet(quiet), true);
+  assert.equal(el.isQuiet(loud), false);
+  assert.equal(el.isQuiet(other), false, "only the findings of an outage are quiet");
+  assert.equal(el.quietCount(), 1);
+  const line = el.outageLineOf(quiet);
+  assert.ok(line.includes("Medium") || line.includes("medium"), line);
+});
+
+test("the watch lists an object that is a finding like the findings list does, and the others with a mark button", () => {
+  const { el } = panel("en");
+  const object = { object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" };
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "entity.state_unavailable|light.a|", object_id: "light.a", confidence: 0.75, impact: "medium" };
+  el.data = { ...DATA, objects: [object, { object_type: "entity", object_id: "light.b", name: "Porch", status: "unknown" }], edges: [], findings: [finding] };
+  const html = el.watchRows(["entity:light.a", "entity:light.b"], "warn");
+  assert.ok(html.includes("data-fsel=") && html.includes('data-watch-mark="entity:light.b"'));
+  assert.equal(html.includes('data-watch-mark="entity:light.a"'), false);
+});
+
+test("an entity that fails regularly gets a hint with a mark prepared for the time it falls out; a dismissed one stays quiet", () => {
+  const { el } = panel("en");
+  const object = { object_type: "entity", object_id: "sensor.inverter", name: "Inverter", status: "unavailable" };
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "entity.state_unavailable|sensor.inverter|", object_id: "sensor.inverter", confidence: 0.75, impact: "low" };
+  el.data = { ...DATA, objects: [object], edges: [], findings: [finding] };
+  el.reliability = { available: true, window_days: 7, unstable: { entities: { "sensor.inverter": { level: "unstable", episodes: 9, per_day: 1.3, total_seconds: 5400, mean_seconds: 600, pattern_hour: 22 } } } };
+  assert.ok(el.oftenChip(finding).includes("between 22:00 and 00:00"), el.oftenChip(finding));
+  assert.equal(el.oftenRows(object).length, 1);
+  const window = el.oftenWindow({ pattern_hour: 22 });
+  assert.equal(`${window.from}-${window.to}`, "22:00-00:00");
+  el.openOftenMark("entity:sensor.inverter");
+  assert.equal(el.markForm.kind, "expected_offline");
+  assert.equal(el.markForm.wmode, "time");
+  assert.equal(el.markForm.days, 90);
+  assert.equal(el.markForm.from, "22:00");
+  el.markForm = null;
+  el.skipOften("entity:sensor.inverter");
+  assert.equal(el.oftenChip(finding), "");
+  assert.equal(el.oftenRows(object).length, 0);
+});
+
+test("a newer scan found in the background reloads the panel; the same scan or a running one does not", async () => {
+  let status = { running: false, scanned_at: DATA.meta.scanned_at };
+  const { el } = panel("en");
+  el._hass = { language: "en", callWS: async () => status };
+  let loads = 0;
+  el.load = async () => { loads += 1; };
+  await el.checkNewScan();
+  assert.equal(loads, 0, "same scan");
+  status = { running: true, scanned_at: "2026-10-07T16:00:00+00:00" };
+  await el.checkNewScan();
+  assert.equal(loads, 0, "a scan that is still running");
+  status = { running: false, scanned_at: "2026-10-07T16:00:00+00:00" };
+  await el.checkNewScan();
+  assert.equal(loads, 1, "a newer scan");
 });

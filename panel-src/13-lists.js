@@ -132,18 +132,11 @@ class ListsMixin {
     return `${note}<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}" aria-label="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup${table ? " table-sort" : ""}"><select data-ls="${id}" aria-label="${this.t("sortBy")}" title="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}<span class="listbar-actions">${this.viewsControl(id)}${dense ? this.denseButton(id) : ""}${this.listTools(id, columns)}</span></div>`;
   }
 
-  // Column picker and CSV export of a list; both are optional. `columns` are the switchable columns: { key, label }.
+  // Column picker and export menu of a list; both are optional. `columns` are the switchable columns: { key, label }.
   listTools(id, columns = []) {
     const open = this._colOpen === id;
     const picker = columns.length ? `<span class="colwrap"><button type="button" class="dirbtn ${open ? "on" : ""}" data-col-open="${id}" aria-expanded="${open}" title="${this.esc(this.t("colsLabel"))}" aria-label="${this.esc(this.t("colsLabel"))}"><ha-icon icon="mdi:table-column"></ha-icon></button>${open ? `<span class="colpop" role="group" aria-label="${this.esc(this.t("colsLabel"))}">${columns.map(c => `<label><span>${this.t(c.label)}</span><input type="checkbox" data-col="${id}|${c.key}" ${this.colHidden(id, c.key) ? "" : "checked"}></label>`).join("")}</span>` : ""}</span>` : "";
-    // Lists with a guided export get one menu (list as CSV, guided export); the others keep the plain download button.
-    if (this._exporters?.[id] && GUIDED_EXPORT_LISTS.includes(id)) {
-      const expOpen = this._expOpen === id;
-      const menu = expOpen ? `<span class="colpop exppop" role="menu"><button type="button" class="expitem" role="menuitem" data-exp-csv="${id}"><strong>${this.t("exportCsvItem")}</strong><small>${this.t("exportCsvHint")}</small></button><button type="button" class="expitem" role="menuitem" data-exp-guided><strong>${this.t("xpGuided")}</strong><small>${this.t("xpGuidedHint")}</small></button></span>` : "";
-      return `${picker}<span class="colwrap"><button type="button" class="btn expbtn ${expOpen ? "on" : ""}" data-exp-menu="${id}" aria-haspopup="menu" aria-expanded="${expOpen}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}<ha-icon icon="mdi:chevron-down"></ha-icon></button>${menu}</span>`;
-    }
-    const download = this._exporters?.[id] ? `<button type="button" class="dirbtn" data-export-list="${id}" title="${this.esc(this.t("exportListTitle"))}" aria-label="${this.esc(this.t("exportListTitle"))}"><ha-icon icon="mdi:download"></ha-icon></button>` : "";
-    return picker + download;
+    return picker + this.exportMenu(id);
   }
 
   // Hidden columns per list, kept in this browser only.
@@ -175,14 +168,47 @@ class ListsMixin {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  // The view registers what its export holds before it draws the list bar: { name, header, rows() }.
-  exportList(id) {
+  // The view registers what its export holds before it draws the list bar: { name, header, rows() }, or, for a whole page,
+  // { name, title, sections: [{ name, title, header, rows }] } (see setPageExporter). A list exports the rows of its search and filters.
+  exportParts(ex) { return ex.sections || [{ name: "", title: "", header: ex.header, rows: ex.rows }]; }
+
+  exportList(id, fmt = "csv") {
     const ex = this._exporters?.[id];
-    const st = this.lv?.[id], filtered = Boolean(st && (st.q?.trim() || Object.values(st.f || {}).some(Boolean)));
-    if (ex) this.downloadRows(filtered ? `${ex.name}-filtered` : ex.name, ex.header, ex.rows());
+    if (!ex) return;
+    const st = this.lv?.[id], filtered = Boolean(!ex.sections && st && (st.q?.trim() || Object.values(st.f || {}).some(Boolean)));
+    const name = filtered ? `${ex.name}-filtered` : ex.name;
+    const parts = this.exportParts(ex).map(p => ({ ...p, rows: typeof p.rows === "function" ? p.rows() : p.rows }));
+    if (fmt === "md") {
+      const cell = v => String(v ?? "").replace(/\|/g, "\\|").replace(/\s*\r?\n\s*/g, " ");
+      const table = p => [`| ${p.header.map(cell).join(" | ")} |`, `| ${p.header.map(() => "---").join(" | ")} |`, ...p.rows.map(r => `| ${r.map(cell).join(" | ")} |`)].join("\n");
+      const body = parts.map(p => `${p.title ? `## ${p.title}\n\n` : ""}${table(p)}`).join("\n\n");
+      this.downloadText(`${name}.md`, `${ex.title ? `# ${ex.title}\n\n` : ""}${body}\n`, "text/markdown");
+    } else if (fmt === "json") {
+      const objects = p => p.rows.map(r => Object.fromEntries(p.header.map((h, i) => [h, r[i] ?? null])));
+      const data = ex.sections ? Object.fromEntries(parts.map(p => [p.name, objects(p)])) : objects(parts[0]);
+      this.downloadText(`${name}.json`, JSON.stringify(data, null, 2), "application/json");
+    } else {
+      parts.forEach((p, i) => { const save = () => this.downloadRows(p.name ? `${name}-${p.name}` : name, p.header, p.rows); if (i) setTimeout(save, i * 300); else save(); });
+    }
   }
 
   setExporter(id, name, header, rows) { (this._exporters ||= {})[id] = { name, header, rows }; }
+
+  // A page that exports everything it shows: one section per list or table, rows as arrays or as a function.
+  setPageExporter(id, name, title, sections) { (this._exporters ||= {})[id] = { name, title, sections }; }
+
+  // Texts built for the screen carry HTML entities; a file wants the plain characters.
+  plainText(text) { return String(text ?? "").replace(/&(amp|lt|gt|quot|#39);/g, (m, e) => ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" }[e])); }
+
+  // The one export button of lists and pages: CSV, Markdown and JSON, and for the inventory the guided export as well.
+  exportMenu(id) {
+    const ex = this._exporters?.[id];
+    if (!ex) return "";
+    const open = this._expOpen === id, parts = this.exportParts(ex).length;
+    const item = (attr, label, hint) => `<button type="button" class="expitem" role="menuitem" ${attr}><strong>${label}</strong><small>${hint}</small></button>`;
+    const menu = open ? `<span class="colpop exppop" role="menu">${item(`data-exp-fmt="${id}|csv"`, this.t("xpFmtCsv"), parts > 1 ? this.t("expCsvMulti", { n: parts }) : this.t("exportCsvHint"))}${item(`data-exp-fmt="${id}|md"`, this.t("xpFmtMd"), this.t("expMdD"))}${item(`data-exp-fmt="${id}|json"`, this.t("xpFmtJson"), this.t("xpFmtJsonD"))}${GUIDED_EXPORT_LISTS.includes(id) ? item("data-exp-guided", this.t("xpGuided"), this.t("xpGuidedHint")) : ""}</span>` : "";
+    return `<span class="colwrap"><button type="button" class="btn expbtn ${open ? "on" : ""}" data-exp-menu="${id}" aria-haspopup="menu" aria-expanded="${open}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}<ha-icon icon="mdi:chevron-down"></ha-icon></button>${menu}</span>`;
+  }
 
   // Tables offer compact rows (one line, no ID line), saved separately per list.
   denseLists() {
@@ -372,22 +398,36 @@ class ListsMixin {
     return `<details class="howto"><summary>${this.t("howCounted")}</summary><p class="factnote">${this.t(key, vars)}</p></details>`;
   }
 
+  // Hands a text to the browser as a download.
+  downloadText(name, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type: `${type};charset=utf-8` }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `ha-housekeeper-${name}`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   // Shared paging for long lists: returns the visible slice and the footer markup.
-  paginate(id, items) {
-    const count = Math.max(1, Math.ceil(items.length / this.pageSize));
+  // `own` gives a short list its own page sizes (the first is the default, kept per list) instead of the global setting.
+  paginate(id, items, own) {
+    const size = own ? (this.listSizes?.[id] || own[0]) : this.pageSize;
+    const count = Math.max(1, Math.ceil(items.length / size));
     const page = Math.min(Math.max(1, this.pages[id] || 1), count);
     this.pages[id] = page;
-    const from = (page - 1) * this.pageSize;
-    const rows = items.slice(from, from + this.pageSize);
-    if (items.length <= 20) return { rows, footer: "" };
-    const sizes = [20, 50, 100].map(n => `<option value="${n}" ${n === this.pageSize ? "selected" : ""}>${n}</option>`).join("");
-    const footer = `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select data-pagesize aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
+    const from = (page - 1) * size;
+    const rows = items.slice(from, from + size);
+    if (items.length <= (own ? own[0] : 20)) return { rows, footer: "" };
+    const sizes = (own || [20, 50, 100]).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
+    const footer = `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
     return { rows, footer };
   }
 
   // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
   // head: { tone, title, sub, pill }; the state lives in this.folds and survives a render.
   foldOpen(id, def) { return this.folds?.[id] ?? def; }
+
+  // The size of the current view at the right end of a selection row: what the filters and search leave over.
+  viewCount(n) { return `<span class="viewcount" role="status">${this.t("viewCount", { n: this.formatNumber(n) })}</span>`; }
 
   fold(id, head, body, def, force) {
     const open = force ?? this.foldOpen(id, def);

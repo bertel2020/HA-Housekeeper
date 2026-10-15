@@ -64,12 +64,10 @@ from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
 from .meter import prepare_meter
 from .monitor import MonitorError, MonitorStore, evaluate
-from .protection import MODES as PROTECTION_MODES
-from .recorder_purge import MAX_IDS as PURGE_MAX_IDS
+from .outage_levels import OUTAGE_KEYS, thresholds_from_options, thresholds_rise
 from .recorder_purge import TRIM_MAX_DAYS, TRIM_TABLES, count_history, count_older, count_trim
 from .references import preview_replacement
-from .window import SKIPPABLE, STEPS, WindowError, reload_targets
-from .writelock import WriteBusy, acquire_write, release_write, write_holder
+from .writelock import write_holder
 from .ws_common import (
     _scanner,
     _versioned,
@@ -150,6 +148,7 @@ def websocket_status(
         _versioned(
             {
                 **scanner.status,
+                "scanned_at": ((scanner.snapshot or {}).get("meta") or {}).get("scanned_at"),
                 "writing": write_holder(hass),
                 "warmup": warmup,
                 "health": scanner.health_report(),
@@ -315,6 +314,11 @@ def websocket_set_options(
         return
     entry = entries[0]
     options = {**entry.options, **changes}
+    if any(key in changes for key in OUTAGE_KEYS) and not thresholds_rise(
+        thresholds_from_options(options)
+    ):
+        connection.send_error(msg["id"], "thresholds_order", "Info, low, medium and high must rise")
+        return
     if options != dict(entry.options):
         hass.config_entries.async_update_entry(entry, options=options)
     connection.send_result(msg["id"], {"options": options})
@@ -605,6 +609,98 @@ async def websocket_plan_merge(
     )
 
 
+async def _rebuilt_preview(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """The open preview named in ``msg`` and the same requests judged again now (not journaled)."""
+    if scanner.warming_up:
+        connection.send_error(msg["id"], "warming_up", "Home Assistant is still starting")
+        return None
+    old = scanner.journal.get(msg["plan_id"])
+    if old is None:
+        connection.send_error(msg["id"], "not_found", "Plan not found")
+        return None
+    if old.get("status") != "dry_run" or old.get("executed") or old.get("run"):
+        connection.send_error(msg["id"], "plan_not_open", "Only open previews can be renewed")
+        return None
+    try:
+        snapshot = await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return None
+    requests, _, _ = merge_requests([old])
+    new = await _plan_from_requests(hass, snapshot, requests, scanner.refactor.enabled)
+    return old, new
+
+
+# What a person decides on in a preview: if one of these differs now, the preview is out of date.
+_CHECKED_FIELDS = ("verdict", "executable", "fingerprint", "has_statistics", "used_by")
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/plan_renew", vol.Required("plan_id"): str}
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_plan_renew(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Judge an open preview's requests again as a new preview and drop the old one."""
+    rebuilt = await _rebuilt_preview(hass, connection, msg, scanner)
+    if rebuilt is None:
+        return
+    old, plan = rebuilt
+    if old.get("full_backup"):
+        plan["full_backup"] = True
+    if backup_is_local_only(hass):
+        plan["backup_local"] = True
+    plan["events"].append(
+        {"at": datetime.now(UTC).isoformat(), "type": "renewed", "plans": [old["plan_id"]]}
+    )
+    scanner.journal.add(plan)
+    scanner.journal.remove(old["plan_id"])
+    connection.send_result(msg["id"], _versioned(public_plan(plan)))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/plan_check", vol.Required("plan_id"): str}
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_plan_check(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Tell whether an open preview still matches the current state. Changes nothing."""
+    rebuilt = await _rebuilt_preview(hass, connection, msg, scanner)
+    if rebuilt is None:
+        return
+    old, plan = rebuilt
+    now = {a["object_id"]: a for a in plan["actions"]}
+    changed = []
+    for action in old["actions"]:
+        fresh = now.get(action["object_id"])
+        if fresh is None or any(action.get(k) != fresh.get(k) for k in _CHECKED_FIELDS):
+            changed.append(
+                {
+                    "object_id": action["object_id"],
+                    "was": action["verdict"],
+                    "now": fresh["verdict"] if fresh else "gone",
+                }
+            )
+    connection.send_result(msg["id"], {"current": not changed, "changed": changed})
+
+
 @websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/plan_list"})
 @callback
@@ -878,221 +974,6 @@ async def websocket_backup_cleanup(
     connection.send_result(msg["id"], _versioned(result))
 
 
-def _window_view(scanner: InventoryScanner) -> dict[str, Any]:
-    window = scanner.window
-    return {"enabled": window.enabled, "state": window.state, "current": window.current()}
-
-
-@websocket_api.require_admin
-@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/window"})
-@callback
-@with_scanner
-def websocket_window(
-    hass: HomeAssistant,
-    connection: websocket_api.ActiveConnection,
-    msg: dict[str, Any],
-    scanner: InventoryScanner,
-) -> None:
-    """The maintenance window: whether it is switched on and where it stands. Reads the store only."""
-    connection.send_result(msg["id"], _versioned(_window_view(scanner)))
-
-
-@websocket_api.require_admin
-@websocket_api.websocket_command(
-    {
-        vol.Required("type"): f"{DOMAIN}/purge_statistics",
-        vol.Required("statistic_ids"): vol.All([str], vol.Length(min=1, max=PURGE_MAX_IDS)),
-        vol.Required("states"): bool,
-        vol.Required("confirmed"): True,
-    }
-)
-@websocket_api.async_response
-@with_scanner
-async def websocket_purge_statistics(
-    hass: HomeAssistant,
-    connection: websocket_api.ActiveConnection,
-    msg: dict[str, Any],
-    scanner: InventoryScanner,
-) -> None:
-    """Delete the recorder statistics of orphaned entities after a backup. Not undoable."""
-    if scanner.warming_up or scanner.cleanup.running or write_holder(hass):
-        connection.send_error(
-            msg["id"], "busy", "Home Assistant is starting or a plan or purge is running"
-        )
-        return
-    if not scanner.snapshot or not scanner.snapshot["meta"].get("recorder_available"):
-        connection.send_error(msg["id"], "no_recorder", "The recorder is not available")
-        return
-    by = connection.user.id if connection.user else None
-    registry = er.async_get(hass)
-    ids = list(dict.fromkeys(msg["statistic_ids"]))
-    plan = build_plan(
-        scanner.snapshot,
-        [{"kind": "purge_statistics", "object_id": i, "states": msg["states"]} for i in ids],
-        datetime.now(UTC),
-        statistic_exists=lambda sid: (
-            registry.async_get(sid) is not None or hass.states.get(sid) is not None
-        ),
-    )
-    await _add_history(hass, scanner.snapshot, plan)
-    scanner.journal.add(plan)
-    legacy = {"entity_exists": "exists"}
-    result: dict[str, Any] = {
-        "removed": [],
-        "skipped": [
-            {"id": a["object_id"], "reason": legacy.get(a["reasons"][0], a["reasons"][0])}
-            for a in plan["actions"]
-            if not a["executable"]
-        ],
-        "backup": False,
-        "states": msg["states"],
-        "plan_id": plan["plan_id"],
-    }
-    runnable = [a["object_id"] for a in plan["actions"] if a["executable"]]
-    if runnable:
-        try:
-            confirmation = scanner.cleanup.confirm(plan["plan_id"], runnable, by)
-            scanner.cleanup.start(plan["plan_id"], confirmation["token"], by)
-        except CleanupError as err:
-            _cleanup_error(connection, msg, err)
-            return
-        await scanner.cleanup.wait()
-        results = {a["object_id"]: a.get("result") or {} for a in plan["actions"]}
-        result["removed"] = [i for i in runnable if results[i].get("state") == "done"]
-        result["skipped"] += [
-            {"id": i, "reason": results[i].get("reason", "not_run")}
-            for i in runnable
-            if i not in result["removed"]
-        ]
-        result["backup"] = bool(plan.get("backup"))
-        failures = {"backup_unavailable", "no_backup_agent", "backup_failed", "recorder_busy"}
-        result["error"] = next(
-            (r["reason"] for r in results.values() if r.get("reason") in failures), None
-        )
-    connection.send_result(msg["id"], _versioned(result))
-
-
-@websocket_api.require_admin
-@websocket_api.websocket_command(
-    {
-        vol.Required("type"): f"{DOMAIN}/window_set",
-        vol.Required("action"): vol.In(("enable", "disable", "begin", "advance", "clear")),
-        vol.Optional("plan_id"): str,
-        vol.Optional("step"): vol.In(STEPS),
-        vol.Optional("note", default=""): str,
-        vol.Optional("skip", default=False): bool,
-    }
-)
-@callback
-@with_scanner
-def websocket_window_set(
-    hass: HomeAssistant,
-    connection: websocket_api.ActiveConnection,
-    msg: dict[str, Any],
-    scanner: InventoryScanner,
-) -> None:
-    """Switch the window on or off, open it with a plan, take the next step, or close it.
-
-    Taking a step only records it. The plan step needs the plan to have run; the restart step needs
-    a restart in the event log after the window began (or an explicit skip).
-    """
-    window, now = scanner.window, datetime.now(UTC).isoformat()
-    try:
-        action = msg["action"]
-        if action in ("enable", "disable"):
-            window.set_enabled(action == "enable")
-        elif action == "begin":
-            window.begin(now, msg.get("plan_id", ""))
-        elif action == "clear":
-            window.clear()
-        else:
-            step = msg.get("step")
-            if step is None or window.state is None:
-                raise WindowError("out of order")
-            if msg["skip"] and step not in SKIPPABLE:
-                raise WindowError("not skippable")
-            if step == "plan":
-                plan = scanner.journal.get(window.state["plan_id"] or "")
-                if not plan or not plan.get("executed"):
-                    raise WindowError("the plan has not run")
-            if step == "restart" and not msg["skip"]:
-                started = window.state["started_at"]
-                if not any(
-                    e["kind"] == "start" and e["at"] > started for e in scanner.events.events
-                ):
-                    raise WindowError("no restart seen yet")
-            window.advance(step, now, "skipped" if msg["skip"] else msg["note"])
-    except WindowError as err:
-        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
-        return
-    connection.send_result(msg["id"], _versioned(_window_view(scanner)))
-
-
-@websocket_api.require_admin
-@websocket_api.websocket_command(
-    {
-        vol.Required("type"): f"{DOMAIN}/window_reload",
-        vol.Optional("execute", default=False): bool,
-    }
-)
-@websocket_api.async_response
-@with_scanner
-async def websocket_window_reload(
-    hass: HomeAssistant,
-    connection: websocket_api.ActiveConnection,
-    msg: dict[str, Any],
-    scanner: InventoryScanner,
-) -> None:
-    """List, or with ``execute`` reload, the integrations that the window's executed plan changed."""
-    state = scanner.window.state
-    plan = scanner.journal.get((state or {}).get("plan_id") or "")
-    if state is None or not plan or not plan.get("executed"):
-        connection.send_error(msg["id"], "invalid_format", "Not accepted: the plan has not run")
-        return
-    snapshot = await scanner.async_get_snapshot()
-    targets = reload_targets(plan, snapshot)
-    if msg["execute"]:
-        if scanner.window.current() != "reload":
-            connection.send_error(msg["id"], "invalid_format", "Not accepted: out of order")
-            return
-        # A reload changes the running system, so it follows the same rules as a plan: not while
-        # Home Assistant starts or another change runs, not in the read-only modes, and it is journaled.
-        if scanner.warming_up or scanner.cleanup.running or write_holder(hass):
-            connection.send_error(
-                msg["id"], "busy", "Home Assistant is starting or a change is running"
-            )
-            return
-        if PROTECTION_MODES.index(scanner.protection.mode) < 2:
-            connection.send_error(msg["id"], "protection_mode", "Cleanup: protection_mode")
-            return
-        try:
-            acquire_write(hass, "window")
-        except WriteBusy:
-            connection.send_error(msg["id"], "busy", "Another change is running")
-            return
-        try:
-            for target in targets:
-                try:
-                    await hass.config_entries.async_reload(target["entry_id"])
-                    target["ok"] = True
-                except Exception as err:
-                    target["ok"] = False
-                    target["error"] = type(err).__name__
-                plan["events"].append(
-                    {
-                        "at": datetime.now(UTC).isoformat(),
-                        "type": "integration_reloaded"
-                        if target["ok"]
-                        else "integration_reload_failed",
-                        "object_id": target["entry_id"],
-                    }
-                )
-            scanner.journal.save()
-        finally:
-            release_write(hass, "window")
-    connection.send_result(msg["id"], _versioned({"targets": targets, "executed": msg["execute"]}))
-
-
 @websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/events"})
 @callback
@@ -1293,6 +1174,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_merge)
+    websocket_api.async_register_command(hass, websocket_plan_renew)
+    websocket_api.async_register_command(hass, websocket_plan_check)
     websocket_api.async_register_command(hass, websocket_plan_list)
     websocket_api.async_register_command(hass, websocket_plan_detail)
     websocket_api.async_register_command(hass, websocket_plan_delete)
@@ -1303,11 +1186,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_plan_cancel)
     websocket_api.async_register_command(hass, websocket_plan_status)
     websocket_api.async_register_command(hass, websocket_plan_undo)
-    websocket_api.async_register_command(hass, websocket_window)
-    websocket_api.async_register_command(hass, websocket_window_set)
-    websocket_api.async_register_command(hass, websocket_purge_statistics)
     websocket_api.async_register_command(hass, websocket_backup_cleanup)
-    websocket_api.async_register_command(hass, websocket_window_reload)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_monitor_list)
     websocket_api.async_register_command(hass, websocket_monitor_save)

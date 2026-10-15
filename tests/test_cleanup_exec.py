@@ -168,6 +168,36 @@ async def test_review_actions_need_an_individual_acknowledgement(hass: HomeAssis
     )
 
 
+async def test_a_token_only_works_for_the_administrator_who_confirmed(
+    hass: HomeAssistant,
+) -> None:
+    entry = orphan(hass, "owner")
+    scanner = await make_scanner(hass)
+    plan = await make_plan(scanner, hass, entry.entity_id)
+    confirmation = scanner.cleanup.confirm(plan["plan_id"], [], "admin-a")
+    with pytest.raises(CleanupError, match="wrong_user"):
+        scanner.cleanup.start(plan["plan_id"], confirmation["token"], "admin-b")
+    scanner.cleanup.start(plan["plan_id"], confirmation["token"], "admin-a")
+    await scanner.cleanup._task
+    assert scanner.journal.get(plan["plan_id"])["run"]["user_id"] == "admin-a"
+
+
+async def test_unredeemed_tokens_are_dropped_once_they_expire(hass: HomeAssistant) -> None:
+    from datetime import timedelta
+
+    first, second = orphan(hass, "stale"), orphan(hass, "fresh")
+    scanner = await make_scanner(hass)
+    old = await make_plan(scanner, hass, first.entity_id)
+    token = scanner.cleanup.confirm(old["plan_id"], [], None)["token"]
+    saved = scanner.cleanup._tokens[old["plan_id"]]
+    scanner.cleanup._tokens[old["plan_id"]] = (saved[0], saved[1] - timedelta(hours=1), *saved[2:])
+    other = await make_plan(scanner, hass, second.entity_id)
+    scanner.cleanup.confirm(other["plan_id"], [], None)
+    assert list(scanner.cleanup._tokens) == [other["plan_id"]]
+    with pytest.raises(CleanupError, match="bad_token"):
+        scanner.cleanup.start(old["plan_id"], token, None)
+
+
 async def test_tokens_are_single_use_and_plans_run_once(hass: HomeAssistant) -> None:
     entry = orphan(hass, "once")
     scanner = await make_scanner(hass)
@@ -354,6 +384,7 @@ async def test_removal_waits_for_a_backup_removes_and_can_be_restored(hass: Home
     assert plan["backup"]["scope"] == "config"
     assert registry.async_get(entry.entity_id) is None
     assert plan["status"] == "verified" and plan["backup"]["job_id"] == "job-1"
+    assert plan["backup"]["name"] == f"Housekeeper {plan['plan_id'][:8]}"
     types = [e["type"] for e in plan["events"]]
     assert types.index("backup_started") < types.index("backup_done") < types.index("removed")
     assert {"check": "removed", "object_id": entry.entity_id, "ok": True} in plan["verification"][
@@ -886,3 +917,153 @@ async def test_a_new_install_starts_read_only_and_one_with_scan_data_keeps_full(
     old = InventoryScanner(hass)
     await old.protection.async_load()
     assert old.protection.mode == "full"
+
+
+async def test_a_damaged_database_stops_a_plan_before_anything_is_deleted(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    scanner = await make_scanner(hass)
+    plan = {"status": "running", "events": [], "actions": [{"object_id": "sensor.a"}]}
+    instance = MagicMock(async_add_executor_job=AsyncMock(return_value="row 7 missing from index"))
+    with (
+        patch("custom_components.ha_housekeeper.cleanup_exec.recorder_ready", return_value=True),
+        patch("homeassistant.components.recorder.get_instance", return_value=instance),
+    ):
+        assert await scanner.cleanup._database_intact(plan) is False
+    assert plan["status"] == "aborted"
+    assert plan["actions"][0]["result"]["reason"] == "database_corrupt"
+
+
+async def test_a_nearly_full_disk_stops_a_plan_that_writes_into_the_recorder(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import patch
+
+    scanner = await make_scanner(hass)
+    plan = {"status": "running", "events": [], "actions": [{"object_id": "sensor.a"}]}
+    with (
+        patch("custom_components.ha_housekeeper.cleanup_exec.recorder_ready", return_value=True),
+        patch(
+            "custom_components.ha_housekeeper.cleanup_exec.database_files",
+            return_value={"disk_free": 100 * 1024**2},
+        ),
+    ):
+        assert await scanner.cleanup._disk_has_room(plan) is False
+    assert plan["status"] == "aborted"
+    assert plan["actions"][0]["result"]["reason"] == "disk_low"
+
+
+async def test_the_backup_needs_room_for_about_half_of_the_database(hass: HomeAssistant) -> None:
+    from unittest.mock import patch
+
+    scanner = await make_scanner(hass)
+
+    def files(free: int):
+        return {"disk_free": free * 1024**2, "db_bytes": 6 * 1024**3}
+
+    for free, fits in ((2000, False), (3500, True)):
+        plan = {"status": "running", "events": [], "actions": [{"object_id": "sensor.a"}]}
+        with (
+            patch(
+                "custom_components.ha_housekeeper.cleanup_exec.recorder_ready", return_value=True
+            ),
+            patch(
+                "custom_components.ha_housekeeper.cleanup_exec.database_files",
+                return_value=files(free),
+            ),
+        ):
+            assert await scanner.cleanup._disk_has_room(plan) is fits
+        assert (plan["status"] == "running") is fits
+
+
+async def test_a_plan_does_not_start_while_home_assistant_makes_a_backup_or_the_recorder_struggles(
+    hass: HomeAssistant,
+) -> None:
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    scanner = await make_scanner(hass)
+
+    def fresh():
+        return {"status": "running", "events": [], "actions": [{"object_id": "sensor.a"}]}
+
+    busy = SimpleNamespace(state=SimpleNamespace(value="create_backup"))
+    plan = fresh()
+    with patch("homeassistant.components.backup.async_get_manager", return_value=busy):
+        assert await scanner.cleanup._others_idle(plan, False) is False
+    assert plan["actions"][0]["result"]["reason"] == "backup_running"
+
+    idle = SimpleNamespace(state=SimpleNamespace(value="idle"))
+    for instance, reason in (
+        (SimpleNamespace(migration_in_progress=True, backlog=0), "recorder_migrating"),
+        (SimpleNamespace(migration_in_progress=False, backlog=20_000), "recorder_backlog"),
+    ):
+        plan = fresh()
+        with (
+            patch("homeassistant.components.backup.async_get_manager", return_value=idle),
+            patch("homeassistant.components.recorder.get_instance", return_value=instance),
+            patch(
+                "custom_components.ha_housekeeper.cleanup_exec.recorder_ready", return_value=True
+            ),
+        ):
+            assert await scanner.cleanup._others_idle(plan, True) is False
+        assert plan["actions"][0]["result"]["reason"] == reason
+        with (
+            patch("homeassistant.components.backup.async_get_manager", return_value=idle),
+            patch("homeassistant.components.recorder.get_instance", return_value=instance),
+            patch(
+                "custom_components.ha_housekeeper.cleanup_exec.recorder_ready", return_value=True
+            ),
+        ):
+            assert await scanner.cleanup._others_idle(fresh(), False) is True  # reads nothing
+
+
+def test_only_a_plan_that_really_wrote_into_the_recorder_asks_for_a_check_afterwards() -> None:
+    from custom_components.ha_housekeeper.cleanup_exec import CleanupRunner
+
+    done = {"state": "done"}
+    wrote = lambda *actions: CleanupRunner._deleted_from_recorder({"actions": list(actions)})  # noqa: E731
+    assert wrote({"kind": "trim_history", "result": done})
+    assert wrote({"kind": "remove_entity", "recorder": "statistics", "result": done})
+    assert not wrote({"kind": "remove_entity", "result": done})
+    assert not wrote({"kind": "trim_history", "result": {"state": "not_run"}})
+    assert not wrote({"kind": "trim_history"})
+
+
+async def test_a_backup_that_is_missing_empty_or_without_the_database_is_not_relied_on(
+    hass: HomeAssistant,
+) -> None:
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock, patch
+
+    from custom_components.ha_housekeeper import backup_cleanup
+
+    def manager(*backups):
+        return SimpleNamespace(
+            async_get_backups=AsyncMock(return_value=({b.backup_id: b for b in backups}, {}))
+        )
+
+    def backup(size=10, database=True, name="Housekeeper abcd1234"):
+        return SimpleNamespace(
+            backup_id="b1",
+            name=name,
+            extra_metadata={"housekeeper": True},
+            database_included=database,
+            agents={"backup.local": SimpleNamespace(size=size)},
+        )
+
+    async def verify(m, database=True):
+        with (
+            patch("homeassistant.components.backup.async_get_manager", return_value=m),
+            patch.object(backup_cleanup, "VERIFY_PAUSE", 0),
+        ):
+            return await backup_cleanup.verify_backup(hass, "Housekeeper abcd1234", database)
+
+    assert await verify(manager(backup())) is None
+    assert await verify(manager()) == "missing"
+    assert await verify(manager(backup(size=0))) == "empty"
+    assert await verify(manager(backup(database=False))) == "without_database"
+    assert await verify(manager(backup(database=False)), database=False) is None
+    assert await verify(SimpleNamespace()) is None  # a manager that cannot be read does not count

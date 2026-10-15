@@ -1,11 +1,14 @@
 // DbHealthMixin: the database card in Maintenance; mixed into the panel in 99-register.js.
 class DbHealthMixin {
-  async loadDbHealth(refresh = false) {
+  async loadDbHealth(refresh = false, check = false) {
     this.dbLoading = true; this.dbError = ""; this.render();
-    try { this.dbHealth = await this._hass.callWS({ type: "ha_housekeeper/db_health", refresh }); }
-    catch (err) { this.dbError = err?.message || String(err); }
+    try { this.dbHealth = await this._hass.callWS({ type: "ha_housekeeper/db_health", refresh, ...(check ? { check } : {}) }); }
+    catch (err) { this.dbError = this.errText(err); }
     this.dbLoading = false; this.render();
     this.followUp("db", "recorder", this.dbHealth, r => this.loadDbHealth(r), refresh);
+    // The full check runs on in the background: look again until it is done (cached reply, no new query).
+    globalThis.clearTimeout?.(this._dbCheckTimer);
+    if (this.dbHealth?.integrity?.running) this._dbCheckTimer = setTimeout(() => this.loadDbHealth(false), 5000);
   }
 
   // Loads on the first visit of Maintenance only: the query reads the recorder, so the overview never starts it.
@@ -29,6 +32,9 @@ class DbHealthMixin {
       return `${this.t("dbMissingShared", { n: n(f.series_total), hours: n(f.gap_hours), count: n(f.gaps_total) })} ${f.own_series ? this.t("dbMissingOwn", { n: n(f.own_series) }) : this.t("dbMissingOnlyShared")}`;
     }
     if (f.kind === "statistics_issues") return this.t("dbIssues", { n: n(f.series_total), list: f.series.map(s => `${this.esc(s.name || s.statistic_id)} (${s.types.map(type => this.t(`dbIssue_${type}`) === `dbIssue_${type}` ? type : this.t(`dbIssue_${type}`)).join(", ")})`).join(", ") });
+    if (f.kind === "disk_low") return this.t("dbDiskLow", { free: size(f.free_bytes), total: size(f.total_bytes) });
+    if (f.kind === "corrupt_files") return this.t("dbCorruptFiles", { n: n(f.files), size: size(f.bytes), list: f.names.map(x => this.esc(x)).join(", ") });
+    if (f.kind === "integrity") return this.t("dbIntegrity", { at: this.formatDate(f.at), lines: f.lines.map(l => this.esc(l)).join("; ") }) + (f.unclean_starts ? ` ${this.t("dbIntegrityCrash", { n: n(f.unclean_starts) })}` : "");
     return this.t("dbRecorderGap", { n: n(f.gaps), longest: this.relDuration(f.longest_seconds), latest: this.formatDate(new Date(f.latest[0].start * 1000).toISOString()) });
   }
 
@@ -74,10 +80,21 @@ class DbHealthMixin {
     return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
   }
 
+  // The full integrity check on demand: a button, and the result of the last run.
+  dbCheckRow(r) {
+    const c = r.integrity || {};
+    const note = c.running ? this.t("dbChecking")
+      : c.state === "ok" ? this.t("dbCheckOk", { at: this.formatDate(c.at) })
+      : c.state === "failed" ? this.t("dbCheckFailed", { at: this.formatDate(c.at) })
+      : c.state === "damaged" ? "" : this.t("dbCheckNever");
+    return `<div class="row"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
+  }
+
   dbCard() {
     const r = this.dbHealth;
     const took = this.tookNote(r);
-    const head = this.pageBar({ left: took ? `<span>${this.esc(took.replace(/^ · /, ""))}</span>` : "", at: this.isoOf(r?.computed_at), loading: this.dbLoading, attr: "data-db-refresh" });
+    const ready = Boolean(r?.available && !r.busy);
+    const head = this.pageBar({ left: took ? `<span>${this.esc(took.replace(/^ · /, ""))}</span>` : "", at: this.isoOf(r?.computed_at), loading: this.dbLoading, attr: "data-db-refresh", exportId: ready && !this.dbError ? "recdb" : "" });
     if (this.dbError) return `<div class="stack">${head}<div class="panel"><div class="error">${this.esc(this.dbError)}</div></div></div>`;
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("dbLoading")}</div></div>`;
     if (!r.available) return `<div class="stack">${head}<div class="panel"><p class="factnote">${this.t("relNoRecorder")}</p></div></div>`;
@@ -91,7 +108,11 @@ class DbHealthMixin {
     if (r.keep_days) facts.push(this.t("dbKeep", { n: this.formatNumber(r.keep_days) }));
     if (r.auto_purge === false) facts.push(this.t("dbOvPurgeOff"));
     if (r.restart_gaps) facts.push(this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }));
+    this.setPageExporter("recdb", "recorder-database", `${this.t("recorder")} · ${this.t("dbTitle")}`, [
+      { name: "findings", title: this.t("stormTabFindings"), header: [this.t("stormColKinds"), this.t("expColLevel"), this.t("expColText"), this.t("expColAdvice")], rows: () => r.findings.map(f => [this.t(`dbKind_${f.kind}`), this.t(f.level === "problem" ? "dbProblem" : "dbHint"), this.plainText(this.dbFindingText(f)), this.t(`dbAdvice_${f.kind}`)]) },
+      { name: "facts", title: this.t("expColFact"), header: [this.t("expColFact")], rows: () => facts.map(x => [this.plainText(x)]) },
+    ].filter(sec => sec.rows().length));
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
-    return `<div class="stack">${head}<div class="panel">${rows}<p class="factnote">${facts.join(" · ")}</p>${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
+    return `<div class="stack">${head}<div class="panel">${rows}${this.dbCheckRow(r)}<p class="factnote">${facts.join(" · ")}</p>${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
   }
 }

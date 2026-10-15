@@ -74,7 +74,7 @@ class SystemMixin {
     const peak = column === 3 ? Math.max(...rows.map(p => p[5] ?? 0)) : null;
     const cap = [span, peak ? this.t("sysLinePeak", { n: this.sysPercent(peak) }) : ""].filter(Boolean).join(" · ");
     const label = this.t("sysLineLabel", { span, from: this.sysPercent(values[0]), to: this.sysPercent(values[n - 1]) });
-    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${this.esc(label)}"><polyline fill="none" stroke="var(--hk-muted)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="${values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}"/><circle class="spark-end" cx="${x(n - 1).toFixed(1)}" cy="${y(values[n - 1]).toFixed(1)}" r="3.5"/></svg><span class="spark-cap">${this.esc(cap)}</span>`;
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${this.esc(label)}"><polyline fill="none" stroke="var(--hk-muted)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="${values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}"/><line class="spark-end sys-spark-end" x1="${x(n - 1).toFixed(1)}" y1="${y(values[n - 1]).toFixed(1)}" x2="${x(n - 1).toFixed(1)}" y2="${y(values[n - 1]).toFixed(1)}"/></svg><span class="spark-cap">${this.esc(cap)}</span>`;
   }
 
   // The share of a row against the largest one of its list, as a bar.
@@ -91,6 +91,7 @@ class SystemMixin {
     const bar = items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
     const refined = this.refine(id, items, { text: opt.text, filters: opt.filterFns || {}, sorts: opt.sorts, tie: opt.tie });
     const pg = this.paginate(id, refined);
+    this.lv[id].shown = refined.length;
     const table = refined.length
       ? this.listTable(id, opt.columns, pg.rows, { cls: opt.cls || "", rowAttrs: opt.rowAttrs || (() => 'class="static"'), ...(opt.after ? { after: opt.after } : {}) })
       : `<div class="emptymsg">${items.length ? this.noMatches(id) : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(opt.empty)}`}</div>`;

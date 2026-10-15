@@ -7,18 +7,32 @@ share the lock of the reliability query and the result is kept for a few minutes
 
 from __future__ import annotations
 
+import asyncio
+import logging
 import os
+import shutil
 import time
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 
+from .const import DOMAIN
+from .issues import async_sync_database_issue
 from .meter import recorder_ready
 from .payloads import DbHealthResult
 from .queries import ReplyStore, cached_query, kept_reply
 
+_LOGGER = logging.getLogger(__name__)
 DAY = 86400
+UNCLEAN_DAYS = 30  # restarts after a crash that are named next to a damaged database
+DISK_LOW_BYTES = 1024**3  # free space under this is a finding
+DISK_LOW_SHARE = 0.05
+DISK_STOP_BYTES = 512 * 1024**2  # free space under this stops a plan that writes into the recorder
+BACKUP_SPACE_SHARE = 0.5  # and so does less than this share of the database: the backup copies it
+INTEGRITY_LINES = 5  # complaints of the full check that are kept
+INTEGRITY_FRESH_DAYS = 3  # a clean check this recent lets a plan skip its own
+INTEGRITY_TIMEOUT = 60 * 60  # seconds the check on demand may run
 CACHE_SECONDS = 600
 WAL_SHARE = 0.25
 WAL_BYTES = 1024**3
@@ -62,7 +76,12 @@ def database_files(hass: HomeAssistant) -> dict[str, Any]:
         or getattr(instance, "dialect_name", "")
         or ""
     )
-    result: dict[str, Any] = {"dialect": dialect, "db_bytes": None, "wal_bytes": None}
+    result: dict[str, Any] = {
+        "dialect": dialect,
+        "db_bytes": None,
+        "wal_bytes": None,
+        "corrupt": [],
+    }
     if dialect != "sqlite":
         return result
     try:
@@ -79,7 +98,138 @@ def database_files(hass: HomeAssistant) -> dict[str, Any]:
             result[key] = os.stat(path + suffix).st_size
         except OSError:
             result[key] = 0 if suffix else None
+    result["corrupt"] = corrupt_copies(path)
+    try:
+        usage = shutil.disk_usage(os.path.dirname(path) or ".")
+        result["disk_free"], result["disk_total"] = usage.free, usage.total
+    except OSError:
+        pass
     return result
+
+
+def corrupt_copies(path: str) -> list[dict[str, Any]]:
+    """Blocking: the damaged files the recorder set aside (``<database>.corrupt.<date>``), largest first."""
+    folder, name = os.path.split(path)
+    found = []
+    try:
+        with os.scandir(folder or ".") as entries:
+            for entry in entries:
+                if entry.name.startswith(name + ".corrupt") and entry.is_file():
+                    found.append({"name": entry.name, "bytes": entry.stat().st_size})
+    except OSError:
+        return []
+    return sorted(found, key=lambda f: f["bytes"], reverse=True)
+
+
+def integrity_lines(hass: HomeAssistant, limit: int = INTEGRITY_LINES) -> list[str]:
+    """Blocking: the first complaints of SQLite's full check, empty when it is fine or not SQLite.
+
+    Reads only. The full ``integrity_check`` is used on purpose: the quick one does not compare
+    the indexes with the tables, which is where a damaged recorder usually shows first. It takes
+    minutes on a large database.
+    """
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import text
+
+    if database_files(hass)["dialect"] != "sqlite":
+        return []
+    with session_scope(hass=hass, read_only=True) as session:
+        lines = [
+            str(line)
+            for line in session.execute(text(f"PRAGMA integrity_check({int(limit)})")).scalars()
+        ]
+    return [] if not lines or lines == ["ok"] else lines
+
+
+def integrity_problem(hass: HomeAssistant) -> str | None:
+    """Blocking: the first complaint of the full check, ``None`` when it is fine or not SQLite.
+
+    Run before rows are deleted: a damaged index shows up as "database disk image is malformed"
+    in the middle of a purge, long after the cause.
+    """
+    lines = integrity_lines(hass, 1)
+    return lines[0] if lines else None
+
+
+def is_corruption_error(err: BaseException) -> bool:
+    """Whether an error means a damaged SQLite file (also when SQLAlchemy wraps it)."""
+    return "malformed" in str(err).lower()
+
+
+def integrity_fresh(events: Any, now: datetime) -> bool:
+    """Whether the last full check found nothing and is recent enough to count for a plan."""
+    found = getattr(events, "integrity", None)
+    if not found or found.get("state") != "ok":
+        return False
+    try:
+        return now - datetime.fromisoformat(found["at"]) <= timedelta(days=INTEGRITY_FRESH_DAYS)
+    except (KeyError, ValueError):
+        return False
+
+
+def check_running(hass: HomeAssistant) -> bool:
+    task = hass.data.get(DOMAIN, {}).get("integrity_task")
+    return task is not None and not task.done()
+
+
+async def _check(hass: HomeAssistant, events: Any) -> None:
+    """Run the full check and keep its result; a damaged file may also raise while it is read."""
+    from homeassistant.components.recorder import get_instance
+
+    state, lines = "ok", []
+    try:
+        async with asyncio.timeout(INTEGRITY_TIMEOUT):
+            lines = await get_instance(hass).async_add_executor_job(integrity_lines, hass)
+        state = "damaged" if lines else "ok"
+    except Exception as err:
+        if is_corruption_error(err):
+            state, lines = "damaged", [str(err)]
+        else:
+            state = "failed"
+            _LOGGER.warning("The database check did not finish", exc_info=True)
+    events.record_integrity(datetime.now(UTC), state, lines)
+    async_sync_database_issue(hass, events.integrity)
+    hass.data.get(DOMAIN, {}).pop("integrity_task", None)
+
+
+def start_check(hass: HomeAssistant, events: Any) -> bool:
+    """Start the full check in the background; False when none can run or one already does."""
+    if not recorder_ready(hass) or check_running(hass):
+        return False
+    hass.data.setdefault(DOMAIN, {})["integrity_task"] = hass.async_create_background_task(
+        _check(hass, events), "ha_housekeeper_integrity_check"
+    )
+    return True
+
+
+def with_integrity(hass: HomeAssistant, reply: Any, events: Any) -> Any:
+    """The state of the full check on every reply, also a kept one; a damaged result is a finding."""
+    if not reply.get("available") or reply.get("busy"):
+        return reply
+    found = getattr(events, "integrity", None)
+    running = check_running(hass)
+    out = {
+        **reply,
+        "integrity": {**(found or {}), "running": running, "state": (found or {}).get("state")},
+    }
+    if found and found["state"] == "damaged":
+        since = (datetime.now(UTC) - timedelta(days=UNCLEAN_DAYS)).isoformat()
+        unclean = sum(
+            1
+            for e in getattr(events, "events", [])
+            if e.get("kind") == "start" and e.get("unclean") and e.get("at", "") >= since
+        )
+        out["findings"] = [
+            {
+                "kind": "integrity",
+                "level": "problem",
+                "at": found["at"],
+                "lines": found["lines"],
+                "unclean_starts": unclean,
+            },
+            *reply["findings"],
+        ]
+    return out
 
 
 def query_db(hass: HomeAssistant, now: float) -> dict[str, Any]:
@@ -282,6 +432,22 @@ def evaluate(
                 "base_bytes": grown["base_bytes"],
             }
         )
+    free, total = raw.get("disk_free"), raw.get("disk_total")
+    if free is not None and total and (free < DISK_LOW_BYTES or free < DISK_LOW_SHARE * total):
+        findings.append(
+            {"kind": "disk_low", "level": "problem", "free_bytes": free, "total_bytes": total}
+        )
+    corrupt = raw.get("corrupt", [])
+    if corrupt:
+        findings.append(
+            {
+                "kind": "corrupt_files",
+                "level": "hint",
+                "files": len(corrupt),
+                "bytes": sum(f["bytes"] for f in corrupt),
+                "names": [f["name"] for f in corrupt[:LIST_LIMIT]],
+            }
+        )
     duplicates = raw.get("duplicates", [])
     if duplicates:
         by_series: dict[str, int] = {}
@@ -459,7 +625,7 @@ async def database_summary(hass: HomeAssistant, events: Any) -> dict[str, Any] |
     }
 
 
-async def db_health(
+async def _db_health(
     hass: HomeAssistant,
     snapshot: dict[str, Any],
     events: Any,
@@ -508,3 +674,16 @@ async def db_health(
     if store is not None:
         store.keep("db_health", reply)
     return reply  # type: ignore[return-value]
+
+
+async def db_health(
+    hass: HomeAssistant,
+    snapshot: dict[str, Any],
+    events: Any,
+    *,
+    refresh: bool = False,
+    store: ReplyStore | None = None,
+) -> DbHealthResult:
+    """Database health and the state of the full integrity check (never cached)."""
+    reply = await _db_health(hass, snapshot, events, refresh=refresh, store=store)
+    return with_integrity(hass, reply, events)  # type: ignore[no-any-return]

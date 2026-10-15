@@ -11,7 +11,6 @@ pytest.importorskip("pytest_homeassistant_custom_component")
 
 from homeassistant.config_entries import ConfigEntryState  # noqa: E402
 from homeassistant.core import HomeAssistant  # noqa: E402
-from homeassistant.helpers import entity_registry as er  # noqa: E402
 from homeassistant.helpers import issue_registry as ir  # noqa: E402
 from pytest_homeassistant_custom_component.common import MockConfigEntry  # noqa: E402
 from pytest_homeassistant_custom_component.components.recorder.common import (  # noqa: E402
@@ -116,10 +115,9 @@ def test_judging_the_preflight() -> None:
     assert counts["repairs"]["level"] == "warn" and counts["repairs"]["count"] == 1
 
 
-async def test_preflight_saves_a_record_and_compares_after_an_update(hass: HomeAssistant) -> None:
+async def test_preflight_reads_the_state_and_judges_it(hass: HomeAssistant) -> None:
     from custom_components.ha_housekeeper import maintenance
 
-    er.async_get(hass).async_get_or_create("sensor", "test", "before", suggested_object_id="before")
     ir.async_create_issue(
         hass,
         "demo",
@@ -128,38 +126,17 @@ async def test_preflight_saves_a_record_and_compares_after_an_update(hass: HomeA
         severity=ir.IssueSeverity.WARNING,
         translation_key="x",
     )
+    MockConfigEntry(domain="demo", title="Hub", state=ConfigEntryState.SETUP_RETRY).add_to_hass(
+        hass
+    )
     scanner = await make_scanner(hass)
     snapshot = await scanner.async_scan()
 
-    report = await maintenance.preflight_report(hass, snapshot, scanner.preflight)
-    assert report["record"] is None and report["after"] is None
+    report = await maintenance.preflight_report(hass, snapshot)
+    assert set(report) == {"state", "checks"}  # nothing is stored, the time after is the watch's
     assert [r["issue_id"] for r in report["state"]["repairs"]] == ["old_issue"]
-    scanner.preflight.save(report["state"], snapshot)
-
-    same = await maintenance.preflight_report(hass, snapshot, scanner.preflight)
-    assert same["record"]["repairs"] == 1 and same["after"] is None  # no update happened yet
-
-    # The update: a newer version, one more repair, an integration that fails, a new entity.
-    ir.async_create_issue(
-        hass,
-        "demo",
-        "new_issue",
-        is_fixable=False,
-        severity=ir.IssueSeverity.ERROR,
-        translation_key="y",
-    )
-    broken = MockConfigEntry(domain="demo", title="Hub", state=ConfigEntryState.SETUP_RETRY)
-    broken.add_to_hass(hass)
-    er.async_get(hass).async_get_or_create("sensor", "test", "after", suggested_object_id="after")
-    snapshot = await scanner.async_scan()
-    installed = maintenance.HA_VERSION
-    with patch.object(maintenance, "HA_VERSION", "2099.1.0"):
-        after = (await maintenance.preflight_report(hass, snapshot, scanner.preflight))["after"]
-    assert after["from_version"] == installed and after["to_version"] == "2099.1.0"
-    assert [r["issue_id"] for r in after["new_repairs"]] == ["new_issue"]
-    assert [e["title"] for e in after["new_failed_entries"]] == ["Hub"]
-    new_ids = {o["object_id"] for o in after["inventory"]["new_objects"]["items"]}
-    assert "sensor.after" in new_ids and "sensor.before" not in new_ids
+    assert [e["title"] for e in report["state"]["failed_entries"]] == ["Hub"]
+    assert maintenance.repair_keys(hass) == ["demo:old_issue"]
 
 
 async def test_preflight_ignores_persisted_issues_that_are_not_active(hass: HomeAssistant) -> None:
@@ -306,3 +283,23 @@ async def test_the_last_costs_reply_is_kept_and_handed_out_while_the_recorder_is
     finally:
         lock.release()
     assert held["stale"] is True and not held.get("busy")
+
+
+async def test_the_start_of_a_system_update_takes_the_state_of_that_moment(
+    hass: HomeAssistant,
+) -> None:
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    scanner = await make_scanner(hass)
+    state = lambda busy: SimpleNamespace(attributes={"in_progress": busy})  # noqa: E731
+    with patch.object(scanner, "async_request_scan", AsyncMock()) as scan:
+        await scanner.async_update_changed(state(False), state(True))
+        assert scan.await_count == 1
+        await scanner.async_update_changed(state(True), state(True))  # still the same install
+        await scanner.async_update_changed(state(True), state(False))  # it ended
+        await scanner.async_update_changed(None, None)
+        assert scan.await_count == 1
+        scanner.watch_hours = 0  # the watch is off: nothing to compare with
+        await scanner.async_update_changed(state(False), state(True))
+        assert scan.await_count == 1

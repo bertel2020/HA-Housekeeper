@@ -15,9 +15,12 @@
     "step": {
       "init": {
         "title": "Nastavenia HA Housekeeper",
-        "description": "Krátke výpadky, napríklad po reštarte, sa nehlásia (0 znamená hlásiť každú nedostupnú entitu). Vypnuté automatizácie a automatizácie, ktoré sa počas zadaného počtu dní nespustili, sa označia ako nepoužívané. Pravidelné kontroly udržiavajú históriu a odporúčania na opravu aktuálne.",
+        "description": "Výpadky sa hodnotia podľa trvania: najprv informatívne, potom ako nízke, stredné alebo vysoké. Kontroly aktualizujú históriu a odporúčania. Nepoužívané automatizácie sa označujú podľa intervalu; ostatné limity upravujú kontrolu batérií, senzorov a údržby.",
         "data": {
-          "min_unavailable_days": "Hlásiť nedostupné entity po (dni)",
+          "outage_info_minutes": "Hlásiť informatívny výpadok po (minúty)",
+          "outage_low_hours": "Zvýšiť závažnosť výpadku na nízku po (hodiny)",
+          "outage_medium_hours": "Zvýšiť závažnosť výpadku na strednú po (hodiny)",
+          "outage_high_hours": "Zvýšiť závažnosť výpadku na vysokú po (hodiny)",
           "unused_automation_days": "Hlásiť nepoužívané automatizácie po (dni, 0 = vypnuté)",
           "low_battery_percent": "Hlásiť nízky stav batérie pri hodnote (%) alebo nižšej",
           "scan_interval_hours": "Automaticky kontrolovať každých (hodiny, 0 = vypnuté)",
@@ -29,29 +32,9 @@
     },
     "abort": {
       "busy": "Prebieha vykonávanie plánu, vrátenie zmien alebo čistenie údajov. Nastavenia možno zmeniť po dokončení."
-    }
-  },
-  "exceptions": {
-    "not_loaded": {
-      "message": "HA Housekeeper nie je načítaný."
     },
-    "cleanup_busy": {
-      "message": "Prebieha plán a jeho vlastná kontrola. Skús to znova neskôr."
-    },
-    "starting": {
-      "message": "Home Assistant sa ešte spúšťa. Kontrola by bola predbežná a neuložila by sa."
-    }
-  },
-  "services": {
-    "scan": {
-      "name": "Spustiť kontrolu",
-      "description": "Spustí kontrolu Housekeepera. Viac volaní sa spojí do jednej kontroly; bezprostredne po predchádzajúcej sa ďalšia nespustí.",
-      "fields": {
-        "wait": {
-          "name": "Počkať na dokončenie",
-          "description": "Počká na dokončenie kontroly a vráti počty. Bez tejto voľby sa kontrola iba spustí."
-        }
-      }
+    "error": {
+      "thresholds_order": "Hranice musia postupne rásť: informatívna, nízka, stredná, vysoká."
     }
   },
   "issues": {
@@ -60,8 +43,8 @@
       "description": "Housekeeper našiel osirotené entity (počet: {count}), ktorým chýba pôvodné zariadenie, konfigurácia integrácie alebo aktuálny stav. [Zobraziť v Housekeeperi]({link}). Nič sa nemení automaticky."
     },
     "unavailable_entities": {
-      "title": "Dlhodobo nedostupné entity: {count}",
-      "description": "Housekeeper našiel dlhodobo nedostupné entity (počet: {count}), ktorých nedostupnosť presiahla nastavený limit. [Zobraziť v Housekeeperi]({link}). Nič sa nemení automaticky."
+      "title": "Nedostupné entity: {count}",
+      "description": "Housekeeper našiel nedostupné entity (počet: {count}) podľa nastavených časových hraníc. [Zobraziť v Housekeeperi]({link}). Nič sa nemení automaticky."
     },
     "broken_automations": {
       "title": "Nálezy s neplatnými odkazmi: {count}",
@@ -74,14 +57,13 @@
     "scan_stale": {
       "title": "Housekeeper už dlhšie nevykonal úspešnú kontrolu",
       "description": "Od {last} neprebehla žiadna úspešná kontrola. Počty a nálezy môžu byť zastarané. [Otvoriť Housekeeper]({link}). Nič sa nemení automaticky."
+    },
+    "database_damaged": {
+      "title": "Databáza Recordera je poškodená",
+      "description": "Kontrola z {at} zistila poškodenie databázy Recordera: {first} Housekeeper nebude nič mazať z Recordera, kým kontrola znova neprejde. Najprv vytvor zálohu, poškodené indexy obnov cez REINDEX alebo obnov zálohu. [Otvoriť Housekeeper]({link})."
     }
   },
   "entity": {
-    "button": {
-      "scan": {
-        "name": "Spustiť kontrolu"
-      }
-    },
     "sensor": {
       "findings": {
         "name": "Nálezy"
@@ -116,6 +98,34 @@
           "preliminary": "Predbežný"
         }
       }
+    },
+    "button": {
+      "scan": {
+        "name": "Spustiť kontrolu"
+      }
+    }
+  },
+  "services": {
+    "scan": {
+      "name": "Spustiť kontrolu",
+      "description": "Spustí kontrolu Housekeepera. Viac volaní sa spojí do jednej kontroly; bezprostredne po predchádzajúcej sa ďalšia nespustí.",
+      "fields": {
+        "wait": {
+          "name": "Počkať na dokončenie",
+          "description": "Počká na dokončenie kontroly a vráti počty. Bez tejto voľby sa kontrola iba spustí."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_loaded": {
+      "message": "HA Housekeeper nie je načítaný."
+    },
+    "cleanup_busy": {
+      "message": "Prebieha plán a jeho vlastná kontrola. Skús to znova neskôr."
+    },
+    "starting": {
+      "message": "Home Assistant sa ešte spúšťa. Kontrola by bola predbežná a neuložila by sa."
     }
   }
 }

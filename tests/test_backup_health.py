@@ -88,6 +88,12 @@ def test_a_sound_setup_is_all_ok() -> None:
     assert report["backup_count"] == 3 and len(report["backups"]) == 3
 
 
+def test_the_report_lists_at_most_twenty_backups_and_marks_the_own_ones() -> None:
+    many = [backup(hours) for hours in range(1, 26)] + [backup(0.5, own=True, partial=True)]
+    report, _ = judge(state(many))
+    assert len(report["backups"]) == 20 and report["backups"][0]["own"] is True
+
+
 def test_a_missing_backup_component_is_reported_not_guessed() -> None:
     report = evaluate({"available": False}, NOW, ATTEST, [])
     assert report == {"available": False, "checks": [], "backups": [], "overall": "unknown"}
@@ -170,7 +176,7 @@ def test_an_unusual_size_is_a_note_against_the_median_of_the_backups_before() ->
 
 
 def test_only_automatic_and_manual_backups_affect_the_report() -> None:
-    app_update = backup(1, size=5, agents=("hassio.local",), automatic=None)
+    app_update = backup(1, size=5, agents=("hassio.local",), automatic=False, ha_included=False)
     automatic = backup(10, size=1000)
     manual = backup(30, size=1100, automatic=False)
     report, checks = judge(state([app_update, automatic, manual]))
@@ -252,6 +258,15 @@ def test_backups_before_risky_plans_are_matched_by_time() -> None:
     assert judge(state([created]), plans=many)[1]["plan_backups"]["values"]["checked"] == 5
 
 
+def test_many_or_large_housekeeper_backups_are_a_hint_to_clean_up() -> None:
+    few = [backup(i + 1, own=True) for i in range(9)]
+    assert "own_backups" not in judge(state(few))[1]
+    assert judge(state(few + [backup(30, own=True)]))[1]["own_backups"]["values"]["count"] == 10
+    big = [backup(1, size=6 * 1024**3, own=True), backup(2)]
+    check = judge(state(big))[1]["own_backups"]
+    assert check["level"] == "note" and check["values"] == {"count": 1, "size": 6 * 1024**3}
+
+
 def test_only_executed_plans_with_a_recorded_backup_count() -> None:
     plans = [
         {"plan_id": "a", "executed": True, "backup": {"at": "2026-10-08T10:00:00+00:00"}},
@@ -325,7 +340,18 @@ async def test_the_collector_reads_the_manager_without_leaking_names_or_secrets(
         "failed_agents",
         "protected",
         "automatic",
+        "ha_included",
+        "own",
         "partial",
+        "id",
+        "name",
+        "version",
+        "database",
+        "apps",
+        "folders",
+        "failed_apps",
+        "failed_folders",
+        "agent_sizes",
     }
     report = evaluate(collected, NOW, ATTEST, [])
     assert report["available"] is True and report["checks"][0]["id"] == "setup"

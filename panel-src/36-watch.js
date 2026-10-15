@@ -28,42 +28,44 @@ class WatchMixin {
     if (!w) return "";
     const hours = Math.max(0, Math.ceil((Date.parse(w.until) - Date.now()) / 3600000)), n = w.new;
     const text = w.samples ? this.t("watchBand", { what: this.watchWhat(w), hours, n: this.formatNumber(n) }) : this.t("watchBandWait", { what: this.watchWhat(w), hours });
-    return `<div class="panel u-mb14" data-watch><div class="row"><span class="tile ${n ? "warn" : "mute"}"><ha-icon icon="mdi:eye-check-outline"></ha-icon></span><span class="row-text"><strong>${text}</strong></span></div></div>`;
+    return `<div class="panel u-mb14" data-watch><button class="row" data-watch-go="${this.esc(w.id || "")}" title="${this.esc(this.t("watchGo"))}"><span class="tile ${n ? "warn" : "mute"}"><ha-icon icon="mdi:eye-check-outline"></ha-icon></span><span class="row-text"><strong>${text}</strong><small>${this.t("watchGo")}</small></span></button></div>`;
   }
 
   watchRows(keys, tone) {
     const pg = keys.slice(0, WATCH_LIST).map(key => {
+      // An object that is a finding already shows as in the findings list: checkbox, menu, decisions.
+      const finding = (this.data?.findings || []).find(f => !f.ignored && this.findingKey(f) === key);
+      if (finding) return this.findingRow(finding);
       const item = this.findObject(key);
       const name = item?.name || key.split(":").slice(1).join(":");
-      return `<button class="row" data-object="${this.esc(key)}">${this.tile(item?.object_type || key.split(":")[0], tone)}<span class="row-text"><strong>${this.esc(name)}</strong><small>${this.esc(key)}</small></span></button>`;
+      const mark = item?.mark;
+      const act = mark ? `<span class="pill mute">${this.esc(this.t(`mark_${mark.kind}`))}</span>` : item ? `<button class="btn quiet" data-watch-mark="${this.esc(key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("markSet")}</button>` : "";
+      return `<div class="row" role="button" tabindex="0" data-object="${this.esc(key)}">${this.tile(item?.object_type || key.split(":")[0], tone)}<span class="row-text"><strong>${this.esc(name)}</strong><small>${this.esc(key)}${item?.status ? ` · ${this.esc(item.status)}` : ""}</small></span>${act}</div>`;
     }).join("");
     const more = keys.length > WATCH_LIST ? `<p class="sub">${this.t("watchMore", { n: this.formatNumber(keys.length - WATCH_LIST) })}</p>` : "";
     return pg + more;
   }
 
+  // Ends the open watch only after the person has said yes: what it measured so far is judged and no more scans follow.
+  askEndWatch() {
+    this.confirmAsk(this.t("endWatchText"), () => this.endWatch(), { title: this.t("endWatchTitle"), yes: this.t("watchEnd"), danger: false });
+  }
+
+  async endWatch() {
+    try { await this._hass.callWS({ type: "ha_housekeeper/watch_end" }); } catch (_) { return; }
+    if (this.data?.meta) this.data.meta.watch = null;
+    await this.loadWatches();
+  }
+
   watchBody(w) {
-    const r = w.result, parts = [];
+    const r = { silent: [], marked: [], ...w.result }, parts = [];
     parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.t("watchSamples", { n: w.samples.length })}</p>`);
     if (r.reason === "unread") parts.push(`<p class="factnote">${this.t("watchUnread")}</p>`);
     const section = (id, keys, tone) => keys.length ? `<h3>${this.t(id, { n: this.formatNumber(keys.length) })}</h3>${this.watchRows(keys, tone)}` : "";
-    parts.push(section("watchNew", r.new, "warn"), section("watchTransient", r.transient, "mute"), section("watchFixed", r.fixed, "ok"));
+    parts.push(section("watchNew", r.new, "warn"), section("watchSilent", r.silent, "mute"), section("watchMarked", r.marked, "mute"), section("watchTransient", r.transient, "mute"), section("watchFixed", r.fixed, "ok"));
+    if (r.new_repairs?.length) parts.push(`<h3>${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</h3>${r.new_repairs.slice(0, WATCH_LIST).map(key => `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(key.split(":").slice(1).join(":"))}</strong><small>${this.esc(key.split(":")[0])}</small></span></div>`).join("")}`);
     if (r.new_findings.length) parts.push(`<p class="sub">${this.t("watchNewFindings", { n: this.formatNumber(r.new_findings.length) })}</p>`);
-    if (!r.new.length && !r.transient.length && !r.fixed.length && !r.new_findings.length && w.before) parts.push(`<p class="sub">${this.t("watchNone")}</p>`);
+    if (!r.new.length && !r.silent.length && !r.marked.length && !r.transient.length && !r.fixed.length && !r.new_findings.length && !r.new_repairs?.length && w.before) parts.push(`<p class="sub">${this.t("watchNone")}</p>`);
     return parts.join("");
-  }
-
-  // On the findings page next to the card for findings that began with an update.
-  watchCard() {
-    this.ensureWatches();
-    const list = this.watch?.watches || [];
-    if (!list.length) return "";
-    const tones = { worse: "warn", stable: "ok", transient: "mute", unknown: "mute", pending: "mute" };
-    const rows = list.map(w => {
-      const verdict = w.result.verdict;
-      const sub = w.closed_at ? this.t("watchEnded", { when: this.formatDate(w.closed_at) }) : this.formatDate(w.started_at);
-      const open = this.foldOpen(`watch_${w.id}`, false);
-      return this.fold(`watch_${w.id}`, { tone: tones[verdict] || "mute", title: this.watchWhat(w), sub, pill: this.t(`watchV_${verdict}`) }, open ? this.watchBody(w) : "", false);
-    }).join("");
-    return `<div class="panel">${this.fold("watch", { tone: "mute", title: this.t("watchTitle"), sub: this.t("watchHint"), pill: this.formatNumber(list.length) }, rows, false)}</div>`;
   }
 }

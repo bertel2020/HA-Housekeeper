@@ -39,6 +39,16 @@ def _state(bad=(), findings=(), unchecked=(), at=START):
     }
 
 
+def test_a_new_repair_makes_it_worse_and_a_watch_without_repairs_compares_none() -> None:
+    before = {**_state(), "repairs": ["a:1"]}
+    after = {**_state(), "repairs": ["a:1", "b:2"]}
+    result = evaluate(_watch(before, [after]))
+    assert (result["verdict"], result["new_repairs"]) == ("worse", ["b:2"])
+    assert (
+        evaluate(_watch(_state(), [after]))["new_repairs"] == []
+    )  # stored before repairs were kept
+
+
 def test_the_verdict_names_what_changed_and_never_guesses() -> None:
     before = _state(bad=["entity:a"], findings=["f1"])
     assert evaluate(_watch(before, []))["verdict"] == "pending"
@@ -102,7 +112,32 @@ def test_the_store_waits_for_the_calm_and_closes_at_the_end() -> None:
     assert not store.expire(end)
 
 
+def test_a_watch_can_be_ended_by_hand() -> None:
+    store = WatchStore.__new__(WatchStore)
+    store.watches = []
+    store._save = lambda: None
+    assert not store.end(START)
+    store.start(START, START, 24, [{"kind": "ha_version", "from": "1", "to": "2"}], None)
+    assert store.end(START + timedelta(hours=1))
+    assert store.active() is None and store.report()[0]["verdict"] == "unknown"
+
+
 def test_a_second_update_joins_the_open_watch_once() -> None:
     first = [{"kind": "ha_version", "from": "1", "to": "2"}]
     again = [*first, {"kind": "entry_version", "domain": "hue", "from": "1", "to": "2"}]
     assert len(merge_triggers(first, again)) == 2
+
+
+def test_silent_objects_are_a_group_of_their_own_and_marked_ones_make_nothing_worse() -> None:
+    before = _state()
+    after = {**_state(bad=["entity:a"]), "silent": {"entity:q": "unknown"}}
+    result = evaluate(_watch(before, [after]))
+    assert (result["verdict"], result["new"], result["silent"]) == (
+        "worse",
+        ["entity:a"],
+        ["entity:q"],
+    )
+    quiet = evaluate(_watch(before, [{**_state(), "silent": {"entity:q": "unknown"}}]))
+    assert (quiet["verdict"], quiet["silent"]) == ("stable", ["entity:q"])
+    marked = evaluate(_watch(before, [after]), frozenset({"entity:a"}))
+    assert (marked["verdict"], marked["new"], marked["marked"]) == ("stable", [], ["entity:a"])

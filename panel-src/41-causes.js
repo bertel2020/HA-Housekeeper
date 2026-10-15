@@ -21,14 +21,74 @@ class CausesMixin {
   // How long an integration has not been loaded and when that becomes more serious: "for 6 h · Medium in 18 h".
   outageLine(c) { return this.outageLineOf(c.finding_key && this.data.findings.find(x => x.key === c.finding_key)); }
 
+  // A length of time in hours as "40 min", "6 h" or "9 d".
+  spanText(h) { return h < 1 ? `${Math.max(1, Math.round(h * 60))} ${this.t("unitMin")}` : h < 48 ? `${Math.round(h)} ${this.t("unitHour")}` : `${Math.round(h / 24)} ${this.t("unitDay")}`; }
+
   // The same for the finding of an outage itself, as the detail page shows it.
   outageLineOf(f) {
     const since = f && Date.parse(f.first_detected_at);
     if (!since) return "";
-    const hours = Math.max(0, (Date.now() - since) / 3600000), high = Math.max(24, (this.data.meta?.min_unavailable_days || 0) * 24);
-    const span = h => h < 1 ? `${Math.max(1, Math.round(h * 60))} ${this.t("unitMin")}` : h < 48 ? `${Math.round(h)} ${this.t("unitHour")}` : `${Math.round(h / 24)} ${this.t("unitDay")}`;
-    const next = hours < 1 ? [1, "low"] : hours < 24 ? [24, "medium"] : hours < high ? [high, "high"] : null;
+    const m = this.data.meta || {};
+    const hours = Math.max(0, (Date.now() - since) / 3600000);
+    // The next level and when it starts, from the four thresholds (info in minutes, the others in hours).
+    const steps = [[(m.outage_info_minutes ?? 15) / 60, "info"], [m.outage_low_hours ?? 1, "low"], [m.outage_medium_hours ?? 24, "medium"], [m.outage_high_hours ?? 168, "high"]];
+    const span = h => this.spanText(h);
+    const next = steps.find(([at]) => at > hours);
     return [this.t("outageFor", { span: span(hours) }), next ? this.t("outageNext", { level: this.t(`chip_${next[1]}`), span: span(next[0] - hours) }) : ""].filter(Boolean).join(" · ");
+  }
+
+  // The staircase of an outage by duration: each level with the hours it starts at.
+  outageSteps() {
+    const m = this.data.meta || {};
+    return [["info", 0], ["low", m.outage_low_hours ?? 1], ["medium", m.outage_medium_hours ?? 24], ["high", m.outage_high_hours ?? 168]];
+  }
+
+  // The block "Rating" of the detail page: how serious the finding is and why, how sure the diagnosis is, and what it
+  // would take to reach the next level. Only when the object has an open finding.
+  ratingBlock(item, key) {
+    const finding = this.data.findings.filter(f => this.findingKey(f) === key && !f.ignored).sort((a, b) => this.impactScore(b) - this.impactScore(a))[0];
+    if (!finding) return "";
+    const cause = this.causeList().find(c => c.object_type === item.object_type && c.object_id === item.object_id);
+    const raw = cause?.impact && cause.impact !== "none" ? cause.impact : finding.impact;
+    const level = raw && raw !== "none" ? raw : "info";
+    const order = ["info", "low", "medium", "high"], idx = order.indexOf(level);
+    const outage = OUTAGE_RULES.includes(finding.rule_id) || Boolean(cause);
+    const since = Date.parse(finding.first_detected_at);
+    const hours = outage && since ? Math.max(0, (Date.now() - since) / 3600000) : null;
+    const reasons = [];
+    if (hours !== null) reasons.push(this.t("outageFor", { span: this.spanText(hours) }));
+    (finding.impact_facts || []).filter(x => x.fact !== "outage_age").forEach(x => reasons.push(this.t(`impactFact_${x.fact}`, { n: x.n ?? "", id: x.id ?? "", why: this.t(`impactWhy_${x.why}`) })));
+    if (cause) {
+      if (this.causeTotal(cause)) reasons.push(this.t("ratingFollowers", { n: this.formatNumber(this.causeTotal(cause)) }));
+      ["automation", "script", "dashboard"].filter(k => cause.consumers?.[k]).forEach(k => reasons.push(this.t(`causeUses_${k}`, { n: cause.consumers[k] })));
+    }
+    if (!reasons.length) reasons.push(this.t("ratingNoReason"));
+    let bar = "";
+    if (hours !== null) {
+      const steps = this.outageSteps();
+      let stage = 0; steps.forEach(([, at], i) => { if (at <= hours) stage = i; });
+      const end = steps[stage + 1]?.[1], frac = end ? Math.min(1, (hours - steps[stage][1]) / Math.max(0.001, end - steps[stage][1])) : 1;
+      bar = `<div class="rbar"><span style="width:${Math.round((stage + frac) / 4 * 100)}%"></span></div><div class="rticks">${steps.map(([lv, at], i) => `<span>${this.t(`chip_${lv}`)}${i ? ` ${this.t("ratingFrom", { span: this.spanText(at) })}` : ""}</span>`).join("")}</div>`;
+    }
+    const why = this.t(`certWhy_${finding.classification}`), kind = why === `certWhy_${finding.classification}` ? "" : why;
+    const label = lv => this.t(`chip_${lv}`);
+    let next;
+    if (idx >= 3) next = `<i class="ratingicon"><ha-icon icon="mdi:check"></ha-icon></i><span>${this.t("ratingTop")}</span>`;
+    else {
+      const target = order[idx + 1], cond = this.t(`ratingNext_${level}`);
+      const steps = hours !== null ? this.outageSteps() : [], step = steps.find(([, at]) => at > hours);
+      const parts = [];
+      if (step && step[0] === target) parts.push(this.t("ratingNextBoth", { level: label(target), span: this.spanText(step[1] - hours), cond }));
+      else {
+        parts.push(this.t("ratingNextCond", { level: label(target), cond }));
+        if (step) parts.push(this.t("ratingNextDur", { level: label(step[0]), span: this.spanText(step[1] - hours) }));
+      }
+      next = `<i class="ratingicon"><ha-icon icon="mdi:arrow-top-right"></ha-icon></i><span>${parts.map(x => this.esc(x)).join(" ")}</span>`;
+    }
+    return `<div class="rating"><h3 class="ratinghead">${this.t("ratingTitle")}</h3>
+      <div class="rrow"><b>${this.t("sortImpact")}</b><div>${this.impactChip(level)}<div class="factnote">${reasons.map(x => this.esc(x)).join(" · ")}</div>${bar}</div></div>
+      <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${Math.round((finding.confidence || 0) * 100)} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div></div></div>
+      <div class="rnext">${next}</div></div>`;
   }
 
   // The short line of a row: the counts and, for an integration, how long it has been down; reason and log are for the detail page.
@@ -100,7 +160,8 @@ class CausesMixin {
     const below = (c.child_ids || []).map(byId).filter(Boolean).map(x => this.causeEntry(x)).join("");
     const followers = (this.data.findings || []).filter(f => f.cause_id === c.id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id));
     const pg = this.paginate(`cause_${c.id}`, followers.map(f => this.findingRow(f)));
-    return `${own}${below}${pg.rows.join("")}${pg.footer}`;
+    const parts = `${below}${pg.rows.join("")}${pg.footer}`;
+    return `${own}${parts ? `<div class="kids">${parts}</div>` : ""}`;
   }
 
   // The entries at the top of the findings list, as the overview shows them: by impact, a chain once at its top.
@@ -129,6 +190,13 @@ class CausesMixin {
   }
 
   // The number the findings are counted by: every chain of outages once, at its top, and every finding without an outage behind it; the follow-up findings of an outage are not counted again.
+  // A quiet outage (info, low) is on the findings page only: not in the overview counts, not in what is new.
+  isQuiet(f) { return OUTAGE_RULES.includes(f.rule_id) && ["info", "low"].includes(f.impact); }
+
+  quietCause(c) { return !c.virtual && ["info", "low"].includes(c.impact); }
+
+  quietCount() { return this.causeEntries().filter(c => this.quietCause(c)).length + this.data.findings.filter(f => !f.cause_id && !f.ignored && this.isQuiet(f)).length; }
+
   findingTotal() { return this.causeEntries().length + this.data.findings.filter(f => !f.cause_id && !f.ignored).length; }
 
   followerCount() { return this.data.findings.filter(f => f.cause_id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id)).length; }
@@ -138,7 +206,7 @@ Object.assign(TEXT.de, {
   causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageDevices: "{n} Geräte",
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
   cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
-  causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Mit Folgen", flatList: "Flache Liste", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageTargets: "{n} fehlende Ziele", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
+  causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Ursachen mit Folgen", flatList: "Alle einzeln", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageTargets: "{n} fehlende Ziele", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
   findingsFollowSub: "dazu {n} Folgen der Ausfälle", actOutages: "Ausfälle",
 });
 Object.assign(TEXT.en, {
@@ -146,6 +214,6 @@ Object.assign(TEXT.en, {
   causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageDevices: "{n} devices",
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
   cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
-  causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "With follow-ups", flatList: "Flat list", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageTargets: "{n} missing targets", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
+  causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Causes with follow-ups", flatList: "All one by one", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageTargets: "{n} missing targets", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
   findingsFollowSub: "plus {n} follow-ups of the outages", actOutages: "Outages",
 });

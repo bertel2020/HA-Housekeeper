@@ -29,6 +29,9 @@ SIZE_LOW, SIZE_HIGH = 0.5, 2.0
 RESTORE_TEST_DAYS = 180
 LOCAL_SUFFIX = ".local"  # agent ids such as backup.local or hassio.local; anything else is remote
 MAX_PLANS_CHECKED = 5
+BACKUP_LIST_MAX = 20  # the newest backups the report lists in detail
+OWN_BACKUPS_NOTE = 10  # Housekeeper's own backups: this many ...
+OWN_BACKUPS_BYTES = 5 * 1024**3  # ... or this much space in total is a hint to clean up
 PLAN_BACKUP_WINDOW_SECONDS = 2 * 3600  # the backup started up to this long before it was recorded
 ATTEST_KINDS = ("targets", "emergency_kit", "restore_test")
 _SEVERITY = {"ok": 0, "unknown": 1, "note": 2, "problem": 3}
@@ -53,6 +56,22 @@ def _iso(value: Any) -> str | None:
 
 def _is_local(agent_id: str) -> bool:
     return agent_id.endswith(LOCAL_SUFFIX)
+
+
+def _names(items: Any) -> list[str]:
+    """Names of apps or folders; HA hands over objects with a ``name``, a ``folder`` or a plain string."""
+    names = []
+    for item in items or []:
+        value = (
+            item
+            if isinstance(item, str)
+            else getattr(item, "name", None)
+            or getattr(item, "value", None)
+            or getattr(item, "slug", None)
+        )
+        if value:
+            names.append(str(value))
+    return sorted(names)
 
 
 async def collect(hass: HomeAssistant) -> dict[str, Any]:
@@ -98,11 +117,28 @@ async def collect(hass: HomeAssistant) -> dict[str, Any]:
                         getattr(status, "protected", False) for status in agents.values()
                     ),
                     "automatic": getattr(backup, "with_automatic_settings", None),
+                    # App-only backups (e.g. before an app update) do not contain Home Assistant.
+                    "ha_included": getattr(backup, "homeassistant_included", None),
                     # Housekeeper's own safety copy before a plan: configuration only, no regular backup.
+                    "own": (getattr(backup, "extra_metadata", None) or {}).get("housekeeper")
+                    is True,
                     "partial": (getattr(backup, "extra_metadata", None) or {}).get(
                         "housekeeper_scope"
                     )
                     == "config",
+                    "id": str(getattr(backup, "backup_id", "") or "") or None,
+                    "name": getattr(backup, "name", None),
+                    "version": getattr(backup, "homeassistant_version", None),
+                    "database": getattr(backup, "database_included", None),
+                    "apps": _names(getattr(backup, "addons", None)),
+                    "folders": _names(getattr(backup, "folders", None)),
+                    "failed_apps": _names(getattr(backup, "failed_addons", None)),
+                    "failed_folders": _names(getattr(backup, "failed_folders", None)),
+                    "agent_sizes": {
+                        str(agent): getattr(status, "size", None)
+                        for agent, status in agents.items()
+                        if isinstance(getattr(status, "size", None), int)
+                    },
                 }
             )
     except Exception:
@@ -269,6 +305,15 @@ def _plans_check(
     return _check("plan_backups", "ok" if not missing else "note", checked=checked, missing=missing)
 
 
+def _own_check(backups: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Housekeeper's safety copies pile up: Home Assistant's retention does not remove them."""
+    own = [item for item in backups if item.get("own")]
+    size = sum(item["size"] for item in own if isinstance(item.get("size"), int))
+    if len(own) < OWN_BACKUPS_NOTE and size < OWN_BACKUPS_BYTES:
+        return None
+    return _check("own_backups", "note", count=len(own), size=size)
+
+
 def evaluate(
     state: dict[str, Any], now: datetime, attest: dict[str, Any], plans: list[dict[str, Any]]
 ) -> dict[str, Any]:
@@ -277,7 +322,11 @@ def evaluate(
         return {"available": False, "checks": [], "backups": [], "overall": "unknown"}
     config, backups = state.get("config"), state.get("backups")
     selected = (
-        [item for item in backups if item.get("automatic") is not None]
+        [
+            item
+            for item in backups
+            if item.get("automatic") is not None and item.get("ha_included") is not False
+        ]
         if backups is not None
         else None
     )
@@ -287,8 +336,8 @@ def evaluate(
         listing: list[dict[str, Any]] = []
         everything: list[dict[str, Any]] = []
     else:
-        # HA marks its scheduled backups True and its manual backups False.
-        # App-update and other imported backups have no such classification (None).
+        # HA marks its scheduled backups True and its manual backups False. The Supervisor's
+        # app-update backups are False too, but hold no Home Assistant (``ha_included`` False).
         everything = sorted(selected, key=lambda item: item["date"] or "", reverse=True)
         # The safety copies before a plan say nothing about the backup strategy.
         listing = [item for item in everything if not item.get("partial")]
@@ -303,6 +352,8 @@ def evaluate(
     checks.append(_attest_check("restore_test", attest.get("restore_test"), now, RESTORE_TEST_DAYS))
     if selected is not None and (plan_check := _plans_check(plans, everything)):
         checks.append(plan_check)
+    if selected is not None and (own_check := _own_check(everything)):
+        checks.append(own_check)
     overall = max((item["level"] for item in checks), key=_SEVERITY.__getitem__, default="unknown")
     counts = {level: sum(1 for item in checks if item["level"] == level) for level in _SEVERITY}
     return {
@@ -318,8 +369,20 @@ def evaluate(
                 "protected": item["protected"],
                 "automatic": item["automatic"],
                 "failed_agents": item["failed_agents"],
+                "own": bool(item.get("own")),
+                "partial": bool(item.get("partial")),
+                "id": item.get("id"),
+                "name": item.get("name"),
+                "version": item.get("version"),
+                "database": item.get("database"),
+                "ha_included": item.get("ha_included"),
+                "apps": item.get("apps") or [],
+                "folders": item.get("folders") or [],
+                "failed_apps": item.get("failed_apps") or [],
+                "failed_folders": item.get("failed_folders") or [],
+                "agent_sizes": item.get("agent_sizes") or {},
             }
-            for item in listing[:10]
+            for item in everything[:BACKUP_LIST_MAX]
         ],
         "backup_count": len(listing),
         "attest": {kind: attest.get(kind) for kind in ATTEST_KINDS},

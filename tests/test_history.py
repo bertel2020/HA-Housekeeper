@@ -103,10 +103,10 @@ def test_a_finding_that_vanished_unread_or_under_a_changed_setting_is_not_resolv
     }
     objects = [("entity", "sensor.a", "active"), ("dashboard", "home", "active")]
     old_snap = _snapshot("2026-10-06T10:00:00+00:00", objects, [dash, unavailable])
-    old_snap["meta"]["min_unavailable_days"] = 1
+    old_snap["meta"]["outage_high_hours"] = 24
     old = make_checkpoint(old_snap)
     new = _snapshot("2026-10-07T10:00:00+00:00", objects)
-    new["meta"] |= {"min_unavailable_days": 3, "unchecked": ["dashboard:home"]}
+    new["meta"] |= {"outage_high_hours": 72, "unchecked": ["dashboard:home"]}
     diff = diff_checkpoints(old, new)
     assert diff["resolved_findings"]["total"] == 0
     assert {f["object_id"]: f["reason"] for f in diff["ended_findings"]["items"]} == {
@@ -114,10 +114,10 @@ def test_a_finding_that_vanished_unread_or_under_a_changed_setting_is_not_resolv
         "sensor.a": "rules_changed",
     }
     # without those causes the same disappearance is a repair, and an old checkpoint has no settings to compare
-    new["meta"] |= {"min_unavailable_days": 1, "unchecked": []}
+    new["meta"] |= {"outage_high_hours": 24, "unchecked": []}
     assert diff_checkpoints(old, new)["resolved_findings"]["total"] == 2
     del old["rules"]
-    new["meta"]["min_unavailable_days"] = 9
+    new["meta"]["outage_high_hours"] = 216
     assert diff_checkpoints(old, new)["resolved_findings"]["total"] == 2
 
 
@@ -207,7 +207,9 @@ def test_series_lists_the_days_and_the_latest_scan_with_unavailable(hass) -> Non
     ]
 
 
-def test_series_carries_open_findings_classes_and_the_score_for_the_sparklines(hass) -> None:
+def test_series_carries_open_findings_classes_and_the_state_of_the_house_for_the_sparklines(
+    hass,
+) -> None:
     def snap(at: str, findings: list[dict]) -> dict:
         base = _snapshot(at, [("entity", "x.a", "active"), ("entity", "x.b", "active")])
         base["findings"] = findings
@@ -235,11 +237,36 @@ def test_series_carries_open_findings_classes_and_the_score_for_the_sparklines(h
         )
     )
     points = history.series()["points"]
-    assert [(p["open"], p["share"]) for p in points] == [(0, 100), (2, 94)]
+    assert [(p["open"], p["health"]) for p in points] == [(0, 100.0), (2, 75.0)], (
+        "an object counts once, with its weight"
+    )
     assert points[0]["classes"] == {} and points[1]["classes"] == {
         "unused": 1,
         "broken_reference": 1,
     }
+
+
+def test_the_lead_series_leaves_out_the_follow_ups_of_a_cause(hass) -> None:
+    history = ScanHistory(hass)
+    snapshot = _snapshot("2026-10-06T08:00:00+00:00", [("entity", "x.a", "active")])
+
+    def finding(rule: str, **extra) -> dict:
+        return {
+            "rule_id": rule,
+            "object_id": rule,
+            "classification": "unused",
+            "impact": "medium",
+            **extra,
+        }
+
+    snapshot["findings"] = [
+        finding("entity.unused"),
+        finding("entity.broken", cause_id="c1"),
+        finding("device.down", cause_id="c1"),
+    ]
+    history.record(snapshot)
+    point = history.series()["points"][0]
+    assert (point["open"], point["lead"], point["lead_classes"]) == (3, 2, {"unused": 2})
 
 
 def test_a_pinned_scan_point_is_named_compared_kept_beyond_the_retention_and_deleted(hass) -> None:
@@ -296,3 +323,22 @@ def test_the_day_of_a_scan_is_counted_in_the_local_time_zone(hass) -> None:
         assert [cp["at"] for cp in history._daily] == ["2026-10-10T19:54:00+00:00"]
     finally:
         dt_util.set_default_time_zone(previous)
+
+
+def test_a_checkpoint_from_before_the_levels_by_duration_ends_findings_as_a_new_rating() -> None:
+    dash = {
+        "rule_id": "entity.state_unavailable",
+        "object_id": "sensor.a",
+        "classification": "unavailable",
+    }
+    objects = [("entity", "sensor.a", "active")]
+    old_snap = _snapshot("2026-10-06T10:00:00+00:00", objects, [dash])
+    old = make_checkpoint(old_snap)
+    old["rules"] = {"min_unavailable_days": 7}  # what a checkpoint of the old version holds
+    new = _snapshot("2026-10-07T10:00:00+00:00", objects)
+    new["meta"] |= {"outage_info_minutes": 15, "outage_high_hours": 168}
+    diff = diff_checkpoints(old, new)
+    assert diff["new_rating"] is True and diff["resolved_findings"]["total"] == 0
+    assert [f["reason"] for f in diff["ended_findings"]["items"]] == ["rules_changed"]
+    again = make_checkpoint(new)
+    assert diff_checkpoints(again, new)["new_rating"] is False

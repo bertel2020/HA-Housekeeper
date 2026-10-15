@@ -1,5 +1,101 @@
 # Changelog
 
+## 1.8.0 - 2026-10-15
+
+### Neu
+
+- **Stand beim Start eines Updates:** Beginnt ein Update von Home Assistant, Betriebssystem oder Supervisor, scannt Housekeeper sofort. Die Beobachtung danach vergleicht mit diesem Stand statt mit dem letzten planmäßigen Scan.
+
+- **Reparaturen nach Updates:** Die Beobachtung nach einem Update meldet auch Reparaturen, die seitdem neu aufgetaucht sind, und zählt sie als Verschlechterung.
+
+- **Backup-Liste mit Details:** Die Liste zeigt bis zu 20 Backups (10 pro Seite, wählbar) mit Art (automatisch, manuell, von Housekeeper) und Inhalt. Eine Zeile klappt auf: Name, HA-Version, Datenbank, Apps, Ordner, Größe je Ziel und fehlgeschlagene Teile.
+
+- **Zustand als Anteil der Objekte in Ordnung:** Der Status zählt jetzt Objekte statt Punkte. Ausgangswert ist die Zahl der geprüften Objekte, jedes Objekt mit Befund nimmt nach seiner schlimmsten Stufe ab (hoch voll, mittel halb, niedrig ein Fünftel, Info nichts), Folgen einer Ursache zählen nicht extra. Es gibt keine Obergrenzen mehr, jede Behebung zählt. Die Karte „Wie entsteht die Zahl?“ zeigt zum Beispiel „1575 von 2000 in Ordnung“, Ring und Kurve zeigen den Anteil. Der Verlauf des Zustands beginnt neu.
+
+- **Ausfälle nach Dauer:** Nicht verfügbare Entitäten, Geräte, Integrationen und Apps werden nach 15 Minuten zum Befund und steigen mit der Dauer (Info, niedrig, mittel, hoch). Info und niedrig stehen nur auf der Befundseite; Übersicht, Sensoren und Reparaturhinweise zählen ab mittel. Die Einstellung „Nicht verfügbar nach Tagen“ ist durch vier einstellbare Schwellen ersetzt (ein alter Wert wird übernommen, bis du die neuen speicherst). Bei einem Ausfall scannt Housekeeper zu den Schwellen zusätzlich, ohne den Verlauf zu verändern. Entitäten werden dadurch viel früher gemeldet als bisher nach 7 Tagen.
+
+- **Bewertung und Hinweise:** Die Detailseite zeigt die Bewertung eines Befunds mit Gründen und nächster Stufe. Fällt ein Objekt regelmäßig aus, nennt der Befund die übliche Tageszeit und schlägt einen Vermerk mit Zeitfenster vor.
+
+- **Befundseite:** Eine Erklärung hinter der Überschrift, Kacheln in drei Gruppen, die wie die Liste zählen (die Kurven ebenfalls, ohne Folgen), ein Schweregrad für jeden Befund (Info zieht nichts ab), Folgen eingerückt unter ihrer Ursache, die Größe der Ansicht in der Auswahlzeile und die Filter „Alle einzeln“ und „Ursachen mit Folgen“ mit Anzahl. Auf dem Reiter „Technisch“ stehen Labels bei allen Objekten.
+
+- **Nach Updates und Neustarts:** Eine Karte auf der Befundseite zeigt, was nach einem Update oder Neustart begann, eine Zeile je Vorfall; zeitlich zusammenliegende Updates bilden einen Vorfall. Die Beobachtung nach einem System-Update steht in der Zeile des Vorfalls, mit Urteil (Läuft, Verschlechtert, Stabil), getrennt nach dem, was seitdem nicht mehr läuft, und den Befunden, die dabei begannen. Sie startet nur noch bei Updates von Home Assistant, Betriebssystem und Supervisor, lässt sich vorzeitig beenden (mit Rückfrage; sie wird dann mit den bisherigen Messungen ausgewertet) und das Band im Seitenkopf führt zu ihr. Ein Filter zeigt nur die Befunde, die mit einem Update begannen.
+
+- **Scan alle 6 Stunden:** Der Standard für den automatischen Scan ist 6 statt 24 Stunden (einstellbar; ein selbst gesetzter Wert bleibt). Der Verlauf behält einen Punkt pro Tag.
+
+- **Schutz der Datenbank:** Vor dem Löschen im Recorder prüft Housekeeper die Datenbank vollständig (auch auf Wunsch und nach dem Löschen) und meldet einen Schaden als Befund und Reparaturmeldung, mit Hinweis auf `REINDEX` und das Backup (Issue 12). Dazu kommen Hinweise auf beiseitegelegte Datenbanken, wenig Speicherplatz und unsauberes Herunterfahren; Pläne warten auf einen ruhigen Recorder. Gelöscht wird dabei nichts.
+
+- **Sicherere Pläne:** Das Backup vor einem Plan wird geprüft und mit Namen genannt. Veraltete Vorschauen sind markiert und lassen sich erneuern, große Löschungen zeigen einen deutlichen Hinweis, und zu viele Housekeeper-Backups werden gemeldet. Eine unlesbare Speicherdatei lässt nur ihren Teil leer starten.
+
+- **Export überall:** Die Recorder-Seite hat einen Export-Knopf (CSV, Markdown, JSON) für alles, was ein Reiter zeigt. Alle Listen nutzen jetzt dasselbe Export-Menü statt des Download-Symbols.
+
+- **Sieben neue Farbschemata:** Aurora, Honig, Lagune, Smaragd, Frost, Mitternacht und Olive, jeweils in Hell und Dunkel. Die Kacheln der Auswahl sind kleiner, „Lesbarkeit“ steht jetzt rechts.
+
+### Geändert
+
+- **Update-Preflight nur noch für vorher:** Der manuell gespeicherte Ausgangszustand und der Vergleich danach entfallen. Die Karte prüft den Zustand vor einem Update und sagt unten, was danach geschieht: Die Beobachtung nach Updates übernimmt das Nachher.
+
+- **Wartungsfenster entfernt:** Das experimentelle, standardmäßig ausgeschaltete Wartungsfenster unter Wartung gibt es nicht mehr. Wer es eingeschaltet hatte, verliert den gespeicherten Stand. Nach einem Update zeigt die Beobachtung, was seitdem ausfiel.
+
+- **Oberfläche:** Korrekturen und kleine Verbesserungen an Listen, Dialogen, Beschriftungen und Bedienung, darunter ein geöffnetes Panel, das neue Scans im Hintergrund selbst übernimmt (vorher zeigte die Übersicht danach alte Zahlen), die Kacheln der Befundseite (auf breiten Fenstern in zwei Zeilen, alle gleich hoch und breit), die Spaltenauswahl der Listen (Kästchen in einer Reihe am rechten Rand), die Karten der Schwellen unter Einstellungen (gruppiert, einheitlich aufgebaut, mit Link „Standard“), die Ereignisse für eigene Automationen als Tabelle mit Kopier-Knopf, die Wartungsziele (nur noch unter Wartung, nicht mehr doppelt in den Einstellungen), die Liste der letzten Backups (Pfeil neben dem Datum, Details ausgerichtet), die Einstellungen mit vier statt sieben Reitern (Darstellung, Scan und Meldungen, Schutz und Ausnahmen, Info); Speichern der Schwellen lässt die Seite offen, statt zum Home-Assistant-Dashboard zu springen und die Lesbarkeit der Vorfälle.
+
+### Behoben
+
+- **Nicht eingelöste Bestätigungen:** Abgelaufene Bestätigungen werden jetzt vergessen und sammeln sich nicht mehr im Speicher (Issue 18).
+
+- **Bestätigung gehört dem Administrator, der sie erteilt hat:** Ein anderer Administrator kann sie nicht mehr einlösen, und im Verlauf steht immer der, der bestätigt und gestartet hat (Issue 17).
+
+- **Löschen von Statistiken nur noch über einen Plan:** Ein alter Befehl löschte verwaiste Statistiken ohne Vorschau und Bestätigung. Das Panel nutzte ihn nicht mehr; er ist entfernt (Issue 16).
+
+- **Backup-Prüfung:** Backups einzelner Apps, etwa vor einem App-Update, zählen nicht mehr als Backups von Home Assistant.
+
+### English
+
+#### New
+
+- **State when an update starts:** When an update of Home Assistant, the operating system or the Supervisor begins, Housekeeper scans at once. The watch afterwards compares with that state instead of the last scheduled scan.
+
+- **Repairs after updates:** The watch after an update also reports repairs that have appeared since, and counts them as worse.
+
+- **Backup list with details:** The list shows up to 20 backups (10 per page, selectable) with type (automatic, manual, by Housekeeper) and contents. A row unfolds: name, HA version, database, apps, folders, size per target and failed parts.
+
+- **State as the share of objects in order:** The status now counts objects instead of points. The starting value is the number of rated objects, each object with a finding takes off by its worst level (high fully, medium half, low a fifth, info nothing), follow-ups of a cause do not count extra. There are no caps any more, every fix counts. The card “How is this number made?” shows, for example, “1575 of 2000 in order”; the ring and the curve show the share. The history of the state starts afresh.
+
+- **Outages by duration:** Unavailable entities, devices, integrations and apps become a finding after 15 minutes and rise with their duration (info, low, medium, high). Info and low appear only on the findings page; the overview, the sensors and the repair hints count from medium on. The setting “Unavailable after days” is replaced by four adjustable thresholds (an old value is kept until you save the new ones). During an outage Housekeeper scans additionally at the thresholds without changing the history. Entities are therefore reported much earlier than the former 7 days.
+
+- **Rating and hints:** The detail page shows the rating of a finding with its reasons and the next level. If an object fails regularly, the finding names the usual time of day and suggests a mark with a time window.
+
+- **Findings page:** An explanation behind the heading, tiles in three groups that count like the list (the curves too, without follow-ups), a severity for every finding (info takes nothing off), follow-ups indented under their cause, the size of the view in the selection row and the filters “All one by one” and “Causes with follow-ups” with their counts. The tab “Technical” shows labels for all objects.
+
+- **After updates and restarts:** A card on the findings page shows what began after an update or restart, one row per incident; updates close in time form one incident. The watch after a system update sits in the row of its incident, with its verdict (Running, Worse, Stable), apart for what has stopped working since and the findings that began with it. It starts only for updates of Home Assistant, the operating system and the Supervisor, can be ended early (after a confirmation; it is then judged by the measurements so far), and the band in the page head leads to it. A filter shows only the findings that began with an update.
+
+- **Scan every 6 hours:** The default for the automatic scan is 6 instead of 24 hours (adjustable; a value you set yourself stays). The history keeps one point per day.
+
+- **Protecting the database:** Before deleting in the recorder, Housekeeper checks the database fully (also on request and after deleting) and reports damage as a finding and a repair hint, pointing to `REINDEX` and the backup (issue 12). Hints on databases set aside, little disk space and unclean shutdowns are added; plans wait for a calm recorder. Nothing is deleted by this.
+
+- **Safer plans:** The backup before a plan is verified and named. Outdated previews are marked and can be renewed, large removals show a clear note, and too many Housekeeper backups are reported. An unreadable saved file only makes its own part start empty.
+
+- **Export everywhere:** The recorder page has an export button (CSV, Markdown, JSON) for everything a tab shows. All lists now use the same export menu instead of the download icon.
+
+- **Seven new color schemes:** Aurora, Honey, Lagoon, Emerald, Frost, Midnight and Olive, each in light and dark. The scheme tiles are smaller and "Readability" now sits on the right.
+
+#### Changed
+
+- **Update preflight only for before:** The manually saved starting state and the comparison afterwards are gone. The card checks the state before an update and says below what happens afterwards: the watch after updates takes over the time after.
+
+- **Maintenance window removed:** The experimental maintenance window under Maintenance, off by default, is gone. If you had switched it on, its saved state is dropped. After an update, the watch shows what has failed since.
+
+- **Interface:** Fixes and small improvements to lists, dialogs, labels and handling, an open panel that picks up scans from the background by itself (the overview used to show old numbers afterwards), among them the tiles of the findings page (in two rows on wide windows, all equally high and wide), the column picker of the lists (boxes in one line at the right edge), the threshold cards in Settings (grouped, uniformly built, with a “Default” link), the events for your own automations as a table with a copy button, the maintenance goals (only under Maintenance, no longer duplicated in Settings), the list of the latest backups (arrow next to the date, details aligned), the settings with four tabs instead of seven (Appearance, Scan and messages, Protection and exceptions, Info); saving the thresholds keeps the page open instead of jumping to the Home Assistant dashboard and the readability of incidents.
+
+#### Fixed
+
+- **Unredeemed confirmations:** Expired confirmations are now forgotten and no longer pile up in memory (issue 18).
+
+- **A confirmation belongs to the administrator who gave it:** Another administrator can no longer redeem it, and the history always names the one who confirmed and started (issue 17).
+
+- **Deleting statistics only through a plan:** An old command deleted orphaned statistics without a preview or confirmation. The panel no longer used it; it is removed (issue 16).
+
+- **Backup check:** Backups of single apps, such as those made before an app update, no longer count as backups of Home Assistant.
+
 ## 1.7.0 - 2026-10-14
 
 ### Neu

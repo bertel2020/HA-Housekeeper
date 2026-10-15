@@ -1,13 +1,35 @@
 // Texts for the impact of a finding (see impact.py); merged into TEXT.
 Object.assign(TEXT.de, {
+  levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
+  openFindingsQuiet: "+ {n} weitere (Info, niedrig)", whyOpenLevel: "Befunde dieser Stufe anzeigen",
   sortImpact: "Schweregrad", allSeverities: "Alle Schweregrade", chip_none: "Keine", viewsClear: "Keine Ansicht", impact_high: "Hohe Auswirkung", impact_medium: "Mittlere Auswirkung", impact_low: "Geringe Auswirkung", impact_info: "Info", outageFor: "seit {span}", outageNext: "{level} in {span}", unitMin: "Min.", unitHour: "Std.", unitDay: "Tagen", chip_outage: "Ausfall", allReasons: "Alle Gründe", chip_high: "Hoch", chip_medium: "Mittel", chip_low: "Niedrig", chip_info: "Info", rowMenu: "Aktionen für diese Zeile", impact_none: "Keine Auswirkung",
   impactFact_outage_age: "Dauer des Ausfalls", impactFact_critical: "kritisch: {why}", impactFact_target_critical: "fehlendes Ziel {id} ist kritisch", impactFact_controls_critical: "steuert {n} kritische Objekte", impactFact_used_by_active: "von {n} aktiven Automationen oder Skripten genutzt", impactFact_on_dashboards: "auf {n} Dashboards", impactFact_many_dependents: "{n} Abhängige", impactFact_runs_active: "läuft aktiv", impactFact_runs_inactive: "ist deaktiviert",
   reason_critical_object: "Kritisches Objekt (Schloss, Alarm, Wasser- oder Rauchmelder, Label housekeeper_critical): bitte einzeln bestätigen.",
   impactWhy_label: "Label", impactWhy_device_label: "Label am Gerät", impactWhy_area_label: "Label am Bereich", impactWhy_kind: "Art des Objekts",
 });
 Object.assign(TEXT.en, {
+  levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
+  openFindingsQuiet: "+ {n} more (info, low)", whyOpenLevel: "Show the findings of this level",
   sortImpact: "Severity", allSeverities: "All severities", chip_none: "None", viewsClear: "No view", impact_high: "High impact", impact_medium: "Medium impact", impact_low: "Low impact", impact_info: "Info", outageFor: "for {span}", outageNext: "{level} in {span}", unitMin: "min", unitHour: "h", unitDay: "days", chip_outage: "Outage", allReasons: "All reasons", chip_high: "High", chip_medium: "Medium", chip_low: "Low", chip_info: "Info", rowMenu: "Actions for this row", impact_none: "No impact",
   impactFact_outage_age: "length of the outage", impactFact_critical: "critical: {why}", impactFact_target_critical: "the missing target {id} is critical", impactFact_controls_critical: "controls {n} critical objects", impactFact_used_by_active: "used by {n} active automations or scripts", impactFact_on_dashboards: "on {n} dashboards", impactFact_many_dependents: "{n} dependents", impactFact_runs_active: "runs actively", impactFact_runs_inactive: "is disabled",
   reason_critical_object: "Critical object (lock, alarm, water or smoke sensor, label housekeeper_critical): confirm it on its own.",
   impactWhy_label: "label", impactWhy_device_label: "label on the device", impactWhy_area_label: "label on the area", impactWhy_kind: "kind of object",
+});
+
+Object.assign(TEXT.de, {
+  ratingTitle: "Bewertung", ratingFollowers: "erklärt {n} Folgebefunde", ratingNoReason: "Nichts nutzt dieses Objekt", ratingFrom: "ab {span}",
+  ratingCertMeaning: "Die Zahl sagt, wie sicher die Diagnose ist, nicht wie schlimm es ist.",
+  ratingTop: "Das ist die höchste Stufe, der Schweregrad kann nicht mehr steigen.",
+  ratingNext_info: "ein Dashboard oder eine Automation darauf verweist", ratingNext_low: "eine aktive Automation oder ein aktives Skript es nutzt", ratingNext_medium: "es kritisch wird (Label, Art des Objekts) oder 5 oder mehr Abhängige hat",
+  ratingNextCond: "{level}, sobald {cond}.", ratingNextBoth: "{level} in {span} oder sobald {cond}.", ratingNextDur: "Nach der Dauer: {level} in {span}.",
+  certWhy_problem: "Befund aus dem Zustand des Objekts", certWhy_unavailable: "der Zustand ist nicht verfügbar", certWhy_broken_reference: "die fehlende Referenz ist belegt", certWhy_possible_duplicate: "Vermutung aus dem Namen und der Registry, nicht belegt", certWhy_unused: "Vermutung: nichts verweist darauf", certWhy_stale: "Vermutung aus dem Alter des Zustands", certWhy_unknown: "der Zustand ist unbekannt",
+});
+
+Object.assign(TEXT.en, {
+  ratingTitle: "Rating", ratingFollowers: "explains {n} follow-up findings", ratingNoReason: "Nothing uses this object", ratingFrom: "from {span}",
+  ratingCertMeaning: "The number says how sure the diagnosis is, not how bad it is.",
+  ratingTop: "This is the highest level; the severity cannot rise any further.",
+  ratingNext_info: "a dashboard or an automation refers to it", ratingNext_low: "an active automation or script uses it", ratingNext_medium: "it becomes critical (label, kind of object) or has 5 or more dependents",
+  ratingNextCond: "{level} as soon as {cond}.", ratingNextBoth: "{level} in {span} or as soon as {cond}.", ratingNextDur: "By duration: {level} in {span}.",
+  certWhy_problem: "finding from the state of the object", certWhy_unavailable: "the state is unavailable", certWhy_broken_reference: "the missing reference is proven", certWhy_possible_duplicate: "a guess from the name and the registry, not proven", certWhy_unused: "a guess: nothing refers to it", certWhy_stale: "a guess from the age of the state", certWhy_unknown: "the state is unknown",
 });

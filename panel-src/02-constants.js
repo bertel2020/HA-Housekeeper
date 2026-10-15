@@ -11,9 +11,11 @@ const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replac
 const PURGE_KINDS = ["purge_statistics", "trim_history", "delete_backup"];
 // Reasons that mean "all is well, there is nothing to do" and not "Housekeeper may not".
 const NOTHING_REASONS = ["nothing_found", "nothing_to_do"];
+// A plan removing this share of all entities or devices (or more) gets a warning before it is confirmed.
+const LARGE_REMOVAL_SHARE = 0.5;
 const REPAIR_KINDS = ["repair_counter", "repair_range"];
 const IMPACT_RANK = { none: 0, info: 1, low: 2, medium: 3, high: 4 };
-const BACKUP_FAILURES = ["backup_failed", "backup_small_failed", "backup_unavailable", "no_backup_agent"];
+const BACKUP_FAILURES = ["backup_failed", "backup_small_failed", "backup_unavailable", "no_backup_agent", "backup_unverified"];
 const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 // What a finished action says it did; kinds not listed just say "done".
 const DONE_RESULTS = Object.fromEntries([
@@ -26,7 +28,7 @@ const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do n
 const PREFS_KEY = "ha_housekeeper.prefs";
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
 const USER_DATA_KEY = "ha_housekeeper";
-const OPTION_LIMITS = { min_unavailable_days: [0, 365], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
+const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 // The dependency graph shows this many nodes per side at first; "more" adds another step.
@@ -34,15 +36,20 @@ const GRAPH_NODE_STEP = 40;
 const GRAPH_GROUP_MIN = 5; // leaf nodes of one type on one node from which the graph folds them into one
 // Scan thresholds as cards: option key, title, explanation, unit and default (the defaults of const.py).
 const OPTION_FIELDS = [
-  ["min_unavailable_days", "optMinUnavailableTitle", "optMinUnavailableHint", "unitDays", 7],
+  ["outage_info_minutes", "optOutageInfoTitle", "optOutageInfoHint", "unitMinutes", 15],
+  ["outage_low_hours", "optOutageLowTitle", "optOutageLowHint", "unitHours", 1],
+  ["outage_medium_hours", "optOutageMediumTitle", "optOutageMediumHint", "unitHours", 24],
+  ["outage_high_hours", "optOutageHighTitle", "optOutageHighHint", "unitHours", 168],
   ["unused_automation_days", "optUnusedAutomationTitle", "optUnusedAutomationHint", "unitDays", 90],
-  ["scan_interval_hours", "optScanIntervalTitle", "optScanIntervalHint", "unitHours", 24],
+  ["scan_interval_hours", "optScanIntervalTitle", "optScanIntervalHint", "unitHours", 6],
   ["low_battery_percent", "optLowBatteryTitle", "optLowBatteryHint", "unitPercent", 20],
   ["stale_hours", "optStaleTitle", "optStaleHint", "unitHours", 48],
   ["history_days", "optHistoryDaysTitle", "optHistoryDaysHint", "unitDays", 30],
   ["watch_hours", "optWatchTitle", "optWatchHint", "unitHours", 24],
 ];
+const OUTAGE_OPTION_KEYS = ["outage_info_minutes", "outage_low_hours", "outage_medium_hours", "outage_high_hours"];
 const START_VIEWS = ["overview", "findingsNav", "inventory", "changes", "batteries"];
+const SCAN_WATCH_MS = 60000;
 const REPO_URL = "https://github.com/bertel2020/HA-Housekeeper";
 // Palettes for explicit light/dark; taken from the Zeitarchiv app's design system (app.css).
 // "standard" keeps the Home Assistant accent and, in automatic mode, the Home Assistant theme itself.
@@ -58,6 +65,34 @@ const SCHEMES = {
   modern: {
     light: { accent: "#3157c8", bg: "#f6f7fb", surface: "#ffffff", soft: "#eef1f6", text: "#172033", muted: "#566176", border: "#d9dee8", positive: "#1f8a54", warning: "#a96700", danger: "#c83737" },
     dark: { accent: "#7ea1ff", on: "#0f1218", bg: "#0f1218", surface: "#171c25", soft: "#222936", text: "#f3f6fb", muted: "#b3bdcc", border: "#303949", positive: "#5fcb89", warning: "#e6a15a", danger: "#f07a7a" },
+  },
+  aurora: {
+    light: { accent: "#7a3ff2", bg: "#f7f5fb", surface: "#ffffff", soft: "#f0ecf8", text: "#1c1730", muted: "#5d5675", border: "#e1dbef", positive: "#1f8a5b", warning: "#a45d00", danger: "#c42a4f" },
+    dark: { accent: "#b79cff", on: "#130f1d", bg: "#130f1d", surface: "#1c1728", soft: "#272037", text: "#f4f1fb", muted: "#b9b1cc", border: "#362d4a", positive: "#62d19a", warning: "#f0b35c", danger: "#ff8aa3" },
+  },
+  honey: {
+    light: { accent: "#a16207", bg: "#fbf8ef", surface: "#ffffff", soft: "#f4eedb", text: "#261f0f", muted: "#6b5f3f", border: "#e9e0c4", positive: "#2f7d46", warning: "#b8470f", danger: "#b3261e" },
+    dark: { accent: "#f5c542", on: "#16130a", bg: "#16130a", surface: "#201c10", soft: "#2d2717", text: "#faf5e4", muted: "#c9bd98", border: "#403819", positive: "#7fd68f", warning: "#ff9f5a", danger: "#ff8f87" },
+  },
+  lagoon: {
+    light: { accent: "#0b7a8f", bg: "#f2f8fa", surface: "#ffffff", soft: "#e5f1f4", text: "#0f2229", muted: "#4a6770", border: "#d3e5ea", positive: "#1f8a54", warning: "#9a6200", danger: "#c23b3b" },
+    dark: { accent: "#4fd8ee", on: "#0b1619", bg: "#0b1619", surface: "#122126", soft: "#1a2f36", text: "#e8f6f9", muted: "#9fc0c8", border: "#25404a", positive: "#62d19a", warning: "#f0b35c", danger: "#ff8a8a" },
+  },
+  emerald: {
+    light: { accent: "#047857", bg: "#f1f8f5", surface: "#ffffff", soft: "#e2f1ea", text: "#0b1f18", muted: "#46665a", border: "#cfe6dc", positive: "#3a8f2f", warning: "#9a6200", danger: "#c0392b" },
+    dark: { accent: "#34d399", on: "#07140f", bg: "#07140f", surface: "#0e1f18", soft: "#162d23", text: "#e6f7ef", muted: "#98c2b0", border: "#1f3b2f", positive: "#86d96a", warning: "#f0b35c", danger: "#ff8a80" },
+  },
+  frost: {
+    light: { accent: "#3b6a8f", bg: "#f3f6f8", surface: "#ffffff", soft: "#e6ecf0", text: "#14202a", muted: "#51636f", border: "#d6dfe5", positive: "#2a8a5a", warning: "#9a6200", danger: "#c23b3b" },
+    dark: { accent: "#8cc1e8", on: "#0d1318", bg: "#0d1318", surface: "#151d24", soft: "#1e2a33", text: "#eaf1f6", muted: "#a3b5c2", border: "#2a3a46", positive: "#62d19a", warning: "#f0b35c", danger: "#ff8a8a" },
+  },
+  midnight: {
+    light: { accent: "#0b4f9c", bg: "#f2f6fb", surface: "#ffffff", soft: "#e4ecf6", text: "#0c1a2e", muted: "#485a74", border: "#d2deec", positive: "#1f8a54", warning: "#9a6200", danger: "#c23b3b" },
+    dark: { accent: "#5aa9ff", on: "#060c18", bg: "#060c18", surface: "#0d1626", soft: "#15233a", text: "#e9f1fc", muted: "#9db2cf", border: "#1f3250", positive: "#62d19a", warning: "#f0b35c", danger: "#ff8a8a" },
+  },
+  olive: {
+    light: { accent: "#5f6b1f", bg: "#f7f7ee", surface: "#ffffff", soft: "#ecedd9", text: "#1c1f0c", muted: "#5a5e3a", border: "#dee0c4", positive: "#2f7d46", warning: "#9a6200", danger: "#b3261e" },
+    dark: { accent: "#c4cf5a", on: "#12140a", bg: "#12140a", surface: "#1b1e10", soft: "#272b17", text: "#f3f5e2", muted: "#b8bd90", border: "#353a1f", positive: "#7fd68f", warning: "#f0b35c", danger: "#ff8f87" },
   },
 };
 // Earlier builds saved other scheme names.
@@ -80,11 +115,12 @@ const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"]
 // The ring of the status: points off for each urgent topic, and the most that can come off.
 // The status is a score from 100: each entry of the findings list takes points off by its impact (points each, at most),
 // each urgent topic of the state area takes 10 off (at most 30). Green from 90, yellow from 70.
-const HEALTH_POINTS = { high: [5, 30], medium: [3, 20], low: [2, 10], info: [1, 5] };
-const HEALTH_STATE_POINTS = 10;
-const HEALTH_STATE_MAX = 30;
-const HEALTH_GREEN = 90;
-const HEALTH_YELLOW = 70;
+// The reasons on the findings page: what needs a look first, and what is tidying up. Anything else counts as urgent.
+const FINDING_URGENT = ["problem", "unavailable", "outage", "broken_reference", "run_error", "recurring"];
+const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
+const HEALTH_WEIGHTS = { high: 1, medium: 0.5, low: 0.2, info: 0 };
+const HEALTH_GREEN = 95;
+const HEALTH_YELLOW = 85;
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
 
 const NAV = [
@@ -147,6 +183,8 @@ const STATUS_TONE = {
 // Finding classes that call for action when they are new.
 // The findings that belong to a cause itself (an integration, a device, an app); the others are its follow-up findings.
 const CAUSE_OWN_RULES = ["config_entry.not_loaded", "device.down", "app.stopped_in_use"];
+// The findings of an outage are quiet (info, low) at first and loud from medium on; quiet ones stay on the findings page only.
+const OUTAGE_RULES = ["entity.state_unavailable", "entity.state_unknown", "device.down", "config_entry.not_loaded", "app.stopped_in_use"];
 const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
 
 // Object types the housekeeping status is calculated from.

@@ -19,7 +19,17 @@ from .const import EVENTS_STORAGE_KEY, STORAGE_VERSION
 SAVE_DELAY = 300  # seconds; coalesces writes, Home Assistant flushes the store when it stops
 SIZE_DAYS = 120  # daily database sizes kept for the growth hint
 MAX_EVENTS = 5000
-EVENT_KINDS = ("ha_version", "entry_version", "start", "plan", "purge")
+EVENT_KINDS = (
+    "ha_version",
+    "os_version",
+    "supervisor_version",
+    "entry_version",
+    "start",
+    "plan",
+    "purge",
+)
+SYSTEM_KINDS = (("os", "os_version"), ("supervisor", "supervisor_version"))
+INTEGRITY_STATES = ("ok", "damaged", "failed")
 LIST_LIMIT = 200  # events sent to the panel
 
 
@@ -38,6 +48,7 @@ def detect(
     ha_version: str,
     custom_versions: dict[str, str],
     now: datetime,
+    system: dict[str, str] | None = None,
 ) -> list[dict[str, Any]]:
     """Return the version changes since ``previous`` (None = first observation, no events)."""
     if not previous:
@@ -46,6 +57,10 @@ def detect(
     stamp = now.isoformat()
     if previous.get("ha") and previous["ha"] != ha_version:
         found.append({"at": stamp, "kind": "ha_version", "from": previous["ha"], "to": ha_version})
+    for key, kind in SYSTEM_KINDS:
+        version = (system or {}).get(key)
+        if version and previous.get(key) and previous[key] != version:
+            found.append({"at": stamp, "kind": kind, "from": previous[key], "to": version})
     known = previous.get("entries") or {}
     for domain, version in sorted(custom_versions.items()):
         if domain in known and known[domain] != version:
@@ -70,6 +85,9 @@ class EventLog:
         self.versions: dict[str, Any] = {}
         self.heartbeat: str | None = None
         self.sizes: dict[str, int] = {}
+        self.integrity: dict[str, Any] | None = None  # the last full database check
+        # False while Home Assistant runs, True once it announced its stop; None before the first start.
+        self.clean_stop: bool | None = None
 
     async def async_load(self) -> None:
         data = await self._store.async_load()
@@ -95,6 +113,19 @@ class EventLog:
                 if isinstance(size, int) and not isinstance(size, bool) and size >= 0
             }
             self._trim_sizes()
+        if isinstance(data.get("clean_stop"), bool):
+            self.clean_stop = data["clean_stop"]
+        integrity = data.get("integrity")
+        if (
+            isinstance(integrity, dict)
+            and integrity.get("state") in INTEGRITY_STATES
+            and _parse(integrity.get("at"))
+        ):
+            self.integrity = {
+                "at": integrity["at"],
+                "state": integrity["state"],
+                "lines": [str(x) for x in integrity.get("lines", [])][:10],
+            }
 
     def _save(self) -> None:
         self._store.async_delay_save(self._data, SAVE_DELAY)
@@ -105,6 +136,8 @@ class EventLog:
             "versions": self.versions,
             "heartbeat": self.heartbeat,
             "sizes": self.sizes,
+            "integrity": self.integrity,
+            "clean_stop": self.clean_stop,
         }
 
     def _trim_sizes(self) -> None:
@@ -117,6 +150,11 @@ class EventLog:
             return
         self.sizes[day] = int(size)
         self._trim_sizes()
+        self._save()
+
+    def record_integrity(self, now: datetime, state: str, lines: list[str]) -> None:
+        """The result of the last full database check; only the last one is kept."""
+        self.integrity = {"at": now.isoformat(), "state": state, "lines": lines[:10]}
         self._save()
 
     def record(self, kind: str, now: datetime, **fields: Any) -> None:
@@ -133,21 +171,44 @@ class EventLog:
         fields: dict[str, Any] = {}
         if last is not None and last <= now:
             fields["down_seconds"] = int((now - last).total_seconds())
+        if self.clean_stop is False:
+            fields["unclean"] = (
+                True  # the last run never announced its stop: crash, power cut, kill
+            )
+        self.clean_stop = False
         self.record("start", now, **fields)
         self.beat(now)
+
+    def mark_clean_stop(self) -> None:
+        """Home Assistant is stopping on purpose; a start without this mark follows a crash."""
+        self.clean_stop = True
+        self._save()
 
     def beat(self, now: datetime) -> None:
         self.heartbeat = now.isoformat()
         self._save()
 
     def observe(
-        self, ha_version: str, custom_versions: dict[str, str], now: datetime
+        self,
+        ha_version: str,
+        custom_versions: dict[str, str],
+        now: datetime,
+        system: dict[str, str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Compare the installed versions with the last observation, log and return the changes."""
-        found = detect(self.versions, ha_version, custom_versions, now)
+        """Compare the installed versions with the last observation, log and return the changes.
+
+        ``system`` holds the OS and Supervisor versions when they could be read; one that could not
+        keeps its last known version, so a failed read is no change.
+        """
+        old = self.versions
+        found = detect(old, ha_version, custom_versions, now, system)
         self.events.extend(found)
         del self.events[:-MAX_EVENTS]
         self.versions = {"ha": ha_version, "entries": dict(custom_versions)}
+        for key, _ in SYSTEM_KINDS:
+            version = (system or {}).get(key) or old.get(key)
+            if isinstance(version, str) and version:
+                self.versions[key] = version
         self._save()
         return found
 

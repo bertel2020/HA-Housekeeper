@@ -13,7 +13,7 @@ from typing import Any
 from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
 from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import (
@@ -31,14 +31,16 @@ from . import storms as storms_module
 from .const import (
     CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
-    CONF_MIN_UNAVAILABLE_DAYS,
+    CONF_OUTAGE_HIGH_HOURS,
+    CONF_OUTAGE_INFO_MINUTES,
+    CONF_OUTAGE_LOW_HOURS,
+    CONF_OUTAGE_MEDIUM_HOURS,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_STALE_HOURS,
     CONF_UNUSED_AUTOMATION_DAYS,
     CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
-    DEFAULT_MIN_UNAVAILABLE_DAYS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_STALE_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
@@ -55,11 +57,13 @@ from .db_health import sample_size
 from .inventory import InventoryScanner
 from .issues import async_clear_issues
 from .maintenance import recorder_costs
+from .outage_levels import thresholds_from_options
 from .runs import run_key
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, retryable_gaps
 from .scan_trigger import ScanRefused
 from .services import async_register_services
 from .system_usage import system_light
+from .watch import UPDATE_ENTITIES
 from .websocket_api import async_register as async_register_websocket
 
 _LOGGER = logging.getLogger(__name__)
@@ -94,9 +98,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     booting = hass.state is not CoreState.running
     if booting:
         scanner.begin_boot()
-    scanner.min_unavailable_days = entry.options.get(
-        CONF_MIN_UNAVAILABLE_DAYS, DEFAULT_MIN_UNAVAILABLE_DAYS
-    )
+    levels = thresholds_from_options(entry.options)
+    scanner.outage_info_minutes = levels[CONF_OUTAGE_INFO_MINUTES]
+    scanner.outage_low_hours = levels[CONF_OUTAGE_LOW_HOURS]
+    scanner.outage_medium_hours = levels[CONF_OUTAGE_MEDIUM_HOURS]
+    scanner.outage_high_hours = levels[CONF_OUTAGE_HIGH_HOURS]
     scanner.unused_automation_days = entry.options.get(
         CONF_UNUSED_AUTOMATION_DAYS, DEFAULT_UNUSED_AUTOMATION_DAYS
     )
@@ -129,17 +135,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ]
         )
         hass.data[DOMAIN]["static_path_registered"] = True
-    await panel_custom.async_register_panel(
-        hass,
-        webcomponent_name=PANEL_ELEMENT,
-        frontend_url_path=PANEL_URL,
-        module_url=f"{FRONTEND_URL}?v={digest}",
-        sidebar_title="Housekeeper",
-        sidebar_icon="mdi:broom",
-        require_admin=True,
-        config={"entry_id": entry.entry_id},
-        config_panel_domain=DOMAIN,
-    )
+    # A reload for new options keeps the panel: removing it makes Home Assistant leave the open page.
+    if PANEL_URL not in hass.data.get(frontend.DATA_PANELS, {}):
+        await panel_custom.async_register_panel(
+            hass,
+            webcomponent_name=PANEL_ELEMENT,
+            frontend_url_path=PANEL_URL,
+            module_url=f"{FRONTEND_URL}?v={digest}",
+            sidebar_title="Housekeeper",
+            sidebar_icon="mdi:broom",
+            require_admin=True,
+            config={"entry_id": entry.entry_id},
+            config_panel_domain=DOMAIN,
+        )
 
     # A gap that a new scan may close (Lovelace not ready, a dashboard being saved) is tried again
     # a few minutes later, a few times, instead of waiting for the next regular scan.
@@ -190,6 +198,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(async_at_started(hass, _start_initial_scan))
 
     @callback
+    def _stopping(_: Any) -> None:
+        scanner.events.mark_clean_stop()
+
+    entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _stopping))
+
+    @callback
     def _heartbeat(_: Any) -> None:
         scanner.events.beat(datetime.now(UTC))
 
@@ -211,6 +225,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(async_track_time_interval(hass, _mark_windows, timedelta(minutes=5)))
     entry.async_on_unload(async_track_state_change_event(hass, ["sun.sun"], _mark_windows))
 
+    async def _update_changed(event: Any) -> None:
+        await scanner.async_update_changed(event.data.get("old_state"), event.data.get("new_state"))
+
+    # An install of a system update takes the state of that moment for the watch after it.
+    entry.async_on_unload(
+        async_track_state_change_event(hass, list(UPDATE_ENTITIES), _update_changed)
+    )
+
     async def _sample_load(_: Any) -> None:
         # A sample that cannot be taken is a gap in the line, nothing more.
         try:
@@ -228,6 +250,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.debug("Taking a load sample failed", exc_info=True)
 
     entry.async_on_unload(async_track_time_interval(hass, _sample_load, timedelta(minutes=5)))
+    entry.async_on_unload(scanner.outage_scans.start())
     entry.async_on_unload(criteria_module.async_listen(hass, scanner.criteria))
     entry.async_on_unload(scanner.criteria.cancel_all)
 
@@ -329,6 +352,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload so the new thresholds apply."""
+    hass.data[DOMAIN]["keep_panel"] = True
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -342,7 +366,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await scanner.cleanup.wait()
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
-        frontend.async_remove_panel(hass, PANEL_URL)
+        if not hass.data[DOMAIN].pop("keep_panel", False):
+            frontend.async_remove_panel(hass, PANEL_URL)
         hass.data[DOMAIN].pop("scanner", None)
         if scanner is not None:
             await scanner.cleanup.flush_journal()

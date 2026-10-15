@@ -24,8 +24,10 @@ class SparklineMixin {
   // Line, end point and the change over the period for one key of the series ("objects", "findings",
   // "unavailable"). "rising" says whether more is worse; without it the colour stays neutral.
   sparkline(key, rising) {
-    // "class:<name>" reads the open findings of one class; a day that stored classes without it had none.
-    const read = p => key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined) : p[key];
+    // "class:<name>" reads the open findings of one class, "lead:<name>" the same without follow-ups; a day that stored
+    // classes without it had none, and a day from before the follow-ups were told apart has no such series at all.
+    const read = p => key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
+      : key.startsWith("lead:") ? (p.lead_classes ? p.lead_classes[key.slice(5)] || 0 : undefined) : p[key];
     const points = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
     if (points.length < SPARK_MIN_POINTS) return `<span class="spark-hint">${this.t("sparkBuilding")}</span>`;
     const values = points.map(read), n = values.length;
@@ -33,7 +35,7 @@ class SparklineMixin {
     const days = Math.max(1, Math.round((new Date(points[n - 1].at) - new Date(points[0].at)) / 864e5));
     const w = 200, h = 36, pad = 4;
     let lo = Math.min(...values), hi = Math.max(...values);
-    const span = Math.max(4, hi * 0.1);
+    const span = key === "health" ? 1 : Math.max(4, hi * 0.1); // the state of the house moves in tenths of a percent
     if (hi - lo < span) { const mid = (hi + lo) / 2; lo = mid - span / 2; hi = mid + span / 2; }
     const x = i => pad + ((w - 2 * pad) * i) / (n - 1), y = v => h - pad - ((h - 2 * pad) * (v - lo)) / (hi - lo);
     const tone = !rising || !change ? "" : (change > 0) === (rising === "bad") ? "red" : "ok";

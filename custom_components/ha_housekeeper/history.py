@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -11,6 +12,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import DEFAULT_HISTORY_DAYS, HISTORY_STORAGE_KEY, STORAGE_VERSION
 from .hygiene import finding_key as _finding_key
+from .outage_levels import is_quiet
 
 SAVE_DELAY = 10
 LIST_LIMIT = 500  # entries per section sent to the panel; totals stay exact
@@ -37,8 +39,17 @@ def _valid_checkpoint(value: Any) -> dict[str, Any] | None:
 
 # The rules whose outcome depends on a setting: when it changed between two scans, findings that
 # vanished were not repaired, the rule just reads differently now.
+_OUTAGE_RULES = {
+    "entity.state_unavailable",
+    "entity.state_unknown",
+    "config_entry.not_loaded",
+    "device.down",
+}
 SETTING_RULES = {
-    "min_unavailable_days": {"entity.state_unavailable", "config_entry.not_loaded", "device.down"},
+    "outage_info_minutes": _OUTAGE_RULES,
+    "outage_low_hours": _OUTAGE_RULES,
+    "outage_medium_hours": _OUTAGE_RULES,
+    "outage_high_hours": _OUTAGE_RULES,
     "unused_automation_days": {
         "automation.disabled_long",
         "automation.stale",
@@ -48,22 +59,50 @@ SETTING_RULES = {
 }
 
 
-# The score from 100, as the panel reads it: points off for each entry of the findings list by its
-# impact (points each, at most), counted once for a chain of outages and not for its followers.
-# "info" (an outage under an hour) counts on the page but not here, so a restart leaves no dent in the curve.
-SCORE_POINTS = {"high": (5, 30), "medium": (3, 20), "low": (2, 10)}
+# The state of the house, as the panel reads it: the number of rated objects, minus the weight of each object
+# that has a finding. An object counts once, with its worst level; a chain of outages stands for its cause and
+# its followers do not count. "info" (an outage under an hour) weighs nothing, so a restart leaves no dent.
+HEALTH_TYPES = frozenset({"entity", "automation", "script", "scene", "config_entry", "device"})
+HEALTH_WEIGHTS = {"high": 1.0, "medium": 0.5, "low": 0.2}
 
 
-def _score(snapshot: dict[str, Any]) -> int:
-    levels = [
-        c.get("impact", "none") for c in snapshot.get("causes", []) if not c.get("parent_id")
-    ] + [
-        f.get("impact", "none")
-        for f in snapshot["findings"]
-        if not f.get("ignored") and not f.get("cause_id")
-    ]
-    off = sum(min(most, each * levels.count(level)) for level, (each, most) in SCORE_POINTS.items())
-    return max(0, 100 - off)
+def _health(snapshot: dict[str, Any]) -> tuple[int, float]:
+    """The rated objects and the weight the objects with a finding take off."""
+    known = {
+        f"{o['object_type']}:{o['object_id']}"
+        for o in snapshot["objects"]
+        if o["object_type"] in HEALTH_TYPES
+    }
+    worst: dict[str, float] = {}
+
+    def note(key: str, level: str) -> None:
+        if key in known:
+            worst[key] = max(worst.get(key, 0.0), HEALTH_WEIGHTS.get(level, 0.0))
+
+    for cause in snapshot.get("causes", []):
+        if not cause.get("parent_id"):
+            note(f"{cause['object_type']}:{cause['object_id']}", cause.get("impact", "none"))
+    for finding in snapshot["findings"]:
+        if not finding.get("ignored") and not finding.get("cause_id"):
+            key = f"{finding['rule_id'].split('.')[0]}:{finding['object_id']}"
+            note(key, finding.get("impact", "none"))
+    return len(known), round(sum(worst.values()), 1)
+
+
+def health_percent(base: int | None, load: float | None) -> float | None:
+    """The share of the rated objects that is in order, with one decimal."""
+    if not base or load is None:
+        return None
+    # Rounded down, so that a house with a finding never reads 100.
+    return math.floor(round(1000 * (1 - load / base), 6)) / 10
+
+
+# The rules whose finding is a cause itself; any other finding with a cause_id is a follow-up.
+CAUSE_OWN_RULES = {"config_entry.not_loaded", "device.down", "app.stopped_in_use"}
+
+
+def _is_follower(finding: dict[str, Any]) -> bool:
+    return bool(finding.get("cause_id")) and finding.get("rule_id") not in CAUSE_OWN_RULES
 
 
 def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
@@ -76,20 +115,33 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
     for finding in open_findings:
         name = str(finding.get("classification") or "")
         classes[name] = classes.get(name, 0) + 1
+    # The tiles count without the follow-ups that hang on a cause, so their curves do too.
+    lead_classes: dict[str, int] = {}
+    for finding in open_findings:
+        if not _is_follower(finding):
+            name = str(finding.get("classification") or "")
+            lead_classes[name] = lead_classes.get(name, 0) + 1
+    health_base, health_load = _health(snapshot)
     return {
         "at": snapshot["meta"]["scanned_at"],
         "objects": objects,
-        "findings": sorted({_finding_key(f) for f in snapshot["findings"]}),
-        # For the sparklines: open findings, per class, and the score.
+        # A quiet outage (info, low) is not a change: it enters the list once it is medium.
+        "findings": sorted({_finding_key(f) for f in snapshot["findings"] if not is_quiet(f)}),
+        # For the sparklines: open findings, per class, and the state of the house.
         "open": len(open_findings),
         "classes": classes,
-        "share": _score(snapshot),
+        "lead": sum(lead_classes.values()),
+        "lead_classes": lead_classes,
+        "health_base": health_base,
+        "health_load": health_load,
         # The settings that decide whether some findings exist at all.
         "rules": {
             name: snapshot["meta"][name] for name in SETTING_RULES if name in snapshot["meta"]
         },
         # Sources this scan could not read: what is missing from it is unknown, not gone.
         "unchecked": sorted(snapshot["meta"].get("unchecked") or []),
+        # Open repairs (domain:issue_id), for the watch after an update.
+        "repairs": list(snapshot["meta"].get("repairs") or []),
     }
 
 
@@ -141,12 +193,18 @@ def diff_checkpoints(base: dict[str, Any], snapshot: dict[str, Any]) -> dict[str
     ]
 
     base_findings = set(base["findings"])
-    new_findings = [f for f in snapshot["findings"] if _finding_key(f) not in base_findings]
+    new_findings = [
+        f for f in snapshot["findings"] if _finding_key(f) not in base_findings and not is_quiet(f)
+    ]
     # Rules that read differently now than at the baseline: what vanished under them was not repaired.
+    base_rules = base.get("rules") or {}
+    # A checkpoint from before the levels by duration still holds the old setting: every outage reads differently now.
+    legacy = "min_unavailable_days" in base_rules and "outage_info_minutes" not in base_rules
     changed = {
         name
         for name in SETTING_RULES
-        if name in (base.get("rules") or {}) and base["rules"][name] != current["rules"].get(name)
+        if (name in base_rules and base_rules[name] != current["rules"].get(name))
+        or (legacy and name.startswith("outage_"))
     }
     reworded = set().union(*(SETTING_RULES[name] for name in changed)) if changed else set()
     resolved_findings = []
@@ -182,6 +240,7 @@ def diff_checkpoints(base: dict[str, Any], snapshot: dict[str, Any]) -> dict[str
         "new_findings": cut(new_findings),
         "resolved_findings": cut(resolved_findings),
         "ended_findings": cut(ended_findings),
+        "new_rating": legacy,
     }
 
 
@@ -337,7 +396,9 @@ class ScanHistory:
                     **checkpoint_counts(cp),
                     "open": cp.get("open"),
                     "classes": cp.get("classes"),
-                    "share": cp.get("share"),
+                    "lead": cp.get("lead"),
+                    "lead_classes": cp.get("lead_classes"),
+                    "health": health_percent(cp.get("health_base"), cp.get("health_load")),
                     "unavailable": sum(
                         1
                         for objs in cp["objects"].values()

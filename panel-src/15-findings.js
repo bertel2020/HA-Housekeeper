@@ -28,8 +28,10 @@ class FindingsMixin {
     return [...top, ...single];
   }
 
-  // The status is a score from 100. Each entry of the findings list takes points off by its impact, each urgent topic of the
-  // state area (backup, disk) another 10. The objects with a finding are only shown next to it, they are not the percent.
+  // The state of the house: the rated objects, minus the weight of each object that has a finding (high 1, medium a half,
+  // low a fifth, info nothing). An object counts once, with its worst level; a chain of outages stands for its cause and its
+  // followers do not count. The percent is what is left of the objects. Urgent state topics (backup, disk) take nothing off
+  // but keep the ring from reading green.
   health() {
     const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
     const base = objects.length;
@@ -40,19 +42,26 @@ class FindingsMixin {
     this.ensureBackup?.(); this.ensureTrend?.();
     const open = this.todoItems().filter(i => i.key !== "db"), red = open.filter(i => i.tone === "red").length, tasks = open.length;
     const stateRed = open.filter(i => i.area === "state" && i.tone === "red").length;
-    const levels = this.entryLevels();
-    const lines = Object.entries(HEALTH_POINTS).map(([level, [each, max]]) => {
+    const worst = new Map(), order = ["info", "low", "medium", "high"];
+    const note = (key, level) => {
+      if (!known.has(key) || !order.includes(level)) return;
+      if (!worst.has(key) || order.indexOf(level) > order.indexOf(worst.get(key))) worst.set(key, level);
+    };
+    for (const c of this.causeList().filter(c => !c.parent_id)) note(`${c.object_type}:${c.object_id}`, c.impact);
+    for (const f of this.data.findings.filter(f => !f.ignored && !f.cause_id)) note(this.findingKey(f), f.impact);
+    const levels = [...worst.values()];
+    const lines = [...order].reverse().map(level => {
       const n = levels.filter(l => l === level).length;
-      return { level, n, each, points: Math.min(max, n * each) };
+      return { level, n, weight: HEALTH_WEIGHTS[level], points: Math.round(n * HEALTH_WEIGHTS[level] * 10) / 10 };
     }).filter(l => l.n);
-    const statePoints = Math.min(HEALTH_STATE_MAX, stateRed * HEALTH_STATE_POINTS);
-    const penalty = lines.reduce((sum, l) => sum + l.points, 0) + statePoints;
-    const percent = Math.max(0, 100 - penalty);
+    const load = Math.round(lines.reduce((sum, l) => sum + l.points, 0) * 10) / 10;
+    // Rounded down, so that a house with a finding never reads 100.
+    const percent = base ? Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10 : 100;
     let tone = percent >= HEALTH_GREEN ? "ok" : percent >= HEALTH_YELLOW ? "warn" : "red";
-    // A high-impact entry or an urgent state topic never reads as green, however small the sum is.
+    // A high-impact object or an urgent state topic never reads as green, however small the sum is.
     if (tone === "ok" && (levels.includes("high") || stateRed)) tone = "warn";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label, affected: affected.size, base, tasks, red, later: tasks - red, penalty, lines, stateRed, statePoints, entries: levels.length };
+    return { percent, tone, label, affected: affected.size, base, tasks, red, later: tasks - red, load, ok: Math.round((base - load) * 10) / 10, lines, stateRed, entries: levels.length };
   }
 
   findingRowContent(finding, inGroup = false) {
@@ -69,7 +78,7 @@ class FindingsMixin {
         : finding.affected_object
           ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}</span>` };
+    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.oftenChip(finding)}</span>` };
   }
 
   findingRow(finding, inGroup = false) {
@@ -101,9 +110,9 @@ class FindingsMixin {
     const total = this.causeTotal(c), own = c.finding_key && this.data.findings.find(f => f.key === c.finding_key);
     const id = `cause_${c.id}`, open = total && this.foldOpen(id, false);
     const link = `${c.object_type}:${c.object_id}`, title = this.t(`cause_${c.kind}`, { name: c.name });
-    const target = total ? `data-fold="${this.esc(id)}" aria-expanded="${Boolean(open)}"` : `data-object="${this.esc(link)}"`;
     const summary = [total ? this.t("causeExplains", { n: this.formatNumber(total) }) : "", this.causeShort(c)].filter(Boolean).join(" · ");
-    const name = `<button type="button" class="finding-link" ${target}>${this.tile(c.object_type, "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(summary)}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}</button>`;
+    const fold = total ? `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${Boolean(open)}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: c.name }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>` : "";
+    const name = `<div class="finding-link-group">${fold}<button type="button" class="finding-link" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(summary)}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}</button></div>`;
     const row = `<tr class="finding-data finding-cause"><td class="selcol">${this.causeBox(c)}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(c.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${own?.confidence == null ? "–" : `${Math.round(own.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(own?.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(own?.rule_id || c.kind)}</span><small>${this.t("chip_outage")}</small></td><td class="finding-action">${this.rowMenu(own)}</td></tr>`;
     const decision = this.rowDecide(own);
     const detail = open || decision ? `<tr class="finding-detail"><td colspan="7">${decision}${open ? this.causeChildren(c, false) : ""}</td></tr>` : "";
@@ -116,11 +125,11 @@ class FindingsMixin {
     (this._findGroups ||= {})[g.group] = keys;
     const title = `${object?.name || f.object_id}${p.view != null ? ` › ${p.view}` : ""}`;
     const sub = [...this.placeParts({ card: p.card, section: p.section }), this.t("brokenCount", { n: keys.length })].join(" · ");
-    const name = `<button type="button" class="finding-link" data-fold="${this.esc(id)}" aria-expanded="${open}">${this.tile(object?.object_type || "dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span><span class="pill red">${keys.length}</span></button>`;
+    const name = `<div class="finding-link-group"><button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button><button type="button" class="finding-link" data-object="${this.esc(this.findingKey(f))}">${this.tile(object?.object_type || "dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span><span class="pill red">${keys.length}</span></button></div>`;
     const row = `<tr class="finding-data finding-cause"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(g.group)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td></td></tr>`;
     const orphan = this.isOrphan(p);
     const hint = orphan ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div>` : "";
-    return row + (open ? `<tr class="finding-detail"><td colspan="7">${hint}${g.members.map(m => this.findingRow(m, true)).join("")}</td></tr>` : "");
+    return row + (open ? `<tr class="finding-detail"><td colspan="7">${hint}<div class="kids">${g.members.map(m => this.findingRow(m, true)).join("")}</div></td></tr>` : "");
   }
 
   sortFindingEntries(items) {
@@ -208,7 +217,24 @@ class FindingsMixin {
     return this.filterNote([this.findingFilter ? this.reasonLabel(this.findingFilter) : "", this.findingAfter ? this.t("corrTile") : ""].filter(Boolean), "data-finding-reset");
   }
 
+  // Opens or closes every chain and group of the findings list at once.
+  foldAllFindings(open) {
+    const ids = [...this.causeList().filter(c => this.causeTotal(c)).map(c => `cause_${c.id}`), ...Object.keys(this._findGroups || {}).map(g => `bg:${g}`)];
+    const next = { ...this.folds };
+    ids.forEach(id => { next[id] = open; });
+    this.folds = next; this.render();
+  }
+
+  // The help under the title of the findings page: the terms, and what each number counts.
+  findingsHelp() {
+    const t = k => this.t(k);
+    const terms = ["Finding", "Followups", "Watch", "Together"].map(k => `<div><h3>${t(`help${k}T`)}</h3><p>${t(`help${k}`)}</p></div>`).join("");
+    const nums = ["All", "Trend", "Tabs", "Follow", "Level", "Cert", "Since", "Watched", "Incidents", "Often"].map(k => `<b>${t(`helpN${k}T`)}</b><span>${t(`helpN${k}`)}</span>`).join("");
+    return `<section class="panel pad helpcard"><div class="helphead"><strong>${t("helpTitle")}</strong><button class="btn quiet" data-fold="findings_help" aria-expanded="true"><ha-icon icon="mdi:close"></ha-icon>${t("helpClose")}</button></div><div class="helpgrid">${terms}</div><div class="helpnums">${nums}</div></section>`;
+  }
+
   findingsView() {
+    if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const classes = [...new Set(all.map(f => this.findingReason(f)))];
     const open = !this.findingStatus && !this.findingFilter && !this.findingAfter && !this.lv.findings?.q && !Object.values(this.lv.findings?.f || {}).some(Boolean);
@@ -216,17 +242,22 @@ class FindingsMixin {
     const grouped = open && !this.showFollowers;
     const list = this.groupBroken(this.collapseFollowers(sorted, !grouped));
     const types = [...new Set(all.map(f => this.findingType(f)))].sort();
-    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info", "none"].map(x => [x, this.t(`chip_${x}`)]) }] });
+    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
-    const classTone = c => { const tone = this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
+    const classTone = c => { const tone = c === "outage" ? "red" : this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
     this.ensureCorrelations();
-    const afterCount = all.filter(f => this.corr?.by_key?.[f.key]).length;
-    const tiles = this.sumTiles([
-      { label: this.t("allFindings"), value: this.formatNumber(this.findingTotal()), sub: this.followerCount() ? this.esc(this.t("findingsFollowSub", { n: this.formatNumber(this.followerCount()) })) : undefined, tone: this.findingTotal() ? "warn" : "ok", filter: "", active: !this.findingFilter, spark: spark("open", "bad") },
-      afterCount ? { label: this.t("corrTile"), value: this.formatNumber(afterCount), sub: this.t("corrTileSub"), tone: "warn", attr: ["data-finding-after", "1"], active: this.findingAfter } : null,
-      ...classes.map(c => ({ label: this.reasonLabel(c), value: this.formatNumber(all.filter(f => this.findingReason(f) === c).length), tone: classTone(c), filter: c, active: this.findingFilter === c, spark: spark(`class:${c}`, "bad") })),
-    ]);
+    const isFollower = f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id);
+    const afterAll = all.filter(f => this.corr?.by_key?.[f.key]);
+    const afterCount = afterAll.filter(f => !isFollower(f)).length, afterFollows = afterAll.length - afterCount;
+    // A reason counts what the list shows under it: the follow-ups of an outage hang on their cause and are named beside the number.
+    const tile = c => { const mine = all.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length; return { label: this.reasonLabel(c), value: this.formatNumber(mine.length - follows), sub: follows ? this.esc(this.t("findingsFollowSub", { n: this.formatNumber(follows) })) : undefined, tone: classTone(c), filter: c, active: this.findingFilter === c, spark: spark(`lead:${c}`, "bad") }; };
+    const rank = c => { const i = [...FINDING_URGENT, ...FINDING_TIDY].indexOf(c); return i < 0 ? FINDING_URGENT.length : i; };
+    const sorted2 = [...classes].sort((a, b) => rank(a) - rank(b));
+    const tidy = sorted2.filter(c => FINDING_TIDY.includes(c)), urgent = sorted2.filter(c => !FINDING_TIDY.includes(c));
+    const total = { label: this.t("allFindings"), value: this.formatNumber(this.findingTotal()), sub: this.followerCount() ? this.esc(this.t("findingsFollowSub", { n: this.formatNumber(this.followerCount()) })) : undefined, tone: this.findingTotal() ? "warn" : "ok", filter: "", active: !this.findingFilter, spark: spark("lead", "bad") };
+    const group = (title, list, make, row) => list.length ? `<div class="sumgroup${row ? ` row${row}` : ""}" style="--n:${list.length};flex:${list.length} 1 ${list.length * 150}px"><div class="sumgrouphead">${this.t(title)}</div>${this.sumTiles(list.map(make))}</div>` : "";
+    const tiles = `<div class="sumgroups" style="--cols:${Math.max(1 + tidy.length, urgent.length)}">${group("sumGroupAll", [total], x => x, 1)}${group("sumGroupTidy", tidy, tile, 1)}${group("sumGroupUrgent", urgent, tile, 2)}</div>`;
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
     const followers = this.followerCount();
     const fixedView = this.findingStatus === "fixed";
@@ -235,8 +266,8 @@ class FindingsMixin {
     let items = grouped ? this.sortFindingEntries([...entries.map(cause => ({ cause })), ...list]) : list;
     if (this.findingWithFollowers) items = grouped ? items.filter(i => i.cause && this.causeTotal(i.cause)) : items.filter(i => i.cause_id);
     const pg = this.paginate("findings", items);
-    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    return `<div class="stack">${tiles}${fixedView ? "" : this.watchCard()}${fixedView ? "" : this.corrGroupsCard()}<div class="panel"><div class="chips">${this.statusChips()}${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t("flatList")}</button>` : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, items.length)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenNote()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t("flatList")} (${this.formatNumber(all.length)})</button>` : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${followers || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findingNote()}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -247,13 +278,13 @@ class FindingsMixin {
     return picked.length > 0 && picked.every(f => f.classification === "broken_reference");
   }
 
-  findSelBar(pageRows) {
+  findSelBar(pageRows, total = 0) {
     const n = this.findSel.size;
     this._findPage = pageRows.flatMap(f => (f.cause ? [{ key: f.cause.finding_key }] : f.members ? f.members : [f])).map(f => f.key).filter(Boolean);
     if (!pageRows.length && !n) return "";
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
-    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label></div>`;
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known">${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed">${this.t("fselSnooze")}</button>${this.selectionOnlyBroken() ? "" : `<button class="btn" data-fsel-state="label">${this.t("fselLabel")}</button>`}${this.markTargets().size ? `<button class="btn" data-fsel-state="mark">${this.t("markSet")}</button>` : ""}<button class="btn" data-fsel-hide>${this.t("findHideSelected")}</button></div>`}</div>${this.bulkForm()}`;
+    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${this.viewCount(total)}</div>`;
+    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known">${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed">${this.t("fselSnooze")}</button>${this.selectionOnlyBroken() ? "" : `<button class="btn" data-fsel-state="label">${this.t("fselLabel")}</button>`}${this.markTargets().size ? `<button class="btn" data-fsel-state="mark">${this.t("markSet")}</button>` : ""}<button class="btn" data-fsel-hide>${this.t("findHideSelected")}</button></div>`}${this.viewCount(total)}</div>${this.bulkForm()}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.

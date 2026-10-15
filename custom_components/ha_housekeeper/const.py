@@ -14,7 +14,9 @@ FONTS_URL: Final = "/ha_housekeeper/fonts"
 STORAGE_KEY: Final = f"{DOMAIN}.observations"
 IGNORED_STORAGE_KEY: Final = f"{DOMAIN}.ignored"
 HISTORY_STORAGE_KEY: Final = f"{DOMAIN}.history"
-PREFLIGHT_STORAGE_KEY: Final = f"{DOMAIN}.preflight"
+PREFLIGHT_STORAGE_KEY: Final = (
+    f"{DOMAIN}.preflight"  # removed feature: the file is deleted on start
+)
 POLICIES_STORAGE_KEY: Final = f"{DOMAIN}.policies"
 REPLIES_STORAGE_KEY: Final = f"{DOMAIN}.replies"
 ATTEST_STORAGE_KEY: Final = f"{DOMAIN}.attest"
@@ -32,7 +34,7 @@ ENTRY_STATES_STORAGE_KEY: Final = f"{DOMAIN}.entry_states"
 REMINDERS_STORAGE_KEY: Final = f"{DOMAIN}.reminders"
 NOTES_STORAGE_KEY: Final = f"{DOMAIN}.notes"
 BATTERY_STORAGE_KEY: Final = f"{DOMAIN}.batteries"
-WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"
+WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"  # removed feature: the file is deleted on start
 NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"
 STALE_STORAGE_KEY: Final = f"{DOMAIN}.stale"
 SCAN_HEALTH_STORAGE_KEY: Final = f"{DOMAIN}.scan_health"
@@ -41,10 +43,20 @@ LOAD_STORAGE_KEY: Final = f"{DOMAIN}.load"
 WATCH_STORAGE_KEY: Final = f"{DOMAIN}.watch"
 STORAGE_VERSION: Final = 1
 
-CONF_MIN_UNAVAILABLE_DAYS: Final = "min_unavailable_days"
+CONF_MIN_UNAVAILABLE_DAYS: Final = (
+    "min_unavailable_days"  # replaced by the four below, read as a fallback
+)
+CONF_OUTAGE_INFO_MINUTES: Final = "outage_info_minutes"
+CONF_OUTAGE_LOW_HOURS: Final = "outage_low_hours"
+CONF_OUTAGE_MEDIUM_HOURS: Final = "outage_medium_hours"
+CONF_OUTAGE_HIGH_HOURS: Final = "outage_high_hours"
 DEFAULT_MIN_UNAVAILABLE_DAYS: Final = 7
+DEFAULT_OUTAGE_INFO_MINUTES: Final = 15
+DEFAULT_OUTAGE_LOW_HOURS: Final = 1
+DEFAULT_OUTAGE_MEDIUM_HOURS: Final = 24
+DEFAULT_OUTAGE_HIGH_HOURS: Final = 168
 CONF_SCAN_INTERVAL_HOURS: Final = "scan_interval_hours"
-DEFAULT_SCAN_INTERVAL_HOURS: Final = 24
+DEFAULT_SCAN_INTERVAL_HOURS: Final = 6
 CONF_UNUSED_AUTOMATION_DAYS: Final = "unused_automation_days"
 DEFAULT_UNUSED_AUTOMATION_DAYS: Final = 90
 CONF_LOW_BATTERY_PERCENT: Final = "low_battery_percent"
@@ -62,7 +74,10 @@ IGNORE_LABEL: Final = "housekeeper_ignore"
 CRITICAL_LABEL: Final = "housekeeper_critical"
 # Allowed range (min, max) per option, shared by the options flow and the panel command.
 OPTION_LIMITS: Final = {
-    CONF_MIN_UNAVAILABLE_DAYS: (0, 365),
+    CONF_OUTAGE_INFO_MINUTES: (5, 1440),
+    CONF_OUTAGE_LOW_HOURS: (1, 720),
+    CONF_OUTAGE_MEDIUM_HOURS: (2, 2160),
+    CONF_OUTAGE_HIGH_HOURS: (3, 8760),
     CONF_UNUSED_AUTOMATION_DAYS: (0, 3650),
     CONF_SCAN_INTERVAL_HOURS: (0, 720),
     CONF_LOW_BATTERY_PERCENT: (1, 100),
