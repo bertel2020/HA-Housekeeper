@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -52,6 +53,24 @@ def test_german_and_english_translation_keys_match() -> None:
     german = _json(COMPONENT / "translations" / "de.json")
     english = _json(COMPONENT / "translations" / "en.json")
     assert _leaf_paths(german) == _leaf_paths(english)
+    slovak = _json(COMPONENT / "translations" / "sk.json")
+    assert _leaf_paths(slovak) == _leaf_paths(english)
+
+
+def test_slovak_audit_report_keys_and_websocket_language() -> None:
+    source = (COMPONENT / "audit_report.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    texts = next(
+        stmt.value
+        for stmt in module.body
+        if isinstance(stmt, ast.AnnAssign)
+        and isinstance(stmt.target, ast.Name)
+        and stmt.target.id == "TEXTS"
+    )
+    languages = ast.literal_eval(texts)
+    assert set(languages["sk"]) == set(languages["en"])
+    websocket = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    assert 'vol.In(["de", "en", "sk"])' in websocket
 
 
 def test_frontend_bundle_is_packaged() -> None:
@@ -81,8 +100,8 @@ def test_cleanup_plans_never_change_home_assistant() -> None:
     assert "executed" in source
 
 
-def test_only_the_cleanup_runner_changes_the_registry() -> None:
-    """Writes live in cleanup_exec.py: registries, configuration files, dashboards, Energy."""
+def test_only_the_cleanup_runner_and_monitor_sensor_change_the_registry() -> None:
+    """Cleanup writes use the runner; a deleted monitor also removes its own sensor."""
     runner = (COMPONENT / "cleanup_exec.py").read_text(encoding="utf-8")
     writes = (
         "async_update_entity",
@@ -103,7 +122,8 @@ def test_only_the_cleanup_runner_changes_the_registry() -> None:
         for write in writes:
             if path.name == "sensor.py" and write == "registry.async_remove(":
                 # The sensor of a home function that was deleted removes itself: Housekeeper's own entity.
-                assert source.count(write) == 1 and 'async_get_entity_id("sensor", DOMAIN' in source
+                assert source.count(write) == 1
+                assert 'async_get_entity_id("sensor", DOMAIN, self.unique_id)' in source
                 continue
             assert write not in source, f"{path.name}: {write}"
 
@@ -122,8 +142,9 @@ def test_every_fixed_refusal_text_has_a_panel_translation() -> None:
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = _websocket_source()
-    assert source.count("@websocket_api.websocket_command") == 84
-    assert source.count("@websocket_api.require_admin") == 84
+    commands = source.count("@websocket_api.websocket_command")
+    assert commands > 0
+    assert source.count("@websocket_api.require_admin") == commands
     assert "connection.require_admin" not in source
 
 

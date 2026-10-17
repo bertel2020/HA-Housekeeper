@@ -78,6 +78,29 @@ test("German and English texts define the same keys", () => {
   assert.deepEqual(Object.keys(TEXT.de).sort(), Object.keys(TEXT.en).sort());
 });
 
+test("Slovak localization covers English keys and preserves interpolation", () => {
+  const { TEXT } = loadPanel();
+  const missing = Object.keys(TEXT.en).filter(key => !(key in TEXT.sk));
+  assert.deepEqual(missing, []);
+  const placeholders = text => [...new Set([...String(text).matchAll(/\{(\w+)\}/g)].map(m => m[1]))].sort();
+  for (const [key, original] of Object.entries(TEXT.en)) {
+    const translated = TEXT.sk[key];
+    for (const value of (typeof translated === "string" ? [translated] : Object.values(translated))) {
+      assert.deepEqual(placeholders(value), placeholders(original), key);
+    }
+  }
+});
+
+test("Slovak is selected automatically and counts use Slovak grammatical forms", () => {
+  const { el } = panel("sk");
+  assert.equal(el.lang, "sk");
+  assert.equal(el.t("deviceEntities", { count: 1 }), "1 entita");
+  assert.equal(el.t("deviceEntities", { count: 2 }), "2 entity");
+  assert.equal(el.t("deviceEntities", { count: 4 }), "4 entity");
+  assert.equal(el.t("deviceEntities", { count: 5 }), "5 entít");
+  assert.equal(el.t("deviceEntities", { count: 10 }), "10 entít");
+});
+
 test("home functions show a confirmed fault, a scan gap, and escapes function names", () => {
   const { el, NAV_GROUPS } = panel("de");
   assert.ok(NAV_GROUPS.find(([group]) => group === "navGroupOperation")[1].includes("monitor"));
