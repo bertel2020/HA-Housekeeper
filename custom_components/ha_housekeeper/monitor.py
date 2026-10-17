@@ -99,7 +99,28 @@ REASONS_EN = {
     "rule_no_value": "no numeric value",
     "rule_no_timestamp": "update time unknown",
 }
-MONITOR_REASONS = {"de": REASONS_DE, "en": REASONS_EN}
+
+REASONS_RU = {
+    "missing": "объект отсутствует",
+    "disabled": "отключено",
+    "orphaned": "осиротевшая",
+    "unavailable": "недоступно",
+    "problem": "интеграция не загружена",
+    "source_unread": "источник не прочитан",
+    "scan_unverified": "проверка ненадежна",
+    "automation.blocked": "автоматизация заблокирована",
+    "automation.dead_actions": "действие автоматизации содержит отсутствующую ссылку",
+    "automation.dead_condition": "условие автоматизации содержит отсутствующую ссылку",
+    "broken_reference": "отсутствующая ссылка",
+    "stopped": "приложение остановлено",
+    "rule_stale": "значение не обновлено вовремя",
+    "rule_below_min": "ниже минимального значения",
+    "rule_unavailable_long": "недоступно слишком долго",
+    "rule_waiting": "идет льготный период",
+    "rule_no_value": "нет числового значения",
+    "rule_no_timestamp": "время обновления неизвестно"
+}
+MONITOR_REASONS = {"de": REASONS_DE, "en": REASONS_EN, "ru": REASONS_RU}
 MONITOR_TEXTS = {
     "de": {
         "uncertain_open": "Prüfung unvollständig; letzter bestätigter Defekt ({last_reason}) bleibt ungeklärt.",
@@ -112,6 +133,12 @@ MONITOR_TEXTS = {
         "uncertain": "Check incomplete.",
         "impaired": "Important function impaired: {reason}",
         "link": "Open home functions",
+    },
+    "ru": {
+        "uncertain_open": "Проверка не завершена; последний подтвержденный сбой ({last_reason}) остается нерешенным.",
+        "uncertain": "Проверка не завершена.",
+        "impaired": "Важная функция нарушена: {reason}",
+        "link": "Открыть функции дома"
     },
 }
 

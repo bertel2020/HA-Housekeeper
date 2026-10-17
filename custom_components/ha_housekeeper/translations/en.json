@@ -99,6 +99,11 @@
         }
       }
     },
+    "event": {
+      "hausfunktionen": {
+        "name": "Home functions"
+      }
+    },
     "button": {
       "scan": {
         "name": "Start scan"

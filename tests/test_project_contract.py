@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -53,6 +54,28 @@ def test_german_and_english_translation_keys_match() -> None:
     english = _json(COMPONENT / "translations" / "en.json")
     assert _leaf_paths(german) == _leaf_paths(english)
 
+
+
+def test_russian_translation_keys_match_english() -> None:
+    russian = _json(COMPONENT / "translations" / "ru.json")
+    english = _json(COMPONENT / "translations" / "en.json")
+    assert _leaf_paths(russian) == _leaf_paths(english)
+
+
+def test_russian_audit_report_keys_and_websocket_language() -> None:
+    source = (COMPONENT / "audit_report.py").read_text(encoding="utf-8")
+    module = ast.parse(source)
+    texts = next(
+        stmt.value
+        for stmt in module.body
+        if isinstance(stmt, ast.AnnAssign)
+        and isinstance(stmt.target, ast.Name)
+        and stmt.target.id == "TEXTS"
+    )
+    languages = ast.literal_eval(texts)
+    assert set(languages["ru"]) == set(languages["en"])
+    websocket = (COMPONENT / "websocket_api.py").read_text(encoding="utf-8")
+    assert 'vol.In(["de", "en", "ru"])' in websocket
 
 def test_frontend_bundle_is_packaged() -> None:
     bundle = COMPONENT / "frontend" / "ha-housekeeper-panel.js"
