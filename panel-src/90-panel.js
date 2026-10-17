@@ -29,7 +29,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.findSel = new Set();
-    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = true; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
+    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
@@ -136,15 +136,17 @@ class HAHousekeeperPanel extends HTMLElement {
   // The browser's back button steps back inside the panel. One history entry is kept in front of
   // the panel's own back steps while there is somewhere to go back to.
   canGoBack() {
-    return Boolean(this.view === "graph" ? this.graphTrail?.length || this.graphOrigin : this.selected || this.viewTrail?.length);
+    return Boolean(this.view === "graph" ? this.graphTrail?.length || this.graphOrigin : this.selected || this.bpOpen || this.viewTrail?.length);
   }
 
   onPopState() {
     if (this._ignorePop) { this._ignorePop = false; return; }
+    if (this._dialogPop) { this._dialogPop = false; return; }
     this._guard = false;
     if (this._gone || window.location.pathname !== this._basePath || !this.canGoBack()) return;
     if (this.view === "graph") this.graphBack();
     else if (this.selected) this.goBack();
+    else if (this.bpOpen) { this.bpOpen = ""; this.render(); }
     else this.viewBack();
   }
 
@@ -384,7 +386,18 @@ class HAHousekeeperPanel extends HTMLElement {
     }
   }
 
-  navigateHA(path) {
+  // Home Assistant's own "More info" dialog of an entity, over the panel; only where the entity has a state.
+  canMoreInfo(entityId) { return !!this._hass?.states?.[entityId]; }
+
+  // HA's dialog puts its own entry into the history and removes it on close; that pop must not step the panel back.
+  moreInfo(entityId) {
+    const before = window.history?.length;
+    globalThis.setTimeout?.(() => { if (window.history?.length > before) this._dialogPop = true; }, 300);
+    this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true }));
+  }
+
+  navigateHA(path, newTab = false) {
+    if (newTab) { window.open(new URL(path, window.location.origin).href, "_blank", "noopener"); return; }
     window.history.pushState(null, "", path);
     window.dispatchEvent(new CustomEvent("location-changed"));
   }
@@ -558,7 +571,8 @@ class HAHousekeeperPanel extends HTMLElement {
     const previousModal = this.modalKey(this.activeModal());
     // A view that throws shows a message under the top bar instead of freezing the panel on the last page.
     let page;
-    try { page = this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
+    if (this.view !== "maintenance") this.bpOpen = "";
+    try { page = this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
     const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
@@ -633,10 +647,16 @@ class HAHousekeeperPanel extends HTMLElement {
     try { window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "")); } catch (_) { /* ignore */ }
   }
 
+  // What the scan counted for the views that cost nothing to read; a view without a number is not counted.
+  viewCounts() {
+    const found = this.data?.meta?.view_counts || {};
+    return Object.fromEntries(["exposure", "dataflow", "secrets", "runs"].map(v => [v, found[v] || undefined]));
+  }
+
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
-    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined } : {};
+    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, ...this.viewCounts() } : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
     const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
@@ -714,6 +734,7 @@ class HAHousekeeperPanel extends HTMLElement {
       cleanup: [this.t("cleanup"), this.t("cleanupSubtitle")],
       repair: [this.t("repair"), this.t("repairSubtitle")],
       journal: [this.t("journal"), this.t("journalSubtitle")],
+      plan: [this.t("plan"), this.t("planPageSubtitle")],
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       monitor: [this.t("monitor"), this.t("monitorSubtitle")],
@@ -726,7 +747,7 @@ class HAHousekeeperPanel extends HTMLElement {
       secrets: [this.t("secrets"), this.t("secretsSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
-    const writes = ["cleanup", "repair", "maintenance", "policies", "monitor"].includes(this.view);
+    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor"].includes(this.view);
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
@@ -736,7 +757,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
-      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}${this.watchBand()}`;
+      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
   }
 
   content() {
@@ -753,6 +774,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "repair") return this.repairView();
+    if (this.view === "plan") return this.planView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -863,6 +885,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-goto-tab]").forEach(el => el.onclick = () => { this.detailTab = el.dataset.gotoTab; this.render(); });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
+    root.querySelectorAll("[data-goto-protection]").forEach(el => el.onclick = () => { this.settingsTab = "protection"; this.noteJump?.("settings"); this.view = "settings"; this.pages = {}; this.selected = null; this.render(); });
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
       if (el.dataset.safeKey === "coverage") this.settingsTab = "info";
@@ -870,10 +893,14 @@ class HAHousekeeperPanel extends HTMLElement {
       this.render();
     });
     root.querySelectorAll("[data-cov-details]").forEach(el => el.onclick = () => { this.settingsTab = "info"; this.noteJump?.("settings"); this.view = "settings"; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
+    root.querySelectorAll("[data-jump]").forEach(el => el.onclick = ev => {
+      ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
+      if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingDue = false; }
+      if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
+      if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; this.pages = {}; }
       this.render();
@@ -909,7 +936,7 @@ class HAHousekeeperPanel extends HTMLElement {
       } catch (err) { this.failed(err); }
       this.render();
     });
-    root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
     root.querySelector("[data-with-followers]")?.addEventListener("click", () => { this.findingWithFollowers = !this.findingWithFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
@@ -969,7 +996,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     root.querySelector("[data-history-all]")?.addEventListener("click", () => { this.historyAll = !this.historyAll; this.pages = {}; this.render(); });
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
-    root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
+    root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label, summary, .menupop"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     // Table rows and graph nodes are not native buttons: Enter and Space open them like a click.
     const openByKey = el => el.onkeydown = ev => {
       if (ev.target !== el || (ev.key !== "Enter" && ev.key !== " ")) return;
@@ -987,7 +1014,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-graph-group]").forEach(el => el.onclick = () => { this.graphOpen.add(el.dataset.graphGroup); this.render(); });
     root.querySelector("[data-graph-regroup]")?.addEventListener("click", () => { this.graphOpen = new Set(); this.render(); });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.noteGraphStep(obj); this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
-    root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
+    root.querySelectorAll("[data-more-info]").forEach(el => el.onclick = () => this.moreInfo(el.dataset.moreInfo));
+    root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath, "haTab" in el.dataset));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
@@ -999,7 +1027,10 @@ class HAHousekeeperPanel extends HTMLElement {
       catch (err) { this.failed(err); }
       this.render();
     });
-    root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this.blueprints = null; this.render(); });
+    root.querySelectorAll("[data-bp-open]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.bpOpen = el.dataset.bpOpen; (this.viewTab ||= {}).blueprint = "overview"; this.render(); });
+    root.querySelectorAll("tr[data-bp-open]").forEach(openByKey);
+    root.querySelector("[data-bp-back]")?.addEventListener("click", () => { this.bpOpen = ""; this.render(); });
+    root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this._bpDetailKey = ""; this.blueprints = null; this.render(); });
     root.querySelector("[data-weekly]")?.addEventListener("click", () => this.weeklyReport());
     root.querySelectorAll("[data-fsel-group]").forEach(el => el.onchange = () => { (this._findGroups?.[el.dataset.fselGroup] || []).forEach(key => (el.checked ? this.findSel.add(key) : this.findSel.delete(key))); this.render(); });
     root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { this.pickRows("fsel", el.dataset.fsel, el.checked, this.findSel, this._findPage); this.render(); });
@@ -1018,8 +1049,11 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-qtype]").forEach(el => el.onclick = () => { this.quarantineType = el.dataset.qtype; this.cleanupKind = el.dataset.qtype === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); });
     const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
     root.querySelectorAll("[data-repair-task]").forEach(el => el.onclick = () => { if (this.repairTask === el.dataset.repairTask) { this.repairTask = null; this.render(); return; } this.repairTask = el.dataset.repairTask; this.cleanupKind = this.repairTask; this.cleanupSel = new Set(); this.plan = null; this.render(); });
-    root.querySelector("[data-ack-all]")?.addEventListener("change", e => { this.ack = new Set(e.target.checked ? this.plan.actions.filter(x => x.verdict === "review" && x.executable).map(x => x.object_id) : []); this.render(); });
+    // (the acknowledgement boxes are gone: the confirm dialog is the acknowledgement)
+    root.querySelector("[data-ack-all]")?.addEventListener("change", e => { this.ack = new Set(e.target.checked ? this.plan.actions.filter(x => x.verdict === "review" && x.executable).map(x => x.object_id) : []); this.cleanupError = ""; this.render(); });
     root.querySelector("[data-plan-confirm]")?.addEventListener("click", ev => this.confirmAsk(this.confirmSummary(this.plan, Number(ev.currentTarget.dataset.count)), () => this.confirmAndRun(), { title: this.t("confirmRunTitle"), yes: this.t("runNow"), danger: ev.currentTarget.dataset.risky === "true", warn: this.largeRemovalWarning(this.plan) }));
+    root.querySelector("[data-plan-discard]")?.addEventListener("click", () => this.discardPlan());
+    root.querySelector("[data-purge-states-switch]")?.addEventListener("change", ev => this.setPurgeStates(ev.currentTarget.checked));
     root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());
     root.querySelector("[data-undo-all]")?.addEventListener("click", () => { this.undoAsk = "all"; this.render(); });
     root.querySelector("[data-undo-all-yes]")?.addEventListener("click", () => this.undoPlan());
@@ -1034,11 +1068,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-page]")?.addEventListener("click", () => { (this._purgePage || []).forEach(id => this.purgeSel.add(id)); this.render(); });
-    root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.purgeOpen = false; this.render(); });
-    root.querySelector("[data-purge-open]")?.addEventListener("click", () => { this.purgeOpen = true; this.purgeWord = ""; this.purgeResult = null; this.render(); });
-    root.querySelector("[data-purge-close]")?.addEventListener("click", () => { this.purgeOpen = false; this.render(); });
-    root.querySelector("[data-purge-states]")?.addEventListener("change", e => { this.purgeStates = e.target.checked; this.render(); });
-    root.querySelector("[data-purge-word]")?.addEventListener("input", e => { this.purgeWord = e.target.value; const b = root.querySelector("[data-purge-run]"); if (b) b.disabled = e.target.value.trim() !== this.t("purgeWord") || this.purgeBusy; });
+    root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
     root.querySelectorAll("[data-meter-mode]").forEach(el => el.onclick = () => { this.meterMode = el.dataset.meterMode; this.render(); });
     root.querySelector("[data-repl-meter]")?.addEventListener("click", () => this.startCleanup("migrate_meter", () => { this.meterOld = this.replOld; this.meterNew = this.replNew; }));
@@ -1066,6 +1096,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
     root.querySelector("[data-db-check]")?.addEventListener("click", () => this.loadDbHealth(false, true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
+    root.querySelector("[data-bkc-open]")?.addEventListener("click", () => { this.folds = { ...this.folds, bkc: true }; this.render(); this.shadowRoot?.querySelector?.("#hk-bkc")?.scrollIntoView?.({ block: "start" }); });
     root.querySelectorAll("[data-bh-open]").forEach(el => el.onclick = () => { this.bhForm = this.bhForm === el.dataset.bhOpen ? null : el.dataset.bhOpen; this.render(); });
     root.querySelector("[data-bh-cancel]")?.addEventListener("click", () => { this.bhForm = null; this.render(); });
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {
@@ -1081,11 +1112,15 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));
+    root.querySelectorAll("img[data-fallback-icon]").forEach(img => img.addEventListener("error", () => { const i = document.createElement("ha-icon"); i.setAttribute("icon", img.dataset.fallbackIcon); img.replaceWith(i); }, { once: true }));
     root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
-    root.querySelectorAll("[data-plan-close]").forEach(el => el.addEventListener("click", () => { this.plan = null; this.render(); }));
-    root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.openPlan(el.dataset.planOpen); });
+    root.querySelector("[data-config-check]")?.addEventListener("click", () => this.runConfigCheck());
+    root.querySelectorAll("[data-plan-close]").forEach(el => el.addEventListener("click", () => this.leavePlan()));
+    root.querySelector("[data-journal-refresh]")?.addEventListener("click", () => this.refreshJournal());
+    root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = ev => { if (el.tagName === "BUTTON") ev?.stopPropagation?.(); const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.openPlan(el.dataset.planOpen); });
     root.querySelectorAll("[data-merge-sel]").forEach(el => el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.checked ? this.mergeSel.add(el.dataset.mergeSel) : this.mergeSel.delete(el.dataset.mergeSel); this.render(); });
     root.querySelector("[data-merge]")?.addEventListener("click", () => this.mergePlans());
+    root.querySelector("[data-merge-delete]")?.addEventListener("click", () => { const n = this.mergeSel?.size || 0; if (n) this.confirmAsk(this.t("confirmPlansDelete", { count: n }), () => this.deletePlans()); });
     root.querySelectorAll("[data-merge-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.dataset.mergePage.split(",").forEach(id => (el.checked ? this.mergeSel.add(id) : this.mergeSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-plan-renew]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.renewPlan(el.dataset.planRenew); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => { const id = el.dataset.planDelete, plan = (this.journal || []).find(p => p.plan_id === id) || this.plan; this.confirmAsk(this.t("confirmPlanDelete", { date: this.formatDate(plan?.created_at) }), () => this.deletePlan(id)); });

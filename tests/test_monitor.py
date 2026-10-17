@@ -12,7 +12,7 @@ from custom_components.ha_housekeeper.monitor import (  # noqa: E402
     evaluate,
 )
 
-NOW = datetime(2026, 10, 13, 12, tzinfo=UTC)
+NOW = datetime.now(UTC).replace(microsecond=0)
 
 
 def definition(*members):
@@ -368,6 +368,7 @@ def test_availability_counts_known_stretches_and_leaves_out_gaps_and_disabled_ti
         and result["days"][-1]["state"] == "problem"
     )
     assert result["days"][0]["state"] is None
+    assert sum(day["problem_seconds"] for day in result["days"]) == 2 * 3600
 
 
 def test_last_problem_is_the_end_of_the_latest_impaired_stretch():

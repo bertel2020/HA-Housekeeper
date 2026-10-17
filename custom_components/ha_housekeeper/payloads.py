@@ -22,7 +22,8 @@ class Reply(TypedDict, total=False):
 
 class ExposureAssistant(TypedDict):
     id: str
-    status: str  # ok, inactive or unavailable (never "not exposed")
+    # ok, inactive, off (switched off in Nabu Casa) or unavailable (never "not exposed")
+    status: str
     exposed: int
 
 
@@ -38,12 +39,22 @@ class ExposureItem(TypedDict):
     assistants: NotRequired[list[str]]
 
 
+class ExposureIntegration(TypedDict):
+    entry_id: str
+    domain: str
+    title: str
+    target: str  # cloud or external
+
+
 class ExposureFinding(TypedDict):
     kind: str
     level: str
     count: int
     items: NotRequired[list[ExposureItem]]
     assistant: NotRequired[str]
+    assistants: NotRequired[list[str]]
+    integrations: NotRequired[list[ExposureIntegration]]
+    reach: NotRequired[int]
     alias: NotRequired[str]
     domain: NotRequired[str]
 
@@ -73,6 +84,7 @@ class ReliabilityRow(TypedDict):
     reauth: bool
     entities: int
     permanent: int
+    dead: bool
     availability: float | None
     shared_outages: int
     longest_outage: int
@@ -80,6 +92,9 @@ class ReliabilityRow(TypedDict):
     last_disruption: dict[str, Any] | None
     affected_total: int
     affected: list[dict[str, Any]]
+    period_total: int
+    periods: list[dict[str, Any]]
+    days: list[dict[str, Any]]
     previous_availability: NotRequired[float | None]
     delta: NotRequired[float | None]
 
@@ -91,6 +106,7 @@ class ReliabilityResult(Reply):
     window_days: int
     coverage: ReliabilityCoverage
     comparison: dict[str, bool]
+    keep_days: int | None
     stale: bool
     age_seconds: int
     computed_at: float
@@ -124,6 +140,7 @@ class RunsResult(TypedDict, total=False):
 
 
 class StormsResult(Reply, total=False):
+    keep_days: int | None
     stale: bool
     age_seconds: int
     computed_at: float

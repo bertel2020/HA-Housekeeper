@@ -17,7 +17,7 @@ class CorrelationMixin {
 
   corrText(group) {
     const vars = { title: this.esc(group.title || ""), domain: this.esc(group.domain || ""), from: this.esc(group.from ?? ""), to: this.esc(group.to ?? "") };
-    return this.t(`corr_${group.kind}`, vars);
+    return this.t(`corr_${group.kind}`, vars) + (group.events > 1 ? ` ×${this.formatNumber(group.events)}` : "");
   }
 
   // The sentence on one finding, or "" when it began with nothing the log knows.
@@ -49,7 +49,7 @@ class CorrelationMixin {
   corrGroupBody(group) {
     const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean);
     const pg = this.paginate(`corr_${group.id}`, findings);
-    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${pg.rows.map(f => this.findingRow(f)).join("")}${pg.footer}`;
+    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${pg.rows.map(f => this.findingRow(f, false, false)).join("")}${pg.footer}`;
   }
 
   // The incidents of the findings page: every update or restart that has findings, and every watch after a system
@@ -67,7 +67,9 @@ class CorrelationMixin {
     });
     watches.filter(w => !used.has(w.id)).forEach(watch => items.push({ group: null, watch, at: watch.started_at }));
     const running = it => (it.watch && !it.watch.closed_at ? 1 : 0);
-    return items.sort((a, b) => running(b) - running(a) || (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
+    // What only stands for itself (restart, plan, deleted statistics) comes after the updates, which can be a reason for findings.
+    const alone = it => (it.group?.only_group && !it.watch ? 1 : 0);
+    return items.sort((a, b) => running(b) - running(a) || alone(a) - alone(b) || (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
   }
 
   incidentId(item) { return item.group ? `corr_${item.group.id}` : `corr_w_${item.watch.id}`; }

@@ -20,6 +20,8 @@ from test_cleanup_exec import make_scanner  # noqa: E402
 
 from custom_components.ha_housekeeper.maintenance import (  # noqa: E402
     judge_preflight,
+    pending_updates,
+    preflight_verdict,
     rank_costs,
     recorder_costs,
 )
@@ -95,7 +97,9 @@ async def test_costs_count_the_states_in_the_database(recorder_mock, hass: HomeA
 def state(**changes) -> dict:
     base = {
         "ha_version": "2026.2.3",
-        "backup": {"available": True, "configured": True, "newest": "x", "age_hours": 5},
+        "backup": {"available": True, "level": "ok", "age_hours": 5},
+        "disk": {"free": 40 * 1024**3},
+        "updates": [],
         "repairs": [],
         "failed_entries": [],
         "broken": [],
@@ -105,14 +109,62 @@ def state(**changes) -> dict:
 
 def test_judging_the_preflight() -> None:
     levels = {c["check"]: c["level"] for c in judge_preflight(state())}
-    assert levels == {"backup": "ok", "repairs": "ok", "failed_entries": "ok", "broken": "ok"}
-    old = state(backup={"available": True, "configured": True, "newest": "x", "age_hours": 100})
-    assert judge_preflight(old)[0]["level"] == "warn"
-    none = state(backup={"available": True, "configured": False, "newest": None})
-    assert judge_preflight(none)[0]["level"] == "red"
+    assert levels == {
+        "backup": "ok",
+        "disk": "ok",
+        "repairs": "ok",
+        "failed_entries": "ok",
+        "broken": "ok",
+    }
+    # The backup line follows the verdict of the backup protection and does not judge the age itself.
+    assert judge_preflight(state(backup={"available": True, "level": "note"}))[0]["level"] == "warn"
+    assert (
+        judge_preflight(state(backup={"available": True, "level": "problem"}))[0]["level"] == "red"
+    )
     assert judge_preflight(state(backup={"available": False}))[0]["level"] == "warn"
     counts = {c["check"]: c for c in judge_preflight(state(repairs=[{"issue_id": "a"}]))}
     assert counts["repairs"]["level"] == "warn" and counts["repairs"]["count"] == 1
+    disk = {c["check"]: c["level"] for c in judge_preflight(state(disk={"free": 2 * 1024**3}))}
+    assert disk["disk"] == "warn"
+    assert judge_preflight(state(disk={"free": 1024**3 // 2}))[1]["level"] == "red"
+    # Integrations that cannot start stop a system update, and only that.
+    failing = state(failed_entries=[{"entry_id": "e"}])
+    assert {c["check"]: c["level"] for c in judge_preflight(failing)}["failed_entries"] == "warn"
+    system = {**failing, "updates": [{"group": "system"}]}
+    checks = judge_preflight(system)
+    assert {c["check"]: c["level"] for c in checks}["failed_entries"] == "red"
+    assert preflight_verdict(checks) == "stop"
+    assert preflight_verdict(judge_preflight(failing)) == "look"
+    assert preflight_verdict(judge_preflight(state())) == "ready"
+
+
+async def test_pending_updates_are_grouped_by_platform(hass: HomeAssistant) -> None:
+    from homeassistant.helpers import entity_registry as er
+
+    registry = er.async_get(hass)
+    for entity_id, platform, unique_id in (
+        ("update.home_assistant_core_update", "hassio", "core"),
+        ("update.cloudflared_update", "hassio", "cf"),
+        ("update.card_mod_update", "hacs", "1"),
+        ("update.proxy_firmware", "esphome", "p"),
+    ):
+        registry.async_get_or_create(
+            "update", platform, unique_id, suggested_object_id=entity_id[7:]
+        )
+        hass.states.async_set(
+            entity_id,
+            "on",
+            {"title": entity_id[7:], "installed_version": "1", "latest_version": "2"},
+        )
+    hass.states.async_set("update.current", "off", {})
+    updates = pending_updates(hass)
+    assert [(u["entity_id"], u["group"]) for u in updates] == [
+        ("update.home_assistant_core_update", "system"),
+        ("update.cloudflared_update", "app"),
+        ("update.card_mod_update", "hacs"),
+        ("update.proxy_firmware", "device"),
+    ]
+    assert all(not u["blocked"] for u in updates)
 
 
 async def test_preflight_reads_the_state_and_judges_it(hass: HomeAssistant) -> None:
@@ -133,7 +185,7 @@ async def test_preflight_reads_the_state_and_judges_it(hass: HomeAssistant) -> N
     snapshot = await scanner.async_scan()
 
     report = await maintenance.preflight_report(hass, snapshot)
-    assert set(report) == {"state", "checks"}  # nothing is stored, the time after is the watch's
+    assert set(report) == {"state", "checks", "verdict", "counts"}  # nothing is stored
     assert [r["issue_id"] for r in report["state"]["repairs"]] == ["old_issue"]
     assert [e["title"] for e in report["state"]["failed_entries"]] == ["Hub"]
     assert maintenance.repair_keys(hass) == ["demo:old_issue"]
@@ -159,6 +211,29 @@ async def test_preflight_ignores_persisted_issues_that_are_not_active(hass: Home
     registry.issues[("demo", "stale_issue")] = dataclasses.replace(stale, active=False)
 
     assert [r["issue_id"] for r in maintenance._repairs(hass)] == ["active_issue"]
+
+
+async def test_repair_details_name_a_repair_by_its_key_and_survive_a_missing_title(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper import maintenance
+
+    ir.async_create_issue(
+        hass,
+        "demo",
+        "some_id",
+        is_fixable=True,
+        severity=ir.IssueSeverity.ERROR,
+        translation_key="unknown_key",
+        learn_more_url="https://example.org/help",
+    )
+    details = await maintenance.repair_details(hass)
+    assert details["demo:some_id"] == {
+        "title": None,
+        "fixable": True,
+        "severity": "error",
+        "url": "https://example.org/help",
+    }
 
 
 def _raw(states, recent=None, **extra):
@@ -303,3 +378,26 @@ async def test_the_start_of_a_system_update_takes_the_state_of_that_moment(
         scanner.watch_hours = 0  # the watch is off: nothing to compare with
         await scanner.async_update_changed(state(False), state(True))
         assert scan.await_count == 1
+
+
+async def test_the_configuration_check_reports_validity_and_clips_long_texts(
+    hass: HomeAssistant,
+) -> None:
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock, patch
+
+    from custom_components.ha_housekeeper.maintenance import check_configuration
+
+    bad = SimpleNamespace(errors=[object()], error_str="x" * 5000, warning_str="")
+    good = SimpleNamespace(errors=[], error_str="", warning_str="a deprecation")
+    target = "homeassistant.helpers.check_config.async_check_ha_config_file"
+    with patch(target, AsyncMock(return_value=bad)):
+        result = await check_configuration(hass)
+    assert result["valid"] is False and len(result["errors"]) == 4000 and result["warnings"] is None
+    with patch(target, AsyncMock(return_value=good)):
+        result = await check_configuration(hass)
+    assert (
+        result["valid"] is True
+        and result["errors"] is None
+        and result["warnings"] == "a deprecation"
+    )

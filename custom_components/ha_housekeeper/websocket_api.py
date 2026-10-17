@@ -62,6 +62,7 @@ from .history import PinError
 from .ignored import KINDS as IGNORE_KINDS
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
+from .lifecycle import removed_objects
 from .meter import prepare_meter
 from .monitor import MonitorError, MonitorStore, evaluate
 from .outage_levels import OUTAGE_KEYS, thresholds_from_options, thresholds_rise
@@ -142,7 +143,17 @@ def websocket_status(
     scanner: InventoryScanner,
 ) -> None:
     """Return scan progress without triggering work."""
-    warmup = {"booting": scanner.booting, "seconds_left": scanner.warmup_seconds_left}
+    scanner.check_warmup()
+    warmup = {
+        "booting": scanner.booting,
+        "seconds_left": scanner.warmup_seconds_left,
+        "pending": scanner.integrations_pending,
+        "names": scanner.integrations_loading,
+        "done": scanner.integrations_done,
+        "total": scanner.integrations_total,
+        "preliminary": bool(((scanner.snapshot or {}).get("meta") or {}).get("preliminary")),
+        "settling": scanner.warmup_settling,
+    }
     connection.send_result(
         msg["id"],
         _versioned(
@@ -712,12 +723,16 @@ def websocket_plan_list(
     scanner: InventoryScanner,
 ) -> None:
     """Return the journal of plans as short entries, newest first; details come per plan."""
+    if scanner.journal.drop_stale_previews():
+        scanner.journal.save()
     connection.send_result(
         msg["id"],
         _versioned(
             {
                 "plans": [plan_summary(p) for p in scanner.journal.plans],
                 "purges": scanner.journal.purges,
+                # What a plan removed, forgot or deleted: the journal is the only place that knows it.
+                "removed": removed_objects(scanner.journal.plans),
             }
         ),
     )

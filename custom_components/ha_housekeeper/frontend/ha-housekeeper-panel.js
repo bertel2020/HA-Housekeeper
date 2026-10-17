@@ -33,7 +33,7 @@ const TEXT = {
     integration_disabled: "Zugehörige Integration wurde deaktiviert",
     device_disabled: "Zugehöriges Gerät wurde deaktiviert",
     device_missing: "Zugehöriges Gerät existiert nicht mehr in der Geräte-Registry",
-    config_entry_missing: "Zugehöriger Konfigurationseintrag fehlt", "config_entry.not_loaded": "Integration nicht geladen", "device.down": "Gerät ganz ausgefallen", "automation.blocked": "Automation kann nicht starten: alle Auslöser sind ausgefallen", "automation.dead_actions": "Automation ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "script.dead_actions": "Skript ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "automation.dead_condition": "Eine Bedingung kann nie wahr werden: ausgefallene Entität", "app.stopped_in_use": "App gestoppt, Integration hängt vermutlich daran",
+    config_entry_missing: "Zugehöriger Konfigurationseintrag fehlt", "config_entry.not_loaded": "Integration nicht geladen", "config_entry.reauth": "Anmeldung nötig", "device.down": "Gerät ganz ausgefallen", "automation.blocked": "Automation kann nicht starten: alle Auslöser sind ausgefallen", "automation.dead_actions": "Automation ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "script.dead_actions": "Skript ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "automation.dead_condition": "Eine Bedingung kann nie wahr werden: ausgefallene Entität", "app.stopped_in_use": "App gestoppt, Integration hängt vermutlich daran",
     state_missing: "Entität ist registriert, besitzt aber keinen Zustand",
     state_unavailable: "Integration meldet den Zustand unavailable",
     state_unknown: "Integration meldet den Zustand unknown", state_available: "Zustand ist verfügbar",
@@ -50,7 +50,7 @@ const TEXT = {
     trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
     allFindings: "Alle Befunde",
     inventoryStatus: "Inventarstatus", byType: "Nach Objekttyp", noFindings: "Keine Befunde – alles unauffällig.",
-    openInHA: "In Home Assistant öffnen", diagnosis: "Ursachendiagnose", present: "Vorhanden", missing: "Fehlt", notInInventory: "Nicht im Inventar", relPlaces: "{n} Stellen",
+    openInHA: "In HA öffnen", diagnosis: "Ursachendiagnose", present: "Vorhanden", missing: "Fehlt", notInInventory: "Nicht im Inventar", relPlaces: "{n} Stellen",
     certain: "Bestätigt", probable: "Wahrscheinlich", confidence: "Sicherheit", origin: "Herkunft",
     usage: "Verwendung", pathTitle: "Abhängigkeitspfad", pathSubtitle: "Herkunft und Verwendung eines Objekts prüfen.",
     searchObject: "Objekt suchen …", noRelations: "Keine Beziehungen gefunden.", firstSeenNote: "seit erster Beobachtung",
@@ -86,7 +86,7 @@ const TEXT = {
     ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
     batteries: "Batterien", batteriesSubtitle: "Stand, Bedarf und Prognose deiner Batterien.", batteryLow: "Niedrig", batteryAll: "Alle",
     settings: "Einstellungen", settingsSubtitle: "Infos zu Housekeeper und Anpassung der Darstellung.", about: "Über Housekeeper", version: "Version", haVersion: "Home Assistant",
-    mode: "Betriebsart", readOnlyValue: "Liest und analysiert; ändert nur nach ausdrücklicher Bestätigung", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
+    aboutIntro: "Housekeeper zeigt, was in deiner Home-Assistant-Installation nicht mehr passt: ausgefallene Geräte, defekte Verweise, Ungenutztes, leere Batterien und vieles mehr.", aboutIntroSafe: "Es ändert oder löscht nichts von selbst.", aboutIntroPlan: "Jede Änderung läuft über einen Plan mit Vorschau, Backup und deiner Bestätigung.", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honig", schemeLagoon: "Lagune", schemeEmerald: "Smaragd", schemeFrost: "Frost", schemeMidnight: "Mitternacht", schemeOlive: "Olive", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
@@ -101,7 +101,7 @@ const TEXT = {
     saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsBusy: "Gerade läuft ein Plan, ein Rückgängigmachen oder eine Löschung. Die Einstellungen lassen sich danach speichern.", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
     cleanupSubtitle: "Erst deaktivieren, nach der Quarantäne entfernen; Reste in der Datenbank löschen.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entitäten.", cleanupNone: "Keine Kandidaten gefunden.",
-    selectPage: "Seite auswählen", successorHint: "Mögliche Nachfolger (nur ein Vorschlag):", purgeOpen: "Auswahl aus dem Recorder löschen …", purgeTitle: "Statistiken aus dem Recorder löschen", purgeWarn: "{n} Statistik-Reihen werden mit Lang- und Kurzzeitwerten gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an und löscht nur, wenn es gelingt. Danach geht es nur noch aus dem Backup zurück. Reihen im Energie-Dashboard sind ausgenommen.", purgeStates: "Auch die gespeicherten Zustände dieser IDs löschen", purgeWord: "LÖSCHEN", purgeRun: "Jetzt löschen", purgeRunning: "Läuft (Backup, dann Löschen) …", purgeDone: "{n} Reihen gelöscht, {skipped} übersprungen.", purgeReason_backup_unavailable: "Backup nicht verfügbar", purgeReason_no_backup_agent: "kein Backup-Ziel eingerichtet", purgeReason_backup_failed: "Backup fehlgeschlagen", purgeReason_failed: "Fehler beim Löschen", purgeReason_busy: "ein Löschvorgang läuft schon", bpTab: "Blueprints", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagCopy: "Angaben für eine Fehlermeldung kopieren", diagCopyHint: "Versionen, Browser oder App und die letzten Fehler im Panel, zum Einfügen in ein GitHub-Issue.", diagCopied: "Kopiert", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", findHideSelected: "Ausgewählte ausblenden", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen", selectedCount: "{count} ausgewählt",
+    selectPage: "Seite auswählen", successorHint: "Mögliche Nachfolger (nur ein Vorschlag):", purgeOpen: "Löschen vorbereiten", purgeTitle: "Statistiken aus dem Recorder löschen", purgeWarn: "{n} Statistik-Reihen werden mit Lang- und Kurzzeitwerten gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an und löscht nur, wenn es gelingt. Danach geht es nur noch aus dem Backup zurück. Reihen im Energie-Dashboard sind ausgenommen.", purgeStates: "Auch die gespeicherten Zustände dieser IDs löschen", purgeWord: "LÖSCHEN", purgeRun: "Jetzt löschen", purgeRunning: "Läuft (Backup, dann Löschen) …", purgeDone: "{n} Reihen gelöscht, {skipped} übersprungen.", purgeReason_backup_unavailable: "Backup nicht verfügbar", purgeReason_no_backup_agent: "kein Backup-Ziel eingerichtet", purgeReason_backup_failed: "Backup fehlgeschlagen", purgeReason_failed: "Fehler beim Löschen", purgeReason_busy: "ein Löschvorgang läuft schon", bpTab: "Blueprints", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagCopy: "Angaben für eine Fehlermeldung kopieren", diagCopyHint: "Versionen, Browser oder App und die letzten Fehler im Panel, zum Einfügen in ein GitHub-Issue.", diagCopied: "Kopiert", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", findHideSelected: "Ausgewählte ausblenden", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen ({count})", prepareDelete: "Löschen vorbereiten ({count})", selectedCount: "{count} ausgewählt",
     stepsLabel: "Ablauf des Plans", stepSelect: "Auswahl", stepAnalysis: "Auswirkungsanalyse", stepConfirm: "Bestätigung", stepBackup: "Backup", stepRun: "Ausführung", stepVerify: "Verifikation",
     stepDone: "erledigt", stepCurrent: "aktuell", stepTodo: "ausstehend", stepSkipped: "entfällt", stepFailed: "fehlgeschlagen",
     stepAnalysisBlocked: "Keine ausführbare Aktion", stepBackupSkipped: "Nicht nötig: alles lässt sich per Housekeeper zurücknehmen", stepBackupDone: "Erstellt am {date}{name}{job}", stepBackupName: " · „{name}“ in der Backup-Liste", stepBackupJob: " · Job {id}",
@@ -113,7 +113,7 @@ const TEXT = {
     planStaleHint: "Diese Vorschau ist älter als 24 Stunden und kann nicht mehr bestätigt werden. Erneuern prüft dieselben Einträge noch einmal und ersetzt sie.",
     planChangedTitle: "Seit der Vorschau hat sich etwas geändert", planChangedHint: "Für diese Einträge ergibt die Prüfung jetzt ein anderes Bild. Erneuere die Vorschau und sieh sie dir noch einmal an.", planChangedMore: "… und {count} weitere",
     planSummary: "{total} geprüft: {ok} ohne bekannte Verwendung, {review} zu prüfen, {blocked} blockiert.", planUses: "{count} Verwendungen betroffen", planStats: "{count} mit Langzeitstatistik",
-    verdict_ok: "Keine bekannte Verwendung", verdict_review: "Prüfen", verdict_blocked: "Blockiert", journal: "Journal", journalHint: "Frühere Vorschauen (die letzten 50).", journalEmpty: "Noch keine Vorschau erstellt.",
+    verdict_ok: "Keine bekannte Verwendung", verdict_review: "Prüfen", verdict_blocked: "Blockiert", journal: "Journal", journalHint: "Vorschauen und ausgeführte Pläne, die neuesten zuerst. Ausgeführte bleiben bis zu einem Jahr (höchstens 300), nie gestartete Vorschauen verfallen früher.", journalEmpty: "Noch keine Vorschau erstellt.",
     openPlan: "Öffnen", deletePlan: "Löschen", dryRun: "Dry Run", usedBy: "Verwendet von",
     reason_entity_working: "Die Entität funktioniert noch und ist kein Kandidat.", reason_used_certain: "Wird sicher verwendet – Entfernen würde Verweise brechen.", reason_used_probable: "Wird vermutlich verwendet (Template oder Dashboard).",
     reason_has_statistics: "Hat Langzeitstatistiken im Recorder; sie blieben ohne Entität zurück.", reason_ignored_by_label: "Trägt das Label housekeeper_ignore.", reason_not_found: "Im letzten Scan nicht gefunden.", reason_unsupported_action: "Diese Aktion wird nicht unterstützt.",
@@ -123,10 +123,6 @@ const TEXT = {
    
     kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
     warmupBanner: "Home Assistant startet noch. Die Befunde sind vorläufig und werden nach dem Start neu erhoben; Aufräumen ist bis dahin gesperrt.",
-    warmupStepBoot: "Schritt 1 von 3: Home Assistant lädt noch. Die Wartezeit beginnt danach.",
-    warmupStepWait: "Schritt 2 von 3: Integrationen laden noch. Noch ca. {time} Min.",
-    warmupStepScan: "Schritt 3 von 3: abschließender Scan läuft ({percent} %).",
-    warmupStepFinal: "Schritt 3 von 3: der abschließende Scan startet gleich.",
     err_warming_up: "Home Assistant startet noch. Bitte in wenigen Minuten erneut versuchen.",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
     kindDisable: "Deaktivieren (Quarantäne, umkehrbar)", kindRemove: "Entfernen (nach Quarantäne, mit Backup)", actionKind: "Aktion",
@@ -220,7 +216,7 @@ const TEXT = {
     integration_disabled: "Related integration was disabled",
     device_disabled: "Related device was disabled",
     device_missing: "Related device no longer exists in the device registry",
-    config_entry_missing: "Related config entry is missing", "config_entry.not_loaded": "Integration not loaded", "device.down": "Device is down completely", "automation.blocked": "Automation cannot start: all its triggers are out of order", "automation.dead_actions": "Automation changes nothing: all its actions target dead entities", "script.dead_actions": "Script changes nothing: all its actions target dead entities", "automation.dead_condition": "A condition can never be true: dead entity", "app.stopped_in_use": "App stopped, an integration probably depends on it",
+    config_entry_missing: "Related config entry is missing", "config_entry.not_loaded": "Integration not loaded", "config_entry.reauth": "Login needed", "device.down": "Device is down completely", "automation.blocked": "Automation cannot start: all its triggers are out of order", "automation.dead_actions": "Automation changes nothing: all its actions target dead entities", "script.dead_actions": "Script changes nothing: all its actions target dead entities", "automation.dead_condition": "A condition can never be true: dead entity", "app.stopped_in_use": "App stopped, an integration probably depends on it",
     state_missing: "Entity is registered but has no state",
     state_unavailable: "Integration reports unavailable",
     state_unknown: "Integration reports unknown", state_available: "State is available",
@@ -237,7 +233,7 @@ const TEXT = {
     trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
     allFindings: "All findings",
     inventoryStatus: "Inventory status", byType: "By object type", noFindings: "No findings – everything looks fine.",
-    openInHA: "Open in Home Assistant", diagnosis: "Root-cause diagnosis", present: "Present", missing: "Missing", notInInventory: "Not in inventory", relPlaces: "{n} places",
+    openInHA: "Open in HA", diagnosis: "Root-cause diagnosis", present: "Present", missing: "Missing", notInInventory: "Not in inventory", relPlaces: "{n} places",
     certain: "Confirmed", probable: "Probable", confidence: "Confidence", origin: "Origin",
     usage: "Usage", pathTitle: "Dependency path", pathSubtitle: "Inspect the origin and usage of an object.",
     searchObject: "Search object …", noRelations: "No relationships found.", firstSeenNote: "since first observation",
@@ -273,7 +269,7 @@ const TEXT = {
     ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
     batteries: "Batteries", batteriesSubtitle: "Level, need and forecast of your batteries.", batteryLow: "Low", batteryAll: "All",
     settings: "Settings", settingsSubtitle: "About Housekeeper and appearance options.", about: "About Housekeeper", version: "Version", haVersion: "Home Assistant",
-    mode: "Mode", readOnlyValue: "Reads and analyzes; changes only after explicit confirmation", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
+    aboutIntro: "Housekeeper shows what no longer fits in your Home Assistant installation: failed devices, broken references, unused items, empty batteries and much more.", aboutIntroSafe: "It never changes or deletes anything by itself.", aboutIntroPlan: "Every change goes through a plan with a preview, a backup and your confirmation.", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
     colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honey", schemeLagoon: "Lagoon", schemeEmerald: "Emerald", schemeFrost: "Frost", schemeMidnight: "Midnight", schemeOlive: "Olive", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
@@ -288,7 +284,7 @@ const TEXT = {
     saveOptions: "Save", optionsSaved: "Saved. Housekeeper is reloading …", optionsBusy: "A plan, an undo or a purge is running. The settings can be saved afterwards.", optionsInvalid: "Please enter values within the allowed range.",
     cleanupSubtitle: "Disable first, remove after the quarantine; delete leftovers in the database.",
     cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
-    selectPage: "Select page", successorHint: "Possible successors (a suggestion only):", purgeOpen: "Delete selection from the recorder …", purgeTitle: "Delete statistics from the recorder", purgeWarn: "{n} statistic series are deleted with their long-term and short-term values. Housekeeper creates a Home Assistant backup first and only deletes if it succeeds. Afterwards the backup is the only way back. Series in the Energy dashboard are left out.", purgeStates: "Also delete the stored states of these IDs", purgeWord: "DELETE", purgeRun: "Delete now", purgeRunning: "Running (backup, then delete) …", purgeDone: "{n} series deleted, {skipped} skipped.", purgeReason_backup_unavailable: "backup not available", purgeReason_no_backup_agent: "no backup location set up", purgeReason_backup_failed: "backup failed", purgeReason_failed: "error while deleting", purgeReason_busy: "a purge is already running", bpTab: "Blueprints", bpMissing: "blueprint file is missing", bpBroken: "blueprint fails to load", bpUnused: "not used", bpFiles: "files", bpNone: "Nothing to note.", notifyTitle: "Notification", notifyHint: "The only thing Housekeeper does on its own. Off by default.", notifyLabel: "Tell about new broken references", notifyDetail: "A notification in Home Assistant when an automation or script points to something that does not exist. Each finding is announced once; switching it on announces nothing old.", diagDownload: "Download diagnostics file", diagCopy: "Copy details for a bug report", diagCopyHint: "Versions, browser or app and the last panel errors, to paste into a GitHub issue.", diagCopied: "Copied", diagHint: "Numbers and versions only, no names, ids or attributes. Fit to attach to an issue on GitHub.", weeklyBtn: "Weekly report", weeklyHint: "Loads the comparison with the state from about a week ago and saves it as a Markdown file.", weeklyTitle: "Housekeeper report", weeklyRecorder: "Loudest entities in the recorder", findHideSelected: "Hide selected", clearSelection: "Clear selection", createPlan: "Create preview", selectedCount: "{count} selected",
+    selectPage: "Select page", successorHint: "Possible successors (a suggestion only):", purgeOpen: "Prepare deletion", purgeTitle: "Delete statistics from the recorder", purgeWarn: "{n} statistic series are deleted with their long-term and short-term values. Housekeeper creates a Home Assistant backup first and only deletes if it succeeds. Afterwards the backup is the only way back. Series in the Energy dashboard are left out.", purgeStates: "Also delete the stored states of these IDs", purgeWord: "DELETE", purgeRun: "Delete now", purgeRunning: "Running (backup, then delete) …", purgeDone: "{n} series deleted, {skipped} skipped.", purgeReason_backup_unavailable: "backup not available", purgeReason_no_backup_agent: "no backup location set up", purgeReason_backup_failed: "backup failed", purgeReason_failed: "error while deleting", purgeReason_busy: "a purge is already running", bpTab: "Blueprints", bpMissing: "blueprint file is missing", bpBroken: "blueprint fails to load", bpUnused: "not used", bpFiles: "files", bpNone: "Nothing to note.", notifyTitle: "Notification", notifyHint: "The only thing Housekeeper does on its own. Off by default.", notifyLabel: "Tell about new broken references", notifyDetail: "A notification in Home Assistant when an automation or script points to something that does not exist. Each finding is announced once; switching it on announces nothing old.", diagDownload: "Download diagnostics file", diagCopy: "Copy details for a bug report", diagCopyHint: "Versions, browser or app and the last panel errors, to paste into a GitHub issue.", diagCopied: "Copied", diagHint: "Numbers and versions only, no names, ids or attributes. Fit to attach to an issue on GitHub.", weeklyBtn: "Weekly report", weeklyHint: "Loads the comparison with the state from about a week ago and saves it as a Markdown file.", weeklyTitle: "Housekeeper report", weeklyRecorder: "Loudest entities in the recorder", findHideSelected: "Hide selected", clearSelection: "Clear selection", createPlan: "Create preview ({count})", prepareDelete: "Prepare deletion ({count})", selectedCount: "{count} selected",
     stepsLabel: "Steps of the plan", stepSelect: "Selection", stepAnalysis: "Impact analysis", stepConfirm: "Confirmation", stepBackup: "Backup", stepRun: "Execution", stepVerify: "Verification",
     stepDone: "done", stepCurrent: "current", stepTodo: "pending", stepSkipped: "not needed", stepFailed: "failed",
     stepAnalysisBlocked: "No executable action", stepBackupSkipped: "Not needed: everything can be taken back by Housekeeper", stepBackupDone: "Created {date}{name}{job}", stepBackupName: " · “{name}” in the backup list", stepBackupJob: " · job {id}",
@@ -300,7 +296,7 @@ const TEXT = {
     planStaleHint: "This preview is older than 24 hours and can no longer be confirmed. Renewing checks the same entries again and replaces it.",
     planChangedTitle: "Something changed since the preview", planChangedHint: "The check now gives a different result for these entries. Renew the preview and look at it again.", planChangedMore: "… and {count} more",
     planSummary: "{total} checked: {ok} with no known use, {review} to review, {blocked} blocked.", planUses: "{count} uses affected", planStats: "{count} with long-term statistics",
-    verdict_ok: "No known use", verdict_review: "Review", verdict_blocked: "Blocked", journal: "Journal", journalHint: "Earlier previews (the last 50).", journalEmpty: "No preview created yet.",
+    verdict_ok: "No known use", verdict_review: "Review", verdict_blocked: "Blocked", journal: "Journal", journalHint: "Previews and plans that ran, newest first. Plans that ran stay up to a year (at most 300); previews that were never started expire sooner.", journalEmpty: "No preview created yet.",
     openPlan: "Open", deletePlan: "Delete", dryRun: "Dry run", usedBy: "Used by",
     reason_entity_working: "The entity still works and is not a candidate.", reason_used_certain: "Definitely in use – removing it would break references.", reason_used_probable: "Probably in use (template or dashboard).",
     reason_has_statistics: "Has long-term statistics in the recorder; they would be left without an entity.", reason_ignored_by_label: "Carries the label housekeeper_ignore.", reason_not_found: "Not found in the latest scan.", reason_unsupported_action: "This action is not supported.",
@@ -310,10 +306,6 @@ const TEXT = {
    
     kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
     warmupBanner: "Home Assistant is still starting. The findings are preliminary and will be collected again after startup; cleanup is locked until then.",
-    warmupStepBoot: "Step 1 of 3: Home Assistant is still loading. The waiting time starts afterwards.",
-    warmupStepWait: "Step 2 of 3: integrations are still loading. About {time} min left.",
-    warmupStepScan: "Step 3 of 3: the final scan is running ({percent}%).",
-    warmupStepFinal: "Step 3 of 3: the final scan starts in a moment.",
     err_warming_up: "Home Assistant is still starting. Please try again in a few minutes.",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
     kindDisable: "Disable (quarantine, reversible)", kindRemove: "Remove (after quarantine, with backup)", actionKind: "Action",
@@ -561,7 +553,7 @@ const STATUS_TONE = {
 
 // Finding classes that call for action when they are new.
 // The findings that belong to a cause itself (an integration, a device, an app); the others are its follow-up findings.
-const CAUSE_OWN_RULES = ["config_entry.not_loaded", "device.down", "app.stopped_in_use"];
+const CAUSE_OWN_RULES = ["config_entry.not_loaded", "config_entry.reauth", "device.down", "app.stopped_in_use"];
 // The findings of an outage are quiet (info, low) at first and loud from medium on; quiet ones stay on the findings page only.
 const OUTAGE_RULES = ["entity.state_unavailable", "entity.state_unknown", "device.down", "config_entry.not_loaded", "app.stopped_in_use"];
 const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
@@ -589,7 +581,7 @@ Object.assign(TEXT.de, {
   utStatId: "Statistik-ID", utKind: "Art", utUnit: "Einheit", utLast: "Letzter Eintrag", utFirst: "Erster Eintrag", utRows: "Datensätze", sortFirstEntry: "Erster Eintrag", sortRows: "Datensätze", statFirstEntry: "Erster Statistik-Eintrag", statRows: "{count} Stundenwerte", utEnergy: "Energie-Dashboard",
   sortKind: "Art", sortDomain: "Domain", sortDevice: "Gerät", sortIntegration: "Integration", sortChanged: "Letzte Änderung", sortReported: "Letzte Meldung", sortStats: "Statistik",
   allUnits: "Alle Einheiten", allAges: "Letzter Eintrag: jeder", allIntegrations: "Alle Integrationen", statAge30: "Letzter Eintrag älter als 30 Tage", statAge365: "Letzter Eintrag älter als 1 Jahr", statAge730: "Letzter Eintrag älter als 2 Jahre", lastEntryBusyShort: "Recorder beschäftigt",
-  statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entität mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entität umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger sind Vermutungen aus Name und Einheit.",
+  statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entität mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entität umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger werden aus Name und Einheit abgeleitet.",
   noBaselinePreliminary: "Der letzte Scan war vorläufig, weil Home Assistant gerade gestartet ist. Vorläufige Scans werden nicht gespeichert. Scanne in ein paar Minuten erneut, dann gibt es einen ersten Vergleichspunkt.", noBaselineOneScan: "Es gibt erst einen gespeicherten Scan. Ein Vergleich braucht zwei: Scanne nach Änderungen an deiner Installation erneut oder warte auf den automatischen Scan (alle {hours} Stunden). Jeder Scan wird als Vergleichspunkt gespeichert.", scanPoint: "Jetzt scannen und Vergleichspunkt setzen",
   releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
   kindDisableDevice: "Gerät deaktivieren (Quarantäne, umkehrbar)", kindRemoveDevice: "Gerät entfernen (nach Quarantäne, mit Backup)",
@@ -622,7 +614,7 @@ Object.assign(TEXT.en, {
   utStatId: "Statistic ID", utKind: "Kind", utUnit: "Unit", utLast: "Last entry", utFirst: "First entry", utRows: "Records", sortFirstEntry: "First entry", sortRows: "Records", statFirstEntry: "First statistics entry", statRows: "{count} hourly values", utEnergy: "Energy dashboard",
   sortKind: "Kind", sortDomain: "Domain", sortDevice: "Device", sortIntegration: "Integration", sortChanged: "Last change", sortReported: "Last report", sortStats: "Statistics",
   allUnits: "All units", allAges: "Last entry: any", allIntegrations: "All integrations", statAge30: "Last entry older than 30 days", statAge365: "Last entry older than 1 year", statAge730: "Last entry older than 2 years", lastEntryBusyShort: "Recorder busy",
-  statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are guesses from name and unit.",
+  statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are derived from name and unit.",
   noBaselinePreliminary: "The last scan was preliminary because Home Assistant has just started. Preliminary scans are not saved. Scan again in a few minutes to get a first comparison point.", noBaselineOneScan: "There is only one saved scan so far. A comparison needs two: scan again after changing your installation or wait for the automatic scan (every {hours} hours). Every scan is saved as a comparison point.", scanPoint: "Scan now and set a comparison point",
   releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",
   kindDisableDevice: "Disable device (quarantine, reversible)", kindRemoveDevice: "Remove device (after quarantine, with backup)",
@@ -677,7 +669,7 @@ Object.assign(TEXT.de, {
   propIntegration: "Integration", propDeviceOf: "Gerät", propArea: "Bereich", propAreaInherited: "{area} (vom Gerät)", propLabels: "Labels", propNone: "–",
   propDomain: "Typ", propDeviceClass: "Geräteklasse", propStateClass: "Zustandsklasse", propUnit: "Einheit", propCategory: "Kategorie", propOriginalName: "Originalname", propAliases: "Aliase", propIcon: "Symbol",
   propDisabledBy: "Deaktiviert durch", propHiddenBy: "Ausgeblendet durch", propEntityId: "Entitäts-ID", propUniqueId: "Eindeutige ID", propPlatform: "Plattform",
-  propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastChangedShort: "Letzter Wechsel", propLastUpdatedShort: "Aktualisiert", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe und Wachstum des Recorders.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvFirst: "Ältester Eintrag", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
+  propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastChangedShort: "Letzter Wechsel", propLastUpdatedShort: "Aktualisiert", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invMarked: "Markiert (erwartet)", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe und Wachstum des Recorders.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvFirst: "Ältester Eintrag", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
   propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
   propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Aufräumen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
   propNoEntities: "Dieses Gerät hat keine Entitäten.",
@@ -689,7 +681,7 @@ Object.assign(TEXT.en, {
   propIntegration: "Integration", propDeviceOf: "Device", propArea: "Area", propAreaInherited: "{area} (from the device)", propLabels: "Labels", propNone: "–",
   propDomain: "Type", propDeviceClass: "Device class", propStateClass: "State class", propUnit: "Unit", propCategory: "Category", propOriginalName: "Original name", propAliases: "Aliases", propIcon: "Icon",
   propDisabledBy: "Disabled by", propHiddenBy: "Hidden by", propEntityId: "Entity ID", propUniqueId: "Unique ID", propPlatform: "Platform",
-  propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastChangedShort: "Last change", propLastUpdatedShort: "Updated", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Recorder size and growth.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvFirst: "Oldest entry", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details in Recorder",
+  propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastChangedShort: "Last change", propLastUpdatedShort: "Updated", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invMarked: "Marked (expected)", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Recorder size and growth.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvFirst: "Oldest entry", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details in Recorder",
   propManufacturer: "Manufacturer", propModel: "Model", propSerial: "Serial number", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Kind", propUserName: "Custom name", propOriginalDeviceName: "Name from the integration",
   propKind: "Kind", propKindChild: "Child device", propParent: "Parent device", propCleanupBlock: "Cleanup blocked", propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
   propNoEntities: "This device has no entities.",
@@ -722,18 +714,26 @@ Object.assign(TEXT.de, {
   abort_meter_changed: "Entitäten oder Statistik wurden nach der Vorschau geändert.", abort_statistics_changed: "Die Statistik wurde nach der Vorschau geändert.", abort_statistics_failed: "Die Statistik konnte nicht bestätigt werden; der Lauf wurde angehalten.",
   abort_no_recorder: "Der Recorder läuft nicht.", abort_alt_id_taken: "Die Ausweich-ID ist inzwischen belegt.", abort_id_not_freed: "Home Assistant hat die alte ID nicht rechtzeitig freigegeben; alles wurde zurückgesetzt.", abort_id_takeover_failed: "Das Umbenennen ist fehlgeschlagen; alles wurde zurückgesetzt.",
   // maintenance
-  maintHint: "Backup-Schutz, Preflight, Blueprints und Ziele",
-  maintenance: "Wartung", maintenanceSubtitle: "Backup-Schutz und Update-Preflight. Beides liest nur; gespeichert wird allein Housekeepers eigener Ausgangszustand und was du als erledigt bestätigst.",
-  recorderTitle: "Recorder-Kosten", 
+  maintHint: "Backups, Updates, Blueprints und Wartungsziele",
+  maintenance: "Wartung", maintenanceSubtitle: "Backups prüfen, offene Updates mit der Prüfung davor, Blueprints und Wartungsziele. Housekeeper liest nur; gelöscht werden allein seine eigenen Backups, und erst nach deiner Bestätigung.",
+  recorderTitle: "Speicherbedarf", 
   recorderLoad: "Analyse starten", recorderReload: "Neu berechnen", recorderLoading: "Datenbank wird ausgewertet …", recorderUnavailable: "Der Recorder läuft nicht, daher gibt es nichts auszuwerten.",
   recorderSummary: "{states} gespeicherte Zustände · {size} · Aufbewahrung {days} Tage · {stats} Statistikwerte", recorderSizeUnknown: "Größe unbekannt", recorderPerDay: "{count} pro Tag", recorderTook: "berechnet in {ms} ms", recorderCached: "Ergebnis von vor wenigen Minuten ({ms} ms)", recorderShare: "{share} % aller Zustände",
   recorderColStat: "Statistik", recorderColRows: "Zeilen", recorderColShare: "Anteil", recorderColTotal: "Gesamt", recorderCol24h: "24 h", recorderCol7d: "7 Tage", recorderColAvg: "Ø pro Tag", recorderColMark: "Markierung", recorderSumAll: "Alle", recorderSumSuggest: "Vorschläge", recorderSumExcluded: "Ausgeschlossen", recorderSumUnused: "Nicht verwendet", recorderFilterAll: "Alle Einträge", recorderNone: "Keine Einträge.",
   recorderUsed: "{count} Verwendungen", recorderUnused: "nicht verwendet", recorderExcluded: "bereits ausgeschlossen", recorderSuggest: "Empfohlen", recorderStats: "Statistikwerte nach Entität",
   recorderSnippetTitle: "Vorschlag für die configuration.yaml", recorderSnippetHint: "Entitäten, die nichts verwendet, keine Statistik haben und sehr oft schreiben. Prüfe die Liste, bevor du sie übernimmst.", recorderCopy: "Kopieren", recorderCopied: "Kopiert",
   preflightTitle: "Update-Preflight", preflightLoading: "Wird geprüft …",
-  pf_backup: "Backup", pf_repairs: "Offene Reparaturen", pf_failed_entries: "Ausgefallene Integrationen", pf_broken: "Fehlende Referenzen",
+  pf_backup: "Backup", pf_disk: "Freier Speicher", pf_config: "Konfiguration", pfConfigHint: "Prüft alle Konfigurationsdateien. Das dauert einige Sekunden und läuft nur auf Knopfdruck.", pfConfigRun: "Prüfen", pfConfigAgain: "Erneut prüfen", pfConfigRunning: "Wird geprüft …", pfConfigOk: "Gültig, geprüft am {time}", pfConfigWarn: "Gültig mit Warnungen, geprüft am {time}: ", pfConfigBad: "Ungültig: ", pf_disk_text: "{free} frei", pf_repairs: "Offene Reparaturen", pf_failed_entries: "Ausgefallene Integrationen", pf_broken: "Fehlende Referenzen",
   pf_backup_ok: "Letztes Backup vor {hours} h", pf_backup_old: "Letztes Backup vor {hours} h – ein neues ist ratsam", pf_backup_none: "Kein Backup eingerichtet oder vorhanden", pf_backup_unavailable: "Backup-Komponente nicht verfügbar",
   pf_count_none: "keine", pf_updates: "Verfügbare Updates", pf_updates_none: "keine",
+  updatesTab: "Updates", pfOpenBackup: "Backup-Schutz",
+  updBlocked: "HACS kann es nicht installieren", updRunning: "läuft", updAuto: "automatisch", updWatch: "Beobachtung startet", updNotes: "Änderungen", updOpenHa: "In Home Assistant öffnen", updOpen: "Öffnen",
+  updVerdict_ready: "Bereit", updVerdict_look: "Erst ansehen", updVerdict_stop: "Stopp", updVerdictNone: "Keine Updates offen",
+  updPending_1: "1 Update offen", updPending_n: "{n} Updates offen", updCheckFirst: "Zu prüfen: {items}",
+  updSumOpen: "Offen", updSumBlocked: "Blockiert",
+  updGroup_system: "System", updGroup_app: "Apps", updGroup_hacs: "Integrationen und Karten über HACS", updGroup_device: "Geräte",
+  updCurrent_system: "Home Assistant, Betriebssystem und Supervisor sind aktuell.", updCurrent_app: "Alle Apps sind aktuell.", updCurrent_hacs: "Alle HACS-Einträge sind aktuell.", updCurrent_device: "Alle Geräte-Firmwares sind aktuell.",
+  updAllCurrent: "Alles ist aktuell.", todoUpdates_1: "1 Update offen", todoUpdates_n: "{n} Updates offen",
   pfAfterTitle: "Danach", pfAfterOn: "Nach einem Update von Home Assistant, Betriebssystem oder Supervisor beobachtet Housekeeper {hours} Stunden lang, ob etwas ausfällt oder neue Reparaturen auftauchen. Beim Start des Updates hält es den Stand fest, die Auswertung steht auf der Befundseite.", pfAfterRunning: "Beobachtung nach {what} läuft, noch {hours} Std., bisher {n} Auffälligkeiten.", pfAfterOff: "Die Beobachtung nach Updates ist ausgeschaltet. Unter Einstellungen → Scan und Schwellen stellst du ein, wie lange sie läuft.",
 });
 Object.assign(TEXT.en, {
@@ -759,18 +759,26 @@ Object.assign(TEXT.en, {
   result_migrated: "Migrated", check_meter_statistics: "Statistics continued", check_meter_id_taken: "New entity carries the stable ID", undo_conflict_statistics: "not undone: statistics can only be reset with the backup",
   abort_meter_changed: "Entities or statistics were changed after the preview.", abort_statistics_changed: "The statistics were changed after the preview.", abort_statistics_failed: "The statistics could not be confirmed; the run stopped.",
   abort_no_recorder: "The recorder is not running.", abort_alt_id_taken: "The fallback ID is taken now.", abort_id_not_freed: "Home Assistant did not free the old ID in time; everything was put back.", abort_id_takeover_failed: "Renaming failed; everything was put back.",
-  maintHint: "Backup protection, preflight, blueprints and goals",
-  maintenance: "Maintenance", maintenanceSubtitle: "Backup protection and update preflight. Both only read; the only things stored are Housekeeper's own starting state and what you confirm as done.",
-  recorderTitle: "Recorder costs", 
+  maintHint: "Backups, updates, blueprints and maintenance goals",
+  maintenance: "Maintenance", maintenanceSubtitle: "Check backups, open updates with the checks before them, blueprints and maintenance goals. Housekeeper only reads; the only things it deletes are its own backups, and only after you confirm.",
+  recorderTitle: "Storage use", 
   recorderLoad: "Start analysis", recorderReload: "Recalculate", recorderLoading: "Evaluating the database …", recorderUnavailable: "The recorder is not running, so there is nothing to evaluate.",
   recorderSummary: "{states} stored states · {size} · kept {days} days · {stats} statistics values", recorderSizeUnknown: "size unknown", recorderPerDay: "{count} per day", recorderTook: "calculated in {ms} ms", recorderCached: "result from a few minutes ago ({ms} ms)", recorderShare: "{share} % of all states",
   recorderColStat: "Statistic", recorderColRows: "Rows", recorderColShare: "Share", recorderColTotal: "Total", recorderCol24h: "24 h", recorderCol7d: "7 days", recorderColAvg: "Avg per day", recorderColMark: "Mark", recorderSumAll: "All", recorderSumSuggest: "Suggestions", recorderSumExcluded: "Excluded", recorderSumUnused: "Not used", recorderFilterAll: "All entries", recorderNone: "No entries.",
   recorderUsed: "{count} uses", recorderUnused: "not used", recorderExcluded: "already excluded", recorderSuggest: "Recommended", recorderStats: "Statistics values by entity",
   recorderSnippetTitle: "Suggestion for configuration.yaml", recorderSnippetHint: "Entities that nothing uses, that have no statistics and that write very often. Review the list before you adopt it.", recorderCopy: "Copy", recorderCopied: "Copied",
   preflightTitle: "Update preflight", preflightLoading: "Checking …",
-  pf_backup: "Backup", pf_repairs: "Open repairs", pf_failed_entries: "Failed integrations", pf_broken: "Missing references",
+  pf_backup: "Backup", pf_disk: "Free space", pf_config: "Configuration", pfConfigHint: "Checks every configuration file. It takes a few seconds and runs only when you press the button.", pfConfigRun: "Check", pfConfigAgain: "Check again", pfConfigRunning: "Checking …", pfConfigOk: "Valid, checked on {time}", pfConfigWarn: "Valid with warnings, checked on {time}: ", pfConfigBad: "Invalid: ", pf_disk_text: "{free} free", pf_repairs: "Open repairs", pf_failed_entries: "Failed integrations", pf_broken: "Missing references",
   pf_backup_ok: "Last backup {hours} h ago", pf_backup_old: "Last backup {hours} h ago – a new one is advisable", pf_backup_none: "No backup set up or available", pf_backup_unavailable: "Backup component not available",
   pf_count_none: "none", pf_updates: "Available updates", pf_updates_none: "none",
+  updatesTab: "Updates", pfOpenBackup: "Backup protection",
+  updBlocked: "HACS cannot install it", updRunning: "running", updAuto: "automatic", updWatch: "Watch starts", updNotes: "Changes", updOpenHa: "Open in Home Assistant", updOpen: "Open",
+  updVerdict_ready: "Ready", updVerdict_look: "Look first", updVerdict_stop: "Stop", updVerdictNone: "No updates open",
+  updPending_1: "1 update open", updPending_n: "{n} updates open", updCheckFirst: "To check: {items}",
+  updSumOpen: "Open", updSumBlocked: "Blocked",
+  updGroup_system: "System", updGroup_app: "Apps", updGroup_hacs: "Integrations and cards via HACS", updGroup_device: "Devices",
+  updCurrent_system: "Home Assistant, the operating system and the Supervisor are up to date.", updCurrent_app: "All apps are up to date.", updCurrent_hacs: "All HACS items are up to date.", updCurrent_device: "All device firmware is up to date.",
+  updAllCurrent: "Everything is up to date.", todoUpdates_1: "1 update open", todoUpdates_n: "{n} updates open",
   pfAfterTitle: "Afterwards", pfAfterOn: "After an update of Home Assistant, the operating system or the Supervisor, Housekeeper watches for {hours} hours whether something fails or new repairs appear. When the update starts it keeps the state, the results are on the findings page.", pfAfterRunning: "Watching after {what}, {hours} h left, {n} findings so far.", pfAfterOff: "The watch after updates is switched off. Under Settings → Scan and thresholds you set how long it runs.",
 });
 Object.assign(TEXT.de, {
@@ -818,72 +826,79 @@ Object.assign(TEXT.de, {
   backupRefresh: "Neu prüfen", backupLoading: "Backups werden geprüft …", backupUnavailable: "Die Backup-Komponente von Home Assistant ist nicht verfügbar.",
   bhLevel_ok: "In Ordnung", bhLevel_note: "Hinweis", bhLevel_problem: "Problem", bhLevel_unknown: "Unbekannt",
   bh_setup: "Ziele und Zeitplan", bh_newest: "Letztes Backup", bh_last_run: "Letzter automatischer Lauf", bh_targets: "Ablageorte", bh_size: "Größe",
-  bh_retention: "Aufbewahrung", bh_encryption: "Verschlüsselung", bh_emergency_kit: "Emergency Kit", bh_restore_test: "Restore-Test", bh_plan_backups: "Backups vor Bereinigungen", bh_own_backups: "Housekeeper-Backups",
+  bh_retention: "Aufbewahrung", bh_encryption: "Verschlüsselung", bh_emergency_kit: "Emergency Kit", bh_restore_test: "Restore-Test", bh_plan_backups: "Backups vor Bereinigungen", bh_own_backups: "Housekeeper-Backups", bh_content: "Inhalt", bh_remote_age: "Alter pro Ablageort", bh_space: "Platz fürs nächste Backup", bhOwnOpen: "Aufräumen", bhSizesTitle: "Größe der letzten Backups", bhSizesLabel: "Größe der letzten {n} Backups, von {from} auf {to}", bhSizesNote: "Die letzten {n} Backups: von {from} auf {to}. Der Balken ganz rechts ist das neueste.",
+  bhContentOk: "Datenbank enthalten, {apps} Apps, {folders} Ordner, keine Fehler", bhContentFailed: "Beim neuesten Backup sind Teile fehlgeschlagen: {items}", bhContentNoDb: "Die Datenbank fehlt im neuesten Backup, obwohl sie vorgesehen ist", bhContentNoDbSet: "Der Zeitplan nimmt die Datenbank nicht mit: eine Wiederherstellung hätte keinen Verlauf", bhContentUnknown: "Der Inhalt des neuesten Backups ist nicht zu lesen",
+  bhRemoteOk: "Neueste Kopie: {items}", bhRemoteStale: "Zu alt (Grenze {limit}): {items}",
+  bhSpaceOk: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceNote: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceProblem: "Nur {free} frei, das letzte Backup war {size} groß", bhSpaceUnknown: "Freier Platz oder Backup-Größe nicht bekannt", bhVerdict_ok: "Belastbar", bhVerdict_note: "Erst ansehen", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unbekannt", bhCheckFirst: "Zu prüfen: {items}", bhTileLast: "Letztes Backup", bhTileCount: "Backups", bhTileRemote: "Externe Kopie", bhTileOpen: "Zu prüfen", bhGroup_running: "Sicherung läuft", bhGroup_storage: "Ablage und Inhalt", bhGroup_restore: "Wiederherstellbarkeit", bhGroup_house: "Housekeeper", backupsTab: "Backups",
   bhRec_daily: "täglich", bhRec_custom_days: "an bestimmten Tagen", bhRec_never: "ohne Zeitplan", bhNone: "keine", bhNever: "nie",
   bhAgeHours: "{n} Std.", bhAgeDays: "{n} Tagen",
   bhSetupOk: "Ziele: {agents} · Zeitplan: {recurrence}", bhSetupNote: "Kein Ziel für automatische Backups gewählt, ältere Backups sind aber vorhanden.", bhSetupProblem: "Weder ein Backup-Ziel noch ein vorhandenes Backup.",
   bhNewestNone: "Es gibt noch kein Backup.", bhNewestText: "Vor {age} · Grenze für den Zeitplan: {limit}",
   bhRunOk: "Zuletzt erfolgreich: {completed}", bhRunUnknown: "Noch kein automatischer Lauf bekannt.",
   bhRunFailed: "Der letzte Versuch ({attempted}) hat kein Backup ergeben; letzter Erfolg: {completed}.", bhRunAgents: "Ziele mit Fehler: {agents}",
-  bhTargetsOk: "Lokal: {local} · extern: {remote}", bhTargetsNote: "Nur lokal ({local}). Eine zweite, externe Kopie schützt vor dem Verlust des Geräts. Die Zuordnung lokal/extern ist eine Vermutung nach dem Namen des Ziels.", bhTargetsConfirmed: "Externen Ablageort am {date} bestätigt. Home Assistant meldet nur {local}; die automatische Zuordnung erfolgt nach dem Namen des Ziels.", bhTargetsOkConfirmed: "Lokal: {local} · extern: {remote} · bestätigt am {date}",
+  bhTargetsOk: "Lokal: {local} · extern: {remote}", bhTargetsNote: "Nur lokal ({local}). Eine zweite, externe Kopie schützt vor dem Verlust des Geräts. Ob ein Ziel lokal oder extern ist, richtet sich nach seinem Namen.", bhTargetsConfirmed: "Externen Ablageort am {date} bestätigt. Home Assistant meldet nur {local}; die automatische Zuordnung erfolgt nach dem Namen des Ziels.", bhTargetsOkConfirmed: "Lokal: {local} · extern: {remote} · bestätigt am {date}",
   bhSizeOk: "{size} (erwartet etwa {expected})", bhSizeNote: "{size} statt etwa {expected} ({percent} %): ungewöhnlich klein oder groß.", bhSizeUnknown: "Zu wenige Backups für einen Vergleich.",
   bhRetentionOk: "Aufbewahrung: {limit} · vorhanden: {count}, das älteste vor {oldest} Tagen", bhRetentionNote: "Keine Aufbewahrungsgrenze eingestellt (vorhanden: {count}). Der Speicher kann volllaufen.",
   bhRetCopies: "{n} Backups", bhRetDays: "{n} Tage",
   bhEncOk: "Passwort gesetzt, das jüngste Backup ist geschützt.", bhEncNoPassword: "Kein Backup-Passwort gesetzt.", bhEncNotProtected: "Das jüngste Backup ist nicht geschützt.",
   bhKitNone: "Noch nicht bestätigt. Ohne das Emergency Kit lassen sich verschlüsselte Backups nicht lesen.", bhKitOk: "Bestätigt am {date}.",
   bhRestoreNone: "Noch nie dokumentiert. Ein Backup gilt erst als sicher, wenn eine Wiederherstellung einmal geklappt hat.", bhRestoreOk: "Zuletzt am {date} (vor {days} Tagen).", bhRestoreOld: "Zuletzt am {date}, das ist {days} Tage her (empfohlen: höchstens {limit}).",
-  bhOwnNote: "{count} Backups von Housekeeper belegen {size}. Home Assistant löscht sie nicht von selbst; unter Wartung → Backups aufräumen kannst du ältere löschen.",
+  bhOwnNote: "{count} Backups von Housekeeper belegen {size}. Home Assistant löscht sie nicht von selbst; unter Wartung → Backups ganz unten kannst du ältere löschen.",
   bhPlansOk: "Für die {checked} zuletzt ausgeführten Pläne ist das Backup noch vorhanden.", bhPlansNote: "Für {missing} von {checked} zuletzt ausgeführten Plänen wurde das Backup nicht mehr gefunden (vermutlich durch die Aufbewahrung gelöscht).",
-  bhAttestDate: "Datum", bhAttestSave: "Speichern", bhAttestClear: "Bestätigung zurücknehmen", bhAttestMark: "Als erledigt markieren", bhAttestTargets: "Externen Ablageort bestätigen", bhAttestAgain: "Erneut bestätigen", bhAttestCancel: "Abbrechen",
+  bhAttestDate: "Datum", bhAttestSave: "Speichern", bhAttestClear: "Bestätigung zurücknehmen", bhAttestMark: "Als erledigt markieren", bhAttestTargets: "Externen Ablageort bestätigen", bhAttestEnc: "Als gewollt bestätigen", bhEncConfirmed: "Ohne Verschlüsselung, am {date} als gewollt bestätigt.", bhAttestAgain: "Erneut bestätigen", bhAttestCancel: "Abbrechen",
   bhListTitle: "Letzte Backups", bhAllProtected: "Alle (geschützt oder nicht)", bhColDate: "Datum", bhColSize: "Größe", bhColTargets: "Ziele", bhColProtected: "Verschlüsselt", bhYes: "Ja", bhNo: "Nein",
   bhColKind: "Art", bhColContent: "Inhalt", bhAllKinds: "Alle Arten", bhKind_auto: "Automatisch", bhKind_manual: "Manuell", bhKind_own: "Housekeeper", bhContent_full: "Voll", bhContent_config: "Nur Konfiguration", bhContent_apps: "Nur Apps", bhFailedPill: "Teil fehlgeschlagen", bhOpen: "Details aufklappen", bhClose: "Details zuklappen",
   bhName: "Name", bhVersion: "HA-Version", bhDatabase: "Datenbank", bhApps: "Apps", bhFolders: "Ordner", bhSizes: "Größe je Ziel", bhFailed: "Fehlgeschlagen", bhId: "Backup-ID",
   bhGuideTitle: "So testest du eine Wiederherstellung", bhGuideSteps: "1. Eine Test-Instanz oder eine zweite Installation bereitstellen (nie zuerst die Hauptinstanz). 2. Dort ein aktuelles Backup einspielen: Einstellungen → System → Backups → Backup hochladen oder bei der Einrichtung wiederherstellen. 3. Prüfen, ob Integrationen, Automationen und Dashboards da sind. 4. Hier das Datum des Tests speichern. Housekeeper führt selbst nie eine Wiederherstellung aus.",
   todoBackupProblem: "Backup-Schutz: Problem",
-  mtProblems: "{n} Problem(e)", mtNotes: "{n} Hinweis(e)", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
+  mtProblems_1: "1 Problem", mtProblems_n: "{n} Probleme", mtNotes_1: "1 Hinweis", mtNotes_n: "{n} Hinweise", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
 });
 Object.assign(TEXT.en, {
   backupTitle: "Backup protection", 
   backupRefresh: "Check again", backupLoading: "Checking backups …", backupUnavailable: "The backup component of Home Assistant is not available.",
   bhLevel_ok: "OK", bhLevel_note: "Note", bhLevel_problem: "Problem", bhLevel_unknown: "Unknown",
   bh_setup: "Targets and schedule", bh_newest: "Latest backup", bh_last_run: "Last automatic run", bh_targets: "Storage locations", bh_size: "Size",
-  bh_retention: "Retention", bh_encryption: "Encryption", bh_emergency_kit: "Emergency kit", bh_restore_test: "Restore test", bh_plan_backups: "Backups before cleanups", bh_own_backups: "Housekeeper backups",
+  bh_retention: "Retention", bh_encryption: "Encryption", bh_emergency_kit: "Emergency kit", bh_restore_test: "Restore test", bh_plan_backups: "Backups before cleanups", bh_own_backups: "Housekeeper backups", bh_content: "Content", bh_remote_age: "Age per target", bh_space: "Room for the next backup", bhOwnOpen: "Tidy up", bhSizesTitle: "Size of the last backups", bhSizesLabel: "Size of the last {n} backups, from {from} to {to}", bhSizesNote: "The last {n} backups: from {from} to {to}. The bar on the right is the newest.",
+  bhContentOk: "Database included, {apps} apps, {folders} folders, no errors", bhContentFailed: "Parts of the newest backup failed: {items}", bhContentNoDb: "The database is missing in the newest backup although it is planned", bhContentNoDbSet: "The schedule leaves the database out: a restore would have no history", bhContentUnknown: "The content of the newest backup cannot be read",
+  bhRemoteOk: "Newest copy: {items}", bhRemoteStale: "Too old (limit {limit}): {items}",
+  bhSpaceOk: "{free} free, the next backup needs about {need}", bhSpaceNote: "{free} free, the next backup needs about {need}", bhSpaceProblem: "Only {free} free, the last backup was {size}", bhSpaceUnknown: "Free space or backup size not known", bhVerdict_ok: "Reliable", bhVerdict_note: "Look first", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unknown", bhCheckFirst: "To check: {items}", bhTileLast: "Latest backup", bhTileCount: "Backups", bhTileRemote: "External copy", bhTileOpen: "To check", bhGroup_running: "Backup runs", bhGroup_storage: "Storage and content", bhGroup_restore: "Restorability", bhGroup_house: "Housekeeper", backupsTab: "Backups",
   bhRec_daily: "daily", bhRec_custom_days: "on chosen days", bhRec_never: "no schedule", bhNone: "none", bhNever: "never",
   bhAgeHours: "{n} h", bhAgeDays: "{n} days",
   bhSetupOk: "Targets: {agents} · schedule: {recurrence}", bhSetupNote: "No target chosen for automatic backups, but older backups exist.", bhSetupProblem: "Neither a backup target nor an existing backup.",
   bhNewestNone: "There is no backup yet.", bhNewestText: "{age} ago · limit for the schedule: {limit}",
   bhRunOk: "Last success: {completed}", bhRunUnknown: "No automatic run known yet.",
   bhRunFailed: "The last attempt ({attempted}) produced no backup; last success: {completed}.", bhRunAgents: "Targets with errors: {agents}",
-  bhTargetsOk: "Local: {local} · remote: {remote}", bhTargetsNote: "Local only ({local}). A second, remote copy protects against losing the device. Local versus remote is a guess from the name of the target.", bhTargetsConfirmed: "Remote storage confirmed on {date}. Home Assistant reports only {local}; automatic classification uses the target name.", bhTargetsOkConfirmed: "Local: {local} · remote: {remote} · confirmed on {date}",
+  bhTargetsOk: "Local: {local} · remote: {remote}", bhTargetsNote: "Local only ({local}). A second, remote copy protects against losing the device. Whether a target is local or remote depends on its name.", bhTargetsConfirmed: "Remote storage confirmed on {date}. Home Assistant reports only {local}; automatic classification uses the target name.", bhTargetsOkConfirmed: "Local: {local} · remote: {remote} · confirmed on {date}",
   bhSizeOk: "{size} (expected about {expected})", bhSizeNote: "{size} instead of about {expected} ({percent} %): unusually small or large.", bhSizeUnknown: "Too few backups to compare.",
   bhRetentionOk: "Retention: {limit} · present: {count}, the oldest {oldest} days old", bhRetentionNote: "No retention limit set (present: {count}). The storage can fill up.",
   bhRetCopies: "{n} backups", bhRetDays: "{n} days",
   bhEncOk: "Password set, the latest backup is protected.", bhEncNoPassword: "No backup password set.", bhEncNotProtected: "The latest backup is not protected.",
   bhKitNone: "Not confirmed yet. Without the emergency kit, encrypted backups cannot be read.", bhKitOk: "Confirmed on {date}.",
   bhRestoreNone: "Never documented. A backup counts as safe only once a restore has worked.", bhRestoreOk: "Last on {date} ({days} days ago).", bhRestoreOld: "Last on {date}, {days} days ago (recommended: at most {limit}).",
-  bhOwnNote: "{count} Housekeeper backups take up {size}. Home Assistant does not delete them on its own; under Maintenance → Tidy backups you can delete older ones.",
+  bhOwnNote: "{count} Housekeeper backups take up {size}. Home Assistant does not delete them on its own; under Maintenance → Backups, at the bottom, you can delete older ones.",
   bhPlansOk: "The backup of the {checked} most recently executed plans still exists.", bhPlansNote: "The backup of {missing} of the {checked} most recently executed plans was not found any more (probably deleted by the retention).",
-  bhAttestDate: "Date", bhAttestSave: "Save", bhAttestClear: "Take back confirmation", bhAttestMark: "Mark as done", bhAttestTargets: "Confirm remote storage", bhAttestAgain: "Confirm again", bhAttestCancel: "Cancel",
+  bhAttestDate: "Date", bhAttestSave: "Save", bhAttestClear: "Take back confirmation", bhAttestMark: "Mark as done", bhAttestTargets: "Confirm remote storage", bhAttestEnc: "Confirm as intended", bhEncConfirmed: "Without encryption, confirmed as intended on {date}.", bhAttestAgain: "Confirm again", bhAttestCancel: "Cancel",
   bhListTitle: "Latest backups", bhAllProtected: "All (protected or not)", bhColDate: "Date", bhColSize: "Size", bhColTargets: "Targets", bhColProtected: "Encrypted", bhYes: "Yes", bhNo: "No",
   bhColKind: "Type", bhColContent: "Contents", bhAllKinds: "All types", bhKind_auto: "Automatic", bhKind_manual: "Manual", bhKind_own: "Housekeeper", bhContent_full: "Full", bhContent_config: "Configuration only", bhContent_apps: "Apps only", bhFailedPill: "Part failed", bhOpen: "Show details", bhClose: "Hide details",
   bhName: "Name", bhVersion: "HA version", bhDatabase: "Database", bhApps: "Apps", bhFolders: "Folders", bhSizes: "Size per target", bhFailed: "Failed", bhId: "Backup ID",
   bhGuideTitle: "How to test a restore", bhGuideSteps: "1. Set up a test instance or a second installation (never the main instance first). 2. Restore a recent backup there: Settings → System → Backups → upload a backup, or restore during setup. 3. Check that integrations, automations and dashboards are there. 4. Save the date of the test here. Housekeeper never performs a restore itself.",
   todoBackupProblem: "Backup protection: problem",
-  mtProblems: "{n} problem(s)", mtNotes: "{n} note(s)", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtRecord: "Saved state", mtNoRecord: "none",
+  mtProblems_1: "1 problem", mtProblems_n: "{n} problems", mtNotes_1: "1 note", mtNotes_n: "{n} notes", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtRecord: "Saved state", mtNoRecord: "none",
 });
 
 // Texts for the reliability view; merged into TEXT.
 Object.assign(TEXT.de, {
   reliability: "Zuverlässigkeit", reliabilitySubtitle: "Wie verfügbar die Entitäten jeder Integration waren und wann sie gemeinsam ausfielen. Liest nur den Recorder.",
   relHint: "Schlechteste zuerst. Gerechnet aus den Zuständen im Recorder",
-  relWindow1: "24 Stunden", relWindow7: "7 Tage", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
-  relTab: "Zuverlässigkeit", relAllStates: "Alle Zustände", relOnlyOutages: "Mit gemeinsamen Ausfällen", relOnlyReauth: "Neue Anmeldung nötig", relOnlyNotLoaded: "Nicht geladen", relSortAvail: "Verfügbarkeit", relSortOutages: "Ausfälle", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entitäten mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entität dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
+  relWindow1: "24 Stunden", relWindow7: "7 Tage", relWindow30: "30 Tage", relKeepShort: "Der Recorder behält nur {keep} Tage. Die Zahlen für {days} Tage reichen deshalb nicht weiter zurück.", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
+  relTab: "Zuverlässigkeit", relAllStates: "Alle Zustände", relOnlyOutages: "Mit gemeinsamen Ausfällen", relDeltaPoints: "Prozentpunkte zum Zeitraum davor", relStrip: "Ausfall je Tag", relPeriods: "Ausfallzeiträume ({n})", relPeriodsMore: "Gezeigt werden die letzten {shown} von {total}.", relColStart: "Beginn", relColDuration: "Dauer", relColAffected: "Betroffen", relColKind: "Art", relOfEntities: "{n} von {m} Entitäten", relKindShared: "Gemeinsam", relKindSingle: "Einzeln", relKindDown: "Ganzer Zeitraum", relCarries: "Trägt die Hausfunktionen",
+  relOnlyDead: "Dauerhaft ausgefallen", relDead: "Ausgefallen", relDeadSub: "{n} Entitäten, ganzes Fenster", relSumAvg: "Ø je Integration", relSumAvgHint: "Mittelwert der Integrationen, jede zählt einmal. Dauerhaft ausgefallene sind nicht eingerechnet.", relTooSmall: "zu klein", relTooSmallHint: "Gemeinsame Ausfälle gibt es erst ab {n} Entitäten.", relReauthOpen: "Zum Befund", relSortAvail: "Verfügbarkeit", relSortOutages: "Gemeinsame Ausfälle", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entitäten mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entität dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
   stability: "Stabilität", stabilityOk: "Stabil im Zeitraum", stabilityMissing: "Noch nicht berechnet. Die Ansicht Zuverlässigkeit rechnet es aus.", cause_unstable: "Die Entität fällt immer wieder aus: {level}.", hint_unstable: "Prüfe Verbindung, Netz und Integration des Geräts; die Zahlen stehen in der Ansicht Zuverlässigkeit.",
   relSumAvail: "Verfügbarkeit gesamt", relSumOutages: "Integrationen mit Ausfällen", relSumOf: "von {n}", relSumUnstable: "Instabile Entitäten", relSumFlapping: "davon {n} flatternd", relSumAttention: "Brauchen Aufmerksamkeit", relSumAttentionHint: "neue Anmeldung oder nicht geladen", relTabIntegrations: "Integrationen", relTabUnstable: "Instabile Entitäten",
   relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
   relBusy: "Eine andere Berechnung läuft noch. Housekeeper fragt automatisch erneut an.", relEmpty: "Im Zeitraum gibt es keine Zustände von Integrationen.",
   relEntities: "{n} Entitäten", relPermanent: "{n} dauerhaft ausgefallen, nicht eingerechnet",
-  relShared: "{n} gemeinsame Ausfälle, längster {longest}", relSharedOne: "1 gemeinsamer Ausfall, {longest}", relLayerCloud: "wahrscheinlich Cloud oder API (Vermutung)", relLayerLocal: "wahrscheinlich Gerät, Netz oder Integration (Vermutung)",
+  relShared: "{n} gemeinsame Ausfälle, längster {longest}", relSharedOne: "1 gemeinsamer Ausfall, {longest}", relLayerCloud: "wahrscheinlich Cloud oder API", relLayerLocal: "wahrscheinlich Gerät, Netz oder Integration",
   relReauth: "Neu anmelden offen", relLastShared: "Letzter gemeinsamer Ausfall bis {date} ({duration})", relLastSingle: "Letzte Störung bis {date} ({duration})", relNoDisruption: "Keine Störung",
   relMinutes: "{n} Min.", relHours: "{n} Std.", relDays: "{n} Tage",
   relUnstableNone: "Keine Entität fällt auffällig oft aus.", relUnstableCoverage: "Beobachtet: {days} Tage, {withData} Entitäten mit Daten. Ausfälle während gemeinsamer Ausfälle sind herausgerechnet; sie zählen für die Integration.",
@@ -892,26 +907,27 @@ Object.assign(TEXT.de, {
   relUnstableFootnote: "Instabil: mindestens {episodes} Ausfälle und {rate} pro Tag, flatternd ab {flap} pro Tag. Ausfälle während eines gemeinsamen Ausfalls der Integration zählen für die Integration, nicht für die Entität. Dauerhaft ausgefallene, deaktivierte und ignorierte Entitäten fehlen.",
   relCoverage: "Letzte {days} Tage · {withData} von {known} Entitäten mit Daten · im Mittel {share} % des Zeitraums beobachtet (neue Entitäten kürzer).",
   relCompare: "Mit Zeitraum davor vergleichen", relDelta: "{delta} Prozentpunkte gegenüber dem Zeitraum davor ({before} %)", relDeltaNone: "Für den Zeitraum davor liegen keine Daten vor.",
-  relFootnote: "Verfügbarkeit: Anteil der Zeit ohne „nicht verfügbar“ in den letzten {days} Tagen, gerechnet ab der ersten Meldung im Zeitraum. Ein gemeinsamer Ausfall heißt: mindestens {share} % der Entitäten des Eintrags, mindestens {entities}, mindestens {minutes} Minuten zugleich nicht verfügbar. Ein Ausfall, der vor dem Zeitraum begann, zählt erst ab der ersten Meldung darin.",
+  relFootnote: "Verfügbarkeit: Anteil der Zeit ohne „nicht verfügbar“ in den letzten {days} Tagen, gerechnet ab der ersten Meldung im Zeitraum. Ein gemeinsamer Ausfall heißt: mindestens {share} % der Entitäten des Eintrags, mindestens {entities}, mindestens {minutes} Minuten zugleich nicht verfügbar. Ein Ausfall, der vor dem Zeitraum begann, zählt erst ab der ersten Meldung darin. Eine Integration, die den ganzen Zeitraum ausgefallen war, hat keinen Prozentwert und steht oben als „Ausgefallen“. Farben: grün ab {green} %, gelb ab {yellow} %, darunter rot; die Tagesleiste einer Hausfunktion färbt nach der Dauer des Ausfalls und hat eine eigene Schwelle.",
   relColSetup: "Setup-Fehler", relOnlySetup: "Setup-Fehler", relSetupCount: "{n} in {days} Tagen", relSetupLast: "zuletzt {date}", relHintTitle: "Möglicher Grund:",
   relHintOffline: "{n} Setup-Fehler in {days} Tagen bei niedriger Verfügbarkeit. Das spricht eher für ein Gerät, das offline geht, oder ein instabiles Netz als für die Integration selbst. Strom, WLAN und feste IP des Geräts prüfen.",
   relHintError: "Der Setup steht gerade im Fehler. Das ist meist ein Zugangs- oder Konfigurationsproblem: Integration neu anmelden oder neu einrichten.",
   relHintEarly: "{n} Setup-Fehler in {days} Tagen bei guter Verfügbarkeit. Die Integration startet vielleicht zu früh nach dem Neustart, bevor Netz oder Gerät bereit sind.",
   relHintUnload: "Entladen oder Migration ist fehlgeschlagen. Meist hilft ein Neustart von Home Assistant; danach nach Updates der Integration sehen.",
-  relSumAll: "Alle", relColStatus: "Status", relColLongest: "Längster Ausfall", relColLast: "Letzte Störung", relColDelta: "Veränderung", relColLevel: "Stufe", relColPattern: "Muster",
+  relSumAll: "Alle", relColStatus: "Status", relColLongest: "Längster Ausfall", relColLast: "Letzte Störung", relColDelta: "Veränderung (Prozentpunkte)", relColLevel: "Stufe", relColPattern: "Muster",
   relSortRank: "Standard", relSortEpisodes: "Ausfälle", relSortRate: "Ausfälle pro Tag", relSortDuration: "Gesamtdauer", relOnlyFlapping: "Nur flatternd", relOnlyUnstable: "Nur instabil",
 });
 Object.assign(TEXT.en, {
   reliability: "Reliability", reliabilitySubtitle: "How available each integration's entities were and when they failed together. Only reads the recorder.",
   relHint: "Worst first. Calculated from the states in the recorder",
-  relWindow1: "24 hours", relWindow7: "7 days", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
-  relTab: "Reliability", relAllStates: "All states", relOnlyOutages: "With shared outages", relOnlyReauth: "Re-authentication open", relOnlyNotLoaded: "Not loaded", relSortAvail: "Availability", relSortOutages: "Outages", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
+  relWindow1: "24 hours", relWindow7: "7 days", relWindow30: "30 days", relKeepShort: "The recorder keeps only {keep} days. The numbers for {days} days therefore reach back no further.", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
+  relTab: "Reliability", relAllStates: "All states", relOnlyOutages: "With shared outages", relDeltaPoints: "percentage points against the period before", relStrip: "Outage per day", relPeriods: "Outage periods ({n})", relPeriodsMore: "Showing the last {shown} of {total}.", relColStart: "Start", relColDuration: "Duration", relColAffected: "Affected", relColKind: "Kind", relOfEntities: "{n} of {m} entities", relKindShared: "Shared", relKindSingle: "Single", relKindDown: "Whole period", relCarries: "Carries the house functions",
+  relOnlyDead: "Down all the time", relDead: "Down", relDeadSub: "{n} entities, the whole window", relSumAvg: "Avg per integration", relSumAvgHint: "Mean of the integrations, each counts once. Those down all the time are not included.", relTooSmall: "too small", relTooSmallHint: "Shared outages need at least {n} entities.", relReauthOpen: "Open the finding", relSortAvail: "Availability", relSortOutages: "Shared outages", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
   stability: "Stability", stabilityOk: "Stable in the period", stabilityMissing: "Not calculated yet. The Reliability view calculates it.", cause_unstable: "The entity keeps failing: {level}.", hint_unstable: "Check the connection, network and integration of the device; the numbers are in the Reliability view.",
   relSumAvail: "Availability overall", relSumOutages: "Integrations with outages", relSumOf: "of {n}", relSumUnstable: "Unstable entities", relSumFlapping: "{n} of them flapping", relSumAttention: "Need attention", relSumAttentionHint: "re-authentication or not loaded", relTabIntegrations: "Integrations", relTabUnstable: "Unstable entities",
   relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
   relBusy: "Another calculation is still running. Housekeeper asks again by itself.", relEmpty: "There are no integration states in this period.",
   relEntities: "{n} entities", relPermanent: "{n} down all the time, not counted",
-  relShared: "{n} shared outages, longest {longest}", relSharedOne: "1 shared outage, {longest}", relLayerCloud: "probably the cloud or its API (a guess)", relLayerLocal: "probably the device, the network or the integration (a guess)",
+  relShared: "{n} shared outages, longest {longest}", relSharedOne: "1 shared outage, {longest}", relLayerCloud: "probably the cloud or its API", relLayerLocal: "probably the device, the network or the integration",
   relReauth: "Re-authentication open", relLastShared: "Last shared outage until {date} ({duration})", relLastSingle: "Last disruption until {date} ({duration})", relNoDisruption: "No disruption",
   relMinutes: "{n} min", relHours: "{n} h", relDays: "{n} days",
   relUnstableNone: "No entity fails unusually often.", relUnstableCoverage: "Observed: {days} days, {withData} entities with data. Failures during shared outages are taken out; they count for the integration.",
@@ -920,13 +936,13 @@ Object.assign(TEXT.en, {
   relUnstableFootnote: "Unstable: at least {episodes} failures and {rate} a day, flapping from {flap} a day. Failures during a shared outage of the integration count for the integration, not the entity. Entities that are down all the time, disabled or ignored are left out.",
   relCoverage: "Last {days} days · {withData} of {known} entities with data · on average {share} % of the period observed (new entities less).",
   relCompare: "Compare with the period before", relDelta: "{delta} percentage points against the period before ({before} %)", relDeltaNone: "There is no data for the period before.",
-  relFootnote: "Availability: the share of time without “unavailable” in the last {days} days, counted from the first report in the period. A shared outage means at least {share} % of the entry's entities, at least {entities}, were unavailable together for at least {minutes} minutes. An outage that began before the period counts from the first report in it.",
+  relFootnote: "Availability: the share of time without “unavailable” in the last {days} days, counted from the first report in the period. A shared outage means at least {share} % of the entry's entities, at least {entities}, were unavailable together for at least {minutes} minutes. An outage that began before the period counts from the first report in it. An integration that was down the whole period has no percentage and is listed first as “Down”. Colors: green from {green} %, yellow from {yellow} %, red below; the day strip of a house function colors by the length of the outage and has a threshold of its own.",
   relColSetup: "Setup failures", relOnlySetup: "Setup failures", relSetupCount: "{n} in {days} days", relSetupLast: "last {date}", relHintTitle: "Possible cause:",
   relHintOffline: "{n} setup failures in {days} days with low availability. That points to a device going offline or an unstable network rather than the integration itself. Check the device's power, Wi-Fi and fixed IP.",
   relHintError: "Setup is in an error right now. That is usually an access or configuration problem: sign in again or set the integration up anew.",
   relHintEarly: "{n} setup failures in {days} days with good availability. The integration may start too early after a restart, before the network or device is ready.",
   relHintUnload: "Unloading or migration failed. A restart of Home Assistant usually helps; then look for updates of the integration.",
-  relSumAll: "All", relColStatus: "Status", relColLongest: "Longest outage", relColLast: "Last disruption", relColDelta: "Change", relColLevel: "Level", relColPattern: "Pattern",
+  relSumAll: "All", relColStatus: "Status", relColLongest: "Longest outage", relColLast: "Last disruption", relColDelta: "Change (percentage points)", relColLevel: "Level", relColPattern: "Pattern",
   relSortRank: "Default", relSortEpisodes: "Outages", relSortRate: "Outages per day", relSortDuration: "Total duration", relOnlyFlapping: "Flapping only", relOnlyUnstable: "Unstable only",
 });
 
@@ -942,7 +958,7 @@ Object.assign(TEXT.de, {
   rfHint_failing: "Prüfe die Ablaufverfolgung der Automation an der genannten Stelle.", rfHint_overlap: "Modus oder maximale Läufe anpassen oder die Auslöser entflechten.", rfHint_never_ok: "Ein Schritt oder eine Bedingung verhindert jeden Erfolg; die Ablaufverfolgung zeigt wo.", rfHint_no_effect: "Die Bedingung stoppt fast jeden Lauf; prüfe, ob sie noch passt oder der Auslöser zu breit ist.", rfHint_burst: "Prüfe, was die Automation so oft auslöst.", rfHint_long_run: "Prüfe Wartezeiten und Aktionen, die lange dauern.", rfHint_after_update: "Prüfe die Änderungen der neuen Version.", rfHint_long_wait: "Ein Neustart verwirft die Wartezeit; erwäge einen Zeitplan oder Auslöser statt Warten.", rfHint_wait_no_timeout: "Setze ein Zeitlimit, damit ein Lauf nicht ewig hängt.", rfHint_continue_on_error: "Fehler werden still übergangen; prüfe, ob das gewollt ist.",
   runsLowerBound: "mindestens, Läufe können fehlen", runsMore: "{shown} von {total} Zeilen gezeigt.", runsTrend30: "30 Tage", runsTrendLabel: "Läufe je Tag, ältester zuerst: {values}",
   runsMs: "{n} ms", runsSec: "{n} s", runsChange: "Seit der Änderung der Konfiguration am {date}: {after}. In der Woche davor: {before}.", runsChangeSide: "{errors} Fehler in {runs} Läufen", runsTab: "Läufe", runsTabHint: "Letzte 7 Tage, gezählt seit {date}",
-  runsFootnote: "Gezählt wird, was Home Assistant je Automation kurz vorhält (standardmäßig 5 Läufe), alle 15 Minuten. Gespeichert werden nur Zähler je Tag und die Stelle eines Fehlers, keine Variablen, Daten oder Fehlertexte. Die Hinweise sind Anlässe, genauer hinzusehen, kein Urteil.",
+  runsFootnote: "Gezählt wird, was Home Assistant je Automation kurz vorhält (standardmäßig 5 Läufe), alle 15 Minuten. Gespeichert werden nur Zähler je Tag und die Stelle eines Fehlers, keine Variablen, Daten oder Fehlertexte. Die Hinweise sind Anlässe, genauer hinzusehen, kein Urteil. Grenzen der letzten {days} Tage: „Fehler“ ab {errors} Fehlern und {rate} % der Läufe, „nie erfolgreich“ ab {neverOk} Läufen ohne Erfolg, „Überschneidung“ ab {overlap} abgewiesenen oder überschrittenen Läufen, „ohne Wirkung“ ab {idle} Läufen mit {idleShare} % Bedingungs-Stopps, „sehr oft“ ab {burst}-fach über dem eigenen Normal ({baseline} Tage davor) und mindestens {burstMin} Läufen pro Tag, „lange Läufe“ ab {longFactor}-fach und {longSeconds} Sekunden.",
   rfLabelFailing: "Fehler", rfLabelOverlap: "Überschneidung", rfLabelNeverOk: "nie erfolgreich", rfLabelNoEffect: "ohne Wirkung", rfLabelBurst: "sehr oft", rfLabelLongRun: "lange Läufe", rfLabelAfterUpdate: "nach Update", rfLabelLongWait: "lange Wartezeit", rfLabelWaitNoTimeout: "ohne Timeout", rfLabelContinue: "Fehler verdeckt",
   rfFailing: "{errors} von {runs} Läufen endeten mit einem Fehler.", rfFailingStep: " Meist an Stelle {step} ({count}-mal).",
   rfOverlap: "{n} Läufe wurden abgewiesen oder überschritten das Maximum, weil noch ein Lauf aktiv war (Modus {mode}).", rfNeverOk: "Kein Lauf war erfolgreich ({runs} Läufe).",
@@ -952,7 +968,7 @@ Object.assign(TEXT.de, {
   rfLongWait: "Enthält eine Wartezeit von {duration}; sie geht bei einem Neustart verloren.", rfWaitNoTimeout: "{n} Warteschritt(e) ohne Timeout; sie gehen bei einem Neustart verloren.",
   rfContinue: "{n} Schritt(e) mit „continue_on_error“; Fehler bleiben dort unsichtbar.",
   cfColStage: "Stufe", cfColKind: "Art", cfColWhat: "Was", cfColAutomations: "Automationen", cfAllKinds: "Alle Arten", cfKind_opposing: "Gegenläufig", cfKind_loop: "Schleife",
-  cfTitle: "Konflikte und Schleifen", cfHint: "Aus den Konfigurationen und den Tageszahlen der Läufe. Das ist eine Vermutung, kein Beweis: Housekeeper führt nichts aus.", cfNone: "Keine möglichen Konflikte oder Schleifen gefunden.",
+  cfTitle: "Konflikte und Schleifen", cfHint: "Aus den Konfigurationen und den Tageszahlen der Läufe. Kein Beweis: Housekeeper führt nichts aus.", cfNone: "Keine möglichen Konflikte oder Schleifen gefunden.",
   cfStage_static: "möglich", cfStage_observed: "beobachtet", cfStage_confirmed: "wiederholt",
   cfOpposing: "{first} und {second} steuern {entity} gegensätzlich ({a} gegen {b}).", cfLoop: "{chain} führen im Kreis über {path} zurück zum Anfang.",
   cfWhy_trigger: "Beide reagieren auf {detail} und können gemeinsam auslösen.", cfWhy_window: "Beide dürfen im Zeitfenster {detail} laufen.",
@@ -970,7 +986,7 @@ Object.assign(TEXT.en, {
   rfHint_failing: "Check the automation's trace at the named step.", rfHint_overlap: "Adjust the mode or max runs, or untangle the triggers.", rfHint_never_ok: "A step or condition prevents every success; the trace shows where.", rfHint_no_effect: "The condition stops almost every run; check whether it still fits or the trigger is too broad.", rfHint_burst: "Check what fires the automation so often.", rfHint_long_run: "Check waits and actions that take long.", rfHint_after_update: "Check the changes of the new version.", rfHint_long_wait: "A restart discards the wait; consider a schedule or trigger instead of waiting.", rfHint_wait_no_timeout: "Set a timeout so a run cannot hang forever.", rfHint_continue_on_error: "Errors are passed over silently; check whether that is intended.",
   runsLowerBound: "at least, runs may be missing", runsMore: "{shown} of {total} rows shown.", runsTrend30: "30 days", runsTrendLabel: "Runs per day, oldest first: {values}",
   runsMs: "{n} ms", runsSec: "{n} s", runsChange: "Since the configuration changed on {date}: {after}. The week before: {before}.", runsChangeSide: "{errors} errors in {runs} runs", runsTab: "Runs", runsTabHint: "Last 7 days, counted since {date}",
-  runsFootnote: "What is counted is what Home Assistant keeps for each automation for a short time (5 runs by default), read every 15 minutes. Only counters per day and the place of a failure are stored, no variables, data or error texts. The notes are reasons to look closer, not a verdict.",
+  runsFootnote: "What is counted is what Home Assistant keeps for each automation for a short time (5 runs by default), read every 15 minutes. Only counters per day and the place of a failure are stored, no variables, data or error texts. The notes are reasons to look closer, not a verdict. Limits over the last {days} days: “errors” from {errors} errors and {rate} % of the runs, “never succeeds” from {neverOk} runs without success, “overlap” from {overlap} rejected or exceeded runs, “no effect” from {idle} runs with {idleShare} % stopped by conditions, “very often” from {burst} times its own normal ({baseline} days before) and at least {burstMin} runs a day, “long runs” from {longFactor} times and {longSeconds} seconds.",
   rfLabelFailing: "failing", rfLabelOverlap: "overlap", rfLabelNeverOk: "never succeeds", rfLabelNoEffect: "no effect", rfLabelBurst: "very often", rfLabelLongRun: "long runs", rfLabelAfterUpdate: "after update", rfLabelLongWait: "long wait", rfLabelWaitNoTimeout: "no timeout", rfLabelContinue: "errors hidden",
   rfFailing: "{errors} of {runs} runs ended with an error.", rfFailingStep: " Mostly at step {step} ({count} times).",
   rfOverlap: "{n} runs were rejected or exceeded the maximum because a run was still active (mode {mode}).", rfNeverOk: "No run succeeded ({runs} runs).",
@@ -980,7 +996,7 @@ Object.assign(TEXT.en, {
   rfLongWait: "Contains a wait of {duration}; it is lost on a restart.", rfWaitNoTimeout: "{n} wait step(s) without a timeout; they are lost on a restart.",
   rfContinue: "{n} step(s) with “continue_on_error”; errors stay invisible there.",
   cfColStage: "Stage", cfColKind: "Kind", cfColWhat: "What", cfColAutomations: "Automations", cfAllKinds: "All kinds", cfKind_opposing: "Opposing", cfKind_loop: "Loop",
-  cfTitle: "Conflicts and loops", cfHint: "From the configurations and the daily numbers of the runs. This is a guess, not proof: Housekeeper runs nothing.", cfNone: "No possible conflicts or loops found.",
+  cfTitle: "Conflicts and loops", cfHint: "From the configurations and the daily numbers of the runs. Not proof: Housekeeper runs nothing.", cfNone: "No possible conflicts or loops found.",
   cfStage_static: "possible", cfStage_observed: "observed", cfStage_confirmed: "repeated",
   cfOpposing: "{first} and {second} control {entity} in opposite ways ({a} against {b}).", cfLoop: "{chain} lead around in a circle via {path} back to the start.",
   cfWhy_trigger: "Both react to {detail} and can fire together.", cfWhy_window: "Both may run in the time window {detail}.",
@@ -1139,7 +1155,7 @@ Object.assign(TEXT.de, {
   recSumRows: "Zeilen pro Tag", recSumLoudest: "Lauteste Entität", recSumDb: "Datenbank", recSumPurgeOff: "Bereinigung aus", recSumFindings: "Auffälligkeiten",
   recorderHint: "Was die Datenbank füllt und wie gesund sie ist",
   recorder: "Recorder", recorderSubtitle: "Was den Recorder am meisten beschreibt, was die Datenbank füllt und wie gesund sie ist. Liest nur den Recorder.",
-  stormTitle: "Last im Recorder", stormLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
+  stormTitle: "Schreiblast", stormLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   stormNone: "Nichts schreibt auffällig viel.", stormStatRows: "Zeilen", stormStatEntities: "Entitäten", stormStatEvents: "Ereignisse", stormSubRowsDay: "in den letzten 24 Stunden", stormSubRowsDays: "in den letzten {days} Tagen · {perDay} pro Tag", stormSubEntities: "haben geschrieben", stormSubEvents: "in der Ereignistabelle", stormExclTip: "Diese Entitäten fließen nicht in die Auswertung ein. Ausgeblendet: auf deiner Ignorierliste. Deaktiviert: in Home Assistant abgeschaltet. Dauerhaft ausgefallen: seit langem ohne Zustand.",
   stormKind_storm: "Sturm", stormKind_attribute_flood: "Große Zeilen", stormKind_no_new_state: "Nur Attribute", stormKind_integration_share: "Großer Anteil", stormKind_event_burst: "Ereignisflut",
   stormColKinds: "Markierungen", stormColPerDay: "Zeilen/Tag", stormColPeak: "Lauteste Stunde", stormColNoNew: "Ohne neuen Zustand", stormColAction: "Aktion", stormColSelect: "Auswahl", stormColHint: "Einordnung", stormColRows: "Zeilen", stormColAttr: "Attribute (KB)", stormFilterKind: "Alle Markierungen",
@@ -1166,7 +1182,7 @@ Object.assign(TEXT.en, {
   recSumRows: "Rows a day", recSumLoudest: "Loudest entity", recSumDb: "Database", recSumPurgeOff: "purging off", recSumFindings: "Findings",
   recorderHint: "What fills the database and how healthy it is",
   recorder: "Recorder", recorderSubtitle: "What writes the most to the recorder, what fills the database and how healthy it is. Only reads the recorder.",
-  stormTitle: "Recorder load", stormLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
+  stormTitle: "Write load", stormLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   stormNone: "Nothing writes unusually much.", stormStatRows: "Rows", stormStatEntities: "Entities", stormStatEvents: "Events", stormSubRowsDay: "in the last 24 hours", stormSubRowsDays: "in the last {days} days · {perDay} a day", stormSubEntities: "have written", stormSubEvents: "in the events table", stormExclTip: "These entities are left out of the analysis. Hidden: on your ignore list. Disabled: switched off in Home Assistant. Permanently down: without a state for a long time.",
   stormKind_storm: "Storm", stormKind_attribute_flood: "Large rows", stormKind_no_new_state: "Attributes only", stormKind_integration_share: "Large share", stormKind_event_burst: "Event flood",
   stormColKinds: "Markers", stormColPerDay: "Rows/day", stormColPeak: "Loudest hour", stormColNoNew: "No new state", stormColAction: "Action", stormColSelect: "Select", stormColHint: "Assessment", stormColRows: "Rows", stormColAttr: "Attributes (KB)", stormFilterKind: "All markers",
@@ -1195,7 +1211,7 @@ Object.assign(TEXT.de, {
   dbKeep: "Aufbewahrung in Home Assistant: {n} Tage", dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
   dbTitle: "Datenbank", dbLoading: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   dbNone: "Keine Auffälligkeit in der Datenbank.", dbProblem: "Problem", dbHint: "Hinweis",
-  dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect}); nur SQLite wird gemessen", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
+  dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect}); nur SQLite wird gemessen", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
   dbKind_wal_large: "Große WAL-Datei", dbKind_growth: "Ungewöhnliches Wachstum", dbKind_duplicates: "Doppelte Statistikzeitpunkte", dbKind_missing_hours: "Fehlende Stunden in Statistiken", dbKind_statistics_issues: "Statistik passt nicht zur Entität", dbKind_recorder_gap: "Lücken im Recorder",
   dbWal: "Die WAL-Datei ist {wal} groß, die Datenbank {db}.", dbGrowth: "In 7 Tagen {recent} gewachsen, in den Wochen davor etwa {base} pro Woche.",
   dbDuplicates: "{n}{more} Zeitpunkte stehen doppelt in den Statistiken, vor allem bei: {list}.", dbMissing: "{n} Reihen haben Lücken im Stundenverlauf: {list}.", dbMissingHours: "{n} Std. fehlen",
@@ -1216,7 +1232,7 @@ Object.assign(TEXT.en, {
   dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
   dbTitle: "Database", dbLoading: "Checking the database. On a large database this can take a few seconds …",
   dbNone: "Nothing unusual in the database.", dbProblem: "Problem", dbHint: "Hint",
-  dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect}); only SQLite is measured", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbRestartGaps: "{n} gaps from restarts (normal)",
+  dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect}); only SQLite is measured", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
   dbKind_wal_large: "Large WAL file", dbKind_growth: "Unusual growth", dbKind_duplicates: "Duplicate statistics timestamps", dbKind_missing_hours: "Missing hours in statistics", dbKind_statistics_issues: "Statistics do not fit the entity", dbKind_recorder_gap: "Gaps in the recorder",
   dbWal: "The WAL file is {wal}, the database {db}.", dbGrowth: "Grew {recent} in 7 days, about {base} a week in the weeks before.",
   dbDuplicates: "{n}{more} timestamps appear twice in the statistics, mostly in: {list}.", dbMissing: "{n} series have gaps in their hourly record: {list}.", dbMissingHours: "{n} h missing",
@@ -1339,10 +1355,10 @@ Object.assign(TEXT.de, {
   expoNone: "Nichts Auffälliges bei den Freigaben.", expoHint2: "Hinweis", expoWarn: "Prüfen",
   expoAssistants: "Assistenten und Bridges", expoFindings: "Auffälligkeiten",
   expoName_conversation: "Assist", expoName_cloud_alexa: "Alexa", expoName_cloud_google_assistant: "Google Assistant", expoName_homekit: "HomeKit",
-  expoOk: "{n} Entitäten freigegeben", expoInactive: "nicht eingerichtet", expoUnavailable: "nicht prüfbar", expoBridge: "{n} Entitäten durch den Filter",
+  expoOk: "{n} Entitäten freigegeben", expoInactive: "nicht eingerichtet", expoOff: "in Nabu Casa ausgeschaltet", expoUnavailable: "nicht prüfbar", expoBridge: "{n} Entitäten durch den Filter",
   expoKind_diagnostic_exposed: "Diagnose-Entitäten freigegeben", expoKind_sensitive_exposed: "Sensible Entitäten freigegeben", expoKind_stale_exposed: "Freigabe für deaktivierte oder verwaiste Entitäten", expoKind_alias_duplicate: "Doppelter Sprachname", expoKind_webhook_orphan: "Webhooks ohne Integration",
   expoText_diagnostic_exposed: "{n} Entitäten aus der Kategorie Diagnose oder Konfiguration sind freigegeben. Sie helfen beim Sprechen selten.",
-  expoText_sensitive_exposed: "{n} Schlösser, Alarmanlagen, Personen, Tracker oder Garagentore sind freigegeben. Das kann gewollt sein; prüfe, ob der Assistent sie steuern oder verraten darf.",
+  expoText_sensitive_exposed: "{n} Schlösser, Alarmanlagen, Kameras, Sirenen, Ventile, Personen, Tracker, Garagentore, Tore oder Türen sind freigegeben. Das kann gewollt sein; prüfe, ob der Assistent sie steuern oder verraten darf.",
   expoText_stale_exposed: "{n} Entitäten sind freigegeben, obwohl sie deaktiviert oder verwaist sind.",
   expoText_alias_duplicate: "„{alias}“ heißt bei {assistant} {n} Entitäten. Der Assistent kann sie nicht auseinanderhalten.",
   expoText_webhook_orphan: "{n} Webhooks gehören zu „{domain}“, einer Integration, die nicht mehr eingerichtet ist. Die IDs zeigt Housekeeper bewusst nicht an.",
@@ -1351,8 +1367,16 @@ Object.assign(TEXT.de, {
   expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
   expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
+  expoKind_google_without_pin: "Google öffnet ohne PIN", expoKind_auto_expose: "Neue Entitäten werden automatisch freigegeben",
+  expoText_google_without_pin: "{n} Schlösser, Alarmanlagen, Garagentore, Tore oder Türen sind bei Google Assistant so eingestellt, dass er sie ohne PIN öffnet oder entschärft.",
+  expoText_auto_expose: "{list} bekommt jede neue Entität von selbst freigegeben. Neue Geräte landen so ohne Zutun bei einem Cloud-Assistenten.",
+  expoAdvice_google_without_pin: "Unter Einstellungen → Sprachassistenten → Entität → Google Assistant die Bestätigung per PIN wieder einschalten.",
+  expoAdvice_auto_expose: "Unter Einstellungen → Sprachassistenten → Alexa bzw. Google Assistant „Neue Entitäten automatisch freigeben“ ausschalten, wenn neue Geräte erst geprüft werden sollen.",
+  expoKind_llm_exposed: "Assist-Freigaben gehen an KI-Agenten", expoColIntegration: "Integration", expoColTarget: "Ziel", expoTarget_cloud: "Anbieter des Modells", expoTarget_external: "verbundene Programme",
+  expoText_llm_exposed: "{n} Integrationen dürfen Home Assistant über Assist steuern. Namen, Bereiche und Zustände der {reach} Assist-Freigaben gehen dabei an den Anbieter des Sprachmodells oder an verbundene Programme.",
+  expoAdvice_llm_exposed: "Nur zur Kenntnis. Wer das nicht will, schaltet bei der Integration „Home Assistant steuern“ aus oder gibt weniger für Assist frei.",
   expoMore: "und {n} weitere", expoToCheck: "Zu prüfen", expoToNote: "Zur Kenntnis",
-  expoFootnote: "Housekeeper liest je Assistent, welche Entitäten Home Assistant freigibt, bei HomeKit nur den gespeicherten Entitäts-Filter der Bridge. Passwörter, Tokens, Ports und Webhook-IDs werden nie gelesen oder angezeigt. Wenn eine Quelle nicht antwortet, steht „nicht prüfbar“, nie „nicht freigegeben“. Sprachnamen gelten als gleich, wenn sie sich nur in Groß- und Kleinschreibung, Leerzeichen oder Umlauten unterscheiden.",
+  expoFootnote: "Housekeeper liest je Assistent, welche Entitäten Home Assistant freigibt, bei HomeKit nur den gespeicherten Entitäts-Filter der Bridge. Passwörter, Tokens, Ports und Webhook-IDs werden nie gelesen oder angezeigt. Ist Alexa oder Google Assistant in den Nabu-Casa-Einstellungen ausgeschaltet, erreicht er nichts und wird nicht bewertet. Bei Alexa und Google liest Housekeeper außerdem, ob neue Entitäten automatisch freigegeben werden, und je Entität nur, ob Google sie ohne PIN öffnen darf; die PIN selbst nie. Bei KI-Gesprächsagenten und dem MCP-Server liest Housekeeper nur, ob sie Home Assistant über Assist steuern dürfen, nie Prompt, Modell oder Schlüssel; Ollama und llama.cpp gelten als lokal und werden nicht genannt. Eine Integration, die ein Modell im eigenen Netz anspricht (etwa über eine eigene Adresse), steht trotzdem unter „Anbieter des Modells“. Wenn eine Quelle nicht antwortet, steht „nicht prüfbar“, nie „nicht freigegeben“. Sprachnamen gelten als gleich, wenn sie sich nur in Groß- und Kleinschreibung, Leerzeichen oder Umlauten unterscheiden.",
 });
 Object.assign(TEXT.en, {
   expoSumEntities: "entities exposed", expoColName: "Name", expoColDomain: "Type", expoColArea: "Area", expoColAlso: "Also exposed to", expoColAssistants: "Exposed to", expoAllDomains: "All types", expoAllAlso: "All services", expoSumFindings: "Findings", expoTabFindings: "Findings", expoSourceHint: "{n} entities are exposed to {name}.", expoAlso: "also: {list}", expoCapped: "The first {n} are shown.", expoNoneFor: "Nothing is exposed to this source.", expoInactiveText: "Not set up: nothing is exposed.",
@@ -1361,10 +1385,10 @@ Object.assign(TEXT.en, {
   expoNone: "Nothing unusual in the exposure.", expoHint2: "Note", expoWarn: "Check",
   expoAssistants: "Assistants and bridges", expoFindings: "Findings",
   expoName_conversation: "Assist", expoName_cloud_alexa: "Alexa", expoName_cloud_google_assistant: "Google Assistant", expoName_homekit: "HomeKit",
-  expoOk: "{n} entities exposed", expoInactive: "not set up", expoUnavailable: "cannot be checked", expoBridge: "{n} entities through the filter",
+  expoOk: "{n} entities exposed", expoInactive: "not set up", expoOff: "switched off in Nabu Casa", expoUnavailable: "cannot be checked", expoBridge: "{n} entities through the filter",
   expoKind_diagnostic_exposed: "Diagnostic entities exposed", expoKind_sensitive_exposed: "Sensitive entities exposed", expoKind_stale_exposed: "Exposed but disabled or orphaned", expoKind_alias_duplicate: "Duplicate voice name", expoKind_webhook_orphan: "Webhooks without integration",
   expoText_diagnostic_exposed: "{n} entities in the diagnostic or configuration category are exposed. They rarely help when speaking.",
-  expoText_sensitive_exposed: "{n} locks, alarm panels, persons, trackers or garage doors are exposed. That can be intended; check whether the assistant may control or reveal them.",
+  expoText_sensitive_exposed: "{n} locks, alarm panels, cameras, sirens, valves, persons, trackers, garage doors, gates or doors are exposed. That can be intended; check whether the assistant may control or reveal them.",
   expoText_stale_exposed: "{n} entities are exposed although they are disabled or orphaned.",
   expoText_alias_duplicate: "\"{alias}\" names {n} entities for {assistant}. The assistant cannot tell them apart.",
   expoText_webhook_orphan: "{n} webhooks belong to \"{domain}\", an integration that is no longer set up. Housekeeper deliberately does not show their ids.",
@@ -1373,8 +1397,16 @@ Object.assign(TEXT.en, {
   expoAdvice_stale_exposed: "Clean up the entity or take the exposure back.",
   expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
   expoAdvice_webhook_orphan: "Set the integration up again or remove the leftovers if they are no longer needed.",
+  expoKind_google_without_pin: "Google opens without PIN", expoKind_auto_expose: "New entities are exposed automatically",
+  expoText_google_without_pin: "{n} locks, alarm panels, garage doors, gates or doors are set so that Google Assistant opens or disarms them without a PIN.",
+  expoText_auto_expose: "{list} gets every new entity exposed by itself. New devices thus reach a cloud assistant without anyone acting.",
+  expoAdvice_google_without_pin: "Turn the PIN confirmation back on under Settings → Voice assistants → entity → Google Assistant.",
+  expoAdvice_auto_expose: "Turn off \"Expose new entities\" under Settings → Voice assistants → Alexa or Google Assistant if new devices should be checked first.",
+  expoKind_llm_exposed: "Assist exposure goes to AI agents", expoColIntegration: "Integration", expoColTarget: "Goes to", expoTarget_cloud: "provider of the model", expoTarget_external: "connected programs",
+  expoText_llm_exposed: "{n} integrations may control Home Assistant through Assist. Names, areas and states of the {reach} Assist exposures go to the provider of the language model or to connected programs.",
+  expoAdvice_llm_exposed: "For your information only. If you do not want this, turn off \"Control Home Assistant\" in the integration or expose less to Assist.",
   expoMore: "and {n} more", expoToCheck: "To check", expoToNote: "For your information",
-  expoFootnote: "Housekeeper reads, per assistant, which entities Home Assistant exposes; for HomeKit only the stored entity filter of the bridge. Passwords, tokens, ports and webhook ids are never read or shown. If a source does not answer, it says \"cannot be checked\", never \"not exposed\". Voice names count as equal when they differ only in case, spaces or umlauts.",
+  expoFootnote: "Housekeeper reads, per assistant, which entities Home Assistant exposes; for HomeKit only the stored entity filter of the bridge. Passwords, tokens, ports and webhook ids are never read or shown. If Alexa or Google Assistant is switched off in the Nabu Casa settings, it reaches nothing and is not judged. For Alexa and Google, Housekeeper also reads whether new entities are exposed automatically and, per entity, only whether Google may open it without a PIN; never the PIN itself. For AI conversation agents and the MCP server, Housekeeper only reads whether they may control Home Assistant through Assist, never prompt, model or key; Ollama and llama.cpp count as local and are not named. An integration that talks to a model in your own network (for example through its own address) is still listed under \"provider of the model\". If a source does not answer, it says \"cannot be checked\", never \"not exposed\". Voice names count as equal when they differ only in case, spaces or umlauts.",
 });
 
 // StylesMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -1445,10 +1477,11 @@ class StylesMixin {
       .tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 13%,transparent);flex:none}
       .tile.ok{color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.tile.warn{color:var(--hk-amber);background:color-mix(in srgb,var(--hk-amber) 15%,transparent)}.tile.red{color:var(--hk-red);background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.tile.mute{color:var(--hk-gray);background:color-mix(in srgb,var(--hk-gray) 15%,transparent)}.tile.violet{color:var(--hk-violet);background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
       .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}
-      .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
+      .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.aboutintro{padding:12px 16px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted)}.aboutintro p{margin:0}.aboutintro p+p{margin-top:6px}.aboutintro strong{color:var(--hk-text)}
+      .panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
       .row{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr);grid-auto-flow:column;grid-auto-columns:auto;align-items:center;gap:12px;padding:12px 16px;border:0;border-bottom:1px solid var(--hk-border);background:transparent;color:inherit;text-align:left}.row:last-child{border-bottom:0}.row:hover{background:var(--hk-soft)}
-      .row .tile{width:34px;height:34px}.row-text{min-width:0;display:grid;gap:2px}.row-text strong{overflow:hidden;font-size:calc(13px*var(--hk-fs,1));font-weight:600;text-overflow:ellipsis;white-space:nowrap}.row-text .id{margin:0;max-width:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.row-text small{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));text-overflow:ellipsis;white-space:nowrap}.date{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}
+      .row .tile{width:34px;height:34px}.tile .updpic{width:100%;height:100%;object-fit:contain;border-radius:inherit}.row-text{min-width:0;display:grid;gap:2px}.row-text strong{overflow:hidden;font-size:calc(13px*var(--hk-fs,1));font-weight:600;text-overflow:ellipsis;white-space:nowrap}.row-text .id{margin:0;max-width:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.row-text small{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));text-overflow:ellipsis;white-space:nowrap}.date{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}
       .pill{display:inline-flex;align-items:center;gap:6px;width:max-content;padding:3px 9px;border-radius:99px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;white-space:nowrap;color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 13%,transparent)}
       .pill.ok{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.pill.warn{color:color-mix(in srgb,var(--hk-amber) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-amber) 16%,transparent)}.pill.red{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.pill.mute{color:color-mix(in srgb,var(--hk-gray) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-gray) 16%,transparent)}.pill.violet{color:color-mix(in srgb,var(--hk-violet) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
       .linklike{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.linklike:hover{text-decoration:underline}.qrow{grid-template-columns:auto minmax(0,1fr) auto auto}.qconfirm{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.factaction{display:block;margin-top:6px}
@@ -1457,7 +1490,7 @@ class StylesMixin {
       .dot.ok,.bar .ok{background:var(--hk-green)}.dot.warn,.bar .warn{background:var(--hk-amber)}.dot.red,.bar .red{background:var(--hk-red)}.dot.mute,.bar .mute{background:var(--hk-gray)}.dot.violet,.bar .violet{background:var(--hk-violet)}
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
-      .rowwrap .row.politem{padding-left:12px}.row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.searchpanel{margin-bottom:14px;overflow:visible}.link-label.flat{margin:0;border:0;padding:0 0 4px}.emptyrel{padding:6px 16px;color:var(--hk-muted)}.emptyrel.sm{font-size:calc(12px*var(--hk-fs,1))}.chips.bare{padding:0;border:0}.propicon{--mdc-icon-size:18px;vertical-align:-3px;margin-right:6px;color:var(--hk-muted)}.w460{max-width:460px}.dim7{display:block;opacity:.7}.refactext{width:100%;max-width:520px}.errpad{padding:6px 16px;display:block}.bar.mt4{margin-top:4px}.evtable{width:100%;border-collapse:collapse}.evtable td{padding:9px 16px;border-top:1px solid var(--hk-border)}.evtable code{white-space:nowrap}.evtable .evcopy{width:1%;text-align:right}.evtable th:first-child,.evtable td:first-child{width:1%;white-space:nowrap}.tablewrap.lt tr[data-plan-open],.tablewrap.lt tr[data-rem-row],.tablewrap.lt tr[data-note-edit]{cursor:pointer}.tablewrap.lt .jsum{display:block;white-space:normal;min-width:180px;max-width:300px}.selhead{padding:6px 16px}.selall{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--hk-muted);cursor:pointer}.tablewrap.lt th.selcol,.tablewrap.lt td.selcol,.tablewrap.lt td.selcol:first-child{box-sizing:border-box;width:44px;min-width:44px;max-width:44px;padding-left:12px;padding-right:0;text-align:center}.lt th.selcol ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;width:max-content;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.tip em{font-style:normal;line-height:1.4}.infotip{display:inline-flex;align-items:center;justify-content:center;line-height:0;width:24px;height:24px;margin:-4px 0 -4px 6px;padding:0;border:0;border-radius:50%;background:none;color:var(--hk-muted);vertical-align:middle;cursor:help}.infotip.warn{color:color-mix(in srgb,var(--hk-amber) 75%,var(--hk-text))}.infotip:hover,.infotip:focus-visible{background:var(--hk-soft);color:inherit}.infotip ha-icon{--mdc-icon-size:18px;display:flex}.fflow{padding:6px 14px 12px}.fstep{margin:6px 0;padding:8px 10px;border:1px solid var(--hk-border);border-left:3px solid var(--hk-blue);border-radius:8px;background:var(--hk-surface)}.fstep.broken{border-left-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 6%,var(--hk-surface))}.fstep>summary{cursor:pointer;list-style-position:inside}.fhead{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - 20px);vertical-align:middle}.fhead ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.ffacts{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fpath{margin-left:auto;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.fkids{margin:8px 0 2px 14px;padding-left:10px;border-left:1px dashed var(--hk-border)}.fgroup>small{display:block;margin:6px 0 2px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(10px*var(--hk-fs,1))}.fbranch{margin:6px 0}.chip.flowref{cursor:pointer;padding:2px 8px;font-size:calc(12px*var(--hk-fs,1))}.chip.flowref.missing{border-color:var(--hk-red,#b3261e);color:var(--hk-red,#b3261e);cursor:default}.listtools{display:flex;gap:8px;justify-content:flex-end;align-items:stretch;padding:10px 14px}.listtools .btn,.listtools .dirbtn{height:40px;min-height:40px;box-sizing:border-box;border:1px solid var(--hk-border);border-radius:8px;box-shadow:none}.listtools .btn:hover{border-color:var(--hk-blue)}.listtools .colwrap{display:flex}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;justify-items:stretch;gap:2px;min-width:180px;max-width:calc(100vw - 32px);width:max-content;box-sizing:border-box;padding:6px;text-align:left;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:16px;align-items:center;justify-content:space-between;text-align:left;min-height:36px;padding:0 10px;border-radius:6px;white-space:nowrap;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.colpop label:hover,.colpop label:focus-within{background:var(--hk-soft)}.colpop label input{flex:0 0 auto;width:16px;min-width:0;max-width:none;margin:0}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){}.tablewrap.dense-list td{padding-top:4px;padding-bottom:4px}.tablewrap.dense-list .namecell .id,.dense-list .statsucc{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+      .rowwrap .row.politem{padding-left:12px}.row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.searchpanel{margin-bottom:14px;overflow:visible}.link-label.flat{margin:0;border:0;padding:0 0 4px}.emptyrel{padding:6px 16px;color:var(--hk-muted)}.emptyrel.sm{font-size:calc(12px*var(--hk-fs,1))}.chips.bare{padding:0;border:0}.propicon{--mdc-icon-size:18px;vertical-align:-3px;margin-right:6px;color:var(--hk-muted)}.w460{max-width:460px}.dim7{display:block;opacity:.7}.refactext{width:100%;max-width:520px}.errpad{padding:6px 16px;display:block}.bar.mt4{margin-top:4px}.evtable{width:100%;border-collapse:collapse}.evtable td{padding:9px 16px;border-top:1px solid var(--hk-border)}.evtable code{white-space:nowrap}.evtable .evcopy{width:1%;text-align:right}.evtable th:first-child,.evtable td:first-child{width:1%;white-space:nowrap}.tablewrap.lt tr[data-plan-open],.tablewrap.lt tr[data-rem-row],.tablewrap.lt tr[data-note-edit]{cursor:pointer}.tablewrap.lt .jsum{display:block;white-space:normal;min-width:180px;max-width:300px}.selhead{padding:6px 16px}.selall{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--hk-muted);cursor:pointer}.tablewrap.lt th.selcol,.tablewrap.lt td.selcol,.tablewrap.lt td.selcol:first-child{box-sizing:border-box;width:44px;min-width:44px;max-width:44px;padding-left:12px;padding-right:0;text-align:center}.lt th.selcol ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;width:max-content;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.tip em{font-style:normal;line-height:1.4}.infotip{display:inline-flex;align-items:center;justify-content:center;line-height:0;width:24px;height:24px;margin:-4px 0 -4px 6px;padding:0;border:0;border-radius:50%;background:none;color:var(--hk-muted);vertical-align:middle;cursor:help}.infotip.warn{color:color-mix(in srgb,var(--hk-amber) 75%,var(--hk-text))}.infotip:hover,.infotip:focus-visible{background:var(--hk-soft);color:inherit}.infotip ha-icon{--mdc-icon-size:18px;display:flex}.fflow{padding:6px 14px 12px}.fstep{margin:6px 0;padding:8px 10px;border:1px solid var(--hk-border);border-left:3px solid var(--hk-blue);border-radius:8px;background:var(--hk-surface)}.fstep.broken{border-left-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 6%,var(--hk-surface))}.fstep>summary{cursor:pointer;list-style-position:inside}.fhead{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - 20px);vertical-align:middle}.fhead ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.ffacts{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fpath{margin-left:auto;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.fkids{margin:8px 0 2px 14px;padding-left:10px;border-left:1px dashed var(--hk-border)}.fgroup>small{display:block;margin:6px 0 2px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(10px*var(--hk-fs,1))}.fbranch{margin:6px 0}.chip.flowref{cursor:pointer;padding:2px 8px;font-size:calc(12px*var(--hk-fs,1))}.chip.flowref.missing{border-color:var(--hk-red,#b3261e);color:var(--hk-red,#b3261e);cursor:default}.listtools{display:flex;gap:8px;justify-content:flex-end;align-items:stretch;padding:10px 14px}.listtools .btn,.listtools .dirbtn{height:40px;min-height:40px;box-sizing:border-box;border:1px solid var(--hk-border);border-radius:8px;box-shadow:none}.listtools .btn:hover{border-color:var(--hk-blue)}.listtools .colwrap{display:flex}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;justify-items:stretch;gap:2px;min-width:180px;max-width:calc(100vw - 32px);width:max-content;box-sizing:border-box;padding:6px;text-align:left;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:16px;align-items:center;justify-content:space-between;text-align:left;min-height:36px;padding:0 10px;border-radius:6px;white-space:nowrap;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.colpop label:hover,.colpop label:focus-within{background:var(--hk-soft)}.colpop label input{flex:0 0 auto;width:16px;min-width:0;max-width:none;margin:0}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){}.tablewrap.dense-list td{padding-top:4px;padding-bottom:4px}.tablewrap.dense-list .namecell .id,.dense-list .statsucc,.dense-list .agestamp{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
       .exppop{min-width:280px;max-width:calc(100vw - 32px)}.expitem{display:grid;gap:2px;justify-items:start;width:100%;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}.expitem small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.expitem:hover,.expitem:focus-visible{background:var(--hk-soft)}.listbar-actions .expbtn{height:40px;min-height:40px;gap:6px;white-space:nowrap}.expbtn.on{border-color:var(--hk-blue)}
       .markform{display:grid;gap:12px}.markform .mrow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}.markform .mfield{display:grid;gap:4px;min-width:150px;flex:0 1 190px;font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.markform .mfield.grow{flex:1 1 260px}.markform .mfield select,.markform .mfield input{width:100%;min-height:40px;font-weight:400;color:var(--hk-text)}.markform .mfield:focus-within>span{color:var(--hk-blue-text)}.markform .mbtns{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--hk-border)}.markform .factnote{display:block}
       @media(max-width:600px){.markform .mfield,.markform .mfield.grow{flex:1 1 100%}.markform .mbtns .btn{flex:1}}
@@ -1472,7 +1505,7 @@ class StylesMixin {
       .tablewrap{overflow-x:auto;overflow-y:visible}table{border-collapse:collapse;width:100%}th{text-align:left;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;background:var(--hk-soft);cursor:pointer;white-space:nowrap}.thbtn{padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}td{padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}tbody tr{cursor:pointer}tbody tr:hover{background:var(--hk-soft)}
       .object{display:flex;align-items:center;gap:11px;min-width:260px}.object .tile{width:34px;height:34px}.object strong{display:block;font-weight:600}.id{display:block;color:var(--hk-muted);font-family:ui-monospace,SFMono-Regular,monospace;font-size:calc(11px*var(--hk-fs,1));margin-top:2px;max-width:390px;overflow:hidden;text-overflow:ellipsis}
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
-      .chip em{font-style:normal;opacity:.7;margin-left:4px}.chip .tabdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;background:var(--hk-red)}.chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue-text);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
+      .viewswitch{display:inline-flex;gap:4px}.chip:disabled{opacity:.55;cursor:not-allowed}.chip em{font-style:normal;opacity:.7;margin-left:4px}.chip .tabdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;background:var(--hk-red)}.chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue-text);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
       .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.viewgroup{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}.skeleton{display:grid;gap:10px;padding:18px 16px}.skeleton i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--hk-soft),color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface)),var(--hk-soft)) 0 0/200% 100%;animation:hk-shimmer 1.4s ease-in-out infinite}.skeleton i:nth-of-type(2){width:80%}.skeleton i:nth-of-type(3){width:60%}@keyframes hk-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.skeleton i{animation:none}}.coverage{display:flex;gap:6px;align-items:flex-start}.coverage ha-icon{--mdc-icon-size:16px;flex:none;margin-top:1px}.fline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}.fline .fnote{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:18px;border-radius:12px;background:color-mix(in srgb,var(--hk-red) 12%,transparent);color:var(--hk-red)}
       .bh.open{background:var(--hk-soft)}.bhactions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.bhopen{min-height:30px;padding:4px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit;font-size:calc(11px*var(--hk-fs,1));font-weight:600;white-space:nowrap;cursor:pointer}.bhopen:hover{background:var(--hk-soft);border-color:var(--hk-muted)}.bhopen:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.bhattest{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:4px 16px 14px 62px;background:var(--hk-soft)}.bhattest label{display:flex;align-items:center;gap:8px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.bhattest input{padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.bhcancel,.bhtake{border:0;background:none;padding:4px 2px;font:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);cursor:pointer;text-decoration:underline}.bhtake{margin-left:auto;color:var(--hk-red)}.bhcancel:hover{color:var(--hk-text)}
       .viewpop{min-width:220px;gap:2px;padding:6px}.viewrow{display:flex;align-items:center;gap:2px}.viewitem{display:flex;flex:1;gap:8px;align-items:center;padding:8px 10px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.viewitem:hover,.viewdel:hover{background:var(--hk-soft)}.viewitem.on{font-weight:700;color:var(--hk-blue)}.viewdel{display:grid;place-items:center;padding:6px;border:0;border-radius:6px;background:none;color:var(--hk-muted);cursor:pointer}.viewitem ha-icon,.viewdel ha-icon{--mdc-icon-size:18px}.dirbtn.withname{display:inline-flex;align-items:center;gap:6px;max-width:170px}.viewname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.viewpop .viewitem[data-lview-save]{border-top:1px solid var(--hk-border);border-radius:0 0 6px 6px;margin-top:4px}.dirbtn[aria-pressed="true"]{border-color:var(--hk-blue);color:var(--hk-blue)}details>summary{display:flex;align-items:center;gap:8px;list-style:none}.storegrp>summary{padding:10px 16px}details>summary::-webkit-details-marker{display:none}details>summary::before{content:"";flex:none;box-sizing:border-box;width:7px;height:7px;margin:0 5px 2px 3px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;opacity:.65;transform:rotate(-45deg);transition:transform .15s ease}details[open]>summary::before{transform:rotate(45deg) translate(-1px,-1px)}.rowmenu>summary::before{display:none}@media(prefers-reduced-motion:reduce){details>summary::before{transition:none}}
@@ -1487,6 +1520,8 @@ class StylesMixin {
       .node.current{border:2px solid var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 8%,var(--hk-surface))}.node .tile{width:34px;height:34px}.node small{display:block;color:var(--hk-blue-text);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}.node strong{display:block;font-size:calc(13px*var(--hk-fs,1));font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.node span.meta{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link-label{margin:0 0 0 22px;padding:3px 0 3px 14px;border-left:2px solid var(--hk-border);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));min-height:26px;display:flex;align-items:center;gap:8px}
       .branch{margin:0 0 0 22px;padding:6px 0 0 18px;border-left:2px solid var(--hk-border);display:grid;gap:8px}
+      .updact{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:8px}.updrow .row-text small{white-space:normal}.verchip{display:inline-block;margin-right:4px;padding:1px 8px;border-radius:999px;background:var(--hk-soft);border:1px solid var(--hk-border);color:var(--hk-text);font-variant-numeric:tabular-nums}.updgroup .sectionlabel{padding-bottom:6px}.updgroup .row-text strong{white-space:normal}
+      @media(max-width:860px){.updrow:has(>.updact){grid-template-columns:auto minmax(0,1fr)}.updrow .updact{grid-column:1/-1;justify-content:flex-start}}
       .sectionlabel{padding:14px 16px 0;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.07em;text-transform:uppercase}
       .search{padding:14px;border-bottom:1px solid var(--hk-border)}.search input{width:100%}.hits{display:grid;max-height:280px;overflow:auto}.hit{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;padding:9px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left}.hit:hover{background:var(--hk-soft)}.hit .tile{width:30px;height:30px}
       .crumbs{display:flex;align-items:center;gap:12px;margin-bottom:14px}.crumbs .trail{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));text-transform:uppercase;letter-spacing:.07em}
@@ -1496,30 +1531,31 @@ class StylesMixin {
       .needgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:16px}.needtile{display:flex;flex-direction:column;justify-content:center;gap:4px;height:92px;padding:0 16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-soft);min-width:0}.needtile b{font-size:calc(28px*var(--hk-fs,1));line-height:1;font-variant-numeric:tabular-nums}.needtile span{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.needtile.miss{border-style:dashed}.needtile.miss b{color:var(--hk-amber)}.tablewrap.lt.batt .iconbtn{padding:3px 6px;margin-left:4px;--mdc-icon-size:16px}.linkbtn{border:0;background:none;padding:0;font:inherit;color:var(--hk-text);cursor:pointer;text-decoration:underline;text-decoration-color:var(--hk-border)}.linkbtn:hover{text-decoration-color:currentColor}.tablewrap.lt.batt .lvl{display:flex;align-items:center;gap:8px;min-width:130px}.tablewrap.lt.batt .lvl .bar{flex:1;height:7px;border-radius:4px;background:var(--hk-border);overflow:hidden;min-width:48px}.tablewrap.lt.batt .lvl .bar i{display:block;height:100%}.lvl .lvlnum{min-width:4.2em;text-align:right;white-space:nowrap}.lvl .lvlnum small{display:block;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.tablewrap.lt.batt .red{color:var(--hk-red)}.tablewrap.lt.batt .amber{color:var(--hk-amber)}.tablewrap.lt.batt .green{color:var(--hk-green)}.tablewrap.lt.batt td .btedit{display:flex;flex-wrap:wrap;gap:6px;white-space:normal}.tablewrap.lt.batt .btedit label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.tablewrap.lt.batt .bkedit{padding:0;background:none;border:0}.tablewrap.lt.batt .bkedit .factnote{display:none}.tablewrap.lt.batt .btn.miss{border-style:dashed;color:var(--hk-amber)}.btn.miss ha-icon{--mdc-icon-size:14px;margin-left:6px}.tablewrap.lt.batt td:last-child{text-align:right}@media(max-width:700px){}.bkedit{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px 12px 62px;background:var(--hk-soft);border-bottom:1px solid var(--hk-border)}.bkedit select,.bkrow select{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit;font-size:calc(13px*var(--hk-fs,1))}.bkcancel{border:0;background:none;padding:4px 2px;font:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);cursor:pointer;text-decoration:underline}.bkrow{gap:8px;padding-right:12px;flex-wrap:wrap}.bkall,.bkask{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.bkask{background:var(--hk-soft)}.rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.selcell{width:34px;padding-right:0}.selcell .selbox{margin:0}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.toast.bad{border-left:5px solid var(--hk-red);max-width:min(560px,calc(100vw - 32px))}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.btcart,.btsuggest{margin:14px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent)}.btcart strong{display:block;margin-bottom:2px}.btsuggest{background:color-mix(in srgb,var(--hk-green) 11%,transparent);border-color:color-mix(in srgb,var(--hk-green) 30%,transparent)}.btsuggest h3{margin:0 0 4px}.btrepl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}.btrepl .row-text{flex:1;min-width:200px}.btct{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border)}.btct .factnote{flex:1;min-width:120px;margin:0}.btct input{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.btctl,.btedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 16px 0 8px}.btedit{flex-basis:100%;margin:0;padding:8px 16px 12px}.rowwrap:has(.btedit){flex-wrap:wrap}.chcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;padding:0 16px}.chcols>div{padding:8px 0}.chcols .big{font-size:22px;font-weight:700}.chbars{display:flex;gap:3px;align-items:flex-end;height:54px;padding:8px 16px 4px}.chbars i{flex:1;max-width:14px;min-width:3px;border-radius:3px 3px 0 0;background:var(--hk-green);display:block}.chbars i.m{background:var(--hk-red)}.chaxis{display:flex;justify-content:space-between;padding:0 16px 12px;color:var(--hk-muted);font-size:12px}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
       .row.politem[data-pol-row],tr[data-pol-row]{cursor:pointer}.tablewrap.lt tr.poldetailrow td{white-space:normal;background:var(--hk-soft)}.poldetail{cursor:auto;display:grid;gap:12px;margin-top:10px}.poldetail h4{margin:0 0 4px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.poldetail p{margin:0}.poledit{display:grid;gap:6px}.poldetail .inline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.poldetail .inline input,.poldetail .inline select{height:36px;min-width:0}.poldetail .acts{display:flex;flex-wrap:wrap;gap:8px}.poldetail .btn.on{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,var(--hk-surface));color:var(--hk-blue-text);font-weight:700}.poldetail .btn small{font-weight:400;color:var(--hk-muted);margin-left:4px}.polcheck{font-size:calc(13px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.polcheck.ok{color:var(--hk-green)}.polcheck.bad{color:var(--hk-red,#b3392f)}.row.politem.open{background:var(--hk-soft)}
       .remform{display:grid;gap:14px;padding:16px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.remgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:start}.remfield{display:grid;grid-template-rows:auto 40px auto;gap:4px;font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted);min-width:0}.remfield input{height:40px;min-width:0}.remfield.full{grid-column:1/-1;grid-template-rows:auto 40px}.remchips{display:flex;gap:6px;flex-wrap:wrap}.remchips .chip{padding:2px 10px;font-size:calc(12px*var(--hk-fs,1))}.remhint{color:var(--hk-blue-text);font-weight:600}.remactions{display:flex;gap:14px;align-items:center;justify-content:flex-end}
-      .tablewrap.rem td:first-child{white-space:normal}.chevbtn{display:inline-flex;vertical-align:middle;padding:0;margin-right:4px;border:0;background:none;color:var(--hk-muted);cursor:pointer}.remnote{display:block;margin-left:28px;color:var(--hk-muted)}.remact{text-align:right;white-space:nowrap}.remact .btn{margin-left:6px}.remhist td{padding:10px 16px 14px 44px;background:var(--hk-soft)}.remhist h3{margin:0 0 6px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.remhist ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}.remhist li{display:flex;gap:12px;align-items:center}.remhist li .linkbtn{margin-left:auto;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.remhist p{margin:0}.bhgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;padding-left:28px}@media(max-width:760px){.bhgrid{grid-template-columns:minmax(0,1fr);padding-left:0}}.bhgrid small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.bhgrid .wide{grid-column:1/-1}.bh .statcell{align-items:center}.pill.bhfail{margin-left:6px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+      .tablewrap.rem td:first-child{white-space:normal}.chevbtn{display:inline-flex;vertical-align:middle;padding:0;margin-right:4px;border:0;background:none;color:var(--hk-muted);cursor:pointer}.remnote{display:block;color:var(--hk-muted)}.remact{text-align:right;white-space:nowrap}.remact .btn{margin-left:6px}.remhist td{padding:10px 16px 14px 44px;background:var(--hk-soft)}.remhist h3{margin:0 0 6px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.remhist ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}.remhist li{display:flex;gap:12px;align-items:center}.remhist li .linkbtn{margin-left:auto;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.remhist p{margin:0}.bhgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;padding-left:28px}@media(max-width:760px){.bhgrid{grid-template-columns:minmax(0,1fr);padding-left:0}}.bhgrid small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.bhgrid .wide{grid-column:1/-1}.bh .statcell{align-items:center}.pill.bhfail{margin-left:6px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
       @media(max-width:700px){.remact{display:flex;flex-wrap:wrap;gap:8px;white-space:normal}.remact .btn{margin-left:0}.remgrid{grid-template-columns:1fr}.remfield.wide,.remfield.full{grid-column:auto}}
       .rating{display:grid;gap:8px;margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid var(--hk-border)}.ratinghead{margin:0;font-size:calc(12px*var(--hk-fs,1));font-weight:500;color:var(--hk-muted)}.rrow{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline}.rrow>b{font-weight:500}.rbar{height:6px;border-radius:3px;background:var(--hk-soft);overflow:hidden;margin:8px 0 3px}.rbar span{display:block;height:100%;background:var(--hk-amber)}.rticks{display:grid;grid-template-columns:repeat(4,1fr);font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.rnext{display:flex;gap:8px;align-items:flex-start;padding-top:8px;border-top:1px solid var(--hk-border)}.ratingicon{--mdc-icon-size:16px;color:var(--hk-muted);flex:none}
+      .stack>.hint{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent);background:color-mix(in srgb,var(--hk-blue) 8%,transparent);border-radius:12px;font-size:13px}.stack>.hint>span{flex:1}.linkbtn{background:none;border:0;padding:0;color:var(--hk-blue);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
       .helpcard{display:grid;gap:14px}.helphead{display:flex;align-items:center;justify-content:space-between}.helpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 22px}.helpgrid h3{margin:0 0 3px;font-size:calc(13px*var(--hk-fs,1));font-weight:500}.helpgrid p{margin:0;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.helpnums{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:6px 14px;padding-top:12px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.helpnums b{font-weight:500}.helpnums span{color:var(--hk-muted)}@media(max-width:560px){.helpnums{grid-template-columns:1fr}}
       .viewcount{margin-left:auto;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));white-space:nowrap}.toolgap+.viewcount{margin-left:0}
       .kids{margin:4px 0 6px 40px;padding-left:16px;border-left:2px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 45%,transparent);border-radius:0 0 8px 0}.kids .tile{width:28px;height:28px}.foldarrow{--mdc-icon-size:18px;color:var(--hk-muted);flex:none;margin-right:2px}
       .alsopill{margin-left:6px;vertical-align:1px}.corralso{display:grid;gap:6px;padding:8px 12px;border-left:3px solid var(--hk-amber);background:var(--hk-soft);border-radius:0 8px 8px 0}.corralso strong{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.corralso ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}.corralso li{display:flex;align-items:center;gap:8px}.corralso ha-icon{--mdc-icon-size:18px;color:var(--hk-amber);flex:none}
       .incidenthead{display:flex;align-items:center;gap:8px;padding-right:12px}.incidenthead .foldhead{flex:1;min-width:0}.incsec{border-left:3px solid var(--hk-border);padding:2px 0 2px 12px;margin:8px 14px 12px}.incsec.obs{border-left-color:var(--hk-amber)}.incsec h4{margin:0 0 6px;font-size:calc(12px*var(--hk-fs,1));font-weight:500;color:var(--hk-muted)}.incfilter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.incfilter b{font-weight:500}.incfilter .chip{margin-left:auto}.incfilter.on{background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));border-color:var(--hk-blue)}
-      .sumgroups{display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:14px;align-items:stretch}.sumgroup{min-width:0;display:flex;flex-direction:column}@media(min-width:1000px){.sumgroups{display:grid;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));gap:6px 10px;grid-auto-rows:1fr}.sumgroup{grid-column:span var(--n,1);flex:none}.sumgroup.row2{grid-column:1/span var(--n,1)}}.sumgroup .sumtiles{margin-bottom:0;flex:1}.sumgroup .sumtile .spark-row{margin-top:auto;padding-top:4px}.sumgrouphead{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));margin:0 0 6px 2px}
+      .sumgroups{display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:14px;align-items:stretch}.sumgroup{min-width:0;display:flex;flex-direction:column}@media(min-width:1000px){.sumgroups{display:grid;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));gap:6px 10px;grid-auto-rows:1fr}.sumgroup{grid-column:span var(--n,1);flex:none}.sumgroup.row2{grid-column:1/span var(--n,1)}}.sumgroup .sumtiles{margin-bottom:0;flex:1}.sumgroup .sumtile .spark-row{margin-top:auto;padding-top:4px}.sumgrouphead{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));margin:0 0 6px 2px}.tilerows{display:grid;gap:10px}.tilerows .sumgrouphead{margin-bottom:-4px}.sumtiles.even{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;margin-bottom:0}.sumtiles.even .sumlabel,.sumtiles.even small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:640px){.sumtiles.even{grid-template-columns:repeat(2,minmax(0,1fr))}}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.sumtile{position:relative}button.sumtile .sumlabel{padding-right:20px}.sumcue{position:absolute;top:10px;right:10px;--mdc-icon-size:16px;color:var(--hk-muted)}div.sumtile,div.sumtile:hover{box-shadow:none;background:var(--hk-soft)}.sumtile.filter[aria-pressed=true]{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));box-shadow:0 0 0 1px var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumcue{color:var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumlabel{color:var(--hk-blue-text)}.sumtile.filter[aria-pressed=true] .sumlabel:before{content:"\\2713";margin-right:.4em}.filteron{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);background:color-mix(in srgb,var(--hk-blue) 7%,var(--hk-surface));border-bottom:1px solid var(--hk-border)}.filteron ha-icon{--mdc-icon-size:16px;color:var(--hk-blue)}.filteron b{color:var(--hk-text);font-weight:600}.filteron .btn{margin-left:auto}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}.todofoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px}.visitline{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.visitline ha-icon{--mdc-icon-size:16px}
       .facts{display:grid}.fact{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.fact:first-child{border-top:0}.fact span{color:var(--hk-muted)}.fact b{font-weight:600;text-align:right}.fact small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}
       .rangechart{display:block;max-width:640px;margin:6px 0}.rangechart.rc-small{max-width:360px}.lg-red{color:var(--hk-red)}.lg-green{color:var(--hk-green)}.rangesample{width:100%;font-size:12px;border-collapse:collapse;margin:4px 0}.rangeslide{width:100%;max-width:640px;display:block}.rangehead{margin-top:12px}.rangewin{display:flex;gap:8px;flex-wrap:wrap}.w140{max-width:140px}
 .w160{max-width:160px}.w260{max-width:260px}
-.w300{max-width:300px}.w460{max-width:460px}.reportextra{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.code.codefull{max-height:none}.panelhead.topline{border-top:1px solid var(--hk-border)}.planchips{padding:6px 0 0;border:0}.planresult{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.planfootbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.panel.ovvis{overflow:visible}.compentry td{padding-left:28px;cursor:pointer}.compentrymeta{display:block;color:var(--hk-muted);font-size:12px}.invsubrow td:first-child{padding-left:28px}.invsubrow .invsub{color:var(--hk-muted)}.hist-bar{margin-top:4px}.hist-hint{margin:10px 16px}.hist-hint0{margin:10px 0 0}.changes-pick{grid-template-columns:auto minmax(220px,360px)}.baselbl{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.u-m0{margin:0!important}.u-block{display:block!important}.u-mb14{margin-bottom:14px!important}.u-pt6{padding:6px 0 0!important}.u-dim{opacity:.8!important}.u-ic14{--mdc-icon-size:14px!important}.u-amber{color:var(--hk-amber)!important}
+.w300{max-width:300px}.w460{max-width:460px}.reportextra{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.code.codefull{max-height:none}.panelhead.topline{border-top:1px solid var(--hk-border)}.planchips{padding:6px 0 0;border:0}.planresult{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.planfootbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.panel.ovvis{overflow:visible}.compentry td{padding-left:62px;cursor:pointer}.hacsadvice ol{margin:0;padding:0 16px 12px 40px}.hacsadvice li{margin:2px 0}.compname{display:flex;align-items:center;gap:8px}.compname>.namecell{flex:1;min-width:0}.compgap{visibility:hidden}.compentrymeta{display:block;color:var(--hk-muted);font-size:12px}.invsubrow td:first-child{padding-left:28px}.invsubrow .invsub{color:var(--hk-muted)}.hist-bar{margin-top:4px}.hist-hint{margin:10px 16px}.hist-hint0{margin:10px 0 0}.changes-pick{grid-template-columns:auto minmax(220px,360px)}.baselbl{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.u-m0{margin:0!important}.u-block{display:block!important}.u-mb14{margin-bottom:14px!important}.u-pt6{padding:6px 0 0!important}.u-dim{opacity:.8!important}.u-ic14{--mdc-icon-size:14px!important}.u-amber{color:var(--hk-amber)!important}
       .factnote{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}:where(:not(.panel))>.factnote{border-top:0;padding:0}.panel>.factnote:first-child{border-top:0}
       .diagcard{display:grid;gap:12px;padding:16px}.checks{display:grid;gap:8px}
       .check{display:grid;grid-template-columns:22px minmax(100px,150px) minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.check b{font-weight:600}.check .val{color:var(--hk-muted);overflow-wrap:anywhere}
       .check ha-icon{--mdc-icon-size:20px}.check.ok ha-icon{color:var(--hk-green)}.check.warn ha-icon{color:var(--hk-amber)}.check.red ha-icon{color:var(--hk-red)}.check.mute ha-icon{color:var(--hk-gray)}.check.violet ha-icon{color:var(--hk-violet)}
       .cause,.hintbox{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft)}.cause strong,.hintbox strong{display:block;margin-bottom:4px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));letter-spacing:.07em;text-transform:uppercase}.cause p,.hintbox p{font-size:calc(13px*var(--hk-fs,1));line-height:1.55}
       .cause.ok{background:color-mix(in srgb,var(--hk-green) 9%,transparent);border-color:color-mix(in srgb,var(--hk-green) 35%,transparent)}.cause.warn{background:color-mix(in srgb,var(--hk-amber) 10%,transparent);border-color:color-mix(in srgb,var(--hk-amber) 35%,transparent)}.cause.red{background:color-mix(in srgb,var(--hk-red) 9%,transparent);border-color:color-mix(in srgb,var(--hk-red) 35%,transparent)}.cause.violet{background:color-mix(in srgb,var(--hk-violet) 9%,transparent);border-color:color-mix(in srgb,var(--hk-violet) 35%,transparent)}
-      .cause ha-icon{color:var(--hk-muted)}.hintbox ha-icon{color:var(--hk-amber)}.row.rel{grid-template-columns:auto minmax(0,1fr) auto}
+      .cause ha-icon{color:var(--hk-muted)}.hintbox ha-icon{color:var(--hk-amber)}.row.rel{grid-template-columns:auto minmax(0,1fr) auto}.agestamp{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}
       .changesum{grid-template-columns:repeat(5,1fr)}
-      .finding{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.finding strong{display:block;font-weight:600}.planfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}.planfoot>:first-child{flex:1 1 280px;min-width:0}.planfoot>.factnote{border:0;padding:0}.plansum{display:block;font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin-bottom:4px}.planfoot .reportopt{margin-top:10px}.checkdet>summary{cursor:pointer;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.checkdet .checkrow{border-top:0;padding-top:0}.planfoot>.btn,.planfoot>span,.planfoot>div:last-child{flex:0 0 auto}.simbox{margin:12px 16px;padding:12px 16px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft)}.simbox summary{cursor:pointer;font-weight:600;font-size:calc(13px*var(--hk-fs,1))}.simlist{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:calc(13px*var(--hk-fs,1))}.simlist li{position:relative;padding-left:18px}.simlist li:before{content:"";position:absolute;left:4px;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--hk-blue)}.simlimits{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.step{align-items:center}.fmeta{display:flex!important;flex-wrap:wrap;align-items:center;gap:4px 8px}.nw{white-space:nowrap}
+      .finding{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.finding strong{display:block;font-weight:600}.planfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}.planfoot>:first-child{flex:1 1 280px;min-width:0}.planfoot>.factnote{border:0;padding:0}.plansum{display:block;font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin-bottom:4px}.planfoot .reportopt{margin-top:10px}.checkdet>summary{cursor:pointer;padding:12px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.checkdet .checkrow{border-top:0;padding-top:0}.planfoot>.btn,.planfoot>span,.planfoot>div:last-child{flex:0 0 auto}.simbox{margin:12px 16px;padding:14px 16px;border:2px solid var(--hk-blue);border-left-width:6px;border-radius:12px;background:var(--hk-soft)}.simbox summary{font-size:1.1em;font-weight:700}.simbox summary{cursor:pointer;font-weight:600;font-size:calc(13px*var(--hk-fs,1))}.simlist{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:calc(13px*var(--hk-fs,1))}.simlist li{position:relative;padding-left:18px}.simlist li:before{content:"";position:absolute;left:4px;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--hk-blue)}.simlimits{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.step{align-items:center}.fmeta{display:flex!important;flex-wrap:wrap;align-items:center;gap:4px 8px}.nw{white-space:nowrap}
       .finding:has(.polform){flex-wrap:wrap}.finding .polform{flex:1 1 100%;display:grid;grid-template-columns:minmax(150px,200px) minmax(180px,1fr) minmax(130px,170px) auto auto;gap:8px;align-items:center}.finding .polform .error{grid-column:1/-1}.finding .polform input,.finding .polform select{min-height:40px;box-sizing:border-box}@media(max-width:860px){.finding .polform{grid-template-columns:1fr 1fr}.finding .polform input{grid-column:1/-1}}
       .deform{display:grid;grid-template-columns:6rem minmax(0,1fr) 13rem;gap:6px 14px;align-items:center}.deform+.deform{margin-top:18px;padding-top:18px;border-top:1px solid var(--hk-border)}.deform .factnote{grid-column:2/-1;margin:0;padding:0;border:0}.deform select,.deform .deid{min-height:40px;box-sizing:border-box;width:100%;min-width:0;padding:0 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.deform .deid{display:flex;align-items:center;gap:2px}.deform .deid .mono{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.deform .deid input{flex:1;min-width:0;padding:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.deform .deid:focus-within{border-color:var(--hk-blue)}.deform label{display:grid;gap:2px}.deform .denow{color:var(--hk-muted);font-weight:400}.deform .denow.none{opacity:.8;font-style:italic}.deform .btn{min-height:40px;box-sizing:border-box;justify-content:center;width:100%}.deform .btn:disabled{background:var(--hk-soft);border-color:var(--hk-border);color:var(--hk-muted);box-shadow:none;opacity:1}@media(max-width:600px){.deform{grid-template-columns:1fr}.deform .factnote{grid-column:1}}
       .chartaxes{display:grid;width:100%;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;max-width:420px;margin:6px 0;align-items:stretch}.chartaxes .rangechart{margin:0!important;max-width:none!important}.chartY{display:flex;flex-direction:column;justify-content:space-between;text-align:right;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}.chartX{grid-column:2;display:flex;justify-content:space-between;gap:8px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
@@ -1538,7 +1574,7 @@ class StylesMixin {
       .code{white-space:pre-wrap;word-break:break-word;background:var(--hk-soft);border-radius:10px;padding:12px;font:calc(11px*var(--hk-fs,1))/1.55 ui-monospace,SFMono-Regular,monospace;max-height:270px;overflow:auto}
       h4{font-size:calc(12px*var(--hk-fs,1));margin:12px 0 6px;color:var(--hk-muted)}
       @media(max-width:1100px){.summary{grid-template-columns:1fr 1fr}.grid2,.detailgrid{grid-template-columns:1fr}}
-      @media(min-width:861px){.tablewrap.runs table{width:auto;min-width:min(100%,820px);max-width:100%}.tablewrap.runs th:first-child,.tablewrap.runs td:first-child{width:340px;max-width:340px}.tablewrap.runs td:not(:first-child){padding-left:20px;padding-right:20px}.tablewrap.runs th:not(:first-child){padding-left:20px;padding-right:20px}}${navCompactRules(true)}@media(max-width:860px){${navCompactRules(false)}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.tablewrap.lt td:not(:first-child){white-space:normal}.tablewrap.lt td{display:block;margin:0}.tablewrap.lt td:first-child{grid-column:1/-1}.tablewrap.lt td[data-label]::before{display:block;margin-bottom:1px}.tablewrap.lt td:first-child{min-width:0}.tablewrap.runs tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.tablewrap.runs td{display:block;margin:0}.tablewrap.runs td:first-child,.tablewrap.runs td:last-child{grid-column:1/-1}.tablewrap.runs td[data-label]::before{display:block;margin-bottom:1px}.tablewrap.inv td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
+      ${navCompactRules(true)}@media(max-width:860px){${navCompactRules(false)}.main{padding:16px 12px 40px}.heading{flex-wrap:wrap}.filters{grid-template-columns:1fr}.row{grid-template-columns:auto minmax(0,1fr) auto}.row:has(>.btn){grid-template-columns:auto minmax(0,1fr);grid-auto-flow:row}.row:has(>.btn)>.btn{grid-column:1/-1}.row .date{display:none}.tablewrap table,.tablewrap thead,.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block}.tablewrap thead{display:none}.tablewrap tr{padding:12px 14px;border-top:1px solid var(--hk-border);cursor:pointer}.tablewrap td{padding:2px 0;border:0}.tablewrap td:nth-child(2),.tablewrap td:nth-child(3){display:inline-block;margin:4px 12px 2px 0}.tablewrap td[data-label]::before{content:attr(data-label) ": ";color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.tablewrap.lt td:not(:first-child){white-space:normal}.tablewrap.lt td{display:block;margin:0}.tablewrap.lt td:first-child{grid-column:1/-1}.tablewrap.lt td[data-label]::before{display:block;margin-bottom:1px}.tablewrap.lt td:first-child{min-width:0}.tablewrap.runs tr{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}.tablewrap.runs td{display:block;margin:0}.tablewrap.runs td:first-child,.tablewrap.runs td:last-child{grid-column:1/-1}.tablewrap.runs td[data-label]::before{display:block;margin-bottom:1px}.tablewrap.inv td:nth-child(3)::before{content:""}.mobsort{display:flex;gap:8px}.msince{display:inline}.row-text strong,.row-text small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.pathcard{grid-template-columns:auto 1fr}.pathcard .btn{grid-column:1/-1}.planrow{grid-template-columns:auto minmax(0,1fr)}.planrow>span:last-child{grid-column:1/-1;justify-content:flex-start!important}.detailhead{grid-template-columns:auto 1fr}.actions{grid-column:1/-1}.check{grid-template-columns:22px 1fr auto}.check .val{grid-column:2/-1;grid-row:2;white-space:normal}}
       /* Fixed sidebar: it stays in view while long content scrolls; Settings sits at the visible bottom edge. */
       /* Equal-width tiles on the overview and the changes view. */
       .card:has(.ring) .card-text em{overflow:visible;white-space:normal;text-overflow:clip;line-height:1.35}
@@ -1557,11 +1593,13 @@ class StylesMixin {
       .taskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding:16px}.taskcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);padding:14px;cursor:pointer;color:var(--hk-text);font:inherit}.taskcard:hover,.taskcard.on{background:var(--hk-soft)}.taskcard.on{border-color:var(--hk-blue)}.compactgrid{padding:0 0 14px}.setgrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}.setgrid .taskcard{display:grid;grid-template-rows:auto auto 24px 1fr;align-content:start;justify-items:start}.setpill{min-height:24px;display:flex;align-items:center}.compactgrid .taskcard{padding:12px}.taskcard ha-icon{--mdc-icon-size:22px;color:var(--hk-blue)}.taskcard strong{font-size:calc(14px*var(--hk-fs,1));font-weight:600}.taskcard small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.45}.repairhead{font-size:calc(16px*var(--hk-fs,1));font-weight:600;margin:10px 0 6px}
       .propgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch}@media(max-width:860px){.propgrid{grid-template-columns:minmax(0,1fr)}}.proph{display:flex;align-items:center;gap:8px}.proph ha-icon{--mdc-icon-size:18px;color:var(--hk-muted);flex:none}.kv{align-items:baseline}.kv dd .link{display:inline;padding:0;text-align:left;font-size:inherit}.propgrid>.wide{grid-column:1/-1}.propgrid .panel{margin:0}.propgrid .kv{grid-template-columns:120px minmax(0,1fr)}.propgrid .kv dd small{display:block}
       .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;list-style:none;margin:0;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.step{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:8px;color:var(--hk-muted)}.step .mark{flex:none;width:22px;height:22px;display:grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;font-size:calc(11px*var(--hk-fs,1));font-weight:700}.steptext{display:grid;gap:2px;min-width:0}.steptext b{font-size:calc(12px*var(--hk-fs,1));font-weight:600;overflow-wrap:break-word;hyphens:auto}.steptext small{font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}
-      .wz{display:flex;gap:6px;list-style:none;margin:0;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.wz li{flex:1;display:flex;flex-direction:column;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);min-width:0}.wz li i{display:block;height:3px;border-radius:2px;background:var(--hk-border)}.wz li.done i{background:var(--hk-green)}.wz li.cur{color:var(--hk-text);font-weight:600}.wz li.cur i{background:var(--hk-blue)}@media (max-width:520px){.wz li:not(.cur){font-size:0}.wz li:not(.cur) i{margin-top:0}}.wzflow{margin:8px 16px}.wzprog{height:8px;border-radius:4px;background:var(--hk-border);overflow:hidden;margin:12px 16px}.wzprog i{display:block;height:100%;background:var(--hk-blue);transition:width .3s}
+      .wz{display:flex;gap:6px;list-style:none;margin:0;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.wz li{flex:1;display:flex;flex-direction:column;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);min-width:0}.wz li i{display:block;height:3px;border-radius:2px;background:var(--hk-border)}.wz li.done i{background:var(--hk-green)}.wz li.cur{color:var(--hk-text);font-weight:600}.wz li.cur i{background:var(--hk-blue)}@media (max-width:520px){.wz li:not(.cur){font-size:0}.wz li:not(.cur) i{margin-top:0}}.wzprog{height:8px;border-radius:4px;background:var(--hk-border);overflow:hidden;margin:12px 16px}.wzprog i{display:block;height:100%;background:var(--hk-blue);transition:width .3s}
       .noteform{display:grid;gap:10px}.noteform label{display:block;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);margin-bottom:4px}.noteform input,.noteform textarea{width:100%;box-sizing:border-box}.notetwo{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media (max-width:560px){.notetwo{grid-template-columns:1fr}}.noteact{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.noteact span{display:flex;gap:8px}
       .headlink{all:unset;cursor:pointer;color:inherit;font:inherit}.headlink:hover{text-decoration:underline}.headlink:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px;border-radius:4px}#hk-todo-card:focus{outline:none}
       .wz .wzbtn{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;cursor:pointer;width:100%}.wz .wzbtn:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px;border-radius:4px}.xpbody{padding:14px 16px}.xpbody h3{margin:0 0 4px}.xpbody input[type=search]{width:100%;box-sizing:border-box}.xpbody .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.xprow{cursor:pointer}.xpgrp{border:1px solid var(--hk-border);border-radius:8px;padding:10px 12px;margin:8px 0}.xpgrp>label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.xpgrp small{display:block;color:var(--hk-muted)}.xpfmts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.xpfmt{flex:1;min-width:150px;border:1px solid var(--hk-border);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}.xpfmt input{position:absolute;opacity:0;pointer-events:none}.xpfmt.on{border:2px solid var(--hk-blue);padding:9px 11px}.xpfmt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.xprowline{display:flex;gap:8px;margin-top:8px}.xprowline input{flex:1}.xpmeta{display:flex;justify-content:space-between;gap:8px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.xppre{max-height:320px;overflow:auto;white-space:pre-wrap}.xpact{display:flex;gap:8px}.chip.tpl{display:inline-flex;gap:4px;padding:0}.chip.tpl button{all:unset;cursor:pointer;padding:4px 8px}.chip.tpl button:focus-visible{outline:2px solid var(--hk-blue);border-radius:4px}
       .step.done{color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}.step.current{color:color-mix(in srgb,var(--hk-blue) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.step.current .mark{background:var(--hk-blue);border-color:var(--hk-blue);color:var(--hk-on,#fff)}.step.failed{color:color-mix(in srgb,var(--hk-red) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-red) 9%,transparent)}.step.skipped{opacity:.85}
+      .track{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--hk-border)}.track .ph{border-top:1px solid var(--hk-border)}.track .ph:first-child{border-top:0}.track .phh{all:unset;box-sizing:border-box;display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;width:100%;padding:12px 16px;cursor:pointer}.track .phh:focus-visible{outline:2px solid var(--hk-blue);outline-offset:-2px}.track .mk{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:calc(12px*var(--hk-fs,1));font-weight:700;border:2px solid var(--hk-border);color:var(--hk-muted);background:var(--hk-surface)}.track .done .mk{background:var(--hk-green);border-color:var(--hk-green);color:var(--hk-on,#fff)}.track .cur .mk{border-color:var(--hk-blue);color:var(--hk-blue)}.track .fail .mk{background:var(--hk-red,#b3392f);border-color:var(--hk-red,#b3392f);color:var(--hk-on,#fff)}.track .phtext{display:grid;gap:1px;min-width:0}.track .phtext b{font-size:calc(14px*var(--hk-fs,1))}.track .todo .phtext b{color:var(--hk-muted);font-weight:500}.track .phtext small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.track .phh ha-icon{color:var(--hk-muted);--mdc-icon-size:18px}
+      .track .subs[hidden]{display:none}.track .subs{list-style:none;margin:0;padding:0 16px 12px}.track .subs>li{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:5px 0;position:relative;font-size:calc(13px*var(--hk-fs,1))}.track .subs>li:before{content:"";position:absolute;left:13px;top:-6px;bottom:10px;width:2px;background:var(--hk-border)}.track .subs>li:first-child:before{top:10px}.track .subs>li:last-child:before{bottom:calc(100% - 14px)}.track .subs>li:only-child:before{display:none}.track .subs .d{width:11px;height:11px;border-radius:50%;margin:4px auto 0;border:2px solid var(--hk-border);background:var(--hk-surface);position:relative;z-index:1}.track .s-done .d{background:var(--hk-green);border-color:var(--hk-green)}.track .s-current .d{background:var(--hk-blue);border-color:var(--hk-blue)}.track .s-failed .d{background:var(--hk-red,#b3392f);border-color:var(--hk-red,#b3392f)}.track .s-skipped .d{border-style:dashed}.track .s-todo,.track .s-skipped{color:var(--hk-muted)}.track .subs small{display:block;color:var(--hk-muted);overflow-wrap:anywhere}.track .wzprog{margin:6px 0 4px}.track .items{list-style:none;margin:4px 0 0;padding:0;border:1px solid var(--hk-border);border-radius:8px}.track .items li{display:grid;grid-template-columns:18px 1fr;gap:6px;padding:4px 10px;border-top:1px solid var(--hk-border);font-size:calc(12px*var(--hk-fs,1))}.track .items li:first-child{border-top:0}.track .items li:before{display:none}.track .items .ok{color:var(--hk-green)}
       .qlight{display:none;gap:3px;margin-top:4px}.qlight i{width:9px;height:9px;border-radius:50%;background:var(--hk-muted)}.qlight i.ok{background:var(--hk-green)}.qlight i.warn{background:var(--hk-amber)}.qlight i.red{background:var(--hk-red,#b3392f)}@media(max-width:700px){.qualitytable th:not(:first-child):not(:last-child),.qualitytable td:not(:first-child):not(:last-child){display:none}.qlight{display:flex}}.foldhead{width:100%}.foldbody{margin:0 0 6px 28px;border-left:2px solid var(--hk-line,rgba(128,128,128,.25))}.foldadvice{margin:6px 16px 2px}.foldhd,.expohd{margin:14px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.08em;text-transform:uppercase;color:var(--hk-muted)}.srclist{display:grid;gap:8px;margin-top:8px}.srcblock{border:1px solid var(--hk-border);border-radius:10px;padding:8px 10px;display:grid;gap:6px}.srchead{display:flex;gap:8px;align-items:center}.srchead small{display:block;color:var(--hk-muted)}.srcdiff{display:grid;gap:2px;font-size:calc(12.5px*var(--hk-fs,1))}.srcspot{margin-top:4px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.srcln{display:grid;grid-template-columns:18px minmax(0,1fr);padding:1px 8px;border-radius:4px;font-family:ui-monospace,monospace;overflow-wrap:anywhere}.srcln i{font-style:normal;font-weight:700}.srcln.del{background:color-mix(in srgb,var(--hk-red,#b3392f) 10%,transparent)}.srcln.add{background:color-mix(in srgb,var(--hk-green) 12%,transparent)}.srchand{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--hk-amber) 9%,transparent);font-size:calc(13px*var(--hk-fs,1))}.srchand ul{margin:4px 0 0;padding-left:18px;color:var(--hk-muted)}.modecards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:4px 16px 12px}.modecard{text-align:left;font:inherit;color:inherit;background:var(--hk-surface);border:1px solid var(--hk-border);border-radius:12px;padding:12px;display:grid;gap:6px;align-content:start;cursor:pointer}.modecard.on{border-color:var(--hk-blue);box-shadow:0 0 0 2px color-mix(in srgb,var(--hk-blue) 25%,transparent)}.modecard small{color:var(--hk-muted)}.modecard .modefollow{font-weight:600}@media(max-width:700px){.modecards{grid-template-columns:1fr}}.setrow .mcheck{padding:4px 0}.mcheck{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;padding:4px 16px;font-size:calc(13px*var(--hk-fs,1));align-items:baseline}.mcheck .ok-t{color:var(--hk-green);font-weight:700}.mcheck .bad-t{color:var(--hk-red,#b3392f);font-weight:700}.mcheck .warn-t{color:var(--hk-amber);font-weight:700}.mtl{display:grid;gap:4px;margin:6px 0}.mtlbar{display:flex;height:40px;border-radius:10px;overflow:hidden;border:1px solid var(--hk-border)}.mtlbar div{display:grid;place-items:center;font-size:calc(12.5px*var(--hk-fs,1));font-weight:600;padding:0 8px}.mtlbar .a{flex:5;background:color-mix(in srgb,var(--hk-blue) 18%,transparent)}.mtlbar .gap{flex:1;background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--hk-amber) 22%,transparent) 0 6px,transparent 6px 12px)}.mtlbar .b{flex:4;background:color-mix(in srgb,var(--hk-green) 18%,transparent)}.mtlaxis{display:flex;justify-content:space-between;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.mfacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:6px 0}.mfacts .mfact{padding:8px 10px;border-radius:10px;background:var(--hk-soft);border:1px solid var(--hk-border)}.mfacts .mfact b{display:block}.mfacts .mfact small{color:var(--hk-muted)}.exsum{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.exptags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.exptags .tag{padding:1px 8px;border-radius:8px;background:var(--hk-soft);border:1px solid var(--hk-border);font-size:calc(12px*var(--hk-fs,1))}.etkinds{display:grid}.etkind{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 16px;border-top:1px solid var(--hk-border);cursor:pointer}.etkind.none{opacity:.6;cursor:default}.etkind small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.etnum{text-align:right;white-space:nowrap}.etnum b{display:block}.etbody{display:grid;gap:12px;padding:12px 16px;border-top:1px solid var(--hk-border)}.etdates{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.etdates input{font:inherit;padding:6px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit}.etwarn{margin:0;padding:12px 16px;background:color-mix(in srgb,var(--hk-amber) 9%,transparent);border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.rowdetails{margin-top:6px}.rowdetails summary{cursor:pointer;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .planrow{align-items:start}.planrow .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
       .row.sel{background:color-mix(in srgb,var(--hk-blue) 10%,var(--hk-soft))}.row.rel .bar i{background:var(--hk-gray)}.row.sel .bar i{background:var(--hk-blue)}
@@ -1589,7 +1627,7 @@ class StylesMixin {
       .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%;gap:8px}}
       .kpi{display:block;min-width:0;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
       .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
-      .spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.sysmeter+.spark,.sysmeter+.spark-hint{margin-top:14px}.sysmeter+.spark polyline{opacity:.65}.spark-end,.spark-halo{stroke-linecap:round;vector-effect:non-scaling-stroke}.spark-halo{stroke:var(--hk-soft);stroke-width:10}.spark-end{stroke:var(--hk-muted);stroke-width:7}.sys-spark-end{stroke-width:4}.spark-end.red{stroke:var(--hk-red)}.spark-end.ok{stroke:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
+      .cfgout{display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word}.bhsizes{display:flex;align-items:flex-end;gap:3px;height:48px;padding:6px 16px 0}.bhsizes i{flex:1;min-width:0;background:color-mix(in srgb,var(--hk-blue) 45%,transparent);border-radius:3px 3px 0 0}.bhsizes i.last{background:var(--hk-blue)}.bhsizes i.last.warn{background:var(--hk-amber)}.spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.sysmeter+.spark,.sysmeter+.spark-hint{margin-top:14px}.sysmeter+.spark polyline{opacity:.65}.spark-end,.spark-halo{stroke-linecap:round;vector-effect:non-scaling-stroke}.spark-halo{stroke:var(--hk-soft);stroke-width:10}.spark-end{stroke:var(--hk-muted);stroke-width:7}.sys-spark-end{stroke-width:4}.spark-end.red{stroke:var(--hk-red)}.spark-end.ok{stroke:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
       .taskgrid{gap:14px}
       .taskcard{--c:var(--hk-blue);position:relative;overflow:hidden;padding-left:20px;box-shadow:var(--hk-sh1),var(--hk-hi)}
       .taskcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
@@ -1631,7 +1669,7 @@ class StylesMixin {
       .hamenu{display:grid;place-items:center;flex:none;width:40px;height:40px;margin:0 -10px 0 -6px;padding:0;border:0;border-radius:50%;background:none;color:inherit}.hamenu:hover{background:var(--hk-soft)}.hamenu:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.hamenu ha-icon{--mdc-icon-size:24px}.sysmeter{display:block;height:6px;margin-top:6px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysmeter i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.sysmeter.warn i{background:var(--hk-amber)}.sysmeter.red i{background:var(--hk-red)}.sysmeter.mute i{background:var(--hk-gray)}.sysshare{display:block;width:100%;min-width:120px;height:8px;margin-top:2px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysshare i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.tablewrap.lt.acc td{white-space:normal}.pills{display:flex;flex-wrap:wrap;gap:4px}@media(min-width:641px){.sysnav .navtiles{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1300px){.sysnav .navtiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
       .intentry{margin:4px 2px 0;font-size:15px}.syssec{margin:18px 16px 6px;font-size:15px}.syssec:first-child{margin-top:12px}
       .pill.kind{background:none;border:1px solid var(--hk-border);color:var(--hk-muted)}.rowmenu{position:relative;flex:none;margin:0 10px 0 0}.rowmenu>summary{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;list-style:none;cursor:pointer;color:var(--hk-muted)}.rowmenu>summary::-webkit-details-marker{display:none}.rowmenu>summary:hover,.rowmenu[open]>summary{background:var(--hk-soft);color:inherit}.menupop{position:absolute;right:0;top:100%;z-index:20;display:grid;min-width:260px;padding:4px 0;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.menuitem{white-space:nowrap;display:flex;gap:10px;align-items:center;padding:8px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}.menuitem:hover{background:var(--hk-soft)}.menuitem ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}
-      .row[data-object]{cursor:pointer}.monitor-days{display:flex;gap:3px;padding:4px 16px 16px}.monitor-days i{flex:1;min-width:4px;max-width:22px;height:22px;border-radius:4px;background:var(--hk-soft)}.monitor-days i.ok{background:var(--hk-green)}.monitor-days i.problem{background:var(--hk-red)}.monitor-days i.unverified,.monitor-days i.flapping{background:var(--hk-amber)}.page-editor{max-width:960px;margin:0 auto}.monitor-fields{display:grid;gap:14px;padding:16px}.monitor-fields label{display:grid;gap:6px;font-weight:600}.monitor-fields input,.monitor-fields textarea{width:100%;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-fields textarea{min-height:0;box-sizing:border-box;resize:none;overflow-y:hidden}.monitor-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.monitor-check input{width:18px;height:18px}.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto auto}.row.monitor-choice{grid-template-columns:auto minmax(0,1fr) auto}.monitor-choice .btn,.monitor-member .btn{justify-self:end;width:auto;white-space:nowrap}.row.monitor-notify{grid-template-columns:minmax(0,1fr) auto;cursor:pointer}.monitor-notify .policyswitch{justify-self:end}.monitor-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px;border-bottom:1px solid var(--hk-border)}.monitor-tabs .btn{border-radius:99px;min-height:34px}.monitor-group h3{display:flex;gap:8px;align-items:center;margin:0;padding:10px 16px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-group h3 span{font-weight:400}.monitor-group .row{border-bottom:1px solid var(--hk-border)}.monitor-choice .btn:disabled{opacity:.65}.monitor-results{max-height:420px;overflow:auto}.monitor-search-note{padding:0 16px 18px;color:var(--hk-muted)}.page-editor .savebar{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface)}@media(max-width:600px){.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;grid-auto-flow:row;gap:8px}.monitor-member .tile{grid-column:1;grid-row:1}.monitor-member .row-text{grid-column:2;grid-row:1}.monitor-member .monitor-check{grid-column:2;grid-row:2}.monitor-member .btn{grid-column:3;grid-row:1/3}}
+      .row[data-object]{cursor:pointer}.monitor-meta{margin-top:2px}.monitor-sec{display:flex;align-items:baseline;gap:8px;padding:16px 16px 8px;border-top:1px solid var(--hk-border);margin-top:14px}.monitor-sec h3{margin:0;font-size:calc(14px*var(--hk-fs,1));font-weight:600}.monitor-sec small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.avail-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px 16px 4px}.avail-tile{background:var(--hk-soft);border-radius:10px;padding:10px 14px}.avail-tile b{display:block;font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.25}.avail-tile b.ok{color:var(--hk-green)}.avail-tile span{font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.avail-info{--mdc-icon-size:16px;color:var(--hk-muted);vertical-align:-2px;cursor:help}.monitor-axis{display:flex;justify-content:space-between;padding:6px 16px 0;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.avail-since{padding:8px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-days{display:flex;gap:3px;padding:14px 16px 0}.monitor-days i{flex:1;min-width:3px;height:34px;border-radius:3px;background:repeating-linear-gradient(135deg,var(--hk-soft) 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-days i.ok,.monitor-days i.problem,.monitor-days i.unverified,.monitor-days i.flapping{box-shadow:none}.monitor-days i.problem.short{background:var(--hk-amber)}.monitor-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-legend span{display:inline-flex;align-items:center;gap:6px}.monitor-legend i{width:10px;height:10px;border-radius:2px;background:var(--hk-soft);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-legend i.ok{background:var(--hk-green);box-shadow:none}.monitor-legend i.problem{background:var(--hk-red);box-shadow:none}.monitor-legend i.problem.short{background:var(--hk-amber)}.monitor-days i.ok{background:var(--hk-green)}.monitor-days i.problem{background:var(--hk-red)}.monitor-days i.unverified,.monitor-days i.flapping{background:var(--hk-amber)}.page-editor{max-width:960px;margin:0 auto}.monitor-fields{display:grid;gap:14px;padding:16px}.monitor-twocol{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}@media(max-width:560px){.monitor-twocol{grid-template-columns:1fr}}.monitor-add{display:grid;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--hk-border)}.monitor-add>input[type=search]{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-suggest{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip{font:inherit;font-size:calc(12px*var(--hk-fs,1));padding:3px 10px;border-radius:999px;border:1px solid var(--hk-border);background:none;color:var(--hk-muted);cursor:pointer}.chip.dashed{border-style:dashed}.chip:hover{color:var(--hk-text);border-color:var(--hk-muted)}.iconbtn{border:0;background:none;color:var(--hk-muted);cursor:pointer;padding:4px;border-radius:6px}.iconbtn:hover{background:var(--hk-soft);color:var(--hk-text)}.monitor-fields label{display:grid;gap:6px;font-weight:600}.monitor-fields input,.monitor-fields textarea{width:100%;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-fields textarea{min-height:0;box-sizing:border-box;resize:none;overflow-y:hidden}.monitor-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.monitor-check input{width:18px;height:18px}.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto auto}.row.monitor-choice{grid-template-columns:auto minmax(0,1fr) auto}.monitor-choice .btn,.monitor-member .btn{justify-self:end;width:auto;white-space:nowrap}.row.monitor-notify{grid-template-columns:minmax(0,1fr) auto;cursor:pointer}.monitor-notify .policyswitch{justify-self:end}.monitor-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px;border-bottom:1px solid var(--hk-border)}.monitor-tabs .btn{border-radius:99px;min-height:34px}.monitor-group h3{display:flex;gap:8px;align-items:center;margin:0;padding:10px 16px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-group h3 span{font-weight:400}.monitor-group .row{border-bottom:1px solid var(--hk-border)}.monitor-choice .btn:disabled{opacity:.65}.monitor-results{max-height:420px;overflow:auto}.monitor-search-note{padding:0 16px 18px;color:var(--hk-muted)}.page-editor .savebar{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface)}@media(max-width:600px){.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;grid-auto-flow:row;gap:8px}.monitor-member .tile{grid-column:1;grid-row:1}.monitor-member .row-text{grid-column:2;grid-row:1}.monitor-member .monitor-check{grid-column:2;grid-row:2}.monitor-member .btn{grid-column:3;grid-row:1/3}}
       .note-editor{min-width:0}.note-fields{display:grid;gap:14px;padding:16px}.note-fields>div{min-width:0}.note-fields h3{margin:0;font-size:calc(15px*var(--hk-fs,1))}.note-fields label{display:block;margin-bottom:6px;color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1));font-weight:600}.note-fields input,.note-fields textarea{box-sizing:border-box;width:100%;min-width:0;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.note-fields textarea{resize:vertical}.note-fields .picker{max-width:none}.note-fields .notetwo{grid-template-columns:repeat(2,minmax(0,1fr))}.note-fields .notetwo>div{min-width:0}.note-fields .notemeta{display:flex;align-items:center;align-self:end;gap:8px;flex-wrap:wrap;min-height:42px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));overflow-wrap:anywhere}.note-fields .notemeta strong{color:var(--hk-text)}.note-fields .notehint2{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.page-editor .note-editor .note-actions,.note-editor .note-actions{border:0;border-top:1px solid var(--hk-border);border-radius:0;background:var(--hk-soft)}.note-editor .danger-t{color:var(--hk-red)}.note-editor.inline .notetwo{grid-template-columns:1fr}@media(max-width:700px){.note-fields .notetwo{grid-template-columns:1fr}}
       .monitor-member-wrap{border-bottom:1px solid var(--hk-border)}.monitor-member-wrap:last-child{border-bottom:0}.monitor-member-wrap .row{border-bottom:0}.monitor-rules{padding:0 16px 12px 62px}.monitor-rules summary{color:var(--hk-blue-text);cursor:pointer;font-size:calc(12px*var(--hk-fs,1));font-weight:600}.monitor-rules p{margin:8px 0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.monitor-rule{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;font-size:calc(13px*var(--hk-fs,1))}.monitor-rule label{display:inline-flex;align-items:center;gap:8px;min-width:210px;cursor:pointer}.monitor-rule input[type=number]{width:100px;padding:7px 9px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-rule input[type=number]:disabled{opacity:.45}.monitor-preview-body{padding:12px 16px}.monitor-preview-body>p{margin:0;color:var(--hk-muted)}.monitor-preview-body>strong{display:block;margin-bottom:4px}.monitor-preview-body>small{display:block;margin-bottom:8px;color:var(--hk-muted)}.monitor-preview-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:7px 0;border-top:1px solid var(--hk-border)}.monitor-preview-row small{grid-column:1/-1;color:var(--hk-muted)}@media(max-width:600px){.monitor-rules{padding-left:16px}.monitor-rule label{min-width:0;flex:1 1 100%}.monitor-rule input[type=number]{width:90px}}
       .pin-editor{border-bottom:1px solid var(--hk-border)}.pin-fields{display:grid;gap:10px;padding:16px}.pin-fields h3{margin:0;font-size:calc(15px*var(--hk-fs,1))}.pin-fields p{margin:0;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.pin-fields label{display:block;margin:4px 0 6px;color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1));font-weight:600}.pin-fields input{box-sizing:border-box;width:100%;max-width:520px;min-height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.pin-fields small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.pin-fields .notechips{margin-top:8px}.pin-editor .pin-actions{border-bottom:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.pin-actions [role=status]{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
@@ -1640,6 +1678,23 @@ class StylesMixin {
       .findings-table td{vertical-align:middle}.findings-table td:nth-child(2){min-width:260px;white-space:normal}.findings-table .finding-link{display:flex;align-items:flex-start;gap:10px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}.findings-table .finding-link .tile{flex:none}.findings-table .finding-name{display:grid;gap:2px;min-width:0}.findings-table .finding-name strong{overflow-wrap:anywhere}.findings-table .finding-name .id{margin:0;overflow-wrap:anywhere}.findings-table .finding-name small{color:var(--hk-muted);white-space:normal;overflow-wrap:anywhere}.findings-table .finding-rule{font-family:var(--hk-mono,monospace);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.findings-table td:nth-child(6) small{display:block;color:var(--hk-muted)}.findings-table .finding-action .rowmenu{margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{padding:0;white-space:normal}.findings-table .finding-group .rowwrap{border-bottom:0}.findings-table .finding-group .fold{border:0}.findings-table .finding-detail .pad{padding:10px 16px}.findings-table.dense-list .finding-name .id,.findings-table.dense-list .finding-name small,.findings-table.dense-list td:nth-child(6) small{display:none}.findings-table.dense-list .finding-link .tile{width:28px;height:28px}.findings-table.dense-list td{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-group>td,.findings-table.dense-list .finding-detail>td{padding:0}@media(max-width:860px){.findings-table tr.finding-data{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 10px;align-items:start}.findings-table tr.finding-data td{grid-column:2;min-width:0}.findings-table tr.finding-data td.selcol{grid-column:1;grid-row:1;width:24px;min-width:24px;max-width:24px;padding:0}.findings-table tr.finding-data td:nth-child(2){grid-column:2;grid-row:1}.findings-table tr.finding-data td.finding-action{grid-column:3;grid-row:1}.findings-table tr.finding-data td:nth-child(n+3):not(.finding-action){display:inline-block;margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{display:block}.findings-table.dense-list .finding-name .id{display:none}}
       .panel:has(.colpop),.panel:has(.viewform){overflow:visible}.listbar-actions{display:flex;flex:1 1 auto;justify-content:flex-end;align-items:center;gap:8px;margin-left:auto;min-height:40px}.listbar-actions:empty{display:none}.listbar-actions>.dirbtn,.listbar-actions>.colwrap>.dirbtn{min-height:40px}.listbar-actions .viewwrap{z-index:30}.viewform{position:absolute;right:0;top:calc(100% + 8px);z-index:30;display:grid;gap:10px;width:min(320px,calc(100vw - 32px));box-sizing:border-box;padding:16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 10px 30px rgba(0,0,0,.18)}.viewform strong{font-size:calc(15px*var(--hk-fs,1))}.viewform label{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.viewform input{box-sizing:border-box;width:100%;min-width:0;height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.viewform small{font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.viewform-actions{display:flex;justify-content:flex-end;gap:8px}.viewform-actions .btn{white-space:nowrap}.findings-table .finding-name{flex:1}.findings-table .finding-cause .finding-link>.pill{flex:none;align-self:center}.findings-table .finding-detail .rowwrap{border-bottom:1px solid var(--hk-border)}.findings-table .finding-detail .rowwrap:last-child{border-bottom:0}.findings-table.dense-list .finding-detail .row{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-detail .row-text small{display:none}.findings-table.dense-list .finding-detail .row .tile{width:28px;height:28px}.findings-table.dense-list .finding-detail .rowmenu>summary{width:28px;height:28px}@media(max-width:860px){.listbar-actions{margin-left:auto}.findings-table tr.finding-detail{padding:0}.findings-table .finding-detail>td{padding:0}}@media(max-width:560px){.listbar-actions{margin-left:auto}.listbar .sortgroup:not(.table-sort){margin-left:0}}
       .findings-table .finding-link-group{display:flex;align-items:flex-start;gap:6px;min-width:0}.findings-table .finding-link-group .finding-link{flex:1;min-width:0}.findings-table .finding-fold{display:flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;padding:0;border:0;background:none;color:var(--hk-muted);cursor:pointer}.findings-table .finding-fold .foldarrow{margin:0}.findings-table .finding-fold:hover{color:var(--hk-text)}
+      .planfootcol{flex-direction:column;align-items:stretch}.planfootcol>:first-child{flex:none}.planfootcol .planfootbtns{justify-content:flex-end;gap:10px}.planfootcol .planfootbtns .btn{min-width:150px;justify-content:center}.fold .planrow{padding:8px 16px}.fold .planrow small{margin-top:1px}
+      .wmx{padding:12px 16px 14px;display:grid;gap:10px}.wmx .wtop{display:flex;gap:10px;align-items:center;color:var(--hk-amber)}.wmx .wtop strong{font-size:calc(15px*var(--hk-fs,1));color:var(--hk-text)}
+      .wtr{display:flex;list-style:none;margin:0;padding:0}.wtr li{flex:1;position:relative;padding-top:20px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);text-align:center}
+      .wtr li::before{content:"";position:absolute;top:6px;left:0;right:0;height:3px;background:var(--hk-border)}.wtr li:first-child::before{left:50%}.wtr li:last-child::before{right:50%}
+      .wtr li i{position:absolute;top:0;left:50%;margin-left:-7px;width:14px;height:14px;border-radius:50%;background:var(--hk-border);z-index:1;font-style:normal;font-size:9px;line-height:14px;color:#fff}
+      .wtr li.done{color:var(--hk-text)}.wtr li.done i,.wtr li.done::before{background:var(--hk-green)}.wtr li.on{color:var(--hk-text);font-weight:700}.wtr li.on i{background:var(--hk-amber)}
+      .wduo{display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:calc(13px*var(--hk-fs,1));color:var(--hk-muted)}@media(max-width:640px){.wduo{grid-template-columns:1fr}}
+      .wcap{display:flex;justify-content:space-between;gap:8px}.wcap b,.wline b{color:var(--hk-text);font-weight:600}
+      .wbar{display:block;height:8px;border-radius:99px;background:var(--hk-soft);border:1px solid var(--hk-border);overflow:hidden;margin-top:4px}.wbar i{display:block;height:100%;background:var(--hk-amber)}.wbar i.g{background:var(--hk-green)}
+      .wline{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:calc(13px*var(--hk-fs,1));color:var(--hk-muted)}.wline .pill{font-weight:500}
+      .wph{display:grid;gap:10px}.wmx .wtop ha-icon{animation:hkflip 2s ease-in-out infinite;animation-delay:var(--wt,0s)}
+      .wtr li.on i{animation:hkpulse 2s ease-out infinite;animation-delay:var(--wt,0s)}.wtr li.on::before{background:linear-gradient(90deg,var(--hk-green),var(--hk-amber))}
+      .wbar i:not(.g){background-image:linear-gradient(45deg,rgba(255,255,255,.3) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.3) 75%,transparent 75%);background-size:16px 16px;animation:hkstripes 1s linear infinite;animation-delay:var(--wt,0s)}
+      .wbar.ind i{width:35%;animation:hkslide 2s ease-in-out infinite;animation-delay:var(--wt,0s);background-image:none}
+      @keyframes hkflip{0%,40%{transform:rotate(0)}60%,100%{transform:rotate(180deg)}}@keyframes hkpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--hk-amber) 55%,transparent)}70%,100%{box-shadow:0 0 0 7px transparent}}
+      @keyframes hkstripes{from{background-position:0 0}to{background-position:16px 0}}@keyframes hkslide{0%{margin-left:-35%}100%{margin-left:100%}}
+      .optswitch{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border:2px solid var(--hk-blue);border-radius:12px;background:var(--hk-soft);cursor:pointer}.optswitch .policyswitch{margin-top:2px}.optswitch span{display:grid;gap:2px}.optswitch small{color:var(--hk-muted)}
       ${this.themeCss()}
     </style>`;
   }
@@ -1647,10 +1702,10 @@ class StylesMixin {
 
 // Texts of the shared table of objects (objectTable); merged into TEXT.
 Object.assign(TEXT.de, {
-  objColState: "Zustand", objAllStatus: "Alle Zustände", objColEntities: "Entitäten", objColDevices: "Geräte", relColAvail: "Verfügbarkeit", relColObject: "Objekt", relColType: "Typ", relColRelation: "Beziehung", relColKind: "Art", relColStatus: "Zustand", relAllGroups: "Alle Arten", relAvailOk: "Ab 99,5 %", relAvailWarn: "95 bis 99,5 %", cleanupAllClasses: "Alle Einstufungen", cleanupAllReadiness: "Alle Zustände", cleanupColRecorder: "Recorder-Daten", recurringColSince: "Vergessen am", recurringColDomains: "Integrationen", recurringPill: "Kehrt zurück", purgeColWhen: "Zeit", purgeColWhat: "Gelöscht", purgeColDetails: "Einzelheiten", bkcColName: "Backup", bkcColDb: "Datenbank", bkcColState: "Schutz / Alter", bkcAllStates: "Alle Backups", bkcFilterProtected: "Geschützt", bkcFilterSelected: "Ausgewählt", bpColFile: "Datei", bpColKind: "Art", bpColDomain: "Domain", bpColUsers: "Verwendet von", bpAllKinds: "Alle Arten", bpAllDomains: "Alle Domains", lifeColDevice: "Gerät", lifeColKind: "Art", lifeColWhen: "Wann", lifeColNote: "Notiz", lifeAllKinds: "Alle Arten", journalColDate: "Erstellt", journalColActions: "Prüfung", journalColFollow: "Nachkontrolle", journalColAct: "Aktionen", journalAllStatus: "Alle Zustände", journalAllFollow: "Alle Nachkontrollen", exColEntity: "Entität", exColUsed: "Verwendung", exColTarget: "Ersatz", exColHow: "Art", exAllPairs: "Alle Paare", exFilterSuggest: "Mit Vorschlag", exFilterNone: "Ohne Verwendung", exFilterChosen: "Gewählt", counterColName: "Entität", counterColKind: "Art", counterColFound: "Fund", counterColAction: "Aktion", counterAllKinds: "Alle Arten", counterKindMeasurement: "Messwert", counterKindCounter: "Zähler", relAvailRed: "Unter 95 %",
+  objColState: "Zustand", objAllStatus: "Alle Zustände", objColEntities: "Entitäten", objColDevices: "Geräte", relColAvail: "Verfügbarkeit", relColObject: "Objekt", relColType: "Typ", relColRelation: "Beziehung", relColKind: "Art", relColStatus: "Zustand", relAllGroups: "Alle Arten", relAvailOk: "Ab 99,5 %", relAvailWarn: "95 bis 99,5 %", cleanupAllClasses: "Alle Einstufungen", cleanupAllReadiness: "Alle Zustände", cleanupColRecorder: "Recorder-Daten", recurringColSince: "Vergessen am", recurringColDomains: "Integrationen", recurringPill: "Kehrt zurück", purgeColWhen: "Zeit", purgeColWhat: "Gelöscht", purgeColDetails: "Einzelheiten", bkcColName: "Backup", bkcColDb: "Datenbank", bkcColState: "Schutz / Alter", bkcAllStates: "Alle Backups", bkcFilterProtected: "Geschützt", bkcFilterSelected: "Ausgewählt", bpColFile: "Datei", bpColKind: "Art", bpColDomain: "Domain", bpColUsers: "Verwendet von", bpBack: "Zur Liste", bpTabInputs: "Eingaben", bpDetSize: "Dateigröße", bpDetModified: "Geändert", bpDetMin: "Mindestens Home Assistant", bpNoInputs: "Dieses Blueprint hat keine Eingaben.", bpUsersNone: "Keine Automation und kein Skript benutzt dieses Blueprint.", bpInDefaultIs: "Standard", bpInNoDefault: "Kein Standardwert, muss gesetzt werden", bpInDefault: "Standard", bpInSet: "gesetzt", bpInMissing: "Entität fehlt", bpValueHidden: "Wert ausgeblendet", bpDetPath: "Pfad", bpDetAuthor: "Autor", bpDetSource: "Quelle", bpHint_missing: "Die Datei gibt es nicht mehr. Diese Automationen oder Skripte laufen nicht, solange sie nicht neu zugewiesen werden.", bpHint_broken: "Die Datei lässt sich nicht laden. Die Nutzer unten laufen nicht, bis sie repariert ist.", bpHint_unused: "Keine Automation und kein Skript benutzt dieses Blueprint.", bpAllKinds: "Alle Arten", bpAllDomains: "Alle Domains", lifeColDevice: "Gerät", lifeColKind: "Art", lifeColWhen: "Wann", lifeColNote: "Notiz", lifeAllKinds: "Alle Arten", journalColDate: "Erstellt", journalColActions: "Prüfung", journalColFollow: "Nachkontrolle", journalColAct: "Aktionen", journalAllStatus: "Alle Zustände", journalAllFollow: "Alle Nachkontrollen", exColEntity: "Entität", exColUsed: "Verwendung", exColTarget: "Ersatz", exColHow: "Art", exAllPairs: "Alle Paare", exFilterSuggest: "Mit Vorschlag", exFilterNone: "Ohne Verwendung", exFilterChosen: "Gewählt", counterColName: "Entität", counterColKind: "Art", counterColFound: "Fund", counterColAction: "Aktion", counterAllKinds: "Alle Arten", counterKindMeasurement: "Messwert", counterKindCounter: "Zähler", relAvailRed: "Unter 95 %",
 });
 Object.assign(TEXT.en, {
-  objColState: "State", objAllStatus: "All states", objColEntities: "Entities", objColDevices: "Devices", relColAvail: "Availability", relColObject: "Object", relColType: "Type", relColRelation: "Relation", relColKind: "Kind", relColStatus: "State", relAllGroups: "All kinds", relAvailOk: "99.5 % and above", relAvailWarn: "95 to 99.5 %", cleanupAllClasses: "All classes", cleanupAllReadiness: "All states", cleanupColRecorder: "Recorder data", recurringColSince: "Forgotten on", recurringColDomains: "Integrations", recurringPill: "Keeps coming back", purgeColWhen: "Time", purgeColWhat: "Deleted", purgeColDetails: "Details", bkcColName: "Backup", bkcColDb: "Database", bkcColState: "Protection / age", bkcAllStates: "All backups", bkcFilterProtected: "Protected", bkcFilterSelected: "Selected", bpColFile: "File", bpColKind: "Kind", bpColDomain: "Domain", bpColUsers: "Used by", bpAllKinds: "All kinds", bpAllDomains: "All domains", lifeColDevice: "Device", lifeColKind: "Kind", lifeColWhen: "When", lifeColNote: "Note", lifeAllKinds: "All kinds", journalColDate: "Created", journalColActions: "Check", journalColFollow: "Follow-up", journalColAct: "Actions", journalAllStatus: "All states", journalAllFollow: "All follow-ups", exColEntity: "Entity", exColUsed: "Use", exColTarget: "Replacement", exColHow: "How", exAllPairs: "All pairs", exFilterSuggest: "With a proposal", exFilterNone: "Unused", exFilterChosen: "Chosen", counterColName: "Entity", counterColKind: "Kind", counterColFound: "Finding", counterColAction: "Action", counterAllKinds: "All kinds", counterKindMeasurement: "Measurement", counterKindCounter: "Counter", relAvailRed: "Below 95 %",
+  objColState: "State", objAllStatus: "All states", objColEntities: "Entities", objColDevices: "Devices", relColAvail: "Availability", relColObject: "Object", relColType: "Type", relColRelation: "Relation", relColKind: "Kind", relColStatus: "State", relAllGroups: "All kinds", relAvailOk: "99.5 % and above", relAvailWarn: "95 to 99.5 %", cleanupAllClasses: "All classes", cleanupAllReadiness: "All states", cleanupColRecorder: "Recorder data", recurringColSince: "Forgotten on", recurringColDomains: "Integrations", recurringPill: "Keeps coming back", purgeColWhen: "Time", purgeColWhat: "Deleted", purgeColDetails: "Details", bkcColName: "Backup", bkcColDb: "Database", bkcColState: "Protection / age", bkcAllStates: "All backups", bkcFilterProtected: "Protected", bkcFilterSelected: "Selected", bpColFile: "File", bpColKind: "Kind", bpColDomain: "Domain", bpColUsers: "Used by", bpBack: "Back to list", bpTabInputs: "Inputs", bpDetSize: "File size", bpDetModified: "Changed", bpDetMin: "Home Assistant at least", bpNoInputs: "This blueprint has no inputs.", bpUsersNone: "No automation or script uses this blueprint.", bpInDefaultIs: "Default", bpInNoDefault: "No default, must be set", bpInDefault: "default", bpInSet: "set", bpInMissing: "entity missing", bpValueHidden: "value hidden", bpDetPath: "Path", bpDetAuthor: "Author", bpDetSource: "Source", bpHint_missing: "The file is gone. These automations or scripts do not run until they are pointed at another blueprint.", bpHint_broken: "The file fails to load. The users below do not run until it is repaired.", bpHint_unused: "No automation or script uses this blueprint.", bpAllKinds: "All kinds", bpAllDomains: "All domains", lifeColDevice: "Device", lifeColKind: "Kind", lifeColWhen: "When", lifeColNote: "Note", lifeAllKinds: "All kinds", journalColDate: "Created", journalColActions: "Check", journalColFollow: "Follow-up", journalColAct: "Actions", journalAllStatus: "All states", journalAllFollow: "All follow-ups", exColEntity: "Entity", exColUsed: "Use", exColTarget: "Replacement", exColHow: "How", exAllPairs: "All pairs", exFilterSuggest: "With a proposal", exFilterNone: "Unused", exFilterChosen: "Chosen", counterColName: "Entity", counterColKind: "Kind", counterColFound: "Finding", counterColAction: "Action", counterAllKinds: "All kinds", counterKindMeasurement: "Measurement", counterKindCounter: "Counter", relAvailRed: "Below 95 %",
 });
 
 // Texts for the policies view; merged into TEXT.
@@ -1711,7 +1766,9 @@ class ListsMixin {
     if (this.lv[id]) return this.lv[id];
     const kept = this.lvStored()[id];
     const ok = kept && typeof kept.sort === "string" && (kept.dir === "asc" || kept.dir === "desc");
-    return (this.lv[id] = { q: "", sort: ok ? kept.sort : sort, dir: ok ? kept.dir : dir, f: ok && kept.f && typeof kept.f === "object" ? Object.fromEntries(Object.entries(kept.f).filter(([, v]) => typeof v === "string")) : {}, view: "", base: { sort, dir } });
+    const pending = this._lfPending?.[id];
+    if (pending) delete this._lfPending[id];
+    return (this.lv[id] = { q: "", sort: ok ? kept.sort : sort, dir: ok ? kept.dir : dir, f: pending ? pending : ok && kept.f && typeof kept.f === "object" ? Object.fromEntries(Object.entries(kept.f).filter(([, v]) => typeof v === "string")) : {}, view: "", base: { sort, dir } });
   }
 
   lvStored() {
@@ -1719,6 +1776,15 @@ class ListsMixin {
     let stored = {};
     try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.lv") || "{}"); } catch (_) { stored = {}; }
     return (this._lvStored = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {});
+  }
+
+  // A jump to a list with one filter set: the search and the other filters of that list are cleared.
+  // A list not shown yet takes it when it is first built (lvState).
+  setListFilter(id, name, value) {
+    const st = this.lv[id];
+    if (!st) { (this._lfPending ||= {})[id] = { [name]: value }; return; }
+    st.q = ""; st.f = { [name]: value };
+    this.persistLv(id);
   }
 
   persistLv(id) {
@@ -2003,10 +2069,10 @@ class ListsMixin {
     return `<span class="id">${this.esc(id)}</span>${extra ? `<small>${this.esc(extra)}</small>` : ""}`;
   }
 
-  // The date of a table cell: how long ago, with the exact time as a tooltip; empty when unknown.
+  // The date of a table cell: how long ago with the exact time in small type below (hidden in compact rows) and as a tooltip; empty when unknown.
   ageCell(iso) {
     if (!iso) return `<span class="muted">–</span>`;
-    return `<span title="${this.esc(this.formatDate(iso))}">${this.esc(this.relTime(iso))}</span>`;
+    return `<span title="${this.esc(this.formatDate(iso))}">${this.esc(this.relTime(iso))}</span><small class="agestamp">${this.esc(this.formatDate(iso))}</small>`;
   }
 
   // Saved list views: search text, filters and sort under a name, kept in this browser only.
@@ -2167,7 +2233,7 @@ class OverviewMixin {
   // the time left of the warm-up and, once that is over, the progress of the final scan.
   warmupBanner() {
     if (!this.data?.meta?.preliminary) return "";
-    return `<div class="panel u-mb14" data-warmup><div class="row"><span class="tile warn"><ha-icon icon="mdi:timer-sand"></ha-icon></span><span class="row-text">${this.warmupInner()}</span></div></div>`;
+    return `<div class="panel u-mb14 wmx" data-warmup>${this.warmupInner()}</div>`;
   }
 
   // Said once per browser: outages are graded by how long they last, and only medium and high show on the overview.
@@ -2188,36 +2254,64 @@ class OverviewMixin {
     return `<div class="panel u-mb14" data-scan-health><div class="row"><span class="tile ${h.state === "failed" ? "red" : "warn"}"><ha-icon icon="mdi:heart-broken-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(text)}</strong><small class="u-m0">${this.esc(more)}</small></span></div></div>`;
   }
 
+  // The card of the start notice: the four steps, progress and time side by side, one line of names or advice.
   warmupInner() {
-    const w = this._warm || {}, left = w.until ? Math.max(0, Math.round((w.until - Date.now()) / 1000)) : null;
-    const st = this.scanStatus;
-    let step, frac = null;
-    if (w.booting) step = this.t("warmupStepBoot");
-    else if (left) {
-      step = this.t("warmupStepWait", { time: `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` });
-      frac = 1 - left / (w.total || 300);
-    } else if (st?.running) { step = this.t("warmupStepScan", { percent: st.progress }); frac = st.progress / 100; }
-    else step = this.t("warmupStepFinal");
-    const bar = frac === null ? "" : `<span class="bar"><i class="warn" style="width:${Math.round(Math.min(1, Math.max(0, frac)) * 100)}%"></i></span>`;
-    return `<strong>${this.esc(this.t("warmupBanner"))}</strong><small class="u-m0">${this.esc(step)}</small>${bar}`;
+    const w = this._warm || {}, st = this.scanStatus;
+    const left = w.until ? Math.max(0, Math.round((w.until - Date.now()) / 1000)) : 0;
+    const clock = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} ${this.t("warmupMin")}`;
+    const bar = (frac, tone = "") => `<span class="wbar"><i class="${tone}" style="width:${Math.round(Math.min(1, Math.max(0, frac)) * 100)}%"></i></span>`;
+    const pair = (label, value, frac, tone) => `<div><div class="wcap"><span>${label}</span><span>${value}</span></div>${bar(frac, tone)}</div>`;
+    const head = `<div class="wtop"><ha-icon icon="mdi:timer-sand"></ha-icon><strong>${this.t("warmupTitle")}</strong></div>`;
+    if (!w.known && !w.booting) return `<div class="wph" style="--wt:-${Date.now() % 2000}ms">${head}<div class="wline">${this.t("warmupAsking")}</div></div>`;
+    const scanning = !w.booting && !left;
+    const at = w.booting ? 0 : scanning ? 3 : w.settling ? 2 : 1;
+    const steps = ["warmupS1", "warmupS2", "warmupS3", "warmupS4"].map((k, n) => `<li class="${n < at ? "done" : n === at ? "on" : ""}"><i>${n < at ? "✓" : ""}</i>${this.t(k)}</li>`).join("");
+    const total = w.total || 0, done = Math.min(w.done || 0, total);
+    let body = "", line = "";
+    if (w.booting) { body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span></div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine"); }
+    else if (scanning) {
+      const order = ["registries", "devices", "automations", "finalizing"], phase = st?.running ? order.indexOf(st.phase) : -1;
+      const percent = st?.running ? st.progress : 0;
+      body = `<div class="wduo">${pair(`${this.t(phase >= 0 ? `warmupPhase_${order[phase]}` : "warmupPhase_start")}${phase >= 0 ? ` <b>${phase + 1}/${order.length}</b>` : ""}`, `${percent} %`, percent / 100)}<div></div></div>`;
+      line = this.t("warmupAfter");
+    } else {
+      const names = (w.names || []).map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
+      const more = (w.pending || 0) > (w.names || []).length ? ` +${w.pending - w.names.length}` : "";
+      // Once nothing is loading any more, what is still not set up will not be (it fails or waits for something else): the bar is full.
+      const loaded = w.settling ? this.t("warmupLoadedAll", { done: this.formatNumber(done) }) : this.t("warmupLoaded", { done: this.formatNumber(done), total: this.formatNumber(total) });
+      body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.total_s || 300))}</div>`;
+      line = w.settling
+        ? ((w.pending || 0) > 0 ? this.t("warmupBlip", { name: this.esc((w.names || [])[0] || "") }) : this.t("warmupLocked"))
+        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")}`;
+    }
+    // The notice is redrawn every second; the offset keeps the animations in step with the clock instead of restarting.
+    return `<div class="wph" style="--wt:-${Date.now() % 2000}ms">${head}<ol class="wtr">${steps}</ol>${body}<div class="wline">${line}</div></div>`;
   }
 
   // Counts the warm-up down in the banner without rebuilding the page; every few seconds the backend is asked for the step.
   startWarmupTicker(meta) {
-    this._warm = { booting: Boolean(meta.warmup_booting), until: Date.now() + (Number(meta.warmup_seconds_left) || 0) * 1000, total: 300 };
+    this._warm = { booting: Boolean(meta.warmup_booting), until: Date.now() + (Number(meta.warmup_seconds_left) || 0) * 1000, pending: 0, settling: false, known: false };
     if (this._warmTick) return;
-    let n = 0;
-    this._warmTick = window.setInterval(async () => {
+    let n = 0, asking = false;
+    const draw = () => { const box = this.shadowRoot?.querySelector?.("[data-warmup]"); if (box) box.innerHTML = this.warmupInner(); };
+    const ask = async () => {
+      if (asking || this._gone || !this._hass) return;
+      asking = true;
+      try {
+        const s = await this._hass.callWS({ type: "ha_housekeeper/status" });
+        this.scanStatus = s;
+        const w = s.warmup || {};
+        this._warm = { ...this._warm, booting: Boolean(w.booting), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
+        draw();
+        // The final scan is in: take it at once, the notice goes away by itself.
+        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(this.t("warmupDoneToast")); }
+      } catch (_) { /* the next tick asks again */ } finally { asking = false; }
+    };
+    ask();
+    this._warmTick = window.setInterval(() => {
       if (this._gone || !this.data?.meta?.preliminary) { this.stopWarmupTicker(); return; }
-      if (++n % 5 === 0 && !this.busy && this._hass) {
-        try {
-          const s = await this._hass.callWS({ type: "ha_housekeeper/status" });
-          this.scanStatus = s;
-          this._warm = { ...this._warm, booting: Boolean(s.warmup?.booting), until: Date.now() + (Number(s.warmup?.seconds_left) || 0) * 1000 };
-        } catch (_) { /* the next tick asks again */ }
-      }
-      const box = this.shadowRoot?.querySelector?.("[data-warmup] .row-text");
-      if (box) box.innerHTML = this.warmupInner();
+      if (++n % 3 === 0) ask();
+      draw();
     }, 1000);
   }
 
@@ -2240,6 +2334,17 @@ class OverviewMixin {
       items.push({ key: "monitor_problem", area: uncovered ? "state" : "findings", tone: "red", icon: "mdi:home-alert-outline", text: this.t("monitorOverviewProblem", { n: impaired.length }), hintText: `${first.name} · ${first.incident_open && first.state === "unverified" ? `${this.t("monitorOverviewUnresolved")}: ${this.monitorReason(first.last_problem_reason)}` : [object?.name || key, this.monitorReason(first.reason)].filter(Boolean).join(" · ")} · ${this.t("monitorFindingAt", { date: this.formatDate(first.scanned_at) })}`, view: "monitor", filter: "problem" });
     }
     if (uncertain.length) items.push({ key: "monitor_unknown", area: "state", tone: "warn", icon: "mdi:home-question-outline", text: this.t("monitorOverviewUnknown", { n: uncertain.length }), hintText: uncertain[0].last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(uncertain[0].last_verified_at) }) : this.t("monitorNeverVerified"), view: "monitor", filter: "unverified" });
+    const reauth = this.reauthFindings();
+    if (reauth.length) {
+      const names = reauth.map(f => this.findObject(`config_entry:${f.object_id}`)?.name || f.object_id);
+      const followers = this.causeList().filter(c => c.kind === "integration_down" && reauth.some(f => f.object_id === c.object_id)).reduce((sum, c) => sum + (c.follower_count || 0), 0);
+      items.push({ key: "reauth", area: "findings", tone: "red", icon: "mdi:key-alert-outline", text: reauth.length === 1 ? this.t("todoReauthOne", { name: names[0] }) : this.t("todoReauthMany", { n: reauth.length }), hintText: [reauth.length > 1 ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : "", followers ? this.t("todoReauthFollowers", { n: this.formatNumber(followers) }) : ""].filter(Boolean).join(" · ") || this.t("secSumReauthSub"), pill: this.t("todoReauthPill"), view: "findingsNav", filter: "config_entry.reauth" });
+    }
+    const hacsGone = this.data.meta?.hacs_removed || [];
+    if (hacsGone.length) items.push({ key: "hacs_removed", area: "care", tone: "warn", icon: "mdi:store-alert-outline", text: hacsGone.length === 1 ? this.t("hacsTodoOne", { name: hacsGone[0].name || hacsGone[0].id }) : this.t("hacsTodoMany", { n: hacsGone.length }), hintText: [hacsGone.length > 1 ? hacsGone.slice(0, 3).map(r => r.name || r.id).join(", ") + (hacsGone.length > 3 ? ", …" : "") : hacsGone[0].reason, this.t("hacsTodoHint")].filter(Boolean).join(" · "), pill: this.t("hacsTodoPill"), jump: 'data-jump="components" data-jump-tab="hacs" data-jump-lf="hacsrepos|state|removed"' });
+    this.ensurePreflight();
+    const updates = this.preflight?.state?.updates || [];
+    if (updates.length) items.push({ key: "updates", area: "care", tone: "warn", icon: "mdi:package-up", text: this.t(updates.length === 1 ? "todoUpdates_1" : "todoUpdates_n", { n: this.formatNumber(updates.length) }), hintText: updates.slice(0, 3).map(u => u.name).join(", ") + (updates.length > 3 ? ", …" : ""), jump: 'data-jump="maintenance" data-jump-tab="updates"' });
     const outages = this.causeList().filter(c => !this.quietCause(c));
     if (outages.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(outages), count: outages.length, view: "findingsNav", filter: "" });
     const regressions = (this.data.regressions || []).length;
@@ -2273,10 +2378,13 @@ class OverviewMixin {
     this.ensureGoals();
     this.ensurePolicies(); // the menu counts need both
     for (const g of (this.goals?.goals || []).filter(x => x.state === "missed")) {
-      items.push({ key: `goal_${g.id}`, area: "care", tone: "warn", icon: "mdi:target", text: this.t(`goal_${g.id}`), hintText: `${this.goalNow(g)} · ${g.limit === 0 && g.unit === "count" ? this.t("goalAllowedNone") : this.t("goalAllowed", { limit: this.goalAmount(g, g.limit) })}`, pill: this.t("goalMissedPill"), view: GOAL_VIEWS[g.id] });
+      items.push({ key: `goal_${g.id}`, area: "care", tone: "warn", icon: "mdi:target", text: this.t(`goal_${g.id}`), hintText: `${this.goalNow(g)} · ${g.limit === 0 && g.unit === "count" ? this.t("goalAllowedNone") : this.t("goalAllowed", { limit: this.goalAmount(g, g.limit) })}`, pill: this.t("goalMissedPill"), view: GOAL_JUMPS[g.id].view, jump: this.goalJump(g.id) });
     }
     return items;
   }
+
+  // The open requests for a new login: one pinned row of the to-do card, so that the entries of the list leave them out.
+  reauthFindings() { return (this.data?.findings || []).filter(f => f.rule_id === "config_entry.reauth" && !f.ignored); }
 
   // Quarantined objects whose waiting time is over.
   readyQuarantine() {
@@ -2339,12 +2447,13 @@ class OverviewMixin {
     const row = it => {
       const inner = `<span class="tile ${it.tone}"><ha-icon icon="${it.icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(it.text || this.t(it.label))}</strong>${it.hint || it.hintText ? `<small>${this.esc(it.hintText || this.t(it.hint))}</small>` : ""}</span>`;
       if (it.scan) return `<div class="row todo" data-todo="${it.key}">${inner}<button class="btn" data-action="scan">${this.t("scan")}</button></div>`;
-      const target = `data-jump="${it.view}"${it.filter !== undefined ? ` data-filter="${it.filter}"` : ""}${it.type ? ` data-type="${it.type}"` : ""}${it.status ? ` data-status="${it.status}"` : ""}`;
+      const target = it.jump || `data-jump="${it.view}"${it.filter !== undefined ? ` data-filter="${it.filter}"` : ""}${it.type ? ` data-type="${it.type}"` : ""}${it.status ? ` data-status="${it.status}"` : ""}`;
       const pill = it.count !== undefined ? this.todoCount(it) : it.pill;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${pill ? `<span class="pill ${it.tone}">${this.esc(pill)}</span>` : ""}</button>`;
     };
     const inArea = area => items.filter(i => i.area === area && i.key !== "outages"); // the outages are entries of the list itself
-    const entries = this.findingEntries();
+    const pinned = new Set(this.reauthFindings().map(f => f.object_id));
+    const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)));
     const entryRow = e => (e.cause ? this.overviewCause(e.cause) : this.overviewFinding(e.finding));
     const findingRows = [...inArea("findings").filter(i => i.key === "monitor_problem").map(row), ...inArea("findings").filter(i => i.key !== "monitor_problem").map(row), ...entries.slice(0, LIMIT).map(entryRow)];
     const all = `<button class="link" data-jump="findingsNav">${this.t("allFindings")} (${this.formatNumber(this.findingTotal())}) <ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
@@ -2420,12 +2529,15 @@ class OverviewMixin {
     this.ensureSeries();
     this.ensureBackup();
     const quiet = this.quietCount();
-    const kpi = ([label, value, tone, view, status, key, rising, extra]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
+    // As on the findings page: everything open with this reason, the follow-ups of an outage counted in and named beside it.
+    const down = (this.data.findings || []).filter(f => !f.ignored && this.findingReason(f) === "unavailable");
+    const downFollows = down.filter(f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id)).length;
+    const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-filter="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.statusHeadline(health))}</button>` : this.t("statusAllGood");
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(this.t("healthWhy"))}"><b>${Math.floor(health.percent)}<small>%</small></b></button>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["objects", m.object_count, "", "inventory", "", "objects"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "findings", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", counts.unavailable || 0, counts.unavailable ? "red" : "", "inventory", "unavailable", "unavailable", "bad"]].map(kpi).join("")}</div></section>${why}
+      <div class="kpis">${[["objects", m.object_count, "", "inventory", "", "objects"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "findings", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }
@@ -2443,24 +2555,29 @@ class OverviewMixin {
     const rows = [
       fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age) })), newest?.level),
       run ? fact("bh_last_run", run.values?.completed ? this.esc(this.formatDate(run.values.completed)) : this.t("bhNever"), run.level) : "",
-      fact("bhResult", problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), ""),
+      fact("bhResult", problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), ""),
     ].join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("backupTitle")}</h2><p>${this.t("maintHintBackup")}</p></div><button class="link" data-jump="maintenance">${this.t("backupOpen")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows}</div></div>`;
   }
 
   // Three groups instead of seven raw statuses: what is fine, what to look at, what is broken.
   inventoryStatusCard() {
-    const m = this.data.meta, counts = m.status_counts || {}, total = Math.max(1, m.object_count);
+    const m = this.data.meta, raw = m.status_counts || {}, marked = m.marked_status_counts || {}, total = Math.max(1, m.object_count);
+    const counts = Object.fromEntries(Object.keys(raw).map(s => [s, raw[s] - (marked[s] || 0)])); // marked objects have their own row
+    const markedN = Object.values(marked).reduce((sum, n) => sum + n, 0);
     const groups = [
       ["invOk", "ok", ["active"]],
       ["invCheck", "warn", ["unknown", "disabled", "empty"]],
       ["invProblem", "red", ["unavailable", "orphaned", "problem"]],
     ].map(([label, tone, statuses]) => ({ label, tone, statuses, n: statuses.reduce((sum, s) => sum + (counts[s] || 0), 0) }));
-    const known = groups.reduce((sum, g) => sum + g.n, 0);
+    const known = groups.reduce((sum, g) => sum + g.n, 0) + markedN;
     const percent = n => `${new Intl.NumberFormat(this.lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(100 * n / total)} %`;
     const detail = g => g.statuses.filter(s => counts[s]).map(s => `${this.formatNumber(counts[s])} ${this.t(s)}`).join(" · ");
-    const rows = groups.map(g => `<div title="${this.esc(detail(g))}"><span><i class="dot ${g.tone}"></i>${this.t(g.label)}</span><span class="nums"><b>${this.formatNumber(g.n)}</b><em class="pct">${percent(g.n)}</em></span></div>`).join("");
-    const bar = groups.filter(g => g.n).map(g => `<i class="${g.tone}" style="width:${(100 * g.n / Math.max(1, known)).toFixed(2)}%"></i>`).join("");
+    const row = (g, title) => `<div title="${this.esc(title)}"><span><i class="dot ${g.tone}"></i>${this.t(g.label)}</span><span class="nums"><b>${this.formatNumber(g.n)}</b><em class="pct">${percent(g.n)}</em></span></div>`;
+    const markedGroup = { label: "invMarked", tone: "mute", n: markedN };
+    const markedDetail = Object.entries(marked).filter(([, n]) => n).map(([s, n]) => `${this.formatNumber(n)} ${this.t(s)}`).join(" · ");
+    const rows = groups.map(g => row(g, detail(g))).join("") + (markedN ? row(markedGroup, markedDetail) : "");
+    const bar = [...groups, ...(markedN ? [markedGroup] : [])].filter(g => g.n).map(g => `<i class="${g.tone}" style="width:${(100 * g.n / Math.max(1, known)).toFixed(2)}%"></i>`).join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("inventoryStatus")}</h2><p>${this.t("invHint")}</p></div></div><div class="legend invlegend">${rows}</div><div class="bar">${bar}</div></div>`;
   }
 
@@ -2628,10 +2745,11 @@ class FindingsMixin {
     return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.oftenChip(finding)}</span>` };
   }
 
-  findingRow(finding, inGroup = false) {
+  // pick = false outside the findings list: there is no bar for the actions on a selection there.
+  findingRow(finding, inGroup = false, pick = true) {
     const { key, object, title, subtitle } = this.findingRowContent(finding, inGroup);
     const button = `<button class="row ${finding.ignored ? "dim" : ""}" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}${finding.first_detected_at ? `<span class="msince"> · ${this.t("sortSince")} ${this.formatDate(finding.first_detected_at)}</span>` : ""}</small></span>${this.kindChip(this.reasonLabel(this.findingReason(finding)))}${this.impactChip(finding.impact)}</button>`;
-    return `<div class="rowwrap"><input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">${button}${this.rowMenu(finding)}</div>${this.rowDecide(finding)}`;
+    return `<div class="rowwrap">${pick ? `<input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">` : ""}${button}${this.rowMenu(finding)}</div>${this.rowDecide(finding)}`;
   }
 
   findingsTable(items) {
@@ -2716,7 +2834,7 @@ class FindingsMixin {
   // The findings as shown (classification chip, search, type filter, sort); the export uses the same list.
   visibleFindings() {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
-    const classed = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter) : all;
+    const classed = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter) : all;
     const afterOnly = this.findingAfter ? classed.filter(f => this.corr?.by_key?.[f.key]) : classed;
     const byClass = this.findingDue ? afterOnly.filter(f => f.resurfaced) : afterOnly;
     this.lvState("findings", "impact", "desc");
@@ -2780,6 +2898,12 @@ class FindingsMixin {
     return `<section class="panel pad helpcard"><div class="helphead"><strong>${t("helpTitle")}</strong><button class="btn quiet" data-fold="findings_help" aria-expanded="true"><ha-icon icon="mdi:close"></ha-icon>${t("helpClose")}</button></div><div class="helpgrid">${terms}</div><div class="helpnums">${nums}</div></section>`;
   }
 
+  // Grouped (follow-ups under their cause) or one by one; with any filter the list is one by one anyway, so the switch is locked there.
+  viewSwitch(grouped, free) {
+    const btn = (flat, label) => `<button type="button" class="chip ${flat === !grouped ? "active" : ""}" data-toggle-followers="${flat ? "flat" : "grouped"}" aria-pressed="${flat === !grouped}"${free ? "" : " disabled"}>${label}</button>`;
+    return `<span class="viewswitch" role="group" aria-label="${this.esc(this.t("viewLabel"))}"${free ? "" : ` title="${this.esc(this.t("viewLocked"))}"`}>${btn(false, this.t("viewGrouped"))}${btn(true, this.t("viewFlat"))}</span>`;
+  }
+
   findingsView() {
     if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
@@ -2798,11 +2922,11 @@ class FindingsMixin {
     const afterAll = all.filter(f => this.corr?.by_key?.[f.key]);
     const afterCount = afterAll.filter(f => !isFollower(f)).length, afterFollows = afterAll.length - afterCount;
     // A reason counts what the list shows under it: the follow-ups of an outage hang on their cause and are named beside the number.
-    const tile = c => { const mine = all.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length; return { label: this.reasonLabel(c), value: this.formatNumber(mine.length - follows), sub: follows ? this.esc(this.t("findingsFollowSub", { n: this.formatNumber(follows) })) : undefined, tone: classTone(c), filter: c, active: this.findingFilter === c, spark: spark(`lead:${c}`, "bad") }; };
+    const tile = c => { const mine = all.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length; return { label: this.reasonLabel(c), value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: classTone(c), filter: c, active: this.findingFilter === c, spark: spark(`class:${c}`, "bad") }; };
     const rank = c => { const i = [...FINDING_URGENT, ...FINDING_TIDY].indexOf(c); return i < 0 ? FINDING_URGENT.length : i; };
     const sorted2 = [...classes].sort((a, b) => rank(a) - rank(b));
     const tidy = sorted2.filter(c => FINDING_TIDY.includes(c)), urgent = sorted2.filter(c => !FINDING_TIDY.includes(c));
-    const total = { label: this.t("allFindings"), value: this.formatNumber(this.findingTotal()), sub: this.followerCount() ? this.esc(this.t("findingsFollowSub", { n: this.formatNumber(this.followerCount()) })) : undefined, tone: this.findingTotal() ? "warn" : "ok", filter: "", active: !this.findingFilter, spark: spark("lead", "bad") };
+    const total = { label: this.t("allFindings"), value: this.formatNumber(this.findingTotal() + this.followerCount()), sub: this.followerCount() ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(this.followerCount()) })) : undefined, tone: this.findingTotal() ? "warn" : "ok", filter: "", active: !this.findingFilter, spark: spark("open", "bad") };
     const group = (title, list, make, row) => list.length ? `<div class="sumgroup${row ? ` row${row}` : ""}" style="--n:${list.length};flex:${list.length} 1 ${list.length * 150}px"><div class="sumgrouphead">${this.t(title)}</div>${this.sumTiles(list.map(make))}</div>` : "";
     const tiles = `<div class="sumgroups" style="--cols:${Math.max(1 + tidy.length, urgent.length)}">${group("sumGroupAll", [total], x => x, 1)}${group("sumGroupTidy", tidy, tile, 1)}${group("sumGroupUrgent", urgent, tile, 2)}</div>`;
     const dueCount = this.data.findings.filter(f => f.resurfaced).length;
@@ -2811,10 +2935,10 @@ class FindingsMixin {
     const entries = this.causeEntries(), withFollowers = entries.filter(c => this.causeTotal(c));
     // Chains and single findings share the chosen order. Under a filter or in the flat list every finding stands for itself.
     let items = grouped ? this.sortFindingEntries([...entries.map(cause => ({ cause })), ...list]) : list;
-    if (this.findingWithFollowers) items = grouped ? items.filter(i => i.cause && this.causeTotal(i.cause)) : items.filter(i => i.cause_id);
+    if (this.findingWithFollowers) items = grouped ? items.filter(i => i.cause && this.causeTotal(i.cause)) : items.filter(i => CAUSE_OWN_RULES.includes(i.rule_id) && entries.some(c => c.id === i.cause_id && this.causeTotal(c)));
     const pg = this.paginate("findings", items);
     const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, items.length)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenNote()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? `<button class="chip ${this.showFollowers ? "active" : ""}" data-toggle-followers>${this.t("flatList")} (${this.formatNumber(all.length)})</button>` : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${followers || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenNote()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? this.viewSwitch(grouped, open) : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${(followers && grouped) || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
       ${this.findingNote()}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -2939,7 +3063,7 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.de, {
   incObs: "Beobachtung · Vergleich mit dem Scan vor dem Neustart", incFindings: "Befunde, die dabei begannen · {n}", incLeft: "noch {hours} Std.", incNoFindings: "keine Befunde", corrStrip: "{n} Befunde begannen zusammen mit einem Update", corrFilterOn: "Nur diese zeigen", corrFilterOff: "Filter aufheben", endWatchTitle: "Beobachtung beenden?", endWatchText: "Die Beobachtung wird jetzt mit den bisherigen Messungen ausgewertet und läuft nicht weiter. Für dieses Update finden keine zusätzlichen Scans mehr statt.",
   viewCount: "{n} in dieser Ansicht", foldAll: "Alle aufklappen", foldNone: "Alle zuklappen", foldGroupOpen: "Unterobjekte von {name} aufklappen", foldGroupClose: "Unterobjekte von {name} zuklappen",
-  helpOpen: "Was die Zahlen auf dieser Seite bedeuten", helpClose: "Schließen", helpTitle: "Was du hier siehst",
+  openEntity: "Entität öffnen", helpOpen: "Was die Zahlen auf dieser Seite bedeuten", helpClose: "Schließen", helpTitle: "Was du hier siehst",
   helpFindingT: "Befund", helpFinding: "Etwas ist jetzt auffällig, zum Beispiel ein ausgefallenes Gerät, ein Duplikat oder eine fehlende Referenz. Jedes Objekt zählt je Regel einmal.",
   helpFollowupsT: "Folgen", helpFollowups: "Fällt ein Gerät aus, ziehen seine Entitäten nach. Sie hängen als Folgen an der Ursache und zählen nicht als eigene Befunde.",
   helpWatchT: "Beobachtung nach System-Update", helpWatch: "Nach einem Update von Home Assistant, Betriebssystem oder Supervisor scannt Housekeeper einige Stunden zusätzlich und vergleicht mit dem Stand davor. So siehst du, was seitdem nicht mehr läuft.",
@@ -2959,7 +3083,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   incObs: "Watch · comparison with the scan before the restart", incFindings: "Findings that began with it · {n}", incLeft: "{hours} h left", incNoFindings: "no findings", corrStrip: "{n} findings began together with an update", corrFilterOn: "Show only these", corrFilterOff: "Clear filter", endWatchTitle: "End the watch?", endWatchText: "The watch is judged now with what it has measured so far and does not go on. No more extra scans follow for this update.",
   viewCount: "{n} in this view", foldAll: "Open all", foldNone: "Close all", foldGroupOpen: "Expand items under {name}", foldGroupClose: "Collapse items under {name}",
-  helpOpen: "What the numbers on this page mean", helpClose: "Close", helpTitle: "What you see here",
+  openEntity: "Open entity", helpOpen: "What the numbers on this page mean", helpClose: "Close", helpTitle: "What you see here",
   helpFindingT: "Finding", helpFinding: "Something is conspicuous right now, for example a failed device, a duplicate or a missing reference. Each object counts once per rule.",
   helpFollowupsT: "Follow-ups", helpFollowups: "When a device fails, its entities follow. They hang on the cause as follow-ups and do not count as findings of their own.",
   helpWatchT: "Watch after a system update", helpWatch: "After an update of Home Assistant, the operating system or the Supervisor, Housekeeper scans a few extra hours and compares with the state before. It shows what has stopped working since.",
@@ -3124,7 +3248,7 @@ class ChangesMixin {
         const d = dir(ch), state = d > 0 ? "worsened" : d < 0 ? "improved" : "changed", tone = d > 0 ? "red" : d < 0 ? "ok" : "mute";
         return objRow(ch.object_type, ch.object_id, { name: ch.name || this.findObject(`${ch.object_type}:${ch.object_id}`)?.name || ch.object_id, sub: `${this.t(ch.from)} → ${this.t(ch.to)}`, tone, state, stateLabel: this.t(state), pill: `<span class="pill ${tone}">${this.t(state)}</span>`, rank: -d });
       }, "status"),
-      newFindings: paged("newFindings", c.new_findings.items, f => this.findingRow(f)),
+      newFindings: paged("newFindings", c.new_findings.items, f => this.findingRow(f, false, false)),
       resolvedFindings: tableOf("resolvedFindings", c.resolved_findings.items, f => findingRowOf(f, "improved", this.t("improved"), "ok", `<span class="pill ok">${this.t("improved")}</span>`)),
       // Gone, but not repaired: the object left with its findings, or the reason cannot be told.
       endedFindings: tableOf("endedFindings", (c.ended_findings || { items: [] }).items, f => {
@@ -3145,12 +3269,18 @@ class ChangesMixin {
 Object.assign(TEXT.de, {
   lifeTab: "Verlauf", lifeHint: "Was sich aus der Geräte-Registry, dem Journal und der Zuverlässigkeit über dieses Gerät sagen lässt.", lifeNow: "Jetzt", lifeNone: "Noch keine Schritte bekannt.",
   life_discovered: "Entdeckt", life_quarantine: "In Quarantäne", life_disabled: "Durch einen Plan deaktiviert", life_removed: "Durch einen Plan entfernt", life_replaced: "Ersetzung: {from} → {to}", lifeForgotten: "Durch einen Plan vergessen",
-  lifeRemovedTab: "Entfernte Geräte", lifeRemovedTitle: "Entfernte Geräte", lifeRemovedHint: "Geräte, die ein Plan von Housekeeper entfernt oder vergessen hat, nach dem Journal.", lifeRemovedNone: "Housekeeper hat noch kein Gerät entfernt.",
+  lifeRemovedTab: "Entfernt und gelöscht", lifeRemovedTitle: "Entfernt und gelöscht", lifeRemovedHint: "Alles, was ein Plan von Housekeeper entfernt, vergessen oder gelöscht hat, nach dem Journal. Pläne, die länger als ein Jahr zurückliegen oder über die 300 jüngsten hinausgehen, fallen aus dem Journal und damit aus dieser Liste. Zurücknehmen geht im Plan.", lifeColPlan: "Plan", lifeOpenPlan: "Plan öffnen", lifeRemovedNone: "Housekeeper hat noch nichts entfernt oder gelöscht.",
+  goneColObject: "Objekt", goneColUndo: "Stand", goneIrreversible: "Nicht rückgängig", goneUndoInPlan: "Rückgängig im Plan",
+  goneKind_remove_device: "Gerät entfernt", goneKind_forget_device: "Gerät vergessen", goneKind_remove_entity: "Entität entfernt", goneKind_delete_automation: "Automation gelöscht", goneKind_purge_statistics: "Statistik gelöscht", goneKind_trim_history: "Verlauf gekürzt", goneKind_delete_backup: "Backup gelöscht",
+  goneGroup_device: "Geräte", goneGroup_entity: "Entitäten", goneGroup_automation: "Automationen", goneGroup_statistics: "Statistiken", goneGroup_backup: "Backups",
 });
 Object.assign(TEXT.en, {
   lifeTab: "History", lifeHint: "What the device registry, the journal and the reliability say about this device.", lifeNow: "Now", lifeNone: "No steps known yet.",
   life_discovered: "Discovered", life_quarantine: "In quarantine", life_disabled: "Disabled by a plan", life_removed: "Removed by a plan", life_replaced: "Replacement: {from} → {to}", lifeForgotten: "Forgotten by a plan",
-  lifeRemovedTab: "Removed devices", lifeRemovedTitle: "Removed devices", lifeRemovedHint: "Devices that a Housekeeper plan removed or forgot, from the journal.", lifeRemovedNone: "Housekeeper has not removed a device yet.",
+  lifeRemovedTab: "Removed and deleted", lifeRemovedTitle: "Removed and deleted", lifeRemovedHint: "Everything a Housekeeper plan removed, forgot or deleted, from the journal. Plans older than a year or beyond the 300 newest leave the journal and so this list. Undo is in the plan.", lifeColPlan: "Plan", lifeOpenPlan: "Open plan", lifeRemovedNone: "Housekeeper has not removed or deleted anything yet.",
+  goneColObject: "Object", goneColUndo: "Status", goneIrreversible: "Cannot be undone", goneUndoInPlan: "Undo in the plan",
+  goneKind_remove_device: "Device removed", goneKind_forget_device: "Device forgotten", goneKind_remove_entity: "Entity removed", goneKind_delete_automation: "Automation deleted", goneKind_purge_statistics: "Statistics deleted", goneKind_trim_history: "History trimmed", goneKind_delete_backup: "Backup deleted",
+  goneGroup_device: "Devices", goneGroup_entity: "Entities", goneGroup_automation: "Automations", goneGroup_statistics: "Statistics", goneGroup_backup: "Backups",
 });
 
 // SettingsMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -3339,18 +3469,18 @@ class SettingsMixin {
     else if (m.version && h.installed_version && !sameVersion(m.version, h.installed_version)) [tone, title, hint] = ["warn", "hkUpdateMismatch", "hkUpdateMismatchHint"];
     else if (sameVersion(m.version, h.available_version)) [tone, title, hint] = ["ok", "hkUpdateCurrent", "hkUpdateCurrentHint"];
     const facts = [fact("hkUpdateLoaded", m.version), h ? fact("hkUpdateHacsInstalled", h.installed_version) : "", h ? fact("hkUpdateLatest", h.available_version) : "", h?.last_fetched ? fact("hkUpdateChecked", this.formatDate(h.last_fetched)) : ""].join("");
-    const open = h?.id ? `<button class="btn" data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(h.id)}`)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("intHacsOpen")}</button>` : "";
+    const open = h?.id ? `<button class="btn" data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(h.id)}`)}" data-ha-tab><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("intHacsOpen")}</button>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hkUpdateTitle")}</h2><p>${this.t("hkUpdateHint")}</p></div>${open}</div><div class="facts">${facts}</div><div class="row"><span class="tile ${tone}"><ha-icon icon="${tone === "ok" ? "mdi:check-circle-outline" : tone === "warn" ? "mdi:alert-outline" : "mdi:information-outline"}"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(hint)}</small></span></div></section>`;
   }
 
   infoCard() {
     const m = this.data?.meta || {};
     const fact = (k, v) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`;
-    const facts = [fact(this.t("version"), this.esc(m.version || "–")), fact(this.t("haVersion"), this.esc(m.ha_version || "–")), fact(this.t("mode"), this.t("readOnlyValue")),
+    const facts = [fact(this.t("version"), this.esc(m.version || "–")), fact(this.t("haVersion"), this.esc(m.ha_version || "–")),
       fact(this.t("lastScan"), m.scanned_at ? this.formatDate(m.scanned_at) : "–"), fact(this.t("objects"), this.formatNumber(m.object_count ?? 0))].join("");
     const link = (icon, href, label, hint) => `<a class="row" href="${href}" target="_blank" rel="noopener noreferrer"><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${label}</strong>${hint ? `<small>${hint}</small>` : ""}</span><ha-icon icon="mdi:open-in-new"></ha-icon></a>`;
     const kept = this.storedFiles(m);
-    return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="facts">${facts}</div></section>${this.housekeeperUpdateCard()}
+    return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="aboutintro"><p>${this.t("aboutIntro")}</p><p><strong>${this.t("aboutIntroSafe")}</strong> ${this.t("aboutIntroPlan")}</p></div><div class="facts">${facts}</div></section>${this.housekeeperUpdateCard()}
       ${this.scanCoverageCard()}${this.scanTimingCard()}
       <section class="panel"><div class="panelhead"><div><h2>${this.t("setKeptTitle")}</h2><p>${this.t("setKeptHint")} ${this.t("storeHintBytes")}</p></div></div>${kept}<p class="factnote">${this.t("setPrivacy")}</p></section>
       <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}
@@ -3501,7 +3631,21 @@ class CleanupMixin {
 
   // What the plan would run now: executable, and "to review" only when explicitly confirmed.
   runActions(plan) {
-    return plan.actions.filter(a => a.executable && (a.verdict !== "review" || this.ack.has(a.object_id)));
+    return plan.actions.filter(a => a.executable);
+  }
+
+  // The steps the protection mode would refuse; the server checks again, this only warns before the click.
+  modeBlocked(plan) {
+    const rules = this.data?.meta?.protection_rules, rank = rules?.modes?.indexOf(this.data?.meta?.protection);
+    if (!rules || rank === undefined || rank < 0) return [];
+    const need = a => rules.quarantine.includes(a.kind) ? 1 : rules.full_only.includes(a.kind) || a.recorder ? 3 : 2;
+    return this.runActions(plan).filter(a => rank < need(a));
+  }
+
+  modeName() { return this.t(`mode_${this.data.meta.protection}`).replace(/^\d · /, ""); }
+
+  modeHint(blocked) {
+    return `<div class="factnote"><strong>${this.t("modeBlockTitle", { mode: this.modeName() })}</strong><small>${this.t("modeBlockText", { count: blocked.length })}</small><button class="linkbtn" data-goto-protection>${this.t("modeBlockLink")}</button></div>`;
   }
 
   largeRemovalWarning(plan) {
@@ -3606,15 +3750,16 @@ class CleanupMixin {
   async loadJournal() {
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/plan_list" });
-      this.journal = reply.plans || []; this.purges = reply.purges || [];
-    } catch (_) { this.journal = []; }
+      this.journal = reply.plans || []; this.purges = reply.purges || []; this.removed = reply.removed || []; this.journalError = "";
+      this.markLoaded("journal");
+    } catch (err) { this.journal = []; this.journalError = this.errText(err); }
     this.render();
   }
 
   // The journal list holds short entries only; the plan itself is fetched when it is opened.
   async openPlan(planId) {
     this.reopenedPlanId = planId; this.planChanges = null;
-    try { this.plan = await this._hass.callWS({ type: "ha_housekeeper/plan_detail", plan_id: planId }); this.cleanupError = ""; } catch (err) { this.cleanupError = this.errText(err); }
+    try { this.plan = await this._hass.callWS({ type: "ha_housekeeper/plan_detail", plan_id: planId }); this.cleanupError = ""; this.showPlanView(); } catch (err) { this.cleanupError = this.errText(err); }
     this.render();
   }
 
@@ -3717,6 +3862,7 @@ class CleanupMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_renew", plan_id: planId });
       this.plan = plan; this.reopenedPlanId = null; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || []).filter(p => p.plan_id !== planId)];
+      this.showPlanView();
       this.toast(this.t("toastRenewed"));
     } catch (err) { this.failPlan(err, "renew"); }
     this.cleanupBusy = false; this.render();
@@ -3727,7 +3873,7 @@ class CleanupMixin {
 
   async confirmPlan() {
     try {
-      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: [...this.ack] });
+      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: this.plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id) });
       this.confirmWord = ""; this.cleanupError = "";
     } catch (err) { this.failPlan(err, "confirm"); }
     this.render();
@@ -3820,21 +3966,33 @@ class CleanupMixin {
 
   async mergePlans() {
     const ids = [...(this.mergeSel || [])].filter(id => (this.journal || []).some(p => p.plan_id === id && this.mergeable(p)));
-    if (ids.length < 2 || this.cleanupBusy) return;
+    if (ids.length < 2 || ids.length > 10 || this.cleanupBusy) return;
     this.cleanupBusy = true; this.cleanupError = ""; this.mergeNote = ""; this.render();
     try {
       const result = await this._hass.callWS({ type: "ha_housekeeper/plan_merge", plan_ids: ids });
       this.plan = result.plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = ""; this.mergeSel = new Set();
+      this.showPlanView();
       this.journal = [result.plan, ...(this.journal || []).filter(p => !result.merged.includes(p.plan_id))];
       this.mergeNote = result.conflicts.length ? this.t("mergeConflicts", { count: result.conflicts.length, list: result.conflicts.slice(0, 5).map(c => `${c.object_id} (${c.kinds.join(" / ")})`).join(", ") }) : this.t("mergeDone", { count: result.merged.length });
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
   }
 
+  // Deletes the picked previews; a plan that ran is never in the picks (it is not mergeable) and the server refuses it anyway.
+  async deletePlans() {
+    const ids = [...(this.mergeSel || [])].filter(id => (this.journal || []).some(p => p.plan_id === id && this.mergeable(p)));
+    if (!ids.length) return;
+    for (const id of ids) { try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: id }); } catch (_) { /* already gone */ } }
+    this.journal = (this.journal || []).filter(p => !ids.includes(p.plan_id));
+    this.mergeSel = new Set();
+    if (this.plan && ids.includes(this.plan.plan_id)) { this.leavePlan(); return; }
+    this.render();
+  }
+
   async deletePlan(id) {
     try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: id }); } catch (_) { /* already gone */ }
     this.journal = (this.journal || []).filter(p => p.plan_id !== id);
-    if (this.plan?.plan_id === id) this.plan = null;
+    if (this.plan?.plan_id === id) { this.leavePlan(); return; }
     this.render();
   }
 
@@ -3866,13 +4024,6 @@ class CleanupMixin {
     steps.push(verification ? (verification.ok ? { id: "stepVerify", state: "done" } : { id: "stepVerify", state: "failed", note: this.t("stepVerifyFailed") })
       : status === "executed" ? { id: "stepVerify", state: "current" } : { id: "stepVerify", state: "todo" });
     return steps;
-  }
-
-  planStepper(plan, confirming) {
-    const mark = { done: "✓", failed: "!", skipped: "–" };
-    const items = this.planSteps(plan, confirming).map((step, i) => `<li class="step ${step.state}"${step.state === "current" ? ' aria-current="step"' : ""}><span class="mark" aria-hidden="true">${mark[step.state] || i + 1}</span><span class="steptext"><b>${this.t(step.id)}</b><span class="sr-only">: ${this.t(`step${{ done: "Done", current: "Current", todo: "Todo", skipped: "Skipped", failed: "Failed" }[step.state]}`)}</span>${step.note ? `<small>${this.esc(step.note)}</small>` : ""}</span></li>`).join("");
-    const backup = plan.backup ? `<p class="factnote">${this.t("backupRestoreHint")}</p>` : "";
-    return `<ol class="steps" aria-label="${this.esc(this.t("stepsLabel"))}">${items}</ol>${backup}`;
   }
 
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
@@ -3918,7 +4069,7 @@ class CleanupMixin {
         return `<button class="chip" data-object="${this.esc(u.source)}">${this.esc(obj?.name || u.source.split(":").slice(1).join(":"))}</button>`;
       }).join("");
       const more = (a.used_by || []).length > 4 ? `<small>+${a.used_by.length - 4}</small>` : "";
-      const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
+      const reasons = (a.reasons || []).filter(r => !(a.kind === "purge_statistics" && ["irreversible", "with_states"].includes(r))).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
@@ -3941,12 +4092,10 @@ class CleanupMixin {
     if (open && this.planStale(plan)) control = `<div class="setrow planfoot"><small class="u-m0">${this.t("planStaleHint")}</small><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("confirmCancel")}</button><button class="btn primary" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button></span></div>`;
     else if (open && !executable) control = `<p class="factnote">${this.t("nothingExecutable")}</p>`;
     else if (open && !conf) {
-      const review = plan.actions.filter(a => a.verdict === "review" && a.executable);
-      const all = review.length && review.every(a => this.ack.has(a.object_id));
-      const reviewBox = review.length ? `<label class="factnote reportopt"><input type="checkbox" data-ack-all ${all ? "checked" : ""}><span><strong>${this.t("acknowledgeAll", { count: review.length })}</strong><small>${this.t("acknowledgeAllHint")}</small></span></label>` : "";
       const run = this.runActions(plan);
+      const blocked = this.modeBlocked(plan);
       const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
-      control = `<div class="setrow planfoot"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${reviewBox}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("confirmCancel")}</button><button class="btn ${risky ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}">${this.t("confirmPlan")}</button></span></div>`;
+      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t("confirmPlan")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
       const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
@@ -3959,6 +4108,7 @@ class CleanupMixin {
       : `<div class="setrow planfoot"><small class="u-m0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<details class="checkdet"><summary><b>${this.t("verification")}</b></summary><div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div></details>` : "";
     const stage = this.planStage(plan, Boolean(conf));
+    const footClose = open && !conf && executable && !this.planStale(plan); // the preview has its buttons in the foot
     // Nothing can run: no steps and no confirmation, one clear band and the reasons.
     if (open && !executable) {
       const blocked = plan.actions.filter(a => a.verdict === "blocked").length;
@@ -3968,15 +4118,14 @@ class CleanupMixin {
         <div class="outcome ${nothing ? "ok" : "warn"}" role="status"><ha-icon icon="${nothing ? "mdi:check-circle-outline" : "mdi:information-outline"}"></ha-icon><span><strong>${this.t(nothing ? "wzIdleNothingTitle" : "wzIdleTitle")}</strong><small>${this.esc(why)}</small></span></div>${rowList.join("")}${this.reportBlock(plan, `<button class="btn primary" data-plan-close>${this.t("planClose")}</button>`)}</section>`;
     }
     const rowTexts = plan.actions.map(a => [a.name, a.object_id, a.target, a.label_name, a.area_name, ...(a.reasons || []).map(r => this.t(`reason_${r}`))].filter(Boolean).join(" "));
-    const rows = this.planRowsShown(plan, rowList, rowTexts);
+    const rows = this.fold("planrows", { title: this.t("planObjects", { n: this.formatNumber(plan.actions.length) }) }, this.planRowsShown(plan, rowList, rowTexts), true);
     const summary = this.exchangeSummary(plan) + `<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.recorderSummary(plan)}`;
-    const flow = `<details class="rowdetails wzflow"><summary>${this.t("wzFlow")}</summary>${this.planStepper(plan, Boolean(conf))}</details>`;
-    const body = stage === 0 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`
-      : stage === 1 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`
-      : stage === 2 ? `${this.planOutcome(plan)}${this.planProgressBar()}${control}`
-      : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}`;
-    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      ${this.wizardBar(stage)}${flow}${body}${this.reportBlock(plan)}</section>`;
+    const body = stage === 0 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
+      : stage === 1 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
+      : stage === 2 ? `${this.planOutcome(plan)}${control}`
+      : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
+    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
+      ${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
   }
 
   kindSelect() {
@@ -4103,18 +4252,19 @@ class CleanupMixin {
       { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), count: count("disable_entity"), facts: nothing(count("disable_entity")), tone: "warn" },
       { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), count: count("disable_device"), facts: nothing(count("disable_device")), tone: "warn" },
       { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), count: held.length, facts: [], pill: heldReady ? this.t("cleanupReadyCount", { count: heldReady }) : "", tone: heldReady ? "ok" : "mute" },
-      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, facts: unusedFacts, tone: "mute" },
       { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), count: statsCount, facts: [], tone: "mute" },
-      ...(purges.length ? [{ id: "purges", icon: "mdi:history", label: this.t("cleanupTabPurges"), hint: this.t("cleanupTilePurgesHint"), count: purges.length, facts: [], tone: "mute" }] : []),
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, facts: unusedFacts, tone: "mute" },
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
     const tiles = this.cleanupTiles(tabs, open);
-    if (["unused", "stats", "purges"].includes(open)) {
+    if (["unused", "stats"].includes(open)) {
       this.unrefTab = open === "stats" ? "statistics" : "entities";
       this._embedUnref = true;
-      const body = open === "purges" ? this.purgeJournalCard() : this.unreferencedView();
+      const body = this.unreferencedView();
       this._embedUnref = false;
-      return `<div class="stack">${this.planHeader()}${tiles}${body}</div>`;
+      // What was deleted from the recorder is noted in the Journal.
+      const pointer = open === "stats" && purges.length ? `<p class="factnote pad">${this.t("purgesInJournal", { n: purges.length })} <button class="link" data-jump="journal" data-jump-tab="purges">${this.t("purgesInJournalLink")}</button></p>` : "";
+      return `<div class="stack">${this.planHeader()}${tiles}${pointer}${body}</div>`;
     }
     const quarantineType = this.quarantineType === "device" ? "device" : "entity";
     this._cleanupKinds = open === "devices" ? ["disable_device"] : open === "quarantine" ? (quarantineType === "device" ? ["remove_device", "forget_device"] : ["remove_entity"]) : ["disable_entity"];
@@ -4162,7 +4312,7 @@ class CleanupMixin {
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
       <div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("cleanup", n)}<span class="selcount" aria-live="polite">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
-      <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button>${this.viewCount(shownList.length)}</div>
+      <button class="btn ${REMOVAL_KINDS.includes(this.cleanupKind) ? "dangersoft" : "primary"}" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t(REMOVAL_KINDS.includes(this.cleanupKind) ? "prepareDelete" : "createPlan", { count: n })}</button>${this.viewCount(shownList.length)}</div>
       ${bar}${table}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
     const message = open === "quarantine" && this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
@@ -4173,13 +4323,72 @@ class CleanupMixin {
     if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
   }
 
+  // "Refresh" on the Journal: asks again; the lists show their loading state meanwhile.
+  refreshJournal() {
+    this.journal = null; this._journalRequested = false; this.journalError = "";
+    this.ensureJournal(); this.render();
+  }
+
   // Every new plan opens the same way: it becomes the open plan, goes on top of the journal and the
-  // page scrolls to its card. `view` switches to the page that shows it; null stays on the current one.
-  openNewPlan(plan, view = "cleanup") {
+  // plan page shows it. The page it came from stays one step back. (`view` is kept for the callers' sake.)
+  openNewPlan(plan, _view) {
     this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
     this.journal = [plan, ...(this.journal || [])];
+    this.showPlanView();
+  }
+
+  // The plan page is a page of its own without a menu entry; "back" returns to where the plan was started.
+  showPlanView() {
     this._scrollPlan = true;
-    if (view) { this.noteJump?.(view); this.view = view; this.pages = {}; }
+    if (this.view !== "plan") { this.noteJump?.("plan"); this.view = "plan"; this.pages = {}; this.selected = null; }
+  }
+
+  // "Cancel" on a preview: the plan is dropped for good, nothing stays in the journal.
+  async discardPlan() {
+    const id = this.plan?.plan_id;
+    if (id) {
+      try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: id }); } catch (_) { /* already gone */ }
+      this.journal = (this.journal || []).filter(p => p.plan_id !== id);
+    }
+    this.leavePlan();
+  }
+
+  // Whether a deletion of statistics also deletes the stored states: the preview is made again with that choice.
+  async setPurgeStates(on) {
+    const old = this.plan;
+    if (!old || this.cleanupBusy) return;
+    this.cleanupBusy = true; this.cleanupError = ""; this.render();
+    try {
+      const actions = old.actions.map(a => ({ kind: a.kind, object_id: a.object_id, ...(a.kind === "purge_statistics" ? { states: on } : {}) }));
+      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.openNewPlan(fresh, null);
+      try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: old.plan_id }); } catch (_) { /* already gone */ }
+      this.journal = (this.journal || []).filter(p => p.plan_id !== old.plan_id);
+    } catch (err) { this.failPlan(err, "renew"); }
+    this.cleanupBusy = false; this.render();
+  }
+
+  // The choice sits at the foot of the preview, only for plans that delete statistics.
+  purgeStatesSwitch(plan) {
+    const purges = plan.actions.filter(a => a.kind === "purge_statistics" && a.executable);
+    if (!purges.length) return "";
+    const on = purges.every(a => a.states), n = plan.simulation?.purge_states_rows;
+    return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-purge-states-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("purgeStates")}</strong><small>${this.t(on ? "purgeStatesOn" : "purgeStatesOff", { n: this.formatNumber(n || 0) })}</small></span></label>`;
+  }
+
+  // Closing the plan page: back to the page it came from, else the journal.
+  leavePlan() {
+    this.plan = null; this.planChanges = null; this.cleanupError = "";
+    if (this.view === "plan") {
+      if (this.viewTrail.length) { this.viewBack(); return; }
+      this.view = "journal"; this.pages = {};
+    }
+    this.render();
+  }
+
+  planView() {
+    if (this.plan) return `<div class="stack">${this.planHeader(true)}</div>`;
+    return `<div class="stack">${this.planHeader()}<p class="factnote pad">${this.t("planNone")}</p><div class="pad"><button class="btn" data-plan-close>${this.t("planClose")}</button></div></div>`;
   }
 
   // For the paths without a busy flag of their own: one request at a time, and their buttons are off
@@ -4196,14 +4405,15 @@ class CleanupMixin {
 
   // An error from the last request and the plan that is open, on top of every view that can finish one.
   // The dry-run sentence sits behind the coloured (i) in the page title (Cleanup, Journal); Repair says it in its subtitle.
-  planHeader() {
+  planHeader(withCard = false) {
     const from = this.cleanupErrorStamp === this.cleanupError ? this.cleanupErrorFrom : "";
     const lead = this.t({ confirm: "confirmError", check: "checkError", renew: "renewError" }[from] || "planError");
     const open = this.plan && this.isOpenPreview(this.plan);
     const renew = open && (this.planStale(this.plan) || this.planChanges || (from === "confirm" && this.cleanupErrorCode === "plan_too_old")) ? `<button class="btn primary" data-plan-renew="${this.esc(this.plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : "";
-    const error = this.cleanupError ? `<div class="error">${lead}: ${this.esc(this.cleanupError)}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
+    const modeLink = this.cleanupError && this.cleanupError === this.t("err_protection_mode") ? ` <button class="linkbtn" data-goto-protection>${this.t("modeBlockLink")}</button>` : "";
+    const error = this.cleanupError ? `<div class="error">${lead}: ${this.esc(this.cleanupError)}${modeLink}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
     const changes = this.planChanges?.length ? `<div class="panel"><div class="error"><strong>${this.t("planChangedTitle")}</strong><small class="dim7">${this.t("planChangedHint")}</small><ul class="evlist">${this.planChanges.slice(0, 10).map(c => `<li>${this.esc(c.object_id)}</li>`).join("")}</ul>${this.planChanges.length > 10 ? `<small>${this.t("planChangedMore", { count: this.planChanges.length - 10 })}</small>` : ""}${renew}</div></div>` : "";
-    return `${error ? `<div class="panel">${error}</div>` : ""}${changes}${this.plan ? this.planCard(this.plan) : ""}`;
+    return `${error ? `<div class="panel">${error}</div>` : ""}${changes}${withCard && this.plan ? this.planCard(this.plan) : ""}`;
   }
 
   // Every plan from Cleanup and Repair: what changed, what was checked, and what can be undone.
@@ -4238,9 +4448,20 @@ class CleanupMixin {
       text: p => `${this.formatDate(p.created_at)} ${this.t(`plan_status_${statusOf(p)}`)}`, tie: p => p.created_at,
     }) : `<div class="emptymsg mute"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon><strong>${this.t("journalEmpty")}</strong>${this.t("journalEmptyNext")}<button class="btn" data-jump="repair">${this.t("repair")}</button></div>`;
     const picked = this.mergeSel?.size || 0;
-    const tools = plans.some(p => this.mergeable(p)) ? `<div class="toolbar${picked ? "" : " nosel"}"><button class="btn" data-merge ${picked >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: picked })}</button><span class="selcount" aria-live="polite">${this.t("selectedCount", { count: picked })}</span>${this.viewCount(this.lv.journal?.shown ?? plans.length)}</div>` : "";
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${plans.length})</h2><p>${this.t("journalHint")}</p></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${tools}${table}</div>`;
-    return `<div class="stack">${this.planHeader()}${journalCard}</div>`;
+    const tools = plans.some(p => this.mergeable(p)) ? `<div class="toolbar${picked ? "" : " nosel"}"><button class="btn" data-merge ${picked >= 2 && picked <= 10 && !this.cleanupBusy ? "" : "disabled"}${picked > 10 ? ` title="${this.esc(this.t("mergeTooMany"))}"` : ""}>${this.t("mergeButton", { count: picked })}</button><button class="btn dangersoft" data-merge-delete ${picked && !this.cleanupBusy ? "" : "disabled"}>${this.t("deleteSelectedPlans", { count: picked })}</button><span class="selcount" aria-live="polite">${this.t("selectedCount", { count: picked })}</span>${this.viewCount(this.lv.journal?.shown ?? plans.length)}</div>` : "";
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journalPlans")}</h2><p>${this.t("journalHint")}</p></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${tools}${table}</div>`;
+    const removed = this.removed || [], purges = this.purges || [];
+    const tabs = [
+      { id: "plans", icon: "mdi:clipboard-text-clock-outline", label: this.t("journalPlans"), hint: this.t("journalTabPlansHint"), count: plans.length, tone: "mute" },
+      { id: "devices", icon: "mdi:delete-outline", label: this.t("lifeRemovedTab"), hint: this.t("journalTabDevicesHint"), count: removed.length, tone: "mute" },
+      // Only older installations have these: deletions of recorder leftovers from before there were plans.
+      ...(purges.length ? [{ id: "purges", icon: "mdi:database-remove-outline", label: this.t("cleanupTabPurges"), hint: this.t("journalTabPurgesHint"), count: purges.length, tone: "mute" }] : []),
+    ];
+    const open = this.viewTabOf("journal", tabs, "plans");
+    const head = this.pageBar({ at: this.loadedAt("journal"), loading: this.journal === null, attr: "data-journal-refresh" });
+    const failed = this.journalError ? `<div class="panel"><div class="error">${this.esc(this.journalError)}</div></div>` : "";
+    const body = this.journalError ? "" : open === "devices" ? this.removedCard() : open === "purges" ? this.purgeJournalCard() : journalCard;
+    return `<div class="stack">${this.planHeader()}${head}${this.navTiles("journal", tabs, open, this.t("journal"), true)}${failed}${body}</div>`;
   }
 
   // Where the person is in an assistant: choose, set up, look at the preview.
@@ -4263,7 +4484,7 @@ class CleanupMixin {
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), repair_counter: () => this.counterCard() }[task]();
       const chosen = { repair_counter: (this.counterId || "").trim(), migrate_meter: this.meterOld, replace_references: this.replOld, exchange_device: this.exchangeState().oldDev }[task];
-      body = `${this.stepsBar(this.plan ? 3 : chosen ? 2 : 1)}${card}`;
+      body = `${this.stepsBar(chosen ? 2 : 1)}${card}`;
     } else {
       body = `<p class="factnote pad">${this.t("repairHint")}</p>`;
     }
@@ -4909,13 +5130,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = n > MAX_PLAN_ACTIONS;
-    const open = this.purgeOpen && n ? `<div class="panel" role="group" aria-label="${this.esc(this.t("purgeTitle"))}"><div class="pad">
-      <p><strong>${this.t("purgeTitle")}</strong></p><p class="factnote">${this.t("purgeWarn", { n })}</p>
-      ${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}
-      <label><input type="checkbox" data-purge-states ${this.purgeStates ? "checked" : ""}> ${this.t("purgeStates")}</label>
-      <div class="setrow planfoot"><small class="u-m0">${this.t("purgePlanHint")}</small>
-      <button class="btn accent" data-purge-run ${!this.purgeBusy ? "" : "disabled"}>${this.purgeBusy ? this.t("purgeRunning") : this.t("purgePreview")} (${Math.min(n, MAX_PLAN_ACTIONS)})</button><button class="btn" data-purge-close>${this.t("cancelRun")}</button></div></div></div>` : "";
-    return `${result}<div class="toolbar"><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span><button class="btn dangersoft" data-purge-open ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${open}`;
+    return `${result}<div class="toolbar"><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span><button class="btn dangersoft" data-purge-run ${n && !this.purgeBusy ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   async purgeRun() {
@@ -4923,9 +5138,9 @@ class UnusedMixin {
     this.purgeBusy = true; this.purgeResult = null; this.render();
     try {
       const chosen = [...this.purgeSel], now = chosen.slice(0, MAX_PLAN_ACTIONS);
-      const actions = now.map(object_id => ({ kind: "purge_statistics", object_id, states: this.purgeStates }));
+      const actions = now.map(object_id => ({ kind: "purge_statistics", object_id, states: true }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); this.purgeOpen = false; this.purgeWord = "";
+      this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); 
       this.openNewPlan(plan);
     } catch (err) { this.purgeResult = { removed: [], skipped: [], error: "failed", detail: this.errText(err) }; }
     this.purgeBusy = false;
@@ -5126,6 +5341,7 @@ class DiagnosisMixin {
       const state = item.state || "not_loaded";
       if (item.disabled_by) { rows.push(this.check(t("status"), "mute", item.name, t("disabled"))); cause = t("cause_entry_off"); }
       else if (item.source === "ignore") { rows.push(this.check(t("status"), "mute", item.name, t("ignored"))); cause = t("cause_entry_ignored"); hint = t("hint_entry_ignored"); tone = "ok"; }
+      else if (item.reauth) { rows.push(this.check(t("status"), "red", item.name, t("entryReauth"))); cause = t("cause_entry_reauth"); hint = t("hint_entry_reauth"); }
       else if (state === "loaded") { rows.push(this.check(t("status"), "ok", item.name, t("cs_loaded"))); cause = t("cause_entry_ok"); }
       else {
         rows.push(this.check(t("status"), tone, item.name, t(`cs_${state}`)));
@@ -5383,7 +5599,7 @@ class DiagnosisMixin {
     const tablist = tabs.map(([id, label, count, tone]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}${tone ? `<i class="tabdot ${tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div><div class="headpills">${this.pill(item.status)}<span class="pill mute">${this.t(item.object_type)}</span></div><h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
-      <div class="actions">${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
+      <div class="actions">${item.object_type === "entity" && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : ""}${path ? `<button class="btn" data-ha-path="${this.esc(path)}" data-ha-tab><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
       <div class="panel sumline">${summary}</div>
       ${this.statusBand(item, key)}
       <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>
@@ -5656,17 +5872,18 @@ class MaintenanceMixin {
       backup: () => {
         const b = state.backup || {};
         if (!b.available) return this.t("pf_backup_unavailable");
-        if (!b.configured || b.newest === null) return this.t("pf_backup_none");
-        return this.t(b.age_hours > 48 ? "pf_backup_old" : "pf_backup_ok", { hours: Math.round(b.age_hours) });
+        if (b.age_hours === null || b.age_hours === undefined) return this.t("pf_backup_none");
+        return this.t(b.level === "ok" ? "pf_backup_ok" : "pf_backup_old", { hours: Math.round(b.age_hours) });
       },
+      disk: () => this.t("pf_disk_text", { free: this.formatBytes(state.disk?.free) }),
     };
     return checks.map(c => {
       const items = { repairs: state.repairs, failed_entries: state.failed_entries, broken: state.broken }[c.check];
       const names = (items || []).slice(0, 5).map(i => i.title || i.name || i.issue_id || i.object_id).filter(Boolean).map(n => this.esc(n)).join(", ");
-      const text = c.check === "backup" ? detail.backup() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
+      const text = detail[c.check] ? detail[c.check]() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
       const tone = { ok: "ok", warn: "warn", red: "red" }[c.level] || "mute";
       const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : "mdi:alert-outline";
-      return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span></div>`;
+      return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span>${c.check === "backup" ? `<button class="btn quiet" data-jump="maintenance" data-jump-tab="backup">${this.t("pfOpenBackup")}</button>` : ""}</div>`;
     }).join("");
   }
 
@@ -5681,41 +5898,108 @@ class MaintenanceMixin {
     return `<div class="panelhead topline"><div><h3>${this.t("pfAfterTitle")}</h3></div></div><p class="factnote">${text}${go}</p>`;
   }
 
-  preflightCard() {
+  // Home Assistant's own configuration check, on request only: it loads every file and takes a few seconds.
+  async runConfigCheck() {
+    if (this.configChecking) return;
+    this.configChecking = true; this.configCheckError = ""; this.render();
+    try { this.configCheck = await this._hass.callWS({ type: "ha_housekeeper/check_config" }); }
+    catch (err) { this.configCheckError = this.errText(err); }
+    this.configChecking = false; this.render();
+  }
+
+  configRow() {
+    const r = this.configCheck, busy = this.configChecking, failed = this.configCheckError;
+    const tone = busy || (!r && !failed) ? "mute" : failed ? "warn" : !r.valid ? "red" : r.warnings ? "warn" : "ok";
+    const icon = { ok: "mdi:check", warn: "mdi:alert-outline", red: "mdi:close-octagon-outline", mute: "mdi:file-cog-outline" }[tone];
+    const clip = text => this.esc(String(text).slice(0, 600));
+    const text = busy ? this.t("pfConfigRunning") : failed ? this.esc(failed) : !r ? this.t("pfConfigHint")
+      : !r.valid ? `${this.t("pfConfigBad")}<span class="cfgout">${clip(r.errors)}</span>`
+      : r.warnings ? `${this.t("pfConfigWarn", { time: this.formatDate(r.at) })}<span class="cfgout">${clip(r.warnings)}</span>`
+      : this.t("pfConfigOk", { time: this.formatDate(r.at) });
+    return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t("pf_config")}</strong><small>${text}</small></span><button class="btn" data-config-check>${this.t(r ? "pfConfigAgain" : "pfConfigRun")}</button></div>`;
+  }
+
+  // Loads once and again after every new scan, so the overview and the Updates tab never show an old report.
+  ensurePreflight() {
+    const key = this.data?.meta?.scanned_at || "";
+    if (this.preflightLoading || (this._pfKey === key && this._pfRequested)) return;
+    this._pfRequested = true; this._pfKey = key;
+    setTimeout(() => this.loadPreflight(), 0);
+  }
+
+  // The icon of an update: the picture Home Assistant knows, if it is a same-origin or https address.
+  updatePicture(u) {
+    const ok = typeof u.picture === "string" && (u.picture.startsWith("/") && !u.picture.startsWith("//") || u.picture.startsWith("https://"));
+    const icon = u.group === "system" ? "mdi:home-assistant" : "mdi:package-up";
+    return ok ? `<img class="updpic" src="${this.esc(u.picture)}" alt="" loading="lazy" data-fallback-icon="${icon}">` : `<ha-icon icon="${icon}"></ha-icon>`;
+  }
+
+  updateRow(u, watching) {
+    const pills = [
+      u.blocked ? `<span class="pill red">${this.t("updBlocked")}</span>` : "",
+      u.in_progress ? `<span class="pill blue">${this.t("updRunning")}</span>` : "",
+      u.auto_update ? `<span class="pill mute">${this.t("updAuto")}</span>` : "",
+      u.group === "system" && watching ? `<span class="pill blue">${this.t("updWatch")}</span>` : "",
+    ].join("");
+    const notes = typeof u.release_url === "string" && u.release_url.startsWith("https://") ? `<a class="btn quiet" href="${this.esc(u.release_url)}" target="_blank" rel="noopener noreferrer">${this.t("updNotes")}</a>` : "";
+    const versions = `<span class="verchip">${this.esc(u.installed ?? "–")} → ${this.esc(u.latest ?? "–")}</span>`;
+    return `<div class="row rel updrow"><span class="tile mute">${this.updatePicture(u)}</span><span class="row-text"><strong>${this.esc(u.name)}</strong><small>${versions}${u.release_summary ? ` ${this.esc(u.release_summary)}` : ""}</small></span><span class="updact">${pills}${notes}<button class="btn quiet" data-ha-path="/config/updates" title="${this.esc(this.t("updOpenHa"))}">${this.t("updOpen")}</button></span></div>`;
+  }
+
+  updatesCard() {
     const p = this.preflight;
     const head = this.pageBar({ at: this.loadedAt("preflight"), loading: this.preflightLoading, attr: "data-pf-refresh" });
     if (this.preflightError) return `<div class="stack">${head}<div class="panel"><div class="error">${this.esc(this.preflightError)}</div></div></div>`;
     if (!p) return `<div class="stack">${head}<div class="panel">${this.skeleton("preflightLoading")}</div></div>`;
-    const updates = p.state.pending_updates || [];
-    const updateRow = `<div class="row rel"><span class="tile ${updates.length ? "warn" : "ok"}"><ha-icon icon="mdi:package-up"></ha-icon></span><span class="row-text"><strong>${this.t("pf_updates")}</strong><small>${updates.length ? updates.slice(0, 6).map(u => `${this.esc(u.name)} ${this.esc(u.installed ?? "")} → ${this.esc(u.latest ?? "")}`).join(" · ") : this.t("pf_updates_none")}</small></span></div>`;
-    return `<div class="stack">${head}<div class="panel">${this.preflightRows(p.state, p.checks)}${updateRow}${this.preflightAfter(p.watch)}</div></div>`;
+    const updates = p.state.updates || [], counts = p.counts || {};
+    const total = counts.total ?? updates.length;
+    // An invalid configuration, once it was checked, stops whatever the other lines say.
+    const cfg = this.configCheck, level = cfg && !cfg.valid ? "stop" : p.verdict;
+    const tone = { ready: "ok", look: "warn", stop: "red" }[level] || "mute";
+    const icon = { ready: "mdi:check-circle-outline", look: "mdi:alert-outline", stop: "mdi:close-octagon-outline" }[level] || "mdi:help-circle-outline";
+    const open = [...p.checks.filter(c => c.level !== "ok").map(c => this.t(`pf_${c.check}`)), ...(cfg && !cfg.valid ? [this.t("pf_config")] : [])];
+    const title = total ? this.t(`updVerdict_${level}`) : this.t("updVerdictNone");
+    const sub = [total ? this.t(total === 1 ? "updPending_1" : "updPending_n", { n: this.formatNumber(total) }) : "", open.length ? this.t("updCheckFirst", { items: open.join(", ") }) : ""].filter(Boolean).join(" · ");
+    const verdict = `<div class="row rel"><span class="tile ${total ? tone : "ok"}"><ha-icon icon="${total ? icon : "mdi:check-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${title}</strong>${sub ? `<small>${this.esc(sub)}</small>` : ""}</span></div>`;
+    const tiles = this.sumTiles([
+      { label: this.t("updSumOpen"), value: this.formatNumber(total), tone: total ? "warn" : "ok" },
+      { label: this.t("updGroup_system"), value: this.formatNumber(counts.system ?? 0), tone: "mute" },
+      { label: this.t("updGroup_app"), value: this.formatNumber(counts.app ?? 0), tone: "mute" },
+      { label: this.t("updSumBlocked"), value: this.formatNumber(counts.blocked ?? 0), tone: counts.blocked ? "red" : "ok" },
+    ]);
+    const watching = p.watch?.hours > 0;
+    const groups = ["system", "app", "hacs", "device"].map(g => {
+      const rows = updates.filter(u => u.group === g);
+      const body = rows.length ? rows.map(u => this.updateRow(u, watching)).join("") : `<div class="row rel"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.t(`updCurrent_${g}`)}</strong></span></div>`;
+      return `<div class="panel updgroup"><div class="sectionlabel">${this.t(`updGroup_${g}`)}${rows.length ? ` · ${this.formatNumber(rows.length)}` : ""}</div>${body}</div>`;
+    }).join("");
+    const list = total ? groups : `<div class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("updAllCurrent")}</div></div>`;
+    return `<div class="stack">${head}${tiles}<div class="panel">${verdict}${this.preflightRows(p.state, p.checks)}${this.configRow()}</div>${list}<div class="panel">${this.preflightAfter(p.watch)}</div></div>`;
   }
 
   maintenanceView() {
-    if (!this.preflight && !this.preflightLoading && !this._pfRequested) { this._pfRequested = true; setTimeout(() => this.loadPreflight(), 0); }
+    this.ensurePreflight();
     this.ensureBackup();
     const checks = this.backup?.available ? this.backup.checks || [] : [];
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
-    const pf = this.preflight, pfChecks = pf?.checks || [];
-    const pfRed = pfChecks.filter(c => c.level === "red").length, pfWarn = pfChecks.filter(c => c.level === "warn").length;
-    const updates = pf?.state?.pending_updates?.length || 0;
+    const pf = this.preflight;
+    const updates = pf?.counts?.total ?? pf?.state?.updates?.length ?? 0;
     const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
-    const pfTone = !pf ? "mute" : pfRed ? "red" : pfWarn ? "warn" : "ok";
+    const pfTone = !pf ? "mute" : !updates ? "ok" : { stop: "red", look: "warn" }[pf.verdict] || "ok";
     const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     this.ensureGoals();
+    this.ensureBlueprints(); // the pill of the tab needs the numbers before the tab is opened
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupTitle"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t("mtProblems", { n: problems }) : notes ? this.t("mtNotes", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
-      { id: "backups", icon: "mdi:delete-sweep-outline", label: this.t("bkcTab"), hint: "maintHintBkc", pill: this.bkc?.available && this.bkc.rows?.length ? this.formatNumber(this.bkc.rows.length) : "", tone: "mute" },
-      { id: "preflight", icon: "mdi:rocket-launch-outline", label: this.t("preflightTitle"), hint: "maintHintPreflight", pill: !pf ? "" : pfRed || pfWarn ? this.t("mtOpen", { n: pfRed + pfWarn }) : this.t("bhLevel_ok"), tone: pfTone },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
+      { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.formatNumber(updates) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
-      { id: "devices", icon: "mdi:devices", label: this.t("lifeRemovedTab"), hint: "maintHintDevices", pill: this.removed?.length ? this.formatNumber(this.removed.length) : "", tone: "mute" },
       { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
     const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok" })), open, this.t("maintenance"), true);
-    return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "preflight" ? this.preflightCard() : open === "devices" ? this.removedCard() : open === "blueprints" ? this.blueprintsCard() : open === "backups" ? this.backupCleanupCard() : this.backupCard()}</div>`;
+    return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "updates" ? this.updatesCard() : open === "blueprints" ? this.blueprintsCard() : this.backupCard()}</div>`;
   }
 }
 
@@ -5777,6 +6061,7 @@ class BackupMixin {
         return t("bhRetentionOk", { limit, count: v.count, oldest: v.oldest_days === null ? "—" : Math.round(v.oldest_days) });
       }
       case "encryption":
+        if (v.at) return t("bhEncConfirmed", { date: this.bhDay(v.at) });
         if (c.level === "ok") return t("bhEncOk");
         return t(v.configured ? "bhEncNotProtected" : "bhEncNoPassword");
       case "emergency_kit":
@@ -5784,6 +6069,20 @@ class BackupMixin {
       case "restore_test":
         if (!v.at) return t("bhRestoreNone");
         return t(c.level === "ok" ? "bhRestoreOk" : "bhRestoreOld", { date: this.bhDay(v.at), days: v.age_days, limit: 180 });
+      case "content":
+        if (c.level === "unknown") return t("bhContentUnknown");
+        if (c.level === "problem") return t("bhContentFailed", { items: this.bhList(v.failed) });
+        if (c.level === "note") return t(v.scheduled === false ? "bhContentNoDbSet" : "bhContentNoDb");
+        return t("bhContentOk", { apps: this.formatNumber(v.apps ?? 0), folders: this.formatNumber(v.folders ?? 0) });
+      case "remote_age": {
+        const row = a => `${this.esc(a.agent)}: ${this.bhAge(a.age_hours)}`;
+        return c.level === "note"
+          ? t("bhRemoteStale", { items: (v.agents || []).filter(a => (v.stale || []).includes(a.agent)).map(row).join(", "), limit: this.bhAge(v.limit_hours) })
+          : t("bhRemoteOk", { items: (v.agents || []).map(row).join(", ") });
+      }
+      case "space":
+        if (c.level === "unknown") return t("bhSpaceUnknown");
+        return t({ ok: "bhSpaceOk", note: "bhSpaceNote", problem: "bhSpaceProblem" }[c.level], { free: this.formatBytes(v.free), size: this.formatBytes(v.size), need: this.formatBytes(v.need) });
       case "own_backups":
         return t("bhOwnNote", { count: v.count, size: this.formatBytes(v.size) });
       case "plan_backups":
@@ -5796,10 +6095,11 @@ class BackupMixin {
   bhRow(c) {
     const tone = { ok: "ok", note: "warn", problem: "red", unknown: "mute" }[c.level] || "mute";
     const icon = { ok: "mdi:check", note: "mdi:alert-outline", problem: "mdi:close-octagon-outline", unknown: "mdi:help-circle-outline" }[c.level] || "mdi:help-circle-outline";
-    const attest = c.id === "targets" || c.id === "emergency_kit" || c.id === "restore_test";
+    const attest = c.id === "targets" || c.id === "emergency_kit" || c.id === "restore_test" || c.id === "encryption";
+    const tidy = c.id === "own_backups" ? `<button class="bhopen" data-bkc-open>${this.t("bhOwnOpen")}</button>` : "";
     const open = attest && c.level !== "unknown" && this.bhForm === c.id;
-    const opener = attest && c.level !== "unknown" ? `<button class="bhopen" data-bh-open="${c.id}" aria-expanded="${open}">${this.t(c.values?.at ? "bhAttestAgain" : c.id === "targets" ? "bhAttestTargets" : "bhAttestMark")}</button>` : "";
-    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}</small></span><span class="bhactions">${opener}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    const opener = attest && c.level !== "unknown" ? `<button class="bhopen" data-bh-open="${c.id}" aria-expanded="${open}">${this.t(c.values?.at ? "bhAttestAgain" : c.id === "targets" ? "bhAttestTargets" : c.id === "encryption" ? "bhAttestEnc" : "bhAttestMark")}</button>` : "";
+    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}</small></span><span class="bhactions">${opener}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
     if (!open) return row;
     const today = new Date().toISOString().slice(0, 10);
     const clear = c.values?.at ? `<button class="bhtake" data-bh-clear="${c.id}">${this.t("bhAttestClear")}</button>` : "";
@@ -5860,11 +6160,60 @@ class BackupMixin {
     if (!b) return `<div class="stack">${head}<div class="panel">${this.skeleton("backupLoading")}</div></div>`;
     if (!b.available) return `<div class="stack">${head}<div class="panel"><div class="emptymsg">${this.t("backupUnavailable")}</div></div></div>`;
     const guide = `<details class="bhguide"><summary>${this.t("bhGuideTitle")}</summary><p class="factnote">${this.t("bhGuideSteps")}</p></details>`;
-    return `<div class="stack">${head}<div class="panel">${b.checks.map(c => this.bhRow(c)).join("")}${guide}</div>${this.bhBackups(b.backups)}</div>`;
+    return `<div class="stack">${head}${this.bhTiles(b)}<div class="panel">${this.bhVerdict(b)}${this.bhGroups(b.checks)}${guide}</div>${this.bhSizes(b)}${this.bhBackups(b.backups)}${this.bkcFold()}</div>`;
+  }
+
+  // The sizes of the last backups as bars: growth shows long before the one that is "unusual".
+  bhSizes(b) {
+    const rows = (b.backups || []).filter(x => !x.own && !x.partial && x.size && x.date).slice(0, 14).reverse();
+    if (rows.length < 3) return "";
+    const max = Math.max(...rows.map(x => x.size)), last = rows[rows.length - 1], first = rows[0];
+    const tone = b.checks.find(c => c.id === "size")?.level === "note" ? " warn" : "";
+    const bars = rows.map((x, i) => `<i class="${i === rows.length - 1 ? `last${tone}` : ""}" style="height:${Math.max(4, Math.round((x.size / max) * 100))}%" title="${this.esc(`${this.formatDate(x.date)} · ${this.formatBytes(x.size)}`)}"></i>`).join("");
+    return `<div class="panel"><div class="sectionlabel">${this.t("bhSizesTitle")}</div><div class="bhsizes" role="img" aria-label="${this.esc(this.t("bhSizesLabel", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) }))}">${bars}</div><p class="factnote pad">${this.t("bhSizesNote", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) })}</p></div>`;
+  }
+
+  // The checks in the order a person thinks in: does it run, where is it kept and what is in it, can it be restored, what Housekeeper adds.
+  bhGroups(checks) {
+    const groups = [
+      ["running", ["setup", "newest", "last_run"]],
+      ["storage", ["targets", "remote_age", "content", "size", "retention", "space"]],
+      ["restore", ["encryption", "emergency_kit", "restore_test"]],
+      ["house", ["plan_backups", "own_backups"]],
+    ];
+    const known = new Set(groups.flatMap(([, ids]) => ids));
+    return groups.map(([name, ids], i) => {
+      const rows = checks.filter(c => ids.includes(c.id) || (i === groups.length - 1 && !known.has(c.id)));
+      rows.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+      return rows.length ? `<div class="sectionlabel">${this.t(`bhGroup_${name}`)}</div>${rows.map(c => this.bhRow(c)).join("")}` : "";
+    }).join("");
+  }
+
+  // One line on top: reliable, look first or a problem, and what to look at.
+  bhVerdict(b) {
+    const tone = { ok: "ok", note: "warn", problem: "red" }[b.overall] || "mute";
+    const icon = { ok: "mdi:check-circle-outline", note: "mdi:alert-outline", problem: "mdi:close-octagon-outline" }[b.overall] || "mdi:help-circle-outline";
+    const open = b.checks.filter(c => c.level === "note" || c.level === "problem").map(c => this.t(`bh_${c.id}`));
+    const sub = open.length ? this.t("bhCheckFirst", { items: `${open.slice(0, 4).join(", ")}${open.length > 4 ? ", …" : ""}` }) : "";
+    return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bhVerdict_${b.overall}`)}</strong>${sub ? `<small>${this.esc(sub)}</small>` : ""}</span></div>`;
+  }
+
+  // Four figures above the checks. The size is not among them: the list holds only the newest backups.
+  bhTiles(b) {
+    const by = Object.fromEntries(b.checks.map(c => [c.id, c.values || {}]));
+    const age = by.newest?.age_hours, remote = by.targets?.remote?.length || by.targets?.at;
+    const open = (b.counts?.note || 0) + (b.counts?.problem || 0);
+    return this.sumTiles([
+      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.bhAge(age)), tone: "mute" },
+      { label: this.t("bhTileCount"), value: this.formatNumber(b.backup_count ?? 0), tone: "mute" },
+      { label: this.t("bhTileRemote"), value: this.t(remote ? "bhYes" : "bhNo"), tone: remote ? "ok" : "warn" },
+      { label: this.t("bhTileOpen"), value: this.formatNumber(open), tone: open ? "warn" : "ok" },
+    ]);
   }
 }
 
 // ReliabilityMixin: the reliability view; mixed into the panel in 99-register.js.
+const REL_GREEN = 99.5, REL_YELLOW = 95; // availability in percent: green from, yellow from, red below
 class ReliabilityMixin {
   // Slow recorder views: an old reply is shown at once and renewed once; when another calculation holds the
   // query lock, the panel asks again by itself a few times instead of asking the user to click.
@@ -5908,7 +6257,7 @@ class ReliabilityMixin {
 
   relSorts() {
     return [
-      { key: "avail", label: "relSortAvail", dir: "asc", get: e => e.availability },
+      { key: "avail", label: "relSortAvail", dir: "asc", get: e => (e.dead ? -1 : e.availability) },
       { key: "title", label: "sortName", dir: "asc", get: e => e.title },
       { key: "outages", label: "relSortOutages", dir: "desc", get: e => e.shared_outages },
     ];
@@ -5916,22 +6265,15 @@ class ReliabilityMixin {
 
   relRowBody(item) {
     const percent = item.availability;
-    const tone = percent === null ? "mute" : percent >= 99.5 ? "ok" : percent >= 95 ? "warn" : "red";
+    const tone = item.dead ? "red" : percent === null ? "mute" : percent >= REL_GREEN ? "ok" : percent >= REL_YELLOW ? "warn" : "red";
     const lines = [`${this.esc(item.domain || "")} · ${this.t("relEntities", { n: item.entities })}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
-    if (item.shared_outages) {
-      const layer = item.layer === "cloud" ? this.t("relLayerCloud") : this.t("relLayerLocal");
-      lines.push(`${this.t(item.shared_outages === 1 ? "relSharedOne" : "relShared", { n: item.shared_outages, longest: this.relDuration(item.longest_outage) })} · ${layer}`);
-    }
+    const layer = item.shared_outages ? (item.layer === "cloud" ? this.t("relLayerCloud") : this.t("relLayerLocal")) : "";
+    if (layer) lines.push(layer);
     const flags = [];
     if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
     if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn">${this.esc(item.state)}</span>`);
     if (item.setup) lines.push(`${item.setup.count ? this.t("relSetup", { n: item.setup.count, days: item.setup.days, last: this.formatDate(item.setup.last) }) : ""}${item.setup.state ? `${item.setup.count ? " · " : ""}${this.t("relSetupNow", { state: item.setup.state })}` : ""}`);
-    lines.push(item.last_disruption
-      ? this.t(item.last_disruption.shared ? "relLastShared" : "relLastSingle", { date: this.formatDate(new Date(item.last_disruption.end * 1000).toISOString()), duration: this.relDuration(item.last_disruption.seconds) })
-      : this.t("relNoDisruption"));
-    if (item.delta !== null && item.delta !== undefined) lines.push(this.t("relDelta", { delta: `${item.delta > 0 ? "+" : item.delta < 0 ? "−" : "±"}${this.formatNumber(Math.abs(item.delta))}`, before: this.formatNumber(item.previous_availability) }));
-    else if (this.reliability?.comparison?.available) lines.push(this.t("relDeltaNone"));
-    return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
+    return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${item.dead ? this.t("relDead") : percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
   }
 
   // The row of one config entry in the loaded numbers, for its detail page.
@@ -5944,14 +6286,51 @@ class ReliabilityMixin {
     const r = this.reliability;
     const items = row.affected || [];
     const list = this.objectTable(`relaffected-${row.entry_id || row.domain || ""}`, items.map(m => {
-      const tone = m.availability >= 99.5 ? "ok" : m.availability >= 95 ? "warn" : "red";
+      const tone = m.availability >= REL_GREEN ? "ok" : m.availability >= REL_YELLOW ? "warn" : "red";
       return { key: `entity:${m.entity_id}`, type: "entity", name: m.name, sub: m.entity_id, tone, state: tone, stateLabel: this.t({ ok: "relAvailOk", warn: "relAvailWarn", red: "relAvailRed" }[tone]), avail: m.availability, pill: `<span class="pill ${tone}">${this.formatNumber(m.availability)} %</span>`, rank: m.availability };
     }), { extras: [{ key: "avail", label: "relColAvail", get: r => r.avail, cell: r => `${this.formatNumber(r.avail)} %` }], empty: "" });
     const more = row.affected_total > items.length ? `<p class="factnote">${this.t("relAffectedMore", { shown: items.length, total: row.affected_total })}</p>` : "";
     const hintKey = this.relSetupHint(row);
     const hint = hintKey ? `<div class="factnote"><strong>${this.t("relHintTitle")}</strong> ${this.t(hintKey, { n: row.setup.count, days: row.setup.days })}</div>` : "";
     const summary = `<div class="row">${this.relRowBody(row)}</div>${hint}`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("relTab")}</h2><p>${this.t(r.window_days === 1 ? "relWindow1" : "relWindow7")}${r.stale || r.age_seconds ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}` : ""}</p></div></div>${summary}<div class="sectionlabel">${this.t("relAffected", { n: this.formatNumber(row.affected_total || 0) })}</div>${list || `<p class="factnote">${this.t("relNoAffected")}</p>`}${more}</section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("relTab")}</h2><p>${this.t(`relWindow${r.window_days}`)}${r.stale || r.age_seconds ? ` · ${this.t("relAgeNote", { when: this.relTime(new Date(r.computed_at * 1000).toISOString()) })}` : ""}</p></div></div>${summary}${this.relDetailExtras(row)}<div class="sectionlabel">${this.t("relAffected", { n: this.formatNumber(row.affected_total || 0) })}</div>${list || `<p class="factnote">${this.t("relNoAffected")}</p>`}${more}</section>`;
+  }
+
+  // The house functions that rely on the integration: a member is one of its entities, or one of its devices.
+  // The recorder keeps less than the window asks for: the numbers reach back only that far.
+  keepNote(r) {
+    return r?.keep_days && r.window_days > r.keep_days ? `<p class="factnote">${this.t("relKeepShort", { keep: this.formatNumber(r.keep_days), days: r.window_days })}</p>` : "";
+  }
+
+  relHouseFunctions(entryId) {
+    return this.monitorFunctions().filter(fn => (fn.members || []).some(m => {
+      const object = this.findObject(m.object_key);
+      return object && (object.config_entry_id === entryId || (object.config_entry_ids || []).includes(entryId));
+    }));
+  }
+
+  // Figures, day strip and outage periods of one integration, from the periods the backend found in the window.
+  relDetailExtras(row) {
+    const r = this.reliability, days = row.days || [], periods = row.periods || [];
+    const tile = (value, label) => `<div class="avail-tile"><b>${this.esc(value)}</b><span>${this.esc(label)}</span></div>`;
+    const comparing = row.delta !== null && row.delta !== undefined;
+    const tiles = [
+      tile(row.dead ? "–" : this.formatNumber(row.shared_outages || 0), this.t("relSortOutages")),
+      row.shared_outages ? tile(this.relDuration(row.longest_outage), this.t("relColLongest")) : "",
+      comparing ? tile(`${row.delta > 0 ? "+" : row.delta < 0 ? "−" : "±"}${this.formatNumber(Math.abs(row.delta))}`, this.t("relDeltaPoints")) : "",
+    ].filter(Boolean).join("");
+    const dayClass = d => (!d.seconds ? "ok" : d.seconds < 864 ? "problem short" : "problem");
+    const strip = days.length >= 7
+      ? `<div class="monitor-days" role="img" aria-label="${this.esc(this.t("relStrip"))}">${days.map(d => `<i class="${dayClass(d)}" title="${this.esc(`${d.date}: ${d.seconds ? this.relDuration(d.seconds) : this.t("monitorAvailOk")}`)}"></i>`).join("")}</div><div class="monitor-axis"><span>${this.t("monitorAvailFrom", { days: days.length - 1 })}</span><span>${this.t("monitorAvailToday")}</span></div><div class="monitor-legend"><span><i class="ok"></i>${this.t("monitorAvailOk")}</span><span><i class="problem short"></i>${this.t("monitorAvailShort")}</span><span><i class="problem"></i>${this.t("monitorAvailLong")}</span></div>`
+      : "";
+    const kinds = { shared: "relKindShared", single: "relKindSingle", down: "relKindDown" };
+    const when = p => this.formatDate(new Date(p.start * 1000).toISOString());
+    const table = periods.length
+      ? `<div class="sectionlabel">${this.t("relPeriods", { n: this.formatNumber(row.period_total ?? periods.length) })}</div><div class="tablewrap"><table class="evtable"><thead><tr><th>${this.t("relColStart")}</th><th>${this.t("relColDuration")}</th><th>${this.t("relColAffected")}</th><th>${this.t("relColKind")}</th></tr></thead><tbody>${periods.map(p => `<tr><td>${this.esc(when(p))}</td><td>${this.esc(this.relDuration(p.seconds))}</td><td>${this.esc(this.t("relOfEntities", { n: p.affected, m: row.entities + row.permanent }))}</td><td><span class="pill ${p.kind === "shared" || p.kind === "down" ? "warn" : "mute"}">${this.t(kinds[p.kind] || "relKindSingle")}</span></td></tr>`).join("")}</tbody></table></div>${(row.period_total || 0) > periods.length ? `<p class="factnote">${this.t("relPeriodsMore", { shown: periods.length, total: row.period_total })}</p>` : ""}`
+      : "";
+    const functions = this.relHouseFunctions(row.entry_id);
+    const carries = functions.length ? `<p class="factnote">${this.t("relCarries")}: ${functions.map(fn => `<button class="link" data-monitor-last="${this.esc(fn.id)}">${this.esc(fn.name)}</button>`).join(", ")}</p>` : "";
+    return `<div class="avail-tiles">${tiles}</div>${strip}${table}${carries}`;
   }
 
   // A guess at the cause from the setup failures and the availability, worded as a possibility.
@@ -5964,8 +6343,6 @@ class ReliabilityMixin {
     return setup.count >= 2 ? "relHintEarly" : null;
   }
 
-  relEntryState(e) { return e.reauth ? "reauth" : e.state && e.state !== "loaded" ? "notloaded" : ""; }
-
   // One row per integration entry: the numbers sit in columns so the list sorts by them; the sentences live on the detail page.
   relSetupCell(setup) {
     if (!setup) return "–";
@@ -5975,16 +6352,19 @@ class ReliabilityMixin {
   }
 
   relEntriesList(r) {
-    const tone = p => (p === null || p === undefined ? "mute" : p >= 99.5 ? "ok" : p >= 95 ? "warn" : "red");
+    const tone = p => (p === null || p === undefined ? "mute" : p >= REL_GREEN ? "ok" : p >= REL_YELLOW ? "warn" : "red");
+    const minEntities = r.thresholds?.shared_min_entities ?? 3;
+    const outagesCell = e => (e.dead ? "–" : !e.shared_outages && e.entities < minEntities ? `<span class="pill mute" title="${this.esc(this.t("relTooSmallHint", { n: minEntities }))}">${this.t("relTooSmall")}</span>` : num(e.shared_outages));
+    const availCell = e => (e.dead ? `<span class="pill red">${this.t("relDead")}</span><small>${this.t("relDeadSub", { n: e.permanent })}</small>` : e.availability === null || e.availability === undefined ? "–" : `<span class="pill ${tone(e.availability)}">${this.esc(this.formatNumber(e.availability))} %</span>`);
     const num = v => (v === null || v === undefined ? "–" : this.esc(this.formatNumber(v)));
     const compare = Boolean(r.comparison?.available);
     const delta = e => (e.delta === null || e.delta === undefined ? null : e.delta);
     const columns = [
       { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.t("relEntities", { n: e.entities })}`) },
-      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn">${this.esc(e.state)}</span>` : "", e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ") },
+      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" data-jump="findingsNav" data-filter="config_entry.reauth" title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn">${this.esc(e.state)}</span>` : "", e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ") },
       { key: "setup", label: "relColSetup", dir: "desc", cell: e => this.relSetupCell(e.setup) },
-      { key: "avail", label: "relSortAvail", dir: "asc", cell: e => (e.availability === null || e.availability === undefined ? "–" : `<span class="pill ${tone(e.availability)}">${this.esc(this.formatNumber(e.availability))} %</span>`) },
-      { key: "outages", label: "relSortOutages", dir: "desc", cell: e => num(e.shared_outages) },
+      { key: "avail", label: "relSortAvail", dir: "asc", cell: availCell },
+      { key: "outages", label: "relSortOutages", dir: "desc", cell: outagesCell },
       { key: "longest", label: "relColLongest", dir: "desc", cell: e => (e.shared_outages ? this.esc(this.relDuration(e.longest_outage)) : "–") },
       { key: "last", label: "relColLast", dir: "desc", cell: e => (e.last_disruption ? this.esc(`${this.formatDate(new Date(e.last_disruption.end * 1000).toISOString())}, ${this.relDuration(e.last_disruption.seconds)}`) : this.esc(this.t("relNoDisruption"))) },
       ...(compare ? [{ key: "delta", label: "relColDelta", dir: "asc", cell: e => (delta(e) === null ? "–" : this.esc(`${delta(e) > 0 ? "+" : delta(e) < 0 ? "−" : "±"}${this.formatNumber(Math.abs(delta(e)))}`)) }] : []),
@@ -5998,8 +6378,8 @@ class ReliabilityMixin {
         { key: "last", label: "relColLast", dir: "desc", get: e => e.last_disruption?.end ?? null },
         ...(compare ? [{ key: "delta", label: "relColDelta", dir: "asc", get: delta }] : []),
       ],
-      filters: [{ name: "state", all: this.t("relAllStates"), options: [["outages", this.t("relOnlyOutages")], ["reauth", this.t("relOnlyReauth")], ["notloaded", this.t("relOnlyNotLoaded")], ["setup", this.t("relOnlySetup")]] }],
-      filterFns: { state: (e, v) => (v === "outages" ? e.shared_outages > 0 : v === "setup" ? Boolean(e.setup) : this.relEntryState(e) === v) },
+      filters: [{ name: "state", all: this.t("relAllStates"), options: [["dead", this.t("relOnlyDead")], ["outages", this.t("relOnlyOutages")], ["setup", this.t("relOnlySetup")]] }],
+      filterFns: { state: (e, v) => (v === "dead" ? Boolean(e.dead) : v === "outages" ? e.shared_outages > 0 : Boolean(e.setup)) },
       text: e => [e.title, e.domain].join(" "), tie: e => e.title, empty: "relEmpty", columns,
       rowAttrs: e => (this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}" tabindex="0" role="button" aria-label="${this.esc(e.title)}"` : 'class="static"'),
       exportName: "reliability", header: [this.t("utName"), "Domain", this.t("relSortAvail"), this.t("relSortOutages"), this.t("relColLongest")], rows: e => [e.title, e.domain, e.availability ?? "", e.shared_outages ?? 0, e.longest_outage ?? ""],
@@ -6009,7 +6389,7 @@ class ReliabilityMixin {
   reliabilityView() {
     this.ensureReliability();
     const r = this.reliability;
-    const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
+    const windows = [[1, "relWindow1"], [7, "relWindow7"], [30, "relWindow30"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
     const aged = Boolean(r?.computed_at && (r.stale || r.age_seconds >= 60)), took = aged ? "" : this.tookNote(r).replace(/^ · /, "");
     const head = this.pageBar({ left: `${windows}${took ? `<span>${this.esc(took)}</span>` : ""}`, at: r?.computed_at ? new Date(r.computed_at * 1000).toISOString() : null, loading: this.relLoading, attr: "data-rel-refresh" });
     const alone = inner => `<div class="stack">${head}<div class="panel">${inner}</div></div>`;
@@ -6018,7 +6398,7 @@ class ReliabilityMixin {
     if (!r.available) return alone(`<p class="factnote">${this.t("relNoRecorder")}</p>`);
     if (r.busy) return alone(`${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p>`);
     if (!r.entries.length) return alone(`<div class="emptymsg">${this.t("relEmpty")}</div>`);
-    const loading = this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "";
+    const loading = (this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "") + this.keepNote(r);
     const th = r.thresholds || {};
     const cov = r.coverage;
     const coverage = cov && cov.observed_share !== null && cov.observed_share !== undefined ? this.coverageNote(this.t("relCoverage", { days: r.window_days, withData: this.formatNumber(cov.with_data), known: this.formatNumber(cov.known), share: cov.observed_share })) : "";
@@ -6027,24 +6407,25 @@ class ReliabilityMixin {
     const flapping = Object.values(u.entities || {}).filter(e => e.level === "flapping").length;
     const outages = r.entries.filter(e => e.shared_outages > 0).length;
     const attention = r.entries.filter(e => e.reauth || (e.state && e.state !== "loaded")).length;
-    const counted = r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.entities), 0);
-    const overall = counted ? r.entries.reduce((n, e) => n + (e.availability === null || e.availability === undefined ? 0 : e.availability * e.entities), 0) / counted : null;
+    const dead = r.entries.filter(e => e.dead).length;
+    const figures = r.entries.filter(e => !e.dead && e.availability !== null && e.availability !== undefined);
+    const overall = figures.length ? figures.reduce((n, e) => n + e.availability, 0) / figures.length : null;
     const availText = overall === null ? "–" : `${this.formatNumber(Math.round(overall * 10) / 10)} %`;
-    const odd = r.entries.filter(e => e.shared_outages > 0 || e.reauth || (e.state && e.state !== "loaded") || e.setup).length;
+    const odd = r.entries.filter(e => e.dead || e.shared_outages > 0 || e.reauth || (e.state && e.state !== "loaded") || e.setup).length;
     const setupCount = r.entries.filter(e => e.setup).length;
     const tiles = this.sumTiles([
       { label: this.t("relSumAll"), value: this.formatNumber(r.entries.length), tone: "mute", lf: ["relentries", "", ""] },
+      { label: this.t("relOnlyDead"), value: this.formatNumber(dead), tone: dead ? "red" : "ok", lf: ["relentries", "state", "dead"] },
       { label: this.t("relOnlyOutages"), value: this.formatNumber(outages), tone: outages ? "warn" : "ok", lf: ["relentries", "state", "outages"] },
-      { label: this.t("relOnlyReauth"), value: this.formatNumber(r.entries.filter(e => e.reauth).length), tone: r.entries.some(e => e.reauth) ? "red" : "ok", lf: ["relentries", "state", "reauth"] },
-      { label: this.t("relOnlyNotLoaded"), value: this.formatNumber(r.entries.filter(e => e.state && e.state !== "loaded").length), tone: r.entries.some(e => e.state && e.state !== "loaded") ? "warn" : "ok", lf: ["relentries", "state", "notloaded"] },
       { label: this.t("relOnlySetup"), value: this.formatNumber(setupCount), tone: setupCount ? "warn" : "ok", lf: ["relentries", "state", "setup"] },
+      { label: this.t("relSumAvg"), value: availText, tone: overall === null ? "mute" : overall >= REL_GREEN ? "ok" : overall >= REL_YELLOW ? "warn" : "red", hint: this.t("relSumAvgHint") },
     ]);
     const tabs = [
-      { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: this.t("relTileIntHint", { avail: availText, window: this.t(r.window_days === 1 ? "relWindow1" : "relWindow7") }), count: r.entries.length, tone: outages || attention ? "warn" : "ok", pill: odd ? this.t("relTilePill", { n: this.formatNumber(odd) }) : "", pillTone: attention ? "red" : "warn" },
+      { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: this.t("relTileIntHint", { avail: availText, window: this.t(`relWindow${r.window_days}`) }), count: r.entries.length, tone: outages || attention ? "warn" : "ok", pill: odd ? this.t("relTilePill", { n: this.formatNumber(odd) }) : "", pillTone: attention ? "red" : "warn" },
       { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: this.t("relTileUnstableHint"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok", pill: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "" },
     ];
     const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
-    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60) })}</div>`;
+    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60), green: this.formatNumber(REL_GREEN), yellow: this.formatNumber(REL_YELLOW) })}</div>`;
     return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${open === "integrations" ? tiles : ""}${body}</div>`;
   }
 
@@ -6272,7 +6653,7 @@ class RunsMixin {
     const c = row.change;
     const side = s => this.t("runsChangeSide", { errors: this.formatNumber(s.errors), runs: this.formatNumber(s.runs) });
     const change = c ? `<div class="pad"><p class="factnote"><ha-icon icon="mdi:source-commit"></ha-icon> ${this.esc(this.t("runsChange", { date: this.formatDate(c.at), after: side(c.after), before: side(c.before) }))}</p></div>` : "";
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsTrend30")}</dt><dd>${this.runsTrend(row, row.per_day_30 || row.per_day)}</dd></dl></div>${change}${notes}${this.howCounted("runsFootnote")}</section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("runsTab")}</h2><p>${since}</p></div></div><div class="pad"><dl class="kv">${facts}<dt>${this.t("runsTrend30")}</dt><dd>${this.runsTrend(row, row.per_day_30 || row.per_day)}</dd></dl></div>${change}${notes}${this.howCounted("runsFootnote", this.runsLimits(this.runs || {}))}</section>`;
   }
 
   // Two tabs: the counted runs, and the quality of each automation (46-diagnostics.js).
@@ -6286,6 +6667,11 @@ class RunsMixin {
     if (open === "overview") return `<div class="stack">${this.navTiles("runs", tabs, open, this.t("runs"), true)}${this.qualityView()}</div>`;
     const body = open === "scripts" ? this.scriptsView() : this.runsListView();
     return `<div class="stack">${this.navTiles("runs", tabs, open, this.t("runs"), true)}${body}</div>`;
+  }
+
+  runsLimits(r) {
+    const th = r.thresholds || {};
+    return { days: r.window_days, errors: th.failing_min_errors ?? 3, rate: Math.round((th.failing_min_rate ?? 0.2) * 100), neverOk: th.never_ok_min_runs ?? 5, overlap: th.overlap_min ?? 3, idle: th.no_effect_min_runs ?? 20, idleShare: Math.round((th.no_effect_share ?? 0.9) * 100), burst: th.burst_factor ?? 5, baseline: th.baseline_days ?? 28, burstMin: th.burst_min_per_day ?? 100, longFactor: th.long_run_factor ?? 10, longSeconds: Math.round((th.long_run_min_ms ?? 60000) / 1000) };
   }
 
   runsListView() {
@@ -6302,7 +6688,7 @@ class RunsMixin {
     const counted = this.refine("runs", everyCounted.filter(row => this.runsMatch(row)), { text: row => [row.name, row.entity_id].join(" "), sorts: this.runsSorts(), tie: row => row.entity_id });
     const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar(counted) : "";
     const more = r.total > r.items.length ? `<p class="factnote">${this.t("runsMore", { shown: r.items.length, total: r.total })}</p>` : "";
-    const all = everyCounted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${bar}${counted.length ? this.runsTable(counted) : `<div class="emptymsg">${this.t("noMatches")}</div>`}${more}${this.howCounted("runsFootnote")}</div>` : "";
+    const all = everyCounted.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("runsAll")}</h2></div></div>${bar}${counted.length ? this.runsTable(counted) : `<div class="emptymsg">${this.t("noMatches")}</div>`}${more}${this.howCounted("runsFootnote", this.runsLimits(r))}</div>` : "";
     const runTotal = r.items.reduce((n, row) => n + row.runs, 0), errorTotal = r.items.reduce((n, row) => n + row.errors, 0);
     const neverOk = r.items.filter(row => row.findings.some(f => f.kind === "never_ok")).length;
     const allFlagged = r.items.filter(row => row.findings.length).length;
@@ -6424,7 +6810,7 @@ class StormsMixin {
   stormEntitiesList(entities) {
     const num = v => (v === null || v === undefined ? "–" : this.esc(this.formatNumber(v)));
     const kb = item => (item.attr_bytes === null || item.attr_bytes === undefined ? null : Math.round(item.attr_bytes / 102.4) / 10);
-    const info = item => this.excludeInfo(item.entity_id, item.per_day, item.excluded);
+    const info = item => this.excludeInfo(item);
     const columns = [
       { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.map(item => item.entity_id)), cell: item => this.excludeBox(item.entity_id) },
       { key: "name", label: "utName", cell: item => this.nameCell(item.name || item.entity_id, item.name ? item.entity_id : "") },
@@ -6549,7 +6935,7 @@ class StormsMixin {
   stormsView() {
     this.ensureStorms();
     const r = this.storms;
-    const windows = [[1, "relWindow1"], [7, "relWindow7"]].map(([days, key]) => `<button class="chip ${this.stormsWindow === days ? "active" : ""}" data-storm-window="${days}" aria-pressed="${this.stormsWindow === days}">${this.t(key)}</button>`).join("");
+    const windows = [[1, "relWindow1"], [7, "relWindow7"], [30, "relWindow30"]].map(([days, key]) => `<button class="chip ${this.stormsWindow === days ? "active" : ""}" data-storm-window="${days}" aria-pressed="${this.stormsWindow === days}">${this.t(key)}</button>`).join("");
     const aged = Boolean(r?.computed_at && (r.stale || r.age_seconds >= 60)), took = aged ? "" : this.tookNote(r).replace(/^ · /, "");
     const ready = Boolean(r?.available && !r.busy);
     if (ready) this.stormsExporter(r);
@@ -6558,7 +6944,7 @@ class StormsMixin {
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("stormLoading")}</div></div>`;
     if (!r.available) return `<div class="stack">${head}<div class="panel"><p class="factnote">${this.t("relNoRecorder")}</p></div></div>`;
     if (r.busy) return `<div class="stack">${head}<div class="panel">${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div></div>`;
-    const loading = this.stormsLoading ? `<p class="factnote">${this.t("stormLoading")}</p>` : "";
+    const loading = (this.stormsLoading ? `<p class="factnote">${this.t("stormLoading")}</p>` : "") + this.keepNote(r);
     const groups = this.stormGroups(r);
     const tiles = groups.length ? this.sumTiles([
       { label: this.t("stormFilterAll"), value: this.formatNumber(groups.length), tone: "mute", lf: ["stormfind", "", ""] },
@@ -6573,9 +6959,9 @@ class StormsMixin {
     ]);
     const entry = this.stormEntry && r.integrations.find(g => g.entry_id === this.stormEntry);
     const ofEntry = entry ? r.entities.filter(item => item.entry_id === entry.entry_id) : r.entities;
-    const shownEntities = this.exOnlySug ? ofEntry.filter(item => this.excludeInfo(item.entity_id, item.per_day, item.excluded).suggest) : ofEntry;
+    const shownEntities = this.exOnlySug ? ofEntry.filter(item => this.excludeInfo(item).suggest) : ofEntry;
     const entryBar = entry ? `<div class="toolbar exbar"><span class="date">${this.t("stormOnlyEntry", { title: this.esc(entry.title), shown: this.formatNumber(ofEntry.length), total: this.formatNumber(entry.entities) })}</span><button class="btn quiet" data-storm-entry-clear>${this.t("stormEntryClear")}</button></div>` : "";
-    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${this.excludeCard(r.entities.filter(item => this.excludeInfo(item.entity_id, item.per_day, item.excluded).suggest).map(item => item.entity_id))}${entryBar}${this.stormEntitiesList(shownEntities)}</div>` : "";
+    const table = r.entities.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormLoudest")}</h2><p>${this.t("stormLoudestHint")}</p></div></div>${this.excludeCard(r.entities.filter(item => this.excludeInfo(item).suggest).map(item => item.entity_id))}${entryBar}${this.stormEntitiesList(shownEntities)}</div>` : "";
     const shares = r.integrations.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormShares")}</h2><p>${this.t("stormSharesHint")}</p></div></div>${this.stormSharesList(r.integrations)}</div>` : "";
     const events = r.events.length ? `<div class="panel"><div class="panelhead"><div><h2>${this.t("stormEvents")}</h2><p>${this.t("stormEventsHint")}</p></div></div>${this.stormEventsList(r)}<details class="howto"><summary>${this.t("evWhenTitle")}</summary><p class="factnote">${this.t("evWhen")}</p></details><p class="factnote">${this.t("evFoot")}</p>${this.howCounted("stormFootnote")}</div>` : "";
     const ex = r.excluded || {};
@@ -6710,7 +7096,16 @@ class DbHealthMixin {
       { name: "facts", title: this.t("expColFact"), header: [this.t("expColFact")], rows: () => facts.map(x => [this.plainText(x)]) },
     ].filter(sec => sec.rows().length));
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
-    return `<div class="stack">${head}<div class="panel">${rows}${this.dbCheckRow(r)}<p class="factnote">${facts.join(" · ")}</p>${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
+    // The figures stand as tiles; what could not be measured, and the normal restart gaps, stay as short notes.
+    const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
+    const tiles = this.sumTiles([
+      sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
+      growthKnown ? { label: this.t("dbTileGrowth"), value: `+${this.formatBytes(Math.max(0, r.growth.per_day))}`, tone: "mute" } : null,
+      r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
+      r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
+    ]);
+    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect: this.esc(r.dialect || "?") }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
+    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
   }
 }
 
@@ -6753,7 +7148,7 @@ class ExposureMixin {
   }
 
   expoFindingText(f) {
-    return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "" });
+    return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "", list: this.expoAssistantList(f.assistants), reach: this.formatNumber(f.reach || 0) });
   }
 
   // One finding as a fold: the head always shows, the entities (a table of their own, with search, sorting and pages) and the advice only when open.
@@ -6779,8 +7174,18 @@ class ExposureMixin {
         { key: "assistants", label: "expoColAssistants", sortable: false, cell: item => (item.assistants?.length ? this.esc(this.expoAssistantList(item.assistants)) : `<span class="muted">—</span>`) },
       ],
     }) : "";
-    const more = f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
-    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${table}${more}`;
+    const agents = f.integrations?.length ? this.sysList(`expofind_${f.kind}`, f.integrations, {
+      sort: "name", tie: i => i.entry_id, empty: "expoNone",
+      sorts: [{ key: "name", label: "expoColIntegration", dir: "asc", get: i => i.title || i.domain }],
+      text: i => [i.title, i.domain].join(" "),
+      rowAttrs: i => `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(i.domain)}`)}" tabindex="0" role="link" aria-label="${this.esc(i.title || i.domain)}"`,
+      columns: [
+        { key: "name", label: "expoColIntegration", dir: "asc", cell: i => this.nameCell(i.title || i.domain, i.domain) },
+        { key: "target", label: "expoColTarget", sortable: false, cell: i => this.esc(this.t(`expoTarget_${i.target}`)) },
+      ],
+    }) : "";
+    const more = items.length && f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
+    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${table}${agents}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
     return this.fold(`expo_${f.kind}`, head, body, false);
   }
@@ -6849,7 +7254,7 @@ class ExposureMixin {
       { id: "findings", icon: "mdi:shield-alert-outline", label: this.t("expoTabFindings"), hint: this.t("expoTileFindingsHint"), count: r.findings.length, tone: warn ? "warn" : "ok" },
       ...sources.map(x => x.status === "ok"
         ? { id: x.id, icon: "mdi:microphone-outline", label: x.label, hint: this.t("expoTileSourceHint", { n: this.formatNumber(x.count) }), count: x.count, tone: "ok" }
-        : { id: x.id, icon: "mdi:microphone-off", label: x.label, hint: this.t(x.status === "inactive" ? "expoInactive" : "expoUnavailable"), disabled: true }),
+        : { id: x.id, icon: "mdi:microphone-off", label: x.label, hint: this.t(x.status === "inactive" ? "expoInactive" : x.status === "off" ? "expoOff" : "expoUnavailable"), disabled: true }),
     ];
     const open = this.viewTabOf("exposure", tabs.filter(x => !x.disabled), r.findings.length || !live.length ? "findings" : live[0].id);
     let body;
@@ -6872,6 +7277,7 @@ const SEARCH_WORDS = {
   cleanup: "aufräumen bereinigen löschen entfernen quarantäne cleanup delete remove quarantine",
   repair: "reparieren zähler umziehen ersetzen austauschen repair counter meter replace exchange",
   journal: "journal pläne rückgängig verlauf plans undo history",
+  removedDevices: "entfernt gelöscht vergessen entfernte geräte removed deleted forgotten devices",
   maintenance: "wartung backup sicherung wiederherstellung update ziele maintenance restore goals",
   batteries: "batterien batterie akku schwach batteries battery low",
   reminders: "erinnerungen wartung filter reminders due",
@@ -6891,7 +7297,10 @@ const SEARCH_WORDS = {
   look: "darstellung theme dunkel hell schrift farbe appearance dark light font",
   protection: "schutz schutzmodus sicherheit ausgeblendet ignoriert ausnahmen protection mode hidden ignored exceptions",
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
-  goals: "ziele goals",
+  goals: "ziele wartungsziele grenzen goals",
+  backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
+  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs firmware check before",
+  blueprints: "blueprints vorlagen fehlend defekt ungenutzt missing broken unused",
   info: "info version speichert daten diagnose prüfung quellen dauer about stored diagnostics coverage timing",
   compare: "scan-vergleich verlauf vergleich scans history compare",
   logbook: "logbuch notizen logbook notes",
@@ -6956,7 +7365,8 @@ class SearchPagesMixin {
     }
     pages.push({ view: "settings", label: this.t("settings"), path: "", words: SEARCH_WORDS.settings });
     for (const [id, , labelKey] of this.settingsTabs()) pages.push({ view: "settings", settingsTab: id, label: this.t(labelKey), path: this.t("settings"), words: SEARCH_WORDS[id] || "" });
-    pages.push({ view: "maintenance", viewTab: "goals", label: this.t("goalsTitle"), path: this.t("maintenance"), words: SEARCH_WORDS.goals });
+    for (const [id, label] of [["backup", "backupsTab"], ["updates", "updatesTab"], ["blueprints", "bpTab"], ["goals", "goalsTitle"]]) pages.push({ view: "maintenance", viewTab: id, label: this.t(label), path: this.t("maintenance"), words: SEARCH_WORDS[id] });
+    pages.push({ view: "journal", viewTab: "devices", label: this.t("lifeRemovedTab"), path: this.t("journal"), words: SEARCH_WORDS.removedDevices });
     pages.push({ view: "changes", viewTab: "compare", label: this.t("tabScans"), path: this.t("changes"), words: SEARCH_WORDS.compare });
     pages.push({ view: "changes", viewTab: "logbook", label: this.t("logbook"), path: this.t("changes"), words: SEARCH_WORDS.logbook });
     return pages;
@@ -7290,7 +7700,8 @@ class PoliciesMixin {
 // LayoutMixin: the pieces every long view shares (a row of key figures and tabs for its sections); mixed in by 99-register.js.
 class LayoutMixin {
   // A row of key figures. tile: { label, value, sub, tone ("ok"|"warn"|"red"|"mute"), tab, filter, lf } where tab ("view|id") makes it a button; lf ([list id, filter name, value]) sets that list filter, an empty name clears them all.
-  sumTiles(tiles) {
+  // `cls` adds a class to the grid, e.g. "even" for tiles of one size in rows of three.
+  sumTiles(tiles, cls = "") {
     const cells = tiles.filter(Boolean).map(t => {
       const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}${t.spark ? `<span class="spark-row">${t.spark}</span>` : ""}`;
       const hint = t.hint ? ` title="${this.esc(t.hint)}"` : "";
@@ -7308,7 +7719,7 @@ class LayoutMixin {
       if (t.unref) return go(`data-unref-tab="${t.unref}"`);
       return t.tab ? go(`data-view-tab="${this.esc(t.tab)}"`) : `<div class="sumtile ${t.tone || "mute"}"${hint}>${inner}</div>`;
     }).join("");
-    return cells ? `<div class="sumtiles" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
+    return cells ? `<div class="sumtiles${cls ? ` ${cls}` : ""}" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
   }
 
   // When the data of a page was read last (for its "as of"), and a time given in seconds as ISO text.
@@ -7510,7 +7921,7 @@ class CorrelationMixin {
 
   corrText(group) {
     const vars = { title: this.esc(group.title || ""), domain: this.esc(group.domain || ""), from: this.esc(group.from ?? ""), to: this.esc(group.to ?? "") };
-    return this.t(`corr_${group.kind}`, vars);
+    return this.t(`corr_${group.kind}`, vars) + (group.events > 1 ? ` ×${this.formatNumber(group.events)}` : "");
   }
 
   // The sentence on one finding, or "" when it began with nothing the log knows.
@@ -7542,7 +7953,7 @@ class CorrelationMixin {
   corrGroupBody(group) {
     const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean);
     const pg = this.paginate(`corr_${group.id}`, findings);
-    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${pg.rows.map(f => this.findingRow(f)).join("")}${pg.footer}`;
+    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${pg.rows.map(f => this.findingRow(f, false, false)).join("")}${pg.footer}`;
   }
 
   // The incidents of the findings page: every update or restart that has findings, and every watch after a system
@@ -7560,7 +7971,9 @@ class CorrelationMixin {
     });
     watches.filter(w => !used.has(w.id)).forEach(watch => items.push({ group: null, watch, at: watch.started_at }));
     const running = it => (it.watch && !it.watch.closed_at ? 1 : 0);
-    return items.sort((a, b) => running(b) - running(a) || (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
+    // What only stands for itself (restart, plan, deleted statistics) comes after the updates, which can be a reason for findings.
+    const alone = it => (it.group?.only_group && !it.watch ? 1 : 0);
+    return items.sort((a, b) => running(b) - running(a) || alone(a) - alone(b) || (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
   }
 
   incidentId(item) { return item.group ? `corr_${item.group.id}` : `corr_w_${item.watch.id}`; }
@@ -7618,6 +8031,7 @@ Object.assign(TEXT.de, {
   watchV_worse: "Verschlechtert", watchV_stable: "Stabil", watchV_transient: "Vorübergehend", watchV_unknown: "Unbekannt", watchV_pending: "Läuft",
   watchBefore: "Stand davor: Scan vom {when}", watchNoBefore: "Vor dem Neustart gab es keinen Scan, ein Vergleich ist nicht möglich.",
   watchUnread: "Eine Quelle konnte nicht gelesen werden. Was dort fehlt, gilt als unbekannt, nicht als in Ordnung.",
+  repairSeverity_critical: "kritisch", repairSeverity_error: "Fehler", repairSeverity_warning: "Warnung", repairFixable: "lässt sich in Home Assistant beheben", repairMore: "Mehr erfahren", watchAgain: "Aktuell wieder gestört",
   watchNew: "Seitdem ausgefallen ({n})", watchRepairs: "Seitdem neue Reparaturen ({n})", watchSilent: "Seitdem ohne Wert ({n})", watchMarked: "Mit Vermerk, nicht gezählt ({n})", watchFixed: "Wieder in Ordnung ({n})", watchTransient: "Kurz gestört, jetzt wieder in Ordnung ({n})", watchNewFindings: "Neue Befunde seit dem Update: {n}",
   watchNone: "Keine Auffälligkeiten.", watchSamples: "{n} Messungen", watchEnded: "beendet {when}", watchMore: "{n} weitere sind hier nicht aufgeführt.",
   optWatchTitle: "Beobachtung nach System-Update", optWatchHint: "Wie viele Stunden nach einem Update von Home Assistant, Betriebssystem oder Supervisor zusätzlich gescannt und mit dem Stand davor verglichen wird. 0 schaltet die Beobachtung aus.",
@@ -7628,12 +8042,13 @@ Object.assign(TEXT.en, {
   watchV_worse: "Worse", watchV_stable: "Stable", watchV_transient: "Temporary", watchV_unknown: "Unknown", watchV_pending: "Running",
   watchBefore: "State before: scan of {when}", watchNoBefore: "There was no scan before the restart, so there is nothing to compare with.",
   watchUnread: "A source could not be read. What is missing there counts as unknown, not as fine.",
+  repairSeverity_critical: "critical", repairSeverity_error: "error", repairSeverity_warning: "warning", repairFixable: "can be fixed in Home Assistant", repairMore: "Learn more", watchAgain: "Disturbed again now",
   watchNew: "Failed since ({n})", watchRepairs: "New repairs since ({n})", watchSilent: "Without a value since ({n})", watchMarked: "Marked, not counted ({n})", watchFixed: "Working again ({n})", watchTransient: "Briefly disturbed, fine now ({n})", watchNewFindings: "New findings since the update: {n}",
   watchNone: "Nothing unusual.", watchSamples: "{n} checks", watchEnded: "ended {when}", watchMore: "{n} more are not listed here.",
   optWatchTitle: "Watch after a system update", optWatchHint: "For how many hours after an update of Home Assistant, the operating system or the Supervisor Housekeeper scans extra and compares with the state before. 0 switches the watch off.",
 });
 
-// LifecycleMixin: the "Verlauf" tab of a device and the list of removed devices in Maintenance; mixed in by 99-register.js.
+// LifecycleMixin: the "Verlauf" tab of a device and the list of what plans removed in the Journal; mixed in by 99-register.js.
 // The steps come from the device registry, the journal and the last reliability numbers; the logbook entry of a removed device is shown in the list of removed devices.
 class LifecycleMixin {
   async loadLifecycle(deviceId) {
@@ -7663,38 +8078,31 @@ class LifecycleMixin {
     return `<section class="panel">${head}${rows || `<p class="factnote">${this.t("lifeNone")}</p>`}${now}</section>`;
   }
 
-  // Devices that a plan removed or forgot; they no longer exist, so the journal is the only source.
-  ensureRemoved() {
-    if (this._removedRequested) return;
-    this._removedRequested = true;
-    setTimeout(async () => {
-      try { this.removed = (await this._hass.callWS({ type: "ha_housekeeper/lifecycle" })).removed || []; } catch (_) { this.removed = []; }
-      this.render();
-    }, 0);
-  }
-
   removedCard() {
-    this.ensureRemoved();
-    const head = `<p class="factnote pad">${this.t("lifeRemovedHint")}</p>`;  // the title is on the tile of the tab
+    // The list comes with the journal (they are the same source); the title is on the tile of the tab.
+    const head = `<p class="factnote pad">${this.t("lifeRemovedHint")}</p>`;
     if (!this.removed) return `<div class="panel">${head}${this.skeleton("loading")}</div>`;
     // The logbook entry that was written when the device was removed (or one the person added to it).
-    const noteOf = d => this.notesList().find(x => x.target === `device:${d.object_id}`);
-    const kindText = d => this.t(d.kind === "forget_device" ? "lifeForgotten" : "life_removed");
+    const noteOf = d => d.group === "device" ? this.notesList().find(x => x.target === `device:${d.object_id}`) : null;
+    const kindText = d => this.t(`goneKind_${d.kind}`);
+    const groups = ["device", "entity", "automation", "statistics", "backup"].filter(g => this.removed.some(d => d.group === g));
     const table = this.removed.length ? this.sysList("removed", this.removed, {
       sort: "when", dir: "desc", empty: "lifeRemovedNone", cls: "removed",
       sorts: [
         { key: "when", label: "lifeColWhen", dir: "desc", get: d => d.at },
-        { key: "name", label: "lifeColDevice", dir: "asc", get: d => d.name || d.object_id },
+        { key: "name", label: "goneColObject", dir: "asc", get: d => d.name || d.object_id },
       ],
-      filters: [{ name: "kind", all: this.t("lifeAllKinds"), options: [["remove_device", this.t("life_removed")], ["forget_device", this.t("lifeForgotten")]] }],
-      filterFns: { kind: (d, v) => (v === "forget_device") === (d.kind === "forget_device") },
+      filters: [{ name: "kind", all: this.t("lifeAllKinds"), options: groups.map(g => [g, this.t(`goneGroup_${g}`)]) }],
+      filterFns: { kind: (d, v) => d.group === v },
       text: d => [d.name, d.object_id].join(" "), tie: d => d.object_id,
       rowAttrs: d => { const n = noteOf(d); return n ? `data-note-edit="${this.esc(n.id)}" tabindex="0" role="button" title="${this.esc(this.t("noteEdit"))}"` : 'class="static"'; },
       columns: [
-        { key: "name", label: "lifeColDevice", dir: "asc", cell: d => `<div class="statcell"><span class="tile red"><ha-icon icon="mdi:delete-outline"></ha-icon></span><div>${this.nameCell(d.name || d.object_id, d.object_id)}</div></div>` },
+        { key: "name", label: "goneColObject", dir: "asc", cell: d => `<div class="statcell"><span class="tile red"><ha-icon icon="mdi:delete-outline"></ha-icon></span><div>${this.nameCell(d.name || d.object_id, d.object_id)}</div></div>` },
         { key: "kind", label: "lifeColKind", sortable: false, cell: kindText },
         { key: "when", label: "lifeColWhen", dir: "desc", cell: d => this.esc(this.formatDate(d.at)) },
+        { key: "undo", label: "goneColUndo", sortable: false, cell: d => `<span class="pill ${d.irreversible ? "warn" : "mute"}">${this.t(d.irreversible ? "goneIrreversible" : "goneUndoInPlan")}</span>` },
         { key: "note", label: "lifeColNote", sortable: false, cell: d => { const n = noteOf(d); return n ? `${this.esc(n.title)}${n.note ? `<small class="u-block">${this.esc(n.note)}</small>` : ""}` : "–"; } },
+        { key: "plan", label: "lifeColPlan", sortable: false, cell: d => ((this.journal || []).some(p => p.plan_id === d.plan_id) ? `<button type="button" class="btn small" data-plan-open="${this.esc(d.plan_id)}">${this.t("lifeOpenPlan")}</button>` : "–") },
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("lifeRemovedNone")}</div>`;
     return `<div class="panel">${head}${table}</div>`;
@@ -7725,7 +8133,7 @@ class WatchMixin {
     return w.triggers.length > 1 ? `${what} +${w.triggers.length - 1}` : what;
   }
 
-  // One line while a watch runs; sits in the page header next to the other banners.
+  // One line while a watch runs; sits on the overview, below the health ring.
   watchBand() {
     const w = this.data?.meta?.watch;
     if (!w) return "";
@@ -7734,16 +8142,19 @@ class WatchMixin {
     return `<div class="panel u-mb14" data-watch><button class="row" data-watch-go="${this.esc(w.id || "")}" title="${this.esc(this.t("watchGo"))}"><span class="tile ${n ? "warn" : "mute"}"><ha-icon icon="mdi:eye-check-outline"></ha-icon></span><span class="row-text"><strong>${text}</strong><small>${this.t("watchGo")}</small></span></button></div>`;
   }
 
-  watchRows(keys, tone) {
+  // past = a group about the time of the watch (briefly disturbed, fixed): no finding row with the state of today, only a note when it is a finding again.
+  watchRows(keys, tone, past = false) {
     const pg = keys.slice(0, WATCH_LIST).map(key => {
       // An object that is a finding already shows as in the findings list: checkbox, menu, decisions.
       const finding = (this.data?.findings || []).find(f => !f.ignored && this.findingKey(f) === key);
-      if (finding) return this.findingRow(finding);
+      if (finding && !past) return this.findingRow(finding, false, false);
       const item = this.findObject(key);
       const name = item?.name || key.split(":").slice(1).join(":");
       const mark = item?.mark;
-      const act = mark ? `<span class="pill mute">${this.esc(this.t(`mark_${mark.kind}`))}</span>` : item ? `<button class="btn quiet" data-watch-mark="${this.esc(key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("markSet")}</button>` : "";
-      return `<div class="row" role="button" tabindex="0" data-object="${this.esc(key)}">${this.tile(item?.object_type || key.split(":")[0], tone)}<span class="row-text"><strong>${this.esc(name)}</strong><small>${this.esc(key)}${item?.status ? ` · ${this.esc(item.status)}` : ""}</small></span>${act}</div>`;
+      const again = past && finding ? `<span class="pill warn">${this.t("watchAgain")}</span>` : "";
+      const menu = item && !past ? this.objectMenu(key, !mark) : "";
+      const act = past ? again : `${mark ? `<span class="pill mute">${this.esc(this.t(`mark_${mark.kind}`))}</span>` : ""}${menu}`;
+      return `<div class="row" role="button" tabindex="0" data-object="${this.esc(key)}">${this.tile(item?.object_type || key.split(":")[0], tone)}<span class="row-text"><strong>${this.esc(name)}</strong><small>${this.esc(key)}${item?.status && !past ? ` · ${this.esc(item.status)}` : ""}</small></span>${act}</div>`;
     }).join("");
     const more = keys.length > WATCH_LIST ? `<p class="sub">${this.t("watchMore", { n: this.formatNumber(keys.length - WATCH_LIST) })}</p>` : "";
     return pg + more;
@@ -7764,9 +8175,16 @@ class WatchMixin {
     const r = { silent: [], marked: [], ...w.result }, parts = [];
     parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.t("watchSamples", { n: w.samples.length })}</p>`);
     if (r.reason === "unread") parts.push(`<p class="factnote">${this.t("watchUnread")}</p>`);
-    const section = (id, keys, tone) => keys.length ? `<h3>${this.t(id, { n: this.formatNumber(keys.length) })}</h3>${this.watchRows(keys, tone)}` : "";
-    parts.push(section("watchNew", r.new, "warn"), section("watchSilent", r.silent, "mute"), section("watchMarked", r.marked, "mute"), section("watchTransient", r.transient, "mute"), section("watchFixed", r.fixed, "ok"));
-    if (r.new_repairs?.length) parts.push(`<h3>${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</h3>${r.new_repairs.slice(0, WATCH_LIST).map(key => `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(key.split(":").slice(1).join(":"))}</strong><small>${this.esc(key.split(":")[0])}</small></span></div>`).join("")}`);
+    const section = (id, keys, tone, past = false) => keys.length ? `<h3>${this.t(id, { n: this.formatNumber(keys.length) })}</h3>${this.watchRows(keys, tone, past)}` : "";
+    parts.push(section("watchNew", r.new, "warn"), section("watchSilent", r.silent, "mute"), section("watchMarked", r.marked, "mute"), section("watchTransient", r.transient, "mute", true), section("watchFixed", r.fixed, "ok", true));
+    if (r.new_repairs?.length) {
+      const info = this.watch?.repairs || {};
+      parts.push(`<h3>${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</h3>${r.new_repairs.slice(0, WATCH_LIST).map(key => {
+        const i = info[key], domain = key.split(":")[0], id = key.split(":").slice(1).join(":");
+        const sub = [this.esc(domain), ["critical", "error", "warning"].includes(i?.severity) ? this.t(`repairSeverity_${i.severity}`) : "", i?.fixable ? this.t("repairFixable") : ""].filter(Boolean).join(" · ");
+        return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(i?.title || id)}</strong><small>${sub}</small></span>${i?.url ? `<a class="btn quiet" href="${this.esc(i.url)}" target="_blank" rel="noopener noreferrer">${this.t("repairMore")}</a>` : ""}</div>`;
+      }).join("")}`);
+    }
     if (r.new_findings.length) parts.push(`<p class="sub">${this.t("watchNewFindings", { n: this.formatNumber(r.new_findings.length) })}</p>`);
     if (!r.new.length && !r.silent.length && !r.marked.length && !r.transient.length && !r.fixed.length && !r.new_findings.length && !r.new_repairs?.length && w.before) parts.push(`<p class="sub">${this.t("watchNone")}</p>`);
     return parts.join("");
@@ -7787,20 +8205,35 @@ class BlueprintsMixin {
 
   blueprintsCount() { const b = this.blueprints; return b ? b.unused + b.missing + b.broken : null; }
 
+  bpItems() {
+    const users = (b) => (b.users || []).map(u => {
+      const obj = this.findObject(`${u.id.split(".")[0]}:${u.id}`);
+      return obj ? `<button class="linklike" data-object="${this.esc(this.objectKey(obj))}">${this.esc(u.name)}</button>` : this.esc(u.name);
+    }).join(", ") + (b.count > (b.users || []).length ? ` +${b.count - b.users.length}` : "");
+    return this.blueprints.domains.flatMap(d => [
+      ...d.missing.map(b => ({ kind: "missing", domain: d.domain, path: b.path, title: b.path, users: users(b), raw: b })),
+      ...d.broken.map(b => ({ kind: "broken", domain: d.domain, path: b.path, title: b.path, users: b.count ? users(b) : "", raw: b })),
+      ...d.unused.map(b => ({ kind: "unused", domain: d.domain, path: b.path, title: b.name === b.path ? b.path : b.name, users: "", raw: b })),
+    ]);
+  }
+
+  // The page of one blueprint takes over the whole view like the page of any other object.
+  blueprintPage() {
+    this.ensureBlueprints();
+    const back = `<div class="crumbs"><button class="btn" data-bp-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t("maintenance")}</button><span class="trail">${this.t("maintenance")} › ${this.t("bpTab")}</span></div>`;
+    if (!this.blueprints) return `${back}${this.skeleton("loading")}`;
+    const item = this.bpItems().find(i => `${i.domain}/${i.path}` === this.bpOpen);
+    if (item) return `${back}${this.blueprintDetail(item)}`;
+    this.bpOpen = "";
+    return `${this.heading()}${this.content()}`;
+  }
+
   blueprintsCard() {
     this.ensureBlueprints();
     const head = this.pageBar({ at: this.loadedAt("blueprints"), loading: !this.blueprints && !this.blueprintsError, attr: "data-bp-refresh" });
     if (this.blueprintsError) return `<div class="stack">${head}<div class="panel"><div class="error">${this.esc(this.blueprintsError)}</div></div></div>`;
     if (!this.blueprints) return `<div class="stack">${head}<div class="panel">${this.skeleton("loading")}</div></div>`;
-    const users = (b) => (b.users || []).map(u => {
-      const obj = this.findObject(`${u.id.split(".")[0]}:${u.id}`);
-      return obj ? `<button class="linklike" data-object="${this.esc(this.objectKey(obj))}">${this.esc(u.name)}</button>` : this.esc(u.name);
-    }).join(", ") + (b.count > (b.users || []).length ? ` +${b.count - b.users.length}` : "");
-    const items = this.blueprints.domains.flatMap(d => [
-      ...d.missing.map(b => ({ kind: "missing", domain: d.domain, path: b.path, title: b.path, users: users(b) })),
-      ...d.broken.map(b => ({ kind: "broken", domain: d.domain, path: b.path, title: b.path, users: b.count ? users(b) : "" })),
-      ...d.unused.map(b => ({ kind: "unused", domain: d.domain, path: b.path, title: b.name === b.path ? b.path : b.name, users: "" })),
-    ]);
+    const items = this.bpItems();
     const rank = { missing: 0, broken: 1, unused: 2 }, label = { missing: "bpMissing", broken: "bpBroken", unused: "bpUnused" }, tone = { missing: "red", broken: "red", unused: "mute" };
     const domains = this.blueprints.domains.filter(d => items.some(i => i.domain === d.domain));
     const files = this.blueprints.domains.map(d => `${this.t(d.domain)}: ${this.formatNumber(d.total)} ${this.t("bpFiles")}`).join(" · ");
@@ -7817,6 +8250,7 @@ class BlueprintsMixin {
       ],
       filterFns: { kind: (i, v) => i.kind === v, domain: (i, v) => i.domain === v },
       text: i => `${i.title} ${i.path}`, tie: i => `${i.domain}/${i.path}`,
+      rowAttrs: i => `data-bp-open="${this.esc(`${i.domain}/${i.path}`)}" tabindex="0" role="button" aria-label="${this.esc(i.title)}"`,
       columns: [
         { key: "name", label: "bpColFile", dir: "asc", cell: i => `<div class="statcell"><span class="tile ${tone[i.kind]}"><ha-icon icon="${{ missing: "mdi:file-question-outline", broken: "mdi:file-alert-outline", unused: "mdi:file-hidden" }[i.kind]}"></ha-icon></span><div>${this.nameCell(i.title, i.title === i.path ? "" : i.path)}</div></div>` },
         { key: "kind", label: "bpColKind", dir: "asc", cell: i => `<span class="pill ${tone[i.kind]}">${this.t(label[i.kind])}</span>` },
@@ -7825,6 +8259,66 @@ class BlueprintsMixin {
       ],
     });
     return `<div class="stack">${head}<div class="panel"><p class="factnote pad">${this.esc(files)}</p>${table}</div></div>`;
+  }
+
+  // The inputs, the file and what each user set are read when a blueprint is opened, not with the list.
+  ensureBlueprintDetail(item) {
+    const key = `${item.domain}/${item.path}`;
+    if (this._bpDetailKey === key) return;
+    this._bpDetailKey = key; this.bpDetail = null; this.bpDetailError = "";
+    setTimeout(async () => {
+      try { const reply = await this._hass.callWS({ type: "ha_housekeeper/blueprint_detail", domain: item.domain, path: item.path }); if (this._bpDetailKey === key) this.bpDetail = reply; }
+      catch (err) { if (this._bpDetailKey === key) this.bpDetailError = this.errText(err); }
+      this.render();
+    }, 0);
+  }
+
+  // One blueprint as a page of its own: overview, inputs, who uses it and how, and the file.
+  blueprintDetail(i) {
+    this.ensureBlueprintDetail(i);
+    const b = i.raw, d = this.bpDetail, tone = { missing: "red", broken: "red", unused: "mute" }[i.kind];
+    const nUsers = d ? d.user_count : (b.count ?? 0);
+    const tabs = [{ id: "overview", label: this.t("tabOverview") }, { id: "inputs", label: this.t("bpTabInputs"), count: d ? d.inputs.length : null }, { id: "users", label: this.t("bpColUsers"), count: d ? nUsers : null }, { id: "technical", label: this.t("tabTechnical") }];
+    const open = this.viewTabOf("blueprint", tabs, "overview");
+    const head = `<div class="panel detailhead"><span class="tile ${tone}"><ha-icon icon="mdi:file-code-outline"></ha-icon></span><div><div class="headpills"><span class="pill ${tone}">${this.t({ missing: "bpMissing", broken: "bpBroken", unused: "bpUnused" }[i.kind])}</span><span class="pill mute">${this.t(i.domain)}</span></div><h1>${this.esc(i.title)}</h1><span class="id">${this.esc(i.path)}</span></div></div>`;
+    const fact = (label, value) => value ? `<div class="fact"><span>${this.t(label)}</span><b>${value}</b></div>` : "";
+    const url = typeof b.source_url === "string" && /^https?:\/\//.test(b.source_url) ? `<a href="${this.esc(b.source_url)}" target="_blank" rel="noopener noreferrer">${this.esc(b.source_url)}</a>` : "";
+    let body;
+    if (open === "overview") {
+      body = `<div class="facts">${fact("bpColDomain", this.esc(this.t(i.domain)))}${fact("bpDetAuthor", this.esc(b.author || ""))}${fact("bpDetSource", url)}${d ? fact("bpTabInputs", this.formatNumber(d.inputs.length)) : ""}${fact("bpColUsers", this.formatNumber(nUsers))}</div>${b.description ? `<p class="factnote pad">${this.esc(b.description)}</p>` : ""}<p class="factnote pad">${this.t(`bpHint_${i.kind}`)}</p>`;
+    } else if (open === "technical") {
+      body = `<div class="facts">${fact("bpDetPath", `<code>${this.esc(i.path)}</code>`)}${fact("bpColDomain", this.esc(this.t(i.domain)))}${d?.size != null ? fact("bpDetSize", this.formatBytes(d.size)) : ""}${d?.modified ? fact("bpDetModified", this.esc(this.formatDate(d.modified))) : ""}${d?.min_version ? fact("bpDetMin", this.esc(d.min_version)) : ""}</div>${d ? "" : this.bpLoading()}`;
+    } else if (!d) {
+      body = this.bpLoading();
+    } else if (open === "inputs") {
+      body = this.blueprintInputs(d);
+    } else {
+      body = this.blueprintUsers(d, nUsers);
+    }
+    return `${head}<section class="panel">${this.viewTabBar("blueprint", tabs, open)}${body}</section>`;
+  }
+
+  bpLoading() { return this.bpDetailError ? `<div class="error pad">${this.esc(this.bpDetailError)}</div>` : this.skeleton("loading"); }
+
+  blueprintInputs(d) {
+    if (!d.inputs.length) return `<div class="emptymsg">${this.t("bpNoInputs")}</div>`;
+    const sections = [...new Set(d.inputs.map(r => r.section))];
+    return sections.map(section => `${section ? `<h3 class="pad">${this.esc(section)}</h3>` : ""}<ul class="pad">${d.inputs.filter(r => r.section === section).map(r => `<li><strong>${this.esc(r.name)}</strong> <code>${this.esc(r.key)}</code>${r.selector ? ` <span class="pill mute">${this.esc(r.selector)}</span>` : ""}${r.description ? `<br><small>${this.esc(r.description)}</small>` : ""}<br><small>${r.has_default ? `${this.t("bpInDefaultIs")}: <code>${this.esc(r.default)}</code>` : this.t("bpInNoDefault")}</small></li>`).join("")}</ul>`).join("");
+  }
+
+  // Each user with what it set; an input left alone, one that points to an entity that is gone, and a value kept back stand out.
+  blueprintUsers(d, count) {
+    if (!d.users.length) return `<div class="emptymsg">${this.t("bpUsersNone")}</div>`;
+    const names = Object.fromEntries(d.inputs.map(r => [r.key, r.name]));
+    const state = { default: ["mute", "bpInDefault"], set: ["ok", "bpInSet"], missing_entity: ["red", "bpInMissing"] };
+    const users = d.users.map(u => {
+      const obj = this.findObject(`${u.id.split(".")[0]}:${u.id}`);
+      const who = obj ? `<button class="linklike" data-object="${this.esc(this.objectKey(obj))}">${this.esc(u.name)}</button>` : this.esc(u.name);
+      const rows = u.inputs.map(x => `<li>${this.esc(names[x.key] || x.key)}: ${x.state === "default" ? "" : (x.value === null ? `<small>${this.t("bpValueHidden")}</small>` : `<code>${this.esc(x.value)}</code>`)} <span class="pill ${state[x.state][0]}">${this.t(state[x.state][1])}</span></li>`).join("");
+      return `<h3 class="pad">${who}</h3>${rows ? `<ul class="pad">${rows}</ul>` : ""}`;
+    }).join("");
+    const rest = Math.max(0, count - d.users.length);
+    return `${users}${rest ? `<p class="factnote pad">+${rest}</p>` : ""}`;
   }
 }
 
@@ -8256,8 +8750,16 @@ class CausesMixin {
     if (!f || f.ignored) return "";
     const key = this.esc(f.key);
     const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
     const del = ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id) ? item("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`) : "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${item("mdi:bookmark-check-outline", "markKnown", `data-decide-open="${key}" data-decide-preset="keep"`)}${item("mdi:clock-outline", "fselSnooze", `data-decide-open="${key}" data-decide-preset="snooze"`)}${item("mdi:eye-off-outline", "hideFinding", `data-decide-open="${key}"`)}${del}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${item("mdi:bookmark-check-outline", "markKnown", `data-decide-open="${key}" data-decide-preset="keep"`)}${item("mdi:clock-outline", "fselSnooze", `data-decide-open="${key}" data-decide-preset="snooze"`)}${item("mdi:eye-off-outline", "hideFinding", `data-decide-open="${key}"`)}${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+  }
+
+  // The menu of an object that is not a finding (the watch lists such objects): the same shape as the menu of a finding row, with what applies to an object.
+  objectMenu(key, canMark = true) {
+    const k = this.esc(key);
+    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${canMark ? item("mdi:bookmark-plus-outline", "markSet", `data-watch-mark="${k}"`) : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
   }
 
   rowDecide(f) { return f && this.decide && this.decide.key === f.key ? `<div class="pad">${this.decideForm(f)}</div>` : ""; }
@@ -8323,42 +8825,56 @@ Object.assign(TEXT.de, {
   causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageDevices: "{n} Geräte",
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
   cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
-  causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Ursachen mit Folgen", flatList: "Alle einzeln", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageTargets: "{n} fehlende Ziele", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
-  findingsFollowSub: "dazu {n} Folgen der Ausfälle", actOutages: "Ausfälle",
+  causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageTargets: "{n} fehlende Ziele", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
+  findingsFollowSub: "dazu {n} Folgen der Ausfälle", findingsOfFollow: "davon {n} Folgen der Ausfälle", actOutages: "Ausfälle",
 });
 Object.assign(TEXT.en, {
   causesTitle: "Outages",
   causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageDevices: "{n} devices",
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
   cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
-  causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Causes with follow-ups", flatList: "All one by one", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageTargets: "{n} missing targets", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
-  findingsFollowSub: "plus {n} follow-ups of the outages", actOutages: "Outages",
+  causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageTargets: "{n} missing targets", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
+  findingsFollowSub: "plus {n} follow-ups of the outages", findingsOfFollow: "of which {n} follow-ups of the outages", actOutages: "Outages",
 });
 
 // Maintenance goals: what "in order" means for this house and whether it is so (see goals.py); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt",
+  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
   goal_broken_references: "Defekte Referenzen", goal_unavailable: "Nicht verfügbare Entitäten", goal_backup_age: "Alter des letzten Backups", goal_restore_test_age: "Alter des Wiederherstellungstests", goal_recorder_growth: "Datenbankwachstum", goal_weak_batteries: "Schwache Batterien", goal_devices_without_area: "Geräte ohne Bereich", goal_stale_sensors: "Sensoren ohne neue Meldung", goal_recurring_devices: "Wiederkehrende Ausfälle (Geräte)", goal_automation_errors: "Automationen mit Fehlern (30 Tage)", goal_blocked_automations: "Blockierte Automationen", goal_orphaned_statistics: "Verwaiste Statistiken",
   goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar",
   goalState_met: "Erfüllt", goalState_missed: "Verfehlt", goalState_unknown: "Unbekannt", goalState_off: "Aus",
   goalUnit_mb_per_day: "{n} MB pro Tag", goalEdit: "Anpassen", goalLimitLabel: "Grenze", goalEnabled: "Ziel beachten", goalDefault: "Standard: {n}", goalFailed: "Nicht gespeichert: {reason}", goalSave: "Speichern", goalsAdjust: "Grenzen anpassen", goalsAllMet: "Alle {n} beachteten Ziele sind erreicht.",
 });
 Object.assign(TEXT.en, {
-  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed",
+  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
   goal_broken_references: "Broken references", goal_unavailable: "Unavailable entities", goal_backup_age: "Age of the latest backup", goal_restore_test_age: "Age of the restore test", goal_recorder_growth: "Database growth", goal_weak_batteries: "Weak batteries", goal_devices_without_area: "Devices without an area", goal_stale_sensors: "Sensors without a new report", goal_recurring_devices: "Recurring outages (devices)", goal_automation_errors: "Automations with errors (30 days)", goal_blocked_automations: "Blocked automations", goal_orphaned_statistics: "Orphaned statistics",
   goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet",
   goalState_met: "Met", goalState_missed: "Missed", goalState_unknown: "Unknown", goalState_off: "Off",
   goalUnit_mb_per_day: "{n} MB per day", goalEdit: "Adjust", goalLimitLabel: "Limit", goalEnabled: "Watch this goal", goalDefault: "Default: {n}", goalFailed: "Not saved: {reason}", goalSave: "Save", goalsAdjust: "Adjust limits", goalsAllMet: "All {n} watched goals are met.",
 });
 
-const GOAL_VIEWS = { broken_references: "findingsNav", unavailable: "findingsNav", backup_age: "maintenance", restore_test_age: "maintenance", recorder_growth: "recorder", weak_batteries: "batteries", devices_without_area: "policies", stale_sensors: "findingsNav", recurring_devices: "cleanup", automation_errors: "runs", blocked_automations: "findingsNav", orphaned_statistics: "cleanup" };
+// Where a goal leads: the page, its tab, and the filter that leaves only what the goal counts (lf: "list|name|value").
+const GOAL_JUMPS = {
+  broken_references: { view: "findingsNav", filter: "broken_reference" },
+  unavailable: { view: "findingsNav", filter: "unavailable" },
+  stale_sensors: { view: "findingsNav", filter: "stale" },
+  blocked_automations: { view: "findingsNav", filter: "automation.blocked" },
+  backup_age: { view: "maintenance", tab: "backup" },
+  restore_test_age: { view: "maintenance", tab: "backup" },
+  recorder_growth: { view: "recorder", tab: "db" },
+  weak_batteries: { view: "batteries", battery: "low" },
+  devices_without_area: { view: "policies", tab: "violations", lf: "polviol|rule|device_area" },
+  recurring_devices: { view: "cleanup", tab: "devices" },
+  orphaned_statistics: { view: "cleanup", tab: "stats" },
+  automation_errors: { view: "runs", tab: "overview", lf: "overview|runs|errors" },
+};
 const GOAL_TONES = { met: "ok", missed: "red", unknown: "mute", off: "mute" };
 
 class GoalsMixin {
   async loadGoals() {
-    this.goalsLoading = true;
-    try { this.goals = await this._hass.callWS({ type: "ha_housekeeper/goals" }); }
-    catch (_) { this.goals = null; }
+    this.goalsLoading = true; this.goalsError = "";
+    try { this.goals = await this._hass.callWS({ type: "ha_housekeeper/goals" }); this.markLoaded("goals"); }
+    catch (err) { this.goals = null; this.goalsError = this.errText(err); }
     this.goalsLoading = false; this.render();
   }
 
@@ -8382,9 +8898,14 @@ class GoalsMixin {
     return g.value === null ? this.t("goalUnknownHint") : this.t("goalNow", { value: this.goalAmount(g, g.value) });
   }
 
+  goalJump(id) {
+    const j = GOAL_JUMPS[id];
+    return `data-jump="${j.view}"${j.tab ? ` data-jump-tab="${j.tab}"` : ""}${j.filter ? ` data-filter="${j.filter}" data-jump-fresh` : ""}${j.lf ? ` data-jump-lf="${j.lf}"` : ""}${j.battery ? ` data-jump-battery="${j.battery}"` : ""}`;
+  }
+
   goalRow(g, editable = true) {
     const form = editable && this.goalForm?.id === g.id ? this.goalFormHtml(g) : "";
-    const title = `<button class="linklike" data-jump="${GOAL_VIEWS[g.id]}"><strong>${this.t(`goal_${g.id}`)}</strong></button>`;
+    const title = `<button class="linklike" ${this.goalJump(g.id)}><strong>${this.t(`goal_${g.id}`)}</strong></button>`;
     return `<div class="row"><span class="tile ${GOAL_TONES[g.state]}"><ha-icon icon="${g.state === "met" ? "mdi:check-circle-outline" : g.state === "missed" ? "mdi:alert-circle-outline" : "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text">${title}<small>${this.esc(this.goalNow(g))} · ${this.esc(this.t("goalLimit", { limit: this.goalAmount(g, g.limit) }))}</small></span><span class="pill ${GOAL_TONES[g.state]}">${this.t(`goalState_${g.state}`)}</span>${editable ? `<button class="btn quiet" data-goal-open="${g.id}">${this.t("goalEdit")}</button>` : ""}</div>${form}`;
   }
 
@@ -8400,13 +8921,21 @@ class GoalsMixin {
   goalsCard(compact = false) {
     this.ensureGoals();
     const r = this.goals;
+    if (!compact) {
+      // The tab in Maintenance says what is going on instead of staying empty.
+      const head = this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
+      if (this.goalsError) return `<div class="stack">${head}<div class="panel"><div class="error">${this.esc(this.goalsError)}</div></div></div>`;
+      if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("loading")}</div></div>`;
+      if (!r.goals?.length) return `<div class="stack">${head}<div class="panel"><div class="emptymsg">${this.t("goalsNone")}</div></div></div>`;
+    }
     if (!r?.goals?.length) return "";
     if (compact) {
       const missed = r.goals.filter(g => g.state === "missed");
       const body = missed.length ? missed.map(g => this.goalRow(g, false)).join("") : `<div class="pad"><small>${this.t("goalsAllMet", { n: r.met })}</small></div>`;
       return `<section class="panel u-mb14" aria-labelledby="hk-goals"><div class="panelhead"><div><h2 id="hk-goals">${this.t("goalsTitle")}</h2></div><span class="date">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</span><button class="btn quiet" data-goals-settings>${this.t("goalsAdjust")}</button></div>${body}</section>`;
     }
-    return `<section class="panel u-mb14" aria-label="${this.esc(this.t("goalsTitle"))}"><p class="factnote pad">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</p>${r.goals.map(g => this.goalRow(g)).join("")}</section>`;
+    const head = this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
+    return `<div class="stack">${head}<section class="panel u-mb14" aria-label="${this.esc(this.t("goalsTitle"))}"><p class="factnote pad">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</p>${r.goals.map(g => this.goalRow(g)).join("")}</section></div>`;
   }
 
   openGoal(id) {
@@ -8431,6 +8960,7 @@ class GoalsMixin {
 
   bindGoals(root) {
     root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { (this.viewTab ||= {}).maintenance = "goals"; this.noteJump?.("maintenance"); this.view = "maintenance"; this.selected = null; this.pages = {}; this.render(); });
+    root.querySelector("[data-goals-refresh]")?.addEventListener("click", () => this.loadGoals());
     root.querySelectorAll("[data-goal-open]").forEach(el => el.onclick = () => this.openGoal(el.dataset.goalOpen));
     root.querySelectorAll("[data-goal-cancel]").forEach(el => el.onclick = () => { this.goalForm = null; this.render(); });
     root.querySelectorAll("[data-goal-form]").forEach(form => {
@@ -8445,11 +8975,11 @@ class GoalsMixin {
 // Texts for the purge entries in the cleanup journal.
 Object.assign(TEXT.de, {
   purgeJournal: "Gelöschte Statistiken", purgeJournalHint: "Ältere Löschungen von Recorder-Resten, aus der Zeit vor den Plänen. Neue Löschungen stehen als Plan im Journal.",
-  purgeEntry: "{removed} gelöscht, {skipped} übersprungen", purgeWithStates: "mit Zuständen", purgeBackup: "Backup {job}", purgeNoBackup: "ohne Backup", purgeByYou: "von dir", purgeByOther: "von anderem Benutzer", purgeError: "Fehler: {error}", purgeNothing: "nichts gelöscht", purgeNotDeleted: "Nichts gelöscht: {reason}", purgeChunk: "{n} ausgewählt. Ein Plan nimmt höchstens {max}: dieser Durchgang nimmt die ersten {max}, die übrigen {rest} bleiben ausgewählt.", purgeOpenCount: "{n} aus dem Recorder löschen …",
+  purgeEntry: "{removed} gelöscht, {skipped} übersprungen", purgeWithStates: "mit Zuständen", purgeBackup: "Backup {job}", purgeNoBackup: "ohne Backup", purgeByYou: "von dir", purgeByOther: "von anderem Benutzer", purgeError: "Fehler: {error}", purgeNothing: "nichts gelöscht", purgeNotDeleted: "Nichts gelöscht: {reason}", purgeChunk: "{n} ausgewählt. Ein Plan nimmt höchstens {max}: dieser Durchgang nimmt die ersten {max}, die übrigen {rest} bleiben ausgewählt.", purgeOpenCount: "Löschen vorbereiten ({n})", planObjects: "Objekte ({n})", purgeStatesOn: "An (empfohlen): Statistik und {n} gespeicherte Zustände werden gelöscht.", purgeStatesOff: "Aus: nur die Statistik wird gelöscht. Die Zustände bleiben im Verlauf und können die Statistik neu entstehen lassen.",
 });
 Object.assign(TEXT.en, {
   purgeJournal: "Deleted statistics", purgeJournalHint: "Older deletions of recorder leftovers, from before plans. New deletions appear as plans in the journal.",
-  purgeEntry: "{removed} deleted, {skipped} skipped", purgeWithStates: "with states", purgeBackup: "backup {job}", purgeNoBackup: "no backup", purgeByYou: "by you", purgeByOther: "by another user", purgeError: "error: {error}", purgeNothing: "nothing deleted", purgeNotDeleted: "Nothing deleted: {reason}", purgeChunk: "{n} selected. A plan takes at most {max}: this round takes the first {max}, the other {rest} stay selected.", purgeOpenCount: "Delete {n} from the recorder …",
+  purgeEntry: "{removed} deleted, {skipped} skipped", purgeWithStates: "with states", purgeBackup: "backup {job}", purgeNoBackup: "no backup", purgeByYou: "by you", purgeByOther: "by another user", purgeError: "error: {error}", purgeNothing: "nothing deleted", purgeNotDeleted: "Nothing deleted: {reason}", purgeChunk: "{n} selected. A plan takes at most {max}: this round takes the first {max}, the other {rest} stay selected.", purgeOpenCount: "Prepare deletion ({n})", planObjects: "Objects ({n})", purgeStatesOn: "On (recommended): the statistics and {n} stored states are deleted.", purgeStatesOff: "Off: only the statistics are deleted. The states stay in the history and can let the statistics reappear.",
 });
 Object.assign(TEXT.de, {
   purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Aufräumen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
@@ -8471,7 +9001,7 @@ Object.assign(TEXT.de, {
   exOld: "Altes Gerät", exNew: "Neues Gerät", exPick: "Gerät wählen", exLoad: "Vorschläge laden", exLoading: "Lade …", exFailed: "Keine Vorschläge: {reason}",
   exNoPairs: "Das alte Gerät hat keine Entitäten.", exNoTarget: "Kein Ersatz", exSuggested: "Vorschlag", exUsed: "{count} Verwendungen", exUnused: "Nichts zu ersetzen",
   exHow: "Art", exHow_replace: "Referenzen ersetzen", exHow_both: "Zähler wechseln (Verlauf und ID)", exHow_statistics: "Zähler wechseln (nur Verlauf)", exHow_id: "Zähler wechseln (nur ID)",
-  exChosen: "{count} Paare bestätigt", exCreate: "Vorschau für {count} Paare", exUnmatched: "Ohne Gegenstück am alten Gerät: {list}",
+  exChosen: "{count} Paare bestätigt", exCreate: "Vorschau erstellen ({count})", exUnmatched: "Ohne Gegenstück am alten Gerät: {list}",
   exDisableOld: "Altes Gerät deaktivieren …", exDisableHint: "Erst nach dem Austausch. Das geht nur, wenn am alten Gerät nichts mehr funktioniert und nichts mehr darauf verweist.",
   exReason_same_class: "gleiche Geräteklasse", exReason_same_unit: "gleiche Einheit", exReason_same_state_class: "gleiche Zustandsklasse", exReason_same_area: "gleicher Bereich", exReason_similar_name: "ähnlicher Name", exReason_same_id_tail: "gleiche ID-Endung",
   exSumPairs: "{count} Paare", exSumSuggest: "{count} mit Vorschlag", exSumNone: "{count} ohne Verwendung", exSumUses: "{count} Verwendungen insgesamt",
@@ -8481,11 +9011,11 @@ Object.assign(TEXT.de, {
   fu_class_broken_reference: "defekte Referenz", fu_class_unavailable: "nicht verfügbar", fu_class_recurring: "Gerät kehrt wieder",
   actFollowup: "Nachkontrolle meldet neue Funde", actFollowupHint: "Nach einem Plan sind neue Probleme aufgetreten.",
   reportButton: "Prüfbericht", reportNames: "Echte Namen und IDs verwenden", reportNamesHint: "Ohne Haken ersetzen Platzhalter alle Namen und IDs. So kannst du den Bericht teilen, ohne etwas preiszugeben.", reportDownload: "Herunterladen", reportCopy: "Kopieren", reportCopied: "Kopiert", reportFailed: "Bericht nicht erstellt: {reason}", reportAnonymous: "IDs und Namen sind durch Platzhalter ersetzt.",
-  simPurgeRows: "{count} Zeilen im Recorder werden entfernt (Datei schrumpft erst nach einem Repack)", simKeptRows: "{count} Zeilen Verlauf bleiben im Recorder, bis er sie bereinigt",
+  simPurgeRows: "{count} Zeilen im Recorder werden entfernt", simPurgeStatRows: "Statistik: {count} Zeilen werden gelöscht", simPurgeStateRows: "Rohdaten: {count} gespeicherte Zustände werden gelöscht", simKeptRows: "{count} Zeilen Verlauf bleiben im Recorder, bis er sie bereinigt",
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
   simRemoved: "{count} Entitäten entfernt ({devices} Geräte)", simDisabled: "{count} Entitäten deaktiviert ({devices} Geräte)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Zählerwechsel",
   simCertain: "{count} sichere Verwendungen bleiben bestehen", simUncertain: "{count} unsichere oder manuelle Verwendungen bleiben bestehen", simOrphaned: "{count} Statistiken voraussichtlich verwaist", simBlocked: "{count} Aktionen laufen nicht",
-  simLimits: "Grenzen: Verweise in Vorlagen und außerhalb von Home Assistant sind nicht sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
+  simLimits: "Grenzen: Die Datenbankdatei schrumpft erst nach einem Repack. Verweise in Vorlagen und außerhalb von Home Assistant sind nicht sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
 });
 Object.assign(TEXT.en, {
   kindExchange: "Exchange device",
@@ -8493,7 +9023,7 @@ Object.assign(TEXT.en, {
   exOld: "Old device", exNew: "New device", exPick: "Pick a device", exLoad: "Load proposals", exLoading: "Loading …", exFailed: "No proposals: {reason}",
   exNoPairs: "The old device has no entities.", exNoTarget: "No replacement", exSuggested: "suggested", exUsed: "{count} uses", exUnused: "Nothing to replace",
   exHow: "Kind", exHow_replace: "Replace references", exHow_both: "Switch meter (history and ID)", exHow_statistics: "Switch meter (history only)", exHow_id: "Switch meter (ID only)",
-  exChosen: "{count} pairs confirmed", exCreate: "Preview for {count} pairs", exUnmatched: "Without a counterpart on the old device: {list}",
+  exChosen: "{count} pairs confirmed", exCreate: "Create preview ({count})", exUnmatched: "Without a counterpart on the old device: {list}",
   exDisableOld: "Disable old device …", exDisableHint: "Only after the exchange. It works only when nothing on the old device works any more and nothing refers to it.",
   exReason_same_class: "same device class", exReason_same_unit: "same unit", exReason_same_state_class: "same state class", exReason_same_area: "same area", exReason_similar_name: "similar name", exReason_same_id_tail: "same ID ending",
   exSumPairs: "{count} pairs", exSumSuggest: "{count} with a proposal", exSumNone: "{count} unused", exSumUses: "{count} uses in total",
@@ -8503,11 +9033,11 @@ Object.assign(TEXT.en, {
   fu_class_broken_reference: "broken reference", fu_class_unavailable: "unavailable", fu_class_recurring: "device came back",
   actFollowup: "Follow-up reports new findings", actFollowupHint: "New problems appeared after a cleanup plan.",
   reportButton: "Audit report", reportNames: "Use real names and IDs", reportNamesHint: "Without the tick, placeholders replace all names and IDs, so you can share the report without giving anything away.", reportDownload: "Download", reportCopy: "Copy", reportCopied: "Copied", reportFailed: "Report not created: {reason}", reportAnonymous: "IDs and names are replaced by placeholders.",
-  simPurgeRows: "{count} recorder rows will be removed (the file only shrinks after a repack)", simKeptRows: "{count} history rows stay in the recorder until it cleans them up",
+  simPurgeRows: "{count} recorder rows will be removed", simPurgeStatRows: "Statistics: {count} rows are deleted", simPurgeStateRows: "Raw data: {count} stored states are deleted", simKeptRows: "{count} history rows stay in the recorder until it cleans them up",
   simTitle: "Expected end state", simPurged: "{count} statistics will be deleted (reversible only from the backup)",
   simRemoved: "{count} entities removed ({devices} devices)", simDisabled: "{count} entities disabled ({devices} devices)", simReplaced: "{count} references replaced", simMeters: "{count} meter switches",
   simCertain: "{count} certain uses remain", simUncertain: "{count} uncertain or manual uses remain", simOrphaned: "{count} statistics likely orphaned", simBlocked: "{count} actions will not run",
-  simLimits: "Limits: references inside templates and outside Home Assistant cannot be checked for certain; saved storage is not estimated.",
+  simLimits: "Limits: the database file only shrinks after a repack. References inside templates and outside Home Assistant cannot be checked for certain; saved storage is not estimated.",
 });
 
 const EXCHANGE_HOW = ["replace", "both", "statistics", "id"];
@@ -8698,13 +9228,31 @@ class ExchangeMixin {
     if (s.meters) lines.push(this.t("simMeters", { count: s.meters }));
     if (s.repaired) lines.push(this.t("simRepaired", { count: s.repaired }));
     if (s.purged) lines.push(this.t("simPurged", { count: s.purged }));
-    lines.push(this.t("simCertain", { count: s.remaining_certain }), this.t("simUncertain", { count: s.remaining_uncertain }));
+    if (s.remaining_certain) lines.push(this.t("simCertain", { count: s.remaining_certain }));
+    if (s.remaining_uncertain) lines.push(this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
-    if (s.rows_counted) { if (s.purge_rows) lines.push(this.t("simPurgeRows", { count: this.formatNumber(s.purge_rows) })); if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); }
+    if (s.rows_counted) { const other = s.purge_rows - (s.purge_stat_rows || 0) - (s.purge_states_rows || 0); if (s.purge_stat_rows) lines.push(this.t("simPurgeStatRows", { count: this.formatNumber(s.purge_stat_rows) })); if (s.purge_states_rows) lines.push(this.t("simPurgeStateRows", { count: this.formatNumber(s.purge_states_rows) })); if (other > 0) lines.push(this.t("simPurgeRows", { count: this.formatNumber(other) })); if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); }
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
     return `<div class="simbox"><details ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary><ul class="simlist">${lines.map(l => `<li>${this.esc(l)}</li>`).join("")}</ul><p class="simlimits">${this.t("simLimits")}</p></details></div>`;
   }
 }
+
+Object.assign(TEXT.de, {
+  warmupTitle: "Home Assistant startet ...", warmupS1: "Home Assistant startet", warmupS2: "Integrationen laden", warmupS3: "Puffer", warmupS4: "Befunde erheben",
+  warmupLoaded: "{done} von {total} Integrationen geladen", warmupLoadedAll: "{done} Integrationen geladen", warmupWait: "Wartezeit, höchstens noch", warmupBuffer: "Sicherheitspuffer, noch", warmupMin: "Min.",
+  warmupNames: "Laden noch:", warmupLocked: "Aufräumen ist bis dahin gesperrt.", warmupBlip: "{name} lädt kurz neu, der Puffer läuft weiter.",
+  warmupBootLine: "Home Assistant lädt noch. Die Wartezeit beginnt danach. Aufräumen ist bis dahin gesperrt.", warmupAfter: "Danach sind die Befunde endgültig, und Aufräumen ist wieder frei.",
+  warmupBooting: "Home Assistant lädt", warmupAsking: "Stand wird abgefragt …", warmupDoneToast: "Die Befunde sind endgültig.",
+  warmupPhase_start: "Der Scan startet", warmupPhase_registries: "Register lesen", warmupPhase_devices: "Geräte und Entitäten", warmupPhase_automations: "Automationen und Verweise", warmupPhase_finalizing: "Befunde berechnen",
+});
+Object.assign(TEXT.en, {
+  warmupTitle: "Home Assistant is starting ...", warmupS1: "Home Assistant starts", warmupS2: "Integrations load", warmupS3: "Buffer", warmupS4: "Collect findings",
+  warmupLoaded: "{done} of {total} integrations loaded", warmupLoadedAll: "{done} integrations loaded", warmupWait: "Waiting time, at most", warmupBuffer: "Safety buffer, left", warmupMin: "min",
+  warmupNames: "Still loading:", warmupLocked: "Cleanup is locked until then.", warmupBlip: "{name} is reloading briefly, the buffer keeps running.",
+  warmupBootLine: "Home Assistant is still loading. The waiting time starts afterwards. Cleanup is locked until then.", warmupAfter: "After that the findings are final and cleanup is free again.",
+  warmupBooting: "Home Assistant is loading", warmupAsking: "Asking for the state …", warmupDoneToast: "The findings are final.",
+  warmupPhase_start: "The scan is starting", warmupPhase_registries: "Reading registries", warmupPhase_devices: "Devices and entities", warmupPhase_automations: "Automations and references", warmupPhase_finalizing: "Working out findings",
+});
 
 // Automation diagnostics: quality dimensions, success criteria, coverage, trace comparison and the dry run (see quality.py, criteria.py, coverage.py, trace_compare.py, dry_run.py); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
@@ -9175,20 +9723,22 @@ class DryRunMixin {
 // Texts of the panel polish: folds, groups and tabs in the cleanup view, filters of the quality view.
 Object.assign(TEXT.de, {
  
+  journalPlans: "Pläne", journalTabPlansHint: "Alle Pläne mit Ergebnis und Rückgängig.", journalTabDevicesHint: "Was Pläne entfernt oder gelöscht haben.", journalTabPurgesHint: "Ältere Löschungen, vor den Plänen.", purgesInJournal: "{n} ältere Löschungen von Statistiken stehen im Journal.", purgesInJournalLink: "Im Journal ansehen",
   cleanupTabNew: "Neuer Plan", cleanupTabJournal: "Pläne und Journal", cleanupTabPurges: "Gelöschte Statistiken",
   journalEmptyNext: "Noch kein Plan. Wähle unter „Neuer Plan“ Kandidaten aus und lege einen Plan an.",
   
   qualityNoneNext: "Keine Automationen gefunden. Sie erscheinen nach dem nächsten Scan.",
-  mergeButton: "Ausgewählte zusammenführen ({count})", mergeSelect: "Plan zum Zusammenführen auswählen", mergeDone: "{count} Pläne zu einem zusammengeführt. Bewertung und Zahlen sind frisch berechnet.", mergeConflicts: "Zusammengeführt. {count} Objekte wurden nicht übernommen, weil sie in den Plänen verschieden angefragt waren: {list}",
+  mergeTooMany: "Höchstens 10 Pläne lassen sich zusammenführen.", mergeButton: "Ausgewählte zusammenführen ({count})", mergeSelect: "Plan zum Zusammenführen auswählen", mergeDone: "{count} Pläne zu einem zusammengeführt. Bewertung und Zahlen sind frisch berechnet.", mergeConflicts: "Zusammengeführt. {count} Objekte wurden nicht übernommen, weil sie in den Plänen verschieden angefragt waren: {list}",
   diagSecDims: "Bewertung", diagSecCriteria: "Erfolgskriterien", diagSecMore: "Abdeckung, Vergleich und Testlauf",
 });
 Object.assign(TEXT.en, {
  
+  journalPlans: "Plans", journalTabPlansHint: "Every plan with result and undo.", journalTabDevicesHint: "What plans removed or deleted.", journalTabPurgesHint: "Older deletions, from before plans.", purgesInJournal: "{n} older deletions of statistics are noted in the Journal.", purgesInJournalLink: "See in the Journal",
   cleanupTabNew: "New plan", cleanupTabJournal: "Plans and journal", cleanupTabPurges: "Deleted statistics",
   journalEmptyNext: "No plan yet. Pick candidates under “New plan” and create one.",
   
   qualityNoneNext: "No automations found. They appear after the next scan.",
-  mergeButton: "Merge selected ({count})", mergeSelect: "Select plan to merge", mergeDone: "{count} plans merged into one. Verdicts and numbers are freshly calculated.", mergeConflicts: "Merged. {count} objects were left out because the plans asked for them in different ways: {list}",
+  mergeTooMany: "At most 10 plans can be merged.", mergeButton: "Merge selected ({count})", mergeSelect: "Select plan to merge", mergeDone: "{count} plans merged into one. Verdicts and numbers are freshly calculated.", mergeConflicts: "Merged. {count} objects were left out because the plans asked for them in different ways: {list}",
   diagSecDims: "Assessment", diagSecCriteria: "Success criteria", diagSecMore: "Coverage, comparison and test run",
 });
 Object.assign(TEXT.de, {
@@ -9402,7 +9952,10 @@ Object.assign(TEXT.de, {
   modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Ansichten bleiben immer erlaubt.", modeLabel: "Was Housekeeper ändern darf",
   mode_read_only: "1 · Nur lesen", mode_quarantine: "2 · Quarantäne erlaubt", mode_confirmed: "3 · Bestätigte Änderungen mit Backup", mode_full: "4 · Voller Wartungsmodus",
   modeText_read_only: "Nichts wird geändert, auch kein Rückgängig.", modeText_quarantine: "Nur Deaktivieren (und dessen Rückgängig) ist erlaubt.", modeText_confirmed: "Alles mit Einzelbestätigung und Backup außer unumkehrbarem Löschen von Recorder-Daten.", modeText_full: "Alles, wie bisher.",
-  err_protection_mode: "Der Schutzmodus erlaubt das nicht. Ändere ihn unter Einstellungen → Scan.",
+  plan: "Plan", planPageSubtitle: "Vorschau, Prüfung und Ergebnis eines Plans. Nichts wird geändert, bevor du bestätigst.", planNone: "Dieser Plan ist nicht mehr geöffnet. Alle Pläne stehen im Journal.",
+  nothingToRun: "Noch nichts zum Ausführen: Hake darunter an, dass du die zu prüfenden Einträge gesehen hast.",
+  modeBlockTitle: "Der Schutzmodus „{mode}“ erlaubt diesen Plan nicht", modeBlockText: "{count} Schritt(e) darf Housekeeper in diesem Modus nicht ausführen. Du kannst den Plan ansehen, aber erst nach einer Änderung des Modus bestätigen.", modeBlockLink: "Schutzmodus ändern",
+  err_protection_mode: "Der Schutzmodus erlaubt das nicht. Ändere ihn unter Einstellungen → Schutz und Ausnahmen.",
   eventsTitle: "Ereignisse für eigene Automationen", eventsHint: "Nach jedem Scan löst Housekeeper für jede neue Lage ein Ereignis aus, einmal je Lage, beim ersten Mal still. Nichts verlässt Home Assistant.", eventColName: "Ereignis", eventColWhen: "Wann", eventCopy: "Namen kopieren",
   event_critical_finding: "neuer Befund mit hoher Auswirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen",
 });
@@ -9411,7 +9964,10 @@ Object.assign(TEXT.en, {
   modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and every view stay allowed.", modeLabel: "What Housekeeper may change",
   mode_read_only: "1 · Read only", mode_quarantine: "2 · Quarantine allowed", mode_confirmed: "3 · Confirmed changes with backup", mode_full: "4 · Full maintenance",
   modeText_read_only: "Nothing is changed, not even an undo.", modeText_quarantine: "Only disabling (and undoing it) is allowed.", modeText_confirmed: "Everything with one-by-one confirmation and backup except irreversible deletion of recorder data.", modeText_full: "Everything, as before.",
-  err_protection_mode: "The protection mode does not allow this. Change it under Settings → Scan.",
+  plan: "Plan", planPageSubtitle: "Preview, check and result of a plan. Nothing changes before you confirm.", planNone: "This plan is no longer open. All plans are in the journal.",
+  nothingToRun: "Nothing to run yet: tick the box below this line to say you have seen the entries to review.",
+  modeBlockTitle: "The protection mode “{mode}” does not allow this plan", modeBlockText: "Housekeeper may not run {count} step(s) in this mode. You can look at the plan, but only confirm it after changing the mode.", modeBlockLink: "Change protection mode",
+  err_protection_mode: "The protection mode does not allow this. Change it under Settings → Protection and exceptions.",
   eventsTitle: "Events for your own automations", eventsHint: "After each scan Housekeeper fires an event for each new situation, once per situation, silent the first time. Nothing leaves Home Assistant.", eventColName: "Event", eventColWhen: "When", eventCopy: "Copy name",
   event_critical_finding: "new finding with high impact", event_backup_overdue: "backup overdue", event_quarantine_expired: "quarantine expired", event_followup_regression: "follow-up: regression", event_integration_down: "integration not loaded",
 });
@@ -9516,7 +10072,7 @@ class BatteryCareMixin {
   reminderColumns() {
     const tone = r => ({ due: "red", soon: "warn", ok: "ok" }[r.state]);
     return [
-      { key: "name", label: "remColName", dir: "asc", cell: r => `${this.expandBtn("data-rem-open", r.id, (this.remOpen || []).includes(r.id), this.t((this.remOpen || []).includes(r.id) ? "remHistoryClose" : "remHistoryOpen"))}<strong>${this.esc(r.name)}</strong>${r.note ? `<small class="remnote">${this.esc(r.note)}</small>` : ""}` },
+      { key: "name", label: "remColName", dir: "asc", cell: r => `<div class="statcell">${this.expandBtn("data-rem-open", r.id, (this.remOpen || []).includes(r.id), this.t((this.remOpen || []).includes(r.id) ? "remHistoryClose" : "remHistoryOpen"))}<div><strong>${this.esc(r.name)}</strong>${r.note ? `<small class="remnote">${this.esc(r.note)}</small>` : ""}</div></div>` },
       { key: "every", label: "remColEvery", dir: "asc", cell: r => this.esc(this.t("remEveryN", { n: r.interval_days })) },
       { key: "last", label: "remColLast", dir: "desc", cell: r => r.last_done ? this.esc(this.remDay(r.last_done)) : `<span class="muted">–</span>` },
       { key: "due", label: "remColDue", dir: "asc", cell: r => `<span class="pill ${tone(r)}" title="${this.esc(this.remDay(r.due))}">${this.esc(this.remWhen(r.days_left))}</span>` },
@@ -10059,7 +10615,7 @@ class FindingStatusMixin {
     const chip = (state, label, count) => `<button class="chip ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}">${label} (${this.formatNumber(count)})</button>`;
     const decided = FINDING_STATES.filter(s => this.statusCount(s)), fixed = this.doneCount();
     if (!decided.length && !fixed) return "";
-    return [chip("", this.t("stateOpen"), this.findingTotal()), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])].join("");
+    return [chip("", this.t("stateOpen"), this.findingTotal() + this.followerCount()), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])].join("");
   }
 
   doneDays() { return this.doneDaysSel || 30; }
@@ -10526,7 +11082,7 @@ Object.assign(TEXT.de, {
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
   setTabProtection: "Schutz und Ausnahmen", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Schutzmodus und ausgeblendete Befunde.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
-  maintHintBackup: "Backups prüfen und schützen.", maintHintPreflight: "Vor einem Update auf Probleme prüfen.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintDevices: "Entfernte Geräte ansehen.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
+  maintHintBackup: "Backups prüfen, schützen und aufräumen.", maintHintUpdates: "Offene Updates und was vorher zu prüfen ist.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
   actRepairValues: "Werte reparieren", actHintRepair: "Falsche Werte im Verlauf und in der Statistik ersetzen.", actMeter: "Zähler wechseln", actHintMeter: "Die Statistik bei einem neuen Zähler fortführen.", actExchange: "Gerät austauschen", actHintExchange: "Durch ein neues Gerät ersetzen und alles übernehmen.",
   actHintReplace: "Überall durch eine andere Entität ersetzen.", actHintDisable: "Erst deaktivieren; nach der Wartezeit entfernen.",
   navGroupActions: "Aktionen", navGroupSecurity: "Sicherheit",
@@ -10535,9 +11091,9 @@ Object.assign(TEXT.de, {
   goalsLine: "Wartungsziele: {met} von {total} erfüllt", hintsTitle: "Hinweise",
   healthScore: "Zustand {percent} %", healthTasks: "{count} Aufgaben offen", healthNoTasks: "keine offenen Aufgaben", healthTip: "Anteil der Objekte in Ordnung: Jedes Objekt mit Befund nimmt je nach Auswirkung ganz, halb oder zu einem Fünftel ab. {affected} von {base} Objekten haben einen Befund; das ist nur die Begleitzahl. Mehr per Klick auf den Ring.",
   repair: "Reparieren", repairSubtitle: "Bestehende Daten und Verweise korrigieren oder auf etwas Neues umstellen. Housekeeper zeigt erst eine Vorschau; geschrieben wird erst nach deiner Bestätigung.", repairDryRun: "Nichts wird geändert, bis du die Vorschau bestätigst.",
-  journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt.",
- relTileIntHint: "Verfügbarkeit {avail} in {window}", relTilePill: "{n} auffällig", relTileUnstableHint: "Entitäten, die oft zwischen Zuständen wechseln", recTileLoadRows: "{n} Einträge pro Tag ({window})", recTileLoadHint: "Welche Entitäten den Recorder füllen", recTileCostsTop: "Größter Posten: {name} ({share} %)", recTileCostsHint: "Wer wie viel Platz belegt", recTileDbHint: "Größe, Wachstum und Aufbewahrung", polTileRulesHint: "{on} eingeschaltet", polTileViolationsHint: "Verstöße gegen eingeschaltete Regeln", polTileHidden: "{n} ausgeblendet", expoTileFindingsHint: "Was du prüfen oder wissen solltest", expoTileSourceHint: "{n} Entitäten freigegeben", runsTileRunsHint: "Gezählte Läufe von Automationen und Skripten", runsTileQualityHint: "Alle Automationen auf einen Blick",
-  cleanupTabEntities: "Entitäten deaktivieren", cleanupTabDevices: "Geräte deaktivieren", cleanupTabQuarantine: "Quarantäne und Entfernen", cleanupReadyCount: "{count} bereit", cleanupNothing: "nichts zu tun", unrefFactStats: "{n} mit Statistik", unrefFactDomain: "häufigste: {name}", cleanupTileEntitiesHint: "Verwaist oder lange nicht verfügbar", cleanupTileDevicesHint: "Geräte ohne funktionierende Entität", cleanupTileQuarantineHint: "Frühestens nach {days} Tagen entfernbar", cleanupTileUnusedHint: "Entitäten ohne bekannte Verwendung", cleanupTileStatsHint: "Reste in der Datenbank löschen", cleanupTilePurgesHint: "Was schon gelöscht wurde", qTypeEntities: "Entitäten ({count})", qTypeDevices: "Geräte ({count})",
+  journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt, dazu, was entfernt oder gelöscht wurde.",
+ relTileIntHint: "Verfügbarkeit {avail} in {window}", relTilePill: "{n} auffällig", relTileUnstableHint: "Entitäten, die oft zwischen Zuständen wechseln", recTileLoadRows: "{n} Einträge pro Tag ({window})", recTileLoadHint: "Wie oft etwas geschrieben wird", recTileCostsTop: "Größter Posten: {name} ({share} %)", recTileCostsHint: "Wie viel Platz jede Entität belegt", recTileDbHint: "Größe, Wachstum und Aufbewahrung", polTileRulesHint: "{on} eingeschaltet", polTileViolationsHint: "Verstöße gegen eingeschaltete Regeln", polTileHidden: "{n} ausgeblendet", expoTileFindingsHint: "Was du prüfen oder wissen solltest", expoTileSourceHint: "{n} Entitäten freigegeben", runsTileRunsHint: "Gezählte Läufe von Automationen und Skripten", runsTileQualityHint: "Alle Automationen auf einen Blick",
+  cleanupTabEntities: "Entitäten deaktivieren", cleanupTabDevices: "Geräte deaktivieren", cleanupTabQuarantine: "Quarantäne und Entfernen", cleanupReadyCount: "{count} bereit", cleanupNothing: "nichts zu tun", unrefFactStats: "{n} mit Statistik", unrefFactDomain: "häufigste: {name}", cleanupTileEntitiesHint: "Verwaist oder lange nicht verfügbar", cleanupTileDevicesHint: "Geräte ohne funktionierende Entität", cleanupTileQuarantineHint: "Frühestens nach {days} Tagen entfernbar", cleanupTileUnusedHint: "Ohne bekannte Verwendung, nur ein Hinweis", cleanupTileStatsHint: "Reste in der Datenbank löschen", cleanupTilePurgesHint: "Was schon gelöscht wurde", qTypeEntities: "Entitäten ({count})", qTypeDevices: "Geräte ({count})",
   repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde", repairNotChecked: "nicht geprüft", repairNoneFound: "keine Funde",
   repairTaskCounter: "Sensorfehler bereinigen", repairTaskCounterHint: "Falsche Werte in Zählern und Messwerten korrigieren, zum Beispiel ein Zähler, der kurz sinkt, oder ein Ausschlag auf 85 °C.",
   repairTaskMeter: "Zähler wechseln", repairTaskMeterHint: "Die Statistik eines alten Zählers beim neuen fortführen.",
@@ -10569,7 +11125,7 @@ Object.assign(TEXT.en, {
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
   setTabProtection: "Protection and exceptions", setHintLook: "Language, density and appearance.", setHintProtection: "Protection mode and hidden findings.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",
-  maintHintBackup: "Check and protect backups.", maintHintPreflight: "Check for problems before an update.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintDevices: "Look at removed devices.", maintHintGoals: "Your own limits for what in order means.",
+  maintHintBackup: "Check, protect and tidy up backups.", maintHintUpdates: "Open updates and what to check first.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintGoals: "Your own limits for what in order means.",
   actRepairValues: "Repair values", actHintRepair: "Replace wrong values in the history and the statistics.", actMeter: "Replace the meter", actHintMeter: "Carry the statistics on with a new meter.", actExchange: "Exchange the device", actHintExchange: "Replace it with a new device and carry everything over.",
   actHintReplace: "Replace it with another entity everywhere.", actHintDisable: "Disable first; remove after the waiting time.",
   navGroupActions: "Actions", navGroupSecurity: "Security",
@@ -10578,9 +11134,9 @@ Object.assign(TEXT.en, {
   goalsLine: "Maintenance goals: {met} of {total} met", hintsTitle: "Hints",
   healthScore: "State {percent} %", healthTasks: "{count} tasks open", healthNoTasks: "no open tasks", healthTip: "Share of the objects in order: every object with a finding takes off fully, by half or by a fifth, by its impact. {affected} of {base} objects have a finding; that is only the number beside it. More with a click on the ring.",
   repair: "Repair", repairSubtitle: "Correct existing data and references, or switch them over to something new. Housekeeper shows a preview first; nothing is written until you confirm.", repairDryRun: "Nothing is changed until you confirm the preview.",
-  journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone.",
- relTileIntHint: "Availability {avail} over {window}", relTilePill: "{n} need a look", relTileUnstableHint: "Entities that often change between states", recTileLoadRows: "{n} rows a day ({window})", recTileLoadHint: "Which entities fill the recorder", recTileCostsTop: "Biggest item: {name} ({share} %)", recTileCostsHint: "Who takes how much space", recTileDbHint: "Size, growth and retention", polTileRulesHint: "{on} switched on", polTileViolationsHint: "Violations of the rules that are on", polTileHidden: "{n} hidden", expoTileFindingsHint: "What you should check or know", expoTileSourceHint: "{n} entities exposed", runsTileRunsHint: "Counted runs of automations and scripts", runsTileQualityHint: "All automations at a glance",
-  cleanupTabEntities: "Disable entities", cleanupTabDevices: "Disable devices", cleanupTabQuarantine: "Quarantine and removal", cleanupReadyCount: "{count} ready", cleanupNothing: "nothing to do", unrefFactStats: "{n} with statistics", unrefFactDomain: "most: {name}", cleanupTileEntitiesHint: "Orphaned or unavailable for a long time", cleanupTileDevicesHint: "Devices without a working entity", cleanupTileQuarantineHint: "Removable after {days} days at the earliest", cleanupTileUnusedHint: "Entities with no known use", cleanupTileStatsHint: "Delete leftovers in the database", cleanupTilePurgesHint: "What has been deleted already", qTypeEntities: "Entities ({count})", qTypeDevices: "Devices ({count})",
+  journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone, plus what was removed or deleted.",
+ relTileIntHint: "Availability {avail} over {window}", relTilePill: "{n} need a look", relTileUnstableHint: "Entities that often change between states", recTileLoadRows: "{n} rows a day ({window})", recTileLoadHint: "How often things are written", recTileCostsTop: "Biggest item: {name} ({share} %)", recTileCostsHint: "How much space each entity takes", recTileDbHint: "Size, growth and retention", polTileRulesHint: "{on} switched on", polTileViolationsHint: "Violations of the rules that are on", polTileHidden: "{n} hidden", expoTileFindingsHint: "What you should check or know", expoTileSourceHint: "{n} entities exposed", runsTileRunsHint: "Counted runs of automations and scripts", runsTileQualityHint: "All automations at a glance",
+  cleanupTabEntities: "Disable entities", cleanupTabDevices: "Disable devices", cleanupTabQuarantine: "Quarantine and removal", cleanupReadyCount: "{count} ready", cleanupNothing: "nothing to do", unrefFactStats: "{n} with statistics", unrefFactDomain: "most: {name}", cleanupTileEntitiesHint: "Orphaned or unavailable for a long time", cleanupTileDevicesHint: "Devices without a working entity", cleanupTileQuarantineHint: "Removable after {days} days at the earliest", cleanupTileUnusedHint: "No known use, a hint only", cleanupTileStatsHint: "Delete leftovers in the database", cleanupTilePurgesHint: "What has been deleted already", qTypeEntities: "Entities ({count})", qTypeDevices: "Devices ({count})",
   repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found", repairNotChecked: "not checked", repairNoneFound: "none found",
   repairTaskCounter: "Repair sensor errors", repairTaskCounterHint: "Correct wrong values in counters and measurements, for example a counter that briefly falls, or a spike to 85 °C.",
   repairTaskMeter: "Replace a meter", repairTaskMeterHint: "Carry the statistics of an old meter on with the new one.",
@@ -11258,11 +11814,11 @@ Object.assign(TEXT.de, {
   exCount: "{count} ausgewählt", exNone: "Nichts ausgewählt", exNoneSug: "Nichts ausgewählt · {count} Vorschläge", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Leeren", exCopy: "YAML kopieren",
   exStepsTitle: "So geht es weiter", exStep1: "Einfügen in die configuration.yaml. Gibt es dort schon einen recorder:-Abschnitt, trage nur die Zeilen unter entities: in dessen exclude:-Liste ein, nicht noch einmal recorder:.",
   exStep2: "Prüfen unter Entwicklerwerkzeuge → YAML → Konfiguration prüfen.", exStep3: "Neu starten. Der Recorder liest den Ausschluss nur beim Start. Danach steht die Entität hier als „bereits ausgeschlossen“.",
-  exSuggest: "Empfohlen", exOnlySug: "Nur Vorschläge", exWhy: "Nicht verwendet, keine Statistik, {perDay} Zeilen pro Tag", exRule: "Empfohlen ist, was nirgends verwendet wird, keine Statistik hat und mindestens {min} Zeilen pro Tag schreibt.", exHasStats: "Statistik vorhanden", exUsedBy: "{count} Verwendungen",
+  exSuggest: "Empfohlen", exOnlySug: "Nur Vorschläge", exWhy: "Nicht verwendet, keine Statistik, {perDay} Zeilen in den letzten 24 Stunden", exRule: "Empfohlen ist, was nirgends verwendet wird, keine Statistik hat und in den letzten 24 Stunden mindestens {min} Zeilen schreibt.", exHasStats: "Statistik vorhanden", exUsedBy: "{count} Verwendungen",
   trimTitle: "Alten Verlauf kürzen", trimHint: "Der Ausschluss gilt nur für neue Daten. Schon gespeicherte Zustände bleiben, bis du sie hier löschst.", trimChosen: "{count} Entitäten ausgewählt", trimChosenOne: "1 Entität ausgewählt",
   trimKeep: "Zustände behalten, die jünger sind als", trimDays: "{days} Tage", trimGone: "Wird gelöscht", trimGoneSub: "Zustände älter als {days} Tage", trimStay: "Bleibt", trimStaySub: "die letzten {days} Tage", trimEarlier: "früher", trimAgo: "vor {days} Tagen", trimToday: "heute",
   trimFactStats: "Statistiken bleiben", trimFactStatsSub: "Energie-Dashboard und Langzeitdiagramme ändern sich nicht.", trimFactRows: "Zeilenzahl erst in der Vorschau", trimFactRowsSub: "Du siehst pro Entität, wie viele Zeilen wegfallen, bevor etwas passiert.",
-  trimFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Zurücknehmen geht nur mit diesem Backup.", trimPreview: "Vorschau für {count} Entitäten erstellen", trimPreviewOne: "Vorschau für 1 Entität erstellen", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
+  trimFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Zurücknehmen geht nur mit diesem Backup.", trimPreview: "Vorschau erstellen ({count})", trimPreviewOne: "Vorschau erstellen (1)", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   trimSub: "älter als {days} Tage: {rows} Zeilen", reason_bad_keep_days: "Die Zeit zum Behalten ist ungültig.", reason_not_counted: "Die Zeilen ließen sich nicht zählen.", reason_nothing_to_trim: "Nichts zu löschen: Es gibt keine so alten Zustände.",
   check_history_trimmed: "Alter Verlauf ist gelöscht", abort_trim_unverified: "Gelöscht, aber die übrigen Zeilen ließen sich nicht zählen.", abort_trim_left: "Nach dem Löschen gab es noch ältere Zeilen.",
   confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an, einschließlich der Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
@@ -11273,29 +11829,29 @@ Object.assign(TEXT.en, {
   exCount: "{count} selected", exNone: "Nothing selected", exNoneSug: "Nothing selected · {count} suggestions", exPickSuggested: "Select all suggested", exClear: "Clear", exCopy: "Copy YAML",
   exStepsTitle: "What to do next", exStep1: "Paste it into configuration.yaml. If there is a recorder: section already, add only the lines under entities: to its exclude: list, not recorder: again.",
   exStep2: "Check under Developer tools → YAML → Check configuration.", exStep3: "Restart. The recorder reads the exclusion only at start. Afterwards the entity shows here as “already excluded”.",
-  exSuggest: "Recommended", exOnlySug: "Only suggestions", exWhy: "Not used, no statistics, {perDay} rows per day", exRule: "Recommended means: used nowhere, no statistics and at least {min} rows per day.", exHasStats: "has statistics", exUsedBy: "{count} uses",
+  exSuggest: "Recommended", exOnlySug: "Only suggestions", exWhy: "Not used, no statistics, {perDay} rows in the last 24 hours", exRule: "Recommended means: used nowhere, no statistics and wrote at least {min} rows in the last 24 hours.", exHasStats: "has statistics", exUsedBy: "{count} uses",
   trimTitle: "Trim the old history", trimHint: "The exclusion only applies to new data. States already stored stay until you delete them here.", trimChosen: "{count} entities selected", trimChosenOne: "1 entity selected",
   trimKeep: "Keep states that are younger than", trimDays: "{days} days", trimGone: "Will be deleted", trimGoneSub: "States older than {days} days", trimStay: "Stays", trimStaySub: "the last {days} days", trimEarlier: "earlier", trimAgo: "{days} days ago", trimToday: "today",
   trimFactStats: "Statistics stay", trimFactStatsSub: "The Energy dashboard and long-term charts do not change.", trimFactRows: "Row count comes with the preview", trimFactRowsSub: "You see per entity how many rows go before anything happens.",
-  trimFoot: "Before deleting, Housekeeper creates a Home Assistant backup including the database. It can only be undone with that backup.", trimPreview: "Create preview for {count} entities", trimPreviewOne: "Create preview for 1 entity", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
+  trimFoot: "Before deleting, Housekeeper creates a Home Assistant backup including the database. It can only be undone with that backup.", trimPreview: "Create preview ({count})", trimPreviewOne: "Create preview (1)", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
   trimSub: "older than {days} days: {rows} rows", reason_bad_keep_days: "The time to keep is not valid.", reason_not_counted: "The rows could not be counted.", reason_nothing_to_trim: "Nothing to delete: there are no states that old.",
   check_history_trimmed: "Old history is deleted", abort_trim_unverified: "Deleted, but the rows left could not be counted.", abort_trim_left: "Older rows were still there after deleting.",
   confirmedSummaryTrim: "The old history of {count} entities will be deleted. Housekeeper creates a Home Assistant backup first, including the database. It can only be taken back with that backup.",
 });
 
-const EXCLUDE_MIN_PER_DAY = 100; // rows per day from which an unused entity is worth excluding
+const EXCLUDE_MIN_PER_DAY = 100; // only for the text of the rule: the backend decides (SUGGEST_MIN_PER_DAY in maintenance.py)
 
 class ExcludeMixin {
-  // What speaks for or against excluding one entity, from the inventory. `excluded` is what the recorder reports.
-  excludeInfo(entityId, perDay, excluded = false) {
+  // What speaks for or against excluding one entity. The backend decides (`suggest_exclude`, one rule for both views);
+  // this only words it. `item` is a row of the write load or of the storage use.
+  excludeInfo(item) {
     const tag = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
-    if (excluded) return { suggest: false, tags: tag("ok", this.t("recorderExcluded")) };
-    const obj = this.findObject(`entity:${entityId}`);
-    if (!obj) return { suggest: false, tags: "" };
-    const uses = this.edgesTo(`entity:${entityId}`).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
-    const suggest = !uses && !obj.has_statistics && perDay >= EXCLUDE_MIN_PER_DAY;
-    const tags = suggest ? tag("warn", this.t("exSuggest")) : [obj.has_statistics ? tag("mute", this.t("exHasStats")) : "", uses ? tag("mute", this.t("exUsedBy", { count: uses })) : ""].join("");
-    return { suggest, tags, why: suggest ? this.t("exWhy", { perDay: this.formatNumber(Math.round(perDay)) }) : "" };
+    if (item.excluded) return { suggest: false, tags: tag("ok", this.t("recorderExcluded")) };
+    if (!this.findObject(`entity:${item.entity_id}`)) return { suggest: false, tags: "" };
+    const suggest = Boolean(item.suggest_exclude), uses = item.used || 0;
+    const rate = item.states_24h ?? item.rows_24h ?? 0;
+    const tags = suggest ? tag("warn", this.t("exSuggest")) : [item.has_statistics ? tag("mute", this.t("exHasStats")) : "", uses ? tag("mute", this.t("exUsedBy", { count: uses })) : ""].join("");
+    return { suggest, tags, why: suggest ? this.t("exWhy", { perDay: this.formatNumber(Math.round(rate)) }) : "" };
   }
 
   // What the recorder keeps out already, from the lists in view.
@@ -11391,12 +11947,12 @@ class ExcludeMixin {
 // Mixed into the panel in 99-register.js; the plan card itself is built in 18-cleanup.js.
 Object.assign(TEXT.de, {
   wzLabel: "Schritte des Plans", wzReview: "Prüfen", wzConfirm: "Bestätigen", wzRun: "Ausführen", wzResult: "Ergebnis",
-  wzFlow: "Ablauf im Detail", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleBlockedOne: "Der Eintrag ist blockiert. Den Grund siehst du beim Eintrag.",
+  wzSumEntries: "{n} Einträge", wzSumRun: "{done} von {total} erledigt", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleBlockedOne: "Der Eintrag ist blockiert. Den Grund siehst du beim Eintrag.",
   wzIdleNothingTitle: "Nichts zu ändern", wzIdleNothing: "Housekeeper hat geprüft und nichts gefunden, das sich ändern ließe. Du musst nichts tun.", verdictNothing: "Nichts zu ändern", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück",
 });
 Object.assign(TEXT.en, {
   wzLabel: "Steps of the plan", wzReview: "Review", wzConfirm: "Confirm", wzRun: "Run", wzResult: "Result",
-  wzFlow: "Flow in detail", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleBlockedOne: "The entry is blocked. Its reason is shown with the entry.",
+  wzSumEntries: "{n} entries", wzSumRun: "{done} of {total} done", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleBlockedOne: "The entry is blocked. Its reason is shown with the entry.",
   wzIdleNothingTitle: "Nothing to change", wzIdleNothing: "Housekeeper checked and found nothing that could be changed. You do not need to do anything.", verdictNothing: "Nothing to change", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back",
 });
 
@@ -11409,10 +11965,34 @@ class PlanWizardMixin {
     return 3;
   }
 
-  wizardBar(stage) {
-    const names = ["wzReview", "wzConfirm", "wzRun", "wzResult"];
-    const items = names.map((name, i) => `<li class="${i < stage ? "done" : i === stage ? "cur" : ""}"${i === stage ? ' aria-current="true"' : ""}><i aria-hidden="true"></i>${i + 1}. ${this.t(name)}</li>`).join("");
-    return `<ol class="wz" aria-label="${this.esc(this.t("wzLabel"))}">${items}</ol>`;
+  // One track instead of two: the four stages of the wizard, each opening into the steps the backend runs in it.
+  // The stage that is on is open, the others are one line with what came of them; a click opens any of them.
+  planTrack(plan, stage, confirming) {
+    const steps = Object.fromEntries(this.planSteps(plan, confirming).map(s => [s.id, s]));
+    const groups = [["wzReview", ["stepSelect", "stepAnalysis"]], ["wzConfirm", ["stepConfirm"]], ["wzRun", ["stepBackup", "stepRun"]], ["wzResult", ["stepVerify"]]];
+    const total = plan.actions.length, done = plan.actions.filter(a => a.result?.state === "done").length;
+    const summary = [
+      this.t("wzSumEntries", { n: this.formatNumber(total) }), "",
+      stage >= 2 ? this.t("wzSumRun", { done: this.formatNumber(done), total: this.formatNumber(total) }) : "",
+      "",
+    ];
+    const mark = { done: "✓", failed: "!" };
+    const items = groups.map(([name, ids], i) => {
+      const list = ids.map(id => steps[id]);
+      const failed = list.some(x => x.state === "failed");
+      const state = failed ? "fail" : stage > i || (stage === 3 && i === 3 && list.every(x => x.state === "done")) ? "done" : stage === i ? "cur" : "todo";
+      const id = `planph_${i}`, open = this.foldOpen(id, stage === i || failed);
+      const now = state === "cur" && stage < 3;
+      const subs = list.map(step => {
+        const live = step.id === "stepRun" && step.state === "current";
+        const recent = live ? plan.actions.filter(a => a.result?.state === "done").slice(-3).reverse() : [];
+        const extra = live ? `${this.planProgressBar()}${recent.length ? `<ul class="items">${recent.map(a => `<li><span class="ok">✓</span><span>${this.esc(a.name || a.object_id)}</span></li>`).join("")}</ul>` : ""}` : "";
+        return `<li class="s-${step.state}"><span class="d" aria-hidden="true"></span><span><b>${this.t(step.id)}</b><span class="sr-only">: ${this.t(`step${{ done: "Done", current: "Current", todo: "Todo", skipped: "Skipped", failed: "Failed" }[step.state]}`)}</span>${step.note ? `<small>${this.esc(step.note)}</small>` : ""}${extra}</span></li>`;
+      }).join("");
+      return `<li class="ph ${state}"${now ? ' aria-current="step"' : ""}><button type="button" class="phh" data-fold="${id}" aria-expanded="${open}"><span class="mk" aria-hidden="true">${mark[state === "fail" ? "failed" : state] || i + 1}</span><span class="phtext"><b>${i + 1}. ${this.t(name)}</b>${summary[i] ? `<small>${this.esc(summary[i])}</small>` : ""}</span><ha-icon icon="mdi:chevron-${open ? "up" : "down"}"></ha-icon></button><ul class="subs"${open ? "" : " hidden"}>${subs}</ul></li>`;
+    }).join("");
+    const backup = plan.backup ? `<p class="factnote">${this.t("backupRestoreHint")}</p>` : "";
+    return `<ol class="track" aria-label="${this.esc(this.t("wzLabel"))}">${items}</ol>${backup}`;
   }
 
   // The rows of a plan come in pages like every other long list.
@@ -11935,8 +12515,9 @@ class KnownMixin {
     const ents = (this.data.objects || []).filter(o => o.object_type === "entity" && o.config_entry_id === id);
     const bad = ents.filter(o => ["unavailable", "orphaned"].includes(o.status)).length;
     const st = item.disabled_by ? "disabled" : item.state || "not_loaded";
-    const tone = st === "loaded" ? "ok" : st === "disabled" ? "mute" : ["setup_error", "migration_error", "failed_unload"].includes(st) ? "red" : "warn";
-    const state = [this.knownLine(tone, t("knownLoaded"), `${st === "disabled" ? t("disabled") : t(`cs_${st}`)}${item.error ? `<small>${this.esc(item.error)}</small>` : ""}`, "knownSrcScan")];
+    const reauth = item.reauth && st === "loaded";
+    const tone = reauth ? "red" : st === "loaded" ? "ok" : st === "disabled" ? "mute" : ["setup_error", "migration_error", "failed_unload"].includes(st) ? "red" : "warn";
+    const state = [this.knownLine(tone, t("knownLoaded"), `${st === "disabled" ? t("disabled") : reauth ? t("entryReauth") : t(`cs_${st}`)}${item.error ? `<small>${this.esc(item.error)}</small>` : ""}`, "knownSrcScan")];
     const row = this.reliability?.available ? this.reliabilityRow(item) : null;
     if (row && row.availability !== null && row.availability !== undefined) {
       const rtone = row.availability >= 99.5 ? "ok" : row.availability >= 95 ? "warn" : "red";
@@ -12019,7 +12600,7 @@ Object.assign(TEXT.de, {
   noteNeedTitle: "Gib dem Eintrag einen Titel.", noteBadTime: "Die Zeit ist ungültig oder liegt zu weit in der Zukunft.", noteFailed: "Der Eintrag konnte nicht gespeichert werden: {reason}",
   noteConcerns: "Betrifft: {name}", noteHint: "Nur für dich. Housekeeper ändert nichts in Home Assistant.", noteConcernsNow: "Betrifft", noteChange: "ändern",
   noteDetailTitle: "Logbuch", noteDetailEmpty: "Noch kein Eintrag.", noteDetailHint: "Halte fest, was du hieran geändert hast, damit es nachvollziehbar bleibt.", noteDetailNone: "Halte fest, was du hieran geändert hast, damit es später als möglicher Zusammenhang auftaucht.", noteAddHere: "Eintrag",
-  noteDialogNew: "Neuer Eintrag", noteDialogEdit: "Eintrag bearbeiten", noteChips: "Schnell eintragen",
+  noteDialogNew: "Neuer Eintrag", noteDialogEdit: "Eintrag bearbeiten", noteChips: "Schnell eintragen", findingNote: "Ins Logbuch eintragen",
   noteChipStick: "Stick getauscht", noteChipFirmware: "Firmware aktualisiert", noteChipPaired: "Neu angelernt", noteChipMoved: "Umgezogen",
   noteSeeAll: "Im Logbuch ansehen", logbook: "Logbuch", tabScans: "Scan-Vergleich", logbookHint: "Alle Einträge, neueste zuerst", logbookEmpty: "Das Logbuch ist leer. Trage ein, was du außerhalb von Housekeeper änderst, zum Beispiel einen getauschten Stick.",
   logColWhen: "Wann", logColTitle: "Titel", logColTarget: "Betrifft", logColSource: "Quelle", logAllSources: "Alle Quellen", logAllObjects: "Alle Objekte",
@@ -12035,7 +12616,7 @@ Object.assign(TEXT.en, {
   noteNeedTitle: "Give the entry a title.", noteBadTime: "The time is invalid or too far in the future.", noteFailed: "The entry could not be saved: {reason}",
   noteConcerns: "Concerns: {name}", noteHint: "Only for you. Housekeeper changes nothing in Home Assistant.", noteConcernsNow: "Concerns", noteChange: "change",
   noteDetailTitle: "Logbook", noteDetailEmpty: "No entry yet.", noteDetailHint: "Note what you changed here, so it stays traceable.", noteDetailNone: "Note what you changed here, so it shows up later as a possible connection.", noteAddHere: "Entry",
-  noteDialogNew: "New entry", noteDialogEdit: "Edit entry", noteChips: "Quick entry",
+  noteDialogNew: "New entry", noteDialogEdit: "Edit entry", noteChips: "Quick entry", findingNote: "Add to logbook",
   noteChipStick: "Stick replaced", noteChipFirmware: "Firmware updated", noteChipPaired: "Paired again", noteChipMoved: "Moved",
   noteSeeAll: "See in the logbook", logbook: "Logbook", tabScans: "Scan comparison", logbookHint: "All entries, newest first", logbookEmpty: "The logbook is empty. Note what you change outside Housekeeper, for example a replaced stick.",
   logColWhen: "When", logColTitle: "Title", logColTarget: "Concerns", logColSource: "Source", logAllSources: "All sources", logAllObjects: "All objects",
@@ -12067,6 +12648,14 @@ class NotesMixin {
     this._noteFocus = true;
   }
 
+  // Opens the logbook with a new entry for an object (as far as the logbook knows its type).
+  noteForObject(key) {
+    const type = this.findObject(key)?.object_type || key.split(":")[0];
+    this.noteOpen(null, NOTE_TYPES.includes(type) ? key : "");
+    this.noteDraft.detailKey = "";
+    this.noteJump?.("changes"); this.view = "changes"; (this.viewTab ||= {}).changes = "logbook"; this.selected = null; this.pages = {}; this.render();
+  }
+
   noteTargetName(target) {
     return target ? this.findObject(target)?.name || target.split(":").slice(1).join(":") : "";
   }
@@ -12084,7 +12673,7 @@ class NotesMixin {
     const d = this.noteDraft;
     if (!d) return "";
     const chips = d.id ? "" : `<div class="notechips" role="group" aria-label="${this.esc(this.t("noteChips"))}">${["Stick", "Firmware", "Paired", "Moved"].map(k => `<button type="button" class="chip" data-note-chip="${this.esc(this.t(`noteChip${k}`))}">${this.t(`noteChip${k}`)}</button>`).join("")}</div>`;
-    const foot = `<div class="toolbar savebar note-actions">${d.id ? `<button type="button" class="btn quiet danger-t" data-note-del="${this.esc(d.id)}">${this.t("noteDelete")}</button>` : ""}<span class="error" role="alert">${this.esc(d.error || "")}</span><span class="toolgap"></span><button type="button" class="btn" data-note-cancel>${this.t("noteCancel")}</button><button type="submit" class="btn primary">${this.t("noteSave")}</button></div>`;
+    const foot = `<div class="toolbar savebar note-actions">${d.id ? `<button type="button" class="btn dangersoft" data-note-del="${this.esc(d.id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("noteDelete")}</button>` : ""}<span class="error" role="alert">${this.esc(d.error || "")}</span><span class="toolgap"></span><button type="button" class="btn" data-note-cancel>${this.t("noteCancel")}</button><button type="submit" class="btn primary">${this.t("noteSave")}</button></div>`;
     return `<form class="note-editor${inline ? " inline" : ""}" data-note-form>
       <div class="note-fields">
         ${inline ? `<h3>${this.t(d.id ? "noteDialogEdit" : "noteDialogNew")}</h3>` : ""}
@@ -12193,6 +12782,11 @@ class NotesMixin {
 
   bindNotes(root) {
     root.querySelectorAll("[data-note-add]").forEach(el => el.onclick = () => { this.noteOpen(null, this.lv?.logbook?.f?.object || ""); this.render(); });
+    root.querySelectorAll("[data-finding-note]").forEach(el => el.onclick = () => {
+      const f = (this.data.findings || []).find(x => x.key === el.dataset.findingNote);
+      if (f) this.noteForObject(this.findingKey(f));
+    });
+    root.querySelectorAll("[data-object-note]").forEach(el => el.onclick = () => this.noteForObject(el.dataset.objectNote));
     root.querySelectorAll("[data-note-add-for]").forEach(el => el.onclick = () => { this.noteOpen(null, el.dataset.noteAddFor); this.render(); });
     root.querySelectorAll("[data-note-edit]").forEach(el => el.onclick = () => { const n = this.notesList().find(x => x.id === el.dataset.noteEdit); if (n) { this.noteOpen(n); this.render(); } });
     root.querySelectorAll("[data-logbook-for]").forEach(el => el.onclick = () => {
@@ -12464,7 +13058,7 @@ Object.assign(TEXT.de, {
   bkcCount: "Housekeeper-Backups", bkcBytes: "belegt", bkcSuggested: "zum Löschen vorgeschlagen", bkcRule: "Was behalten wird", bkcKeepLast: "Die letzten", bkcKeepDays: "Backups und alle aus den letzten", bkcDays: "Tagen.", bkcReset: "Auf Vorschlag zurücksetzen",
   bkcProtectNote: "Ältere Backups sind zum Löschen vorausgewählt; du kannst die Auswahl unten ändern. Nie auswählbar sind Backups von Plänen, die noch beobachtet werden, und das jüngste Backup eines Plans, der sich noch rückgängig machen lässt.", bkcSelSum: "{count} ausgewählt · {bytes}",
   bkcProtected_watching: "geschützt: Beobachtung läuft", bkcProtected_undo: "geschützt: Rückgängig möglich", bkcAge: "{days} Tage alt", bkcToday: "von heute", bkcDb: "mit Datenbank", bkcNoDb: "ohne Datenbank", bkcNoPlan: "Plan nicht mehr im Journal",
-  bkcOnlyReturn: "Dieses Backup ist die einzige Möglichkeit, gelöschte oder zusammengeführte Daten dieses Plans zurückzuholen.", bkcPlan: "Plan zum Löschen erstellen ({count})", bkcFinal: "Löschen ist endgültig. Es gibt kein Rückgängig.",
+  bkcOnlyReturn: "Dieses Backup ist die einzige Möglichkeit, gelöschte oder zusammengeführte Daten dieses Plans zurückzuholen.", bkcPlan: "Löschen vorbereiten ({count})", bkcFinal: "Löschen ist endgültig. Es gibt kein Rückgängig.",
   bkcNone: "Es gibt keine Housekeeper-Backups.", bkcUnavailable: "Die Backups ließen sich nicht lesen.", bkcLoading: "Backups werden gelesen …", bkcFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   reason_backup_missing: "Das Backup gibt es nicht mehr.", reason_not_housekeeper_backup: "Das ist kein Backup von Housekeeper.", reason_backup_protected: "Geschützt: Der Plan wird noch beobachtet oder das Backup erlaubt noch ein Rückgängig.", reason_only_return: "Einzige Möglichkeit, Daten dieses Plans zurückzuholen.",
   check_backup_deleted: "Backup ist gelöscht", confirmedSummaryBackups: "{count} Backups werden gelöscht. Das ist endgültig; es wird kein neues Backup angelegt.", undoFinal: "endgültig",
@@ -12481,7 +13075,7 @@ Object.assign(TEXT.en, {
   bkcCount: "Housekeeper backups", bkcBytes: "used", bkcSuggested: "suggested for deleting", bkcRule: "What is kept", bkcKeepLast: "The last", bkcKeepDays: "backups and all from the last", bkcDays: "days.", bkcReset: "Reset to the suggestion",
   bkcProtectNote: "Older backups are preselected for deleting; you can change the selection below. Never selectable are backups of plans that are still watched, and the newest backup of a plan that can still be undone.", bkcSelSum: "{count} selected · {bytes}",
   bkcProtected_watching: "protected: being watched", bkcProtected_undo: "protected: undo possible", bkcAge: "{days} days old", bkcToday: "from today", bkcDb: "with database", bkcNoDb: "without database", bkcNoPlan: "plan no longer in the journal",
-  bkcOnlyReturn: "This backup is the only way to get back data this plan deleted or merged.", bkcPlan: "Create a plan to delete ({count})", bkcFinal: "Deleting is final. There is no undo.",
+  bkcOnlyReturn: "This backup is the only way to get back data this plan deleted or merged.", bkcPlan: "Prepare deletion ({count})", bkcFinal: "Deleting is final. There is no undo.",
   bkcNone: "There are no Housekeeper backups.", bkcUnavailable: "The backups could not be read.", bkcLoading: "Reading backups …", bkcFailed: "The plan could not be created: {detail}",
   reason_backup_missing: "The backup no longer exists.", reason_not_housekeeper_backup: "This is not a Housekeeper backup.", reason_backup_protected: "Protected: the plan is still watched or the backup still allows an undo.", reason_only_return: "The only way to get back data of this plan.",
   check_backup_deleted: "Backup is deleted", confirmedSummaryBackups: "{count} backups will be deleted. This is final; no new backup is made.", undoFinal: "final",
@@ -12512,9 +13106,17 @@ class BackupCleanupMixin {
     this.bkcLoading = false; this.render();
   }
 
+  // The tidy-up is a section at the foot of the Backups tab, folded: the tab reads, this part deletes.
+  bkcFold() {
+    this.ensureBackupCleanup();
+    const n = this.bkc?.available ? this.bkc.rows?.length || 0 : 0;
+    const open = this.foldOpen("bkc", false);
+    return `<div class="panel" id="hk-bkc">${this.fold("bkc", { title: this.t("bkcTitle"), sub: this.t("maintHintBkc"), pill: n ? this.formatNumber(n) : "", tone: "warn" }, open ? this.backupCleanupCard() : "", false)}</div>`;
+  }
+
   backupCleanupCard() {
     this.ensureBackupCleanup();
-    const head = `<p class="factnote pad">${this.t("bkcHint")}</p>`;  // the title is on the tile of the tab
+    const head = `<p class="factnote pad">${this.t("bkcHint")}</p>`;  // the title is on the head of the fold
     if (this.bkcError) return `<div class="panel">${head}<div class="error">${this.esc(this.bkcError)}</div></div>`;
     const d = this.bkc;
     if (!d) return `<div class="panel">${head}${this.skeleton("bkcLoading")}</div>`;
@@ -12554,7 +13156,7 @@ class BackupCleanupMixin {
     });
     const bytes = d.rows.filter(r => sel.has(r.backup_id)).reduce((n, r) => n + (r.size || 0), 0);
     const error = this.bkcPlanError ? `<p class="bkcerr" role="alert">${this.esc(this.t("bkcFailed", { detail: this.bkcPlanError }))}</p>` : "";
-    const action = `<div class="bkcfoot"><div><strong>${this.t("bkcSelSum", { count: this.formatNumber(sel.size), bytes: this.formatBytes(bytes) })}</strong><small>${this.t("bkcFinal")}</small>${error}</div><button class="btn danger" data-bkc-plan ${sel.size && !this.bkcBusy ? "" : "disabled"}>${this.bkcBusy ? this.t("trimBusy") : this.t("bkcPlan", { count: sel.size })}</button></div>`;
+    const action = `<div class="bkcfoot"><div><strong>${this.t("bkcSelSum", { count: this.formatNumber(sel.size), bytes: this.formatBytes(bytes) })}</strong><small>${this.t("bkcFinal")}</small>${error}</div><button class="btn dangersoft" data-bkc-plan ${sel.size && !this.bkcBusy ? "" : "disabled"}>${this.bkcBusy ? this.t("trimBusy") : this.t("bkcPlan", { count: sel.size })}</button></div>`;
     return `<div class="panel">${head}${sum}${rule}${list}${action}</div>`;
   }
 
@@ -12939,11 +13541,16 @@ Object.assign(TEXT.de, {
   accAppTab: "Rechte", accAppLoad: "Last & Speicher", accAppConfig: "Konfiguration", accAppTotal: "Gesamt", appVersion: "Version", appRepository: "Quelle", appStage: "Entwicklungsstand", appUpdate: "Update auf {version}", appHint: "Installierte App (Add-on), wie der Supervisor sie meldet. Housekeeper liest nur und ändert nichts an Apps.",
   accClearFilter: "Filter aufheben", accSumApps: "Apps mit hohem Risiko", accSumHooks: "Webhooks von außen", accSumHooksSub: "von {n} Webhooks", accHooksTitle: "Webhooks", accHooksHint: "Automationen, die ein Webhook starten kann. Offen heißt: nicht auf das lokale Netz beschränkt, wer die ID kennt, kann sie auslösen. Die ID zeigt Housekeeper nie.", accNoneHooks: "Keine Automation mit Webhook-Auslöser.", accColAutomation: "Automation", accColMethods: "Methoden", accColReach: "Erreichbar", accAnyMethod: "alle", accHookLocal: "nur lokal", accHookOpen: "offen (auch von außen)", accSumAppsSub: "von {n} Apps", accAppsTitle: "Apps", accAppsHint: "Rechte der installierten Apps, wie der Supervisor sie beschreibt", accColApp: "App", accColRights: "Rechte",
   accAppsNoSupervisor: "Apps gibt es nur mit Home Assistant OS oder Supervised.", accNoneApps: "Keine Apps installiert.", accAppNoRights: "keine besonderen Rechte", accAppUnchecked: "Der Supervisor hat zu dieser App nicht geantwortet.", accAppUncheckedShort: "nicht prüfbar",
-  accApp_full_access: "Voller Hardwarezugriff", accApp_privileged: "Privilegiert", accApp_host_pid: "Host-Prozesse (PID)", accApp_docker_api: "Docker-API (wie Root)", accApp_host_ipc: "Host-IPC", accApp_host_dbus: "Host-D-Bus", accApp_host_network: "Host-Netzwerk", accApp_supervisor_api: "Supervisor-API", accApp_ha_api: "Home-Assistant-API", accApp_auth_api: "Login-Prüfung (Auth-API)", accApp_gpio: "GPIO", accApp_usb: "USB", accApp_devices: "Geräte", accApp_apparmor_off: "AppArmor aus",
-  accExternal: "extern", accGps: "Standort (Tracker)", accCamera: "Kamera-Entitäten", accDisabled: "deaktiviert",
+  accApp_full_access: "Voller Hardwarezugriff", accApp_protection_off: "Schutzmodus aus", accApp_ports: "Offene Ports", accColOrigin: "Herkunft", accOrigin_core: "Offiziell", accOrigin_local: "Lokal", accOrigin_community: "Community", accStage_experimental: "experimentell", accStage_deprecated: "veraltet", accApp_privileged: "Privilegiert", accApp_host_pid: "Host-Prozesse (PID)", accApp_docker_api: "Docker-API (wie Root)", accApp_host_ipc: "Host-IPC", accApp_host_dbus: "Host-D-Bus", accApp_host_network: "Host-Netzwerk", accApp_supervisor_api: "Supervisor-API", accApp_ha_api: "Home-Assistant-API", accApp_auth_api: "Login-Prüfung (Auth-API)", accApp_gpio: "GPIO", accApp_usb: "USB", accApp_devices: "Geräte", accApp_apparmor_off: "AppArmor aus",
+  accExternal: "extern", accGps: "Standort (Tracker)", accPresence: "Anwesenheit im Netz", accInTitle: "Von außen erreichbar", accInHint: "Wege herein", accInColWay: "Weg herein", accInColWhat: "Was", accInColState: "Stand", accInNone: "Housekeeper sieht keinen Weg von außen herein.",
+  accInLegend: "Was Home Assistant von außen erreichbar macht, soweit Housekeeper es sieht. Gelb heißt: aus dem Internet erreichbar, das kann gewollt sein. Ein VPN ist grün, weil nur Mitglieder des Netzes hineinkommen.",
+  accInNote: "Proxy, SSL und vertrauenswürdige Proxys prüft die Richtlinie „HTTP-Konfiguration“ unter Richtlinien. Portweiterleitungen am Router und Tunnel ohne App sieht Housekeeper nicht; Apps werden am Namen erkannt.",
+  accInKind_nabu_casa: "Cloud", accInKind_tunnel: "Tunnel-App", accInKind_proxy: "Proxy-App", accInKind_dyndns: "DynDNS-App", accInKind_vpn: "VPN-App", accInKind_mcp_server: "Integration", accInKind_webhooks: "Automationen",
+  accIn_nabu_casa: "Fernzugriff auf die Oberfläche über Nabu Casa", accIn_tunnel: "Tunnel ins Internet, Oberfläche öffentlich erreichbar", accIn_proxy: "Reverse Proxy, meist mit offenem Port am Router", accIn_dyndns: "Fester Name im Internet, meist mit Portweiterleitung", accIn_vpn: "Privates Netz, nur Mitglieder kommen hinein", accIn_mcp_server: "Externe Programme steuern über Assist", accIn_webhooks: "{n} Automationen per Webhook aus dem Internet auslösbar",
+  accInState_on: "an", accInState_off: "aus", accInState_logged_out: "nicht angemeldet", accInState_unknown: "nicht prüfbar", accInState_running: "läuft", accInState_stopped: "gestoppt", accInState_set_up: "eingerichtet", accInState_open: "{n} offen", accInState_local: "nur lokal", accKind_custom_code: "Fremdcode, volle Rechte", accCamera: "Kamera-Entitäten", accDisabled: "deaktiviert",
   accNoneSys: "Keine Integration mit Systemzugriff erkannt.", accNoneCloud: "Kein Datenfluss zu externen Diensten erkannt.",
-  accFootnote: "Systemzugriff und Datenfluss leitet Housekeeper aus dem Namen der Integration ab (zha → Zigbee-Funk, mobile_app → Standort), einen Cloud-Datenfluss außerdem aus der IoT-Klasse cloud_polling oder cloud_push; Tracker- und Kamera-Entitäten zählen als Standort und Kamera. Die Einordnung ist ein Hinweis, kein Beweis. Hoch: Zugriff auf System, Shell oder Funk, Kameras oder Standort. Mittel: Daten gehen nach außen oder ein anderer Zugriff. Ignorierte Funde fehlen. Die Rechte der Apps meldet der Supervisor; hoch ist, was auf dem Host Root gleichkommt (voller Hardwarezugriff, Privilegien, Docker-API, Host-Prozesse, Supervisor-Rolle admin oder manager), mittel sind Host-Netzwerk, Zugriff auf Home Assistant oder Logins und ein abgeschaltetes AppArmor. Ein Klick auf eine App öffnet sie in Home Assistant. Es wird nichts geändert und nichts gespeichert.",
-  secrets: "Zugangsdaten", secretsSubtitle: "Welche Integrationen Zugangsdaten gespeichert haben, von welcher Art und ob ein Wert hinterlegt ist. Werte zeigt Housekeeper nie. Liest nur.",
+  accFootnote: "Systemzugriff und Datenfluss leitet Housekeeper aus dem Namen der Integration ab (zha → Zigbee-Funk, mobile_app → Standort), einen Cloud-Datenfluss außerdem aus der IoT-Klasse cloud_polling oder cloud_push; Tracker mit GPS und Kamera-Entitäten zählen als Standort und Kamera; Tracker über Router oder Bluetooth melden nur, ob ein Gerät zu Hause ist („Anwesenheit im Netz“), und heben das Risiko nicht an. Ein Tracker ohne lesbare Quelle zählt vorsichtshalber als Standort. Die Einordnung ist ein Hinweis, kein Beweis. Hoch: Zugriff auf System, Shell oder Funk, Kameras oder Standort. Mittel: Daten gehen nach außen, ein anderer Zugriff oder Fremdcode: eine Integration, die nicht zu Home Assistant gehört (HACS oder custom_components), läuft mit allen Rechten von Home Assistant, auch Housekeeper selbst. Ignorierte Funde fehlen. Die Rechte der Apps meldet der Supervisor; hoch ist, was auf dem Host Root gleichkommt (voller Hardwarezugriff, Privilegien, Docker-API, Host-Prozesse, Supervisor-Rolle admin oder manager, Schutzmodus aus), mittel sind Host-Netzwerk, offene Ports am Host, Zugriff auf Home Assistant oder Logins und ein abgeschaltetes AppArmor. Ein Klick auf eine App öffnet sie in Home Assistant. „Von außen erreichbar“ liest bei Nabu Casa nur, ob der Fernzugriff an ist, erkennt Tunnel-, Proxy-, DynDNS- und VPN-Apps am Namen und zählt den MCP-Server und offene Webhooks. Es wird nichts geändert und nichts gespeichert.",
+  secrets: "Zugangsdaten", secretsSubtitle: "Welche Integrationen Zugangsdaten gespeichert haben, von welcher Art und ob ein Wert hinterlegt ist, und die Konten mit Rolle und Zwei-Faktor. Werte zeigt Housekeeper nie. Liest nur.",
   secHint: "Gespeicherte Zugangsdaten der Integrationen, ohne Werte", secLoading: "Die Integrationen werden durchgesehen …",
   secSumEntries: "Integrationen mit Zugangsdaten", secSumEntriesSub: "{n} Felder mit Wert", secSumEmpty: "Felder ohne Wert", secSumEmptySub: "Feld vorhanden, aber leer",
   secListTitle: "Integrationen", secListHint: "Art der Zugangsdaten und ob ein Wert hinterlegt ist",
@@ -12951,7 +13558,24 @@ Object.assign(TEXT.de, {
   secStateGap: "mit leeren Feldern", secState: "{n} von {total}", secStateSet: "alle hinterlegt", secStatePart: "teilweise", secStateEmpty: "nichts hinterlegt", secAllKinds: "Alle Arten", secAllStates: "Alle Zustände",
   secKind_password: "Passwort", secKind_token: "Token", secKind_api_key: "API-Schlüssel", secKind_secret: "Secret", secKind_webhook: "Webhook", secKind_pin: "PIN",
   secNone: "Keine Integration mit gespeicherten Zugangsdaten erkannt.", secOpen: "{name} in Home Assistant öffnen",
-  secFootnote: "Housekeeper erkennt Zugangsdaten am Namen eines Feldes in der Konfiguration einer Integration (password, token, api_key, secret, webhook, pin) und prüft nur, ob es leer ist. Werte, Auszüge davon und ihre Länge werden weder gelesen noch angezeigt noch exportiert. Die Erkennung ist ein Hinweis: Zugangsdaten unter einem anderen Namen fehlen, und ein Feld mit so einem Namen kann etwas Harmloses enthalten. Ein Klick auf eine Zeile öffnet die Integration in Home Assistant, dort lassen sich die Zugangsdaten ändern. Es wird nichts geändert und nichts gespeichert.",
+  secSumDisabled: "Deaktivierte Integrationen", secSumDisabledSub: "Zugangsdaten bleiben gespeichert", secStateDisabled: "deaktiviert, mit Wert",
+  secSumReauth: "Anmeldung nötig", secSumReauthSub: "Integration verlangt neuen Login", secReauth: "Anmeldung nötig",
+  todoReauthOne: "Anmeldung nötig: {name}", todoReauthMany: "Anmeldung nötig: {n} Integrationen", todoReauthFollowers: "{n} Entitäten fallen aus", todoReauthPill: "Neu anmelden",
+  flowsTitle: "Offen in Home Assistant", flowsNote: "Information, kein Befund", flowsOpenHa: "In Home Assistant öffnen", flowsCount_discovered: "{n} gefundene Geräte", flowsCount_reconfigure: "{n} Neukonfiguration", flowDiscovered: "Gefunden über {source}", flowReconfigure: "Möchte neu konfiguriert werden", flowPillDiscovered: "Entdeckt", flowPillReconfigure: "Neu konfigurieren",
+  entryReauth: "Neue Anmeldung offen", cause_entry_reauth: "Die Integration hat Home Assistant um eine neue Anmeldung gebeten. Bis sie erledigt ist, liefert sie keine Daten.", hint_entry_reauth: "In den Integrationen bei diesem Eintrag „Neu authentifizieren“ wählen und die Zugangsdaten eingeben.",
+  secTabAccounts: "Konten", secAccHint: "Benutzer dieses Home Assistant ohne Systemkonten; ein Klick öffnet die Benutzerverwaltung",
+  secSumNoMfa: "Admins ohne Zwei-Faktor", secSumNoMfaSub: "von {n} Admins",
+  secColAccount: "Konto", secColRole: "Rolle", secColMfa: "Zwei-Faktor", secColLogin: "Letzte Anmeldung", secColTokens: "Langzeit-Tokens",
+  secRoleOwner: "Besitzer", secRoleAdmin: "Admin", secRoleUser: "Benutzer", secRoleLocal: "nur lokal", secRoleOff: "abgeschaltet",
+  secMfaOn: "an", secMfaOff: "aus", secLoginNever: "nie", secLoginTokens: "nur Tokens",
+  secStateNoMfa: "Admin ohne Zwei-Faktor", secStateInactive: "lange nicht angemeldet", secNoAccounts: "Keine Konten gefunden.", secOpenUsers: "Benutzer in Home Assistant öffnen",
+  secTabTokens: "Langzeit-Tokens", secTokHint: "Name, Konto und Alter; widerrufen lässt sich ein Token im Profil seines Kontos unter Sicherheit",
+  secSumTokens: "Langzeit-Tokens", secSumTokensSub: "{n} alt oder wirkungslos",
+  secColToken: "Token", secColAge: "Alter", secColHint: "Hinweis", secTokDays: "{n} Tage",
+  secTokOld: "älter als 90 Tage", secTokDead: "Konto abgeschaltet, wirkungslos", secNoTokens: "Keine Langzeit-Tokens.",
+  secTokFootnote: "Wann ein Langzeit-Token zuletzt benutzt wurde, merkt sich Home Assistant nicht; deshalb steht hier nur sein Alter. Gelb ist ein Token ab 90 Tagen oder eines abgeschalteten Kontos, wie in den Richtlinien „Alte Langzeit-Tokens“ und „Langzeit-Tokens abgeschalteter Konten“. Widerrufen kann ein Token nur sein Konto, im eigenen Profil unter Sicherheit. Housekeeper zeigt nur Name, Konto und Alter, nie den Token selbst.",
+  secAccFootnote: "Konten, die Home Assistant für sich selbst anlegt (Supervisor, Apps), fehlen. Die letzte Anmeldung ist die jüngste Nutzung einer Anmeldung im Browser oder in der App; gelb ist sie nach 90 Tagen ohne Anmeldung, wie in der Richtlinie „Benutzer lange nicht angemeldet“. Ein Konto, das nur Langzeit-Tokens hat, meldet sich nie an und zählt dort nicht. Zwei-Faktor heißt: mindestens ein Verfahren wie Einmalcode ist für das Konto eingerichtet. Housekeeper liest nur Namen, Rollen und Zeiten, nie einen Token oder eine Adresse.",
+  secFootnote: "Housekeeper erkennt Zugangsdaten am Namen eines Feldes in der Konfiguration einer Integration (password, token, api_key, secret, webhook, pin, auch pass, passcode, cookie, session_id und otp) und prüft nur, ob es leer ist. Werte, Auszüge davon und ihre Länge werden weder gelesen noch angezeigt noch exportiert. Die Erkennung ist ein Hinweis: Zugangsdaten unter einem anderen Namen fehlen, und ein Feld mit so einem Namen kann etwas Harmloses enthalten. „Anmeldung nötig“ heißt: Die Integration hat Home Assistant um eine neue Anmeldung gebeten, etwa weil ein Token abgelaufen oder ein Passwort geändert ist; sie steht dann auch ohne erkanntes Feld in der Liste. Eine deaktivierte Integration behält ihre Zugangsdaten, solange sie eingerichtet ist; wird sie nicht mehr gebraucht, entfernt Löschen der Integration sie mit. Ein Klick auf eine Zeile öffnet die Integration in Home Assistant, dort lassen sich die Zugangsdaten ändern. Es wird nichts geändert und nichts gespeichert.",
 });
 Object.assign(TEXT.en, {
   sysTabUsage: "Usage", sysTabUsageHint: "categories and folders", sysByCategory: "By category", sysByFolder: "By folder under /config", sysByMisc: "More", sysLineBuilding: "The line appears within the first hour", sysLineHours: "last {n} h", sysLineDays: "last {n} days", sysLinePeak: "peak {n}", sysLineLabel: "Trend, {span}: from {from} to {to}", sysHeadCategory: "Usage by category", sysHeadFolder: "Usage by folder", sysAppsHint: "Apps and custom integrations with size, CPU and RAM are under",
@@ -12995,11 +13619,16 @@ Object.assign(TEXT.en, {
   accAppTab: "Rights", accAppLoad: "Load & storage", accAppConfig: "Configuration", accAppTotal: "Total", appVersion: "Version", appRepository: "Source", appStage: "Stage", appUpdate: "Update to {version}", appHint: "Installed app (add-on) as the Supervisor reports it. Housekeeper only reads and changes nothing about apps.",
   accClearFilter: "Remove the filter", accSumApps: "Apps with high risk", accSumHooks: "Webhooks from outside", accSumHooksSub: "of {n} webhooks", accHooksTitle: "Webhooks", accHooksHint: "Automations a webhook can start. Open means: not limited to the local network, anyone who knows the ID can trigger them. Housekeeper never shows the ID.", accNoneHooks: "No automation with a webhook trigger.", accColAutomation: "Automation", accColMethods: "Methods", accColReach: "Reachable", accAnyMethod: "any", accHookLocal: "local only", accHookOpen: "open (also from outside)", accSumAppsSub: "of {n} apps", accAppsTitle: "Apps", accAppsHint: "Rights of the installed apps as the Supervisor describes them", accColApp: "App", accColRights: "Rights",
   accAppsNoSupervisor: "Apps exist only with Home Assistant OS or Supervised.", accNoneApps: "No apps installed.", accAppNoRights: "no special rights", accAppUnchecked: "The Supervisor did not answer for this app.", accAppUncheckedShort: "cannot be checked",
-  accApp_full_access: "Full hardware access", accApp_privileged: "Privileged", accApp_host_pid: "Host processes (PID)", accApp_docker_api: "Docker API (like root)", accApp_host_ipc: "Host IPC", accApp_host_dbus: "Host D-Bus", accApp_host_network: "Host network", accApp_supervisor_api: "Supervisor API", accApp_ha_api: "Home Assistant API", accApp_auth_api: "Login check (Auth API)", accApp_gpio: "GPIO", accApp_usb: "USB", accApp_devices: "Devices", accApp_apparmor_off: "AppArmor off",
-  accExternal: "external", accGps: "Location (trackers)", accCamera: "Camera entities", accDisabled: "disabled",
+  accApp_full_access: "Full hardware access", accApp_protection_off: "Protection mode off", accApp_ports: "Open ports", accColOrigin: "Origin", accOrigin_core: "Official", accOrigin_local: "Local", accOrigin_community: "Community", accStage_experimental: "experimental", accStage_deprecated: "deprecated", accApp_privileged: "Privileged", accApp_host_pid: "Host processes (PID)", accApp_docker_api: "Docker API (like root)", accApp_host_ipc: "Host IPC", accApp_host_dbus: "Host D-Bus", accApp_host_network: "Host network", accApp_supervisor_api: "Supervisor API", accApp_ha_api: "Home Assistant API", accApp_auth_api: "Login check (Auth API)", accApp_gpio: "GPIO", accApp_usb: "USB", accApp_devices: "Devices", accApp_apparmor_off: "AppArmor off",
+  accExternal: "external", accGps: "Location (trackers)", accPresence: "Presence on the network", accInTitle: "Reachable from outside", accInHint: "Ways in", accInColWay: "Way in", accInColWhat: "What", accInColState: "State", accInNone: "Housekeeper sees no way in from outside.",
+  accInLegend: "What makes Home Assistant reachable from outside, as far as Housekeeper can see. Yellow means reachable from the internet, which can be intended. A VPN is green because only members of the network get in.",
+  accInNote: "Proxy, SSL and trusted proxies are checked by the \"HTTP configuration\" policy under Policies. Port forwarding on the router and tunnels without an app are not visible to Housekeeper; apps are recognised by name.",
+  accInKind_nabu_casa: "Cloud", accInKind_tunnel: "Tunnel app", accInKind_proxy: "Proxy app", accInKind_dyndns: "DynDNS app", accInKind_vpn: "VPN app", accInKind_mcp_server: "Integration", accInKind_webhooks: "Automations",
+  accIn_nabu_casa: "Remote access to the interface through Nabu Casa", accIn_tunnel: "Tunnel to the internet, interface publicly reachable", accIn_proxy: "Reverse proxy, usually with an open port on the router", accIn_dyndns: "Fixed name on the internet, usually with port forwarding", accIn_vpn: "Private network, only members get in", accIn_mcp_server: "External programs control through Assist", accIn_webhooks: "{n} automations can be started by webhook from the internet",
+  accInState_on: "on", accInState_off: "off", accInState_logged_out: "not logged in", accInState_unknown: "cannot be checked", accInState_running: "running", accInState_stopped: "stopped", accInState_set_up: "set up", accInState_open: "{n} open", accInState_local: "local only", accKind_custom_code: "Custom code, full rights", accCamera: "Camera entities", accDisabled: "disabled",
   accNoneSys: "No integration with system access found.", accNoneCloud: "No data flow to external services found.",
-  accFootnote: "Housekeeper derives system access and data flow from the name of the integration (zha → Zigbee radio, mobile_app → location) and a cloud data flow also from the IoT class cloud_polling or cloud_push; tracker and camera entities count as location and camera. The classification is a hint, not a proof. High: access to the system, shell or radio, cameras or the location. Medium: data goes outside or another access. Ignored discoveries are left out. The rights of the apps come from the Supervisor; high is what equals root on the host (full hardware access, privileges, Docker API, host processes, Supervisor role admin or manager), medium is the host network, access to Home Assistant or logins, and AppArmor switched off. A click on an app opens it in Home Assistant. Nothing is changed and nothing is stored.",
-  secrets: "Credentials", secretsSubtitle: "Which integrations store credentials, of what kind, and whether a value is set. Housekeeper never shows the values. Only reads.",
+  accFootnote: "Housekeeper derives system access and data flow from the name of the integration (zha → Zigbee radio, mobile_app → location) and a cloud data flow also from the IoT class cloud_polling or cloud_push; GPS trackers and camera entities count as location and camera; trackers through a router or Bluetooth only tell whether a device is at home (\"presence on the network\") and do not raise the risk. A tracker without a readable source counts as a location to be safe. The classification is a hint, not a proof. High: access to the system, shell or radio, cameras or the location. Medium: data goes outside, another access, or custom code: an integration that is not part of Home Assistant (HACS or custom_components) runs with all the rights of Home Assistant, Housekeeper itself included. Ignored discoveries are left out. The rights of the apps come from the Supervisor; high is what equals root on the host (full hardware access, privileges, Docker API, host processes, Supervisor role admin or manager, protection mode off), medium is the host network, open ports on the host, access to Home Assistant or logins, and AppArmor switched off. A click on an app opens it in Home Assistant. \"Reachable from outside\" reads from Nabu Casa only whether remote access is on, recognises tunnel, proxy, DynDNS and VPN apps by name and counts the MCP server and open webhooks. Nothing is changed and nothing is stored.",
+  secrets: "Credentials", secretsSubtitle: "Which integrations store credentials, of what kind, and whether a value is set, and the accounts with role and two-factor. Housekeeper never shows the values. Only reads.",
   secHint: "Stored credentials of the integrations, without values", secLoading: "Looking through the integrations …",
   secSumEntries: "Integrations with credentials", secSumEntriesSub: "{n} fields with a value", secSumEmpty: "Fields without a value", secSumEmptySub: "field exists but is empty",
   secListTitle: "Integrations", secListHint: "Kind of credentials and whether a value is set",
@@ -13007,7 +13636,24 @@ Object.assign(TEXT.en, {
   secStateGap: "with empty fields", secState: "{n} of {total}", secStateSet: "all set", secStatePart: "partly", secStateEmpty: "nothing set", secAllKinds: "All kinds", secAllStates: "All states",
   secKind_password: "Password", secKind_token: "Token", secKind_api_key: "API key", secKind_secret: "Secret", secKind_webhook: "Webhook", secKind_pin: "PIN",
   secNone: "No integration with stored credentials found.", secOpen: "Open {name} in Home Assistant",
-  secFootnote: "Housekeeper recognises credentials by the name of a field in an integration's configuration (password, token, api_key, secret, webhook, pin) and only checks whether it is empty. Values, parts of them and their length are neither read nor shown nor exported. The detection is a hint: credentials under another name are missing, and a field with such a name may hold something harmless. A click on a row opens the integration in Home Assistant, where the credentials can be changed. Nothing is changed and nothing is stored.",
+  secSumDisabled: "Disabled integrations", secSumDisabledSub: "credentials stay stored", secStateDisabled: "disabled, with a value",
+  secSumReauth: "Login needed", secSumReauthSub: "integration asks to sign in again", secReauth: "login needed",
+  todoReauthOne: "Login needed: {name}", todoReauthMany: "Login needed: {n} integrations", todoReauthFollowers: "{n} entities are down", todoReauthPill: "Sign in again",
+  flowsTitle: "Open in Home Assistant", flowsNote: "information, not a finding", flowsOpenHa: "Open in Home Assistant", flowsCount_discovered: "{n} devices found", flowsCount_reconfigure: "{n} to reconfigure", flowDiscovered: "Found via {source}", flowReconfigure: "Wants to be set up again", flowPillDiscovered: "Discovered", flowPillReconfigure: "Reconfigure",
+  entryReauth: "New login open", cause_entry_reauth: "The integration has asked Home Assistant for a new login. Until it is done, it delivers no data.", hint_entry_reauth: "Under integrations, choose “Reauthenticate” on this entry and enter the credentials.",
+  secTabAccounts: "Accounts", secAccHint: "Users of this Home Assistant without system accounts; a click opens the user settings",
+  secSumNoMfa: "Admins without two-factor", secSumNoMfaSub: "of {n} admins",
+  secColAccount: "Account", secColRole: "Role", secColMfa: "Two-factor", secColLogin: "Last login", secColTokens: "Long-lived tokens",
+  secRoleOwner: "Owner", secRoleAdmin: "Admin", secRoleUser: "User", secRoleLocal: "local only", secRoleOff: "switched off",
+  secMfaOn: "on", secMfaOff: "off", secLoginNever: "never", secLoginTokens: "tokens only",
+  secStateNoMfa: "Admin without two-factor", secStateInactive: "no login for a long time", secNoAccounts: "No accounts found.", secOpenUsers: "Open the users in Home Assistant",
+  secTabTokens: "Long-lived tokens", secTokHint: "Name, account and age; a token is revoked in the profile of its account under Security",
+  secSumTokens: "Long-lived tokens", secSumTokensSub: "{n} old or without effect",
+  secColToken: "Token", secColAge: "Age", secColHint: "Note", secTokDays: "{n} days",
+  secTokOld: "older than 90 days", secTokDead: "account switched off, no effect", secNoTokens: "No long-lived tokens.",
+  secTokFootnote: "Home Assistant does not record when a long-lived token was last used, so only its age is shown. A token turns amber from 90 days on or when its account is switched off, as in the rules \"Old long-lived tokens\" and \"Long-lived tokens of switched-off accounts\". Only its own account can revoke a token, in its profile under Security. Housekeeper shows only name, account and age, never the token itself.",
+  secAccFootnote: "Accounts Home Assistant makes for itself (Supervisor, apps) are left out. The last login is the latest use of a login in the browser or the app; it turns amber after 90 days without a login, as in the rule \"User not logged in for a long time\". An account that only holds long-lived tokens never logs in and does not count there. Two-factor means at least one method such as a one-time code is set up for the account. Housekeeper reads only names, roles and times, never a token or an address.",
+  secFootnote: "Housekeeper recognises credentials by the name of a field in an integration's configuration (password, token, api_key, secret, webhook, pin, also pass, passcode, cookie, session_id and otp) and only checks whether it is empty. Values, parts of them and their length are neither read nor shown nor exported. The detection is a hint: credentials under another name are missing, and a field with such a name may hold something harmless. \"Login needed\" means the integration asked Home Assistant for a new login, for example because a token expired or a password changed; it is then listed even without a recognised field. A disabled integration keeps its credentials as long as it is set up; if it is no longer needed, deleting the integration removes them too. A click on a row opens the integration in Home Assistant, where the credentials can be changed. Nothing is changed and nothing is stored.",
 });
 
 // The Batteries view as one table: level, type and forecast side by side, and the need of the next 30 days above it.
@@ -13193,7 +13839,9 @@ class BatteryTableMixin {
 // SystemMixin: the pages "Storage & system", "Access & data flow" and "Credentials" under Operation and Security; mixed in by 99-register.js.
 // All three only read. A page loads on its first visit; its refresh button reads again.
 // A page and the WebSocket command it asks.
-const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields" };
+const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories" };
+// What a tile of the credentials page opens: [tab, list, state filter]; "" clears the filters.
+const SEC_SHOWS = { "": ["entries", "seclist", ""], gap: ["entries", "seclist", "gap"], reauth: ["entries", "seclist", "reauth"], disabled: ["entries", "seclist", "disabled"], nomfa: ["accounts", "secusers", "nomfa"], tokens: ["tokens", "sectokens", ""] };
 const SYS_WARN_PERCENT = 75, SYS_RED_PERCENT = 90;
 
 class SystemMixin {
@@ -13201,17 +13849,21 @@ class SystemMixin {
     return ((this._sys ||= {})[name] ||= { data: null, loading: false, error: "", requested: false, at: null });
   }
 
-  // `fresh` is the refresh button: the server then walks the folders again, unless it did a moment ago.
-  async sysLoad(name, fresh = false) {
+  // `fresh` is the refresh button: the server then reads the folders and the disk use again, unless it did a moment ago.
+  // `quick` (opening the storage page): the server answers at once with the sizes it kept, however old;
+  // when it says they are `stale`, the page asks once more and shows the new ones when they are in.
+  async sysLoad(name, fresh = false, quick = !fresh) {
     const st = this.sysState(name);
     st.loading = true; st.error = ""; st.requested = true; this.render();
+    const extra = name !== "storage" ? {} : fresh ? { fresh: true } : quick ? { quick: true } : {};
     try {
-      st.data = await this._hass.callWS({ type: `ha_housekeeper/${SYS_COMMANDS[name]}`, ...(fresh && name === "storage" ? { fresh: true } : {}) });
+      st.data = await this._hass.callWS({ type: `ha_housekeeper/${SYS_COMMANDS[name]}`, ...extra });
       // The sizes carry the time they were read; the rest of the page is live.
       st.at = (name === "storage" && st.data?.read_at) || new Date().toISOString();
     } catch (err) { st.error = this.errText(err); }
     st.loading = false;
     this.render();
+    if (extra.quick && st.data?.stale) return this.sysLoad(name, false, false);
   }
 
   // Loads on the first visit only; later visits show what was read until the person refreshes.
@@ -13282,7 +13934,7 @@ class SystemMixin {
     if (opt.exportName) this.setExporter(id, opt.exportName, opt.header, () => refined.map(opt.rows));
     const bar = items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
     const refined = this.refine(id, items, { text: opt.text, filters: opt.filterFns || {}, sorts: opt.sorts, tie: opt.tie });
-    const pg = this.paginate(id, refined);
+    const pg = this.paginate(id, refined, opt.pageSizes);
     this.lv[id].shown = refined.length;
     const table = refined.length
       ? this.listTable(id, opt.columns, pg.rows, { cls: opt.cls || "", rowAttrs: opt.rowAttrs || (() => 'class="static"'), ...(opt.after ? { after: opt.after } : {}) })
@@ -13422,6 +14074,7 @@ class SystemMixin {
     const labels = e.access.map(a => `${this.t(`accKind_${a.kind}`)}${a.detail ? ` (${a.detail})` : ""}`);
     if (e.gps && !e.access.some(a => a.kind === "location")) labels.push(this.t("accGps"));
     if (e.camera && !e.access.some(a => a.kind === "camera")) labels.push(this.t("accCamera"));
+    if (e.presence) labels.push(this.t("accPresence"));
     return labels;
   }
 
@@ -13461,11 +14114,12 @@ class SystemMixin {
   dataflowView() {
     return this.sysFrame("dataflow", "accLoading", (r, head) => {
       const entries = r.entries || [];
-      const sys = entries.filter(e => e.access.length || e.gps || e.camera);
+      const sys = entries.filter(e => e.access.length || e.gps || e.camera || e.presence);
       const cloud = entries.filter(e => e.external);
       const appList = r.apps || [];
       const hooks = r.webhooks || [], hooksOpen = hooks.filter(w => !w.local_only && w.enabled !== false).length;
-      const open = this.viewTabOf("dataflow", [{ id: "sys" }, { id: "cloud" }, ...(r.apps_available ? [{ id: "apps" }] : []), ...(hooks.length ? [{ id: "hooks" }] : [])], "sys");
+      const inbound = r.inbound || [], inboundWarn = inbound.filter(i => i.level === "warn").length;
+      const open = this.viewTabOf("dataflow", [{ id: "sys" }, { id: "cloud" }, ...(r.apps_available ? [{ id: "apps" }] : []), { id: "inbound" }, ...(hooks.length ? [{ id: "hooks" }] : [])], "sys");
       const risks = [["high", this.t("accRisk_high")], ["medium", this.t("accRisk_medium")], ["low", this.t("accRisk_low")]];
       const riskOrder = { high: 0, medium: 1, low: 2 };
       const flows = e => e.flows.map(f => this.t(`accFlow_${f}`));
@@ -13513,7 +14167,7 @@ class SystemMixin {
         ],
         exportName: "webhooks", header: [this.t("accColAutomation"), "ID", this.t("accColReach")], rows: w => [w.name, w.object_id, this.t(w.local_only ? "accHookLocal" : "accHookOpen")],
       });
-      const panel = (id, body, legend = "accLegend") => `<div class="panel">${legend ? `<p class="factnote">${this.t(legend)}</p>` : ""}${body}</div>`;
+      const panel = (id, body, legend = "accLegend") => `<div class="panel">${legend ? `<p class="factnote">${this.t(legend)}</p>` : ""}${body}${this.howCounted("accFootnote")}</div>`;
       const hi = list => list.filter(e => e.risk === "high").length;
       const tone = (n, level = "red") => (n ? level : "ok");
       const tabs = [
@@ -13521,13 +14175,39 @@ class SystemMixin {
         { id: "cloud", icon: "mdi:cloud-outline", label: this.t("accCloudTitle"), hint: this.t("accCloudHint"), count: cloud.length, tone: tone(hi(cloud)), ...(hi(cloud) ? { pill: this.t("accTabHigh", { n: this.formatNumber(hi(cloud)) }), pillTone: "red" } : {}) },
         r.apps_available ? { id: "apps", icon: "mdi:package-variant-closed", label: this.t("accAppsTitle"), hint: this.t("accAppsHint"), count: appList.length, tone: tone(hi(appList)), ...(hi(appList) ? { pill: this.t("accTabHigh", { n: this.formatNumber(hi(appList)) }), pillTone: "red" } : {}) } : { id: "apps", icon: "mdi:package-variant-closed", label: this.t("accAppsTitle"), hint: this.t("accAppsNoSupervisor"), disabled: true },
       ];
+      tabs.push({ id: "inbound", icon: "mdi:earth", label: this.t("accInTitle"), hint: this.t("accInHint"), count: inbound.length, tone: tone(inboundWarn, "warn"), ...(inboundWarn ? { pill: this.t("accTabOpen", { n: this.formatNumber(inboundWarn) }), pillTone: "warn" } : {}) });
       if (hooks.length) tabs.push({ id: "hooks", icon: "mdi:webhook", label: this.t("accHooksTitle"), hint: this.t("accHooksHint"), count: hooks.length, tone: tone(hooksOpen, "warn"), ...(hooksOpen ? { pill: this.t("accTabOpen", { n: this.formatNumber(hooksOpen) }), pillTone: "warn" } : {}) });
       const body = open === "hooks" ? panel("acchooks", hookTable, "")
+        : open === "inbound" ? panel("accin", `${this.accInboundTable(inbound)}<p class="factnote">${this.t("accInNote")}</p>`, "accInLegend")
         : open === "cloud" ? panel("acccloud", cloudTable)
         : open === "apps" ? panel("accapps", this.accAppsTable(appList, risks, sorts.find(x => x.key === "risk")), "accLegendApps")
         : panel("accsys", sysTable);
-      return `<div class="stack">${head}${this.navTiles("dataflow", tabs, open, this.t("dataflow"), true)}${body}<div class="panel">${this.howCounted("accFootnote")}</div></div>`;
+      return `<div class="stack">${head}${this.navTiles("dataflow", tabs, open, this.t("dataflow"), true)}${body}</div>`;
     }, e => `<span>${this.esc(this.t("sysChecked", { n: this.formatNumber((e.entries || []).length) }))}</span>`);
+  }
+
+  // Ways in from outside. A row opens the app, the integration, the cloud settings or the webhook tab.
+  accInboundTable(list) {
+    const rowAttrs = i => {
+      const label = `aria-label="${this.esc(i.name)}" tabindex="0"`;
+      if (i.slug) return `data-ha-path="${this.esc(`/hassio/addon/${encodeURIComponent(i.slug)}/info`)}" role="link" ${label}`;
+      if (i.domain) return `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(i.domain)}`)}" role="link" ${label}`;
+      if (i.kind === "nabu_casa") return `data-ha-path="/config/cloud/account" role="link" ${label}`;
+      return i.kind === "webhooks" ? `data-view-tab="dataflow|hooks" role="button" ${label}` : "";
+    };
+    const tone = { warn: "warn", ok: "ok", mute: "mute" };
+    return this.sysList("accin", list, {
+      sort: "level", dir: "asc", cls: "acc", tie: i => `${i.kind} ${i.name}`, empty: "accInNone",
+      sorts: [{ key: "level", label: "accInColState", dir: "asc", get: i => ({ warn: 0, mute: 1, ok: 2 })[i.level] ?? 3 }, { key: "name", label: "accInColWay", dir: "asc", get: i => i.name }],
+      text: i => `${i.name} ${this.t(`accIn_${i.kind}`)}`,
+      rowAttrs,
+      columns: [
+        { key: "name", label: "accInColWay", cell: i => this.nameCell(i.name, this.t(`accInKind_${i.kind}`)) },
+        { key: "what", label: "accInColWhat", sortable: false, cell: i => this.esc(this.t(`accIn_${i.kind}`, { n: this.formatNumber(i.count || 0) })) },
+        { key: "level", label: "accInColState", cell: i => `<span class="pill ${tone[i.level] || "mute"}">${this.esc(this.t(`accInState_${i.state}`, { n: this.formatNumber(i.count || 0) }))}</span>` },
+      ],
+      exportName: "inbound", header: [this.t("accInColWay"), this.t("accInColWhat"), this.t("accInColState")], rows: i => [i.name, this.t(`accIn_${i.kind}`, { n: i.count || 0 }), this.t(`accInState_${i.state}`, { n: i.count || 0 })],
+    });
   }
 
   // A row of an app opens its detail page when the scan knows it, else the app in Home Assistant.
@@ -13544,6 +14224,8 @@ class SystemMixin {
     const tone = { high: "red", medium: "warn", low: "mute" };
     const rights = a => `<span class="pills">${a.access.map(x => `<span class="pill ${tone[x.level] || "mute"}">${this.esc(this.accAppRight(x))}</span>`).join("") || `<span class="muted">${this.t(a.checked ? "accAppNoRights" : "accAppUnchecked")}</span>`}</span>`;
     const running = a => a.state === "started";
+    const originText = a => [a.origin ? this.t(`accOrigin_${a.origin}`) : "", a.stage ? this.t(`accStage_${a.stage}`) : ""].filter(Boolean).join(" · ");
+    const origin = a => (originText(a) ? `${this.esc(originText(a))}` : `<span class="muted">–</span>`);
     return this.sysList("accapps", apps, {
       sort: "risk", dir: "asc", cls: "acc",
       sorts: [{ ...riskSort, get: a => order[a.risk] ?? 3 }, { key: "name", label: "accColApp", dir: "asc", get: a => a.name }],
@@ -13553,10 +14235,11 @@ class SystemMixin {
       columns: [
         { key: "name", label: "accColApp", cell: a => this.nameCell(a.name, a.slug) },
         { key: "state", label: "sysColState", sortable: false, cell: a => `<span class="pill ${running(a) ? "ok" : "mute"}">${this.t(running(a) ? "sysAppRunning" : "sysAppStopped")}</span>` },
+        { key: "origin", label: "accColOrigin", sortable: false, cell: origin },
         { key: "rights", label: "accColRights", sortable: false, cell: rights },
         { key: "risk", label: "accColRisk", cell: a => (a.risk ? this.accRiskPill(a.risk, this.accAppWhy(a)) : `<span class="pill mute">${this.t("accAppUncheckedShort")}</span>`) },
       ],
-      exportName: "app-rights", header: [this.t("accColApp"), "Slug", this.t("sysColState"), this.t("accColRights"), this.t("accColRisk")], rows: a => [a.name, a.slug, a.state || "", a.access.map(x => this.accAppRight(x)).join("; "), a.risk ? this.t(`accRisk_${a.risk}`) : ""],
+      exportName: "app-rights", header: [this.t("accColApp"), "Slug", this.t("sysColState"), this.t("accColOrigin"), this.t("accColRights"), this.t("accColRisk")], rows: a => [a.name, a.slug, a.state || "", originText(a), a.access.map(x => this.accAppRight(x)).join("; "), a.risk ? this.t(`accRisk_${a.risk}`) : ""],
     });
   }
 
@@ -13654,30 +14337,48 @@ class SystemMixin {
 
   // ---------------------------------------------------------------- Credentials
 
-  // Which integrations hold credentials, of what kind, and whether a value is set. Never a value.
+  // Which integrations hold credentials, of what kind, and whether a value is set, and the accounts. Never a value.
+  // Tiles in even rows of three; each one opens its tab with its filter.
   secretsView() {
     return this.sysFrame("secrets", "secLoading", (r, head) => {
-      const entries = r.entries || [];
+      const entries = r.entries || [], users = r.accounts || [], tokens = r.tokens || [];
       const count = (e, set) => e.fields.filter(f => f.set === set).length;
       const kinds = e => [...new Set(e.fields.map(f => f.kind))];
-      const empty = entries.reduce((n, e) => n + count(e, false), 0);
-      const gap = this.lv?.seclist?.f?.state === "gap", anyFilter = Object.values(this.lv?.seclist?.f || {}).some(Boolean);
-      const tiles = this.sumTiles([
-        { label: this.t("secSumEntries"), value: this.esc(this.formatNumber(entries.length)), sub: this.esc(this.t("secSumEntriesSub", { n: this.formatNumber(entries.reduce((n, e) => n + count(e, true), 0)) })), tone: "mute", attr: ["data-sec-show", ""], active: !anyFilter },
-        { label: this.t("secSumEmpty"), value: this.esc(this.formatNumber(empty)), sub: this.esc(this.t("secSumEmptySub")), tone: empty ? "warn" : "ok", attr: ["data-sec-show", "gap"], active: gap },
-      ]);
+      const empty = entries.reduce((n, e) => n + count(e, false), 0), reauth = entries.filter(e => e.reauth).length;
+      // A switched-off integration keeps what it stored; worth a look only when a value is set.
+      const kept = e => e.disabled && count(e, true) > 0, disabled = entries.filter(kept).length;
+      const tabs = [{ id: "entries", label: this.t("secListTitle"), count: entries.length }, ...(r.accounts ? [{ id: "accounts", label: this.t("secTabAccounts"), count: users.length }] : []), ...(r.tokens ? [{ id: "tokens", label: this.t("secTabTokens"), count: tokens.length }] : [])];
+      const open = this.viewTabOf("secrets", tabs, "entries");
+      const on = (tab, list, value) => open === tab && (value ? this.lv?.[list]?.f?.state === value : !Object.values(this.lv?.[list]?.f || {}).some(Boolean));
+      const admins = users.filter(u => u.active && u.admin), noMfa = admins.filter(u => !u.mfa);
+      const tile = (label, value, sub, tone, show, active) => ({ label: this.t(label), value: this.esc(this.formatNumber(value)), sub: this.esc(sub), tone, attr: ["data-sec-show", show], active });
+      const rowOne = [
+        tile("secSumEntries", entries.length, this.t("secSumEntriesSub", { n: this.formatNumber(entries.reduce((n, e) => n + count(e, true), 0)) }), "mute", "", on("entries", "seclist")),
+        tile("secSumEmpty", empty, this.t("secSumEmptySub"), empty ? "warn" : "ok", "gap", on("entries", "seclist", "gap")),
+        tile("secSumReauth", reauth, this.t("secSumReauthSub"), reauth ? "red" : "ok", "reauth", on("entries", "seclist", "reauth")),
+      ];
+      const old = tokens.filter(x => x.old || !x.account_active).length;
+      const rowTwo = [
+        tile("secSumDisabled", disabled, this.t("secSumDisabledSub"), disabled ? "warn" : "ok", "disabled", on("entries", "seclist", "disabled")),
+        r.accounts && tile("secSumNoMfa", noMfa.length, this.t("secSumNoMfaSub", { n: this.formatNumber(admins.length) }), noMfa.length ? "warn" : "ok", "nomfa", on("accounts", "secusers", "nomfa")),
+        r.tokens && tile("secSumTokens", tokens.length, this.t("secSumTokensSub", { n: this.formatNumber(old) }), old ? "warn" : "mute", "tokens", on("tokens", "sectokens")),
+      ];
+      const tiles = `<div class="tilerows"><div class="sumgrouphead">${this.t("secListTitle")}</div>${this.sumTiles(rowOne, "even")}${this.sumTiles(rowTwo, "even")}</div>`;
+      const bar = tabs.length > 1 ? this.viewTabBar("secrets", tabs, open) : "";
+      if (open === "tokens") return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secTabTokens")}</h2><p>${this.t("secTokHint")}</p></div></div>${this.secTokens(tokens)}${this.howCounted("secTokFootnote")}</div></div>`;
+      if (open === "accounts") return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secTabAccounts")}</h2><p>${this.t("secAccHint")}</p></div></div>${this.secAccounts(users)}${this.howCounted("secAccFootnote")}</div></div>`;
       const state = e => (count(e, false) === 0 ? "set" : count(e, true) === 0 ? "empty" : "part");
-      const stateCell = e => `<span class="pill ${{ set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>`;
+      const stateCell = e => `${e.fields.length ? `<span class="pill ${{ set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>` : ""}${e.reauth ? `<span class="pill red">${this.t("secReauth")}</span>` : ""}`;
       const kindNames = e => kinds(e).map(k => this.t(`secKind_${k}`));
       const names = e => e.fields.map(f => f.key).join(", ");
       const table = this.sysList("seclist", entries, {
         sort: "name", dir: "asc", cls: "acc", tie: e => e.entry_id,
-        sorts: [{ key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }, { key: "state", label: "secColState", dir: "desc", get: e => ({ empty: 2, part: 1, set: 0 })[state(e)] }],
+        sorts: [{ key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }, { key: "state", label: "secColState", dir: "desc", get: e => (e.reauth ? 3 : ({ empty: 2, part: 1, set: 0 })[state(e)]) }],
         filters: [
           { name: "kind", all: this.t("secAllKinds"), options: ["password", "token", "api_key", "secret", "webhook", "pin"].map(k => [k, this.t(`secKind_${k}`)]) },
-          { name: "state", all: this.t("secAllStates"), options: [["gap", this.t("secStateGap")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
+          { name: "state", all: this.t("secAllStates"), options: [["reauth", this.t("secReauth")], ["disabled", this.t("secStateDisabled")], ["gap", this.t("secStateGap")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
         ],
-        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "gap" ? state(e) !== "set" : state(e) === v) },
+        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "reauth" ? Boolean(e.reauth) : v === "disabled" ? kept(e) : v === "gap" ? state(e) !== "set" : state(e) === v) },
         text: e => `${e.domain} ${e.title} ${names(e)} ${kindNames(e).join(" ")}`, empty: "secNone",
         rowAttrs: e => `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(e.domain)}`)}" tabindex="0" role="link" aria-label="${this.esc(this.t("secOpen", { name: e.title || e.domain }))}"`,
         columns: [
@@ -13690,7 +14391,53 @@ class SystemMixin {
         exportName: "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount")],
         rows: e => [e.title, e.domain, kindNames(e).join("; "), names(e), count(e, true), count(e, false)],
       });
-      return `<div class="stack">${head}${tiles}<div class="panel"><div class="panelhead"><div><h2>${this.t("secListTitle")}</h2><p>${this.t("secListHint")}</p></div></div>${table}${this.howCounted("secFootnote")}</div></div>`;
+      return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secListTitle")}</h2><p>${this.t("secListHint")}</p></div></div>${table}${this.howCounted("secFootnote")}</div></div>`;
+    });
+  }
+
+  // The people of this Home Assistant: role, two-factor login and last login. A click opens the user settings.
+  secAccounts(users) {
+    const roles = u => [u.owner ? this.t("secRoleOwner") : "", this.t(u.admin ? "secRoleAdmin" : "secRoleUser"), u.local_only ? this.t("secRoleLocal") : "", u.active ? "" : this.t("secRoleOff")].filter(Boolean);
+    const mfa = u => `<span class="pill ${u.mfa ? "ok" : u.admin && u.active ? "warn" : "mute"}">${this.t(u.mfa ? "secMfaOn" : "secMfaOff")}</span>`;
+    const login = u => (!u.logins && u.token_count ? this.t("secLoginTokens") : u.last_login ? this.formatDate(u.last_login) : this.t("secLoginNever"));
+    const state = u => (u.active && u.admin && !u.mfa ? "nomfa" : u.inactive ? "inactive" : "");
+    return this.sysList("secusers", users, {
+      sort: "name", dir: "asc", cls: "acc", tie: u => u.id,
+      sorts: [{ key: "name", label: "secColAccount", dir: "asc", get: u => u.name }, { key: "login", label: "secColLogin", dir: "desc", get: u => u.last_login || "" }],
+      filters: [{ name: "state", all: this.t("secAllStates"), options: [["nomfa", this.t("secStateNoMfa")], ["inactive", this.t("secStateInactive")]] }],
+      filterFns: { state: (u, v) => state(u) === v || (v === "inactive" && u.inactive) },
+      text: u => `${u.name} ${roles(u).join(" ")}`, empty: "secNoAccounts",
+      rowAttrs: () => `data-ha-path="/config/users" tabindex="0" role="link" aria-label="${this.esc(this.t("secOpenUsers"))}"`,
+      columns: [
+        { key: "name", label: "secColAccount", cell: u => `<strong>${this.esc(u.name)}</strong>` },
+        { key: "role", label: "secColRole", sortable: false, cell: u => this.accPills(roles(u)) },
+        { key: "mfa", label: "secColMfa", sortable: false, cell: mfa },
+        { key: "login", label: "secColLogin", dir: "desc", cell: u => (u.inactive ? `<span class="pill warn">${this.esc(login(u))}</span>` : this.esc(login(u))) },
+        { key: "tokens", label: "secColTokens", sortable: false, cell: u => this.esc(this.formatNumber(u.token_count)) },
+      ],
+      exportName: "accounts", header: [this.t("secColAccount"), this.t("secColRole"), this.t("secColMfa"), this.t("secColLogin"), this.t("secColTokens")],
+      rows: u => [u.name, roles(u).join("; "), this.t(u.mfa ? "secMfaOn" : "secMfaOff"), u.last_login || "", u.token_count],
+    });
+  }
+
+  // The long-lived tokens by name, account and age. Home Assistant does not record their use, so the age is all there is.
+  secTokens(tokens) {
+    const state = x => (!x.account_active ? "dead" : x.old ? "old" : "");
+    const hint = x => ({ dead: this.t("secTokDead"), old: this.t("secTokOld") })[state(x)] || "";
+    return this.sysList("sectokens", tokens, {
+      sort: "age", dir: "desc", cls: "acc", tie: x => `${x.account} ${x.name} ${x.created}`,
+      sorts: [{ key: "age", label: "secColAge", dir: "desc", get: x => x.days }, { key: "name", label: "secColToken", dir: "asc", get: x => x.name }, { key: "account", label: "secColAccount", dir: "asc", get: x => x.account }],
+      filters: [{ name: "state", all: this.t("secAllStates"), options: [["old", this.t("secTokOld")], ["dead", this.t("secTokDead")]] }],
+      filterFns: { state: (x, v) => state(x) === v },
+      text: x => `${x.name} ${x.account}`, empty: "secNoTokens",
+      columns: [
+        { key: "name", label: "secColToken", cell: x => `<strong>${this.esc(x.name)}</strong>` },
+        { key: "account", label: "secColAccount", cell: x => `${this.esc(x.account)}${x.account_active ? "" : ` <span class="pill mute">${this.t("secRoleOff")}</span>`}` },
+        { key: "age", label: "secColAge", dir: "desc", cell: x => `<span class="pill ${state(x) ? "warn" : "mute"}">${this.esc(this.t("secTokDays", { n: this.formatNumber(x.days) }))}</span>` },
+        { key: "hint", label: "secColHint", sortable: false, cell: x => `<span class="muted">${this.esc(hint(x))}</span>` },
+      ],
+      exportName: "long-lived-tokens", header: [this.t("secColToken"), this.t("secColAccount"), this.t("secColAge"), this.t("secColHint")],
+      rows: x => [x.name, x.account, x.days, hint(x)],
     });
   }
 
@@ -13709,11 +14456,13 @@ class SystemMixin {
       this._tipHide = globalThis.setTimeout?.(() => this.hideTip(), 6000);
     }));
     root.querySelectorAll("[data-detail-tab-go]").forEach(el => el.onclick = () => { this.detailTab = el.dataset.detailTabGo; this.render(); });
-    // A key figure of the credential overview sets the state filter ("gap": some field empty) or clears all filters.
+    // A key figure of the credential overview opens its tab and sets its state filter, or clears all filters.
     root.querySelectorAll("[data-sec-show]").forEach(el => el.onclick = () => {
-      const st = this.lvState("seclist", "name", "asc");
-      st.f = el.dataset.secShow ? { ...st.f, state: el.dataset.secShow } : {};
-      this.persistLv("seclist"); this.pages = {}; this.render();
+      const [tab, list, value] = SEC_SHOWS[el.dataset.secShow] || SEC_SHOWS[""];
+      (this.viewTab ||= {}).secrets = tab;
+      const st = this.lvState(list, "name", "asc");
+      st.f = value ? { ...st.f, state: value } : {};
+      this.persistLv(list); this.pages = {}; this.render();
     });
     root.querySelector("[data-ha-menu]")?.addEventListener("click", () => this.toggleHaSidebar());
     // Rows that lead into Home Assistant (apps) open with Enter and Space like the other rows.
@@ -13946,8 +14695,8 @@ class HistoryTabMixin {
 
 // ConfirmMixin: one dialog for every deletion of something you made yourself (a reminder, a plan, a saved view, a template).
 // The buttons open `confirmAsk`; nothing is deleted before "Delete". Mixed into the panel in 99-register.js.
-Object.assign(TEXT.de, { confirmRunTitle: "Plan jetzt ausführen?", confirmTitle: "Wirklich löschen?", confirmDelete: "Löschen", confirmCancel: "Abbrechen", confirmRem: "Die Erinnerung „{name}“ und ihre Historie werden gelöscht.", confirmRemDay: "Der Eintrag vom {date} wird aus der Historie von „{name}“ gelöscht. Die Fälligkeit bleibt.", confirmPlanDelete: "Der Plan vom {date} wird aus dem Journal gelöscht. Ein bereits ausgeführter Plan bleibt in Home Assistant wirksam; ein Rückgängig ist danach nicht mehr möglich.", confirmView: "Die gespeicherte Ansicht „{name}“ wird gelöscht.", confirmTpl: "Die Vorlage „{name}“ wird gelöscht." });
-Object.assign(TEXT.en, { confirmRunTitle: "Run the plan now?", confirmTitle: "Really delete?", confirmDelete: "Delete", confirmCancel: "Cancel", confirmRem: "The reminder “{name}” and its history will be deleted.", confirmRemDay: "The entry of {date} will be deleted from the history of “{name}”. The due day stays.", confirmPlanDelete: "The plan of {date} will be deleted from the journal. A plan that already ran stays in effect in Home Assistant; undoing it is no longer possible afterwards.", confirmView: "The saved view “{name}” will be deleted.", confirmTpl: "The template “{name}” will be deleted." });
+Object.assign(TEXT.de, { deleteSelectedPlans: "Ausgewählte löschen ({count})", confirmPlansDelete: "{count} Vorschauen werden aus dem Journal gelöscht. Ausgeführte Pläne bleiben erhalten; Vorschauen lassen sich jederzeit neu anlegen.", confirmRunTitle: "Plan jetzt ausführen?", confirmTitle: "Wirklich löschen?", confirmDelete: "Löschen", confirmCancel: "Abbrechen", confirmRem: "Die Erinnerung „{name}“ und ihre Historie werden gelöscht.", confirmRemDay: "Der Eintrag vom {date} wird aus der Historie von „{name}“ gelöscht. Die Fälligkeit bleibt.", confirmPlanDelete: "Der Plan vom {date} wird aus dem Journal gelöscht. Ein bereits ausgeführter Plan bleibt in Home Assistant wirksam; ein Rückgängig ist danach nicht mehr möglich.", confirmView: "Die gespeicherte Ansicht „{name}“ wird gelöscht.", confirmTpl: "Die Vorlage „{name}“ wird gelöscht." });
+Object.assign(TEXT.en, { deleteSelectedPlans: "Delete selected ({count})", confirmPlansDelete: "{count} previews will be deleted from the journal. Plans that ran stay; previews can be created again at any time.", confirmRunTitle: "Run the plan now?", confirmTitle: "Really delete?", confirmDelete: "Delete", confirmCancel: "Cancel", confirmRem: "The reminder “{name}” and its history will be deleted.", confirmRemDay: "The entry of {date} will be deleted from the history of “{name}”. The due day stays.", confirmPlanDelete: "The plan of {date} will be deleted from the journal. A plan that already ran stays in effect in Home Assistant; undoing it is no longer possible afterwards.", confirmView: "The saved view “{name}” will be deleted.", confirmTpl: "The template “{name}” will be deleted." });
 
 class ConfirmMixin {
   // `run` is called only after "Delete"; `text` is the sentence of the dialog.
@@ -14055,6 +14804,16 @@ Object.assign(TEXT.de, {
   compColVersion: "Version", compColEntries: "Einträge", compColDevices: "Geräte", compColAvail: "Verfügbarkeit", compColOrigin: "Herkunft", compUpdate: "Update", compUpdateHint: "Neuere Version: {v}",
   compOpenEntries: "Einträge anzeigen", compCloseEntries: "Einträge ausblenden", compFilterState: "Zustand",
   compAvailHint: "Schlechtester Wert der Einträge; erscheint, sobald die Zuverlässigkeit berechnet ist.", compSizeHint: "Ordnergröße; erscheint, sobald „Speicher & System“ geladen ist.",
+  compTabHacs: "HACS", compTabHacsHint: "alle installierten Repositories", compSumHacsRemoved: "aus HACS entfernt", compSumHacsUpdates: "Updates",
+  hacsColRepo: "Repository", hacsColKind: "Art", hacsColInstalled: "Installiert", hacsColLatest: "Neueste", hacsColState: "Zustand",
+  hacsKind_integration: "Integration", hacsKind_plugin: "Karte", hacsKind_theme: "Theme", hacsKind_python_script: "Python-Skript", hacsKind_appdaemon: "AppDaemon", hacsKind_template: "Vorlage", hacsFilterKind: "Art", hacsFilterState: "Zustand",
+  hacsStateRemoved: "Aus HACS entfernt", hacsStateRemovedIgnored: "Aus HACS entfernt (ignoriert)", hacsStateArchived: "Archiviert", hacsStateUpdate: "Update", hacsStateCurrent: "Aktuell",
+  hacsTodoOne: "{name} wurde von HACS entfernt", hacsTodoMany: "{n} Repositories wurden von HACS entfernt", hacsTodoPill: "Prüfen",
+  hacsTodoHint: "Sie laufen weiter, bekommen aber keine Updates mehr.", hacsWhatTitle: "Aus HACS entfernt: was tun?",
+  hacsStep1: "Den Grund in HACS ansehen (Zeile öffnen).", hacsStep2: "Prüfen, was daran hängt: bei einer Integration die Entitäten und Automationen, bei einer Karte die Dashboards.",
+  hacsStep3: "Je nach Grund zu einem Nachfolger wechseln, weiter nutzen oder in HACS entfernen. Housekeeper ändert in HACS nichts.", hacsStep4: "Wer es bewusst weiter nutzt, ignoriert die Reparatur in Home Assistant. Sie steht dann hier als „ignoriert“.",
+  hacsOpenRepairs: "Reparaturen in Home Assistant", hacsRemovedNote: "HACS hat dieses Repository aus seiner Liste genommen: {reason}. Es läuft weiter, bekommt aber keine Updates mehr. Was zu tun ist, steht unter Apps & Integrationen → HACS.",
+  hacsNone: "Keine installierten Repositories gefunden.", hacsLoading: "Die Repositories werden gelesen …", hacsOpenInHacs: "In HACS öffnen",
 });
 Object.assign(TEXT.en, {
   components: "Apps & integrations", componentsSubtitle: "What is installed and whether it runs: apps and integrations by domain, with version, status and scope. Read-only; the numbers come from the scan.",
@@ -14064,6 +14823,16 @@ Object.assign(TEXT.en, {
   compColVersion: "Version", compColEntries: "Entries", compColDevices: "Devices", compColAvail: "Availability", compColOrigin: "Origin", compUpdate: "Update", compUpdateHint: "Newer version: {v}",
   compOpenEntries: "Show entries", compCloseEntries: "Hide entries", compFilterState: "State",
   compAvailHint: "Worst value of the entries; appears once reliability is calculated.", compSizeHint: "Folder size; appears once Storage & system is loaded.",
+  compTabHacs: "HACS", compTabHacsHint: "every installed repository", compSumHacsRemoved: "removed from HACS", compSumHacsUpdates: "updates",
+  hacsColRepo: "Repository", hacsColKind: "Kind", hacsColInstalled: "Installed", hacsColLatest: "Latest", hacsColState: "State",
+  hacsKind_integration: "Integration", hacsKind_plugin: "Card", hacsKind_theme: "Theme", hacsKind_python_script: "Python script", hacsKind_appdaemon: "AppDaemon", hacsKind_template: "Template", hacsFilterKind: "Kind", hacsFilterState: "State",
+  hacsStateRemoved: "Removed from HACS", hacsStateRemovedIgnored: "Removed from HACS (ignored)", hacsStateArchived: "Archived", hacsStateUpdate: "Update", hacsStateCurrent: "Up to date",
+  hacsTodoOne: "{name} was removed from HACS", hacsTodoMany: "{n} repositories were removed from HACS", hacsTodoPill: "Review",
+  hacsTodoHint: "They keep running but get no more updates.", hacsWhatTitle: "Removed from HACS: what to do?",
+  hacsStep1: "Look up the reason in HACS (open the row).", hacsStep2: "Check what depends on it: for an integration the entities and automations, for a card the dashboards.",
+  hacsStep3: "Depending on the reason, switch to a successor, keep using it or remove it in HACS. Housekeeper changes nothing in HACS.", hacsStep4: "If you keep using it on purpose, ignore the repair in Home Assistant. It then shows here as “ignored”.",
+  hacsOpenRepairs: "Repairs in Home Assistant", hacsRemovedNote: "HACS took this repository out of its list: {reason}. It keeps running but gets no more updates. What to do is under Apps & integrations → HACS.",
+  hacsNone: "No installed repositories found.", hacsLoading: "Reading the repositories …", hacsOpenInHacs: "Open in HACS",
 });
 
 const COMP_RANK = { problem: 3, disabled: 2, active: 1, ignored: 0 };
@@ -14099,7 +14868,8 @@ class ComponentsMixin {
   compNameCell(g) {
     const sub = [g.domain, g.entries.length > 1 ? this.t("compEntries", { n: g.entries.length }) : ""].filter(Boolean).join(" · ");
     const open = (this.compOpen || []).includes(g.domain);
-    return `${g.entries.length > 1 ? this.expandBtn("data-comp-open", g.domain, open, this.t(open ? "compCloseEntries" : "compOpenEntries")) : ""}${this.nameCell(g.name, sub)}`;
+    const lead = g.entries.length > 1 ? this.expandBtn("data-comp-open", g.domain, open, this.t(open ? "compCloseEntries" : "compOpenEntries")) : `<span class="tile compgap" aria-hidden="true"></span>`;
+    return `<div class="compname">${lead}${this.nameCell(g.name, sub)}</div>`;
   }
 
   // The entries of an opened integration: one line each, a click opens the entry.
@@ -14145,6 +14915,55 @@ class ComponentsMixin {
     });
   }
 
+  // The state of one HACS repository: what HACS removed comes first, then archived, then an open update.
+  hacsState(r) {
+    if (r.removed) return { key: r.removed.ignored ? "hacsStateRemovedIgnored" : "hacsStateRemoved", tone: r.removed.ignored ? "mute" : "warn", rank: r.removed.ignored ? 2 : 4 };
+    if (r.archived) return { key: "hacsStateArchived", tone: "warn", rank: 3 };
+    if (r.pending_update) return { key: "hacsStateUpdate", tone: "warn", rank: 1 };
+    return { key: "hacsStateCurrent", tone: "ok", rank: 0 };
+  }
+
+  hacsKind(r) {
+    const key = `hacsKind_${r.category}`;
+    return TEXT[this.lang]?.[key] ? this.t(key) : r.category || "–";
+  }
+
+  // What to do about a repository that HACS took out of its list; shown above the list while one is not ignored.
+  hacsAdvice(rows) {
+    const open = rows.filter(r => r.removed && !r.removed.ignored);
+    if (!open.length) return "";
+    return `<div class="hacsadvice"><div class="panelhead"><h2>${this.t("hacsWhatTitle")}</h2><div class="actions"><button class="btn" data-ha-path="/config/repairs" data-ha-tab><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("hacsOpenRepairs")}</button></div></div><ol class="factnote">${[1, 2, 3, 4].map(n => `<li>${this.t(`hacsStep${n}`)}</li>`).join("")}</ol></div>`;
+  }
+
+  compHacsList(rows) {
+    const st = row => this.hacsState(row);
+    const columns = [
+      { key: "name", label: "hacsColRepo", cell: r => this.nameCell(r.name, r.full_name) },
+      { key: "kind", label: "hacsColKind", cell: r => this.esc(this.hacsKind(r)) },
+      { key: "installed", label: "hacsColInstalled", cell: r => this.esc(r.installed_version || "–") },
+      { key: "latest", label: "hacsColLatest", cell: r => this.esc(r.available_version || "–") },
+      { key: "state", label: "hacsColState", cell: r => `<span class="pill ${st(r).tone}">${this.t(st(r).key)}</span>${r.removed?.reason ? `<small>${this.esc(r.removed.reason)}</small>` : ""}` },
+    ];
+    const kinds = [...new Set(rows.map(r => r.category).filter(Boolean))];
+    return this.sysList("hacsrepos", rows, {
+      sort: "state", dir: "desc",
+      sorts: [
+        { key: "state", label: "hacsColState", dir: "desc", get: r => st(r).rank },
+        { key: "name", label: "hacsColRepo", dir: "asc", get: r => r.name },
+        { key: "kind", label: "hacsColKind", dir: "asc", get: r => this.hacsKind(r) },
+      ],
+      filters: [
+        { name: "kind", all: this.t("hacsFilterKind"), options: kinds.map(k => [k, this.hacsKind({ category: k })]) },
+        { name: "state", all: this.t("hacsFilterState"), options: [["removed", this.t("hacsStateRemoved")], ["update", this.t("hacsStateUpdate")], ["archived", this.t("hacsStateArchived")]] },
+      ],
+      filterFns: { kind: (r, v) => r.category === v, state: (r, v) => (v === "removed" ? Boolean(r.removed) : v === "update" ? Boolean(r.pending_update) : r.archived) },
+      text: r => `${r.name} ${r.full_name}`, tie: r => r.id, empty: "hacsNone",
+      rowAttrs: r => `data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(r.id)}`)}" data-ha-tab tabindex="0" role="link" aria-label="${this.esc(`${r.name} · ${this.t("hacsOpenInHacs")}`)}"`,
+      columns, exportName: "hacs", header: [this.t("hacsColRepo"), "ID", this.t("hacsColKind"), this.t("hacsColInstalled"), this.t("hacsColLatest"), this.t("hacsColState")],
+      rows: r => [r.full_name, r.id, r.category || "", r.installed_version || "", r.available_version || "", this.t(st(r).key)],
+    });
+  }
+
   compAppsList(apps) {
     // CPU, RAM and data come from the system report; it is read when this tab opens (see componentsView).
     const usage = new Map((this.sysState("storage").data?.apps || []).map(a => [a.slug, a]));
@@ -14183,6 +15002,16 @@ class ComponentsMixin {
     });
   }
 
+  // What Home Assistant still waits for (discoveries, set-up requests): information only, no finding; it is left out when there is none.
+  openFlowsFold() {
+    const flows = this.sysState("flows").data?.flows || [];
+    if (!flows.length) return "";
+    const kinds = ["discovered", "reconfigure"].map(kind => [kind, flows.filter(f => f.kind === kind).length]).filter(([, n]) => n);
+    const row = f => `<div class="row" data-ha-path="/config/integrations" tabindex="0" role="link" aria-label="${this.esc(this.t("flowsOpenHa"))}"><span class="tile mute"><ha-icon icon="${f.kind === "reconfigure" ? "mdi:cog-outline" : "mdi:radar"}"></ha-icon></span><span class="row-text"><strong>${this.esc(f.name)}</strong><small>${this.esc(f.kind === "reconfigure" ? this.t("flowReconfigure") : this.t("flowDiscovered", { source: f.source }))}</small></span><span class="pill mute">${this.t(f.kind === "reconfigure" ? "flowPillReconfigure" : "flowPillDiscovered")}</span></div>`;
+    const sub = kinds.map(([kind, n]) => this.t(`flowsCount_${kind}`, { n: this.formatNumber(n) })).join(" · ");
+    return `<div class="panel">${this.fold("open_flows", { tone: "mute", title: this.t("flowsTitle"), sub: `${sub} · ${this.t("flowsNote")}`, pill: this.formatNumber(flows.length) }, flows.map(row).join(""), false)}</div>`;
+  }
+
   componentsView() {
     const apps = (this.data?.objects || []).filter(o => o.object_type === "app");
     const ints = this.compIntegrations();
@@ -14204,13 +15033,22 @@ class ComponentsMixin {
         facts: [fact(bad(core), "compSumProblem", "red")] },
       { id: "custom", icon: "mdi:puzzle-plus-outline", label: this.t("compTabCustom"), hint: this.t("compTabCustomHint"), count: custom.length,
         facts: [fact(bad(custom), "compSumProblem", "red"), fact(custom.filter(g => g.hacs?.pending_update).length, "compSumUpdates", "warn"), sizeFact(customBytes)] },
-    ].map(t => ({ ...t, facts: t.facts.filter(Boolean), tone: t.facts.some(f => f?.tone === "red") ? "red" : "mute" }));
+    ];
+    const hacsSt = this.data?.meta?.hacs_available ? this.sysEnsure("hacs") : null;
+    const repos = hacsSt?.data?.repositories || [];
+    if (hacsSt) {
+      tabs.push({ id: "hacs", icon: "mdi:store-outline", label: this.t("compTabHacs"), hint: this.t("compTabHacsHint"), count: hacsSt.data ? repos.length : null,
+        facts: [fact(repos.filter(r => r.removed && !r.removed.ignored).length, "compSumHacsRemoved", "warn"), fact(repos.filter(r => r.pending_update).length, "compSumHacsUpdates", "warn")] });
+    }
+    tabs.forEach((t, i) => { tabs[i] = { ...t, facts: t.facts.filter(Boolean), tone: t.facts.some(f => f?.tone === "red") ? "red" : "mute" }; });
     const open = this.viewTabOf("components", tabs, "core");
     if (apps.length || custom.length) this.sysEnsure("storage"); // CPU, RAM and data of the apps, folder sizes of custom integrations
-    const body = open === "apps" ? this.compAppsList(apps) : this.compIntegrationsList(open === "custom" ? custom : core, open);
-    const st = this.sysState("storage");
-    const bar = this.pageBar({ at: st.at, loading: st.loading, attr: 'data-sys-refresh="storage"' });
-    return `<div class="stack">${bar}${this.navTiles("components", tabs, open, this.t("components"), true)}<div class="panel">${body}</div></div>`;
+    this.sysEnsure("flows");
+    const hacsBody = !hacsSt?.data ? (hacsSt?.error ? `<div class="error">${this.esc(hacsSt.error)}</div>` : this.skeleton("hacsLoading")) : `${this.hacsAdvice(repos)}${this.compHacsList(repos)}`;
+    const body = open === "apps" ? this.compAppsList(apps) : open === "hacs" ? hacsBody : this.compIntegrationsList(open === "custom" ? custom : core, open);
+    const st = this.sysState(open === "hacs" ? "hacs" : "storage");
+    const bar = this.pageBar({ at: st.at, loading: st.loading, attr: `data-sys-refresh="${open === "hacs" ? "hacs" : "storage"}"` });
+    return `<div class="stack">${bar}${this.openFlowsFold()}${this.navTiles("components", tabs, open, this.t("components"), true)}<div class="panel">${body}</div></div>`;
   }
 }
 
@@ -14341,10 +15179,11 @@ class IntegrationPageMixin {
   // What HACS says about the integration, for custom integrations that HACS installed.
   intHacsCard(h) {
     const fact = (label, value) => `<div class="fact"><span>${this.t(label)}</span><b>${value}</b></div>`;
-    const status = `<span class="pill ${h.pending_update ? "warn" : "ok"}">${this.t(h.pending_update ? "intHacsUpdate" : "intHacsCurrent")}</span>${h.blocked ? ` <span class="pill warn">${this.t("intHacsBlocked")}</span>` : ""}${h.archived ? ` <span class="pill warn">${this.t("intHacsArchived")}</span>` : ""}`;
-    const open = h.id ? `<button class="btn" data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(h.id)}`)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("intHacsOpen")}</button>` : "";
+    const status = `<span class="pill ${h.pending_update ? "warn" : "ok"}">${this.t(h.pending_update ? "intHacsUpdate" : "intHacsCurrent")}</span>${h.blocked ? ` <span class="pill warn">${this.t("intHacsBlocked")}</span>` : ""}${h.archived ? ` <span class="pill warn">${this.t("intHacsArchived")}</span>` : ""}${h.removed ? ` <span class="pill ${h.removed.ignored ? "mute" : "warn"}">${this.t("hacsStateRemoved")}</span>` : ""}`;
+    const gone = h.removed ? `<p class="factnote">${this.t("hacsRemovedNote", { reason: this.esc(h.removed.reason || "–") })}</p>` : "";
+    const open = h.id ? `<button class="btn" data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(h.id)}`)}" data-ha-tab><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("intHacsOpen")}</button>` : "";
     const github = h.full_name ? `<a class="btn" href="${this.esc(`https://github.com/${h.full_name}`)}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:github"></ha-icon>${this.t("intHacsGitHub")}</a>` : "";
-    return `<section class="panel"><div class="panelhead"><h2>${this.t("intHacsTitle")}</h2>${open || github ? `<div class="actions">${open}${github}</div>` : ""}</div><div class="facts">${fact("intHacsInstalled", this.esc(h.installed_version || "–"))}${fact("intHacsAvailable", this.esc(h.available_version || "–"))}${fact("sysColState", status)}</div><p class="factnote">${this.t("intHacsNote")}</p></section>`;
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("intHacsTitle")}</h2>${open || github ? `<div class="actions">${open}${github}</div>` : ""}</div><div class="facts">${fact("intHacsInstalled", this.esc(h.installed_version || "–"))}${fact("intHacsAvailable", this.esc(h.available_version || "–"))}${fact("sysColState", status)}</div><p class="factnote">${this.t("intHacsNote")}</p>${gone}</section>`;
   }
 
   intMembersCard(item) {
@@ -14542,8 +15381,8 @@ Object.assign(TEXT.en, {
   monitorReason_unknown: "State unknown", monitorReason_status_unknown: "State unreadable",
 });
 Object.assign(TEXT.de, {
-  monitorAvail: "Verfügbarkeit", monitorAvailHint: "Letzte {days} Tage, soweit beobachtet. Zeiten ohne Bewertung (deaktiviert, nach Änderungen an den Objekten, vor der ersten Prüfung) zählen nicht. Jedes Feld ist ein Tag mit dem schlechtesten Zustand.", monitorAvailNone: "Noch keine Bewertung in diesem Zeitraum.",
-  monitorAvailOk: "Unauffällig: {pct} %", monitorAvailProblem: "Beeinträchtigt: {time} · {n} Vorfälle · längster {longest}", monitorAvailNoProblem: "Kein Defekt belegt", monitorAvailUnknown: "Unbekannt: {time}", monitorAvailUnstable: "Instabil: {time}", monitorAvailSince: "Beobachtet seit {date}", monitorAvailNoData: "keine Bewertung",
+  monitorAvail: "Verfügbarkeit", monitorAvailInfo: "Zeiten ohne Bewertung zählen nicht: deaktiviert, nach Änderungen an den Objekten, vor der ersten Prüfung.", monitorAvailNone: "Noch keine Bewertung in diesem Zeitraum.",
+  monitorAvailOk: "Unauffällig", monitorAvailProblem: "Beeinträchtigt", monitorAvailIncidents: "{n} Vorfall", monitorAvailIncidentsN: "{n} Vorfälle", monitorAvailLongest: "Längster Vorfall", monitorAvailNoProblem: "Kein Defekt belegt", monitorAvailUnknown: "Unbekannt", monitorAvailUnstable: "Instabil", monitorAvailFrom: "vor {days} Tagen", monitorAvailOkDays: "Unauffällig, {days} Tage", monitorMembersCount: "{n}, davon {required} erforderlich", monitorNeedName: "Gib der Funktion einen Namen.", monitorNeedMembers: "Wähle mindestens ein Objekt.", monitorAvailShort: "Kurz beeinträchtigt", monitorAvailLong: "Länger beeinträchtigt", monitorAvailUnobserved: "Nicht beobachtet", monitorAvailDayProblem: "{state}, {time}", monitorAvailToday: "Heute", monitorAvailSince: "Beobachtet seit {date}", monitorAvailNoData: "keine Bewertung",
   monitorDurLess: "unter 1 Min.", monitorDurMinutes: "{n} Min.", monitorDurHours: "{h} Std. {m} Min.", monitorDurDays: "{d} T. {h} Std.",
   monitorLastProblem: "zuletzt beeinträchtigt {when}", monitorLastProblemLine: "Zuletzt beeinträchtigt",
   monitorHistory: "Verlauf", monitorHistoryHint: "Zustandswechsel, Änderungen und Pläne zu diesen Objekten der letzten {days} Tage, neueste zuerst. Die Dauer ist unter Einstellungen einstellbar.", monitorHistoryEmpty: "Noch keine Einträge.", monitorHistoryLoading: "Verlauf wird geladen …",
@@ -14552,8 +15391,8 @@ Object.assign(TEXT.de, {
   monitorHistField_name: "Name", monitorHistField_description: "Beschreibung", monitorHistField_notify: "Benachrichtigung",
 });
 Object.assign(TEXT.en, {
-  monitorAvail: "Availability", monitorAvailHint: "Last {days} days, as far as observed. Times without an evaluation (disabled, after edits to the objects, before the first check) do not count. Each square is one day with its worst state.", monitorAvailNone: "No evaluation in this period yet.",
-  monitorAvailOk: "No known fault: {pct} %", monitorAvailProblem: "Impaired: {time} · {n} incidents · longest {longest}", monitorAvailNoProblem: "No fault confirmed", monitorAvailUnknown: "Unknown: {time}", monitorAvailUnstable: "Unstable: {time}", monitorAvailSince: "Observed since {date}", monitorAvailNoData: "no evaluation",
+  monitorAvail: "Availability", monitorAvailInfo: "Times without an evaluation do not count: disabled, after edits to the objects, before the first check.", monitorAvailNone: "No evaluation in this period yet.",
+  monitorAvailOk: "No known fault", monitorAvailProblem: "Impaired", monitorAvailIncidents: "{n} incident", monitorAvailIncidentsN: "{n} incidents", monitorAvailLongest: "Longest incident", monitorAvailNoProblem: "No fault confirmed", monitorAvailUnknown: "Unknown", monitorAvailUnstable: "Unstable", monitorAvailFrom: "{days} days ago", monitorAvailOkDays: "No known fault, {days} days", monitorMembersCount: "{n}, {required} of them required", monitorNeedName: "Give the function a name.", monitorNeedMembers: "Choose at least one object.", monitorAvailShort: "Briefly impaired", monitorAvailLong: "Impaired for longer", monitorAvailUnobserved: "Not observed", monitorAvailDayProblem: "{state}, {time}", monitorAvailToday: "Today", monitorAvailSince: "Observed since {date}", monitorAvailNoData: "no evaluation",
   monitorDurLess: "under 1 min", monitorDurMinutes: "{n} min", monitorDurHours: "{h} h {m} min", monitorDurDays: "{d} d {h} h",
   monitorLastProblem: "last impaired {when}", monitorLastProblemLine: "Last impaired",
   monitorHistory: "History", monitorHistoryHint: "State changes, edits and plans for these objects of the last {days} days, newest first. The period is set in Settings.", monitorHistoryEmpty: "No entries yet.", monitorHistoryLoading: "Loading the history …",
@@ -19211,7 +20050,7 @@ class MonitorMixin {
         { key: "name", label: "sortName", dir: "asc", cell: item => this.nameCell(item.name, item.description || "") },
         { key: "state", label: "sysColState", dir: "asc", cell: item => `<span class="pill ${toneOf(item)}">${this.monitorState(item)}</span>` },
         { key: "reason", label: "monitorColReason", sortable: false, cell: item => this.esc(reasonOf(item) || "—") },
-        { key: "problem", label: "monitorColLastProblem", dir: "desc", cell: item => (item.last_problem_at ? this.esc(this.agoText(item.last_problem_at)) : "—") },
+        { key: "problem", label: "monitorColLastProblem", dir: "desc", cell: item => (item.last_problem_at ? `${this.esc(this.agoText(item.last_problem_at))}<small class="agestamp">${this.esc(this.formatDate(item.last_problem_at))}</small>` : "—") },
         { key: "scan", label: "monitorColScan", dir: "desc", cell: item => (item.scanned_at ? this.esc(this.formatDate(item.scanned_at)) : "—") },
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:home-heart"></ha-icon>${this.t("monitorEmpty")}</div>`;
@@ -19222,7 +20061,16 @@ class MonitorMixin {
     const item = this.monitorFunctions().find(f => f.id === this.monitorSelected);
     if (!item) { this.monitorSelected = null; return this.monitorView(); }
     const tone = item.enabled === false ? "mute" : item.incident_open || item.state === "problem" ? "red" : item.state === "unverified" ? "warn" : "ok";
-    return `<div class="u-mb14"><button class="btn" data-monitor-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("monitorBack")}</button></div><section class="panel u-mb14"><div class="panelhead"><div><h2>${this.esc(item.name)} <span class="pill ${tone}">${this.monitorState(item)}</span></h2><p>${this.esc(item.description || this.t("monitorSubtitle"))}</p></div><button class="btn" data-monitor-edit>${this.t("monitorEdit")}</button></div><div class="facts"><div class="fact"><span>${this.t("monitorLastScan", { date: this.formatDate(item.scanned_at) })}</span></div><div class="fact"><span>${item.last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(item.last_verified_at) }) : this.t("monitorNeverVerified")}</span></div></div>${item.state === "unverified" ? `<div class="row"><span class="tile warn"><ha-icon icon="mdi:help-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t(item.incident_open ? "monitorUnresolved" : "monitorNoProof")}</strong>${item.incident_open && item.last_problem_reason ? `<small>${this.esc(this.monitorReason(item.last_problem_reason))}</small>` : ""}</span></div>` : ""}</section><section class="panel u-mb14"><div class="panelhead"><h2>${this.t("monitorMembers")}</h2></div>${this.monitorMembersTable(item)}</section>${this.monitorHistoryHtml(item)}`;
+    const cache = (this.monitorHistory ||= {})[item.id];
+    const meta = [
+      this.t("monitorLastScan", { date: this.formatDate(item.scanned_at) }),
+      item.last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(item.last_verified_at) }) : this.t("monitorNeverVerified"),
+      this.t("monitorHistObjects", { n: item.members.length }),
+    ].map(text => this.esc(text)).join(" · ");
+    const unverified = item.state === "unverified" ? `<div class="row"><span class="tile warn"><ha-icon icon="mdi:help-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t(item.incident_open ? "monitorUnresolved" : "monitorNoProof")}</strong>${item.incident_open && item.last_problem_reason ? `<small>${this.esc(this.monitorReason(item.last_problem_reason))}</small>` : ""}</span></div>` : "";
+    const head = `<div class="panelhead"><div><h2>${this.esc(item.name)} <span class="pill ${tone}">${this.monitorState(item)}</span></h2>${item.description ? `<p>${this.esc(item.description)}</p>` : ""}<p class="monitor-meta">${meta}</p></div><button class="btn" data-monitor-edit>${this.t("monitorEdit")}</button></div>`;
+    const history = this.monitorHistoryHtml(item);
+    return `<div class="u-mb14"><button class="btn" data-monitor-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("monitorBack")}</button></div><section class="panel u-mb14">${head}${unverified}${this.monitorAvailabilityHtml(cache?.availability, item)}<div class="monitor-sec"><h3>${this.t("monitorMembers")}</h3><small>${this.t("monitorMembersCount", { n: item.members.length, required: item.members.filter(m => m.required).length })}</small></div>${this.monitorMembersTable(item)}</section>${history}`;
   }
 
   // The objects of one function as a table: a row opens the object.
@@ -19234,21 +20082,18 @@ class MonitorMixin {
     const rulesOf = ({ member, object }) => (member.rules || []).map(rule => this.monitorRuleText(rule, object)).join("; ");
     const sorts = [
       { key: "name", label: "sortName", dir: "asc", get: titleOf },
-      { key: "kind", label: "monitorColKind", dir: "asc", get: r => r.member.object_key.split(":")[0] },
       { key: "role", label: "monitorColRole", dir: "asc", get: r => (r.member.required ? 0 : 1) },
       { key: "state", label: "sysColState", dir: "asc", get: r => ({ problem: 0, unverified: 1, ok: 2, disabled: 3 }[r.member.state] ?? 9) },
     ];
     return this.sysList("monitor-members", rows, {
-      sort: "state", sorts, tie: titleOf, empty: "monitorEmpty",
+      sort: "state", sorts, tie: titleOf, empty: "monitorEmpty", pageSizes: [10, 20, 50],
       text: r => [titleOf(r), r.member.object_key, this.monitorReason(r.member.reason), rulesOf(r)].join(" "),
       rowAttrs: r => (r.object ? `data-object="${this.esc(r.member.object_key)}" tabindex="0" role="button" aria-label="${this.esc(titleOf(r))}"` : 'class="static"'),
       columns: [
         { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${this.tile(r.member.object_key.split(":")[0], "")}<div>${this.nameCell(titleOf(r), r.member.object_key)}</div></div>` },
-        { key: "kind", label: "monitorColKind", dir: "asc", cell: r => this.esc(this.t(`monitorType_${r.member.object_key.split(":")[0]}`)) },
         { key: "role", label: "monitorColRole", dir: "asc", cell: r => this.t(r.member.required ? "monitorRequired" : "monitorAdditional") },
         { key: "state", label: "sysColState", dir: "asc", cell: r => `<span class="pill ${toneOf(r)}">${stateText(r)}</span>` },
         { key: "reason", label: "monitorColReason", sortable: false, cell: r => this.esc(this.monitorReason(r.member.reason) || "—") },
-        { key: "rules", label: "monitorRules", sortable: false, cell: r => this.esc(rulesOf(r) || "—") },
       ],
     });
   }
@@ -19307,7 +20152,7 @@ class MonitorMixin {
         ...(hasPlan ? [{ key: "act", label: "btColAct", sortable: false, cell: item => (item.planId ? `<button class="btn small" data-plan-open="${this.esc(item.planId)}">${this.t("openPlan")}</button>` : "") }] : []),
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:history"></ha-icon>${this.t("monitorHistoryEmpty")}</div>`;
-    return `${this.monitorAvailabilityHtml(cache.availability)}<section class="panel">${head}${list}</section>`;
+    return `<section class="panel">${head}${list}</section>`;
   }
 
   monitorDuration(seconds) {
@@ -19318,22 +20163,32 @@ class MonitorMixin {
   }
 
   // The shares of time in each state over the last days and one square per day (the worst state of that day).
-  monitorAvailabilityHtml(a) {
+  monitorAvailabilityHtml(a, item) {
     if (!a) return "";
-    const head = `<div class="panelhead"><div><h2>${this.t("monitorAvail")}</h2><p>${this.t("monitorAvailHint", { days: a.window_days })}</p></div></div>`;
-    if (!a.observed_seconds) return `<section class="panel u-mb14">${head}<div class="emptymsg"><ha-icon icon="mdi:chart-timeline-variant"></ha-icon>${this.t("monitorAvailNone")}</div></section>`;
+    if (!a.observed_seconds) return `<div class="emptymsg"><ha-icon icon="mdi:chart-timeline-variant"></ha-icon>${this.t("monitorAvailNone")}</div>`;
     const pct = Math.floor((a.ok_seconds / a.observed_seconds) * 1000) / 10; // a fault never rounds up to 100 %
     const percent = new Intl.NumberFormat(this.lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(pct);
-    const facts = [
-      this.t("monitorAvailOk", { pct: percent }),
-      a.problem_seconds ? this.t("monitorAvailProblem", { time: this.monitorDuration(a.problem_seconds), n: a.incidents, longest: this.monitorDuration(a.longest_seconds) }) : this.t("monitorAvailNoProblem"),
-      a.unknown_seconds ? this.t("monitorAvailUnknown", { time: this.monitorDuration(a.unknown_seconds) }) : "",
-      a.unstable_seconds ? this.t("monitorAvailUnstable", { time: this.monitorDuration(a.unstable_seconds) }) : "",
-      this.t("monitorAvailSince", { date: this.formatDate(a.since) }),
-    ].filter(Boolean).map(text => `<div class="fact"><span>${this.esc(text)}</span></div>`).join("");
+    const tile = (value, label, tone = "") => `<div class="avail-tile"><b class="${tone}">${this.esc(value)}</b><span>${this.esc(label)}</span></div>`;
+    const tiles = [
+      tile(`${percent} %`, this.t("monitorAvailOkDays", { days: a.window_days }), "ok"),
+      a.problem_seconds
+        ? tile(this.monitorDuration(a.problem_seconds), `${this.t("monitorAvailProblem")} · ${this.t(a.incidents === 1 ? "monitorAvailIncidents" : "monitorAvailIncidentsN", { n: a.incidents })}`)
+        : tile("–", this.t("monitorAvailNoProblem")),
+      a.problem_seconds ? tile(this.monitorDuration(a.longest_seconds), this.t("monitorAvailLongest")) : "",
+      a.unknown_seconds ? tile(this.monitorDuration(a.unknown_seconds), this.t("monitorAvailUnknown")) : "",
+      a.unstable_seconds ? tile(this.monitorDuration(a.unstable_seconds), this.t("monitorAvailUnstable")) : "",
+      item?.last_problem_at ? tile(this.agoText(item.last_problem_at), this.t("monitorLastProblemLine")) : "",
+    ].filter(Boolean).join("");
     const labels = { ok: "monitorOk", problem: "monitorProblem", unverified: "monitorUnverified", flapping: "monitorHist_flapping" };
-    const days = a.days.map(day => `<i class="${day.state || "none"}" title="${this.esc(`${day.date}: ${day.state ? this.t(labels[day.state]) : this.t("monitorAvailNoData")}`)}"></i>`).join("");
-    return `<section class="panel u-mb14">${head}<div class="facts">${facts}</div><div class="monitor-days" role="img" aria-label="${this.esc(this.t("monitorAvail"))}">${days}</div></section>`;
+    // A day with less than 1 % of impaired time reads amber, not red; unknown and unstable days are amber too.
+    const dayClass = day => (day.state === "problem" && (day.problem_seconds || 0) < 864 ? "problem short" : day.state || "none");
+    const dayTitle = day => `${day.date}: ${day.state ? (day.state === "problem" && day.problem_seconds ? this.t("monitorAvailDayProblem", { state: this.t(labels.problem), time: this.monitorDuration(day.problem_seconds) }) : this.t(labels[day.state])) : this.t("monitorAvailNoData")}`;
+    const days = a.days.map(day => `<i class="${dayClass(day)}" title="${this.esc(dayTitle(day))}"></i>`).join("");
+    const swatch = (cls, key) => `<span><i class="${cls}"></i>${this.esc(this.t(key))}</span>`;
+    const legend = `<div class="monitor-legend">${swatch("ok", "monitorAvailOk")}${swatch("problem short", "monitorAvailShort")}${swatch("problem", "monitorAvailLong")}${swatch("none", "monitorAvailUnobserved")}</div>`;
+    const axis = `<div class="monitor-axis"><span>${this.t("monitorAvailFrom", { days: a.window_days })}</span><span>${this.t("monitorAvailToday")}</span></div>`;
+    const since = `<div class="avail-since">${this.esc(this.t("monitorAvailSince", { date: this.formatDate(a.since) }))} <ha-icon class="avail-info" icon="mdi:information-outline" title="${this.esc(this.t("monitorAvailInfo"))}"></ha-icon></div>`;
+    return `<div class="avail-tiles">${tiles}</div><div class="monitor-days" role="img" aria-label="${this.esc(this.t("monitorAvail"))}">${days}</div>${axis}${legend}${since}`;
   }
 
   async loadMonitorHistory(id, sig) {
@@ -19366,10 +20221,10 @@ class MonitorMixin {
         const rule = rules.find(r => r.kind === ruleKind), enabled = Boolean(rule);
         return `<div class="monitor-rule"><label><input type="checkbox" data-monitor-rule-toggle="${i}:${ruleKind}" ${enabled ? "checked" : ""}>${this.t(label)}</label><input type="number" data-monitor-rule-value="${i}:${ruleKind}" aria-label="${this.t(label)}" value="${rule?.value ?? fallback}" min="${min}" max="${max}" step="${ruleKind === "min_value" ? "any" : "1"}" ${enabled ? "" : "disabled"}><span>${this.esc(this.t(unit))}</span></div>`;
       }).join("")}</details>`;
-      return `<div class="monitor-member-wrap"><div class="row monitor-member"${object ? ` data-object="${this.esc(member.object_key)}"` : ""}><span class="tile mute"><ha-icon icon="${ICONS[kind] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || member.object_key)}</strong><small>${this.t(`monitorType_${kind}`)} · ${this.esc(member.object_key.split(":").slice(1).join(":"))}${rules.length ? ` · ${this.esc(rules.map(rule => this.monitorRuleText(rule, object)).join("; "))}` : ""}</small></span><label class="monitor-check"><input type="checkbox" data-monitor-required="${i}" ${member.required ? "checked" : ""}>${this.t("monitorRequired")}</label><button class="btn quiet" data-monitor-remove="${i}">${this.t("monitorRemove")}</button></div>${ruleFields}</div>`;
+      return `<div class="monitor-member-wrap"><div class="row monitor-member"${object ? ` data-object="${this.esc(member.object_key)}"` : ""}><span class="tile mute"><ha-icon icon="${ICONS[kind] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || member.object_key)}</strong><small>${this.t(`monitorType_${kind}`)} · ${this.esc(member.object_key.split(":").slice(1).join(":"))}${rules.length ? ` · ${this.esc(rules.map(rule => this.monitorRuleText(rule, object)).join("; "))}` : ""}</small></span><label class="monitor-check"><input type="checkbox" data-monitor-required="${i}" ${member.required ? "checked" : ""}>${this.t("monitorRequired")}</label><button type="button" class="iconbtn" data-monitor-remove="${i}" aria-label="${this.t("monitorRemove")}" title="${this.t("monitorRemove")}"><ha-icon icon="mdi:close"></ha-icon></button></div>${ruleFields}</div>`;
     }).join("");
     const suggestions = form.members.length ? this.monitorSuggestions() : [];
-    const suggested = suggestions.length ? `<section class="panel u-mb14"><div class="panelhead"><div><h2>${this.t("monitorSuggestions")}</h2><p>${this.t("monitorSuggestionsHint")}</p></div></div>${suggestions.map(({ key, object, reason, probable }) => `<div class="row monitor-choice" data-object="${this.esc(key)}"><span class="tile mute"><ha-icon icon="${ICONS[object.object_type] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object.name || object.object_id)}</strong><small>${this.t(`monitorType_${object.object_type}`)} · ${this.esc(reason)}${probable ? ` · ${this.t("monitorSuggestionProbable")}` : ""}</small></span><button class="btn small" data-monitor-pick="${this.esc(key)}">${this.t("monitorPick")}</button></div>`).join("")}</section>` : "";
+    const suggested = suggestions.length ? `<div class="monitor-suggest"><span>${this.t("monitorSuggestions")}:</span>${suggestions.map(({ key, object, reason, probable }) => `<button type="button" class="chip dashed" data-monitor-pick="${this.esc(key)}" title="${this.esc([reason, probable ? this.t("monitorSuggestionProbable") : ""].filter(Boolean).join(" · "))}">+ ${this.esc(object.name || object.object_id)}</button>`).join("")}</div>` : "";
     const picks = groups.map(([kind, label]) => {
       const items = candidates.filter(o => typeOf(o) === kind);
       if (!items.length) return "";
@@ -19380,7 +20235,8 @@ class MonitorMixin {
       }).join("")}${grouped.find(([type]) => type === kind)[1].length > items.length ? `<p class="monitor-search-note">${this.t("monitorMoreResults")}</p>` : ""}</div>`;
     }).join("");
     const searchResult = query.length < 2 ? this.t("monitorSearchStart") : candidates.length ? picks : this.t("monitorSearchNone");
-    return `<div class="page-editor"><section class="panel u-mb14"><div class="panelhead"><h2>${this.t(form.id ? "monitorEditTitle" : "monitorAdd")}</h2></div><div class="monitor-fields"><label>${this.t("monitorName")}<input data-monitor-name maxlength="80" value="${this.esc(form.name)}"></label><label>${this.t("monitorDescription")}<textarea data-monitor-description maxlength="240" rows="1">${this.esc(form.description)}</textarea></label></div><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorEnabled")}</strong><small>${this.t("monitorEnabledHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-enabled ${form.enabled !== false ? "checked" : ""}></label><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorNotify")}</strong><small>${this.t("monitorNotifyHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-notify ${form.notify ? "checked" : ""}></label></section><section class="panel u-mb14"><div class="panelhead"><div><h2>${this.t("monitorMembers")}</h2><p>${this.t("monitorRequiredCount", { n: form.members.filter(m => m.required).length, m: form.members.filter(m => !m.required).length })}</p></div></div>${selected || `<div class="emptymsg">${this.t("monitorChoose")}</div>`}</section><div data-monitor-preview aria-live="polite">${this.monitorPreviewHtml()}</div>${suggested}<section class="panel u-mb14"><div class="panelhead"><div><h2>${this.t("monitorFindObject")}</h2><p>${this.t("monitorSearchHint")}</p></div></div><div class="monitor-fields monitor-search"><input type="search" data-monitor-search aria-label="${this.t("monitorSearch")}" placeholder="${this.t("monitorSearch")}" value="${this.esc(this.monitorQuery)}"></div><div class="monitor-tabs" role="group" aria-label="${this.t("monitorTypeFilter")}">${tabs}</div><div class="monitor-results">${candidates.length ? searchResult : `<p class="monitor-search-note">${searchResult}</p>`}</div></section><div class="toolbar savebar"><span role="alert">${this.esc(this.monitorError)}</span><span class="toolgap"></span>${form.id ? `<button class="btn quiet danger-t" data-monitor-delete>${this.t("monitorDelete")}</button>` : ""}<button class="btn" data-monitor-cancel>${this.t("monitorCancel")}</button><button class="btn primary" data-monitor-save ${!form.name.trim() || !form.members.length ? "disabled" : ""}>${this.t("monitorSave")}</button></div></div>`;
+    const needs = !form.name.trim() ? "monitorNeedName" : !form.members.length ? "monitorNeedMembers" : "";
+    return `<div class="page-editor"><section class="panel u-mb14"><div class="panelhead"><h2>${this.t(form.id ? "monitorEditTitle" : "monitorAdd")}</h2></div><div class="monitor-fields monitor-twocol"><label>${this.t("monitorName")}<input data-monitor-name maxlength="80" value="${this.esc(form.name)}"></label><label>${this.t("monitorDescription")}<textarea data-monitor-description maxlength="240" rows="1">${this.esc(form.description)}</textarea></label></div><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorEnabled")}</strong><small>${this.t("monitorEnabledHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-enabled ${form.enabled !== false ? "checked" : ""}></label><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorNotify")}</strong><small>${this.t("monitorNotifyHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-notify ${form.notify ? "checked" : ""}></label><div class="monitor-sec"><h3>${this.t("monitorMembers")}</h3><small>${this.t("monitorRequiredCount", { n: form.members.filter(m => m.required).length, m: form.members.filter(m => !m.required).length })}</small></div>${selected || `<div class="emptymsg">${this.t("monitorChoose")}</div>`}<div class="monitor-add"><input type="search" data-monitor-search aria-label="${this.t("monitorSearch")}" placeholder="${this.t("monitorSearch")}" value="${this.esc(this.monitorQuery)}"><div class="monitor-tabs" role="group" aria-label="${this.t("monitorTypeFilter")}">${tabs}</div>${suggested}<div class="monitor-results">${candidates.length ? searchResult : `<p class="monitor-search-note">${searchResult}</p>`}</div></div></section><div data-monitor-preview aria-live="polite">${this.monitorPreviewHtml()}</div><div class="toolbar savebar">${form.id ? `<button class="btn dangersoft" data-monitor-delete><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("monitorDelete")}</button>` : ""}<span class="error" role="alert">${this.esc(this.monitorError)}</span><span class="toolgap"></span><button class="btn" data-monitor-cancel>${this.t("monitorCancel")}</button><button class="btn primary" data-monitor-save data-need="${needs}">${this.t("monitorSave")}</button></div></div>`;
   }
 
   bindMonitor(root) {
@@ -19393,7 +20249,7 @@ class MonitorMixin {
     root.querySelector("[data-monitor-back]")?.addEventListener("click", () => { this.monitorSelected = null; this.render(); });
     root.querySelector("[data-monitor-edit]")?.addEventListener("click", () => { const item = this.monitorFunctions().find(f => f.id === this.monitorSelected); this.monitorForm = { id: item.id, name: item.name, description: item.description, enabled: item.enabled !== false, notify: item.notify, members: item.members.map(m => ({ object_key: m.object_key, required: m.required, rules: m.rules || [] })) }; this.monitorQuery = ""; this.monitorType = ""; this.monitorPreview = null; this.monitorError = ""; this.render(); this.queueMonitorPreview(); });
     root.querySelectorAll("[data-monitor-cancel]").forEach(el => el.onclick = () => { globalThis.clearTimeout?.(this._monitorPreviewTimer); this._monitorPreviewToken = (this._monitorPreviewToken || 0) + 1; this.monitorForm = null; this.monitorError = ""; this.render(); });
-    root.querySelector("[data-monitor-name]")?.addEventListener("input", ev => { this.monitorForm.name = ev.target.value; root.querySelector("[data-monitor-save]").disabled = !this.monitorForm.name.trim() || !this.monitorForm.members.length; });
+    root.querySelector("[data-monitor-name]")?.addEventListener("input", ev => { this.monitorForm.name = ev.target.value; const save = root.querySelector("[data-monitor-save]"); if (save) save.dataset.need = !this.monitorForm.name.trim() ? "monitorNeedName" : !this.monitorForm.members.length ? "monitorNeedMembers" : ""; });
     const description = root.querySelector("[data-monitor-description]");
     if (description) {
       const resize = () => {
@@ -19441,6 +20297,8 @@ class MonitorMixin {
 
   async saveMonitor() {
     const form = this.monitorForm;
+    const need = !form.name.trim() ? "monitorNeedName" : !form.members.length ? "monitorNeedMembers" : "";
+    if (need) { this.monitorError = this.t(need); this.render(); return; }
     globalThis.clearTimeout?.(this._monitorPreviewTimer);
     this._monitorPreviewToken = (this._monitorPreviewToken || 0) + 1;
     try {
@@ -19688,6 +20546,391 @@ Object.assign(TEXT.sk, {
   "whyLevel": "{n} objektov · {level} · {weight}"
 });
 
+// Slovak translations for panel strings added in upstream releases through v1.9.0.
+// Keep interpolation names identical to English.
+Object.assign(TEXT.sk, {
+  "config_entry.reauth": "Vyžaduje sa nové prihlásenie",
+  "aboutIntro": "Housekeeper ukazuje, čo už do tvojej inštalácie Home Assistantu nezapadá: nefunkčné zariadenia, chybné odkazy, nepoužívané položky, vybité batérie a ďalšie problémy.",
+  "aboutIntroSafe": "Sám od seba nič nemení ani nemaže.",
+  "aboutIntroPlan": "Každá zmena prejde plánom s náhľadom, zálohou a tvojím potvrdením.",
+  "prepareDelete": "Pripraviť odstránenie ({count})",
+  "invMarked": "Označené (očakávané)",
+  "pf_disk": "Voľné miesto",
+  "pf_config": "Konfigurácia",
+  "pfConfigHint": "Skontroluje každý konfiguračný súbor. Trvá to niekoľko sekúnd a spustí sa iba po stlačení tlačidla.",
+  "pfConfigRun": "Skontrolovať",
+  "pfConfigAgain": "Skontrolovať znova",
+  "pfConfigRunning": "Kontroluje sa …",
+  "pfConfigOk": "Platná, skontrolovaná {time}",
+  "pfConfigWarn": "Platná s upozorneniami, skontrolovaná {time}: ",
+  "pfConfigBad": "Neplatná: ",
+  "pf_disk_text": "Voľné miesto: {free}",
+  "updatesTab": "Aktualizácie",
+  "pfOpenBackup": "Ochrana záloh",
+  "updBlocked": "HACS ju nedokáže nainštalovať",
+  "updRunning": "beží",
+  "updAuto": "automaticky",
+  "updWatch": "Začiatok sledovania",
+  "updNotes": "Zmeny",
+  "updOpenHa": "Otvoriť v Home Assistante",
+  "updOpen": "Otvoriť",
+  "updVerdict_ready": "Pripravené",
+  "updVerdict_look": "Najprv skontroluj",
+  "updVerdict_stop": "Zastaviť",
+  "updVerdictNone": "Žiadne čakajúce aktualizácie",
+  "updPending_1": "Čaká 1 aktualizácia",
+  "updPending_n": "Čakajú aktualizácie: {n}",
+  "updCheckFirst": "Skontrolovať: {items}",
+  "updSumOpen": "Čakajúce",
+  "updSumBlocked": "Blokované",
+  "updGroup_system": "Systém",
+  "updGroup_app": "Doplnky",
+  "updGroup_hacs": "Integrácie a karty cez HACS",
+  "updGroup_device": "Zariadenia",
+  "updCurrent_system": "Home Assistant, operačný systém aj Supervisor sú aktuálne.",
+  "updCurrent_app": "Všetky doplnky sú aktuálne.",
+  "updCurrent_hacs": "Všetky položky HACS sú aktuálne.",
+  "updCurrent_device": "Firmvér všetkých zariadení je aktuálny.",
+  "updAllCurrent": "Všetko je aktuálne.",
+  "todoUpdates_1": "Čaká 1 aktualizácia",
+  "todoUpdates_n": "Čakajú aktualizácie: {n}",
+  "bh_content": "Obsah",
+  "bh_remote_age": "Vek podľa cieľa",
+  "bh_space": "Miesto pre ďalšiu zálohu",
+  "bhOwnOpen": "Upratať",
+  "bhSizesTitle": "Veľkosť posledných záloh",
+  "bhSizesLabel": "Veľkosť posledných {n} záloh od {from} do {to}",
+  "bhSizesNote": "Posledných {n} záloh od {from} do {to}. Stĺpec vpravo predstavuje najnovšiu.",
+  "bhContentOk": "Databáza je zahrnutá, doplnkov: {apps}, priečinkov: {folders}, bez chýb",
+  "bhContentFailed": "Časti najnovšej zálohy zlyhali: {items}",
+  "bhContentNoDb": "V najnovšej zálohe chýba plánovaná databáza",
+  "bhContentNoDbSet": "Plán zálohovania vynecháva databázu; pri obnove by chýbala história",
+  "bhContentUnknown": "Obsah najnovšej zálohy sa nedá prečítať",
+  "bhRemoteOk": "Najnovšia kópia: {items}",
+  "bhRemoteStale": "Príliš stará (limit {limit}): {items}",
+  "bhSpaceOk": "Voľné miesto: {free}, ďalšia záloha potrebuje približne {need}",
+  "bhSpaceNote": "Voľné miesto: {free}, ďalšia záloha potrebuje približne {need}",
+  "bhSpaceProblem": "Voľné miesto: iba {free}, posledná záloha mala {size}",
+  "bhSpaceUnknown": "Voľné miesto alebo veľkosť zálohy nie sú známe",
+  "bhVerdict_ok": "Spoľahlivé",
+  "bhVerdict_note": "Najprv skontroluj",
+  "bhVerdict_problem": "Problém",
+  "bhVerdict_unknown": "Neznáme",
+  "bhCheckFirst": "Skontrolovať: {items}",
+  "bhTileLast": "Najnovšia záloha",
+  "bhTileCount": "Zálohy",
+  "bhTileRemote": "Kópia mimo zariadenia",
+  "bhTileOpen": "Na kontrolu",
+  "bhGroup_running": "Priebeh záloh",
+  "bhGroup_storage": "Úložisko a obsah",
+  "bhGroup_restore": "Možnosť obnovy",
+  "bhGroup_house": "Housekeeper",
+  "backupsTab": "Zálohy",
+  "bhAttestEnc": "Potvrdiť ako zámerné",
+  "bhEncConfirmed": "Nešifrovanie je označené ako zámerné ({date}).",
+  "mtProblems_1": "1 problém",
+  "mtProblems_n": "Problémy: {n}",
+  "mtNotes_1": "1 poznámka",
+  "mtNotes_n": "Poznámky: {n}",
+  "relWindow30": "30 dní",
+  "relKeepShort": "Recorder uchováva údaje iba za {keep} dní, preto sa dostupnosť za {days} dní nedá zistiť za dlhšie obdobie.",
+  "relDeltaPoints": "percentuálnych bodov oproti predchádzajúcemu obdobiu",
+  "relStrip": "Výpadky podľa dní",
+  "relPeriods": "Obdobia výpadkov ({n})",
+  "relPeriodsMore": "Zobrazených je posledných {shown} z {total}.",
+  "relColStart": "Začiatok",
+  "relColDuration": "Trvanie",
+  "relColAffected": "Ovplyvnené",
+  "relOfEntities": "Entít: {n} z {m}",
+  "relKindShared": "Spoločný",
+  "relKindSingle": "Jednotlivý",
+  "relKindDown": "Celé obdobie",
+  "relCarries": "Zabezpečuje funkcie domácnosti",
+  "relOnlyDead": "Nedostupná počas celého obdobia",
+  "relDead": "Nedostupná",
+  "relDeadSub": "Entít: {n}, celé sledované obdobie",
+  "relSumAvg": "Priemer podľa integrácie",
+  "relSumAvgHint": "Priemer integrácií, každá sa započítava raz. Integrácie nefunkčné celé obdobie sa vynechávajú.",
+  "relTooSmall": "príliš málo",
+  "relTooSmallHint": "Na spoločný výpadok treba aspoň {n} entít.",
+  "relReauthOpen": "Otvoriť nález",
+  "dbTileSize": "Veľkosť",
+  "dbTileWal": "WAL {wal}",
+  "dbTileGrowth": "Denný nárast",
+  "dbTileKeep": "Uchovávanie",
+  "dbTileDays": "Dní: {n}",
+  "dbTilePurge": "Automatické mazanie",
+  "dbTileOn": "Zapnuté",
+  "dbTileOff": "Vypnuté",
+  "expoOff": "vypnuté v Nabu Casa",
+  "expoKind_google_without_pin": "Google sa otvára bez PIN-u",
+  "expoKind_auto_expose": "Nové entity sa sprístupňujú automaticky",
+  "expoText_google_without_pin": "Zámkov, alarmov, garážových brán, brán alebo dverí bez potvrdenia PIN-om: {n}. Google Assistant ich môže odomknúť alebo vypnúť alarm.",
+  "expoText_auto_expose": "{list} automaticky sprístupňuje každú novú entitu. Nové zariadenia sa tak dostanú ku cloudovému asistentovi bez zásahu.",
+  "expoAdvice_google_without_pin": "Znova zapni potvrdenie PIN-om v Nastavenia → Hlasoví asistenti → entita → Google Assistant.",
+  "expoAdvice_auto_expose": "Ak chceš nové zariadenia najprv skontrolovať, vypni voľbu „Sprístupniť nové entity“ v Nastavenia → Hlasoví asistenti → Alexa alebo Google Assistant.",
+  "expoKind_llm_exposed": "Assist sprístupňuje ovládanie AI agentom",
+  "expoColIntegration": "Integrácia",
+  "expoColTarget": "Cieľ",
+  "expoTarget_cloud": "poskytovateľ modelu",
+  "expoTarget_external": "pripojené programy",
+  "expoText_llm_exposed": "{n} integrácií môže cez Assist ovládať Home Assistant. Názvy, oblasti a stavy {reach} sprístupnených položiek Assist sa posielajú poskytovateľovi jazykového modelu alebo pripojeným programom.",
+  "expoAdvice_llm_exposed": "Táto informácia je iba informatívna. Ak to nechceš, vypni v integrácii voľbu „Ovládať Home Assistant“ alebo obmedz položky sprístupnené cez Assist.",
+  "bpBack": "Späť na zoznam",
+  "bpTabInputs": "Vstupy",
+  "bpDetSize": "Veľkosť súboru",
+  "bpDetModified": "Zmenené",
+  "bpDetMin": "Minimálna verzia Home Assistanta",
+  "bpNoInputs": "Táto predloha nemá žiadne vstupy.",
+  "bpUsersNone": "Túto predlohu nepoužíva žiadna automatizácia ani skript.",
+  "bpInDefaultIs": "Predvolená hodnota",
+  "bpInNoDefault": "Bez predvolenej hodnoty, treba ju nastaviť",
+  "bpInDefault": "predvolené",
+  "bpInSet": "nastavené",
+  "bpInMissing": "entita chýba",
+  "bpValueHidden": "hodnota skrytá",
+  "bpDetPath": "Cesta",
+  "bpDetAuthor": "Autor",
+  "bpDetSource": "Zdroj",
+  "bpHint_missing": "Súbor už neexistuje. Tieto automatizácie a skripty nebudú fungovať, kým ich nenastavíš na inú predlohu.",
+  "bpHint_broken": "Súbor sa nedá načítať. Používatelia nižšie nebudú fungovať, kým sa predloha neopraví.",
+  "bpHint_unused": "Túto predlohu nepoužíva žiadna automatizácia ani skript.",
+  "openEntity": "Otvoriť entitu",
+  "lifeColPlan": "Plán",
+  "lifeOpenPlan": "Otvoriť plán",
+  "goneColObject": "Objekt",
+  "goneColUndo": "Stav",
+  "goneIrreversible": "Nedá sa vrátiť späť",
+  "goneUndoInPlan": "Vrátiť zmenu v pláne",
+  "goneKind_remove_device": "Zariadenie odstránené",
+  "goneKind_forget_device": "Zariadenie zabudnuté",
+  "goneKind_remove_entity": "Entita odstránená",
+  "goneKind_delete_automation": "Automatizácia odstránená",
+  "goneKind_purge_statistics": "Štatistiky odstránené",
+  "goneKind_trim_history": "História skrátená",
+  "goneKind_delete_backup": "Záloha odstránená",
+  "goneGroup_device": "Zariadenia",
+  "goneGroup_entity": "Entity",
+  "goneGroup_automation": "Automatizácie",
+  "goneGroup_statistics": "Štatistiky",
+  "goneGroup_backup": "Zálohy",
+  "repairSeverity_critical": "kritické",
+  "repairSeverity_error": "chyba",
+  "repairSeverity_warning": "upozornenie",
+  "repairFixable": "dá sa opraviť v Home Assistante",
+  "repairMore": "Zistiť viac",
+  "watchAgain": "Opäť narušené práve teraz",
+  "viewLabel": "Zobrazenie",
+  "viewGrouped": "Zoskupené",
+  "viewFlat": "Jednotlivo",
+  "viewLocked": "Pri použití filtra sa zoznam vždy zobrazí jednotlivo.",
+  "findingsOfFollow": "z toho nadväzujúcich na výpadky: {n}",
+  "goalsNone": "Zatiaľ nie sú nastavené žiadne ciele údržby.",
+  "planObjects": "Objekty ({n})",
+  "purgeStatesOn": "Zapnuté (odporúčané): odstránia sa štatistiky aj uložené stavy ({n}).",
+  "purgeStatesOff": "Vypnuté: odstránia sa iba štatistiky. Stavy zostanú v histórii a štatistiky sa môžu znova objaviť.",
+  "simPurgeStatRows": "Štatistiky: odstráni sa riadkov {count}",
+  "simPurgeStateRows": "Surové údaje: odstráni sa uložených stavov {count}",
+  "warmupTitle": "Home Assistant sa spúšťa …",
+  "warmupS1": "Spúšťanie Home Assistanta",
+  "warmupS2": "Načítavanie integrácií",
+  "warmupS3": "Rezerva",
+  "warmupS4": "Zhromažďovanie nálezov",
+  "warmupLoaded": "Načítané integrácie: {done} z {total}",
+  "warmupLoadedAll": "Načítané integrácie: {done}",
+  "warmupWait": "Čakacia doba, najviac",
+  "warmupBuffer": "Zostávajúca bezpečnostná rezerva",
+  "warmupMin": "min",
+  "warmupNames": "Stále sa načítavajú:",
+  "warmupLocked": "Kým sa načítavanie neskončí, upratovanie je zablokované.",
+  "warmupBlip": "{name} sa krátko reštartuje; bezpečnostná rezerva stále beží.",
+  "warmupBootLine": "Home Assistant sa ešte načítava. Čakacia doba začne až potom a upratovanie bude dovtedy zablokované.",
+  "warmupAfter": "Potom budú nálezy konečné a upratovanie sa znova sprístupní.",
+  "warmupBooting": "Home Assistant sa načítava",
+  "warmupAsking": "Zisťuje sa stav …",
+  "warmupDoneToast": "Nálezy sú konečné.",
+  "warmupPhase_start": "Spúšťa sa kontrola",
+  "warmupPhase_registries": "Čítajú sa registre",
+  "warmupPhase_devices": "Zariadenia a entity",
+  "warmupPhase_automations": "Automatizácie a odkazy",
+  "warmupPhase_finalizing": "Vyhodnocujú sa nálezy",
+  "journalPlans": "Plány",
+  "journalTabPlansHint": "Všetky plány s výsledkom a možnosťou vrátenia zmien.",
+  "journalTabDevicesHint": "Čo plány odstránili alebo vymazali.",
+  "journalTabPurgesHint": "Staršie mazania vykonané ešte pred plánmi.",
+  "purgesInJournal": "V denníku je zaznamenaných starších odstránení štatistík: {n}.",
+  "purgesInJournalLink": "Zobraziť v denníku",
+  "mergeTooMany": "Možno zlúčiť najviac 10 plánov.",
+  "plan": "Plán",
+  "planPageSubtitle": "Náhľad, kontrola a výsledok plánu. Kým ho nepotvrdíš, nič sa nezmení.",
+  "planNone": "Tento plán už nie je otvorený. Všetky plány nájdeš v denníku.",
+  "nothingToRun": "Zatiaľ sa nedá pokračovať: zaškrtni políčko nižšie, že si si prezrel položky na kontrolu.",
+  "modeBlockTitle": "Režim ochrany „{mode}“ tento plán nepovoľuje",
+  "modeBlockText": "V tomto režime Housekeeper nesmie vykonať krokov: {count}. Plán si môžeš prezrieť, ale potvrdiť ho môžeš až po zmene režimu.",
+  "modeBlockLink": "Zmeniť režim ochrany",
+  "maintHintUpdates": "Čakajúce aktualizácie a čo treba najprv skontrolovať.",
+  "wzSumEntries": "Položiek: {n}",
+  "wzSumRun": "Hotovo: {done} z {total}",
+  "findingNote": "Pridať do denníka",
+  "accApp_protection_off": "Režim ochrany vypnutý",
+  "accApp_ports": "Otvorené porty",
+  "accColOrigin": "Pôvod",
+  "accOrigin_core": "Oficiálne",
+  "accOrigin_local": "Lokálne",
+  "accOrigin_community": "Komunitné",
+  "accStage_experimental": "experimentálne",
+  "accStage_deprecated": "zastarané",
+  "accPresence": "Prítomnosť v sieti",
+  "accInTitle": "Prístup zvonka",
+  "accInHint": "Možnosti prístupu",
+  "accInColWay": "Spôsob prístupu",
+  "accInColWhat": "Opis",
+  "accInColState": "Stav",
+  "accInNone": "Housekeeper nevidí žiadny spôsob prístupu zvonka.",
+  "accInLegend": "Zobrazuje spôsoby, ktorými môže byť Home Assistant podľa Housekeepera dostupný zvonka. Žltá farba znamená dostupnosť z internetu, ktorá môže byť zámerná. VPN je zelená, pretože prístup majú iba členovia siete.",
+  "accInNote": "Proxy, SSL a dôveryhodné proxy kontroluje pravidlo „HTTP konfigurácia“ v časti Pravidlá. Presmerovanie portov na smerovači a tunely bez doplnku Housekeeper nevidí; doplnky rozpoznáva podľa názvu.",
+  "accInKind_nabu_casa": "Cloud",
+  "accInKind_tunnel": "Tunelovací doplnok",
+  "accInKind_proxy": "Proxy doplnok",
+  "accInKind_dyndns": "DynDNS doplnok",
+  "accInKind_vpn": "VPN doplnok",
+  "accInKind_mcp_server": "Integrácia",
+  "accInKind_webhooks": "Automatizácie",
+  "accIn_nabu_casa": "Vzdialený prístup k rozhraniu cez Nabu Casa",
+  "accIn_tunnel": "Tunel do internetu, rozhranie je verejne dostupné",
+  "accIn_proxy": "Reverzná proxy, zvyčajne s otvoreným portom na smerovači",
+  "accIn_dyndns": "Stála internetová adresa, zvyčajne s presmerovaním portu",
+  "accIn_vpn": "Súkromná sieť, prístup majú iba jej členovia",
+  "accIn_mcp_server": "Externé programy ovládajú systém cez Assist",
+  "accIn_webhooks": "Automatizácií spustiteľných webhookom z internetu: {n}",
+  "accInState_on": "zapnuté",
+  "accInState_off": "vypnuté",
+  "accInState_logged_out": "neprihlásené",
+  "accInState_unknown": "nedá sa overiť",
+  "accInState_running": "spustené",
+  "accInState_stopped": "zastavené",
+  "accInState_set_up": "nastavené",
+  "accInState_open": "otvorené: {n}",
+  "accInState_local": "iba lokálne",
+  "accKind_custom_code": "Vlastný kód, úplné oprávnenia",
+  "secSumDisabled": "Vypnuté integrácie",
+  "secSumDisabledSub": "prihlasovacie údaje zostávajú uložené",
+  "secStateDisabled": "vypnuté, s hodnotou",
+  "secSumReauth": "Vyžaduje sa nové prihlásenie",
+  "secSumReauthSub": "integrácia žiada opätovné prihlásenie",
+  "secReauth": "vyžaduje sa prihlásenie",
+  "todoReauthOne": "Vyžaduje sa prihlásenie: {name}",
+  "todoReauthMany": "Integrácií vyžadujúcich prihlásenie: {n}",
+  "todoReauthFollowers": "Nedostupných entít: {n}",
+  "todoReauthPill": "Prihlásiť sa znova",
+  "flowsTitle": "Otvorené v Home Assistante",
+  "flowsNote": "informácia, nie nález",
+  "flowsOpenHa": "Otvoriť v Home Assistante",
+  "flowsCount_discovered": "Nájdené zariadenia: {n}",
+  "flowsCount_reconfigure": "Vyžaduje nové nastavenie: {n}",
+  "flowDiscovered": "Nájdené cez {source}",
+  "flowReconfigure": "Vyžaduje opätovné nastavenie",
+  "flowPillDiscovered": "Nájdené",
+  "flowPillReconfigure": "Nastaviť znova",
+  "entryReauth": "Čaká na nové prihlásenie",
+  "cause_entry_reauth": "Integrácia požiadala Home Assistant o nové prihlásenie. Kým ho nedokončíš, nebude poskytovať údaje.",
+  "hint_entry_reauth": "V časti Integrácie na tejto položke vyber „Znova overiť“ a zadaj prihlasovacie údaje.",
+  "secTabAccounts": "Účty",
+  "secAccHint": "Používatelia Home Assistanta bez systémových účtov; kliknutím otvoríš nastavenia používateľa",
+  "secSumNoMfa": "Správcovia bez dvojfaktorového overenia",
+  "secSumNoMfaSub": "zo správcov: {n}",
+  "secColAccount": "Účet",
+  "secColRole": "Rola",
+  "secColMfa": "Dvojfaktorové overenie",
+  "secColLogin": "Posledné prihlásenie",
+  "secColTokens": "Dlhodobé tokeny",
+  "secRoleOwner": "Vlastník",
+  "secRoleAdmin": "Správca",
+  "secRoleUser": "Používateľ",
+  "secRoleLocal": "iba lokálny",
+  "secRoleOff": "vypnutý",
+  "secMfaOn": "zapnuté",
+  "secMfaOff": "vypnuté",
+  "secLoginNever": "nikdy",
+  "secLoginTokens": "iba tokeny",
+  "secStateNoMfa": "Správca bez dvojfaktorového overenia",
+  "secStateInactive": "dlho bez prihlásenia",
+  "secNoAccounts": "Nenašli sa žiadne účty.",
+  "secOpenUsers": "Otvoriť používateľov v Home Assistante",
+  "secTabTokens": "Dlhodobé tokeny",
+  "secTokHint": "Názov, účet a vek; token sa odvoláva v profile jeho účtu v časti Zabezpečenie",
+  "secSumTokens": "Dlhodobé tokeny",
+  "secSumTokensSub": "starých alebo neúčinných: {n}",
+  "secColToken": "Token",
+  "secColAge": "Vek",
+  "secColHint": "Poznámka",
+  "secTokDays": "Dní: {n}",
+  "secTokOld": "starší ako 90 dní",
+  "secTokDead": "účet vypnutý, token neúčinný",
+  "secNoTokens": "Nie sú tu žiadne dlhodobé tokeny.",
+  "secTokFootnote": "Home Assistant nezaznamenáva, kedy bol dlhodobý token naposledy použitý, preto sa zobrazuje iba jeho vek. Po 90 dňoch alebo po vypnutí účtu sa token označí žltou farbou, rovnako ako v pravidlách „Staré dlhodobé tokeny“ a „Dlhodobé tokeny vypnutých účtov“. Token môže odvolať iba jeho vlastník vo svojom profile v časti Zabezpečenie. Housekeeper zobrazuje iba názov, účet a vek, nikdy samotný token.",
+  "secAccFootnote": "Účty vytvorené Home Assistantom pre vlastné potreby (Supervisor, doplnky) sa vynechávajú. Posledné prihlásenie je najnovšie použitie prehliadača alebo aplikácie; po 90 dňoch bez prihlásenia sa označí žltou farbou, rovnako ako v pravidle „Používateľ sa dlho neprihlásil“. Účet používaný iba na dlhodobé tokeny sa nikdy neprihlasuje a do tohto pravidla sa nezapočítava. Dvojfaktorové overenie znamená, že účet má nastavenú aspoň jednu metódu, napríklad jednorazový kód. Housekeeper číta iba názvy, roly a časy, nikdy token ani adresu.",
+  "deleteSelectedPlans": "Odstrániť vybrané ({count})",
+  "confirmPlansDelete": "Z denníka sa odstránia náhľady plánov: {count}. Vykonané plány zostanú; náhľad môžeš kedykoľvek vytvoriť znova.",
+  "compTabHacs": "HACS",
+  "compTabHacsHint": "všetky nainštalované repozitáre",
+  "compSumHacsRemoved": "odstránené z HACS",
+  "compSumHacsUpdates": "aktualizácie",
+  "hacsColRepo": "Repozitár",
+  "hacsColKind": "Typ",
+  "hacsColInstalled": "Nainštalované",
+  "hacsColLatest": "Najnovšie",
+  "hacsColState": "Stav",
+  "hacsKind_integration": "Integrácia",
+  "hacsKind_plugin": "Karta",
+  "hacsKind_theme": "Téma",
+  "hacsKind_python_script": "Python skript",
+  "hacsKind_appdaemon": "AppDaemon",
+  "hacsKind_template": "Predloha",
+  "hacsFilterKind": "Typ",
+  "hacsFilterState": "Stav",
+  "hacsStateRemoved": "Odstránené z HACS",
+  "hacsStateRemovedIgnored": "Odstránené z HACS (ignorované)",
+  "hacsStateArchived": "Archivované",
+  "hacsStateUpdate": "Aktualizácia",
+  "hacsStateCurrent": "Aktuálne",
+  "hacsTodoOne": "Repozitár {name} bol odstránený z HACS",
+  "hacsTodoMany": "Repozitárov odstránených z HACS: {n}",
+  "hacsTodoPill": "Skontrolovať",
+  "hacsTodoHint": "Naďalej fungujú, ale už nedostávajú aktualizácie.",
+  "hacsWhatTitle": "Odstránené z HACS: čo ďalej?",
+  "hacsStep1": "V HACS si pozri dôvod (otvor daný riadok).",
+  "hacsStep2": "Skontroluj, čo od tejto položky závisí: pri integrácii entity a automatizácie, pri karte nástenky.",
+  "hacsStep3": "Podľa dôvodu prejdi na náhradu, ponechaj si ju alebo ju odstráň v HACS. Housekeeper v HACS nič nemení.",
+  "hacsStep4": "Ak ju chceš zámerne ponechať, ignoruj opravu v Home Assistante. Zobrazí sa tu ako ignorovaná.",
+  "hacsOpenRepairs": "Opravy v Home Assistante",
+  "hacsRemovedNote": "HACS odstránil tento repozitár zo zoznamu: {reason}. Naďalej funguje, ale nedostáva aktualizácie. Ďalší postup nájdeš v Aplikácie a integrácie → HACS.",
+  "hacsNone": "Nenašli sa žiadne nainštalované repozitáre.",
+  "hacsLoading": "Čítajú sa repozitáre …",
+  "hacsOpenInHacs": "Otvoriť v HACS",
+  "monitorAvailInfo": "Časy bez vyhodnotenia sa nezapočítavajú: keď je kontrola vypnutá, po úpravách objektov a pred prvou kontrolou.",
+  "monitorAvailIncidents": "Incidentov: {n}",
+  "monitorAvailIncidentsN": "Incidentov: {n}",
+  "monitorAvailLongest": "Najdlhší incident",
+  "monitorAvailFrom": "Pred {days} dňami",
+  "monitorAvailOkDays": "Bez známej poruchy, dní: {days}",
+  "monitorMembersCount": "{n}, z toho povinných: {required}",
+  "monitorNeedName": "Zadaj názov funkcie.",
+  "monitorNeedMembers": "Vyber aspoň jeden objekt.",
+  "monitorAvailShort": "Krátkodobé obmedzenie",
+  "monitorAvailLong": "Dlhšie obmedzenie",
+  "monitorAvailUnobserved": "Bez pozorovania",
+  "monitorAvailDayProblem": "{state}, {time}",
+  "monitorAvailToday": "Dnes",
+  "createPlan": "Vytvoriť náhľad ({count})",
+  "relFootnote": "Dostupnosť je podiel času bez stavu „unavailable“ za posledných {days} dní, počítaný od prvého hlásenia v období. Spoločný výpadok znamená, že aspoň {share} % entít záznamu integrácie (najmenej {entities}) bolo súčasne nedostupných aspoň {minutes} minút. Výpadok začatý pred obdobím sa počíta od prvého hlásenia v danom období. Integrácia nefunkčná počas celého obdobia nemá percentuálnu hodnotu a zobrazuje sa navrchu ako „Nedostupná“. Farby: zelená od {green} %, žltá od {yellow} %, nižšie červená; pásik dní funkcie domácnosti sa farbí podľa dĺžky výpadku a má vlastný prah.",
+  "runsFootnote": "Zaznamenávajú sa údaje o behoch, ktoré Home Assistant krátko uchováva pri automatizáciách (predvolene posledných 5), a čítajú sa každých 15 minút. Ukladajú sa iba počítadlá za deň a miesto chyby, nie premenné, údaje ani texty chýb. Upozornenia sú podnetom na preverenie, nie konečným verdiktom. Limity za posledných {days} dní: „chyby“ od {errors} chýb a {rate} % behov, „nikdy neuspeje“ od {neverOk} behov bez úspechu, „prekrývanie“ od {overlap} odmietnutých alebo prekročených behov, „bez účinku“ od {idle} behov, pri ktorých podmienky zastavili {idleShare} %, „veľmi často“ od {burst}-násobku vlastného bežného počtu ({baseline} predchádzajúcich dní) a aspoň {burstMin} behov za deň, „dlhé behy“ od {longFactor}-násobku a {longSeconds} sekúnd.",
+  "monitorAvailOk": "Bez známej poruchy",
+  "monitorAvailProblem": "Obmedzená dostupnosť",
+  "monitorAvailUnknown": "Neznáme",
+  "monitorAvailUnstable": "Nestabilná",
+});
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -19719,7 +20962,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.findSel = new Set();
-    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeOpen = false; this.purgeStates = true; this.purgeWord = ""; this.purgeBusy = false; this.purgeResult = null;
+    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = "";
     this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
@@ -19826,15 +21069,17 @@ class HAHousekeeperPanel extends HTMLElement {
   // The browser's back button steps back inside the panel. One history entry is kept in front of
   // the panel's own back steps while there is somewhere to go back to.
   canGoBack() {
-    return Boolean(this.view === "graph" ? this.graphTrail?.length || this.graphOrigin : this.selected || this.viewTrail?.length);
+    return Boolean(this.view === "graph" ? this.graphTrail?.length || this.graphOrigin : this.selected || this.bpOpen || this.viewTrail?.length);
   }
 
   onPopState() {
     if (this._ignorePop) { this._ignorePop = false; return; }
+    if (this._dialogPop) { this._dialogPop = false; return; }
     this._guard = false;
     if (this._gone || window.location.pathname !== this._basePath || !this.canGoBack()) return;
     if (this.view === "graph") this.graphBack();
     else if (this.selected) this.goBack();
+    else if (this.bpOpen) { this.bpOpen = ""; this.render(); }
     else this.viewBack();
   }
 
@@ -20074,7 +21319,18 @@ class HAHousekeeperPanel extends HTMLElement {
     }
   }
 
-  navigateHA(path) {
+  // Home Assistant's own "More info" dialog of an entity, over the panel; only where the entity has a state.
+  canMoreInfo(entityId) { return !!this._hass?.states?.[entityId]; }
+
+  // HA's dialog puts its own entry into the history and removes it on close; that pop must not step the panel back.
+  moreInfo(entityId) {
+    const before = window.history?.length;
+    globalThis.setTimeout?.(() => { if (window.history?.length > before) this._dialogPop = true; }, 300);
+    this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true }));
+  }
+
+  navigateHA(path, newTab = false) {
+    if (newTab) { window.open(new URL(path, window.location.origin).href, "_blank", "noopener"); return; }
     window.history.pushState(null, "", path);
     window.dispatchEvent(new CustomEvent("location-changed"));
   }
@@ -20248,7 +21504,8 @@ class HAHousekeeperPanel extends HTMLElement {
     const previousModal = this.modalKey(this.activeModal());
     // A view that throws shows a message under the top bar instead of freezing the panel on the last page.
     let page;
-    try { page = this.selected && this.data ? this.detail() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
+    if (this.view !== "maintenance") this.bpOpen = "";
+    try { page = this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
     const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
@@ -20323,10 +21580,16 @@ class HAHousekeeperPanel extends HTMLElement {
     try { window.history.replaceState(window.history.state, "", window.location.pathname + (query ? `?${query}` : "")); } catch (_) { /* ignore */ }
   }
 
+  // What the scan counted for the views that cost nothing to read; a view without a number is not counted.
+  viewCounts() {
+    const found = this.data?.meta?.view_counts || {};
+    return Object.fromEntries(["exposure", "dataflow", "secrets", "runs"].map(v => [v, found[v] || undefined]));
+  }
+
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
-    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined } : {};
+    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, ...this.viewCounts() } : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
     const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
@@ -20404,6 +21667,7 @@ class HAHousekeeperPanel extends HTMLElement {
       cleanup: [this.t("cleanup"), this.t("cleanupSubtitle")],
       repair: [this.t("repair"), this.t("repairSubtitle")],
       journal: [this.t("journal"), this.t("journalSubtitle")],
+      plan: [this.t("plan"), this.t("planPageSubtitle")],
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       monitor: [this.t("monitor"), this.t("monitorSubtitle")],
@@ -20416,7 +21680,7 @@ class HAHousekeeperPanel extends HTMLElement {
       secrets: [this.t("secrets"), this.t("secretsSubtitle")],
     };
     const [title, sub] = titles[this.view] || titles.overview;
-    const writes = ["cleanup", "repair", "maintenance", "policies", "monitor"].includes(this.view);
+    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor"].includes(this.view);
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
@@ -20426,7 +21690,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
-      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}${this.watchBand()}`;
+      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
   }
 
   content() {
@@ -20443,6 +21707,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "unreferenced") return this.unreferencedView();
     if (this.view === "cleanup") return this.cleanupView();
     if (this.view === "repair") return this.repairView();
+    if (this.view === "plan") return this.planView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -20553,6 +21818,7 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelectorAll("[data-goto-tab]").forEach(el => el.onclick = () => { this.detailTab = el.dataset.gotoTab; this.render(); });
     root.querySelectorAll("[data-graph-open]").forEach(el => el.onclick = () => this.openGraph(this.findObject(el.dataset.graphOpen)));
+    root.querySelectorAll("[data-goto-protection]").forEach(el => el.onclick = () => { this.settingsTab = "protection"; this.noteJump?.("settings"); this.view = "settings"; this.pages = {}; this.selected = null; this.render(); });
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
       if (el.dataset.safeKey === "coverage") this.settingsTab = "info";
@@ -20560,10 +21826,14 @@ class HAHousekeeperPanel extends HTMLElement {
       this.render();
     });
     root.querySelectorAll("[data-cov-details]").forEach(el => el.onclick = () => { this.settingsTab = "info"; this.noteJump?.("settings"); this.view = "settings"; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => {
+    root.querySelectorAll("[data-jump]").forEach(el => el.onclick = ev => {
+      ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
+      if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingDue = false; }
+      if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
+      if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
       if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; this.pages = {}; }
       this.render();
@@ -20599,7 +21869,7 @@ class HAHousekeeperPanel extends HTMLElement {
       } catch (err) { this.failed(err); }
       this.render();
     });
-    root.querySelector("[data-toggle-followers]")?.addEventListener("click", () => { this.showFollowers = !this.showFollowers; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
     root.querySelector("[data-with-followers]")?.addEventListener("click", () => { this.findingWithFollowers = !this.findingWithFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
@@ -20659,7 +21929,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     root.querySelector("[data-history-all]")?.addEventListener("click", () => { this.historyAll = !this.historyAll; this.pages = {}; this.render(); });
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
-    root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
+    root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label, summary, .menupop"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     // Table rows and graph nodes are not native buttons: Enter and Space open them like a click.
     const openByKey = el => el.onkeydown = ev => {
       if (ev.target !== el || (ev.key !== "Enter" && ev.key !== " ")) return;
@@ -20677,7 +21947,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-graph-group]").forEach(el => el.onclick = () => { this.graphOpen.add(el.dataset.graphGroup); this.render(); });
     root.querySelector("[data-graph-regroup]")?.addEventListener("click", () => { this.graphOpen = new Set(); this.render(); });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.noteGraphStep(obj); this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
-    root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
+    root.querySelectorAll("[data-more-info]").forEach(el => el.onclick = () => this.moreInfo(el.dataset.moreInfo));
+    root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath, "haTab" in el.dataset));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
@@ -20689,7 +21960,10 @@ class HAHousekeeperPanel extends HTMLElement {
       catch (err) { this.failed(err); }
       this.render();
     });
-    root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this.blueprints = null; this.render(); });
+    root.querySelectorAll("[data-bp-open]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.bpOpen = el.dataset.bpOpen; (this.viewTab ||= {}).blueprint = "overview"; this.render(); });
+    root.querySelectorAll("tr[data-bp-open]").forEach(openByKey);
+    root.querySelector("[data-bp-back]")?.addEventListener("click", () => { this.bpOpen = ""; this.render(); });
+    root.querySelector("[data-bp-refresh]")?.addEventListener("click", () => { this._blueprintsRequested = false; this._bpDetailKey = ""; this.blueprints = null; this.render(); });
     root.querySelector("[data-weekly]")?.addEventListener("click", () => this.weeklyReport());
     root.querySelectorAll("[data-fsel-group]").forEach(el => el.onchange = () => { (this._findGroups?.[el.dataset.fselGroup] || []).forEach(key => (el.checked ? this.findSel.add(key) : this.findSel.delete(key))); this.render(); });
     root.querySelectorAll("[data-fsel]").forEach(el => el.onchange = () => { this.pickRows("fsel", el.dataset.fsel, el.checked, this.findSel, this._findPage); this.render(); });
@@ -20708,8 +21982,11 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-qtype]").forEach(el => el.onclick = () => { this.quarantineType = el.dataset.qtype; this.cleanupKind = el.dataset.qtype === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); });
     const kind = root.querySelector("[data-cleanup-kind]"); if (kind) kind.onchange = () => { this.cleanupKind = kind.value; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); };
     root.querySelectorAll("[data-repair-task]").forEach(el => el.onclick = () => { if (this.repairTask === el.dataset.repairTask) { this.repairTask = null; this.render(); return; } this.repairTask = el.dataset.repairTask; this.cleanupKind = this.repairTask; this.cleanupSel = new Set(); this.plan = null; this.render(); });
-    root.querySelector("[data-ack-all]")?.addEventListener("change", e => { this.ack = new Set(e.target.checked ? this.plan.actions.filter(x => x.verdict === "review" && x.executable).map(x => x.object_id) : []); this.render(); });
+    // (the acknowledgement boxes are gone: the confirm dialog is the acknowledgement)
+    root.querySelector("[data-ack-all]")?.addEventListener("change", e => { this.ack = new Set(e.target.checked ? this.plan.actions.filter(x => x.verdict === "review" && x.executable).map(x => x.object_id) : []); this.cleanupError = ""; this.render(); });
     root.querySelector("[data-plan-confirm]")?.addEventListener("click", ev => this.confirmAsk(this.confirmSummary(this.plan, Number(ev.currentTarget.dataset.count)), () => this.confirmAndRun(), { title: this.t("confirmRunTitle"), yes: this.t("runNow"), danger: ev.currentTarget.dataset.risky === "true", warn: this.largeRemovalWarning(this.plan) }));
+    root.querySelector("[data-plan-discard]")?.addEventListener("click", () => this.discardPlan());
+    root.querySelector("[data-purge-states-switch]")?.addEventListener("change", ev => this.setPurgeStates(ev.currentTarget.checked));
     root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());
     root.querySelector("[data-undo-all]")?.addEventListener("click", () => { this.undoAsk = "all"; this.render(); });
     root.querySelector("[data-undo-all-yes]")?.addEventListener("click", () => this.undoPlan());
@@ -20724,11 +22001,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-page]")?.addEventListener("click", () => { (this._purgePage || []).forEach(id => this.purgeSel.add(id)); this.render(); });
-    root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.purgeOpen = false; this.render(); });
-    root.querySelector("[data-purge-open]")?.addEventListener("click", () => { this.purgeOpen = true; this.purgeWord = ""; this.purgeResult = null; this.render(); });
-    root.querySelector("[data-purge-close]")?.addEventListener("click", () => { this.purgeOpen = false; this.render(); });
-    root.querySelector("[data-purge-states]")?.addEventListener("change", e => { this.purgeStates = e.target.checked; this.render(); });
-    root.querySelector("[data-purge-word]")?.addEventListener("input", e => { this.purgeWord = e.target.value; const b = root.querySelector("[data-purge-run]"); if (b) b.disabled = e.target.value.trim() !== this.t("purgeWord") || this.purgeBusy; });
+    root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
     root.querySelectorAll("[data-meter-mode]").forEach(el => el.onclick = () => { this.meterMode = el.dataset.meterMode; this.render(); });
     root.querySelector("[data-repl-meter]")?.addEventListener("click", () => this.startCleanup("migrate_meter", () => { this.meterOld = this.replOld; this.meterNew = this.replNew; }));
@@ -20756,6 +22029,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-db-refresh]")?.addEventListener("click", () => this.loadDbHealth(true));
     root.querySelector("[data-db-check]")?.addEventListener("click", () => this.loadDbHealth(false, true));
     root.querySelector("[data-bh-refresh]")?.addEventListener("click", () => this.loadBackup());
+    root.querySelector("[data-bkc-open]")?.addEventListener("click", () => { this.folds = { ...this.folds, bkc: true }; this.render(); this.shadowRoot?.querySelector?.("#hk-bkc")?.scrollIntoView?.({ block: "start" }); });
     root.querySelectorAll("[data-bh-open]").forEach(el => el.onclick = () => { this.bhForm = this.bhForm === el.dataset.bhOpen ? null : el.dataset.bhOpen; this.render(); });
     root.querySelector("[data-bh-cancel]")?.addEventListener("click", () => { this.bhForm = null; this.render(); });
     root.querySelectorAll("[data-bh-save]").forEach(el => el.onclick = () => {
@@ -20771,11 +22045,15 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));
+    root.querySelectorAll("img[data-fallback-icon]").forEach(img => img.addEventListener("error", () => { const i = document.createElement("ha-icon"); i.setAttribute("icon", img.dataset.fallbackIcon); img.replaceWith(i); }, { once: true }));
     root.querySelector("[data-pf-refresh]")?.addEventListener("click", () => this.loadPreflight());
-    root.querySelectorAll("[data-plan-close]").forEach(el => el.addEventListener("click", () => { this.plan = null; this.render(); }));
-    root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.openPlan(el.dataset.planOpen); });
+    root.querySelector("[data-config-check]")?.addEventListener("click", () => this.runConfigCheck());
+    root.querySelectorAll("[data-plan-close]").forEach(el => el.addEventListener("click", () => this.leavePlan()));
+    root.querySelector("[data-journal-refresh]")?.addEventListener("click", () => this.refreshJournal());
+    root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = ev => { if (el.tagName === "BUTTON") ev?.stopPropagation?.(); const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.openPlan(el.dataset.planOpen); });
     root.querySelectorAll("[data-merge-sel]").forEach(el => el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.checked ? this.mergeSel.add(el.dataset.mergeSel) : this.mergeSel.delete(el.dataset.mergeSel); this.render(); });
     root.querySelector("[data-merge]")?.addEventListener("click", () => this.mergePlans());
+    root.querySelector("[data-merge-delete]")?.addEventListener("click", () => { const n = this.mergeSel?.size || 0; if (n) this.confirmAsk(this.t("confirmPlansDelete", { count: n }), () => this.deletePlans()); });
     root.querySelectorAll("[data-merge-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.dataset.mergePage.split(",").forEach(id => (el.checked ? this.mergeSel.add(id) : this.mergeSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-plan-renew]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.renewPlan(el.dataset.planRenew); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => { const id = el.dataset.planDelete, plan = (this.journal || []).find(p => p.plan_id === id) || this.plan; this.confirmAsk(this.t("confirmPlanDelete", { date: this.formatDate(plan?.created_at) }), () => this.deletePlan(id)); });

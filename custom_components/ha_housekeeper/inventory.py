@@ -10,6 +10,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from homeassistant.config_entries import SOURCE_IGNORE, ConfigEntryState
 from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import UnsupportedStorageVersionError
@@ -57,7 +58,10 @@ from .const import (
     SIGNAL_SCAN_COMPLETE,
     SIGNAL_SCAN_STARTED,
     STORAGE_VERSION,
+    WARMUP_BLIP_SECONDS,
+    WARMUP_NAMES,
     WARMUP_SECONDS,
+    WARMUP_SETTLE_SECONDS,
     WINDOW_STORAGE_KEY,
 )
 from .coverage import CoverageStore
@@ -76,7 +80,7 @@ from .db_health import database_summary
 from .entry_states import EntryStateHistory
 from .events import EventLog
 from .goals import GoalStore
-from .hacs import hacs_by_domain
+from .hacs import hacs_by_domain, removed_issues
 from .history import ScanHistory
 from .hygiene import (
     automation_hygiene_findings,
@@ -113,7 +117,7 @@ from .outage_levels import DIRECT_ENTRY_STATES, Levels, outage_level
 from .outage_scan import OutageScans, outage_start
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
 from .policies import PolicyStore
-from .protection import ProtectionStore
+from .protection import ProtectionStore, protection_rules
 from .queries import ReplyStore
 from .refactor import RefactorStore
 from .reminders import ReminderStore
@@ -121,11 +125,13 @@ from .runs import RunStore
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, ScanCoverage, retryable_gaps
 from .scan_health import ScanHealth
 from .scan_trigger import ScanRefused, scan_request
+from .sensitive_fields import reauth_entry_ids
 from .service_check import missing_service_findings
 from .signals import SignalStore, situations
 from .signals import fire as signal_fire
 from .stale import StaleStore
 from .system_usage import supervisor_get, supervisor_token
+from .view_counts import view_counts
 from .watch import WATCH_KINDS, WatchStore, evaluate, make_before, next_due
 
 _LOGGER = logging.getLogger(__name__)
@@ -162,6 +168,29 @@ def _enum(value: Any) -> str | None:
     if value is None:
         return None
     return str(getattr(value, "value", value))
+
+
+def marked_keys(objects: list[dict[str, Any]]) -> frozenset[str]:
+    """Keys of the objects a hiding mark covers, with the entities of a marked device."""
+
+    def hides(item: dict[str, Any]) -> bool:
+        mark = item.get("mark")
+        return bool(mark and mark.get("kind") in HIDING_KINDS and not item.get("mark_due"))
+
+    devices = {i["object_id"] for i in objects if i["object_type"] == "device" and hides(i)}
+    return frozenset(
+        f"{i['object_type']}:{i['object_id']}"
+        for i in objects
+        if hides(i) or (i["object_type"] == "entity" and i.get("device_id") in devices)
+    )
+
+
+def marked_status_counts(objects: list[dict[str, Any]]) -> dict[str, int]:
+    """How many marked objects there are per status, for the inventory status card."""
+    marked = marked_keys(objects)
+    return dict(
+        Counter(i["status"] for i in objects if f"{i['object_type']}:{i['object_id']}" in marked)
+    )
 
 
 class _DeviceIds(set):
@@ -373,15 +402,21 @@ def _config_entry_item(
     integration: Any = None,
     entity_count: int = 0,
     device_count: int = 0,
+    reauth: bool = False,
 ) -> dict[str, Any]:
-    """Normalize one config entry; ``integration`` is the loader's description of its domain."""
+    """Normalize one config entry; ``integration`` is the loader's description of its domain.
+
+    ``reauth`` says that a reauth flow of the entry is open: it asks for a new login. Such an entry
+    is a problem even while it is loaded, because its data stops coming.
+    """
     state = _enum(entry.state)
     if entry.disabled_by:
         status = "disabled"
     elif entry.source == "ignore":
         status = "ignored"  # a discovery the user dismissed: never set up, so not a problem
     else:
-        status = "active" if state == "loaded" else "problem"
+        status = "active" if state == "loaded" and not reauth else "problem"
+    reauth = reauth and status == "problem"
     custom = integration is not None and not getattr(integration, "is_built_in", True)
     return {
         "object_type": "config_entry",
@@ -398,6 +433,7 @@ def _config_entry_item(
         "source": entry.source,
         "state": state,
         "error": getattr(entry, "reason", None),
+        "reauth": reauth,
         "unique_id": entry.unique_id,
         "disabled_by": _enum(entry.disabled_by),
         "entity_count": entity_count,
@@ -474,6 +510,21 @@ def _fallback_automation_item(state: Any) -> dict[str, Any]:
         "action_count": 0,
         "references": [],
     }
+
+
+def _runtime_references(entity: Any, attr: str) -> Any:
+    """What Home Assistant extracts from an automation or script, or nothing where it fails on it."""
+    try:
+        return getattr(entity, attr, set())
+    except Exception as err:
+        # HA's extraction raises on a config it did not expect (a dict in an entity_id list).
+        _LOGGER.warning(
+            "Home Assistant could not read %s of %s (%s); only its configuration is used",
+            attr,
+            getattr(entity, "entity_id", "?"),
+            type(err).__name__,
+        )
+        return set()
 
 
 def _age(item: dict[str, Any], now: datetime) -> timedelta | None:
@@ -561,6 +612,10 @@ def _graded_outage(
     return started.isoformat(), outage_level(age, levels, direct)
 
 
+REAUTH_RULE = "config_entry.reauth"
+REAUTH_SCAN_GAP = 60  # seconds between two scans that a changed login request asks for
+
+
 def _config_entry_findings(
     integrations: list[dict[str, Any]],
     now: datetime,
@@ -575,6 +630,18 @@ def _config_entry_findings(
     findings = []
     for item in integrations:
         since = item.get("status_since")
+        if item.get("reauth"):
+            findings.append(
+                {
+                    "rule_id": REAUTH_RULE,
+                    "object_id": item["object_id"],
+                    "classification": "problem",
+                    "confidence": 0.95,
+                    "first_detected_at": since or now.isoformat(),
+                    "evidence": [{"kind": "reauth", "source": "config_entries"}],
+                }
+            )
+            continue  # the new login is the news, not that the entry is not loaded
         if item["status"] != "problem" or item["state"] not in FAILED_ENTRY_STATES or not since:
             continue
         counted, level = _graded_outage(
@@ -777,6 +844,10 @@ class InventoryScanner:
         self.stale = StaleStore(hass)
         self.load = LoadStore(hass)
         self._started = datetime.now(UTC)
+        self._reauth_seen: set[str] | None = (
+            None  # the entries that asked for a login at the last scan
+        )
+        self._reauth_asked = float("-inf")
         self.goals = GoalStore(hass)
         self.criteria = CriteriaStore(hass)
         self.coverage = CoverageStore(hass)
@@ -797,6 +868,16 @@ class InventoryScanner:
         self.retry_runs = 0  # Rescans after a gap in a row; set by the scheduler in __init__.py
         self._booting = False
         self._warmup_until: float | None = None
+        self._settled_at: float | None = None  # since when no integration has been loading
+        self._pending_since: float | None = None  # since when an integration has been loading again
+        self.integrations_pending = 0
+        self.integrations_loading: list[
+            str
+        ] = []  # titles of the ones being set up, for the start notice
+        self.integrations_done = (
+            0  # of the enabled ones: not waiting to be set up and not being set up
+        )
+        self.integrations_total = 0
         self._recorder_available = False
         # What the scan in progress could not read: "dashboard", "dashboard:<id>" or "app".
         self._unchecked: set[str] = set()
@@ -866,6 +947,49 @@ class InventoryScanner:
         """Home Assistant just started: scans stay preliminary for the next ``seconds``."""
         self._booting = False
         self._warmup_until = time.monotonic() + seconds
+        self._settled_at = None
+        self._pending_since = None
+        self.check_warmup()
+
+    def check_warmup(self) -> None:
+        """Look at the integrations: the warm-up ends a minute after none of them is loading any more."""
+        if self._booting or self._warmup_until is None:
+            return
+        entries = list(self.hass.config_entries.async_entries())
+        loading = [e for e in entries if e.state is ConfigEntryState.SETUP_IN_PROGRESS]
+        # Ignored and disabled entries are never set up, so they are no part of the progress.
+        enabled = [
+            e
+            for e in entries
+            if getattr(e, "disabled_by", None) is None
+            and getattr(e, "source", None) != SOURCE_IGNORE
+        ]
+        self.integrations_pending = len(loading)
+        self.integrations_loading = [str(getattr(e, "title", "") or e.domain) for e in loading][
+            :WARMUP_NAMES
+        ]
+        self.integrations_total = len(enabled)
+        self.integrations_done = sum(
+            1
+            for e in enabled
+            if e.state not in (ConfigEntryState.SETUP_IN_PROGRESS, ConfigEntryState.NOT_LOADED)
+        )
+        now = time.monotonic()
+        if self.integrations_pending:
+            if self._pending_since is None:
+                self._pending_since = now
+            # A short blip after the integrations had settled does not start the buffer over.
+            if self._settled_at is None or now - self._pending_since >= WARMUP_BLIP_SECONDS:
+                self._settled_at = None
+        else:
+            self._pending_since = None
+            if self._settled_at is None:
+                self._settled_at = now
+
+    @property
+    def warmup_settling(self) -> bool:
+        """Whether every integration has loaded and only the safety buffer is left."""
+        return self._settled_at is not None and self.warmup_seconds_left > 0
 
     @property
     def booting(self) -> bool:
@@ -879,7 +1003,11 @@ class InventoryScanner:
             return WARMUP_SECONDS
         if self._warmup_until is None:
             return 0
-        return max(0, round(self._warmup_until - time.monotonic()))
+        now = time.monotonic()
+        left = self._warmup_until - now
+        if self._settled_at is not None:
+            left = min(left, self._settled_at + WARMUP_SETTLE_SECONDS - now)
+        return max(0, round(left))
 
     @property
     def warming_up(self) -> bool:
@@ -917,6 +1045,7 @@ class InventoryScanner:
                     )
                     await self._observe_versions(snapshot)
                     self._observe_watch(snapshot)
+                    snapshot["meta"]["view_counts"] = await view_counts(self, self.hass, snapshot)
                     if followup.check(
                         self.journal.plans, snapshot, datetime.now(UTC), self.runs.errors_since
                     ):
@@ -1065,18 +1194,7 @@ class InventoryScanner:
     def watch_marked(self, snapshot: dict[str, Any] | None = None) -> frozenset[str]:
         """Objects marked as expected (offline on purpose and the like); they do not count as new outages."""
         snapshot = snapshot or self._snapshot or {}
-        objects = snapshot.get("objects") or []
-
-        def hides(item: dict[str, Any]) -> bool:
-            mark = item.get("mark")
-            return bool(mark and mark.get("kind") in HIDING_KINDS and not item.get("mark_due"))
-
-        devices = {i["object_id"] for i in objects if i["object_type"] == "device" and hides(i)}
-        return frozenset(
-            f"{i['object_type']}:{i['object_id']}"
-            for i in objects
-            if hides(i) or (i["object_type"] == "entity" and i.get("device_id") in devices)
-        )
+        return marked_keys(snapshot.get("objects") or [])
 
     def watch_summary(self) -> dict[str, Any] | None:
         """The open watch in short, for the band in the panel header; None when none is open."""
@@ -1116,6 +1234,22 @@ class InventoryScanner:
         try:
             await self.async_request_scan()
         except ScanRefused:
+            return
+
+    async def async_check_reauth(self) -> None:
+        """Ask for a scan when the entries that wait for a new login are not those of the last scan.
+
+        Home Assistant has no hook for a flow that starts or ends, so this is a cheap look at its open
+        flows. At most one scan a minute comes of it, and only when the set has changed.
+        """
+        if self._reauth_seen is None or reauth_entry_ids(self.hass) == self._reauth_seen:
+            return
+        if time.monotonic() - self._reauth_asked < REAUTH_SCAN_GAP:
+            return
+        self._reauth_asked = time.monotonic()
+        try:
+            await self.async_request_scan()
+        except ScanRefused:  # a plan or the start is in the way: the next look asks again
             return
 
     async def async_watch_tick(self) -> None:
@@ -1213,6 +1347,8 @@ class InventoryScanner:
         described = await async_get_integrations(
             self.hass, {entry.domain for entry in config_entries}
         )
+        reauth = reauth_entry_ids(self.hass)
+        self._reauth_seen = reauth
         integrations = [
             _config_entry_item(
                 entry,
@@ -1221,6 +1357,7 @@ class InventoryScanner:
                 else None,
                 entities_per_entry[entry.entry_id],
                 devices_per_entry[entry.entry_id],
+                entry.entry_id in reauth,
             )
             for entry in config_entries
         ]
@@ -1479,6 +1616,11 @@ class InventoryScanner:
                 "preliminary": preliminary,
                 "warmup_seconds_left": self.warmup_seconds_left,
                 "warmup_booting": self.booting,
+                "warmup_pending": self.integrations_pending,
+                "warmup_names": self.integrations_loading,
+                "warmup_done": self.integrations_done,
+                "warmup_total": self.integrations_total,
+                "warmup_settling": self.warmup_settling,
                 "outage_info_minutes": self.outage_info_minutes,
                 "outage_low_hours": self.outage_low_hours,
                 "outage_medium_hours": self.outage_medium_hours,
@@ -1488,6 +1630,7 @@ class InventoryScanner:
                 "version": self.version,
                 "notify": self.notify.enabled,
                 "protection": self.protection.mode,
+                "protection_rules": protection_rules(),
                 "recorder_available": self._recorder_available,
                 "orphaned_statistics": len(orphaned_statistics),
                 "quarantined": len(quarantine),
@@ -1496,6 +1639,11 @@ class InventoryScanner:
                 "ha_version": HA_VERSION,
                 "hacs_available": hacs is not None,
                 "hacs_housekeeper": hacs.get(DOMAIN) if hacs is not None else None,
+                "hacs_removed": [
+                    {"id": key, **value}
+                    for key, value in sorted(removed_issues(self.hass).items())
+                    if not value["ignored"]
+                ],
                 "scan_interval_hours": self.scan_interval_hours,
                 "low_battery_percent": self.low_battery_percent,
                 "stale_hours": self.stale_hours,
@@ -1505,6 +1653,7 @@ class InventoryScanner:
                 "low_batteries": len(low_battery_ids(entities, self.low_battery_percent)),
                 "object_count": len(objects),
                 "status_counts": dict(Counter(item["status"] for item in objects)),
+                "marked_status_counts": marked_status_counts(objects),
                 "type_counts": dict(Counter(item["object_type"] for item in objects)),
             },
             "objects": objects,
@@ -1713,6 +1862,7 @@ class InventoryScanner:
         for finding in snapshot["findings"]:
             self._mark_ignored(finding, registry)
         self._apply_marks(snapshot["objects"], snapshot["findings"])
+        snapshot["meta"]["marked_status_counts"] = marked_status_counts(snapshot["objects"])
         snapshot["causes"] = apply_causes(
             snapshot["objects"], snapshot["edges"], snapshot["findings"]
         )
@@ -1791,11 +1941,14 @@ class InventoryScanner:
             # HA's runtime extraction also detects references inside templates.
             explicit_markers = {(ref["kind"], ref["object_id"]) for ref in references}
             runtime_sets = {
-                "entity": getattr(entity, "referenced_entities", set()),
-                "device": getattr(entity, "referenced_devices", set()),
-                "area": getattr(entity, "referenced_areas", set()),
-                "floor": getattr(entity, "referenced_floors", set()),
-                "label": getattr(entity, "referenced_labels", set()),
+                kind: _runtime_references(entity, attr)
+                for kind, attr in (
+                    ("entity", "referenced_entities"),
+                    ("device", "referenced_devices"),
+                    ("area", "referenced_areas"),
+                    ("floor", "referenced_floors"),
+                    ("label", "referenced_labels"),
+                )
             }
             for kind, object_ids in runtime_sets.items():
                 for object_id in object_ids:

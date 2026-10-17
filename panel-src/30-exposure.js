@@ -37,7 +37,7 @@ class ExposureMixin {
   }
 
   expoFindingText(f) {
-    return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "" });
+    return this.t(`expoText_${f.kind}`, { n: this.formatNumber(f.count), alias: f.alias || "", assistant: f.assistant ? this.expoAssistantName(f.assistant) : "", domain: f.domain || "", list: this.expoAssistantList(f.assistants), reach: this.formatNumber(f.reach || 0) });
   }
 
   // One finding as a fold: the head always shows, the entities (a table of their own, with search, sorting and pages) and the advice only when open.
@@ -63,8 +63,18 @@ class ExposureMixin {
         { key: "assistants", label: "expoColAssistants", sortable: false, cell: item => (item.assistants?.length ? this.esc(this.expoAssistantList(item.assistants)) : `<span class="muted">—</span>`) },
       ],
     }) : "";
-    const more = f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
-    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${table}${more}`;
+    const agents = f.integrations?.length ? this.sysList(`expofind_${f.kind}`, f.integrations, {
+      sort: "name", tie: i => i.entry_id, empty: "expoNone",
+      sorts: [{ key: "name", label: "expoColIntegration", dir: "asc", get: i => i.title || i.domain }],
+      text: i => [i.title, i.domain].join(" "),
+      rowAttrs: i => `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(i.domain)}`)}" tabindex="0" role="link" aria-label="${this.esc(i.title || i.domain)}"`,
+      columns: [
+        { key: "name", label: "expoColIntegration", dir: "asc", cell: i => this.nameCell(i.title || i.domain, i.domain) },
+        { key: "target", label: "expoColTarget", sortable: false, cell: i => this.esc(this.t(`expoTarget_${i.target}`)) },
+      ],
+    }) : "";
+    const more = items.length && f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
+    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${table}${agents}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
     return this.fold(`expo_${f.kind}`, head, body, false);
   }
@@ -133,7 +143,7 @@ class ExposureMixin {
       { id: "findings", icon: "mdi:shield-alert-outline", label: this.t("expoTabFindings"), hint: this.t("expoTileFindingsHint"), count: r.findings.length, tone: warn ? "warn" : "ok" },
       ...sources.map(x => x.status === "ok"
         ? { id: x.id, icon: "mdi:microphone-outline", label: x.label, hint: this.t("expoTileSourceHint", { n: this.formatNumber(x.count) }), count: x.count, tone: "ok" }
-        : { id: x.id, icon: "mdi:microphone-off", label: x.label, hint: this.t(x.status === "inactive" ? "expoInactive" : "expoUnavailable"), disabled: true }),
+        : { id: x.id, icon: "mdi:microphone-off", label: x.label, hint: this.t(x.status === "inactive" ? "expoInactive" : x.status === "off" ? "expoOff" : "expoUnavailable"), disabled: true }),
     ];
     const open = this.viewTabOf("exposure", tabs.filter(x => !x.disabled), r.findings.length || !live.length ? "findings" : live[0].id);
     let body;

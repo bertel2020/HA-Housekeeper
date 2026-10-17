@@ -122,7 +122,7 @@ class MonitorMixin {
         { key: "name", label: "sortName", dir: "asc", cell: item => this.nameCell(item.name, item.description || "") },
         { key: "state", label: "sysColState", dir: "asc", cell: item => `<span class="pill ${toneOf(item)}">${this.monitorState(item)}</span>` },
         { key: "reason", label: "monitorColReason", sortable: false, cell: item => this.esc(reasonOf(item) || "—") },
-        { key: "problem", label: "monitorColLastProblem", dir: "desc", cell: item => (item.last_problem_at ? this.esc(this.agoText(item.last_problem_at)) : "—") },
+        { key: "problem", label: "monitorColLastProblem", dir: "desc", cell: item => (item.last_problem_at ? `${this.esc(this.agoText(item.last_problem_at))}<small class="agestamp">${this.esc(this.formatDate(item.last_problem_at))}</small>` : "—") },
         { key: "scan", label: "monitorColScan", dir: "desc", cell: item => (item.scanned_at ? this.esc(this.formatDate(item.scanned_at)) : "—") },
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:home-heart"></ha-icon>${this.t("monitorEmpty")}</div>`;
@@ -133,7 +133,16 @@ class MonitorMixin {
     const item = this.monitorFunctions().find(f => f.id === this.monitorSelected);
     if (!item) { this.monitorSelected = null; return this.monitorView(); }
     const tone = item.enabled === false ? "mute" : item.incident_open || item.state === "problem" ? "red" : item.state === "unverified" ? "warn" : "ok";
-    return `<div class="u-mb14"><button class="btn" data-monitor-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("monitorBack")}</button></div><section class="panel u-mb14"><div class="panelhead"><div><h2>${this.esc(item.name)} <span class="pill ${tone}">${this.monitorState(item)}</span></h2><p>${this.esc(item.description || this.t("monitorSubtitle"))}</p></div><button class="btn" data-monitor-edit>${this.t("monitorEdit")}</button></div><div class="facts"><div class="fact"><span>${this.t("monitorLastScan", { date: this.formatDate(item.scanned_at) })}</span></div><div class="fact"><span>${item.last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(item.last_verified_at) }) : this.t("monitorNeverVerified")}</span></div></div>${item.state === "unverified" ? `<div class="row"><span class="tile warn"><ha-icon icon="mdi:help-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t(item.incident_open ? "monitorUnresolved" : "monitorNoProof")}</strong>${item.incident_open && item.last_problem_reason ? `<small>${this.esc(this.monitorReason(item.last_problem_reason))}</small>` : ""}</span></div>` : ""}</section><section class="panel u-mb14"><div class="panelhead"><h2>${this.t("monitorMembers")}</h2></div>${this.monitorMembersTable(item)}</section>${this.monitorHistoryHtml(item)}`;
+    const cache = (this.monitorHistory ||= {})[item.id];
+    const meta = [
+      this.t("monitorLastScan", { date: this.formatDate(item.scanned_at) }),
+      item.last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(item.last_verified_at) }) : this.t("monitorNeverVerified"),
+      this.t("monitorHistObjects", { n: item.members.length }),
+    ].map(text => this.esc(text)).join(" · ");
+    const unverified = item.state === "unverified" ? `<div class="row"><span class="tile warn"><ha-icon icon="mdi:help-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t(item.incident_open ? "monitorUnresolved" : "monitorNoProof")}</strong>${item.incident_open && item.last_problem_reason ? `<small>${this.esc(this.monitorReason(item.last_problem_reason))}</small>` : ""}</span></div>` : "";
+    const head = `<div class="panelhead"><div><h2>${this.esc(item.name)} <span class="pill ${tone}">${this.monitorState(item)}</span></h2>${item.description ? `<p>${this.esc(item.description)}</p>` : ""}<p class="monitor-meta">${meta}</p></div><button class="btn" data-monitor-edit>${this.t("monitorEdit")}</button></div>`;
+    const history = this.monitorHistoryHtml(item);
+    return `<div class="u-mb14"><button class="btn" data-monitor-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("monitorBack")}</button></div><section class="panel u-mb14">${head}${unverified}${this.monitorAvailabilityHtml(cache?.availability, item)}<div class="monitor-sec"><h3>${this.t("monitorMembers")}</h3><small>${this.t("monitorMembersCount", { n: item.members.length, required: item.members.filter(m => m.required).length })}</small></div>${this.monitorMembersTable(item)}</section>${history}`;
   }
 
   // The objects of one function as a table: a row opens the object.
@@ -145,21 +154,18 @@ class MonitorMixin {
     const rulesOf = ({ member, object }) => (member.rules || []).map(rule => this.monitorRuleText(rule, object)).join("; ");
     const sorts = [
       { key: "name", label: "sortName", dir: "asc", get: titleOf },
-      { key: "kind", label: "monitorColKind", dir: "asc", get: r => r.member.object_key.split(":")[0] },
       { key: "role", label: "monitorColRole", dir: "asc", get: r => (r.member.required ? 0 : 1) },
       { key: "state", label: "sysColState", dir: "asc", get: r => ({ problem: 0, unverified: 1, ok: 2, disabled: 3 }[r.member.state] ?? 9) },
     ];
     return this.sysList("monitor-members", rows, {
-      sort: "state", sorts, tie: titleOf, empty: "monitorEmpty",
+      sort: "state", sorts, tie: titleOf, empty: "monitorEmpty", pageSizes: [10, 20, 50],
       text: r => [titleOf(r), r.member.object_key, this.monitorReason(r.member.reason), rulesOf(r)].join(" "),
       rowAttrs: r => (r.object ? `data-object="${this.esc(r.member.object_key)}" tabindex="0" role="button" aria-label="${this.esc(titleOf(r))}"` : 'class="static"'),
       columns: [
         { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${this.tile(r.member.object_key.split(":")[0], "")}<div>${this.nameCell(titleOf(r), r.member.object_key)}</div></div>` },
-        { key: "kind", label: "monitorColKind", dir: "asc", cell: r => this.esc(this.t(`monitorType_${r.member.object_key.split(":")[0]}`)) },
         { key: "role", label: "monitorColRole", dir: "asc", cell: r => this.t(r.member.required ? "monitorRequired" : "monitorAdditional") },
         { key: "state", label: "sysColState", dir: "asc", cell: r => `<span class="pill ${toneOf(r)}">${stateText(r)}</span>` },
         { key: "reason", label: "monitorColReason", sortable: false, cell: r => this.esc(this.monitorReason(r.member.reason) || "—") },
-        { key: "rules", label: "monitorRules", sortable: false, cell: r => this.esc(rulesOf(r) || "—") },
       ],
     });
   }
@@ -218,7 +224,7 @@ class MonitorMixin {
         ...(hasPlan ? [{ key: "act", label: "btColAct", sortable: false, cell: item => (item.planId ? `<button class="btn small" data-plan-open="${this.esc(item.planId)}">${this.t("openPlan")}</button>` : "") }] : []),
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:history"></ha-icon>${this.t("monitorHistoryEmpty")}</div>`;
-    return `${this.monitorAvailabilityHtml(cache.availability)}<section class="panel">${head}${list}</section>`;
+    return `<section class="panel">${head}${list}</section>`;
   }
 
   monitorDuration(seconds) {
@@ -229,22 +235,32 @@ class MonitorMixin {
   }
 
   // The shares of time in each state over the last days and one square per day (the worst state of that day).
-  monitorAvailabilityHtml(a) {
+  monitorAvailabilityHtml(a, item) {
     if (!a) return "";
-    const head = `<div class="panelhead"><div><h2>${this.t("monitorAvail")}</h2><p>${this.t("monitorAvailHint", { days: a.window_days })}</p></div></div>`;
-    if (!a.observed_seconds) return `<section class="panel u-mb14">${head}<div class="emptymsg"><ha-icon icon="mdi:chart-timeline-variant"></ha-icon>${this.t("monitorAvailNone")}</div></section>`;
+    if (!a.observed_seconds) return `<div class="emptymsg"><ha-icon icon="mdi:chart-timeline-variant"></ha-icon>${this.t("monitorAvailNone")}</div>`;
     const pct = Math.floor((a.ok_seconds / a.observed_seconds) * 1000) / 10; // a fault never rounds up to 100 %
     const percent = new Intl.NumberFormat(this.lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(pct);
-    const facts = [
-      this.t("monitorAvailOk", { pct: percent }),
-      a.problem_seconds ? this.t("monitorAvailProblem", { time: this.monitorDuration(a.problem_seconds), n: a.incidents, longest: this.monitorDuration(a.longest_seconds) }) : this.t("monitorAvailNoProblem"),
-      a.unknown_seconds ? this.t("monitorAvailUnknown", { time: this.monitorDuration(a.unknown_seconds) }) : "",
-      a.unstable_seconds ? this.t("monitorAvailUnstable", { time: this.monitorDuration(a.unstable_seconds) }) : "",
-      this.t("monitorAvailSince", { date: this.formatDate(a.since) }),
-    ].filter(Boolean).map(text => `<div class="fact"><span>${this.esc(text)}</span></div>`).join("");
+    const tile = (value, label, tone = "") => `<div class="avail-tile"><b class="${tone}">${this.esc(value)}</b><span>${this.esc(label)}</span></div>`;
+    const tiles = [
+      tile(`${percent} %`, this.t("monitorAvailOkDays", { days: a.window_days }), "ok"),
+      a.problem_seconds
+        ? tile(this.monitorDuration(a.problem_seconds), `${this.t("monitorAvailProblem")} · ${this.t(a.incidents === 1 ? "monitorAvailIncidents" : "monitorAvailIncidentsN", { n: a.incidents })}`)
+        : tile("–", this.t("monitorAvailNoProblem")),
+      a.problem_seconds ? tile(this.monitorDuration(a.longest_seconds), this.t("monitorAvailLongest")) : "",
+      a.unknown_seconds ? tile(this.monitorDuration(a.unknown_seconds), this.t("monitorAvailUnknown")) : "",
+      a.unstable_seconds ? tile(this.monitorDuration(a.unstable_seconds), this.t("monitorAvailUnstable")) : "",
+      item?.last_problem_at ? tile(this.agoText(item.last_problem_at), this.t("monitorLastProblemLine")) : "",
+    ].filter(Boolean).join("");
     const labels = { ok: "monitorOk", problem: "monitorProblem", unverified: "monitorUnverified", flapping: "monitorHist_flapping" };
-    const days = a.days.map(day => `<i class="${day.state || "none"}" title="${this.esc(`${day.date}: ${day.state ? this.t(labels[day.state]) : this.t("monitorAvailNoData")}`)}"></i>`).join("");
-    return `<section class="panel u-mb14">${head}<div class="facts">${facts}</div><div class="monitor-days" role="img" aria-label="${this.esc(this.t("monitorAvail"))}">${days}</div></section>`;
+    // A day with less than 1 % of impaired time reads amber, not red; unknown and unstable days are amber too.
+    const dayClass = day => (day.state === "problem" && (day.problem_seconds || 0) < 864 ? "problem short" : day.state || "none");
+    const dayTitle = day => `${day.date}: ${day.state ? (day.state === "problem" && day.problem_seconds ? this.t("monitorAvailDayProblem", { state: this.t(labels.problem), time: this.monitorDuration(day.problem_seconds) }) : this.t(labels[day.state])) : this.t("monitorAvailNoData")}`;
+    const days = a.days.map(day => `<i class="${dayClass(day)}" title="${this.esc(dayTitle(day))}"></i>`).join("");
+    const swatch = (cls, key) => `<span><i class="${cls}"></i>${this.esc(this.t(key))}</span>`;
+    const legend = `<div class="monitor-legend">${swatch("ok", "monitorAvailOk")}${swatch("problem short", "monitorAvailShort")}${swatch("problem", "monitorAvailLong")}${swatch("none", "monitorAvailUnobserved")}</div>`;
+    const axis = `<div class="monitor-axis"><span>${this.t("monitorAvailFrom", { days: a.window_days })}</span><span>${this.t("monitorAvailToday")}</span></div>`;
+    const since = `<div class="avail-since">${this.esc(this.t("monitorAvailSince", { date: this.formatDate(a.since) }))} <ha-icon class="avail-info" icon="mdi:information-outline" title="${this.esc(this.t("monitorAvailInfo"))}"></ha-icon></div>`;
+    return `<div class="avail-tiles">${tiles}</div><div class="monitor-days" role="img" aria-label="${this.esc(this.t("monitorAvail"))}">${days}</div>${axis}${legend}${since}`;
   }
 
   async loadMonitorHistory(id, sig) {
@@ -277,10 +293,10 @@ class MonitorMixin {
         const rule = rules.find(r => r.kind === ruleKind), enabled = Boolean(rule);
         return `<div class="monitor-rule"><label><input type="checkbox" data-monitor-rule-toggle="${i}:${ruleKind}" ${enabled ? "checked" : ""}>${this.t(label)}</label><input type="number" data-monitor-rule-value="${i}:${ruleKind}" aria-label="${this.t(label)}" value="${rule?.value ?? fallback}" min="${min}" max="${max}" step="${ruleKind === "min_value" ? "any" : "1"}" ${enabled ? "" : "disabled"}><span>${this.esc(this.t(unit))}</span></div>`;
       }).join("")}</details>`;
-      return `<div class="monitor-member-wrap"><div class="row monitor-member"${object ? ` data-object="${this.esc(member.object_key)}"` : ""}><span class="tile mute"><ha-icon icon="${ICONS[kind] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || member.object_key)}</strong><small>${this.t(`monitorType_${kind}`)} · ${this.esc(member.object_key.split(":").slice(1).join(":"))}${rules.length ? ` · ${this.esc(rules.map(rule => this.monitorRuleText(rule, object)).join("; "))}` : ""}</small></span><label class="monitor-check"><input type="checkbox" data-monitor-required="${i}" ${member.required ? "checked" : ""}>${this.t("monitorRequired")}</label><button class="btn quiet" data-monitor-remove="${i}">${this.t("monitorRemove")}</button></div>${ruleFields}</div>`;
+      return `<div class="monitor-member-wrap"><div class="row monitor-member"${object ? ` data-object="${this.esc(member.object_key)}"` : ""}><span class="tile mute"><ha-icon icon="${ICONS[kind] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || member.object_key)}</strong><small>${this.t(`monitorType_${kind}`)} · ${this.esc(member.object_key.split(":").slice(1).join(":"))}${rules.length ? ` · ${this.esc(rules.map(rule => this.monitorRuleText(rule, object)).join("; "))}` : ""}</small></span><label class="monitor-check"><input type="checkbox" data-monitor-required="${i}" ${member.required ? "checked" : ""}>${this.t("monitorRequired")}</label><button type="button" class="iconbtn" data-monitor-remove="${i}" aria-label="${this.t("monitorRemove")}" title="${this.t("monitorRemove")}"><ha-icon icon="mdi:close"></ha-icon></button></div>${ruleFields}</div>`;
     }).join("");
     const suggestions = form.members.length ? this.monitorSuggestions() : [];
-    const suggested = suggestions.length ? `<section class="panel u-mb14"><div class="panelhead"><div><h2>${this.t("monitorSuggestions")}</h2><p>${this.t("monitorSuggestionsHint")}</p></div></div>${suggestions.map(({ key, object, reason, probable }) => `<div class="row monitor-choice" data-object="${this.esc(key)}"><span class="tile mute"><ha-icon icon="${ICONS[object.object_type] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object.name || object.object_id)}</strong><small>${this.t(`monitorType_${object.object_type}`)} · ${this.esc(reason)}${probable ? ` · ${this.t("monitorSuggestionProbable")}` : ""}</small></span><button class="btn small" data-monitor-pick="${this.esc(key)}">${this.t("monitorPick")}</button></div>`).join("")}</section>` : "";
+    const suggested = suggestions.length ? `<div class="monitor-suggest"><span>${this.t("monitorSuggestions")}:</span>${suggestions.map(({ key, object, reason, probable }) => `<button type="button" class="chip dashed" data-monitor-pick="${this.esc(key)}" title="${this.esc([reason, probable ? this.t("monitorSuggestionProbable") : ""].filter(Boolean).join(" · "))}">+ ${this.esc(object.name || object.object_id)}</button>`).join("")}</div>` : "";
     const picks = groups.map(([kind, label]) => {
       const items = candidates.filter(o => typeOf(o) === kind);
       if (!items.length) return "";
@@ -291,7 +307,8 @@ class MonitorMixin {
       }).join("")}${grouped.find(([type]) => type === kind)[1].length > items.length ? `<p class="monitor-search-note">${this.t("monitorMoreResults")}</p>` : ""}</div>`;
     }).join("");
     const searchResult = query.length < 2 ? this.t("monitorSearchStart") : candidates.length ? picks : this.t("monitorSearchNone");
-    return `<div class="page-editor"><section class="panel u-mb14"><div class="panelhead"><h2>${this.t(form.id ? "monitorEditTitle" : "monitorAdd")}</h2></div><div class="monitor-fields"><label>${this.t("monitorName")}<input data-monitor-name maxlength="80" value="${this.esc(form.name)}"></label><label>${this.t("monitorDescription")}<textarea data-monitor-description maxlength="240" rows="1">${this.esc(form.description)}</textarea></label></div><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorEnabled")}</strong><small>${this.t("monitorEnabledHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-enabled ${form.enabled !== false ? "checked" : ""}></label><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorNotify")}</strong><small>${this.t("monitorNotifyHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-notify ${form.notify ? "checked" : ""}></label></section><section class="panel u-mb14"><div class="panelhead"><div><h2>${this.t("monitorMembers")}</h2><p>${this.t("monitorRequiredCount", { n: form.members.filter(m => m.required).length, m: form.members.filter(m => !m.required).length })}</p></div></div>${selected || `<div class="emptymsg">${this.t("monitorChoose")}</div>`}</section><div data-monitor-preview aria-live="polite">${this.monitorPreviewHtml()}</div>${suggested}<section class="panel u-mb14"><div class="panelhead"><div><h2>${this.t("monitorFindObject")}</h2><p>${this.t("monitorSearchHint")}</p></div></div><div class="monitor-fields monitor-search"><input type="search" data-monitor-search aria-label="${this.t("monitorSearch")}" placeholder="${this.t("monitorSearch")}" value="${this.esc(this.monitorQuery)}"></div><div class="monitor-tabs" role="group" aria-label="${this.t("monitorTypeFilter")}">${tabs}</div><div class="monitor-results">${candidates.length ? searchResult : `<p class="monitor-search-note">${searchResult}</p>`}</div></section><div class="toolbar savebar"><span role="alert">${this.esc(this.monitorError)}</span><span class="toolgap"></span>${form.id ? `<button class="btn quiet danger-t" data-monitor-delete>${this.t("monitorDelete")}</button>` : ""}<button class="btn" data-monitor-cancel>${this.t("monitorCancel")}</button><button class="btn primary" data-monitor-save ${!form.name.trim() || !form.members.length ? "disabled" : ""}>${this.t("monitorSave")}</button></div></div>`;
+    const needs = !form.name.trim() ? "monitorNeedName" : !form.members.length ? "monitorNeedMembers" : "";
+    return `<div class="page-editor"><section class="panel u-mb14"><div class="panelhead"><h2>${this.t(form.id ? "monitorEditTitle" : "monitorAdd")}</h2></div><div class="monitor-fields monitor-twocol"><label>${this.t("monitorName")}<input data-monitor-name maxlength="80" value="${this.esc(form.name)}"></label><label>${this.t("monitorDescription")}<textarea data-monitor-description maxlength="240" rows="1">${this.esc(form.description)}</textarea></label></div><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorEnabled")}</strong><small>${this.t("monitorEnabledHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-enabled ${form.enabled !== false ? "checked" : ""}></label><label class="row monitor-notify"><span class="row-text"><strong>${this.t("monitorNotify")}</strong><small>${this.t("monitorNotifyHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" data-monitor-notify ${form.notify ? "checked" : ""}></label><div class="monitor-sec"><h3>${this.t("monitorMembers")}</h3><small>${this.t("monitorRequiredCount", { n: form.members.filter(m => m.required).length, m: form.members.filter(m => !m.required).length })}</small></div>${selected || `<div class="emptymsg">${this.t("monitorChoose")}</div>`}<div class="monitor-add"><input type="search" data-monitor-search aria-label="${this.t("monitorSearch")}" placeholder="${this.t("monitorSearch")}" value="${this.esc(this.monitorQuery)}"><div class="monitor-tabs" role="group" aria-label="${this.t("monitorTypeFilter")}">${tabs}</div>${suggested}<div class="monitor-results">${candidates.length ? searchResult : `<p class="monitor-search-note">${searchResult}</p>`}</div></div></section><div data-monitor-preview aria-live="polite">${this.monitorPreviewHtml()}</div><div class="toolbar savebar">${form.id ? `<button class="btn dangersoft" data-monitor-delete><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("monitorDelete")}</button>` : ""}<span class="error" role="alert">${this.esc(this.monitorError)}</span><span class="toolgap"></span><button class="btn" data-monitor-cancel>${this.t("monitorCancel")}</button><button class="btn primary" data-monitor-save data-need="${needs}">${this.t("monitorSave")}</button></div></div>`;
   }
 
   bindMonitor(root) {
@@ -304,7 +321,7 @@ class MonitorMixin {
     root.querySelector("[data-monitor-back]")?.addEventListener("click", () => { this.monitorSelected = null; this.render(); });
     root.querySelector("[data-monitor-edit]")?.addEventListener("click", () => { const item = this.monitorFunctions().find(f => f.id === this.monitorSelected); this.monitorForm = { id: item.id, name: item.name, description: item.description, enabled: item.enabled !== false, notify: item.notify, members: item.members.map(m => ({ object_key: m.object_key, required: m.required, rules: m.rules || [] })) }; this.monitorQuery = ""; this.monitorType = ""; this.monitorPreview = null; this.monitorError = ""; this.render(); this.queueMonitorPreview(); });
     root.querySelectorAll("[data-monitor-cancel]").forEach(el => el.onclick = () => { globalThis.clearTimeout?.(this._monitorPreviewTimer); this._monitorPreviewToken = (this._monitorPreviewToken || 0) + 1; this.monitorForm = null; this.monitorError = ""; this.render(); });
-    root.querySelector("[data-monitor-name]")?.addEventListener("input", ev => { this.monitorForm.name = ev.target.value; root.querySelector("[data-monitor-save]").disabled = !this.monitorForm.name.trim() || !this.monitorForm.members.length; });
+    root.querySelector("[data-monitor-name]")?.addEventListener("input", ev => { this.monitorForm.name = ev.target.value; const save = root.querySelector("[data-monitor-save]"); if (save) save.dataset.need = !this.monitorForm.name.trim() ? "monitorNeedName" : !this.monitorForm.members.length ? "monitorNeedMembers" : ""; });
     const description = root.querySelector("[data-monitor-description]");
     if (description) {
       const resize = () => {
@@ -352,6 +369,8 @@ class MonitorMixin {
 
   async saveMonitor() {
     const form = this.monitorForm;
+    const need = !form.name.trim() ? "monitorNeedName" : !form.members.length ? "monitorNeedMembers" : "";
+    if (need) { this.monitorError = this.t(need); this.render(); return; }
     globalThis.clearTimeout?.(this._monitorPreviewTimer);
     this._monitorPreviewToken = (this._monitorPreviewToken || 0) + 1;
     try {

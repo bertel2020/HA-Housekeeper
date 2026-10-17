@@ -57,6 +57,26 @@ def test_classify_risk_follows_access_location_and_cloud() -> None:
     assert classify("hue", "local_push", {"light"})["risk_reasons"] == []
 
 
+def test_router_trackers_are_presence_not_a_location() -> None:
+    fritz = classify("fritz", "local_polling", {"device_tracker"}, {"router"})
+    assert not fritz["gps"] and fritz["presence"] and fritz["risk"] == "low"
+    assert classify("x", "local_push", {"device_tracker"}, {"gps"})["risk"] == "high"
+    assert classify("x", "local_push", {"device_tracker"}, {"router", "unknown"})["gps"]
+    assert classify("usgs", "cloud_polling", {"geo_location"})["gps"] is False
+
+
+def test_more_radios_cameras_and_local_models_are_known() -> None:
+    assert classify("bluetooth", "local_push", set())["risk_reasons"] == ["radio"]
+    assert classify("frigate", "local_push", set())["access"][0]["kind"] == "camera"
+    assert classify("ollama", "local_polling", set())["flows"] == ["local"]
+
+
+def test_custom_code_is_at_least_medium() -> None:
+    plain = classify("my_thing", "local_push", {"light"}, custom=True)
+    assert plain["risk"] == "medium" and plain["risk_reasons"] == ["custom_code"]
+    assert classify("my_cam", "local_push", {"camera"}, custom=True)["risk"] == "high"
+
+
 async def test_access_report_on_config_entries(hass: HomeAssistant) -> None:
     MockConfigEntry(domain="alexa_media", title="Alexa", data={"password": PASSWORD}).add_to_hass(
         hass
@@ -124,6 +144,43 @@ def test_classify_app_levels_follow_the_rights() -> None:
     )
     assert classify_app({"usb": True, "devices": ["/dev/ttyUSB0"]})["risk"] == "low"
     assert classify_app({}) == {"access": [], "risk": "low"}
+
+
+def test_app_protection_ports_and_origin() -> None:
+    from custom_components.ha_housekeeper.access import app_origin
+
+    off = classify_app({"protected": False, "network": {"1883/tcp": 1883, "8080/tcp": None}})
+    assert off["risk"] == "high"
+    assert {"kind": "ports", "detail": "1883", "level": "medium"} in off["access"]
+    assert classify_app({"host_network": True, "network": {"80/tcp": 80}})["access"] == [
+        {"kind": "host_network", "detail": None, "level": "medium"}
+    ]
+    assert app_origin({"repository": "a0d7b954", "stage": "experimental"}) == {
+        "origin": "community",
+        "stage": "experimental",
+    }
+    assert app_origin({"repository": "core", "stage": "stable"})["origin"] == "core"
+
+
+async def test_inbound_paths_name_the_ways_in(hass: HomeAssistant) -> None:
+    from types import SimpleNamespace
+
+    from custom_components.ha_housekeeper.access import inbound_paths
+
+    hass.config.components.add("cloud")
+    prefs = SimpleNamespace(remote_enabled=True)
+    hass.data["cloud"] = SimpleNamespace(client=SimpleNamespace(prefs=prefs), is_logged_in=True)
+    apps = [
+        {"slug": "9074a9fa_cloudflared", "name": "Cloudflared", "state": "started"},
+        {"slug": "a0d7b954_tailscale", "name": "Tailscale", "state": "started"},
+        {"slug": "core_mosquitto", "name": "Mosquitto", "state": "started"},
+    ]
+    entries = [{"domain": "mcp_server", "title": "MCP", "disabled": False}]
+    hooks = [{"local_only": False, "enabled": True}]
+    found = {i["kind"]: i for i in inbound_paths(hass, entries, apps, hooks)}
+    assert set(found) == {"nabu_casa", "tunnel", "vpn", "mcp_server", "webhooks"}
+    assert found["nabu_casa"]["state"] == "on" and found["tunnel"]["level"] == "warn"
+    assert found["vpn"]["level"] == "ok" and found["webhooks"]["count"] == 1
 
 
 async def test_apps_report_reads_every_app_and_marks_one_without_answer(

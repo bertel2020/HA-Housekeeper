@@ -8,6 +8,16 @@ Object.assign(TEXT.de, {
   compColVersion: "Version", compColEntries: "Einträge", compColDevices: "Geräte", compColAvail: "Verfügbarkeit", compColOrigin: "Herkunft", compUpdate: "Update", compUpdateHint: "Neuere Version: {v}",
   compOpenEntries: "Einträge anzeigen", compCloseEntries: "Einträge ausblenden", compFilterState: "Zustand",
   compAvailHint: "Schlechtester Wert der Einträge; erscheint, sobald die Zuverlässigkeit berechnet ist.", compSizeHint: "Ordnergröße; erscheint, sobald „Speicher & System“ geladen ist.",
+  compTabHacs: "HACS", compTabHacsHint: "alle installierten Repositories", compSumHacsRemoved: "aus HACS entfernt", compSumHacsUpdates: "Updates",
+  hacsColRepo: "Repository", hacsColKind: "Art", hacsColInstalled: "Installiert", hacsColLatest: "Neueste", hacsColState: "Zustand",
+  hacsKind_integration: "Integration", hacsKind_plugin: "Karte", hacsKind_theme: "Theme", hacsKind_python_script: "Python-Skript", hacsKind_appdaemon: "AppDaemon", hacsKind_template: "Vorlage", hacsFilterKind: "Art", hacsFilterState: "Zustand",
+  hacsStateRemoved: "Aus HACS entfernt", hacsStateRemovedIgnored: "Aus HACS entfernt (ignoriert)", hacsStateArchived: "Archiviert", hacsStateUpdate: "Update", hacsStateCurrent: "Aktuell",
+  hacsTodoOne: "{name} wurde von HACS entfernt", hacsTodoMany: "{n} Repositories wurden von HACS entfernt", hacsTodoPill: "Prüfen",
+  hacsTodoHint: "Sie laufen weiter, bekommen aber keine Updates mehr.", hacsWhatTitle: "Aus HACS entfernt: was tun?",
+  hacsStep1: "Den Grund in HACS ansehen (Zeile öffnen).", hacsStep2: "Prüfen, was daran hängt: bei einer Integration die Entitäten und Automationen, bei einer Karte die Dashboards.",
+  hacsStep3: "Je nach Grund zu einem Nachfolger wechseln, weiter nutzen oder in HACS entfernen. Housekeeper ändert in HACS nichts.", hacsStep4: "Wer es bewusst weiter nutzt, ignoriert die Reparatur in Home Assistant. Sie steht dann hier als „ignoriert“.",
+  hacsOpenRepairs: "Reparaturen in Home Assistant", hacsRemovedNote: "HACS hat dieses Repository aus seiner Liste genommen: {reason}. Es läuft weiter, bekommt aber keine Updates mehr. Was zu tun ist, steht unter Apps & Integrationen → HACS.",
+  hacsNone: "Keine installierten Repositories gefunden.", hacsLoading: "Die Repositories werden gelesen …", hacsOpenInHacs: "In HACS öffnen",
 });
 Object.assign(TEXT.en, {
   components: "Apps & integrations", componentsSubtitle: "What is installed and whether it runs: apps and integrations by domain, with version, status and scope. Read-only; the numbers come from the scan.",
@@ -17,6 +27,16 @@ Object.assign(TEXT.en, {
   compColVersion: "Version", compColEntries: "Entries", compColDevices: "Devices", compColAvail: "Availability", compColOrigin: "Origin", compUpdate: "Update", compUpdateHint: "Newer version: {v}",
   compOpenEntries: "Show entries", compCloseEntries: "Hide entries", compFilterState: "State",
   compAvailHint: "Worst value of the entries; appears once reliability is calculated.", compSizeHint: "Folder size; appears once Storage & system is loaded.",
+  compTabHacs: "HACS", compTabHacsHint: "every installed repository", compSumHacsRemoved: "removed from HACS", compSumHacsUpdates: "updates",
+  hacsColRepo: "Repository", hacsColKind: "Kind", hacsColInstalled: "Installed", hacsColLatest: "Latest", hacsColState: "State",
+  hacsKind_integration: "Integration", hacsKind_plugin: "Card", hacsKind_theme: "Theme", hacsKind_python_script: "Python script", hacsKind_appdaemon: "AppDaemon", hacsKind_template: "Template", hacsFilterKind: "Kind", hacsFilterState: "State",
+  hacsStateRemoved: "Removed from HACS", hacsStateRemovedIgnored: "Removed from HACS (ignored)", hacsStateArchived: "Archived", hacsStateUpdate: "Update", hacsStateCurrent: "Up to date",
+  hacsTodoOne: "{name} was removed from HACS", hacsTodoMany: "{n} repositories were removed from HACS", hacsTodoPill: "Review",
+  hacsTodoHint: "They keep running but get no more updates.", hacsWhatTitle: "Removed from HACS: what to do?",
+  hacsStep1: "Look up the reason in HACS (open the row).", hacsStep2: "Check what depends on it: for an integration the entities and automations, for a card the dashboards.",
+  hacsStep3: "Depending on the reason, switch to a successor, keep using it or remove it in HACS. Housekeeper changes nothing in HACS.", hacsStep4: "If you keep using it on purpose, ignore the repair in Home Assistant. It then shows here as “ignored”.",
+  hacsOpenRepairs: "Repairs in Home Assistant", hacsRemovedNote: "HACS took this repository out of its list: {reason}. It keeps running but gets no more updates. What to do is under Apps & integrations → HACS.",
+  hacsNone: "No installed repositories found.", hacsLoading: "Reading the repositories …", hacsOpenInHacs: "Open in HACS",
 });
 
 const COMP_RANK = { problem: 3, disabled: 2, active: 1, ignored: 0 };
@@ -52,7 +72,8 @@ class ComponentsMixin {
   compNameCell(g) {
     const sub = [g.domain, g.entries.length > 1 ? this.t("compEntries", { n: g.entries.length }) : ""].filter(Boolean).join(" · ");
     const open = (this.compOpen || []).includes(g.domain);
-    return `${g.entries.length > 1 ? this.expandBtn("data-comp-open", g.domain, open, this.t(open ? "compCloseEntries" : "compOpenEntries")) : ""}${this.nameCell(g.name, sub)}`;
+    const lead = g.entries.length > 1 ? this.expandBtn("data-comp-open", g.domain, open, this.t(open ? "compCloseEntries" : "compOpenEntries")) : `<span class="tile compgap" aria-hidden="true"></span>`;
+    return `<div class="compname">${lead}${this.nameCell(g.name, sub)}</div>`;
   }
 
   // The entries of an opened integration: one line each, a click opens the entry.
@@ -98,6 +119,55 @@ class ComponentsMixin {
     });
   }
 
+  // The state of one HACS repository: what HACS removed comes first, then archived, then an open update.
+  hacsState(r) {
+    if (r.removed) return { key: r.removed.ignored ? "hacsStateRemovedIgnored" : "hacsStateRemoved", tone: r.removed.ignored ? "mute" : "warn", rank: r.removed.ignored ? 2 : 4 };
+    if (r.archived) return { key: "hacsStateArchived", tone: "warn", rank: 3 };
+    if (r.pending_update) return { key: "hacsStateUpdate", tone: "warn", rank: 1 };
+    return { key: "hacsStateCurrent", tone: "ok", rank: 0 };
+  }
+
+  hacsKind(r) {
+    const key = `hacsKind_${r.category}`;
+    return TEXT[this.lang]?.[key] ? this.t(key) : r.category || "–";
+  }
+
+  // What to do about a repository that HACS took out of its list; shown above the list while one is not ignored.
+  hacsAdvice(rows) {
+    const open = rows.filter(r => r.removed && !r.removed.ignored);
+    if (!open.length) return "";
+    return `<div class="hacsadvice"><div class="panelhead"><h2>${this.t("hacsWhatTitle")}</h2><div class="actions"><button class="btn" data-ha-path="/config/repairs" data-ha-tab><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("hacsOpenRepairs")}</button></div></div><ol class="factnote">${[1, 2, 3, 4].map(n => `<li>${this.t(`hacsStep${n}`)}</li>`).join("")}</ol></div>`;
+  }
+
+  compHacsList(rows) {
+    const st = row => this.hacsState(row);
+    const columns = [
+      { key: "name", label: "hacsColRepo", cell: r => this.nameCell(r.name, r.full_name) },
+      { key: "kind", label: "hacsColKind", cell: r => this.esc(this.hacsKind(r)) },
+      { key: "installed", label: "hacsColInstalled", cell: r => this.esc(r.installed_version || "–") },
+      { key: "latest", label: "hacsColLatest", cell: r => this.esc(r.available_version || "–") },
+      { key: "state", label: "hacsColState", cell: r => `<span class="pill ${st(r).tone}">${this.t(st(r).key)}</span>${r.removed?.reason ? `<small>${this.esc(r.removed.reason)}</small>` : ""}` },
+    ];
+    const kinds = [...new Set(rows.map(r => r.category).filter(Boolean))];
+    return this.sysList("hacsrepos", rows, {
+      sort: "state", dir: "desc",
+      sorts: [
+        { key: "state", label: "hacsColState", dir: "desc", get: r => st(r).rank },
+        { key: "name", label: "hacsColRepo", dir: "asc", get: r => r.name },
+        { key: "kind", label: "hacsColKind", dir: "asc", get: r => this.hacsKind(r) },
+      ],
+      filters: [
+        { name: "kind", all: this.t("hacsFilterKind"), options: kinds.map(k => [k, this.hacsKind({ category: k })]) },
+        { name: "state", all: this.t("hacsFilterState"), options: [["removed", this.t("hacsStateRemoved")], ["update", this.t("hacsStateUpdate")], ["archived", this.t("hacsStateArchived")]] },
+      ],
+      filterFns: { kind: (r, v) => r.category === v, state: (r, v) => (v === "removed" ? Boolean(r.removed) : v === "update" ? Boolean(r.pending_update) : r.archived) },
+      text: r => `${r.name} ${r.full_name}`, tie: r => r.id, empty: "hacsNone",
+      rowAttrs: r => `data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(r.id)}`)}" data-ha-tab tabindex="0" role="link" aria-label="${this.esc(`${r.name} · ${this.t("hacsOpenInHacs")}`)}"`,
+      columns, exportName: "hacs", header: [this.t("hacsColRepo"), "ID", this.t("hacsColKind"), this.t("hacsColInstalled"), this.t("hacsColLatest"), this.t("hacsColState")],
+      rows: r => [r.full_name, r.id, r.category || "", r.installed_version || "", r.available_version || "", this.t(st(r).key)],
+    });
+  }
+
   compAppsList(apps) {
     // CPU, RAM and data come from the system report; it is read when this tab opens (see componentsView).
     const usage = new Map((this.sysState("storage").data?.apps || []).map(a => [a.slug, a]));
@@ -136,6 +206,16 @@ class ComponentsMixin {
     });
   }
 
+  // What Home Assistant still waits for (discoveries, set-up requests): information only, no finding; it is left out when there is none.
+  openFlowsFold() {
+    const flows = this.sysState("flows").data?.flows || [];
+    if (!flows.length) return "";
+    const kinds = ["discovered", "reconfigure"].map(kind => [kind, flows.filter(f => f.kind === kind).length]).filter(([, n]) => n);
+    const row = f => `<div class="row" data-ha-path="/config/integrations" tabindex="0" role="link" aria-label="${this.esc(this.t("flowsOpenHa"))}"><span class="tile mute"><ha-icon icon="${f.kind === "reconfigure" ? "mdi:cog-outline" : "mdi:radar"}"></ha-icon></span><span class="row-text"><strong>${this.esc(f.name)}</strong><small>${this.esc(f.kind === "reconfigure" ? this.t("flowReconfigure") : this.t("flowDiscovered", { source: f.source }))}</small></span><span class="pill mute">${this.t(f.kind === "reconfigure" ? "flowPillReconfigure" : "flowPillDiscovered")}</span></div>`;
+    const sub = kinds.map(([kind, n]) => this.t(`flowsCount_${kind}`, { n: this.formatNumber(n) })).join(" · ");
+    return `<div class="panel">${this.fold("open_flows", { tone: "mute", title: this.t("flowsTitle"), sub: `${sub} · ${this.t("flowsNote")}`, pill: this.formatNumber(flows.length) }, flows.map(row).join(""), false)}</div>`;
+  }
+
   componentsView() {
     const apps = (this.data?.objects || []).filter(o => o.object_type === "app");
     const ints = this.compIntegrations();
@@ -157,12 +237,21 @@ class ComponentsMixin {
         facts: [fact(bad(core), "compSumProblem", "red")] },
       { id: "custom", icon: "mdi:puzzle-plus-outline", label: this.t("compTabCustom"), hint: this.t("compTabCustomHint"), count: custom.length,
         facts: [fact(bad(custom), "compSumProblem", "red"), fact(custom.filter(g => g.hacs?.pending_update).length, "compSumUpdates", "warn"), sizeFact(customBytes)] },
-    ].map(t => ({ ...t, facts: t.facts.filter(Boolean), tone: t.facts.some(f => f?.tone === "red") ? "red" : "mute" }));
+    ];
+    const hacsSt = this.data?.meta?.hacs_available ? this.sysEnsure("hacs") : null;
+    const repos = hacsSt?.data?.repositories || [];
+    if (hacsSt) {
+      tabs.push({ id: "hacs", icon: "mdi:store-outline", label: this.t("compTabHacs"), hint: this.t("compTabHacsHint"), count: hacsSt.data ? repos.length : null,
+        facts: [fact(repos.filter(r => r.removed && !r.removed.ignored).length, "compSumHacsRemoved", "warn"), fact(repos.filter(r => r.pending_update).length, "compSumHacsUpdates", "warn")] });
+    }
+    tabs.forEach((t, i) => { tabs[i] = { ...t, facts: t.facts.filter(Boolean), tone: t.facts.some(f => f?.tone === "red") ? "red" : "mute" }; });
     const open = this.viewTabOf("components", tabs, "core");
     if (apps.length || custom.length) this.sysEnsure("storage"); // CPU, RAM and data of the apps, folder sizes of custom integrations
-    const body = open === "apps" ? this.compAppsList(apps) : this.compIntegrationsList(open === "custom" ? custom : core, open);
-    const st = this.sysState("storage");
-    const bar = this.pageBar({ at: st.at, loading: st.loading, attr: 'data-sys-refresh="storage"' });
-    return `<div class="stack">${bar}${this.navTiles("components", tabs, open, this.t("components"), true)}<div class="panel">${body}</div></div>`;
+    this.sysEnsure("flows");
+    const hacsBody = !hacsSt?.data ? (hacsSt?.error ? `<div class="error">${this.esc(hacsSt.error)}</div>` : this.skeleton("hacsLoading")) : `${this.hacsAdvice(repos)}${this.compHacsList(repos)}`;
+    const body = open === "apps" ? this.compAppsList(apps) : open === "hacs" ? hacsBody : this.compIntegrationsList(open === "custom" ? custom : core, open);
+    const st = this.sysState(open === "hacs" ? "hacs" : "storage");
+    const bar = this.pageBar({ at: st.at, loading: st.loading, attr: `data-sys-refresh="${open === "hacs" ? "hacs" : "storage"}"` });
+    return `<div class="stack">${bar}${this.openFlowsFold()}${this.navTiles("components", tabs, open, this.t("components"), true)}<div class="panel">${body}</div></div>`;
   }
 }

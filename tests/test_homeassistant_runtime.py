@@ -580,7 +580,8 @@ async def test_cleanup_plan_is_a_dry_run_recorded_in_the_journal(
     assert registry.async_get(orphan.entity_id).disabled_by is None  # nothing was changed
 
     await client.send_json_auto_id({"type": "ha_housekeeper/plan_list"})
-    assert (await client.receive_json())["result"]["plans"][0]["plan_id"] == plan["plan_id"]
+    listed = (await client.receive_json())["result"]
+    assert listed["plans"][0]["plan_id"] == plan["plan_id"] and listed["removed"] == []
     await client.send_json_auto_id(
         {"type": "ha_housekeeper/plan_delete", "plan_id": plan["plan_id"]}
     )
@@ -868,6 +869,68 @@ async def test_a_boot_scan_is_followed_by_a_final_scan(hass: HomeAssistant) -> N
     async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=WARMUP_SECONDS + 10))
     await hass.async_block_till_done(wait_background_tasks=True)
     assert scanner.snapshot["meta"]["preliminary"] is False
+
+
+async def test_warmup_ends_a_minute_after_the_integrations_have_loaded(hass: HomeAssistant) -> None:
+    """With nothing loading any more only the safety buffer is left, never more than the cap."""
+    import time
+
+    from custom_components.ha_housekeeper.const import WARMUP_SECONDS, WARMUP_SETTLE_SECONDS
+    from custom_components.ha_housekeeper.inventory import InventoryScanner
+
+    scanner = InventoryScanner(hass)
+    scanner.begin_warmup(WARMUP_SECONDS)
+    assert scanner.warmup_settling and scanner.warmup_seconds_left <= WARMUP_SETTLE_SECONDS
+    scanner._settled_at = time.monotonic() - WARMUP_SETTLE_SECONDS - 1
+    assert not scanner.warming_up
+
+
+async def test_a_short_loading_blip_does_not_restart_the_warmup_buffer(hass: HomeAssistant) -> None:
+    """Only an integration that keeps loading for a while takes the settled mark away."""
+    import time
+
+    from homeassistant.config_entries import ConfigEntryState
+
+    from custom_components.ha_housekeeper.const import WARMUP_BLIP_SECONDS, WARMUP_SECONDS
+    from custom_components.ha_housekeeper.inventory import InventoryScanner
+
+    scanner = InventoryScanner(hass)
+    scanner.begin_warmup(WARMUP_SECONDS)
+    settled = scanner._settled_at
+    assert settled is not None
+    scanner.hass = type(
+        "H",
+        (),
+        {
+            "config_entries": type(
+                "C",
+                (),
+                {
+                    "async_entries": lambda self: [
+                        type(
+                            "E",
+                            (),
+                            {
+                                "state": ConfigEntryState.SETUP_IN_PROGRESS,
+                                "domain": "shelly",
+                                "title": "Shelly",
+                                "disabled_by": None,
+                            },
+                        )()
+                    ]
+                },
+            )()
+        },
+    )()
+    scanner.check_warmup()
+    assert scanner._settled_at == settled
+    assert scanner.integrations_loading == ["Shelly"] and (
+        scanner.integrations_done,
+        scanner.integrations_total,
+    ) == (0, 1)
+    scanner._pending_since = time.monotonic() - WARMUP_BLIP_SECONDS - 1
+    scanner.check_warmup()
+    assert scanner._settled_at is None
 
 
 async def test_a_set_up_after_the_start_has_no_warmup(hass: HomeAssistant) -> None:
@@ -1205,7 +1268,7 @@ async def test_report_and_device_pairs_are_served_to_admins(
     scanner.journal.add(
         {
             "plan_id": "p1",
-            "created_at": "2026-10-09T10:00:00+00:00",
+            "created_at": datetime.now(UTC).isoformat(),
             "status": "dry_run",
             "actions": [],
             "events": [],

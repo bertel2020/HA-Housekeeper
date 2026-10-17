@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 from unittest.mock import patch
 
@@ -194,6 +195,77 @@ async def test_the_folder_walk_is_reused_and_a_refresh_waits_for_the_gap(
         with patch.object(module, "WALK_MAX_AGE", 0), patch.object(module, "WALK_MIN_GAP", 0):
             await system_usage(hass)
         assert len(walks) == 3, "an old walk is not reused"
+
+
+async def test_the_folder_walk_runs_beside_the_supervisor(hass: HomeAssistant, tmp_path) -> None:
+    """The page waits for the slower of the two, not for both one after the other."""
+    hass.config.config_dir = str(tmp_path)
+    walked = asyncio.Event()
+    real = module.storage_breakdown
+
+    def signalling(config_dir: str, budget=None) -> dict:
+        hass.loop.call_soon_threadsafe(walked.set)
+        return real(config_dir, budget)
+
+    async def supervisor(_hass, *_args) -> dict:
+        await asyncio.wait_for(walked.wait(), 5)
+        return {"available": False}
+
+    with (
+        patch.object(module, "cpu_percent", return_value=1.0),
+        patch.object(module, "storage_breakdown", signalling),
+        patch.object(module, "supervisor_part", supervisor),
+    ):
+        result = await system_usage(hass)
+    assert result["cached"] is False
+
+
+async def test_the_disk_usage_of_the_supervisor_is_reused(hass: HomeAssistant, tmp_path) -> None:
+    """The Supervisor walks the whole data disk for it; a second visit must not ask again."""
+    hass.config.config_dir = str(tmp_path)
+    asked = []
+
+    async def answer(_hass, path, **_kwargs):
+        asked.append(path)
+        return {"used_bytes": 1, "children": [{"id": "system", "used_bytes": 1}]}
+
+    with (
+        patch.object(module, "cpu_percent", return_value=1.0),
+        patch.object(module, "supervisor_token", return_value="t"),
+        patch.object(module, "supervisor_get", answer),
+    ):
+        await system_usage(hass)
+        await system_usage(hass)
+        await system_usage(hass, fresh=True)
+        assert asked.count("/host/disks/default/usage") == 1, "reused, a refresh waits for the gap"
+        with patch.object(module, "WALK_MIN_GAP", 0):
+            await system_usage(hass, fresh=True)
+        assert asked.count("/host/disks/default/usage") == 2
+
+
+async def test_an_opened_page_gets_the_kept_sizes_at_once(hass: HomeAssistant, tmp_path) -> None:
+    """Old sizes come back at once and flagged; the next ordinary call reads them again."""
+    hass.config.config_dir = str(tmp_path)
+    walks = []
+    real = module.storage_breakdown
+
+    def counting(config_dir: str, budget=None) -> dict:
+        walks.append(config_dir)
+        return real(config_dir, budget)
+
+    with (
+        patch.dict(os.environ, {}, clear=False),
+        patch.object(module, "cpu_percent", return_value=1.0),
+        patch.object(module, "storage_breakdown", counting),
+    ):
+        os.environ.pop("SUPERVISOR_TOKEN", None)
+        first = await system_usage(hass, quick=True)
+        assert len(walks) == 1 and first["stale"] is False, "nothing kept yet: the page waits"
+        with patch.object(module, "WALK_MAX_AGE", 0), patch.object(module, "WALK_MIN_GAP", 0):
+            kept = await system_usage(hass, quick=True)
+            assert len(walks) == 1 and kept["stale"] is True and kept["cached"] is True
+            again = await system_usage(hass)
+        assert len(walks) == 2 and again["stale"] is False
 
 
 async def test_a_walk_over_its_time_limit_stops_and_says_so(hass: HomeAssistant, tmp_path) -> None:

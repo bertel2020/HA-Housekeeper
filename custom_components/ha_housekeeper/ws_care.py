@@ -23,8 +23,8 @@ from .goals import evaluate as evaluate_goals
 from .goals import measure as measure_goals
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
-from .lifecycle import removed_devices, timeline
-from .maintenance import preflight_report
+from .lifecycle import timeline
+from .maintenance import check_configuration, preflight_report
 from .marks import GRACE_DEFAULT, GRACE_MAX
 from .marks import KINDS as MARK_KINDS
 from .marks import OBJECT_TYPES as MARK_TYPES
@@ -53,14 +53,34 @@ async def websocket_preflight(
     msg: dict[str, Any],
     scanner: InventoryScanner,
 ) -> None:
-    """Check backup, repairs, failing integrations and broken references before an update."""
+    """The updates that are open and what to check before them: backup, space, repairs, integrations."""
     try:
         snapshot = await scanner.async_get_snapshot()
-        result = await preflight_report(hass, snapshot)
+        try:
+            async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
+                backup = await backup_health(hass, scanner.attest, scanner.journal.plans)
+        except Exception:  # noqa: BLE001 - without the report the backup line only says "unknown"
+            backup = None
+        result = await preflight_report(hass, snapshot, backup)
         # What follows an update: whether the watch is on, and the one that runs now.
         result["watch"] = {"hours": scanner.watch_hours, "active": scanner.watch_summary()}
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], result)
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/check_config"})
+@websocket_api.async_response
+async def websocket_check_config(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Run Home Assistant's configuration check on request; it changes nothing."""
+    try:
+        result = await check_configuration(hass)
+    except Exception as err:  # noqa: BLE001 - the panel shows the reason
+        connection.send_error(msg["id"], "check_config_failed", f"{type(err).__name__}: {err}")
         return
     connection.send_result(msg["id"], result)
 
@@ -549,7 +569,7 @@ def websocket_protection_set(
 
 @websocket_api.require_admin
 @websocket_api.websocket_command(
-    {vol.Required("type"): f"{DOMAIN}/lifecycle", vol.Optional("device_id"): str}
+    {vol.Required("type"): f"{DOMAIN}/lifecycle", vol.Required("device_id"): str}
 )
 @websocket_api.async_response
 @with_scanner
@@ -559,11 +579,8 @@ async def websocket_lifecycle(
     msg: dict[str, Any],
     scanner: InventoryScanner,
 ) -> None:
-    """The life of one device (steps, state), or without a device the removed devices."""
+    """The life of one device: its steps and its state."""
     plans = scanner.journal.plans
-    if "device_id" not in msg:
-        connection.send_result(msg["id"], _versioned({"removed": removed_devices(plans)}))
-        return
     snapshot = await scanner.async_get_snapshot()
     device = next(
         (
@@ -813,6 +830,7 @@ async def websocket_backup_attest(
 def async_register(hass: HomeAssistant) -> None:
     """Register the commands of this part."""
     websocket_api.async_register_command(hass, websocket_preflight)
+    websocket_api.async_register_command(hass, websocket_check_config)
     websocket_api.async_register_command(hass, websocket_backup_health)
     websocket_api.async_register_command(hass, websocket_policies)
     websocket_api.async_register_command(hass, websocket_set_policy)

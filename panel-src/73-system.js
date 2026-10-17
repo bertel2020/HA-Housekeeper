@@ -1,7 +1,9 @@
 // SystemMixin: the pages "Storage & system", "Access & data flow" and "Credentials" under Operation and Security; mixed in by 99-register.js.
 // All three only read. A page loads on its first visit; its refresh button reads again.
 // A page and the WebSocket command it asks.
-const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields" };
+const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories" };
+// What a tile of the credentials page opens: [tab, list, state filter]; "" clears the filters.
+const SEC_SHOWS = { "": ["entries", "seclist", ""], gap: ["entries", "seclist", "gap"], reauth: ["entries", "seclist", "reauth"], disabled: ["entries", "seclist", "disabled"], nomfa: ["accounts", "secusers", "nomfa"], tokens: ["tokens", "sectokens", ""] };
 const SYS_WARN_PERCENT = 75, SYS_RED_PERCENT = 90;
 
 class SystemMixin {
@@ -9,17 +11,21 @@ class SystemMixin {
     return ((this._sys ||= {})[name] ||= { data: null, loading: false, error: "", requested: false, at: null });
   }
 
-  // `fresh` is the refresh button: the server then walks the folders again, unless it did a moment ago.
-  async sysLoad(name, fresh = false) {
+  // `fresh` is the refresh button: the server then reads the folders and the disk use again, unless it did a moment ago.
+  // `quick` (opening the storage page): the server answers at once with the sizes it kept, however old;
+  // when it says they are `stale`, the page asks once more and shows the new ones when they are in.
+  async sysLoad(name, fresh = false, quick = !fresh) {
     const st = this.sysState(name);
     st.loading = true; st.error = ""; st.requested = true; this.render();
+    const extra = name !== "storage" ? {} : fresh ? { fresh: true } : quick ? { quick: true } : {};
     try {
-      st.data = await this._hass.callWS({ type: `ha_housekeeper/${SYS_COMMANDS[name]}`, ...(fresh && name === "storage" ? { fresh: true } : {}) });
+      st.data = await this._hass.callWS({ type: `ha_housekeeper/${SYS_COMMANDS[name]}`, ...extra });
       // The sizes carry the time they were read; the rest of the page is live.
       st.at = (name === "storage" && st.data?.read_at) || new Date().toISOString();
     } catch (err) { st.error = this.errText(err); }
     st.loading = false;
     this.render();
+    if (extra.quick && st.data?.stale) return this.sysLoad(name, false, false);
   }
 
   // Loads on the first visit only; later visits show what was read until the person refreshes.
@@ -90,7 +96,7 @@ class SystemMixin {
     if (opt.exportName) this.setExporter(id, opt.exportName, opt.header, () => refined.map(opt.rows));
     const bar = items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
     const refined = this.refine(id, items, { text: opt.text, filters: opt.filterFns || {}, sorts: opt.sorts, tie: opt.tie });
-    const pg = this.paginate(id, refined);
+    const pg = this.paginate(id, refined, opt.pageSizes);
     this.lv[id].shown = refined.length;
     const table = refined.length
       ? this.listTable(id, opt.columns, pg.rows, { cls: opt.cls || "", rowAttrs: opt.rowAttrs || (() => 'class="static"'), ...(opt.after ? { after: opt.after } : {}) })
@@ -230,6 +236,7 @@ class SystemMixin {
     const labels = e.access.map(a => `${this.t(`accKind_${a.kind}`)}${a.detail ? ` (${a.detail})` : ""}`);
     if (e.gps && !e.access.some(a => a.kind === "location")) labels.push(this.t("accGps"));
     if (e.camera && !e.access.some(a => a.kind === "camera")) labels.push(this.t("accCamera"));
+    if (e.presence) labels.push(this.t("accPresence"));
     return labels;
   }
 
@@ -269,11 +276,12 @@ class SystemMixin {
   dataflowView() {
     return this.sysFrame("dataflow", "accLoading", (r, head) => {
       const entries = r.entries || [];
-      const sys = entries.filter(e => e.access.length || e.gps || e.camera);
+      const sys = entries.filter(e => e.access.length || e.gps || e.camera || e.presence);
       const cloud = entries.filter(e => e.external);
       const appList = r.apps || [];
       const hooks = r.webhooks || [], hooksOpen = hooks.filter(w => !w.local_only && w.enabled !== false).length;
-      const open = this.viewTabOf("dataflow", [{ id: "sys" }, { id: "cloud" }, ...(r.apps_available ? [{ id: "apps" }] : []), ...(hooks.length ? [{ id: "hooks" }] : [])], "sys");
+      const inbound = r.inbound || [], inboundWarn = inbound.filter(i => i.level === "warn").length;
+      const open = this.viewTabOf("dataflow", [{ id: "sys" }, { id: "cloud" }, ...(r.apps_available ? [{ id: "apps" }] : []), { id: "inbound" }, ...(hooks.length ? [{ id: "hooks" }] : [])], "sys");
       const risks = [["high", this.t("accRisk_high")], ["medium", this.t("accRisk_medium")], ["low", this.t("accRisk_low")]];
       const riskOrder = { high: 0, medium: 1, low: 2 };
       const flows = e => e.flows.map(f => this.t(`accFlow_${f}`));
@@ -321,7 +329,7 @@ class SystemMixin {
         ],
         exportName: "webhooks", header: [this.t("accColAutomation"), "ID", this.t("accColReach")], rows: w => [w.name, w.object_id, this.t(w.local_only ? "accHookLocal" : "accHookOpen")],
       });
-      const panel = (id, body, legend = "accLegend") => `<div class="panel">${legend ? `<p class="factnote">${this.t(legend)}</p>` : ""}${body}</div>`;
+      const panel = (id, body, legend = "accLegend") => `<div class="panel">${legend ? `<p class="factnote">${this.t(legend)}</p>` : ""}${body}${this.howCounted("accFootnote")}</div>`;
       const hi = list => list.filter(e => e.risk === "high").length;
       const tone = (n, level = "red") => (n ? level : "ok");
       const tabs = [
@@ -329,13 +337,39 @@ class SystemMixin {
         { id: "cloud", icon: "mdi:cloud-outline", label: this.t("accCloudTitle"), hint: this.t("accCloudHint"), count: cloud.length, tone: tone(hi(cloud)), ...(hi(cloud) ? { pill: this.t("accTabHigh", { n: this.formatNumber(hi(cloud)) }), pillTone: "red" } : {}) },
         r.apps_available ? { id: "apps", icon: "mdi:package-variant-closed", label: this.t("accAppsTitle"), hint: this.t("accAppsHint"), count: appList.length, tone: tone(hi(appList)), ...(hi(appList) ? { pill: this.t("accTabHigh", { n: this.formatNumber(hi(appList)) }), pillTone: "red" } : {}) } : { id: "apps", icon: "mdi:package-variant-closed", label: this.t("accAppsTitle"), hint: this.t("accAppsNoSupervisor"), disabled: true },
       ];
+      tabs.push({ id: "inbound", icon: "mdi:earth", label: this.t("accInTitle"), hint: this.t("accInHint"), count: inbound.length, tone: tone(inboundWarn, "warn"), ...(inboundWarn ? { pill: this.t("accTabOpen", { n: this.formatNumber(inboundWarn) }), pillTone: "warn" } : {}) });
       if (hooks.length) tabs.push({ id: "hooks", icon: "mdi:webhook", label: this.t("accHooksTitle"), hint: this.t("accHooksHint"), count: hooks.length, tone: tone(hooksOpen, "warn"), ...(hooksOpen ? { pill: this.t("accTabOpen", { n: this.formatNumber(hooksOpen) }), pillTone: "warn" } : {}) });
       const body = open === "hooks" ? panel("acchooks", hookTable, "")
+        : open === "inbound" ? panel("accin", `${this.accInboundTable(inbound)}<p class="factnote">${this.t("accInNote")}</p>`, "accInLegend")
         : open === "cloud" ? panel("acccloud", cloudTable)
         : open === "apps" ? panel("accapps", this.accAppsTable(appList, risks, sorts.find(x => x.key === "risk")), "accLegendApps")
         : panel("accsys", sysTable);
-      return `<div class="stack">${head}${this.navTiles("dataflow", tabs, open, this.t("dataflow"), true)}${body}<div class="panel">${this.howCounted("accFootnote")}</div></div>`;
+      return `<div class="stack">${head}${this.navTiles("dataflow", tabs, open, this.t("dataflow"), true)}${body}</div>`;
     }, e => `<span>${this.esc(this.t("sysChecked", { n: this.formatNumber((e.entries || []).length) }))}</span>`);
+  }
+
+  // Ways in from outside. A row opens the app, the integration, the cloud settings or the webhook tab.
+  accInboundTable(list) {
+    const rowAttrs = i => {
+      const label = `aria-label="${this.esc(i.name)}" tabindex="0"`;
+      if (i.slug) return `data-ha-path="${this.esc(`/hassio/addon/${encodeURIComponent(i.slug)}/info`)}" role="link" ${label}`;
+      if (i.domain) return `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(i.domain)}`)}" role="link" ${label}`;
+      if (i.kind === "nabu_casa") return `data-ha-path="/config/cloud/account" role="link" ${label}`;
+      return i.kind === "webhooks" ? `data-view-tab="dataflow|hooks" role="button" ${label}` : "";
+    };
+    const tone = { warn: "warn", ok: "ok", mute: "mute" };
+    return this.sysList("accin", list, {
+      sort: "level", dir: "asc", cls: "acc", tie: i => `${i.kind} ${i.name}`, empty: "accInNone",
+      sorts: [{ key: "level", label: "accInColState", dir: "asc", get: i => ({ warn: 0, mute: 1, ok: 2 })[i.level] ?? 3 }, { key: "name", label: "accInColWay", dir: "asc", get: i => i.name }],
+      text: i => `${i.name} ${this.t(`accIn_${i.kind}`)}`,
+      rowAttrs,
+      columns: [
+        { key: "name", label: "accInColWay", cell: i => this.nameCell(i.name, this.t(`accInKind_${i.kind}`)) },
+        { key: "what", label: "accInColWhat", sortable: false, cell: i => this.esc(this.t(`accIn_${i.kind}`, { n: this.formatNumber(i.count || 0) })) },
+        { key: "level", label: "accInColState", cell: i => `<span class="pill ${tone[i.level] || "mute"}">${this.esc(this.t(`accInState_${i.state}`, { n: this.formatNumber(i.count || 0) }))}</span>` },
+      ],
+      exportName: "inbound", header: [this.t("accInColWay"), this.t("accInColWhat"), this.t("accInColState")], rows: i => [i.name, this.t(`accIn_${i.kind}`, { n: i.count || 0 }), this.t(`accInState_${i.state}`, { n: i.count || 0 })],
+    });
   }
 
   // A row of an app opens its detail page when the scan knows it, else the app in Home Assistant.
@@ -352,6 +386,8 @@ class SystemMixin {
     const tone = { high: "red", medium: "warn", low: "mute" };
     const rights = a => `<span class="pills">${a.access.map(x => `<span class="pill ${tone[x.level] || "mute"}">${this.esc(this.accAppRight(x))}</span>`).join("") || `<span class="muted">${this.t(a.checked ? "accAppNoRights" : "accAppUnchecked")}</span>`}</span>`;
     const running = a => a.state === "started";
+    const originText = a => [a.origin ? this.t(`accOrigin_${a.origin}`) : "", a.stage ? this.t(`accStage_${a.stage}`) : ""].filter(Boolean).join(" · ");
+    const origin = a => (originText(a) ? `${this.esc(originText(a))}` : `<span class="muted">–</span>`);
     return this.sysList("accapps", apps, {
       sort: "risk", dir: "asc", cls: "acc",
       sorts: [{ ...riskSort, get: a => order[a.risk] ?? 3 }, { key: "name", label: "accColApp", dir: "asc", get: a => a.name }],
@@ -361,10 +397,11 @@ class SystemMixin {
       columns: [
         { key: "name", label: "accColApp", cell: a => this.nameCell(a.name, a.slug) },
         { key: "state", label: "sysColState", sortable: false, cell: a => `<span class="pill ${running(a) ? "ok" : "mute"}">${this.t(running(a) ? "sysAppRunning" : "sysAppStopped")}</span>` },
+        { key: "origin", label: "accColOrigin", sortable: false, cell: origin },
         { key: "rights", label: "accColRights", sortable: false, cell: rights },
         { key: "risk", label: "accColRisk", cell: a => (a.risk ? this.accRiskPill(a.risk, this.accAppWhy(a)) : `<span class="pill mute">${this.t("accAppUncheckedShort")}</span>`) },
       ],
-      exportName: "app-rights", header: [this.t("accColApp"), "Slug", this.t("sysColState"), this.t("accColRights"), this.t("accColRisk")], rows: a => [a.name, a.slug, a.state || "", a.access.map(x => this.accAppRight(x)).join("; "), a.risk ? this.t(`accRisk_${a.risk}`) : ""],
+      exportName: "app-rights", header: [this.t("accColApp"), "Slug", this.t("sysColState"), this.t("accColOrigin"), this.t("accColRights"), this.t("accColRisk")], rows: a => [a.name, a.slug, a.state || "", originText(a), a.access.map(x => this.accAppRight(x)).join("; "), a.risk ? this.t(`accRisk_${a.risk}`) : ""],
     });
   }
 
@@ -462,30 +499,48 @@ class SystemMixin {
 
   // ---------------------------------------------------------------- Credentials
 
-  // Which integrations hold credentials, of what kind, and whether a value is set. Never a value.
+  // Which integrations hold credentials, of what kind, and whether a value is set, and the accounts. Never a value.
+  // Tiles in even rows of three; each one opens its tab with its filter.
   secretsView() {
     return this.sysFrame("secrets", "secLoading", (r, head) => {
-      const entries = r.entries || [];
+      const entries = r.entries || [], users = r.accounts || [], tokens = r.tokens || [];
       const count = (e, set) => e.fields.filter(f => f.set === set).length;
       const kinds = e => [...new Set(e.fields.map(f => f.kind))];
-      const empty = entries.reduce((n, e) => n + count(e, false), 0);
-      const gap = this.lv?.seclist?.f?.state === "gap", anyFilter = Object.values(this.lv?.seclist?.f || {}).some(Boolean);
-      const tiles = this.sumTiles([
-        { label: this.t("secSumEntries"), value: this.esc(this.formatNumber(entries.length)), sub: this.esc(this.t("secSumEntriesSub", { n: this.formatNumber(entries.reduce((n, e) => n + count(e, true), 0)) })), tone: "mute", attr: ["data-sec-show", ""], active: !anyFilter },
-        { label: this.t("secSumEmpty"), value: this.esc(this.formatNumber(empty)), sub: this.esc(this.t("secSumEmptySub")), tone: empty ? "warn" : "ok", attr: ["data-sec-show", "gap"], active: gap },
-      ]);
+      const empty = entries.reduce((n, e) => n + count(e, false), 0), reauth = entries.filter(e => e.reauth).length;
+      // A switched-off integration keeps what it stored; worth a look only when a value is set.
+      const kept = e => e.disabled && count(e, true) > 0, disabled = entries.filter(kept).length;
+      const tabs = [{ id: "entries", label: this.t("secListTitle"), count: entries.length }, ...(r.accounts ? [{ id: "accounts", label: this.t("secTabAccounts"), count: users.length }] : []), ...(r.tokens ? [{ id: "tokens", label: this.t("secTabTokens"), count: tokens.length }] : [])];
+      const open = this.viewTabOf("secrets", tabs, "entries");
+      const on = (tab, list, value) => open === tab && (value ? this.lv?.[list]?.f?.state === value : !Object.values(this.lv?.[list]?.f || {}).some(Boolean));
+      const admins = users.filter(u => u.active && u.admin), noMfa = admins.filter(u => !u.mfa);
+      const tile = (label, value, sub, tone, show, active) => ({ label: this.t(label), value: this.esc(this.formatNumber(value)), sub: this.esc(sub), tone, attr: ["data-sec-show", show], active });
+      const rowOne = [
+        tile("secSumEntries", entries.length, this.t("secSumEntriesSub", { n: this.formatNumber(entries.reduce((n, e) => n + count(e, true), 0)) }), "mute", "", on("entries", "seclist")),
+        tile("secSumEmpty", empty, this.t("secSumEmptySub"), empty ? "warn" : "ok", "gap", on("entries", "seclist", "gap")),
+        tile("secSumReauth", reauth, this.t("secSumReauthSub"), reauth ? "red" : "ok", "reauth", on("entries", "seclist", "reauth")),
+      ];
+      const old = tokens.filter(x => x.old || !x.account_active).length;
+      const rowTwo = [
+        tile("secSumDisabled", disabled, this.t("secSumDisabledSub"), disabled ? "warn" : "ok", "disabled", on("entries", "seclist", "disabled")),
+        r.accounts && tile("secSumNoMfa", noMfa.length, this.t("secSumNoMfaSub", { n: this.formatNumber(admins.length) }), noMfa.length ? "warn" : "ok", "nomfa", on("accounts", "secusers", "nomfa")),
+        r.tokens && tile("secSumTokens", tokens.length, this.t("secSumTokensSub", { n: this.formatNumber(old) }), old ? "warn" : "mute", "tokens", on("tokens", "sectokens")),
+      ];
+      const tiles = `<div class="tilerows"><div class="sumgrouphead">${this.t("secListTitle")}</div>${this.sumTiles(rowOne, "even")}${this.sumTiles(rowTwo, "even")}</div>`;
+      const bar = tabs.length > 1 ? this.viewTabBar("secrets", tabs, open) : "";
+      if (open === "tokens") return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secTabTokens")}</h2><p>${this.t("secTokHint")}</p></div></div>${this.secTokens(tokens)}${this.howCounted("secTokFootnote")}</div></div>`;
+      if (open === "accounts") return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secTabAccounts")}</h2><p>${this.t("secAccHint")}</p></div></div>${this.secAccounts(users)}${this.howCounted("secAccFootnote")}</div></div>`;
       const state = e => (count(e, false) === 0 ? "set" : count(e, true) === 0 ? "empty" : "part");
-      const stateCell = e => `<span class="pill ${{ set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>`;
+      const stateCell = e => `${e.fields.length ? `<span class="pill ${{ set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>` : ""}${e.reauth ? `<span class="pill red">${this.t("secReauth")}</span>` : ""}`;
       const kindNames = e => kinds(e).map(k => this.t(`secKind_${k}`));
       const names = e => e.fields.map(f => f.key).join(", ");
       const table = this.sysList("seclist", entries, {
         sort: "name", dir: "asc", cls: "acc", tie: e => e.entry_id,
-        sorts: [{ key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }, { key: "state", label: "secColState", dir: "desc", get: e => ({ empty: 2, part: 1, set: 0 })[state(e)] }],
+        sorts: [{ key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }, { key: "state", label: "secColState", dir: "desc", get: e => (e.reauth ? 3 : ({ empty: 2, part: 1, set: 0 })[state(e)]) }],
         filters: [
           { name: "kind", all: this.t("secAllKinds"), options: ["password", "token", "api_key", "secret", "webhook", "pin"].map(k => [k, this.t(`secKind_${k}`)]) },
-          { name: "state", all: this.t("secAllStates"), options: [["gap", this.t("secStateGap")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
+          { name: "state", all: this.t("secAllStates"), options: [["reauth", this.t("secReauth")], ["disabled", this.t("secStateDisabled")], ["gap", this.t("secStateGap")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
         ],
-        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "gap" ? state(e) !== "set" : state(e) === v) },
+        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "reauth" ? Boolean(e.reauth) : v === "disabled" ? kept(e) : v === "gap" ? state(e) !== "set" : state(e) === v) },
         text: e => `${e.domain} ${e.title} ${names(e)} ${kindNames(e).join(" ")}`, empty: "secNone",
         rowAttrs: e => `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(e.domain)}`)}" tabindex="0" role="link" aria-label="${this.esc(this.t("secOpen", { name: e.title || e.domain }))}"`,
         columns: [
@@ -498,7 +553,53 @@ class SystemMixin {
         exportName: "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount")],
         rows: e => [e.title, e.domain, kindNames(e).join("; "), names(e), count(e, true), count(e, false)],
       });
-      return `<div class="stack">${head}${tiles}<div class="panel"><div class="panelhead"><div><h2>${this.t("secListTitle")}</h2><p>${this.t("secListHint")}</p></div></div>${table}${this.howCounted("secFootnote")}</div></div>`;
+      return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secListTitle")}</h2><p>${this.t("secListHint")}</p></div></div>${table}${this.howCounted("secFootnote")}</div></div>`;
+    });
+  }
+
+  // The people of this Home Assistant: role, two-factor login and last login. A click opens the user settings.
+  secAccounts(users) {
+    const roles = u => [u.owner ? this.t("secRoleOwner") : "", this.t(u.admin ? "secRoleAdmin" : "secRoleUser"), u.local_only ? this.t("secRoleLocal") : "", u.active ? "" : this.t("secRoleOff")].filter(Boolean);
+    const mfa = u => `<span class="pill ${u.mfa ? "ok" : u.admin && u.active ? "warn" : "mute"}">${this.t(u.mfa ? "secMfaOn" : "secMfaOff")}</span>`;
+    const login = u => (!u.logins && u.token_count ? this.t("secLoginTokens") : u.last_login ? this.formatDate(u.last_login) : this.t("secLoginNever"));
+    const state = u => (u.active && u.admin && !u.mfa ? "nomfa" : u.inactive ? "inactive" : "");
+    return this.sysList("secusers", users, {
+      sort: "name", dir: "asc", cls: "acc", tie: u => u.id,
+      sorts: [{ key: "name", label: "secColAccount", dir: "asc", get: u => u.name }, { key: "login", label: "secColLogin", dir: "desc", get: u => u.last_login || "" }],
+      filters: [{ name: "state", all: this.t("secAllStates"), options: [["nomfa", this.t("secStateNoMfa")], ["inactive", this.t("secStateInactive")]] }],
+      filterFns: { state: (u, v) => state(u) === v || (v === "inactive" && u.inactive) },
+      text: u => `${u.name} ${roles(u).join(" ")}`, empty: "secNoAccounts",
+      rowAttrs: () => `data-ha-path="/config/users" tabindex="0" role="link" aria-label="${this.esc(this.t("secOpenUsers"))}"`,
+      columns: [
+        { key: "name", label: "secColAccount", cell: u => `<strong>${this.esc(u.name)}</strong>` },
+        { key: "role", label: "secColRole", sortable: false, cell: u => this.accPills(roles(u)) },
+        { key: "mfa", label: "secColMfa", sortable: false, cell: mfa },
+        { key: "login", label: "secColLogin", dir: "desc", cell: u => (u.inactive ? `<span class="pill warn">${this.esc(login(u))}</span>` : this.esc(login(u))) },
+        { key: "tokens", label: "secColTokens", sortable: false, cell: u => this.esc(this.formatNumber(u.token_count)) },
+      ],
+      exportName: "accounts", header: [this.t("secColAccount"), this.t("secColRole"), this.t("secColMfa"), this.t("secColLogin"), this.t("secColTokens")],
+      rows: u => [u.name, roles(u).join("; "), this.t(u.mfa ? "secMfaOn" : "secMfaOff"), u.last_login || "", u.token_count],
+    });
+  }
+
+  // The long-lived tokens by name, account and age. Home Assistant does not record their use, so the age is all there is.
+  secTokens(tokens) {
+    const state = x => (!x.account_active ? "dead" : x.old ? "old" : "");
+    const hint = x => ({ dead: this.t("secTokDead"), old: this.t("secTokOld") })[state(x)] || "";
+    return this.sysList("sectokens", tokens, {
+      sort: "age", dir: "desc", cls: "acc", tie: x => `${x.account} ${x.name} ${x.created}`,
+      sorts: [{ key: "age", label: "secColAge", dir: "desc", get: x => x.days }, { key: "name", label: "secColToken", dir: "asc", get: x => x.name }, { key: "account", label: "secColAccount", dir: "asc", get: x => x.account }],
+      filters: [{ name: "state", all: this.t("secAllStates"), options: [["old", this.t("secTokOld")], ["dead", this.t("secTokDead")]] }],
+      filterFns: { state: (x, v) => state(x) === v },
+      text: x => `${x.name} ${x.account}`, empty: "secNoTokens",
+      columns: [
+        { key: "name", label: "secColToken", cell: x => `<strong>${this.esc(x.name)}</strong>` },
+        { key: "account", label: "secColAccount", cell: x => `${this.esc(x.account)}${x.account_active ? "" : ` <span class="pill mute">${this.t("secRoleOff")}</span>`}` },
+        { key: "age", label: "secColAge", dir: "desc", cell: x => `<span class="pill ${state(x) ? "warn" : "mute"}">${this.esc(this.t("secTokDays", { n: this.formatNumber(x.days) }))}</span>` },
+        { key: "hint", label: "secColHint", sortable: false, cell: x => `<span class="muted">${this.esc(hint(x))}</span>` },
+      ],
+      exportName: "long-lived-tokens", header: [this.t("secColToken"), this.t("secColAccount"), this.t("secColAge"), this.t("secColHint")],
+      rows: x => [x.name, x.account, x.days, hint(x)],
     });
   }
 
@@ -517,11 +618,13 @@ class SystemMixin {
       this._tipHide = globalThis.setTimeout?.(() => this.hideTip(), 6000);
     }));
     root.querySelectorAll("[data-detail-tab-go]").forEach(el => el.onclick = () => { this.detailTab = el.dataset.detailTabGo; this.render(); });
-    // A key figure of the credential overview sets the state filter ("gap": some field empty) or clears all filters.
+    // A key figure of the credential overview opens its tab and sets its state filter, or clears all filters.
     root.querySelectorAll("[data-sec-show]").forEach(el => el.onclick = () => {
-      const st = this.lvState("seclist", "name", "asc");
-      st.f = el.dataset.secShow ? { ...st.f, state: el.dataset.secShow } : {};
-      this.persistLv("seclist"); this.pages = {}; this.render();
+      const [tab, list, value] = SEC_SHOWS[el.dataset.secShow] || SEC_SHOWS[""];
+      (this.viewTab ||= {}).secrets = tab;
+      const st = this.lvState(list, "name", "asc");
+      st.f = value ? { ...st.f, state: value } : {};
+      this.persistLv(list); this.pages = {}; this.render();
     });
     root.querySelector("[data-ha-menu]")?.addEventListener("click", () => this.toggleHaSidebar());
     // Rows that lead into Home Assistant (apps) open with Enter and Space like the other rows.

@@ -131,9 +131,11 @@ test("the home functions history shows a flapping run as one line and filters by
   el.monitorHistory = { one: { sig: "ok|" + at + "|undefined", retention_days: 30, entries: [
     { at, until: at, kind: "flapping", count: 7, state: "ok" }, { at, kind: "edited", added: ["entity:sensor.x"] },
   ] } };
-  el.monitorHistory.one.availability = { window_days: 30, since: at, observed_seconds: 1000, ok_seconds: 999, problem_seconds: 1, unknown_seconds: 0, unstable_seconds: 0, incidents: 1, longest_seconds: 1, days: [{ date: "2026-10-14", state: "problem" }] };
+  el.monitorHistory.one.availability = { window_days: 30, since: at, observed_seconds: 1000, ok_seconds: 999, problem_seconds: 1, unknown_seconds: 0, unstable_seconds: 0, incidents: 1, longest_seconds: 1, days: [{ date: "2026-10-13", state: "problem", problem_seconds: 3600 }, { date: "2026-10-14", state: "problem", problem_seconds: 540 }] };
   const html = el.monitorDetail();
-  assert.match(html, /Unauffällig: 99,9 %/);
+  assert.match(html, /<b class="ok">99,9 %<\/b><span>Unauffällig, 30 Tage<\/span>/);
+  assert.match(html, /<i class="problem" title="2026-10-13: Beeinträchtigt, 1 Std\./);
+  assert.match(html, /<i class="problem short" title="2026-10-14: Beeinträchtigt, 9 Min\./);
   assert.match(html, /data-plan-open="p1"/);
   assert.ok(html.includes('data-lsort="monitor-history|time|desc"') && html.includes('data-lsort="monitor-members|state|asc"') && html.includes('data-object="entity:sensor.x"') === false, "history and objects are tables (the object is not in the inventory here, so its row opens nothing)");
   el.data.monitor[0].last_problem_at = new Date(Date.now() - 2 * 86400000).toISOString();
@@ -982,11 +984,13 @@ test("cleanup view lists candidates, creates a dry-run plan and shows the verdic
   await el.createPlan();
   const create = calls.find(c => c.type === "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "disable_entity", object_id: "sensor.old" }, { kind: "disable_entity", object_id: "sensor.used" }]));
-  el.view = "journal";
+  el.view = "plan";
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes("2 checked: 1 with no known use, 0 to review, 1 blocked.") && html.includes("Blocked") && html.includes("Definitely in use"));
-  assert.ok(html.includes('data-plan-open="p1"')); // journaled
+  assert.ok(html.includes("Blocked") && html.includes("Definitely in use"));
+  el.view = "journal";
+  el.render();
+  assert.ok(shadow.innerHTML.includes("2 checked: 1 with no known use, 0 to review, 1 blocked.") && shadow.innerHTML.includes('data-plan-open="p1"')); // journaled
   await el.deletePlan("p1");
   assert.equal(el.plan, null);
 });
@@ -1280,22 +1284,31 @@ test("preliminary data during the Home Assistant start shows a banner on every p
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, preliminary: false } };
   assert.equal(el.warmupBanner(), "");
-  assert.ok(!el.heading().includes("still starting"));
+  assert.ok(!el.heading().includes("is starting"));
   el.data = { ...DATA, meta: { ...DATA.meta, preliminary: true, warmup_seconds_left: 120 } };
-  assert.ok(el.warmupBanner().includes("still starting"));
-  assert.ok(el.heading().includes("still starting")); // part of the page heading, so on every view
+  assert.ok(el.warmupBanner().includes("is starting"));
+  assert.ok(el.heading().includes("is starting")); // part of the page heading, so on every view
 });
 
 test("the start banner names the step and counts the warm-up down", () => {
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, preliminary: true } };
-  el._warm = { booting: true };
-  assert.ok(el.warmupBanner().includes("Step 1 of 3"));
-  el._warm = { until: Date.now() + 125000, total: 300 };
-  assert.ok(el.warmupBanner().includes("2:0") && el.warmupBanner().includes("Step 2 of 3"));
-  el._warm = { until: Date.now() - 1000 };
-  el.scanStatus = { running: true, progress: 40 };
-  assert.ok(el.warmupBanner().includes("Step 3 of 3") && el.warmupBanner().includes("40%"));
+  el._warm = { booting: true, known: true };
+  assert.ok(el.warmupBanner().includes("Home Assistant starts") && el.warmupBanner().includes("still loading"));
+  el._warm = { until: Date.now() + 125000, known: true, done: 38, total: 41, pending: 3, names: ["Shelly", "HACS"] };
+  let html = el.warmupBanner();
+  assert.ok(html.includes("38 of 41 integrations loaded") && html.includes("2:0") && html.includes("Shelly") && html.includes("+1"));
+  el._warm = { until: Date.now() + 45000, settling: true, known: true, done: 41, total: 41, pending: 0 };
+  assert.ok(el.warmupBanner().includes("Safety buffer"));
+  el._warm = { until: Date.now() + 45000, settling: true, known: true, done: 41, total: 41, pending: 1, names: ["Shelly"] };
+  assert.ok(el.warmupBanner().includes("Shelly is reloading briefly"));
+  el._warm = { until: Date.now() - 1000, known: true };
+  el.scanStatus = { running: true, progress: 40, phase: "devices" };
+  html = el.warmupBanner();
+  assert.ok(html.includes("Devices and entities") && html.includes("2/4") && html.includes("40 %"));
+  el._warm = { until: Date.now() + 290000, known: false }; // the figures of an old scan are not shown
+  html = el.warmupBanner();
+  assert.ok(html.includes("Asking for the state") && !html.includes("4:5"));
 });
 
 test("the recorder load header shows rows, entities and events as figures and names what was left out", () => {
@@ -1320,7 +1333,7 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
   const base = { plan_id: "p1", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 1, blocked: 0 },
     actions: [action("sensor.a", "ok"), action("sensor.b", "review", { reasons: ["has_statistics"] })] };
   el.plan = base;
-  el.view = "cleanup";
+  el.view = "plan";
   const sent = [];
   let current = base;
   el._hass = { language: "en", callWS: async msg => {
@@ -1336,12 +1349,11 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
   } };
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("data-plan-confirm") && html.includes("data-plan-close>Cancel") && html.includes('data-ack-all') && !html.includes("data-plan-execute"));
-  el.ack.add("sensor.b"); el.render();
+  assert.ok(html.includes("data-plan-confirm") && html.includes("data-plan-discard>Cancel") && !html.includes('data-ack-all') && !html.includes("data-plan-execute"));
   assert.ok(shadow.innerHTML.includes("2 entities will be disabled") && shadow.innerHTML.includes('data-count="2"'), "the preview already names what runs");
   await el.confirmPlan();
   const confirm = sent.find(m => m.type === "ha_housekeeper/plan_confirm");
-  assert.equal(JSON.stringify(confirm.acknowledged), JSON.stringify(["sensor.b"]));
+  assert.equal(JSON.stringify(confirm.acknowledged), JSON.stringify(["sensor.b"]), "the dialog is the acknowledgement: every step to review is sent");
   el.render();
   html = shadow.innerHTML;
   assert.ok(!html.includes("data-confirm-word") && !html.includes("data-plan-execute"), "one step: no second screen and no word to type");
@@ -1369,7 +1381,7 @@ test("a blocked removal cannot be confirmed; a ready one asks for the removal wo
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
   const plan = (executable, reasons) => ({ plan_id: "p2", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: executable ? 1 : 0, review: 0, blocked: executable ? 0 : 1 },
     actions: [{ kind: "remove_entity", object_id: "sensor.a", name: "A", verdict: executable ? "ok" : "blocked", executable, reasons, quarantine_days_left: 6, used_by: [] }] });
-  el.view = "cleanup";
+  el.view = "plan";
   el.journal = [];
   el.plan = plan(false, ["quarantine_too_short"]);
   el.render();
@@ -1554,7 +1566,7 @@ test("the meter assistant offers the modes and sends the pair with the plan", as
 test("a meter plan explains the copy, the shifted total and the ID move, and asks for MIGRATE", () => {
   const { el, shadow } = panel("en");
   const { data } = stepCData();
-  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "migrate_meter"; el.plan = METER_PLAN;
+  el.data = data; el.journal = []; el.view = "plan"; el.repairTask = "migrate_meter"; el.plan = METER_PLAN;
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("sensor.meter_old → sensor.meter_new") && html.includes("48 hourly values"));
@@ -1582,18 +1594,18 @@ const COSTS = {
 test("the maintenance view loads the preflight; the recorder view offers the cost analysis on request", async () => {
   const { el, shadow } = panel("en", { setTimeout: () => 0 });
   const sent = [];
-  const state = { ha_version: "2026.2.3", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [{ issue_id: "old", domain: "demo" }], failed_entries: [], broken: [], pending_updates: [{ entity_id: "update.core", name: "Core", installed: "2026.2.3", latest: "2026.3.0" }] };
-  const report = { state, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "warn", count: 1 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], watch: { hours: 24, active: null } };
+  const state = { ha_version: "2026.2.3", backup: { available: true, level: "ok", age_hours: 5 }, disk: { free: 41e9 }, repairs: [{ issue_id: "old", domain: "demo" }], failed_entries: [], broken: [], updates: [{ entity_id: "update.core", name: "Core", installed: "2026.2.3", latest: "2026.3.0", group: "system" }] };
+  const report = { state, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "warn", count: 1 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], verdict: "look", counts: { total: 1, system: 1, app: 0, hacs: 0, device: 0, blocked: 0 }, watch: { hours: 24, active: null } };
   el._hass = { language: "en", callWS: async msg => { sent.push(msg.type); return msg.type.endsWith("recorder_costs") ? COSTS : report; } };
-  el.view = "maintenance"; el.viewTab = { maintenance: "preflight" };
+  el.view = "maintenance"; el.viewTab = { maintenance: "updates" };
   el.render();
-  assert.ok(shadow.innerHTML.includes("Update preflight") && shadow.innerHTML.includes("Checking"));
-  assert.ok(!shadow.innerHTML.includes("Start analysis") && !shadow.innerHTML.includes("Recorder costs"), "the recorder topics moved to the Recorder view");
+  assert.ok(shadow.innerHTML.includes("Updates") && shadow.innerHTML.includes("Checking"));
+  assert.ok(!shadow.innerHTML.includes("Start analysis") && !shadow.innerHTML.includes("Storage use"), "the recorder topics moved to the Recorder view");
   await el.loadPreflight();
   let html = shadow.innerHTML;
   assert.deepEqual(sent, ["ha_housekeeper/preflight"]);
   assert.ok(html.includes("Last backup 5 h ago") && html.includes("Open repairs") && html.includes("1 · old"));
-  assert.ok(html.includes("Core 2026.2.3 → 2026.3.0") && html.includes("watches for 24 hours"));
+  assert.ok(html.includes("2026.2.3 → 2026.3.0") && html.includes("1 update open") && html.includes("watches for 24 hours"));
   el.view = "recorder"; el.viewTab = { recorder: "costs" };
   el.render();
   assert.ok(shadow.innerHTML.includes("Start analysis"));
@@ -1658,7 +1670,7 @@ test("the backup card puts text and a word next to every level and escapes what 
   el.data = DATA;
   el._hass = { language: "en", callWS: async () => BACKUP_REPORT };
   el.view = "maintenance"; el.render();
-  assert.ok(shadow.innerHTML.includes("Backup protection") && shadow.innerHTML.includes("Checking backups"));
+  assert.ok(shadow.innerHTML.includes("Backups") && shadow.innerHTML.includes("Checking backups"));
   await el.loadBackup();
   const html = shadow.innerHTML;
   for (const text of ["Targets and schedule", "Targets: hassio.local, cloud.cloud · schedule: daily", "3 days ago · limit for the schedule: 36 h",
@@ -1667,7 +1679,7 @@ test("the backup card puts text and a word next to every level and escapes what 
     "not found any more", "Latest backups", "How to test a restore", "Housekeeper never performs a restore itself"]) assert.ok(html.includes(text), text);
   for (const word of [">OK<", ">Note<", ">Problem<"]) assert.ok(html.includes(word), word);
   assert.ok(!html.includes("<b>>") && !html.includes("cloud.<b>"));
-  assert.ok(html.indexOf("Backup protection") < html.indexOf("Update preflight"), "the card comes first");
+  assert.ok(html.indexOf("Backups") < html.indexOf("Updates"), "the card comes first");
 });
 
 test("the backup card says when the component is missing or the call fails", async () => {
@@ -1711,12 +1723,25 @@ test("backup confirmations are inline, saved with a date, and can be taken back"
 
 test("the preflight says what follows an update: the watch is on, running or off", () => {
   const { el, shadow } = panel("en");
-  const state = { ha_version: "2026.3.0", backup: { available: false }, repairs: [], failed_entries: [], broken: [], pending_updates: [] };
-  const show = watch => { el.preflight = { state, checks: [{ check: "backup", level: "warn" }], watch }; el.view = "maintenance"; el.viewTab = { maintenance: "preflight" }; el._pfRequested = true; el.render(); return shadow.innerHTML; };
+  const state = { ha_version: "2026.3.0", backup: { available: false }, repairs: [], failed_entries: [], broken: [], updates: [] };
+  const show = watch => { el.preflight = { state, checks: [{ check: "backup", level: "warn" }], watch }; el.view = "maintenance"; el.viewTab = { maintenance: "updates" }; el._pfRequested = true; el.render(); return shadow.innerHTML; };
   assert.ok(show({ hours: 24, active: null }).includes("watches for 24 hours") && !show({ hours: 24, active: null }).includes("data-watch-go"));
   const running = show({ hours: 24, active: { id: "w1", until: new Date(Date.now() + 5 * 3600000).toISOString(), triggers: [{ kind: "ha_version", from: "1", to: "2" }], samples: 1, new: 2 } });
   assert.ok(running.includes("2 findings so far") && running.includes('data-watch-go="w1"'));
   assert.ok(show({ hours: 0, active: null }).includes("switched off"));
+});
+
+test("the updates tab judges first, groups the updates and trusts only safe picture addresses", () => {
+  const { el, shadow } = panel("en");
+  const update = (group, name, extra = {}) => ({ entity_id: `update.${name}`, name, installed: "1", latest: "2", group, ...extra });
+  const updates = [update("system", "Core"), update("app", "Cloudflared", { picture: "/api/hassio/addons/x/icon" }), update("hacs", "Card", { blocked: true, picture: "javascript:alert(1)" })];
+  el.preflight = { state: { backup: { available: true, level: "ok", age_hours: 5 }, disk: { free: 41e9 }, repairs: [], failed_entries: [], broken: [], updates },
+    checks: [{ check: "backup", level: "ok" }, { check: "broken", level: "warn", count: 2 }], verdict: "look", counts: { total: 3, system: 1, app: 1, hacs: 1, device: 0, blocked: 1 }, watch: { hours: 24, active: null } };
+  el.view = "maintenance"; el.viewTab = { maintenance: "updates" }; el._pfRequested = true; el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Look first") && html.includes("3 updates open") && html.includes("To check: Missing references"));
+  assert.ok(html.indexOf("Cloudflared") < html.indexOf("Card") && html.includes("HACS cannot install it") && html.includes("All device firmware is up to date."));
+  assert.ok(html.includes('src="/api/hassio/addons/x/icon"') && !html.includes("javascript:"));
 });
 
 test("inventory rows and sortable headers can be used with the keyboard", () => {
@@ -2035,9 +2060,9 @@ test("a plan with many rows has a search box for its rows, and the editors share
   const note = el.noteEditor();
   assert.ok(note.indexOf('role="alert"') > note.indexOf("note-actions") && !note.includes('<div class="error" role="alert">'), "the error stands in the bottom bar");
   el.noteOpen({ id: "n1", title: "t", at: "2026-10-08T18:05:00+00:00", target: "", note: "", source: "me", ref: "" });
-  assert.ok(el.noteEditor().includes("btn quiet danger-t"), "delete is the quiet red button");
+  assert.ok(el.noteEditor().includes("btn dangersoft"), "delete is the soft red button");
   el.monitorForm = { id: "f1", name: "x", description: "", enabled: true, notify: true, members: [] };
-  assert.ok(el.monitorEditor().includes("btn quiet danger-t") && !el.monitorEditor().includes("btn danger"), "the same in the home functions editor");
+  assert.ok(el.monitorEditor().includes("btn dangersoft") && !el.monitorEditor().includes("btn danger\""), "the same in the home functions editor");
 });
 
 test("the plan card shows the steps with text, marks undo kinds and folds the details", () => {
@@ -2049,7 +2074,7 @@ test("the plan card shows the steps with text, marks undo kinds and folds the de
     act("remove_entity", { executable: false, verdict: "blocked", reasons: ["used_certain"], used_by: [{ source: "automation:automation.a", relation: "TARGETS", confidence: "certain" }] }),
   ], { backup: { job_id: "job-9", at: "2026-10-07T10:05:00+00:00" }, verification: { ok: true, checks: [] } });
   const html = el.planCard(plan);
-  assert.ok(html.indexOf('<ol class="steps"') < html.indexOf('class="row planrow'), "the steps come before the actions");
+  assert.ok(html.indexOf('<ol class="track"') < html.indexOf('class="row planrow'), "the steps come before the actions");
   assert.equal((html.match(/aria-current="step"/g) || []).length, 0, "a finished plan has no current step");
   assert.ok(html.includes('<span class="sr-only">: done</span>') && html.includes('<span class="sr-only">: not needed</span>') === false);
   assert.ok(html.includes("Created") && html.includes(el.t("backupRestoreHint")));
@@ -2194,6 +2219,17 @@ test("blueprints tab, notification switch, diagnostics without names and the wee
   el._blueprintsRequested = true;
   el.render();
   assert.ok(shadow.innerHTML.includes("a/gone.yaml") && shadow.innerHTML.includes("Idle") && shadow.innerHTML.includes("data-bp-refresh"));
+  assert.ok(shadow.innerHTML.includes('data-bp-open="automation/a/idle.yaml"'), "rows open the detail");
+  el.bpOpen = "automation/a/idle.yaml"; el._bpDetailKey = "automation/a/idle.yaml";
+  el.bpDetail = { available: true, user_count: 1, size: 1200, modified: "2026-10-01T10:00:00+00:00", min_version: "2024.10.0", inputs: [{ key: "light", name: "Light", section: "", selector: "entity", has_default: false, default: null, description: null }],
+    users: [{ id: "automation.c", name: "C", inputs: [{ key: "light", state: "missing_entity", value: "light.gone" }] }] };
+  el.viewTab.blueprint = "inputs"; el.render();
+  assert.ok(shadow.innerHTML.includes("Light") && shadow.innerHTML.includes("No default, must be set"));
+  el.viewTab.blueprint = "users"; el.render();
+  assert.ok(shadow.innerHTML.includes("light.gone") && shadow.innerHTML.includes("entity missing"));
+  el.viewTab.blueprint = "technical"; el.render();
+  assert.ok(shadow.innerHTML.includes("2024.10.0"));
+  el.bpOpen = "";
   el.view = "settings"; el.settingsTab = "scan";
   el.data = { ...DATA, meta: { ...DATA.meta, notify: true } };
   el.render();
@@ -2223,7 +2259,7 @@ test("orphaned statistics are selected and turned into a purge plan, which asks 
   await el.purgeRun();
   assert.equal(JSON.stringify(asked[0]), JSON.stringify({ type: "ha_housekeeper/plan_create", actions: [{ kind: "purge_statistics", object_id: "sensor.old_power", states: true }] }));
   assert.equal(el.purgeSel.size, 0);
-  assert.equal(el.view, "cleanup");
+  assert.equal(el.view, "plan");
   assert.equal(el.plan.plan_id, "p9");
   assert.equal(el.planWord({ actions: [{ kind: "purge_statistics", executable: true }] }), "DELETE");
   assert.equal(el.successorsOf("sensor.power_new", "W")[0].object_id, "sensor.new_power");
@@ -2452,6 +2488,7 @@ const RELIABILITY = {
   entries: [
     { entry_id: "e1", title: "Cloud <b>Hub</b>", domain: "hue", state: "setup_retry", reauth: true, entities: 12, permanent: 2, availability: 93.4, shared_outages: 3, longest_outage: 7200, layer: "cloud", last_disruption: { end: 1791470000, seconds: 3600, shared: true } },
     { entry_id: "e2", title: "Local Box", domain: "zha", state: "loaded", reauth: false, entities: 5, permanent: 0, availability: 100, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null },
+    { entry_id: "e9", title: "Dead Gate", domain: "shelly", state: "setup_error", reauth: false, entities: 0, permanent: 6, dead: true, availability: null, shared_outages: 0, longest_outage: 0, layer: null, last_disruption: null },
   ],
 };
 
@@ -2463,17 +2500,21 @@ test("the reliability view lists the worst integration first with numbers, words
   assert.ok(shadow.innerHTML.includes("Evaluating the recorder"));
   await el.loadReliability();
   const html = shadow.innerHTML;
-  for (const text of [el.t("relTabIntegrations"), "Cloud &lt;b&gt;Hub&lt;/b&gt;", "93.4 %", "12 entities", "2 h", "probably the cloud or its API (a guess)", "Re-authentication open", "setup_retry", "No disruption", "calculated in 2.8 s", "24 hours", "7 days"]) assert.ok(html.includes(text), text);
-  assert.ok(html.indexOf("Cloud &lt;b&gt;") < html.indexOf("Local Box"));
+  for (const text of [el.t("relTabIntegrations"), "Cloud &lt;b&gt;Hub&lt;/b&gt;", "93.4 %", "12 entities", "2 h", "probably the cloud or its API", "Re-authentication open", "setup_retry", "No disruption", "calculated in 2.8 s", "24 hours", "7 days", "30 days"]) assert.ok(html.includes(text), text);
+  assert.ok(html.indexOf("Dead Gate") < html.indexOf("Cloud &lt;b&gt;") && html.indexOf("Cloud &lt;b&gt;") < html.indexOf("Local Box"), "the dead one first");
   assert.ok(!html.includes("<b>Hub</b>"));
+  assert.ok(html.includes("Down all the time") && html.includes("6 entities, the whole window") && html.includes("Avg per integration"));
+  assert.ok(!html.includes("Re-authentication open</button>") && html.includes('data-jump="findingsNav" data-filter="config_entry.reauth"'));
 });
 
 test("reliability rows open the integration, and its detail page shows the numbers with the affected entities", async () => {
   const { el, shadow } = panel("en");
   const entry = { object_type: "config_entry", object_id: "e1", name: "Hue", status: "active", state: "loaded", domain: "hue" };
-  el.data = { ...DATA, objects: [...DATA.objects.filter(o => o.object_type !== "config_entry"), entry] };
+  el.data = { ...DATA, monitor: [{ id: "m1", name: "Light <b>function</b>", enabled: true, members: [{ object_key: "entity:light.a" }] }], objects: [...DATA.objects.filter(o => o.object_type !== "config_entry"), entry, { object_type: "entity", object_id: "light.a", name: "Lamp A", config_entry_id: "e1", status: "active" }] };
   el.view = "reliability";
-  const withEntities = { ...RELIABILITY, computed_at: 1791470000, entries: [{ ...RELIABILITY.entries[0], affected_total: 20, affected: [{ entity_id: "light.a", name: "Lamp <i>A</i>", availability: 91.2 }] }, RELIABILITY.entries[1]] };
+  const days = Array.from({ length: 8 }, (_, i) => ({ date: `2026-10-0${i + 1}`, seconds: i === 2 ? 7200 : i === 5 ? 300 : 0 }));
+  const periods = [{ start: 1791470000, end: 1791477200, seconds: 7200, kind: "shared", affected: 9 }];
+  const withEntities = { ...RELIABILITY, computed_at: 1791470000, entries: [{ ...RELIABILITY.entries[0], days, periods, period_total: 3, affected_total: 20, affected: [{ entity_id: "light.a", name: "Lamp <i>A</i>", availability: 91.2 }] }, RELIABILITY.entries[1]] };
   el._hass = { language: "en", callWS: async () => withEntities };
   await el.loadReliability();
   const list = shadow.innerHTML;
@@ -2484,10 +2525,19 @@ test("reliability rows open the integration, and its detail page shows the numbe
   const html = shadow.innerHTML;
   assert.ok(html.includes('data-detail-tab="reliability"'));
   for (const text of ["Entities with downtime (20)", "Lamp &lt;i&gt;A&lt;/i&gt;", "91.2 %", 'data-object="entity:light.a"', "Showing the 1 with the lowest availability of 20"]) assert.ok(html.includes(text), text);
+  for (const text of ["Outage periods (3)", "9 of 14 entities", ">Shared<", 'class="problem short"', 'class="problem"', "Showing the last 1 of 3.", "Carries the house functions", 'data-monitor-last="m1"', "Light &lt;b&gt;function&lt;/b&gt;"]) assert.ok(html.includes(text), text);
   const facts = el.knownCard(entry, "config_entry:e1");
   assert.ok(facts.includes("Availability (7 days)") && facts.includes("93.4 %"));
+  assert.ok(el.knownCard({ ...entry, status: "problem", reauth: true }, "config_entry:e1").includes("New login open"), "a loaded entry that wants a login says so");
   el.selected = { ...entry, object_id: "e3" }; el.detailTab = "reliability"; el.render();
   assert.ok(!shadow.innerHTML.includes('data-detail-tab="reliability"'), "no tab without numbers");
+});
+
+test("a window longer than the recorder keeps gets a note, in reliability and in the write load", () => {
+  const { el } = panel("en");
+  assert.ok(el.keepNote({ keep_days: 10, window_days: 30 }).includes("keeps only 10 days"));
+  assert.equal(el.keepNote({ keep_days: 10, window_days: 7 }), "");
+  assert.equal(el.keepNote({ keep_days: null, window_days: 30 }), "");
 });
 
 test("an old reliability reply is shown at once and renewed once in the background", async () => {
@@ -2516,8 +2566,10 @@ test("the reliability window switch and refresh ask the backend with the right a
   assert.deepEqual({ ...calls[0] }, { type: "ha_housekeeper/reliability", window_days: 7, refresh: false });
   el.relWindow = 1; el.ensureReliability(); await drain();
   assert.equal(calls[1].window_days, 1);
+  el.relWindow = 30; el.ensureReliability(); await drain();
+  assert.equal(calls[2].window_days, 30);
   await el.loadReliability(true);
-  assert.equal(calls[2].refresh, true);
+  assert.equal(calls[3].refresh, true);
 });
 
 const UNSTABLE = {
@@ -2661,6 +2713,7 @@ test("the runs view searches and filters the table and the list of what stands o
   html = el.runsView();
   assert.ok(html.indexOf("automation.flur") < html.indexOf("script.nacht") && html.indexOf("script.nacht") < html.indexOf("automation.heizung"));
   assert.ok(html.includes('data-lsort="runs|errors|desc"'));
+  assert.ok(html.includes("from 3 errors and 20 % of the runs") && html.includes("5 times its own normal (28 days before) and at least 100 runs a day"), "the footnote names the limits");
 });
 
 test("reliability and the unstable entities can be searched and filtered", () => {
@@ -2678,10 +2731,9 @@ test("reliability and the unstable entities can be searched and filtered", () =>
   el.lvState("relentries", "avail", "asc").f = { state: "outages" };
   html = el.reliabilityView();
   assert.ok(html.includes("Box 3") && !html.includes("Box 0"));
-  el.lv.relentries.f = { state: "reauth" };
-  assert.ok(el.reliabilityView().includes("Box 5") && !el.reliabilityView().includes("Box 3"));
-  el.lv.relentries.f = { state: "notloaded" };
-  assert.ok(el.reliabilityView().includes("Box 6") && !el.reliabilityView().includes("Box 5"));
+  el.lv.relentries.f = { state: "setup" };
+  assert.ok(!el.reliabilityView().includes("Box 3"));
+  assert.ok(el.reliabilityView().includes("too small") === false, "five entities are enough for a shared outage");
   el.lv.relentries.f = {}; el.lv.relentries.q = "zha";
   assert.ok(el.reliabilityView().includes("Box 3") && !el.reliabilityView().includes("Box 0"));
   el.lv.relentries.q = ""; el.lvState("relunstable", "", "asc").q = "flatter 4"; el.viewTab = { reliability: "unstable" };
@@ -2750,7 +2802,7 @@ test("polish: the to-do list groups by urgency, the cleanup view has tabs, the q
   assert.ok(card.includes(">Findings<") && card.includes('data-fold="todo_care"') && !card.includes(">State<"), "areas without rows are left out, maintenance folds while something else is open");
   el.view = "cleanup"; el.journal = []; el._journalRequested = true; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
   const html = el.cleanupView();
-  assert.ok(html.includes('data-view-tab="cleanup|entities"') && html.includes('data-view-tab="cleanup|devices"') && html.includes('data-view-tab="cleanup|unused"') && html.includes('data-view-tab="cleanup|stats"') && html.includes('data-view-tab="cleanup|purges"'));
+  assert.ok(html.includes('data-view-tab="cleanup|entities"') && html.includes('data-view-tab="cleanup|devices"') && html.includes('data-view-tab="cleanup|unused"') && html.includes('data-view-tab="cleanup|stats"') && !html.includes('data-view-tab="cleanup|purges"'), "old purges are noted in the Journal, no tab here");
   el.diag = { quality: { items: [{ entity_id: "automation.ok", name: "Fine", status: "on", worst: "ok", dimensions: Object.fromEntries(["integrity", "reliability", "effectiveness", "maintainability", "restart_safety", "efficiency", "conflicts"].map(id => [id, { level: "ok", reasons: [] }])) }] }, criteria: {}, detail: {} };
   el._qualityRequested = true;
   el.lvState("overview", "worst", "asc").f.level = "problem";
@@ -2792,6 +2844,20 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   assert.ok(el.mergeNote.includes("1 objects were left out") && el.mergeNote.includes("sensor.x"));
 });
 
+test("picked previews can be deleted at once; a ran plan is not among them", async () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  const short = (id, extra = {}) => ({ plan_id: id, created_at: new Date().toISOString(), status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
+  el.journal = [short("a"), short("b"), short("c", { executed: true, status: "verified" })];
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { if (msg.type === "ha_housekeeper/plan_delete") calls.push(msg.plan_id); return { removed: true }; } };
+  el.mergeSel = new Set(["a", "c"]);
+  await el.deletePlans();
+  assert.equal(JSON.stringify(calls), '["a"]');
+  assert.equal(JSON.stringify(el.journal.map(p => p.plan_id)), '["b","c"]');
+  assert.equal(el.mergeSel.size, 0);
+});
+
 test("the improve block asks for the switch, offers fixes and turns one into a plan under cleanup", async () => {
   const { el } = panel("en");
   el.data = { ...DATA };
@@ -2817,7 +2883,7 @@ test("the improve block asks for the switch, offers fixes and turns one into a p
   assert.ok(scrolled, "the page opens at the new plan");
   const create = calls.find(c => c.type.endsWith("/plan_create"));
   assert.equal(JSON.stringify(create.actions), JSON.stringify([{ kind: "refactor_automation", object_id: "automation.hall", fix: "add_description", values: { description: "Warms the hall" } }]));
-  assert.equal(el.view, "repair");
+  assert.equal(el.view, "plan");
   assert.equal(el.plan.plan_id, "r1");
   enabled = true;
   el.refactor.by["automation.hall"] = { enabled: true, editable: true, proposals: [{ fix: "set_timeout", count: 2, paths: ["action/0", "action/2"] }, { fix: "set_mode", mode: "single", max: null }] };
@@ -2907,7 +2973,11 @@ test("the load view loads once per window, asks the backend with the right argum
   el.stormsWindow = 7; el.storms = null;
   await el.loadStorms(true);
   assert.equal(JSON.stringify(calls[1]), JSON.stringify({ type: "ha_housekeeper/storms", window_days: 7, refresh: true }));
-  el._stormsRequested = 7;
+  el.stormsWindow = 30; el.storms = null;
+  await el.loadStorms();
+  assert.equal(calls[2].window_days, 30);
+  assert.ok(el.stormsView().includes('data-storm-window="30"') && el.stormsView().includes("30 days"));
+  el._stormsRequested = 30;
   const before = calls.length; el.stormsView();
   assert.equal(calls.length, before, "no repeated load");
 });
@@ -3133,12 +3203,12 @@ test("the Recorder view holds the load, the costs and the database, and starts t
   el._hass = { language: "en", callWS: async msg => (msg.type.endsWith("/storms") ? STORMS : msg.type.endsWith("/db_health") ? DBH : COSTS) };
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Recorder load") && html.includes("Recorder costs") && html.includes("Database"));
+  assert.ok(html.includes("Write load") && html.includes("Storage use") && html.includes("Database"));
   assert.equal(queue.length, 1, "only the load query is started at first");
   assert.ok(!el._dbRequested);
   await el.loadStorms();
   assert.equal(el._dbRequested, true, "the database check follows once the load is there");
-  assert.ok(el.maintenanceView && !el.maintenanceView().includes("Recorder costs"));
+  assert.ok(el.maintenanceView && !el.maintenanceView().includes("Storage use"));
 });
 
 test("the old load link opens the Recorder view", () => {
@@ -3263,13 +3333,13 @@ test("the selection row of the findings list names the size of the view at its r
   assert.ok(/1 selected.*viewcount" role="status">3 in this view/s.test(el.findingsView()));
 });
 
-test("a reason tile counts what the list shows and names the follow-ups beside it", () => {
+test("a reason tile counts everything under it and names the follow-ups in it", () => {
   const { el } = panel("en");
   const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", cause_id: cause });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x"), f("d", "device:x")] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
   const html = el.findingsView();
-  assert.ok(html.includes("Unavailable") && /sumvalue">2<\/b><small>plus 2 follow-ups/.test(html));
+  assert.ok(html.includes("Unavailable") && /sumvalue">4<\/b><small>of which 2 follow-ups/.test(html));
 });
 
 test("the button for findings after an update counts what the list shows and names the follow-ups beside it", () => {
@@ -3342,7 +3412,7 @@ test("a watch joins the incident that holds the same update, and ending it asks 
   assert.ok(el.confirmState && el.confirmState.text.includes("judged now"));
 });
 
-test("a device has a history tab with its steps and no note; removed devices show their logbook entry in Maintenance", () => {
+test("a device has a history tab with its steps and no note; removed devices show their logbook entry and the plan in the Journal", () => {
   const { el } = panel("en");
   el.data = DATA;
   const device = { object_type: "device", object_id: "d1", name: "Hub", status: "active" };
@@ -3350,11 +3420,12 @@ test("a device has a history tab with its steps and no note; removed devices sho
   el.life = new Map([["d1", { steps: [{ kind: "discovered", at: "2026-01-01T00:00:00+00:00" }, { kind: "replaced", at: "2026-02-01T00:00:00+00:00", from: "light.old", to: "light.new" }], unstable: "flapping" }]]);
   const html = el.lifeCard(device);
   assert.ok(html.includes("Discovered") && html.includes("light.old → light.new") && html.includes("flapping") && !html.includes("<textarea") && !html.includes("data-life-save"));
-  el._removedRequested = true;
-  el.removed = [{ object_id: "d9", name: "Old hub", kind: "remove_device", at: "2026-03-01T00:00:00+00:00" }, { object_id: "d8", name: "Old plug", kind: "forget_device", at: "2026-03-02T00:00:00+00:00" }];
+  el.journal = [{ plan_id: "p1", created_at: "2026-03-01T00:00:00+00:00", status: "verified", summary: { total: 1, ok: 1, review: 0, blocked: 0 } }];
+  el.removed = [{ object_id: "d9", name: "Old hub", kind: "remove_device", group: "device", at: "2026-03-01T00:00:00+00:00", plan_id: "p1" }, { object_id: "d8", name: "Old plug", kind: "forget_device", group: "device", at: "2026-03-02T00:00:00+00:00" }];
   el.data = { ...DATA, notes: [{ id: "n1", title: "Device “Old plug” forgotten", at: "2026-03-02T00:00:00+00:00", target: "device:d8", note: "broken <b>", source: "housekeeper", ref: "forget_device:d8" }] };
   const list = el.removedCard();
-  assert.ok(list.includes("Old hub") && list.includes("Removed by a plan") && list.includes("Device “Old plug” forgotten") && list.includes('data-note-edit="n1"') && list.includes("broken &lt;b&gt;") && !list.includes("<b>"));
+  assert.ok(list.includes("Old hub") && list.includes("Device removed") && list.includes("Device “Old plug” forgotten") && list.includes('data-note-edit="n1"') && list.includes("broken &lt;b&gt;") && !list.includes("<b>"));
+  assert.ok(list.includes('<button type="button" class="btn small" data-plan-open="p1">Open plan</button>') && list.includes("beyond the 300 newest"), "the plan is one click away, and the list says how far back it reaches");
 });
 
 test("missing statistics hours say what all series lack, name the periods and list the series", () => {
@@ -3539,6 +3610,16 @@ test("a policy violation takes the same decisions as a finding and reloads the r
   assert.equal(calls[1].type, "ha_housekeeper/policies");
   el.policyShowHidden = true; el.render();
   assert.ok(shadow.innerHTML.includes("Reserve") && el.decide === null);
+});
+
+test("a goal leads to the list it counts, with the filter set", () => {
+  const { el } = panel("en");
+  assert.ok(el.goalJump("broken_references").includes('data-jump="findingsNav"') && el.goalJump("broken_references").includes('data-filter="broken_reference"'));
+  assert.ok(el.goalJump("devices_without_area").includes('data-jump-tab="violations"') && el.goalJump("devices_without_area").includes('data-jump-lf="polviol|rule|device_area"'));
+  el.setListFilter("polviol", "rule", "device_area");
+  assert.deepEqual(JSON.parse(JSON.stringify(el.lvState("polviol", "name", "asc").f)), { rule: "device_area" });
+  el.setListFilter("polviol", "rule", "other");
+  assert.equal(el.lv.polviol.f.rule, "other");
 });
 
 test("maintenance goals show state and values, and a limit is saved through goal_set", async () => {
@@ -3884,6 +3965,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("<polyline") && html.includes("5-minute rows") && !html.includes("data-confirm-word"));
+  el.view = "repair"; el.render();
   // A range picked by hand becomes a repair_range request with seconds since 1970.
   el.counterId = "sensor.water"; el.rangeFrom = "2026-10-01T10:00"; el.rangeTo = "2026-10-01T12:00"; el.rangeMode = "fixed"; el.rangeFixed = "91,7";
   el.pickRange(shadow);
@@ -3892,6 +3974,7 @@ test("the counter assistant scans, previews with a chart and asks for REPAIR", a
   assert.equal(range.kind, "repair_range"); assert.equal(range.mode, "fixed"); assert.equal(range.range.fixed, 91.7);
   assert.equal(range.range.to - range.range.from, 7200);
   // A spike found in a measurement fills the range and shows the readings with two sliders.
+  el.view = "repair"; el.render();
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return { error: null, kind: "measurement", unit: "°C", table: "short_term", points: Array.from({ length: 20 }, (_, i) => [1788200000 + i * 300, 20 + (i === 10 ? 65 : 0)]) }; } };
   el.takeRange("sensor.boiler", 1788202900, 1788203300);
   await new Promise(r => setTimeout(r, 0));
@@ -3934,7 +4017,7 @@ test("selected findings get a label through a plan that opens under Cleanup", as
   await el.commitBulk();
   const sent = calls.find(c => c.type === "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(sent.actions.map(a => [a.kind, a.target])), JSON.stringify([["add_label", "review"]]));
-  assert.equal(el.view, "cleanup");
+  assert.equal(el.view, "plan");
   await el.planLabel(sent.actions[0].object_id, "review"); // the same from the detail page
   assert.equal(scrolls.filter(Boolean).length, 2, "both open the page at the new plan (issue #8)");
 });
@@ -3980,6 +4063,24 @@ test("every new plan opens through openNewPlan, so none is left out of view (iss
       assert.ok(src.slice(m.index, m.index + 400).split("\n").slice(0, 3).join("\n").includes("openNewPlan("), `${name}: plan_create without openNewPlan`);
     }
   }
+});
+
+test("a preview that deletes statistics offers the states switch and is cancelled for good", async () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [] };
+  const act = { kind: "purge_statistics", object_id: "sensor.old", name: "sensor.old", verdict: "review", executable: true, reasons: ["irreversible"], used_by: [], states: true };
+  el.plan = { plan_id: "p9", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: 0, review: 1, blocked: 0 }, actions: [act], simulation: { purge_states_rows: 7 } };
+  el.journal = [el.plan]; el.view = "plan";
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type === "ha_housekeeper/plan_create" ? { ...el.plan, plan_id: "p10", actions: [{ ...act, states: msg.actions[0].states }] } : {}; } };
+  el.render();
+  assert.ok(shadow.innerHTML.includes("data-purge-states-switch") && shadow.innerHTML.includes("7 stored states"));
+  await el.setPurgeStates(false);
+  assert.equal(sent.find(m => m.type === "ha_housekeeper/plan_create").actions[0].states, false);
+  assert.equal(el.plan.plan_id, "p10");
+  assert.ok(sent.some(m => m.type === "ha_housekeeper/plan_delete" && m.plan_id === "p9"));
+  await el.discardPlan();
+  assert.ok(sent.some(m => m.type === "ha_housekeeper/plan_delete" && m.plan_id === "p10") && !el.journal.length && !el.plan);
 });
 
 test("the overview of an object offers its actions: decide a finding, replace a missing entity, disable, label", () => {
@@ -4069,7 +4170,7 @@ test("detail, maintenance and settings offer their options as tiles that open on
   assert.equal(el.view, "repair"); assert.equal(el.repairTask, "repair_counter"); assert.equal(el.counterId, "sensor.water");
   assert.equal(sent.at(-1).type, "ha_housekeeper/range_series");
   el.view = "maintenance"; el.render();
-  for (const id of ["backup", "preflight", "blueprints", "devices", "goals"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
+  for (const id of ["backup", "updates", "blueprints", "goals"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
   el.view = "settings"; el.settingsTab = "protection"; el.render();
   for (const id of ["look", "protection", "scan", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
   assert.ok(shadow.innerHTML.includes("data-protection") && !shadow.innerHTML.includes("data-notify"));
@@ -4134,8 +4235,8 @@ test("the loudest entities offer ticks, mark what can be excluded and share the 
   el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [ent("light.a", false), ent("sensor.s", true)], edges: [] };
   el._edgeIndex = null;
   el.storms = { available: true, busy: false, findings: [], integrations: [], events: [], entities: [
-    { entity_id: "light.a", name: "A", rows: 5000, per_day: 5000, no_new_state: 1, attr_bytes: 100 },
-    { entity_id: "sensor.s", name: "S", rows: 4000, per_day: 4000, no_new_state: 0, attr_bytes: 100 },
+    { entity_id: "light.a", name: "A", rows: 5000, per_day: 5000, rows_24h: 5000, used: 0, has_statistics: false, suggest_exclude: true, no_new_state: 1, attr_bytes: 100 },
+    { entity_id: "sensor.s", name: "S", rows: 4000, per_day: 4000, rows_24h: 4000, used: 0, has_statistics: true, suggest_exclude: false, no_new_state: 0, attr_bytes: 100 },
   ], total_rows: 9000, per_day: 9000, entity_count: 2, event_total: 0 };
   el.view = "recorder"; el.viewTab = { recorder: "entities" };
   el.render();
@@ -4150,7 +4251,7 @@ test("a plan runs as a wizard: review, confirm with a way back, run, result; lon
   const plan = (status, extra = {}) => ({ plan_id: "p", status, created_at: new Date().toISOString(), summary: { total: 25, ok: 25, review: 0, blocked: 0 }, actions: Array.from({ length: 25 }, (_, i) => action(`sensor.s${i}`)), ...extra });
   const stage = (p, confirming = false) => el.planStage(p, confirming);
   assert.deepEqual([stage(plan("dry_run")), stage(plan("dry_run"), true), stage(plan("running")), stage(plan("executed")), stage(plan("verified", { verification: { ok: true, checks: [] } })), stage(plan("aborted"))], [0, 1, 2, 2, 3, 3]);
-  el.plan = plan("dry_run"); el.view = "cleanup"; el.render();
+  el.plan = plan("dry_run"); el.view = "plan"; el.render();
   let html = shadow.innerHTML;
   assert.ok(html.includes("1. Review") && html.includes("sensor.s0") && html.includes("sensor.s19") && !html.includes("sensor.s20") && html.includes("data-lpage"), "a long plan comes in pages");
   el.confirmation = { plan_id: "p", token: "t", execute: ["sensor.s0"], needs_acknowledgement: [] }; el.render();
@@ -4533,7 +4634,7 @@ test("the selection can be trimmed: a plan with a day count for each entity, and
   el.excludeSel.add("sensor.hue2");
   el.trimDays = 30;
   const card = el.excludeCard([]);
-  assert.ok(card.includes("Trim the old history") && card.includes("2 entities selected") && card.includes("Create preview for 2 entities"));
+  assert.ok(card.includes("Trim the old history") && card.includes("2 entities selected") && card.includes("Create preview (2)"));
   let sent;
   el._hass.callWS = async msg => {
     sent = msg;
@@ -4543,7 +4644,7 @@ test("the selection can be trimmed: a plan with a day count for each entity, and
   await el.trimPlan();
   assert.equal(sent.type, "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(sent.actions.map(a => [a.kind, a.object_id, a.keep_days])), JSON.stringify([["trim_history", "sensor.hue", 30], ["trim_history", "sensor.hue2", 30]]));
-  assert.equal(el.view, "cleanup");
+  assert.equal(el.view, "plan");
   const action = { kind: "trim_history", object_id: "sensor.hue", name: "Hue", object_type: "entity", verdict: "review", executable: true, reasons: ["irreversible"], keep_days: 30, trim: { rows: 5000 } };
   const plan = { plan_id: "p2", status: "dry_run", actions: [action], summary: {} };
   assert.ok(el.planCard(plan).includes("older than 30 days: 5000 rows"));
@@ -4619,13 +4720,13 @@ test("housekeeper backups: the list marks protected ones, the rule picks the res
   const html = el.backupCleanupCard();
   assert.ok(html.includes("protected: being watched") && html.includes("41 days old") && html.includes("only way to get back"));
   assert.ok(html.includes('data-bkc-sel="b1"') && /data-bkc-sel="b1"[^>]*disabled/.test(html), "a protected backup cannot be ticked");
-  assert.ok(html.includes("Create a plan to delete (1)"));
+  assert.ok(html.includes("Prepare deletion (1)"));
   assert.ok(html.includes("<table") && html.includes('data-bkc-page="b2"') && !html.includes('data-bkc-page="b1'), "the backups are a table whose head box covers the ones that can be ticked");
   let sent;
   el._hass.callWS = async msg => { sent = msg; return { plan_id: "p9", status: "dry_run", actions: [], summary: {} }; };
   await el.backupDeletePlan();
   assert.equal(JSON.stringify(sent.actions), JSON.stringify([{ kind: "delete_backup", object_id: "b2" }]));
-  assert.equal(el.view, "cleanup");
+  assert.equal(el.view, "plan");
   const action = { kind: "delete_backup", object_id: "b2", name: "Housekeeper bbbb2222", object_type: "backup", verdict: "review", executable: true, reasons: ["irreversible", "only_return"], backup: { date: "2026-08-30T10:00:00+00:00", size: 900 } };
   assert.ok(el.undoBadge(action).includes("final"));
   assert.equal(el.planWord({ actions: [action] }), el.t("purgeWord"));
@@ -4661,7 +4762,7 @@ test("ticked policy violations get an area through a plan, by suggestion or by c
   el.polSel = new Set(["ka"]); el.bulk = { kind: "area", area: "kitchen", error: "" };
   await el.commitBulk();
   assert.equal(calls[1].actions[0].target, "kitchen");
-  assert.equal(el.view, "cleanup");
+  assert.equal(el.view, "plan");
 });
 
 test("a violation row folds open to a rename that checks the name and plans one rename", async () => {
@@ -4748,7 +4849,7 @@ test("what the recorder already excludes stays pickable for trimming but never r
   assert.equal(el.excludeSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.open\n");
   assert.ok(el.excludeBox("sensor.done").includes("checked") && !el.excludeBox("sensor.done").includes("disabled"));
   assert.equal(el.t("exTitle"), "Exchange device", "the exchange card keeps its own title");
-  assert.ok(el.excludeInfo("sensor.done", 5000, true).tags.includes("already excluded") && !el.excludeInfo("sensor.done", 5000, true).suggest);
+  assert.ok(el.excludeInfo({ entity_id: "sensor.done", excluded: true }).tags.includes("already excluded") && !el.excludeInfo({ entity_id: "sensor.done", excluded: true }).suggest);
   let html = el.excludeCard([]);
   assert.ok(html.includes("1 selected · 1 to trim") && html.includes("Trim the old history"), "one for the block, one to trim");
   el.excludeSel.clear();
@@ -4872,6 +4973,15 @@ const ACCESS = {
 
 const SECRETS = { entries: [
   { entry_id: "c1", domain: "demo_cloud", title: "<i>Demo</i>", disabled: false, fields: [{ source: "data", key: "password", kind: "password", set: true }, { source: "data", key: "token.access_token", kind: "token", set: false }] },
+  { entry_id: "c2", domain: "netatmo", title: "Netatmo", disabled: false, reauth: true, fields: [] },
+  { entry_id: "c3", domain: "onvif", title: "Alte Kamera", disabled: true, fields: [{ source: "data", key: "password", kind: "password", set: true }] },
+], accounts: [
+  { id: "u1", name: "Roberto", active: true, owner: true, admin: true, local_only: false, mfa: true, logins: true, last_login: "2026-10-16T08:00:00+00:00", inactive: false, token_count: 2 },
+  { id: "u2", name: "<b>Partner</b>", active: true, owner: false, admin: true, local_only: false, mfa: false, logins: true, last_login: "2026-10-13T08:00:00+00:00", inactive: false, token_count: 0 },
+  { id: "u3", name: "Gast", active: true, owner: false, admin: false, local_only: false, mfa: false, logins: true, last_login: "2026-03-01T08:00:00+00:00", inactive: true, token_count: 0 },
+], tokens: [
+  { name: "Node-RED", account: "Roberto", account_active: true, created: "2025-09-01T00:00:00+00:00", days: 410, old: true },
+  { name: "MCP", account: "Roberto", account_active: true, created: "2026-10-04T00:00:00+00:00", days: 12, old: false },
 ] };
 
 function systemPanel(lang = "en") {
@@ -4903,6 +5013,7 @@ test("apps and integrations groups config entries by domain and opens the page o
   el.viewTab = { components: "custom" };
   el.render();
   assert.ok(shadow.innerHTML.includes('data-comp-open="demo"') && !shadow.innerHTML.includes('class="compentry"'), "an integration with two entries folds out; closed it shows none");
+  assert.ok(/<div class="compname"><span class="tile mute"><button[^>]*data-comp-open="demo"[\s\S]*?<\/span><div class="namecell"/.test(shadow.innerHTML), "arrow and name share one row");
   el.compOpen = ["demo"];
   el.render();
   assert.equal((shadow.innerHTML.match(/class="compentry"/g) || []).length, 2, "opened, one row per entry");
@@ -4912,6 +5023,33 @@ test("apps and integrations groups config entries by domain and opens the page o
   el.render();
   assert.ok(shadow.innerHTML.includes("0.4 %") && shadow.innerHTML.includes("<th") && shadow.innerHTML.includes(el.t("sysColRam")), "the apps list shows CPU and RAM from the system report");
   assert.ok(shadow.innerHTML.includes("1.7") && shadow.innerHTML.includes(el.t("compSumAppUpdates")), "the newest version and the number of app updates show");
+});
+
+test("the HACS tab lists every repository, puts what HACS removed first and opens the repository in HACS", () => {
+  const { el, shadow } = systemPanel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, hacs_available: true } };
+  el.view = "components"; el.viewTab = { components: "hacs" };
+  el.sysState("hacs").data = { available: true, repositories: [
+    { id: "1", name: "Mushroom", full_name: "piitaya/lovelace-mushroom", category: "plugin", installed_version: "v5", available_version: "v5", pending_update: false, archived: false, removed: null },
+    { id: "2", name: "Old icons", full_name: "me/old-icons", category: "plugin", installed_version: "v1", available_version: "v1", pending_update: false, archived: true, removed: { name: "me/old-icons", reason: "Repository is archived", ignored: false } },
+    { id: "3", name: "Demo", full_name: "me/demo", category: "integration", installed_version: "1.0", available_version: "1.1", pending_update: true, archived: false, removed: null },
+    { id: "4", name: "Seen", full_name: "me/seen", category: "theme", installed_version: "2", available_version: "2", pending_update: false, archived: false, removed: { name: "me/seen", reason: "x", ignored: true } },
+  ] };
+  el.sysState("hacs").requested = true;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Removed from HACS") && html.includes("Repository is archived") && html.includes("(ignored)"), "removed repositories show with the reason");
+  assert.ok(html.indexOf("Old icons") < html.indexOf("Demo") && html.indexOf("Demo") < html.indexOf("Mushroom"), "removed first, then updates, then the rest");
+  assert.ok(html.includes('data-ha-path="/hacs/repository/2"') && html.includes("Card") && html.includes("Theme"), "a row opens HACS; cards and themes are listed");
+  assert.ok(html.includes('data-sys-refresh="hacs"'), "the refresh bar reloads the list");
+  assert.ok(html.includes("Removed from HACS: what to do?") && html.includes('data-ha-path="/config/repairs"'), "the advice and the link to the repairs show above the list");
+  el.data = { ...el.data, meta: { ...el.data.meta, hacs_removed: [{ id: "2", name: "me/old-icons", reason: "Repository is archived", ignored: false }] } };
+  const row = el.todoItems().find(i => i.key === "hacs_removed");
+  assert.ok(row && row.text.includes("me/old-icons") && row.jump.includes('data-jump-tab="hacs"') && row.jump.includes("hacsrepos|state|removed"), "the to-do card has a row that opens the filtered list");
+  assert.ok(el.intHacsCard({ id: "2", full_name: "me/old-icons", installed_version: "1", removed: { reason: "Repository is archived", ignored: false } }).includes("took this repository out of its list: Repository is archived"), "the page of the integration says why");
+  el.data = { ...DATA, meta: { ...DATA.meta, hacs_available: false } };
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("every installed repository"), "without HACS there is no tab");
 });
 
 test("the page of an integration covers all its entries for core and custom and every tab renders", async () => {
@@ -5027,6 +5165,51 @@ test("the credential overview shows kind and set or empty, links to Home Assista
   assert.ok(shadow.innerHTML.includes('class="filteron"') && shadow.innerHTML.includes('data-lf-set="seclist||"') && !shadow.innerHTML.includes('class="pill warn" data-sec-show'), "the filter shows once, as the shared note of the list");
 });
 
+test("the credential page shows the accounts with role and two-factor, and its tile opens them filtered", () => {
+  const { el, shadow } = systemPanel("de");
+  el.view = "secrets";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Admins ohne Zwei-Faktor") && html.includes("von 2 Admins") && html.includes('data-sec-show="nomfa"'));
+  assert.equal((html.match(/class="sumtiles even"/g) || []).length, 2, "two even rows of tiles");
+  const tile = { dataset: { secShow: "nomfa" } };
+  el.bindSystem({ querySelectorAll: selector => (selector === "[data-sec-show]" ? [tile] : []), querySelector: () => null });
+  tile.onclick();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("&lt;b&gt;Partner&lt;/b&gt;") && !html.includes("Roberto</strong>") && !html.includes("Gast</strong>"), "only the admin without two-factor, escaped");
+  assert.ok(html.includes('data-ha-path="/config/users"'), "a row opens the users in Home Assistant");
+});
+
+test("an integration that asks for a new login is marked and has a tile of its own", () => {
+  const { el, shadow } = systemPanel("de");
+  el.view = "secrets";
+  el.lvState("seclist", "name", "asc").f.state = "reauth";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('data-sec-show="reauth"') && html.includes('class="pill red">Anmeldung nötig'));
+  assert.ok(html.includes("Netatmo") && !html.includes("&lt;i&gt;Demo"), "the filter keeps only the one asking");
+});
+
+test("a disabled integration that still holds a value has a tile and a filter", () => {
+  const { el, shadow } = systemPanel("de");
+  el.view = "secrets";
+  el.lvState("seclist", "name", "asc").f.state = "disabled";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Deaktivierte Integrationen") && html.includes('data-sec-show="disabled"'));
+  assert.ok(html.includes("Alte Kamera") && !html.includes("Netatmo</"), "the filter keeps only the disabled one");
+});
+
+test("the credential page lists the long-lived tokens by age and never more than name, account and age", () => {
+  const { el, shadow } = systemPanel("de");
+  el.view = "secrets";
+  (el.viewTab ||= {}).secrets = "tokens";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("1 alt oder wirkungslos") && html.includes("410 Tage") && html.includes("älter als 90 Tage"));
+  assert.ok(html.indexOf("Node-RED") < html.indexOf("MCP</strong>"), "oldest first");
+});
+
 test("the rights of the apps show under access and data flow, or why they are missing", () => {
   const { el, shadow } = systemPanel("de");
   el._sys.dataflow.data = { ...ACCESS, apps_available: true, apps: [
@@ -5047,6 +5230,19 @@ test("the rights of the apps show under access and data flow, or why they are mi
   el.render();
   html = shadow.innerHTML;
   assert.ok(html.includes("Apps gibt es nur mit Home Assistant OS oder Supervised.") && html.includes("taskcard t-mute off"));
+});
+
+test("the ways in from outside show in their own tab", () => {
+  const { el, shadow } = systemPanel("de");
+  el._sys.dataflow.data = { ...ACCESS, inbound: [
+    { kind: "nabu_casa", name: "Nabu Casa", state: "on", level: "warn" },
+    { kind: "vpn", name: "Tailscale", slug: "a0d7b954_tailscale", state: "running", level: "ok" },
+  ] };
+  el.view = "dataflow";
+  el.pickViewTab("dataflow|inbound");
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Von außen erreichbar") && html.includes("Fernzugriff auf die Oberfläche über Nabu Casa"));
+  assert.ok(html.includes('data-ha-path="/hassio/addon/a0d7b954_tailscale/info"') && html.includes("1 offen"));
 });
 
 test("the menu button for Home Assistant's sidebar shows when the sidebar is hidden", () => {
@@ -5269,7 +5465,11 @@ test("the info page lists the phases of the last scan, longest first, and the re
   await el.sysLoad("storage");
   await el.sysLoad("storage", true);
   const usage = sent.filter(m => m.type === "ha_housekeeper/system_usage");
-  assert.equal(usage[0].fresh, undefined); assert.equal(usage.at(-1).fresh, true);
+  assert.equal(usage[0].fresh, undefined); assert.equal(usage[0].quick, true); assert.equal(usage.at(-1).fresh, true);
+  sent.length = 0;
+  el._hass.callWS = async msg => { sent.push(msg); return { read_at: "2026-10-12T20:00:00+00:00", stale: msg.quick === true }; };
+  await el.sysLoad("storage");
+  assert.deepEqual(sent.map(m => m.quick), [true, undefined], "kept sizes that are due are asked for once more");
   assert.equal(el.sysState("storage").at, "2026-10-12T20:00:00+00:00", "the page shows when the sizes were read");
 });
 
@@ -5346,6 +5546,16 @@ test("the search finds pages, settings tabs and finding filters, puts the better
   const bar = el.topbar();
   assert.ok(bar.includes('aria-label="Settings"') && bar.includes("nav iconly") && !bar.includes('data-view="overview" ><ha-icon') , "settings is the gear");
   assert.ok(bar.includes('class="brand') && bar.includes("brandtext") && !bar.includes('class="nav  active" data-view="overview"') && !bar.includes('class="nav " data-view="overview"'), "the brand carries the overview");
+});
+
+test("the bar shows what the scan counted for the security and runs views, and nothing for one it could not read", () => {
+  const { el } = panel("en");
+  el.data = { ...el.data, meta: { ...el.data.meta, view_counts: { exposure: 2, secrets: 3, runs: 4 } } };
+  const bar = el.topbar();
+  const num = view => (bar.match(new RegExp(`data-view="${view}"[^>]*>.*?(?:<em>(\\d+)</em>)?</button>`)) || [])[1];
+  assert.equal(num("exposure"), "2"); assert.equal(num("secrets"), "3"); assert.equal(num("runs"), "4");
+  assert.equal(num("dataflow"), undefined, "a view left out has no number");
+  assert.equal(num("inventory"), undefined, "the stock has none");
 });
 
 test("a finding row ends in an impact chip and a menu with the decisions; a hidden one has no menu", () => {
@@ -5500,8 +5710,10 @@ test("the watch lists an object that is a finding like the findings list does, a
   const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "entity.state_unavailable|light.a|", object_id: "light.a", confidence: 0.75, impact: "medium" };
   el.data = { ...DATA, objects: [object, { object_type: "entity", object_id: "light.b", name: "Porch", status: "unknown" }], edges: [], findings: [finding] };
   const html = el.watchRows(["entity:light.a", "entity:light.b"], "warn");
-  assert.ok(html.includes("data-fsel=") && html.includes('data-watch-mark="entity:light.b"'));
+  assert.ok(html.includes("data-decide-open=") && !html.includes("data-fsel=") && html.includes('data-watch-mark="entity:light.b"'));
   assert.equal(html.includes('data-watch-mark="entity:light.a"'), false);
+  const past = el.watchRows(["entity:light.a"], "mute", true);
+  assert.ok(past.includes("Disturbed again now") && !past.includes("data-decide-open"), "a group about the past shows no finding row, only a note");
 });
 
 test("an entity that fails regularly gets a hint with a mark prepared for the time it falls out; a dismissed one stays quiet", () => {
@@ -5539,4 +5751,146 @@ test("a newer scan found in the background reloads the panel; the same scan or a
   status = { running: false, scanned_at: "2026-10-07T16:00:00+00:00" };
   await el.checkNewScan();
   assert.equal(loads, 1, "a newer scan");
+});
+
+test("a new plan opens on its own page, and closing it returns to the page it came from", () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA; el.journal = []; el.view = "cleanup";
+  const plan = { plan_id: "pn", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: 1, review: 0, blocked: 0 },
+    actions: [{ kind: "disable_entity", object_id: "sensor.a", name: "A", verdict: "ok", executable: true, reasons: [], used_by: [] }] };
+  el.openNewPlan(plan);
+  el.render();
+  assert.equal(el.view, "plan");
+  assert.ok(shadow.innerHTML.includes("data-plan-card") && shadow.innerHTML.includes('data-action="view-back"'));
+  assert.ok(shadow.innerHTML.includes("data-plan-close"));
+  el.leavePlan();
+  assert.equal(el.view, "cleanup");
+  assert.equal(el.plan, null);
+  assert.ok(!shadow.innerHTML.includes("data-plan-card"));
+});
+
+test("an open request for a new login is a pinned row of the to-do card", () => {
+  const { el } = panel("de");
+  el.ensureSysLight = el.ensureGoals = el.ensurePolicies = () => {};
+  el.staleScan = () => null;
+  el.causeList = () => [{ kind: "integration_down", object_id: "e1", follower_count: 14, impact: "medium" }];
+  const finding = (id) => ({ rule_id: "config_entry.reauth", object_id: id, classification: "problem", ignored: false });
+  el.data = { ...DATA, monitor: [], quarantine: [], findings: [finding("e1")], objects: [{ object_type: "config_entry", object_id: "e1", name: "Tibber" }] };
+  el.findObject = key => (key === "config_entry:e1" ? { name: "Tibber" } : null);
+  const row = el.todoItems().find(i => i.key === "reauth");
+  assert.equal(row.text, "Anmeldung nötig: Tibber");
+  assert.equal(row.hintText, "14 Entitäten fallen aus");
+  assert.equal(row.filter, "config_entry.reauth");
+  el.data = { ...el.data, findings: [finding("e1"), finding("e2")] };
+  assert.equal(el.todoItems().find(i => i.key === "reauth").text, "Anmeldung nötig: 2 Integrationen");
+});
+
+test("the components page lists what Home Assistant still waits for as information", () => {
+  const { el } = panel("de");
+  el.sysState("flows").data = { flows: [
+    { flow_id: "a", domain: "hue", name: "Hue Bridge", source: "zeroconf", kind: "discovered" },
+    { flow_id: "b", domain: "fritz", name: "Fritz!Box", source: "reconfigure", kind: "reconfigure" },
+  ] };
+  const html = el.openFlowsFold();
+  assert.ok(html.includes("Offen in Home Assistant") && html.includes("1 gefundene Geräte") && html.includes("1 Neukonfiguration"));
+  el.folds = { open_flows: true };
+  assert.ok(el.openFlowsFold().includes("Hue Bridge") && el.openFlowsFold().includes("Gefunden über zeroconf"));
+  el.sysState("flows").data = { flows: [] };
+  assert.equal(el.openFlowsFold(), "");
+});
+
+test("an integration with too few entities for a shared outage says so instead of showing zero", () => {
+  const { el } = panel("en");
+  el.data = DATA; el.view = "reliability"; el._relRequested = 7;
+  el.reliability = { ...RELIABILITY, thresholds: { shared_min_entities: 3 }, entries: [{ ...RELIABILITY.entries[1], entry_id: "s1", title: "Tiny", entities: 2, shared_outages: 0 }] };
+  const html = el.reliabilityView();
+  assert.ok(html.includes("too small") && html.includes("Shared outages need at least 3 entities."));
+});
+
+test("the database tab shows size, growth, retention and purge as tiles and keeps notes for what is unknown", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._dbRequested = true;
+  el.dbHealth = { ...DBH, keep_days: 10, auto_purge: false };
+  let html = el.dbCard();
+  assert.ok(html.includes("Size") && html.includes("11 GB") && html.includes("WAL 3 GB") && html.includes("Growth per day") && html.includes("+80 MB") && html.includes("10 days") && html.includes("Purge automatically") && html.includes("Off"));
+  assert.ok(html.includes("Automatic purging is off") && html.includes("2 gaps from restarts (normal)"), "the sentences stay as notes");
+  el.dbHealth = { ...DBH, supported: false, dialect: "mysql", db_bytes: null, growth: { known: false } };
+  html = el.dbCard();
+  assert.ok(!html.includes("Growth per day") && html.includes("Size not measurable (database: mysql)") && html.includes("Growth is being observed"));
+});
+
+test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {
+  const { el, shadow } = panel("en");
+  const tabs = el.searchPages().filter(page => page.view === "maintenance" && page.viewTab).map(page => page.viewTab);
+  assert.equal(tabs.join(","), "backup,updates,blueprints,goals");
+  assert.equal(el.t("mtNotes_1"), "1 note");
+  el.goals = { goals: [], met: 0, missed: 0 }; el._goalsRequested = true; el.view = "maintenance"; el.viewTab = { maintenance: "goals" }; el.render();
+  assert.ok(shadow.innerHTML.includes("There are no maintenance goals yet."));
+  el.goals = null; el.goalsError = "boom"; el.render();
+  assert.ok(shadow.innerHTML.includes("boom"));
+});
+
+test("the journal has tabs for plans and removed devices, shows a load error and points to older purges from tidy up", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [], notes: [] };
+  el.journal = []; el._journalRequested = true; el.removed = [{ object_id: "d9", name: "Old hub", kind: "remove_device", group: "device", at: "2026-03-01T00:00:00+00:00", plan_id: "gone" }]; el.purges = [];
+  el.view = "journal"; el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes('data-view-tab="journal|plans"') && html.includes('data-view-tab="journal|devices"') && !html.includes('data-view-tab="journal|purges"') && html.includes("data-journal-refresh"));
+  el.viewTab = { journal: "devices" }; el.render();
+  assert.ok(shadow.innerHTML.includes("Old hub") && !shadow.innerHTML.includes("Open plan"), "a plan that left the journal gets no button");
+  el.journalError = "boom"; el.render();
+  assert.ok(shadow.innerHTML.includes("boom") && !shadow.innerHTML.includes("Old hub"), "a failed load is shown, not mistaken for an empty journal");
+  el.journalError = ""; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
+  el.view = "cleanup"; el.viewTab = { cleanup: "stats" };
+  assert.ok(el.cleanupView().includes('data-jump-tab="purges"'));
+});
+
+test("the Backups tab holds the protection and, folded at the foot, the tidy-up of Housekeeper's own backups", () => {
+  const { el } = panel("en");
+  el._bkcRequested = true;
+  el.bkc = { available: true, rows: [{ backup_id: "b2", name: "Housekeeper bbbb2222", date: "2026-08-30T10:00:00+00:00", age_days: 41, size: 900, with_database: true, plan_id: "p2", protected: null, only_return: false, suggested: true }], total: { count: 1, bytes: 900 }, suggested: { count: 1, bytes: 900 } };
+  el.backup = { available: true, overall: "note", checks: [{ id: "own_backups", level: "note", values: { count: 12, size: 3145728000 } }], backups: [] };
+  let html = el.backupCard();
+  assert.ok(html.includes("data-bkc-open") && html.includes('data-fold="bkc"') && html.includes('aria-expanded="false"') && !html.includes("data-bkc-plan"), "folded: nothing to press by accident");
+  assert.ok(html.includes("Look first") && html.includes("To check: Housekeeper backups") && html.includes("Latest backup") && html.includes("Backup runs") === false, "a verdict on top, groups only where there are checks");
+  assert.ok(html.indexOf("Look first") < html.indexOf("Housekeeper</div>"), "the verdict comes before the groups");
+  el.folds = { bkc: true };
+  html = el.backupCard();
+  assert.ok(html.includes("data-bkc-plan") && html.includes("Housekeeper bbbb2222"));
+});
+
+test("the new backup checks say what failed, which target is stale and how much room is left", () => {
+  const { el } = panel("en");
+  el.backup = { available: true, overall: "problem", counts: { note: 1, problem: 1 }, backup_count: 3, backups: [], checks: [
+    { id: "content", level: "problem", values: { failed: ["Cloudflared", "ssl"] } },
+    { id: "remote_age", level: "note", values: { agents: [{ agent: "cloud.cloud", age_hours: 216 }, { agent: "hassio.local", age_hours: 5 }], stale: ["cloud.cloud"], limit_hours: 36 } },
+    { id: "space", level: "problem", values: { free: 800 * 1024 ** 2, size: 1024 ** 3, need: 1.5 * 1024 ** 3 } },
+  ] };
+  const html = el.backupCard();
+  assert.ok(html.includes("Parts of the newest backup failed: Cloudflared, ssl") && html.includes("Too old (limit 36 h): cloud.cloud: 9 days") && html.includes("Only 800 MB free, the last backup was 1 GB"));
+  assert.ok(html.includes("Storage and content") && html.includes("Content") && html.includes("Room for the next backup"));
+});
+
+test("the Backups tab draws the sizes of the last backups and marks the newest, left out below three", () => {
+  const { el } = panel("en");
+  const row = (n, size, extra = {}) => ({ date: `2026-10-${10 + n}T03:00:00+00:00`, size, ...extra });
+  el.backup = { available: true, overall: "ok", checks: [{ id: "size", level: "note", values: {} }], backups: [row(3, 4 * 1024 ** 3), row(2, 2 * 1024 ** 3), row(1, 2 * 1024 ** 3), row(0, 1024 ** 3, { own: true })] };
+  const html = el.bhSizes(el.backup);
+  assert.ok(html.includes("Size of the last backups") && (html.match(/<i /g) || []).length === 3 && html.includes('class="last warn"') && html.includes("from 2 GB to 4 GB"), "own backups stay out");
+  assert.equal(el.bhSizes({ ...el.backup, backups: el.backup.backups.slice(0, 2) }), "");
+});
+
+test("the configuration check runs on request only and an invalid result stops the verdict", async () => {
+  const { el, shadow } = panel("en");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg.type); return { valid: false, errors: "Invalid config for [demo] <b>", warnings: null, at: "2026-10-17T10:00:00+00:00", took_ms: 900 }; } };
+  el.preflight = { state: { backup: { available: true, level: "ok", age_hours: 5 }, disk: { free: 41e9 }, repairs: [], failed_entries: [], broken: [], updates: [{ entity_id: "update.core", name: "Core", installed: "1", latest: "2", group: "system" }] },
+    checks: [{ check: "backup", level: "ok" }], verdict: "ready", counts: { total: 1, system: 1, app: 0, hacs: 0, device: 0, blocked: 0 }, watch: { hours: 24, active: null } };
+  el.view = "maintenance"; el.viewTab = { maintenance: "updates" }; el._pfRequested = true; el.render();
+  assert.ok(shadow.innerHTML.includes("data-config-check") && shadow.innerHTML.includes("runs only when you press the button") && shadow.innerHTML.includes("Ready"));
+  await el.runConfigCheck();
+  const html = shadow.innerHTML;
+  assert.deepEqual(sent, ["ha_housekeeper/check_config"]);
+  assert.ok(html.includes("Stop") && html.includes("To check: Configuration") && html.includes("Invalid config for [demo] &lt;b&gt;") && !html.includes("<b>"));
 });

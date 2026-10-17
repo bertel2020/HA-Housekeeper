@@ -14,6 +14,7 @@ pytest.importorskip("pytest_homeassistant_custom_component")
 from homeassistant.core import HomeAssistant  # noqa: E402
 
 from custom_components.ha_housekeeper.backup_health import (  # noqa: E402
+    ATTEST_KINDS,
     AttestStore,
     collect,
     evaluate,
@@ -35,6 +36,7 @@ def backup(hours: float = 5, size: int = 1000, agents=("hassio.local", "cloud.cl
         "failed_agents": [],
         "protected": True,
         "automatic": True,
+        "database": True,
         **extra,
     }
 
@@ -58,6 +60,7 @@ def state(backups=None, **extra):
         "config": config(),
         "backups": [backup()] if backups is None else backups,
         "agent_errors": [],
+        "disk_free": 10_000,
         **extra,
     }
 
@@ -82,6 +85,9 @@ def test_a_sound_setup_is_all_ok() -> None:
         "size",
         "retention",
         "encryption",
+        "content",
+        "remote_age",
+        "space",
         "emergency_kit",
         "restore_test",
     }
@@ -224,6 +230,10 @@ def test_encryption_needs_the_password_and_a_protected_newest_backup() -> None:
         checks["encryption"]["level"] == "note"
         and checks["encryption"]["values"]["newest_protected"] is False
     )
+    _, checks = judge(
+        {**state(), "config": config(encrypted=False)}, attest={**ATTEST, "encryption": ago(days=2)}
+    )
+    assert checks["encryption"]["level"] == "ok" and checks["encryption"]["values"]["at"]
 
 
 def test_what_only_the_person_knows_is_a_note_until_confirmed() -> None:
@@ -380,7 +390,12 @@ async def test_the_attestations_survive_a_restart_and_reject_unknown_kinds(
 ) -> None:
     store = AttestStore(hass)
     await store.async_load()
-    assert store.record == {"targets": None, "emergency_kit": None, "restore_test": None}
+    assert store.record == {
+        "targets": None,
+        "emergency_kit": None,
+        "restore_test": None,
+        "encryption": None,
+    }
     store.set("emergency_kit")
     store.set("restore_test", date(2026, 9, 1))
     store.set("targets", date(2026, 9, 2))
@@ -402,4 +417,34 @@ async def test_the_attestations_survive_a_restart_and_reject_unknown_kinds(
     }
     broken = AttestStore(hass)
     await broken.async_load()
-    assert broken.record == {"targets": None, "emergency_kit": None, "restore_test": None}
+    assert broken.record == dict.fromkeys(ATTEST_KINDS)
+
+
+def test_the_content_of_the_newest_backup_is_judged() -> None:
+    assert judge(state())[1]["content"]["level"] == "ok"
+    failed = judge(state([backup(failed_apps=["Cloudflared"])]))[1]["content"]
+    assert failed["level"] == "problem" and failed["values"]["failed"] == ["Cloudflared"]
+    assert judge(state([backup(database=False)]))[1]["content"]["level"] == "note"
+    assert judge(state([backup(database=None)]))[1]["content"]["level"] == "unknown"
+
+
+def test_the_newest_copy_on_each_external_target_must_not_be_old() -> None:
+    both = [backup(5, agents=("hassio.local",)), backup(29, agents=("hassio.local", "cloud.cloud"))]
+    check = judge(state(both))[1]["remote_age"]
+    assert check["level"] == "ok" and check["values"]["agents"][0]["agent"] == "cloud.cloud"
+    old = [
+        backup(5, agents=("hassio.local",)),
+        backup(24 * 9, agents=("hassio.local", "cloud.cloud")),
+    ]
+    stale = judge(state(old))[1]["remote_age"]
+    assert stale["level"] == "note" and stale["values"]["stale"] == ["cloud.cloud"]
+    assert "remote_age" not in judge(state([backup(agents=("hassio.local",))]))[1]
+
+
+def test_the_next_backup_must_fit_on_the_local_target() -> None:
+    newest = [backup(5, size=1000)]
+    assert judge(state(newest, disk_free=2000))[1]["space"]["level"] == "ok"
+    assert judge(state(newest, disk_free=1200))[1]["space"]["level"] == "note"
+    assert judge(state(newest, disk_free=900))[1]["space"]["level"] == "problem"
+    assert judge(state(newest, disk_free=None))[1]["space"]["level"] == "unknown"
+    assert "space" not in judge(state([backup(5, agents=("cloud.cloud",))]))[1]

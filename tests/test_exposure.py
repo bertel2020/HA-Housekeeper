@@ -83,6 +83,56 @@ def test_sensitive_classes_are_a_hint_never_a_problem() -> None:
     assert "cover.blind" not in {i["entity_id"] for i in found["items"]}
 
 
+def test_cameras_sirens_valves_and_doors_are_sensitive_too() -> None:
+    entities = {
+        "camera.drive": entity(domain="camera"),
+        "siren.alarm": entity(domain="siren"),
+        "valve.water": entity(domain="valve"),
+        "cover.patio": entity(domain="cover", device_class="door"),
+    }
+    result = evaluate(raw(exposed=entities), entities, set())
+    found = next(f for f in result["findings"] if f["kind"] == "sensitive_exposed")
+    assert found["count"] == 4
+
+
+def test_google_without_pin_only_for_secure_devices() -> None:
+    entities = {
+        "lock.door": entity(domain="lock"),
+        "cover.blind": entity(domain="cover", device_class="blind"),
+    }
+    data = raw(exposed=[], google_without_pin=["lock.door", "cover.blind"])
+    data["assistants"]["cloud.google_assistant"] = {"status": "ok", "exposed": list(entities)}
+    found = next(
+        f for f in evaluate(data, entities, set())["findings"] if f["kind"] == "google_without_pin"
+    )
+    assert found["level"] == "warn" and [i["entity_id"] for i in found["items"]] == ["lock.door"]
+
+
+def test_auto_expose_names_the_working_assistants() -> None:
+    data = raw(
+        expose_new={"conversation": True, "cloud.alexa": True, "cloud.google_assistant": True}
+    )
+    data["assistants"]["cloud.alexa"]["status"] = "ok"
+    found = next(
+        f
+        for f in evaluate(data, {"light.a": entity("A")}, set())["findings"]
+        if f["kind"] == "auto_expose"
+    )
+    assert found["assistants"] == ["cloud.alexa"] and found["level"] == "hint"
+
+
+def test_llm_agents_are_named_with_the_assist_reach() -> None:
+    agent = {
+        "entry_id": "e1",
+        "domain": "openai_conversation",
+        "title": "OpenAI",
+        "target": "cloud",
+    }
+    result = evaluate(raw(llm_agents=[agent]), {"light.a": entity("A")}, set())
+    found = next(f for f in result["findings"] if f["kind"] == "llm_exposed")
+    assert found["integrations"] == [agent] and found["reach"] == 1 and found["level"] == "hint"
+
+
 def test_stale_exposed_disabled_or_orphaned() -> None:
     entities = {
         "light.a": entity(status="disabled"),
@@ -225,6 +275,66 @@ async def test_assistant_source_failing_is_unavailable(hass: HomeAssistant) -> N
 async def test_cloud_assistants_inactive_without_cloud(hass: HomeAssistant) -> None:
     data = collect(hass, ["light.a"])
     assert data["assistants"]["cloud.alexa"]["status"] == "inactive"
+
+
+async def test_cloud_assistant_switched_off_in_nabu_casa(hass: HomeAssistant) -> None:
+    from types import SimpleNamespace
+
+    hass.config.components.add("cloud")
+    prefs = SimpleNamespace(alexa_enabled=True, google_enabled=False)
+    hass.data["cloud"] = SimpleNamespace(client=SimpleNamespace(prefs=prefs))
+    with patch(
+        "homeassistant.components.homeassistant.exposed_entities.async_should_expose",
+        return_value=True,
+    ):
+        data = collect(hass, ["light.a"])
+    assert data["assistants"]["cloud.google_assistant"] == {"status": "off", "exposed": []}
+    assert data["assistants"]["cloud.alexa"] == {"status": "ok", "exposed": ["light.a"]}
+
+
+async def test_collect_reads_expose_new_and_the_google_pin_switch(hass: HomeAssistant) -> None:
+    from homeassistant.components.homeassistant.exposed_entities import (
+        async_expose_entity,
+        async_set_assistant_option,
+    )
+    from homeassistant.setup import async_setup_component
+
+    assert await async_setup_component(hass, "homeassistant", {})
+    hass.config.components.add("cloud")
+    hass.states.async_set("lock.door", "locked")
+    async_expose_entity(hass, "cloud.google_assistant", "lock.door", True)
+    async_set_assistant_option(hass, "cloud.google_assistant", "lock.door", "disable_2fa", True)
+    data = collect(hass, ["lock.door"])
+    assert data["google_without_pin"] == ["lock.door"]
+    assert data["expose_new"] == {"cloud.alexa": False, "cloud.google_assistant": False}
+
+
+async def test_llm_agents_read_only_the_assist_option(hass: HomeAssistant) -> None:
+    from homeassistant.config_entries import ConfigSubentryData
+
+    cloud = MockConfigEntry(
+        domain="anthropic",
+        title="Claude",
+        data={"api_key": SECRETS[2]},
+        subentries_data=[
+            ConfigSubentryData(
+                data={"llm_hass_api": ["assist"], "prompt": SECRETS[3]},
+                subentry_type="conversation",
+                title="Agent",
+                unique_id=None,
+            )
+        ],
+    )
+    local = MockConfigEntry(domain="ollama", options={"llm_hass_api": "assist"})
+    mcp = MockConfigEntry(domain="mcp_server", title="MCP", options={"llm_hass_api": ["assist"]})
+    for entry in (cloud, local, mcp):
+        entry.add_to_hass(hass)
+    agents = collect(hass, [])["llm_agents"]
+    assert sorted((a["domain"], a["target"]) for a in agents) == [
+        ("anthropic", "cloud"),
+        ("mcp_server", "external"),
+    ]
+    assert not any(secret in json.dumps(agents) for secret in SECRETS)
 
 
 async def test_collect_runs_against_real_exposed_entities(hass: HomeAssistant) -> None:

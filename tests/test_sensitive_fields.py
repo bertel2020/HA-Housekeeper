@@ -27,6 +27,15 @@ def test_kind_follows_the_field_name() -> None:
     assert kind_of("api_key") == "api_key"
     assert kind_of("webhook_id") == "webhook"
     assert kind_of("pin") == "pin"
+    for name, kind in {
+        "user_pass": "password",
+        "passcode": "password",
+        "cookie": "token",
+        "session_id": "token",
+        "totp": "secret",
+        "otp_secret": "secret",
+    }.items():
+        assert kind_of(name) == kind, name
     for harmless in (
         "token_type",
         "expires_at",
@@ -35,6 +44,12 @@ def test_kind_follows_the_field_name() -> None:
         "host",
         "ping",
         "client_id",
+        "bypass",
+        "passive",
+        "session",
+        "session_timeout",
+        "otp_digits",
+        "token_expiry",
     ):
         assert kind_of(harmless) is None, harmless
 
@@ -48,7 +63,7 @@ async def test_overview_has_kind_and_set_but_no_value(hass: HomeAssistant) -> No
     ).add_to_hass(hass)
     MockConfigEntry(domain="plain", title="Plain", data={"host": "h"}).add_to_hass(hass)
 
-    result = sensitive_fields(hass)
+    result = await sensitive_fields(hass)
 
     assert [e["domain"] for e in result["entries"]] == ["demo_cloud"], (
         "entries without any are left out"
@@ -63,3 +78,39 @@ async def test_overview_has_kind_and_set_but_no_value(hass: HomeAssistant) -> No
         ("options", "pin"): ("pin", True),
     }
     assert VALUE not in json.dumps(result), "no value, no mask, nothing derived from one"
+
+
+async def test_accounts_name_role_and_two_factor_but_never_a_token(hass: HomeAssistant) -> None:
+    admin = await hass.auth.async_create_user("Admin", group_ids=["system-admin"])
+    await hass.auth.async_create_system_user("Supervisor")
+    token = await hass.auth.async_create_refresh_token(
+        admin,
+        client_name="Node-RED",
+        token_type="long_lived_access_token",
+        access_token_expiration=__import__("datetime").timedelta(days=3650),
+    )
+
+    result = await sensitive_fields(hass)
+
+    rows = {row["name"]: row for row in result["accounts"]}
+    assert "Supervisor" not in rows, "accounts the system made are left out"
+    row = rows["Admin"]
+    assert (row["admin"], row["mfa"], row["token_count"], row["logins"]) == (True, False, 1, False)
+    assert row["inactive"] is False, "only tokens: a service account, as the account rule says"
+    assert [(t["name"], t["account"], t["days"], t["old"]) for t in result["tokens"]] == [
+        ("Node-RED", "Admin", 0, False)
+    ]
+    assert token.token not in json.dumps(result) and token.jwt_key not in json.dumps(result)
+
+
+async def test_an_integration_waiting_for_a_new_login_is_marked(hass: HomeAssistant) -> None:
+    from unittest.mock import patch
+
+    entry = MockConfigEntry(domain="plain", title="Plain", data={"host": "h"})
+    entry.add_to_hass(hass)
+    flows = [{"context": {"source": "reauth", "entry_id": entry.entry_id}}]
+    with patch.object(hass.config_entries.flow, "async_progress", return_value=flows):
+        result = await sensitive_fields(hass)
+    assert [(e["domain"], e["reauth"], e["fields"]) for e in result["entries"]] == [
+        ("plain", True, [])
+    ], "listed although no field name gave it away"

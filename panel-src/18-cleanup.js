@@ -98,7 +98,21 @@ class CleanupMixin {
 
   // What the plan would run now: executable, and "to review" only when explicitly confirmed.
   runActions(plan) {
-    return plan.actions.filter(a => a.executable && (a.verdict !== "review" || this.ack.has(a.object_id)));
+    return plan.actions.filter(a => a.executable);
+  }
+
+  // The steps the protection mode would refuse; the server checks again, this only warns before the click.
+  modeBlocked(plan) {
+    const rules = this.data?.meta?.protection_rules, rank = rules?.modes?.indexOf(this.data?.meta?.protection);
+    if (!rules || rank === undefined || rank < 0) return [];
+    const need = a => rules.quarantine.includes(a.kind) ? 1 : rules.full_only.includes(a.kind) || a.recorder ? 3 : 2;
+    return this.runActions(plan).filter(a => rank < need(a));
+  }
+
+  modeName() { return this.t(`mode_${this.data.meta.protection}`).replace(/^\d · /, ""); }
+
+  modeHint(blocked) {
+    return `<div class="factnote"><strong>${this.t("modeBlockTitle", { mode: this.modeName() })}</strong><small>${this.t("modeBlockText", { count: blocked.length })}</small><button class="linkbtn" data-goto-protection>${this.t("modeBlockLink")}</button></div>`;
   }
 
   largeRemovalWarning(plan) {
@@ -203,15 +217,16 @@ class CleanupMixin {
   async loadJournal() {
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/plan_list" });
-      this.journal = reply.plans || []; this.purges = reply.purges || [];
-    } catch (_) { this.journal = []; }
+      this.journal = reply.plans || []; this.purges = reply.purges || []; this.removed = reply.removed || []; this.journalError = "";
+      this.markLoaded("journal");
+    } catch (err) { this.journal = []; this.journalError = this.errText(err); }
     this.render();
   }
 
   // The journal list holds short entries only; the plan itself is fetched when it is opened.
   async openPlan(planId) {
     this.reopenedPlanId = planId; this.planChanges = null;
-    try { this.plan = await this._hass.callWS({ type: "ha_housekeeper/plan_detail", plan_id: planId }); this.cleanupError = ""; } catch (err) { this.cleanupError = this.errText(err); }
+    try { this.plan = await this._hass.callWS({ type: "ha_housekeeper/plan_detail", plan_id: planId }); this.cleanupError = ""; this.showPlanView(); } catch (err) { this.cleanupError = this.errText(err); }
     this.render();
   }
 
@@ -314,6 +329,7 @@ class CleanupMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_renew", plan_id: planId });
       this.plan = plan; this.reopenedPlanId = null; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
       this.journal = [plan, ...(this.journal || []).filter(p => p.plan_id !== planId)];
+      this.showPlanView();
       this.toast(this.t("toastRenewed"));
     } catch (err) { this.failPlan(err, "renew"); }
     this.cleanupBusy = false; this.render();
@@ -324,7 +340,7 @@ class CleanupMixin {
 
   async confirmPlan() {
     try {
-      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: [...this.ack] });
+      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: this.plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id) });
       this.confirmWord = ""; this.cleanupError = "";
     } catch (err) { this.failPlan(err, "confirm"); }
     this.render();
@@ -417,21 +433,33 @@ class CleanupMixin {
 
   async mergePlans() {
     const ids = [...(this.mergeSel || [])].filter(id => (this.journal || []).some(p => p.plan_id === id && this.mergeable(p)));
-    if (ids.length < 2 || this.cleanupBusy) return;
+    if (ids.length < 2 || ids.length > 10 || this.cleanupBusy) return;
     this.cleanupBusy = true; this.cleanupError = ""; this.mergeNote = ""; this.render();
     try {
       const result = await this._hass.callWS({ type: "ha_housekeeper/plan_merge", plan_ids: ids });
       this.plan = result.plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = ""; this.mergeSel = new Set();
+      this.showPlanView();
       this.journal = [result.plan, ...(this.journal || []).filter(p => !result.merged.includes(p.plan_id))];
       this.mergeNote = result.conflicts.length ? this.t("mergeConflicts", { count: result.conflicts.length, list: result.conflicts.slice(0, 5).map(c => `${c.object_id} (${c.kinds.join(" / ")})`).join(", ") }) : this.t("mergeDone", { count: result.merged.length });
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
   }
 
+  // Deletes the picked previews; a plan that ran is never in the picks (it is not mergeable) and the server refuses it anyway.
+  async deletePlans() {
+    const ids = [...(this.mergeSel || [])].filter(id => (this.journal || []).some(p => p.plan_id === id && this.mergeable(p)));
+    if (!ids.length) return;
+    for (const id of ids) { try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: id }); } catch (_) { /* already gone */ } }
+    this.journal = (this.journal || []).filter(p => !ids.includes(p.plan_id));
+    this.mergeSel = new Set();
+    if (this.plan && ids.includes(this.plan.plan_id)) { this.leavePlan(); return; }
+    this.render();
+  }
+
   async deletePlan(id) {
     try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: id }); } catch (_) { /* already gone */ }
     this.journal = (this.journal || []).filter(p => p.plan_id !== id);
-    if (this.plan?.plan_id === id) this.plan = null;
+    if (this.plan?.plan_id === id) { this.leavePlan(); return; }
     this.render();
   }
 
@@ -463,13 +491,6 @@ class CleanupMixin {
     steps.push(verification ? (verification.ok ? { id: "stepVerify", state: "done" } : { id: "stepVerify", state: "failed", note: this.t("stepVerifyFailed") })
       : status === "executed" ? { id: "stepVerify", state: "current" } : { id: "stepVerify", state: "todo" });
     return steps;
-  }
-
-  planStepper(plan, confirming) {
-    const mark = { done: "✓", failed: "!", skipped: "–" };
-    const items = this.planSteps(plan, confirming).map((step, i) => `<li class="step ${step.state}"${step.state === "current" ? ' aria-current="step"' : ""}><span class="mark" aria-hidden="true">${mark[step.state] || i + 1}</span><span class="steptext"><b>${this.t(step.id)}</b><span class="sr-only">: ${this.t(`step${{ done: "Done", current: "Current", todo: "Todo", skipped: "Skipped", failed: "Failed" }[step.state]}`)}</span>${step.note ? `<small>${this.esc(step.note)}</small>` : ""}</span></li>`).join("");
-    const backup = plan.backup ? `<p class="factnote">${this.t("backupRestoreHint")}</p>` : "";
-    return `<ol class="steps" aria-label="${this.esc(this.t("stepsLabel"))}">${items}</ol>${backup}`;
   }
 
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
@@ -515,7 +536,7 @@ class CleanupMixin {
         return `<button class="chip" data-object="${this.esc(u.source)}">${this.esc(obj?.name || u.source.split(":").slice(1).join(":"))}</button>`;
       }).join("");
       const more = (a.used_by || []).length > 4 ? `<small>+${a.used_by.length - 4}</small>` : "";
-      const reasons = (a.reasons || []).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
+      const reasons = (a.reasons || []).filter(r => !(a.kind === "purge_statistics" && ["irreversible", "with_states"].includes(r))).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
@@ -538,12 +559,10 @@ class CleanupMixin {
     if (open && this.planStale(plan)) control = `<div class="setrow planfoot"><small class="u-m0">${this.t("planStaleHint")}</small><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("confirmCancel")}</button><button class="btn primary" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button></span></div>`;
     else if (open && !executable) control = `<p class="factnote">${this.t("nothingExecutable")}</p>`;
     else if (open && !conf) {
-      const review = plan.actions.filter(a => a.verdict === "review" && a.executable);
-      const all = review.length && review.every(a => this.ack.has(a.object_id));
-      const reviewBox = review.length ? `<label class="factnote reportopt"><input type="checkbox" data-ack-all ${all ? "checked" : ""}><span><strong>${this.t("acknowledgeAll", { count: review.length })}</strong><small>${this.t("acknowledgeAllHint")}</small></span></label>` : "";
       const run = this.runActions(plan);
+      const blocked = this.modeBlocked(plan);
       const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
-      control = `<div class="setrow planfoot"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${reviewBox}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("confirmCancel")}</button><button class="btn ${risky ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}">${this.t("confirmPlan")}</button></span></div>`;
+      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t("confirmPlan")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
       const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
@@ -556,6 +575,7 @@ class CleanupMixin {
       : `<div class="setrow planfoot"><small class="u-m0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
     const checks = plan.verification ? `<details class="checkdet"><summary><b>${this.t("verification")}</b></summary><div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div></details>` : "";
     const stage = this.planStage(plan, Boolean(conf));
+    const footClose = open && !conf && executable && !this.planStale(plan); // the preview has its buttons in the foot
     // Nothing can run: no steps and no confirmation, one clear band and the reasons.
     if (open && !executable) {
       const blocked = plan.actions.filter(a => a.verdict === "blocked").length;
@@ -565,15 +585,14 @@ class CleanupMixin {
         <div class="outcome ${nothing ? "ok" : "warn"}" role="status"><ha-icon icon="${nothing ? "mdi:check-circle-outline" : "mdi:information-outline"}"></ha-icon><span><strong>${this.t(nothing ? "wzIdleNothingTitle" : "wzIdleTitle")}</strong><small>${this.esc(why)}</small></span></div>${rowList.join("")}${this.reportBlock(plan, `<button class="btn primary" data-plan-close>${this.t("planClose")}</button>`)}</section>`;
     }
     const rowTexts = plan.actions.map(a => [a.name, a.object_id, a.target, a.label_name, a.area_name, ...(a.reasons || []).map(r => this.t(`reason_${r}`))].filter(Boolean).join(" "));
-    const rows = this.planRowsShown(plan, rowList, rowTexts);
+    const rows = this.fold("planrows", { title: this.t("planObjects", { n: this.formatNumber(plan.actions.length) }) }, this.planRowsShown(plan, rowList, rowTexts), true);
     const summary = this.exchangeSummary(plan) + `<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.recorderSummary(plan)}`;
-    const flow = `<details class="rowdetails wzflow"><summary>${this.t("wzFlow")}</summary>${this.planStepper(plan, Boolean(conf))}</details>`;
-    const body = stage === 0 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`
-      : stage === 1 ? `${summary}${this.simulationBlock(plan)}${rows}${control}`
-      : stage === 2 ? `${this.planOutcome(plan)}${this.planProgressBar()}${control}`
-      : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${this.simulationBlock(plan)}${rows}${checks}${this.followupLine(plan)}${control}`;
-    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div><button class="btn" data-plan-close>${this.t("planClose")}</button></div>
-      ${this.wizardBar(stage)}${flow}${body}${this.reportBlock(plan)}</section>`;
+    const body = stage === 0 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
+      : stage === 1 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
+      : stage === 2 ? `${this.planOutcome(plan)}${control}`
+      : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
+    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
+      ${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
   }
 
   kindSelect() {
@@ -700,18 +719,19 @@ class CleanupMixin {
       { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), count: count("disable_entity"), facts: nothing(count("disable_entity")), tone: "warn" },
       { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), count: count("disable_device"), facts: nothing(count("disable_device")), tone: "warn" },
       { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), count: held.length, facts: [], pill: heldReady ? this.t("cleanupReadyCount", { count: heldReady }) : "", tone: heldReady ? "ok" : "mute" },
-      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, facts: unusedFacts, tone: "mute" },
       { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), count: statsCount, facts: [], tone: "mute" },
-      ...(purges.length ? [{ id: "purges", icon: "mdi:history", label: this.t("cleanupTabPurges"), hint: this.t("cleanupTilePurgesHint"), count: purges.length, facts: [], tone: "mute" }] : []),
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, facts: unusedFacts, tone: "mute" },
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
     const tiles = this.cleanupTiles(tabs, open);
-    if (["unused", "stats", "purges"].includes(open)) {
+    if (["unused", "stats"].includes(open)) {
       this.unrefTab = open === "stats" ? "statistics" : "entities";
       this._embedUnref = true;
-      const body = open === "purges" ? this.purgeJournalCard() : this.unreferencedView();
+      const body = this.unreferencedView();
       this._embedUnref = false;
-      return `<div class="stack">${this.planHeader()}${tiles}${body}</div>`;
+      // What was deleted from the recorder is noted in the Journal.
+      const pointer = open === "stats" && purges.length ? `<p class="factnote pad">${this.t("purgesInJournal", { n: purges.length })} <button class="link" data-jump="journal" data-jump-tab="purges">${this.t("purgesInJournalLink")}</button></p>` : "";
+      return `<div class="stack">${this.planHeader()}${tiles}${pointer}${body}</div>`;
     }
     const quarantineType = this.quarantineType === "device" ? "device" : "entity";
     this._cleanupKinds = open === "devices" ? ["disable_device"] : open === "quarantine" ? (quarantineType === "device" ? ["remove_device", "forget_device"] : ["remove_entity"]) : ["disable_entity"];
@@ -759,7 +779,7 @@ class CleanupMixin {
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
       <div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("cleanup", n)}<span class="selcount" aria-live="polite">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
-      <button class="btn primary" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("createPlan")}</button>${this.viewCount(shownList.length)}</div>
+      <button class="btn ${REMOVAL_KINDS.includes(this.cleanupKind) ? "dangersoft" : "primary"}" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t(REMOVAL_KINDS.includes(this.cleanupKind) ? "prepareDelete" : "createPlan", { count: n })}</button>${this.viewCount(shownList.length)}</div>
       ${bar}${table}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
     const message = open === "quarantine" && this.releaseMessage ? `<p class="factnote" role="status">${this.esc(this.releaseMessage)}</p>` : "";
@@ -770,13 +790,72 @@ class CleanupMixin {
     if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
   }
 
+  // "Refresh" on the Journal: asks again; the lists show their loading state meanwhile.
+  refreshJournal() {
+    this.journal = null; this._journalRequested = false; this.journalError = "";
+    this.ensureJournal(); this.render();
+  }
+
   // Every new plan opens the same way: it becomes the open plan, goes on top of the journal and the
-  // page scrolls to its card. `view` switches to the page that shows it; null stays on the current one.
-  openNewPlan(plan, view = "cleanup") {
+  // plan page shows it. The page it came from stays one step back. (`view` is kept for the callers' sake.)
+  openNewPlan(plan, _view) {
     this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
     this.journal = [plan, ...(this.journal || [])];
+    this.showPlanView();
+  }
+
+  // The plan page is a page of its own without a menu entry; "back" returns to where the plan was started.
+  showPlanView() {
     this._scrollPlan = true;
-    if (view) { this.noteJump?.(view); this.view = view; this.pages = {}; }
+    if (this.view !== "plan") { this.noteJump?.("plan"); this.view = "plan"; this.pages = {}; this.selected = null; }
+  }
+
+  // "Cancel" on a preview: the plan is dropped for good, nothing stays in the journal.
+  async discardPlan() {
+    const id = this.plan?.plan_id;
+    if (id) {
+      try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: id }); } catch (_) { /* already gone */ }
+      this.journal = (this.journal || []).filter(p => p.plan_id !== id);
+    }
+    this.leavePlan();
+  }
+
+  // Whether a deletion of statistics also deletes the stored states: the preview is made again with that choice.
+  async setPurgeStates(on) {
+    const old = this.plan;
+    if (!old || this.cleanupBusy) return;
+    this.cleanupBusy = true; this.cleanupError = ""; this.render();
+    try {
+      const actions = old.actions.map(a => ({ kind: a.kind, object_id: a.object_id, ...(a.kind === "purge_statistics" ? { states: on } : {}) }));
+      const fresh = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.openNewPlan(fresh, null);
+      try { await this._hass.callWS({ type: "ha_housekeeper/plan_delete", plan_id: old.plan_id }); } catch (_) { /* already gone */ }
+      this.journal = (this.journal || []).filter(p => p.plan_id !== old.plan_id);
+    } catch (err) { this.failPlan(err, "renew"); }
+    this.cleanupBusy = false; this.render();
+  }
+
+  // The choice sits at the foot of the preview, only for plans that delete statistics.
+  purgeStatesSwitch(plan) {
+    const purges = plan.actions.filter(a => a.kind === "purge_statistics" && a.executable);
+    if (!purges.length) return "";
+    const on = purges.every(a => a.states), n = plan.simulation?.purge_states_rows;
+    return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-purge-states-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("purgeStates")}</strong><small>${this.t(on ? "purgeStatesOn" : "purgeStatesOff", { n: this.formatNumber(n || 0) })}</small></span></label>`;
+  }
+
+  // Closing the plan page: back to the page it came from, else the journal.
+  leavePlan() {
+    this.plan = null; this.planChanges = null; this.cleanupError = "";
+    if (this.view === "plan") {
+      if (this.viewTrail.length) { this.viewBack(); return; }
+      this.view = "journal"; this.pages = {};
+    }
+    this.render();
+  }
+
+  planView() {
+    if (this.plan) return `<div class="stack">${this.planHeader(true)}</div>`;
+    return `<div class="stack">${this.planHeader()}<p class="factnote pad">${this.t("planNone")}</p><div class="pad"><button class="btn" data-plan-close>${this.t("planClose")}</button></div></div>`;
   }
 
   // For the paths without a busy flag of their own: one request at a time, and their buttons are off
@@ -793,14 +872,15 @@ class CleanupMixin {
 
   // An error from the last request and the plan that is open, on top of every view that can finish one.
   // The dry-run sentence sits behind the coloured (i) in the page title (Cleanup, Journal); Repair says it in its subtitle.
-  planHeader() {
+  planHeader(withCard = false) {
     const from = this.cleanupErrorStamp === this.cleanupError ? this.cleanupErrorFrom : "";
     const lead = this.t({ confirm: "confirmError", check: "checkError", renew: "renewError" }[from] || "planError");
     const open = this.plan && this.isOpenPreview(this.plan);
     const renew = open && (this.planStale(this.plan) || this.planChanges || (from === "confirm" && this.cleanupErrorCode === "plan_too_old")) ? `<button class="btn primary" data-plan-renew="${this.esc(this.plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : "";
-    const error = this.cleanupError ? `<div class="error">${lead}: ${this.esc(this.cleanupError)}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
+    const modeLink = this.cleanupError && this.cleanupError === this.t("err_protection_mode") ? ` <button class="linkbtn" data-goto-protection>${this.t("modeBlockLink")}</button>` : "";
+    const error = this.cleanupError ? `<div class="error">${lead}: ${this.esc(this.cleanupError)}${modeLink}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
     const changes = this.planChanges?.length ? `<div class="panel"><div class="error"><strong>${this.t("planChangedTitle")}</strong><small class="dim7">${this.t("planChangedHint")}</small><ul class="evlist">${this.planChanges.slice(0, 10).map(c => `<li>${this.esc(c.object_id)}</li>`).join("")}</ul>${this.planChanges.length > 10 ? `<small>${this.t("planChangedMore", { count: this.planChanges.length - 10 })}</small>` : ""}${renew}</div></div>` : "";
-    return `${error ? `<div class="panel">${error}</div>` : ""}${changes}${this.plan ? this.planCard(this.plan) : ""}`;
+    return `${error ? `<div class="panel">${error}</div>` : ""}${changes}${withCard && this.plan ? this.planCard(this.plan) : ""}`;
   }
 
   // Every plan from Cleanup and Repair: what changed, what was checked, and what can be undone.
@@ -835,9 +915,20 @@ class CleanupMixin {
       text: p => `${this.formatDate(p.created_at)} ${this.t(`plan_status_${statusOf(p)}`)}`, tie: p => p.created_at,
     }) : `<div class="emptymsg mute"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon><strong>${this.t("journalEmpty")}</strong>${this.t("journalEmptyNext")}<button class="btn" data-jump="repair">${this.t("repair")}</button></div>`;
     const picked = this.mergeSel?.size || 0;
-    const tools = plans.some(p => this.mergeable(p)) ? `<div class="toolbar${picked ? "" : " nosel"}"><button class="btn" data-merge ${picked >= 2 && !this.cleanupBusy ? "" : "disabled"}>${this.t("mergeButton", { count: picked })}</button><span class="selcount" aria-live="polite">${this.t("selectedCount", { count: picked })}</span>${this.viewCount(this.lv.journal?.shown ?? plans.length)}</div>` : "";
-    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journal")} (${plans.length})</h2><p>${this.t("journalHint")}</p></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${tools}${table}</div>`;
-    return `<div class="stack">${this.planHeader()}${journalCard}</div>`;
+    const tools = plans.some(p => this.mergeable(p)) ? `<div class="toolbar${picked ? "" : " nosel"}"><button class="btn" data-merge ${picked >= 2 && picked <= 10 && !this.cleanupBusy ? "" : "disabled"}${picked > 10 ? ` title="${this.esc(this.t("mergeTooMany"))}"` : ""}>${this.t("mergeButton", { count: picked })}</button><button class="btn dangersoft" data-merge-delete ${picked && !this.cleanupBusy ? "" : "disabled"}>${this.t("deleteSelectedPlans", { count: picked })}</button><span class="selcount" aria-live="polite">${this.t("selectedCount", { count: picked })}</span>${this.viewCount(this.lv.journal?.shown ?? plans.length)}</div>` : "";
+    const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journalPlans")}</h2><p>${this.t("journalHint")}</p></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${tools}${table}</div>`;
+    const removed = this.removed || [], purges = this.purges || [];
+    const tabs = [
+      { id: "plans", icon: "mdi:clipboard-text-clock-outline", label: this.t("journalPlans"), hint: this.t("journalTabPlansHint"), count: plans.length, tone: "mute" },
+      { id: "devices", icon: "mdi:delete-outline", label: this.t("lifeRemovedTab"), hint: this.t("journalTabDevicesHint"), count: removed.length, tone: "mute" },
+      // Only older installations have these: deletions of recorder leftovers from before there were plans.
+      ...(purges.length ? [{ id: "purges", icon: "mdi:database-remove-outline", label: this.t("cleanupTabPurges"), hint: this.t("journalTabPurgesHint"), count: purges.length, tone: "mute" }] : []),
+    ];
+    const open = this.viewTabOf("journal", tabs, "plans");
+    const head = this.pageBar({ at: this.loadedAt("journal"), loading: this.journal === null, attr: "data-journal-refresh" });
+    const failed = this.journalError ? `<div class="panel"><div class="error">${this.esc(this.journalError)}</div></div>` : "";
+    const body = this.journalError ? "" : open === "devices" ? this.removedCard() : open === "purges" ? this.purgeJournalCard() : journalCard;
+    return `<div class="stack">${this.planHeader()}${head}${this.navTiles("journal", tabs, open, this.t("journal"), true)}${failed}${body}</div>`;
   }
 
   // Where the person is in an assistant: choose, set up, look at the preview.
@@ -860,7 +951,7 @@ class CleanupMixin {
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), repair_counter: () => this.counterCard() }[task]();
       const chosen = { repair_counter: (this.counterId || "").trim(), migrate_meter: this.meterOld, replace_references: this.replOld, exchange_device: this.exchangeState().oldDev }[task];
-      body = `${this.stepsBar(this.plan ? 3 : chosen ? 2 : 1)}${card}`;
+      body = `${this.stepsBar(chosen ? 2 : 1)}${card}`;
     } else {
       body = `<p class="factnote pad">${this.t("repairHint")}</p>`;
     }

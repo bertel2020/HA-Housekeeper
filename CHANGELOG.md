@@ -1,5 +1,234 @@
 # Changelog
 
+## 1.9.0 - 2026-10-17
+
+### Geändert
+
+- **Wartung, Backups:**
+  - „Backup-Schutz“ und „Backups aufräumen“ sind ein Reiter „Backups“; das Aufräumen steht eingeklappt ganz unten, die Zeile „Housekeeper-Backups“ führt dorthin.
+  - Oben stehen ein Urteil (Belastbar, Erst ansehen, Problem) und vier Kennzahlen; die Prüfzeilen sind in vier Gruppen geordnet.
+  - Neue Prüfungen: Inhalt des neuesten Backups (fehlgeschlagene Apps oder Ordner, fehlende Datenbank), Alter der Kopie je externem Ablageort und Platz fürs nächste Backup.
+  - Eine Leiste zeigt die Größe der letzten Backups, so fällt Wachstum früh auf.
+  - Fehlende Verschlüsselung lässt sich als gewollt bestätigen; die Zeile steht dann auf „In Ordnung“.
+- **Journal:**
+  - Das Journal hat Reiter: „Pläne“ und „Entfernte Geräte“ (bisher unter Wartung, jetzt mit einem Sprung zum Plan); ältere Löschungen von Statistiken stehen als dritter Reiter dort, wenn es sie gibt.
+  - Ein Fehler beim Laden wird angezeigt statt „Noch keine Vorschau“, und die Seite hat „Aktualisieren“ und einen Zeitstempel.
+  - Der Hinweis nennt die richtigen Grenzen (ausgeführte Pläne bis zu einem Jahr, höchstens 300).
+  - Der Reiter „Entfernte Geräte“ heißt „Entfernt und gelöscht“ und zeigt auch entfernte Entitäten, gelöschte Automationen, Statistiken und Backups, mit Filter nach Art und dem Hinweis, was sich nicht rückgängig machen lässt.
+- **Wartung, Updates:**
+  - Der Reiter „Update-Preflight“ heißt jetzt „Updates“: ein Gesamturteil (Bereit, Erst ansehen, Stopp), die Prüfzeilen und die Liste der offenen Updates, gruppiert nach System, Apps, HACS und Geräten, mit Sprung nach Home Assistant.
+  - Das Backup wird nach dem Backup-Schutz beurteilt (Zeitplan, letzter Lauf); neu ist die Zeile „Freier Speicher“; HACS-Updates, die HACS nicht installieren kann, sind gekennzeichnet.
+  - Auf der Übersicht steht eine Zeile „n Updates offen“ (ohne Einfluss auf den Ring).
+  - Ein Knopf prüft die Konfiguration (die Prüfung von Home Assistant, nur auf Knopfdruck); ist sie ungültig, steht das Urteil auf „Stopp“.
+  - Die Liste ist übersichtlicher: jede Gruppe eine eigene Karte mit Anzahl, die Versionen als Chip, ruhige Knöpfe rechts, ein Ersatzsymbol, wenn Home Assistant kein Bild liefert.
+- **Weniger CPU-Last:**
+  - Zeitsteuerung und Code der Hintergrundarbeit sind optimiert.
+  - Die Auswertungen aus der Recorder-Datenbank laufen seltener und verteilt, die Abfragen sind sparsamer (abgeschlossene Tage werden nur noch einmal gerechnet, unnötige Suchen entfallen), und Scans nach Ausfällen rücken bei langsamen Systemen weiter auseinander.
+- **Speicher & System:** Die Seite lädt schneller: der Durchlauf über die Ordner läuft neben der Abfrage beim Supervisor statt danach, die Plattenbelegung nach Kategorien wird wie die Ordnergrößen einige Minuten wiederverwendet (Aktualisieren liest neu), und beim Öffnen stehen die zuletzt gelesenen Größen sofort da und werden bei Bedarf im Hintergrund erneuert.
+- **Befunde, Anmeldung nötig:** Verlangt eine Integration eine neue Anmeldung, ist das ein Befund („Anmeldung nötig“, mindestens mittel) mit den betroffenen Entitäten als Folgen, auch wenn die Integration geladen bleibt. Er erscheint innerhalb etwa einer Minute und verschwindet nach der Anmeldung wieder. In „Was muss ich tun?“ steht er als eigene Zeile ganz oben.
+- **Apps & Integrationen, offen in Home Assistant:** Über der Liste steht eine zugeklappte Info-Zeile mit den gefundenen Geräten, die noch auf ihre Einrichtung warten, und den Integrationen, die neu konfiguriert werden möchten. Sie ist ein Hinweis, kein Befund, und fehlt, wenn nichts offen ist.
+- **Zuverlässigkeit:**
+  - Integrationen, die den ganzen Zeitraum ausgefallen waren, stehen oben als „Ausgefallen“ (statt ohne Wert am Ende der Liste) und haben eine eigene Kachel.
+  - Die Kachel „Ø je Integration“ zählt jede Integration einmal und lässt dauerhaft Ausgefallene weg; die Spalte heißt „Gemeinsame Ausfälle“, bei Integrationen mit weniger als drei Entitäten steht „zu klein“ statt einer 0.
+  - Die Kacheln und Filter „Neue Anmeldung nötig“ und „Nicht geladen“ entfallen, die Anmeldung bleibt als Hinweis in der Zeile und führt zum Befund.
+  - Neues Fenster „30 Tage“ (wie bei den Hausfunktionen); die Fußnote nennt die Farbgrenzen (grün ab 99,5 %, gelb ab 95 %) und dass die Tagesleiste einer Hausfunktion nach der Dauer färbt.
+  - Die Detailseite einer Integration zeigt Kennzahlen, eine Tagesleiste mit den Ausfalltagen (wie bei den Hausfunktionen), die Ausfallzeiträume mit Beginn, Dauer und Zahl der betroffenen Entitäten und nennt die Hausfunktionen, die sich auf die Integration stützen; der Vergleich nennt seine Einheit (Prozentpunkte).
+- **Zugangsdaten:**
+  - Integrationen, die eine neue Anmeldung verlangen, tragen die Marke „Anmeldung nötig“ und haben eine eigene Kachel, ebenso deaktivierte Integrationen, die noch Zugangsdaten halten; mehr Feldnamen werden als Zugangsdaten erkannt (etwa Cookie, Session-ID, Einmalcode).
+  - Neuer Reiter „Konten“ mit Rolle, Zwei-Faktor und letzter Anmeldung jedes Benutzers und eine Kachel „Admins ohne Zwei-Faktor“, ein Reiter „Langzeit-Tokens“ mit Name, Konto und Alter; die Kacheln stehen in gleich großen Reihen.
+- **Übersicht, Inventarstatus:** Objekte mit einer Markierung (z. B. „Absichtlich offline“), auch die Entitäten eines markierten Geräts, stehen in einer eigenen Zeile „Markiert (erwartet)“ und zählen nicht mehr unter „Problematisch“ (Issue 25).
+- **Oberfläche:**
+  - Der Start-Hinweis ist eine kompakte Karte: vier Schritte als Leiste, „38 von 41 Integrationen geladen“ mit Balken und Wartezeit daneben, die Namen der noch ladenden Integrationen und beim Scan die aktuelle Phase.
+  - Er aktualisiert sich selbst (alle 3 Sekunden) und verschwindet, sobald die endgültigen Befunde da sind.
+- **Freigaben:**
+  - Als sensibel gelten jetzt auch Kameras, Sirenen, Ventile und Türen.
+  - Neue Warnung, wenn Google Assistant Schlösser, Alarmanlagen oder Tore ohne PIN öffnen darf, und ein Hinweis, wenn neue Entitäten automatisch an Alexa oder Google freigegeben werden.
+  - Ein weiterer Hinweis nennt KI-Gesprächsagenten und den MCP-Server, die Home Assistant über Assist steuern dürfen und so die Assist-Freigaben an ein Sprachmodell oder verbundene Programme geben.
+- **Zugriffe & Datenfluss:**
+  - Mehr Integrationen werden erkannt, etwa Bluetooth und Thread als Funk, Frigate und UniFi Protect als Kamera, ESPHome und Matter als Netzwerk; Ollama gilt als lokal.
+  - Integrationen aus HACS tragen „Fremdcode, volle Rechte“ und haben mindestens mittleres Risiko.
+  - Bei den Apps: Schutzmodus aus (hohes Risiko), offene Ports am Host und eine Spalte zur Herkunft (offiziell, Community, lokal).
+  - Neuer Reiter „Von außen erreichbar“: Nabu-Casa-Fernzugriff, Tunnel-, Proxy-, DynDNS- und VPN-Apps, der MCP-Server und offene Webhooks.
+
+### Behoben
+
+- **Oberfläche, Korrekturen:**
+  - Ein Blueprint öffnet eine eigene Seite wie andere Objekte (mit „Zurück zu Wartung“ und Kopfkarte) statt unter den Wartungskacheln.
+  - In der Liste der Erinnerungen steht der Aufklapp-Pfeil links neben dem Namen statt darüber.
+  - Wartung: Untertitel und Hinweis nennen die Reiter richtig, jeder Reiter ist über die Suche zu finden, die Zahl am Reiter Blueprints steht schon beim Öffnen der Seite, es heißt „1 Hinweis“ und „3 Hinweise“, und der Reiter Wartungsziele zeigt einen Ladefehler und hat „Aktualisieren“.
+  - Die Tabelle „Alle gezählten Läufe“ nimmt wie die anderen Listen die volle Breite.
+  - Auf „Zugriffe & Datenfluss“ steht „Wie wird das gezählt?“ in der Liste wie auf den anderen Sicherheitsseiten statt als eigene Karte darunter.
+  - Der Start-Hinweis zeigt nach dem Neuladen der Seite nicht mehr kurz die alten „5 Minuten“, sondern wartet auf die aktuelle Angabe.
+  - Der Puffer von einer Minute fängt wegen einer kurz ladenden Integration nicht mehr mehrmals von vorn an.
+  - Die Zeile „Beobachtung nach Update“ steht auf der Übersicht unter dem Gesundheitsring statt im Seitenkopf.
+  - Der Info-Hinweis „ändert nichts von selbst“ oben auf der Befundseite entfällt; eine kurze Erklärung steht stattdessen unter „Über Housekeeper“ in den Einstellungen, die Zeile „Betriebsart“ entfällt dort.
+  - Auf schmalen Bildschirmen (Handy) brechen Zeilen mit Knöpfen um, statt den Text auf eine Buchstabenspalte zu quetschen (z. B. der Hinweis zu den Ausfall-Stufen auf der Übersicht).
+  - Die Zeilen der Blueprint-Liste lassen sich anklicken und öffnen eine Detailseite mit Übersicht, Eingaben, Nutzung (mit den dort gesetzten Werten) und Dateidaten.
+  - Ein Wartungsziel führt zur passenden Liste mit gesetztem Filter (etwa „Defekte Referenzen“ zu den Befunden dieser Art).
+  - Die Verfügbarkeit einer Hausfunktion zeigt Kennzahlen als Kacheln und eine Tagesleiste über die ganze Breite mit Achse; „1 Vorfälle“ heißt jetzt „1 Vorfall“.
+  - In der Tagesleiste der Verfügbarkeit ist ein Tag mit weniger als 1 % Ausfallzeit bernsteinfarben statt rot; der Hinweis am Balken nennt die Dauer, darunter steht eine Legende.
+  - Die Seite einer Hausfunktion ist kompakter: Kopf, Kennzahlen, Tagesleiste und die zugeordneten Objekte stehen in einer Karte, Scan und Prüfung in einer Zeile unter dem Namen. Die Objekte sind eine Tabelle mit Seiten (zunächst 10 pro Seite).
+  - Das Bearbeiten einer Hausfunktion ist aufgeräumter: Allgemeines, Objekte, Suche und Vorschläge stehen in einer Karte, Vorschläge sind „+“-Knöpfe, Entfernen ein X. „Löschen“ ist wie überall der weich rote Knopf (auch bei Notizen). „Speichern“ bleibt aktiv und sagt, was fehlt.
+  - Recorder: Die Reiter heißen „Schreiblast“ (wie oft etwas geschrieben wird), „Speicherbedarf“ (wie viel Platz jede Entität belegt) und „Datenbank“.
+  - Recorder: „Empfohlen“ zum Ausschließen entscheidet in Schreiblast und Speicherbedarf dieselbe Regel (nirgends verwendet, keine Statistik, mindestens 100 Zeilen in den letzten 24 Stunden); vorher konnte eine Entität im einen Reiter empfohlen sein und im anderen nicht.
+  - Recorder, Datenbank: Größe, Zuwachs pro Tag, Aufbewahrung und „Automatisch löschen“ stehen als Kacheln über der Liste statt in einer Textzeile darunter; was sich nicht messen lässt (etwa bei MySQL), steht weiter als kurzer Hinweis.
+  - Recorder, Schreiblast: neues Fenster „30 Tage“ neben 24 Stunden und 7 Tagen.
+  - Hinweistexte zu Konflikten, Backup-Zielen und Statistik-Nachfolgern sagen nicht mehr „Vermutung“, wo „mögliche“ schon dasteht.
+  - Läufe: Die Fußnote „So wird gezählt“ nennt jetzt die Grenzen der Hinweise (Fehler, nie erfolgreich, Überschneidung, ohne Wirkung, sehr oft, lange Läufe) mit den Zahlen aus dem Backend.
+  - Der Kurzüberblick einer Integration („Bekannt“) zeigt „Neue Anmeldung offen“ statt „Geladen“, wenn Home Assistant eine neue Anmeldung verlangt.
+  - Zuverlässigkeit und Schreiblast: Behält der Recorder weniger Tage, als das gewählte Fenster umfasst, steht ein Hinweis, dass die Zahlen nicht weiter zurückreichen.
+  - Apps & Integrationen: Der Pfeil zum Aufklappen steht neben dem Namen statt darüber; alle Namen beginnen auf einer Linie.
+  - HACS: Housekeeper liest jetzt alle installierten Repositories (auch Karten und Themes) und erfährt aus den Reparaturen von Home Assistant, welche HACS aus seiner Liste genommen hat.
+  - Apps & Integrationen: Neuer Reiter „HACS“ mit allen installierten Repositories (Integrationen, Karten, Themes), Version, offenem Update und dem Hinweis, wenn HACS ein Repository aus seiner Liste genommen hat oder es archiviert ist. Eine Zeile öffnet das Repository in HACS.
+  - HACS: Wurde ein Repository aus HACS entfernt, steht in „Was muss ich tun?“ eine Zeile dazu, auf der Integrationsseite der Grund und im Reiter HACS eine Anleitung mit Link zu den Reparaturen. Eine ignorierte Reparatur zeigt der Reiter als „ignoriert“.
+  - Freigaben, Datenfluss, Zugangsdaten und Läufe zeigen im Menü eine Zahl, wenn dort etwas anzusehen ist (der Scan zählt sie).
+- **Zugriffe & Datenfluss:** Integrationen, deren Tracker nur die Anwesenheit über Router oder Bluetooth melden (etwa die FRITZ!Box), gelten nicht mehr als „Standort“ mit hohem Risiko, sondern zeigen „Anwesenheit im Netz“.
+- **Freigaben:** Alexa und Google Assistant, die in den Nabu-Casa-Einstellungen ausgeschaltet sind, zählen nicht mehr als „freigegeben“ und erzeugen keine Befunde; ihre Kachel zeigt „in Nabu Casa ausgeschaltet“.
+
+### English
+
+#### Changed
+
+- **Maintenance, backups:**
+  - "Backup protection" and "Tidy up backups" are one "Backups" tab; the tidy-up is folded at the bottom, and the "Housekeeper backups" line leads there.
+  - On top are a verdict (Reliable, Look first, Problem) and four figures; the check lines are sorted into four groups.
+  - New checks: the content of the newest backup (failed apps or folders, missing database), the age of the copy on each external target and room for the next backup.
+  - A strip shows the size of the last backups, so growth shows early.
+- **Journal:**
+  - The Journal has tabs: "Plans" and "Removed devices" (so far under Maintenance, now with a jump to the plan); older deletions of statistics are a third tab there when there are any.
+  - A load error is shown instead of "No preview yet", and the page has "Refresh" and a time stamp.
+  - The hint names the right limits (plans that ran up to a year, at most 300).
+- **Maintenance, updates:**
+  - The "Update preflight" tab is now called "Updates": a verdict (Ready, Look first, Stop), the check lines and the list of open updates, grouped into system, apps, HACS and devices, with a jump to Home Assistant.
+  - The backup is judged like the backup protection does (schedule, last run); there is a new "Free space" line; HACS updates that HACS cannot install are marked.
+  - The overview has an "n updates open" line (without effect on the ring).
+  - A button checks the configuration (Home Assistant's own check, only on request); if it is invalid, the verdict says "Stop".
+- **Less CPU load:**
+  - The timing and the code of the background work are optimised.
+  - The analyses of the recorder database run less often and spread out, the queries do less work (finished days are calculated only once, needless searches are skipped), and on slow systems the scans after outages are spaced further apart.
+- **Storage & system:** The page loads faster: the walk over the folders runs beside the Supervisor query instead of after it, the disk use by category is reused for a few minutes like the folder sizes (refresh reads it again), and on opening the sizes read last show at once and are renewed in the background when due.
+- **Findings, login needed:** An integration that asks for a new login is a finding ("Login needed", at least medium) with its affected entities as follow-ups, even while it stays loaded. It appears within about a minute and goes away after the login. On the overview it is a row of its own at the top of "What do I have to do?".
+- **Apps & integrations, open in Home Assistant:** A collapsed info row above the list shows the devices found that still wait to be set up and the integrations that want to be reconfigured. It is a hint, not a finding, and is left out when nothing is open.
+- **Reliability:**
+  - Integrations that were down the whole period are listed first as "Down" (instead of without a value at the end) and have a tile of their own.
+  - The tile "Avg per integration" counts each integration once and leaves out those down all the time; the column is called "Shared outages", and integrations with fewer than three entities say "too small" instead of 0.
+  - The tiles and filters "Login needed" and "Not loaded" are gone; the login request stays a hint in the row and leads to the finding.
+  - New window "30 days" (as with the house functions); the footnote names the color limits (green from 99.5 %, yellow from 95 %) and says that the day strip of a house function colors by duration.
+  - The detail page of an integration shows figures, a day strip of the outage days (as with the house functions), the outage periods with start, duration and number of affected entities, and names the house functions that rely on the integration; the comparison names its unit (percentage points).
+- **Credentials:**
+  - Integrations that ask to sign in again carry a "Login needed" mark and have a tile of their own, as do disabled integrations that still hold credentials; more field names are recognised as credentials (such as cookie, session id, one-time code).
+  - New "Accounts" tab with each user's role, two-factor and last login, an "Admins without two-factor" tile, and a "Long-lived tokens" tab with name, account and age; the tiles sit in rows of equal size.
+- **Overview, inventory status:** Objects with a mark (e.g. “Offline on purpose”), including the entities of a marked device, sit in their own row “Marked (expected)” and no longer count as “Problematic” (issue 25).
+- **Interface:**
+  - The start notice is a compact card: four steps in one track, “38 of 41 integrations loaded” with a bar and the waiting time beside it, the names of the integrations still loading and, during the scan, the current phase.
+  - It updates by itself (every 3 seconds) and goes away as soon as the final findings are in.
+- **Exposure:**
+  - Cameras, sirens, valves and doors now count as sensitive too.
+  - New warning when Google Assistant may open locks, alarm panels or gates without a PIN, and a note when new entities are exposed to Alexa or Google automatically.
+  - Another note names AI conversation agents and the MCP server that may control Home Assistant through Assist and so hand the Assist exposure to a language model or connected programs.
+- **Access & data flow:**
+  - More integrations are recognised, such as Bluetooth and Thread as radio, Frigate and UniFi Protect as camera, ESPHome and Matter as network; Ollama counts as local.
+  - Integrations from HACS carry "custom code, full rights" and are at least medium risk.
+  - For apps: protection mode off (high risk), open ports on the host and a column for the origin (official, community, local).
+  - New "Reachable from outside" tab: Nabu Casa remote access, tunnel, proxy, DynDNS and VPN apps, the MCP server and open webhooks.
+
+#### Fixed
+
+- **Interface, corrections:**
+  - A blueprint opens its own page like other objects (with "Back to Maintenance" and a header card) instead of under the Maintenance tiles.
+  - In the reminders list the expand arrow sits to the left of the name instead of above it.
+  - Maintenance: the subtitle and hint name the tabs correctly, every tab can be found by search, the number on the Blueprints tab is there when the page opens, it says "1 note" and "3 notes", and the Maintenance goals tab shows a load error and has "Refresh".
+  - The table "All counted runs" uses the full width like the other lists.
+  - On "Access & data flow", "How is this counted?" sits inside the list like on the other security pages instead of in a card of its own below.
+  - After a page reload the start notice no longer shows the old “5 minutes” for a moment but waits for the current figure.
+  - The one-minute buffer no longer starts over because an integration loads briefly.
+  - The “Observation after update” line now sits on the overview below the health ring instead of in the page header.
+  - The “changes nothing by itself” info notice at the top of the findings page is gone; a short explanation now sits under “About Housekeeper” in the settings, and the “Mode” row is dropped there.
+  - On narrow screens (phones) rows with buttons now wrap instead of squeezing the text into a one-letter column (e.g. the notice about outage levels on the overview).
+  - Rows of the blueprint list can be clicked and open a detail page with overview, inputs, usage (with the values set there) and file data.
+  - A maintenance goal leads to the matching list with the filter set (for example "Broken references" to the findings of that kind).
+  - The availability of a house function shows its figures as tiles and a day strip across the full width with an axis; "1 incidents" now reads "1 incident".
+  - In the day strip of the availability, a day with less than 1 % of impaired time is amber instead of red; the tooltip names the duration and a legend sits below.
+  - The page of a house function is more compact: header, figures, day strip and the assigned objects share one card, scan and check sit in one line under the name. The objects are a table with pages (10 per page to begin with).
+  - Editing a house function is tidier: general settings, objects, search and suggestions share one card, suggestions are “+” buttons, remove is an X. “Delete” is the soft red button as everywhere else (notes too). “Save” stays enabled and says what is missing.
+  - Recorder: the tabs are called "Write load" (how often things are written), "Storage use" (how much space each entity takes) and "Database".
+  - Recorder: "Recommended" for exclusion is decided by the same rule in write load and storage use (used nowhere, no statistics, at least 100 rows in the last 24 hours); before, an entity could be recommended in one tab and not in the other.
+  - Recorder, database: size, growth per day, retention and "Purge automatically" are tiles above the list instead of a line of text below; what cannot be measured (for example with MySQL) stays as a short note.
+  - Recorder, write load: new window "30 days" next to 24 hours and 7 days.
+  - Hint texts on conflicts, backup targets and statistics successors no longer say “guess” where “possible” already says it.
+  - Runs: the “How this is counted” footnote now names the limits of the notes (errors, never succeeds, overlap, no effect, very often, long runs) with the numbers from the backend.
+  - The short overview of an integration (“Known”) shows “New login open” instead of “Loaded” when Home Assistant asks for a new login.
+  - Reliability and write load: if the recorder keeps fewer days than the chosen window, a note says the numbers reach back no further.
+  - Apps & integrations: the arrow that unfolds a row sits beside the name instead of above it; all names start on one line.
+  - HACS: Housekeeper now reads every installed repository (cards and themes too) and learns from Home Assistant's repairs which ones HACS took out of its list.
+  - Apps & integrations: new “HACS” tab with every installed repository (integrations, cards, themes), version, open update and a note when HACS took a repository out of its list or it is archived. A row opens the repository in HACS.
+  - HACS: if a repository was removed from HACS, “What do I need to do?” gets a row for it, the integration page shows the reason and the HACS tab has a guide with a link to the repairs. An ignored repair shows as “ignored” in the tab.
+  - Exposure, data flow, credentials and runs show a number in the menu when there is something to look at (the scan counts it).
+- **Access & data flow:** Integrations whose trackers only report presence through a router or Bluetooth (such as the FRITZ!Box) no longer count as "location" with a high risk but show "presence on the network".
+- **Exposure:** Alexa and Google Assistant switched off in the Nabu Casa settings no longer count as "exposed" and raise no findings; their tile says "switched off in Nabu Casa".
+
+## 1.8.2 - 2026-10-16
+
+### Geändert
+
+- **Oberfläche, Knöpfe:** Knöpfe, die einen Plan anlegen, heißen einheitlich „Vorschau erstellen (N)“; wer Daten löscht, heißt „Löschen vorbereiten (N)“ und ist dezent rot.
+- **Oberfläche, Plan-Vorschau:** „Aus dem Recorder löschen“ führt direkt in die Vorschau. Die Wahl „Auch die gespeicherten Zustände löschen“ ist dort ein hervorgehobener Schiebeschalter unten (an, nur bei Plänen, die Statistiken löschen). „Erwarteter Endzustand“ ist hervorgehoben, nennt Statistik und Rohdaten getrennt und zeigt „bleiben bestehen“-Zeilen nur, wenn sie nicht 0 sind. Das Kästchen „zur Kenntnis genommen“ entfällt: Das Bestätigen-Popup ist die Bestätigung. „Abbrechen“ verwirft die Vorschau ganz und speichert sie nicht im Journal.
+
+### Behoben
+
+- **Start, Anlaufphase:** Sie endet eine Minute, nachdem keine Integration mehr lädt (spätestens nach 5 Minuten), statt immer 5 Minuten zu laufen. Das Banner nennt die Zahl der ladenden Integrationen oder den Sicherheitspuffer.
+- **Oberfläche, Korrekturen:** „In HA öffnen“ (Befundseite, HACS-Knöpfe) öffnet Home Assistant in einem neuen Tab statt im selben. Das Schließen des Dialogs „Mehr Infos“ lässt die Seite, auf der man ist. „Ausgewählte zusammenführen“ ist bei mehr als 10 Plänen gesperrt (statt mit Serverfehler abzubrechen).
+
+### English
+
+#### Changed
+
+- **Interface, buttons:** Buttons that create a plan are named alike, “Create preview (N)”; the ones that delete are “Prepare deletion (N)” and softly red.
+- **Interface, plan preview:** “Delete from the recorder” goes straight to the preview. The choice “Also delete the stored states” is a highlighted switch at the foot of the preview (on, only for plans that delete statistics). “Expected end state” is highlighted, names statistics and raw data separately and shows the “remain” lines only when they are not 0. The “acknowledged” box is gone: the confirm dialog is the confirmation. “Cancel” drops the preview completely and does not keep it in the journal.
+
+#### Fixed
+
+- **Startup, warm-up:** It ends one minute after no integration is loading any more (5 minutes at most) instead of always running 5 minutes. The banner names the number of integrations still loading or the safety buffer.
+- **Interface, corrections:** “Open in HA” (findings page, HACS buttons) opens Home Assistant in a new tab instead of the same one. Closing the “More info” dialog keeps you on the page you were on. “Merge selected” is disabled for more than 10 plans (instead of failing with a server error).
+
+## 1.8.1 - 2026-10-16
+
+### Geändert
+
+- **Oberfläche:**
+  - Befunde: „Entität öffnen“ im Menü „⋯“ und auf der Detailseite öffnet den Dialog „Mehr Infos“ von Home Assistant („In Home Assistant öffnen“ heißt jetzt „In HA öffnen“). Die Seite sagt oben, dass Housekeeper nichts von selbst ändert (schließbar).
+  - Befundseite: Die Kacheln zählen alles samt Folgen und nennen die Folgen daneben. Die Chips „Gruppiert | Einzeln“ ersetzen „Alle einzeln“. „Nur Ursachen mit Folgen“ gilt in beiden Ansichten. Listen außerhalb der Befundseite zeigen keine Auswahlkästchen mehr. Die Kachel „Nicht verfügbar“ der Übersicht öffnet die Befunde gefiltert.
+  - Plan: Ein neuer Plan öffnet sich auf einer eigenen Seite mit „← Zurück zu …“ und geht direkt in die Vorschau. Vier Stufen (Prüfen, Bestätigen, Ausführen, Ergebnis) in einer Leiste, die laufende Stufe ist offen. Verbietet der Schutzmodus den Plan, sagt die Seite es vor dem Bestätigen und verlinkt die Einstellung.
+  - Journal: „Ausgewählte löschen“ entfernt mehrere Vorschauen auf einmal (ausgeführte Pläne bleiben). Nie gestartete Vorschauen werden nach 24 Stunden von selbst entfernt.
+  - Tabellen: Unter „vor 1.119 Tagen“ steht der genaue Zeitstempel in kleiner Schrift (bei kompakten Zeilen ausgeblendet).
+  - Aufräumen: Die Kachel „Nicht verwendet“ steht zuletzt und nennt sich einen Hinweis.
+  - Logbuch: „Ins Logbuch eintragen“ im Menü „⋯“ eines Befunds; Objekte der Beobachtung ohne Befund bekommen dasselbe Menü.
+  - Beobachtung nach Updates: Neue Reparaturen zeigen Titel, Schweregrad und Link. Die Gruppen „Wieder in Ordnung“ zeigen nicht mehr den heutigen Zustand. Ereignisse derselben Art, die kurz aufeinander folgen, sind ein Eintrag mit Anzahl.
+
+### Behoben
+
+- **Oberfläche, Korrekturen:** Das Häkchen „zur Kenntnis genommen“ im Plan löscht die Fehlermeldung, und „Bestätigen“ ist mit Hinweis gesperrt, solange kein Schritt ausgeführt würde. Auswahlkästchen stehen nur noch in der Befundliste, wo die Leiste für die Aktionen ist. Objekte ohne Befund haben dasselbe Zeilenmenü, und „Ins Logbuch eintragen“ heißt nicht mehr wie „Vermerk setzen“. Die Gruppen der Beobachtung über die Vergangenheit zeigen nicht mehr Befunde mit dem heutigen Zustand.
+- **Scan bei ungewöhnlichem Skript:** Kann Home Assistant die Verweise eines Skripts oder einer Automation nicht lesen (zum Beispiel wegen eines Dicts in einer `entity_id`-Liste), nutzt Housekeeper für dieses Objekt nur dessen Konfiguration und warnt im Log, statt den ganzen Scan abzubrechen (Issue 19). Die Warnung zu `device_registry.devices` im Log entfällt (Issue 22).
+
+### English
+
+#### Changed
+
+- **Interface:**
+  - Findings: “Open entity” in the “⋯” menu and on the detail page opens Home Assistant’s “More info” dialog (“Open in Home Assistant” is now “Open in HA”). The page says at the top that Housekeeper changes nothing by itself (can be closed).
+  - Findings page: The tiles count everything including follow-ups and name the follow-ups beside it. The chips “Grouped | One by one” replace “All one by one”. “Only causes with follow-ups” means the same in both views. Lists outside the findings page no longer show selection boxes. The “Unavailable” tile of the overview opens the findings filtered.
+  - Plan: A new plan opens on a page of its own with “← Back to …” and goes straight into the preview. Four stages (review, confirm, run, result) in one track, the stage that is on is open. When the protection mode forbids the plan, the page says so before you confirm and links to the setting.
+  - Journal: “Delete selected” removes several previews at once (plans that ran stay). Previews that were never started are removed by themselves after 24 hours.
+  - Tables: The exact timestamp sits below “1,119 days ago” in small type (hidden with compact rows).
+  - Cleanup: The “Not used” tile comes last and calls itself a hint.
+  - Logbook: “Add to logbook” in the “⋯” menu of a finding; objects of the watch without a finding get the same menu.
+  - Watch after updates: New repairs show title, severity and link. The “Fine again” groups no longer show today’s state. Events of one kind that follow each other closely are one entry with their count.
+
+#### Fixed
+
+- **Interface, corrections:** Ticking “acknowledged” in a plan clears the error message, and “Confirm” is locked with a hint while no step would run. Selection boxes show only in the findings list, where the bar for the actions is. Objects without a finding have the same row menu, and “Add to logbook” no longer shares a name with “Set a mark”. The watch groups about the past no longer show findings with today’s state.
+- **Scan with an unusual script:** When Home Assistant cannot read the references of a script or automation (for example because of a dict in an `entity_id` list), Housekeeper uses only that object's configuration and warns in the log instead of aborting the whole scan (issue 19). The warning about `device_registry.devices` in the log is gone (issue 22).
+
 ## 1.8.0 - 2026-10-15
 
 ### Neu

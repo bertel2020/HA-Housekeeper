@@ -512,3 +512,84 @@ async def test_cached_only_never_starts_a_query_and_hands_out_what_exists(
     )
     old = await reliability(hass, snapshot, store=store, cached_only=True)
     assert old["stale"] is True and old["cached"] is True and "missing" not in old
+
+
+async def test_kept_days_give_the_same_runs_and_loads_as_one_query_also_over_midnight(
+    recorder_mock, hass: HomeAssistant, freezer
+) -> None:
+    from datetime import UTC, datetime
+
+    from homeassistant.components.recorder import get_instance
+
+    from custom_components.ha_housekeeper.queries import DayCache, pieces
+    from custom_components.ha_housekeeper.storms import query_storms
+
+    day = 86400
+    base = (int(datetime.now(UTC).timestamp()) // day - 3) * day
+    for offset, state in (
+        (HOUR, "1"),
+        (23 * HOUR, "unavailable"),  # open over midnight into the next day
+        (day + 2 * HOUR, "2"),
+        (day + 5 * HOUR, "unavailable"),
+        (2 * day, "1"),  # a row exactly at midnight
+        (2 * day + 3 * HOUR, "unavailable"),
+    ):
+        freezer.move_to(datetime.fromtimestamp(base + offset, UTC))
+        hass.states.async_set("sensor.a", state)
+    end = base + 2 * day + 6 * HOUR
+    freezer.move_to(datetime.fromtimestamp(end, UTC))
+    await async_wait_recording_done(hass)
+
+    from custom_components.ha_housekeeper.reliability import _merge, query_runs
+
+    run = get_instance(hass).async_add_executor_job
+    whole = await run(query_runs, hass, base, end)
+    days = DayCache(hass, "reliability")
+    assert [keep for *_, keep in pieces(base, end, days.oldest)] == [True, True, False]
+    for _ in range(2):  # read once, then from the kept days
+        split = await run(query_runs, hass, base, end, days)
+        assert split["seen"] == whole["seen"]
+        assert _merge(split["intervals"]["sensor.a"]) == _merge(whole["intervals"]["sensor.a"])
+        assert _merge(split["intervals"]["sensor.a"])[0] == (
+            base + 23 * HOUR,
+            base + day + 2 * HOUR,
+        )
+    loads = DayCache(hass, "storms")
+    plain = await run(query_storms, hass, base, end)
+    for _ in range(2):
+        kept = await run(query_storms, hass, base, end, loads)
+        assert kept["entities"] == plain["entities"] and kept["events"] == plain["events"]
+
+
+def test_an_entry_that_was_down_the_whole_window_is_dead_and_comes_first() -> None:
+    entries = {
+        "e1": {**ENTRIES["e1"], "title": "Fine"},
+        "e2": {**ENTRIES["e1"], "title": "Gone"},
+    }
+    items = [*entities("a", entry="e1"), *entities("b", entry="e2")]
+    result = compute(runs({"a": START, "b": START}, {"b": [(START, END)]}), items, entries)
+    gone = result["entries"][0]
+    assert gone["title"] == "Gone" and gone["dead"] and gone["availability"] is None
+    assert not result["entries"][1]["dead"]
+
+
+def test_the_outage_periods_and_the_seconds_per_local_day_of_an_entry() -> None:
+    from datetime import UTC
+
+    down = {n: [(30 * HOUR, 32 * HOUR)] for n in "abc"}
+    result = compute(
+        runs({n: START for n in "abc"}, down), entities("a", "b", "c"), ENTRIES, zone=UTC
+    )
+    row = result["entries"][0]
+    assert [(p["kind"], p["seconds"], p["affected"]) for p in row["periods"]] == [
+        ("shared", 2 * HOUR, 3)
+    ]
+    days = {d["date"]: d["seconds"] for d in row["days"]}
+    assert days["1970-01-02"] == 2 * HOUR and days["1970-01-01"] == 0 and len(days) == 5
+
+    small = compute(runs({"a": START}, {"a": [(10 * HOUR, 11 * HOUR)]}), entities("a"), ENTRIES)
+    assert [p["kind"] for p in small["entries"][0]["periods"]] == ["single"]
+
+    gone = compute(runs({"a": START}, {"a": [(START, END)]}), entities("a"), ENTRIES)
+    period = gone["entries"][0]["periods"][0]
+    assert period["kind"] == "down" and period["seconds"] == 100 * HOUR
