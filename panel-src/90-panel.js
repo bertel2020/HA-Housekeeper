@@ -13,7 +13,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._urlApplied = false;
     this.selected = null;
     this.detailTab = "overview";
-    this.settingsTab = "look";
+    this.settingsTab = "protection";
     this.trail = [];
     this.compare = null;
     this.compareBaseline = "previous";
@@ -55,7 +55,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar, wasLanguage = this._hass?.language;
     this._hass = value;
     if (first) { this.load(false); this.loadUserPrefs(); }
-    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || (wasDocked !== value?.dockedSidebar) || wasLanguage !== value?.language) this.render();
+    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar || wasLanguage !== value?.language) this.render();
   }
 
   get hass() { return this._hass; }
@@ -168,17 +168,16 @@ class HAHousekeeperPanel extends HTMLElement {
 
   get lang() {
     const chosen = this.prefs?.language;
-    if (["de", "en", "sk"].includes(chosen)) return chosen;
+    if (chosen && Object.hasOwn(TEXT, chosen)) return chosen;
     const detected = String(this._hass?.language || "en").toLowerCase().split(/[-_]/)[0];
-    return ["de", "en", "sk"].includes(detected) ? detected : "en";
+    return Object.hasOwn(TEXT, detected) ? detected : "en";
   }
 
-  // Slovak has distinct forms for one, few (2-4) and other counts.
-  // Translation entries can be strings or objects with Intl.PluralRules categories.
+  // Plural forms are optional; language dictionaries may also use ordinary strings.
   t(key, vars) {
     const value = TEXT[this.lang]?.[key] ?? TEXT.en[key] ?? key;
     let output = value;
-    if (typeof value === "object" && value !== null) {
+    if (value && typeof value === "object") {
       const count = Number(vars?.count ?? vars?.n);
       const category = Number.isFinite(count) ? new Intl.PluralRules(this.lang).select(count) : "other";
       output = value[category] ?? value.other ?? TEXT.en[key] ?? key;
@@ -367,7 +366,8 @@ class HAHousekeeperPanel extends HTMLElement {
 
   haPath(item) {
     switch (item.object_type) {
-      case "entity": return `/config/entities?search=${encodeURIComponent(item.object_id)}`;
+      // HA ignores ?search=, so an entity with a device opens the device page that lists it
+      case "entity": return item.device_id ? `/config/devices/device/${encodeURIComponent(item.device_id)}` : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
       case "device": return `/config/devices/device/${encodeURIComponent(item.object_id)}`;
       case "area": return `/config/areas/area/${encodeURIComponent(item.object_id)}`;
       case "automation": return item.automation_id
@@ -376,7 +376,7 @@ class HAHousekeeperPanel extends HTMLElement {
       case "script": return `/config/script/edit/${encodeURIComponent(item.object_id.replace(/^script\./, ""))}`;
       case "scene": return item.scene_id
         ? `/config/scene/edit/${encodeURIComponent(item.scene_id)}`
-        : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
+        : item.device_id ? `/config/devices/device/${encodeURIComponent(item.device_id)}` : `/config/entities?search=${encodeURIComponent(item.object_id)}`;
       case "dashboard": return `/${encodeURIComponent(item.url_path || "lovelace")}`;
       case "app": return `/hassio/addon/${encodeURIComponent(item.slug || item.object_id)}/info`;
       case "config_entry": case "integration": return `/config/integrations/integration/${encodeURIComponent(item.domain)}`;
@@ -391,15 +391,34 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // HA's dialog puts its own entry into the history and removes it on close; that pop must not step the panel back.
   moreInfo(entityId) {
+    // The dialog may load lazily, so watch for its entry (its marker in the history state, or a longer history) for a few seconds.
     const before = window.history?.length;
-    globalThis.setTimeout?.(() => { if (window.history?.length > before) this._dialogPop = true; }, 300);
+    globalThis.clearInterval?.(this._dialogWatch);
+    let waited = 0;
+    this._dialogWatch = globalThis.setInterval?.(() => {
+      waited += 100;
+      if (window.history?.state?.dialog || window.history?.length > before) { this._dialogPop = true; globalThis.clearInterval(this._dialogWatch); }
+      else if (waited >= 5000) globalThis.clearInterval(this._dialogWatch);
+    }, 100);
     this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId }, bubbles: true, composed: true }));
   }
 
-  navigateHA(path, newTab = false) {
-    if (newTab) { window.open(new URL(path, window.location.origin).href, "_blank", "noopener"); return; }
-    window.history.pushState(null, "", path);
-    window.dispatchEvent(new CustomEvent("location-changed"));
+  // The clipboard API needs HTTPS; over plain http or in some app web views it is missing, so fall back to a hidden textarea. Throws when neither works.
+  async copyText(text) {
+    try { if (globalThis.navigator?.clipboard?.writeText) { await globalThis.navigator.clipboard.writeText(text); return; } } catch (_) { /* fall through */ }
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(area);
+    try {
+      area.select();
+      if (!document.execCommand("copy")) throw new Error("copy not available");
+    } finally { area.remove(); }
+  }
+
+  navigateHA(path) {
+    window.open(new URL(path, window.location.origin).href, "_blank", "noopener");
   }
 
   // What a screen reader announces: scan, backup and plan progress, nothing while idle.
@@ -573,7 +592,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}${this.aiBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;
@@ -797,7 +816,9 @@ class HAHousekeeperPanel extends HTMLElement {
 
   findingType(f) { return this.findObject(this.findingKey(f))?.object_type || f.rule_id.split(".")[0]; }
 
-  check(label, tone, value, badge) { return { label, tone, value, badge }; }
+  // ``link`` is the key of the object the value names; the diagnosis shows it as a link to that object.
+  // ``extra`` is ready HTML after the value, such as clickable suggestions.
+  check(label, tone, value, badge, link = null, extra = "") { return { label, tone, value, badge, link, extra }; }
 
   bind() {
     const root = this.shadowRoot;
@@ -902,7 +923,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
-      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; this.pages = {}; }
+      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
       this.render();
       if (this.view === "changes" && !this.compare) this.loadCompare();
     });
@@ -941,6 +962,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
     root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
     this.bindMarks(root);
+    this.bindExceptions(root);
+    this.bindMcp(root);
     this.bindStale(root);
     this.bindNotes(root);
     this.bindConfirm(root);
@@ -1015,7 +1038,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-graph-regroup]")?.addEventListener("click", () => { this.graphOpen = new Set(); this.render(); });
     root.querySelectorAll("[data-graph]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.graph); if (obj) { this.noteGraphStep(obj); this.graphSelected = obj; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; this.render(); } });
     root.querySelectorAll("[data-more-info]").forEach(el => el.onclick = () => this.moreInfo(el.dataset.moreInfo));
-    root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath, "haTab" in el.dataset));
+    root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
@@ -1140,7 +1163,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }
     });
     root.querySelectorAll("[data-set-tab]").forEach(el => {
-      el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
+      el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; if (this.settingsTab === "exceptions" && this.exc) this.loadExceptions(); this.render(); };
       el.onkeydown = ev => {
         const ids = [...root.querySelectorAll("[data-set-tab]")].map(b => b.dataset.setTab), at = ids.indexOf(el.dataset.setTab);
         const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];
@@ -1153,12 +1176,12 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
     root.querySelectorAll("[data-copy-event]").forEach(el => el.onclick = async () => {
-      try { await globalThis.navigator?.clipboard?.writeText(el.dataset.copyEvent); this.copiedEvent = el.dataset.copyEvent.replace("ha_housekeeper_", ""); } catch (_) { this.copiedEvent = ""; }
+      try { await this.copyText(el.dataset.copyEvent); this.copiedEvent = el.dataset.copyEvent.replace("ha_housekeeper_", ""); } catch (_) { this.copiedEvent = ""; }
       this.render();
       setTimeout(() => { this.copiedEvent = ""; this.render(); }, 1500);
     });
     root.querySelector("[data-copy-info]")?.addEventListener("click", async () => {
-      try { await globalThis.navigator?.clipboard?.writeText(this.infoText()); this.copied = true; } catch (_) { this.copied = false; }
+      try { await this.copyText(this.infoText()); this.copied = true; } catch (_) { this.copied = false; }
       this.render();
       setTimeout(() => { this.copied = false; this.render(); }, 1500);
     });

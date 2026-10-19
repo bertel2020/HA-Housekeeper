@@ -3,7 +3,7 @@
 Stored by Housekeeper only; Home Assistant stays untouched. A mark of an object hides the
 "not available" findings of that object (of a device: of its entities; of an integration or app: its
 "not loaded" and "app stopped" findings), never a broken reference.
-"Keep" also blocks every cleanup step on the object. A mark with a review date that has passed no
+"Keep" also blocks every cleanup step on the object; the label ``housekeeper_keep`` does the same. A mark with a review date that has passed no
 longer hides anything; the finding comes back as due.
 A mark can carry a time window (fixed hours, or while the sun is below the horizon): it hides only
 inside that window, plus a grace period after it, so a device that is on by day is watched by day.
@@ -18,8 +18,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
-from .const import MARKS_STORAGE_KEY, STORAGE_VERSION
-from .ignored import REASON_LIMIT, due
+from .const import KEEP_LABEL, MARKS_STORAGE_KEY, STORAGE_VERSION
+from .ignored import REASON_LIMIT, VIAS, due
 
 SAVE_DELAY = 10
 KINDS = ("expected_offline", "seasonal", "spare", "keep", "replaced")
@@ -137,6 +137,7 @@ def _clean(value: Any) -> dict[str, Any] | None:
         "until": _text(value, "until"),
         "target": (_text(value, "target") or "")[:TARGET_LIMIT] or None,
         "by": _text(value, "by"),
+        "via": value["via"] if value.get("via") in VIAS else None,
         "window": clean_window(value.get("window")),
         "grace": clean_grace(value.get("grace")),
     }
@@ -173,6 +174,7 @@ class MarkStore:
         by: str | None = None,
         window: dict[str, Any] | None = None,
         grace: int = GRACE_DEFAULT,
+        via: str | None = None,
     ) -> bool:
         """Record a mark; False when the kind is unknown, the window is invalid or the store is full."""
         if window is not None and clean_window(window) is None:
@@ -186,11 +188,20 @@ class MarkStore:
             "until": until.isoformat() if until else None,
             "target": (target or "")[:TARGET_LIMIT] or None,
             "by": by,
+            "via": via,
             "window": clean_window(window),
             "grace": clean_grace(grace),
         }
         self._save()
         return True
+
+    def restore(self, key: str, entry: dict[str, Any] | None) -> None:
+        """Put a mark back exactly as it was, or take it away when there was none."""
+        if entry is None:
+            self.items.pop(key, None)
+        elif (cleaned := _clean(entry)) is not None:
+            self.items[key] = cleaned
+        self._save()
 
     def clear(self, key: str) -> bool:
         if self.items.pop(key, None) is None:
@@ -227,6 +238,10 @@ def apply_marks(
             device_of[item["object_id"]] = item.get("device_id")
         elif item["object_type"] == "device":
             devices[item["object_id"]] = item
+        if KEEP_LABEL in (
+            item.get("labels") or []
+        ):  # the label is a "keep" mark made in Home Assistant
+            item["marked_keep"] = True
         mark = marks.get(mark_key(item["object_type"], item["object_id"]))
         if mark is None:
             continue

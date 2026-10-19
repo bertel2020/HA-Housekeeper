@@ -63,6 +63,71 @@ def test_entity_status_table(entry, state, devices, config_entries, expected) ->
     assert _entity_status(entry, state_object, config_entries, devices) == expected
 
 
+def test_restored_placeholder_counts_as_not_provided_only_while_loaded() -> None:
+    from homeassistant.config_entries import ConfigEntryState
+
+    state = SimpleNamespace(state="unavailable", attributes={"restored": True})
+    entry = _entry(config_entry_id="c")
+    loaded = {"c": SimpleNamespace(disabled_by=None, state=ConfigEntryState.LOADED)}
+    failed = {"c": SimpleNamespace(disabled_by=None, state=ConfigEntryState.SETUP_RETRY)}
+    assert _entity_status(entry, state, loaded, {}) == ("orphaned", "not_provided")
+    assert _entity_status(entry, state, failed, {}) == ("unavailable", "state_unavailable")
+
+
+def test_restored_yaml_entity_counts_as_not_provided_only_while_its_platform_runs() -> None:
+    state = SimpleNamespace(state="unavailable", attributes={"restored": True})
+    entry = _entry(entity_id="sensor.old", platform="template")
+    assert _entity_status(entry, state, {}, {}, {"template.sensor"}) == ("orphaned", "not_provided")
+    assert _entity_status(entry, state, {}, {}, {"template"}) == (
+        "unavailable",
+        "state_unavailable",
+    )
+
+
+def test_an_entity_not_provided_waits_like_an_outage_before_it_is_a_finding() -> None:
+    from datetime import UTC, datetime
+
+    now = datetime(2026, 10, 19, 12, tzinfo=UTC)
+    item = {
+        "object_id": "sensor.x",
+        "status": "orphaned",
+        "reason": "not_provided",
+        "status_since": None,
+        "last_changed": "2026-10-19T11:58:00+00:00",
+    }
+    levels = (15, 1, 24, 168)
+    assert _entity_findings([item], now, levels) == []
+    assert (
+        len(_entity_findings([{**item, "last_changed": "2026-10-19T11:00:00+00:00"}], now, levels))
+        == 1
+    )
+
+
+def test_an_entity_not_provided_keeps_the_observation_period_of_its_outage() -> None:
+    from custom_components.ha_housekeeper.inventory import _observed_as
+
+    assert _observed_as({"status": "orphaned", "reason": "not_provided"}) == "unavailable"
+    assert _observed_as({"status": "orphaned", "reason": "state_missing"}) == "orphaned"
+
+
+async def test_the_day_without_the_entity_survives_restarts_and_ends_when_it_is_back(
+    hass,
+) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.ha_housekeeper.inventory import _not_provided_settled
+    from custom_components.ha_housekeeper.observations import ObservationStore
+
+    store, start = ObservationStore(hass), datetime(2026, 10, 19, 15, tzinfo=UTC)
+    await store.async_update({"not_provided:sensor.x": "not_provided"}, start)
+    later = start + timedelta(hours=25)
+    await store.async_update({"not_provided:sensor.x": "not_provided"}, later)
+    assert _not_provided_settled(store.since("not_provided:sensor.x", "not_provided"), later)
+    await store.async_update({}, later)  # provided again: the period ends
+    await store.async_update({"not_provided:sensor.x": "not_provided"}, later)
+    assert not _not_provided_settled(store.since("not_provided:sensor.x", "not_provided"), later)
+
+
 def test_unavailable_is_never_reported_as_orphaned() -> None:
     state = SimpleNamespace(state="unavailable")
     assert _entity_status(_entry(), state, {}, {})[0] == "unavailable"

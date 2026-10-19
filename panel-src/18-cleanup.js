@@ -47,11 +47,12 @@ class CleanupMixin {
     return this.navTiles("cleanup", tabs.map(t => ({ ...t, tone: t.count ? t.tone : "mute" })), open, this.t("cleanup"), true);
   }
 
-  // Devices without a working entity: nothing there to lose by quarantining them.
+  // Devices without a working entity: nothing there to lose by quarantining them. Marked, labelled or excepted ones stay out.
   deviceCandidates() {
     const members = new Map();
     for (const o of this.data.objects) if (o.object_type === "entity" && o.device_id) (members.get(o.device_id) || members.set(o.device_id, []).get(o.device_id)).push(o);
-    return this.data.objects.filter(o => o.object_type === "device" && o.status !== "disabled" && (members.get(o.object_id) || []).every(e => ["orphaned", "unavailable", "unknown", "disabled"].includes(e.status)))
+    const kept = o => o.marked_keep || o.excepted || (o.labels || []).includes("housekeeper_ignore");
+    return this.data.objects.filter(o => o.object_type === "device" && o.status !== "disabled" && !kept(o) && !(members.get(o.object_id) || []).some(kept) && (members.get(o.object_id) || []).every(e => ["orphaned", "unavailable", "unknown", "disabled"].includes(e.status)))
       .map(item => ({ item, finding: null, quarantine: null, count: (members.get(item.object_id) || []).length }));
   }
 
@@ -59,15 +60,23 @@ class CleanupMixin {
     return (this.data.quarantine || []).filter(q => (q.object_type || "entity") === type).map(q => ({ item: this.findObject(`${type}:${q.object_id}`), finding: null, quarantine: q })).filter(r => r.item);
   }
 
+  // Entities a loaded integration no longer provides: removed without quarantine, so they stand
+  // with the quarantined ones and not among those to disable.
+  notProvidedRows() {
+    const held = new Set((this.data.quarantine || []).map(q => q.object_id));
+    return this.data.findings.filter(f => !f.ignored && f.rule_id === "entity.not_provided" && !held.has(f.object_id))
+      .map(f => ({ item: this.findObject(`entity:${f.object_id}`), finding: f })).filter(r => r.item?.reason === "not_provided");
+  }
+
   cleanupCandidates(kind = this.cleanupKind) {
-    if (kind === "remove_entity") return this.quarantineRows("entity");
+    if (kind === "remove_entity") return [...this.quarantineRows("entity"), ...this.notProvidedRows()];
     if (kind === "remove_device" || kind === "forget_device") return this.quarantineRows("device");
     if (kind === "disable_device") return this.deviceCandidates();
     const seen = new Set(), rows = [];
     for (const f of this.data.findings) {
       if (f.ignored || !f.rule_id.startsWith("entity.") || !["orphaned", "unavailable"].includes(f.classification) || seen.has(f.object_id)) continue;
       const item = this.findObject(`entity:${f.object_id}`);
-      if (!item) continue;
+      if (!item || item.reason === "not_provided") continue;
       seen.add(f.object_id);
       rows.push({ item, finding: f });
     }
@@ -281,7 +290,7 @@ class CleanupMixin {
         : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.recorderFor(object_id) !== "keep" ? { recorder: this.recorderFor(object_id) } : {}) }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.openNewPlan(plan, null); this.toast(this.t("previewReady"));
-    } catch (err) { this.cleanupError = err?.message || String(err); }
+    } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
   }
 
@@ -760,7 +769,7 @@ class CleanupMixin {
     this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
     const badge = r => {
       const left = r.quarantine ? limit - this.daysSince(r.quarantine.since) : 0;
-      return r.finding ? this.pill(r.finding.classification) : r.quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t("deviceEntities", { count: r.count })}</span>`;
+      return r.finding ? this.pill(r.finding.classification) : r.quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t(r.count ? "deviceEntities" : "deviceNoEntities", { count: r.count })}</span>`;
     };
     const recorderCol = this.cleanupKind === "remove_entity" && this.data?.meta?.recorder_available;
     const columns = [
@@ -926,7 +935,7 @@ class CleanupMixin {
     ];
     const open = this.viewTabOf("journal", tabs, "plans");
     const head = this.pageBar({ at: this.loadedAt("journal"), loading: this.journal === null, attr: "data-journal-refresh" });
-    const failed = this.journalError ? `<div class="panel"><div class="error">${this.esc(this.journalError)}</div></div>` : "";
+    const failed = this.journalError ? `<div class="panel">${this.notice("err", this.journalError)}</div>` : "";
     const body = this.journalError ? "" : open === "devices" ? this.removedCard() : open === "purges" ? this.purgeJournalCard() : journalCard;
     return `<div class="stack">${this.planHeader()}${head}${this.navTiles("journal", tabs, open, this.t("journal"), true)}${failed}${body}</div>`;
   }

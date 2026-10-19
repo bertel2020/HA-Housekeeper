@@ -1,5 +1,111 @@
 # Changelog
 
+## 1.10.2 - 2026-10-19
+
+### Behoben
+
+- **Scan:**
+  - Ein Konfigurationseintrag mit einer Zahl als Titel ließ den ersten Scan scheitern („'int' object has no attribute 'lower'“).
+  - Eine Szene, die etwas anderes als Namen auflistet, lässt den Scan nicht mehr scheitern; bei einem Fehler steht im Debug-Protokoll, wo er auftrat.
+  - „Scan starten“ bleibt nach einem Scan nicht mehr nicht verfügbar.
+- **Backup-Schutz:** Backups anderer Werkzeuge (zum Beispiel Google Drive Backup) werden erkannt und zählen für die Prüfungen.
+
+### Geändert
+
+- **Diagnose:** Der Download enthält jetzt die Markierungen der Backups (ohne Namen), das hilft bei Meldungen zum Backup-Schutz.
+
+### English
+
+#### Fixed
+
+- **Scan:**
+  - A config entry whose title is a number made the first scan fail (“'int' object has no attribute 'lower'”).
+  - A scene that lists something other than names no longer makes the scan fail; on an error the debug log says where it happened.
+  - “Start scan” no longer stays unavailable after a scan.
+- **Backup protection:** Backups made by other tools (for example Google Drive Backup) are recognised and count for the checks.
+
+#### Changed
+
+- **Diagnostics:** The download now holds the flags of the backups (no names), which helps with reports about backup protection.
+
+## 1.10.1 - 2026-10-19
+
+### Behoben
+
+- **Inventar und Detailseite:** Enthält die Antwort einen Wert, den Home Assistant nicht als JSON senden kann („Invalid JSON in response“), lädt die Seite trotzdem (zum Beispiel ein ungewöhnliches Attribut einer Entität); das Protokoll nennt die betroffenen Stellen.
+
+### English
+
+#### Fixed
+
+- **Inventory and detail page:** If the reply holds a value Home Assistant cannot send as JSON (“Invalid JSON in response”), the page still loads (for example an unusual attribute of an entity); the log names the affected places.
+
+## 1.10.0 - 2026-10-18
+
+### Neu
+
+- **KI-Zugriff:**
+  - Neuer Reiter Einstellungen → KI-Zugriff, standardmäßig aus: Programme und KI-Agenten, die Home-Assistant-Dienste aufrufen können (zum Beispiel ha-mcp), lesen Housekeeper über die Dienste `status`, `findings`, `object` und `audit`.
+  - Ein zweiter Schalter „Merkliste ändern“ erlaubt `finding_decide`, `mark`, `note_set` und `undo`; es ändern sich nur Housekeepers eigene Listen, nie Home Assistant.
+  - „Automatisch ausschalten“ wählst du mit Chips (Nie, 1, 8, 24 Stunden).
+  - Grenzen gegen Schleifen: standardmäßig 200 Änderungen in 5 Minuten und 120 Lesezugriffe pro Minute, im Reiter einstellbar.
+  - Ein Protokoll zeigt jeden Aufruf mit Benutzer und Ergebnis, Änderungen lassen sich dort zurücknehmen. Es ist eine Standard-Tabelle wie die anderen Listen: Suche, Filter nach Art, Sortierung, Seiten, Export (CSV, Markdown, JSON) und aufklappbare Zeilen mit den Parametern. Nur Administratoren, nie Geheimnisse.
+- **Urlaubsmodus:** Eine Entität deiner Wahl (z. B. `input_boolean.urlaub`) schaltet Regeln „nur im Urlaubsmodus“ ein. Dazu gibt es Regeln für einzelne Geräte und Entitäten, eine Nachfrist nach dem Urlaub (Standard 24 Stunden) und eine Leiste, solange etwas zurückgehalten wird.
+  - Ist noch nichts gewählt und gibt es einen Helfer wie `input_boolean.urlaubsmodus` oder `vacation_mode`, steht er als Vorschlag im Feld und gilt nach dem Speichern.
+  - Eine Kalender-Entität kann ein Stichwort bekommen: Dann schaltet in deinem normalen Kalender ein Termin mit „Urlaub“ im Titel den Modus ein, auch wenn gleichzeitig andere Termine laufen. Ohne Stichwort zählt jeder Termin.
+- **Ausnahmeregeln:** Unter Einstellungen → Ausnahmen nimmst du Objekte nach Bereich, Label, Integration oder Typ (z. B. Bereich „Lager“, alle `media_player`) aus. Die Regel blendet ihre Befunde aus oder meldet einen Ausfall erst nach einer einstellbaren Zahl Tage.
+  - Die Regeln stehen mit einem Umschalter „Immer“ und „Im Urlaubsmodus“ in einer Tabelle, darunter der Urlaubsmodus.
+  - Die Art „Alle Typen“ (vorgewählt) findet Bereiche, Labels, Integrationen, Geräte und Entitäten gleichzeitig; beim Speichern entsteht je Art eine Regel.
+  - Die Kachel „Ausnahmen“ in den Einstellungen zeigt die Zahl der Regeln, die Zahl der ausgeblendeten Befunde und den Urlaubsmodus: an, aus oder „nicht eingerichtet“.
+
+### Geändert
+
+- **HACS und Marketplace:** Ab Home Assistant 2026.11 ist HACS als „Marketplace“ eingebaut. Housekeeper liest installierte Integrationen, Updates, archivierte und entfernte Repositories aus beiden.
+- **In HA öffnen:** Bei Entitäten mit Gerät öffnet der Knopf die Geräteseite statt der ganzen Entitätenliste.
+- **Links nach Home Assistant:** Alle Sprünge nach Home Assistant (Apps, Integrationen, HACS, Benutzer, Cloud) öffnen in einem neuen Tab statt im selben.
+- **Schutzmodus:** Der Schutzmodus nennt die Wirkung statt der Stufe: „Alles erlaubt“, „Ohne endgültiges Löschen“, „Nur Quarantäne“, „Nur lesen“.
+- **Einstellungen, Kacheln:** Die Kacheln stehen in neuer Reihenfolge (Schutzmodus, Ausnahmen, Scan und Meldungen, KI-Zugriff, Darstellung, Info) in drei Spalten. Jede Kachel zeigt ihren Stand, der Randstreifen folgt ihm (z. B. KI-Zugriff: aus grau, Lesen grün, Ändern gelb).
+- **Oberfläche, Fehlermeldungen:** Fehler stehen überall im selben Kasten mit Symbol (Seiten, die nicht laden, und Formulare). Die schmale Fehlerzeile in den Speicherleisten ist ohne Fehler unsichtbar.
+- **Updates:** Die ausstehenden Updates stehen in der gewohnten Tabelle mit Suche, Sortierung, Filter nach Bereich und Seiten.
+
+### Behoben
+
+- **Mehr Infos:** Beim Schließen des Dialogs „Mehr Infos“ bleibt das Panel auf der Detailseite, statt zurück zur Liste zu springen.
+- **Kopieren:** Die Kopier-Knöpfe (z. B. „Angaben für eine Fehlermeldung kopieren“) funktionieren auch ohne HTTPS und melden einen Fehlschlag statt „Kopiert“.
+
+### English
+
+#### New
+
+- **AI access:**
+  - New tab Settings → AI access, off by default: programs and AI agents that can call Home Assistant services (for example ha-mcp) read Housekeeper through the services `status`, `findings`, `object` and `audit`.
+  - A second switch “Change the list” allows `finding_decide`, `mark`, `note_set` and `undo`; only Housekeeper's own lists change, never Home Assistant.
+  - “Switch off automatically” uses chips (never, 1, 8, 24 hours).
+  - Limits against loops: by default 200 changes in 5 minutes and 120 reads per minute, adjustable in the tab.
+  - A log shows every call with user and result, and changes can be taken back there. It is a standard table like the other lists: search, filter by kind, sorting, pages, export (CSV, Markdown, JSON) and expandable rows with the parameters. Administrators only, never secrets.
+- **Vacation mode:** An entity of your choice (e.g. `input_boolean.vacation`) turns on rules “only in vacation mode”. Also rules for single devices and entities, a grace period after the vacation (default 24 hours) and a bar while something is held back.
+  - If nothing is chosen and a helper like `input_boolean.urlaubsmodus` or `vacation_mode` exists, it is offered as a suggestion in the field and counts once saved.
+  - A calendar entity can get a keyword: an event with “Vacation” in its title in your normal calendar then switches the mode on, even while other events run. Without a keyword every event counts.
+- **Exception rules:** Under Settings → Exceptions you leave out objects by area, label, integration or type (e.g. area “Storage”, all `media_player`). A rule hides their findings or reports an outage only after a number of days you set.
+  - The rules sit in a table with a switch “Always” and “In vacation mode”, and below it the vacation mode.
+  - The kind “All types” (preselected) finds areas, labels, integrations, devices and entities at once; saving makes one rule per kind.
+  - The “Exceptions” tile in the settings shows the number of rules, the number of hidden findings and the vacation mode: on, off or “not set up”.
+
+#### Changed
+
+- **HACS and Marketplace:** From Home Assistant 2026.11 HACS is built in as “Marketplace”. Housekeeper reads installed integrations, updates, archived and removed repositories from both.
+- **Open in HA:** For entities with a device the button opens the device page instead of the whole entity list.
+- **Links into Home Assistant:** All jumps into Home Assistant (apps, integrations, HACS, users, cloud) now open in a new tab instead of the current one.
+- **Protection mode:** The protection mode names the effect instead of the level: “Everything allowed”, “No irreversible deletions”, “Quarantine only”, “Read only”.
+- **Settings, tiles:** The tiles come in a new order (protection mode, exceptions, scan and messages, AI access, appearance, info) in three columns. Every tile shows its state, and the edge stripe follows it (e.g. AI access: off grey, reads green, changes amber).
+- **Interface, error messages:** Errors appear in the same box with an icon everywhere (pages that do not load, and forms). The narrow error line in the save bars is invisible when there is no error.
+- **Updates:** The pending updates sit in the usual table with search, sorting, filter by area and pages.
+
+#### Fixed
+
+- **More info:** Closing the “More info” dialog keeps the panel on the detail page instead of jumping back to the list.
+- **Copying:** The copy buttons (e.g. “Copy details for a bug report”) also work without HTTPS and report a failure instead of “Copied”.
+
 ## 1.9.0 - 2026-10-17
 
 ### Geändert

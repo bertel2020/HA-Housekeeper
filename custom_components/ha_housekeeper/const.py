@@ -13,6 +13,7 @@ FONTS_URL: Final = "/ha_housekeeper/fonts"
 
 STORAGE_KEY: Final = f"{DOMAIN}.observations"
 IGNORED_STORAGE_KEY: Final = f"{DOMAIN}.ignored"
+EXCEPTIONS_STORAGE_KEY: Final = f"{DOMAIN}.exceptions"
 HISTORY_STORAGE_KEY: Final = f"{DOMAIN}.history"
 PREFLIGHT_STORAGE_KEY: Final = (
     f"{DOMAIN}.preflight"  # removed feature: the file is deleted on start
@@ -20,6 +21,7 @@ PREFLIGHT_STORAGE_KEY: Final = (
 POLICIES_STORAGE_KEY: Final = f"{DOMAIN}.policies"
 REPLIES_STORAGE_KEY: Final = f"{DOMAIN}.replies"
 ATTEST_STORAGE_KEY: Final = f"{DOMAIN}.attest"
+EVENT_AI_CHANGE: Final = f"{DOMAIN}_ai_change"  # fired for every change made through AI access
 EVENTS_STORAGE_KEY: Final = f"{DOMAIN}.events"
 RUNS_STORAGE_KEY: Final = f"{DOMAIN}.runs"
 CHANGES_STORAGE_KEY: Final = f"{DOMAIN}.config_changes"
@@ -36,6 +38,7 @@ NOTES_STORAGE_KEY: Final = f"{DOMAIN}.notes"
 BATTERY_STORAGE_KEY: Final = f"{DOMAIN}.batteries"
 WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"  # removed feature: the file is deleted on start
 NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"
+MCP_STORAGE_KEY: Final = f"{DOMAIN}.mcp"
 STALE_STORAGE_KEY: Final = f"{DOMAIN}.stale"
 SCAN_HEALTH_STORAGE_KEY: Final = f"{DOMAIN}.scan_health"
 MONITOR_STORAGE_KEY: Final = f"{DOMAIN}.monitor"
@@ -72,6 +75,7 @@ JOURNAL_STORAGE_KEY: Final = f"{DOMAIN}.journal"
 QUARANTINE_DAYS: Final = 14
 IGNORE_LABEL: Final = "housekeeper_ignore"
 CRITICAL_LABEL: Final = "housekeeper_critical"
+KEEP_LABEL: Final = "housekeeper_keep"
 # Allowed range (min, max) per option, shared by the options flow and the panel command.
 OPTION_LIMITS: Final = {
     CONF_OUTAGE_INFO_MINUTES: (5, 1440),
@@ -98,6 +102,8 @@ WARMUP_NAMES: Final = 4
 API_SCHEMA: Final = 1
 SIGNAL_SCAN_COMPLETE: Final = f"{DOMAIN}_scan_complete"
 SIGNAL_SCAN_STARTED: Final = f"{DOMAIN}_scan_started"
+# A cleanup plan starts or ends; the activity sensor follows it.
+SIGNAL_PLAN_ACTIVITY: Final = f"{DOMAIN}_plan_activity"
 SIGNAL_MONITOR_DEFINITIONS: Final = f"{DOMAIN}_monitor_definitions"
 SIGNAL_MONITOR_EVENT: Final = f"{DOMAIN}_monitor_event"
 

@@ -45,6 +45,22 @@ class PickerMixin {
         get: () => this.noteDraft?.targetText ?? "", set: v => { if (this.noteDraft) { this.noteDraft.targetText = v; this.noteDraft.target = ""; } }, min: 2, types: null, limit: 15,
         pick: o => { this.noteDraft.target = this.objectKey(o); this.noteDraft.targetText = o.name; },
       },
+      exc: {
+        get: () => this.excForm?.search || "", set: v => { if (this.excForm) this.excForm.search = v; }, min: 1, limit: 30,
+        types: this.excForm?.kind === "any" ? null : [this.excForm?.kind || "entity"],
+        sub: o => (this.excForm?.kind === "any" ? `${this.t(o.object_type)} · ${o.object_type === "config_entry" ? o.domain : o.object_id}` : o.object_type === "device" ? this.deviceSub(o) : o.object_id),
+        filter: o => {
+          const f = this.excForm;
+          if (f?.kind !== "any") return o.object_type === f?.kind && !f.targets.includes(o.object_id);
+          const t = this.excTargetOf(o);
+          return Boolean(t) && !f.picks.some(p => p.kind === t.kind && p.id === t.id);
+        },
+        pick: o => {
+          const f = this.excForm;
+          if (f.kind === "any") { const t = this.excTargetOf(o); if (t) f.picks = [...f.picks, { ...t, name: o.name || t.id }]; } else f.targets = [...f.targets, o.object_id];
+          f.search = ""; this.excPreview();
+        },
+      },
       graph: {
         get: () => this.graphQuery, set: v => { this.graphQuery = v; }, min: 2, types: null, limit: 15,
         pick: o => { this.noteGraphStep(o); this.graphSelected = o; this.graphQuery = ""; this.graphLimit = GRAPH_NODE_STEP; },

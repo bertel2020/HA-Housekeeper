@@ -10,22 +10,33 @@ class InventoryMixin {
   set typeFilter(v) { this.invSetFilter("type", v); if (v !== "config_entry") this.invSetFilter("origin", ""); if (v !== "helper") this.invSetFilter("idle", ""); }
   get statusFilter() { return this.invState().f.status || ""; }
   set statusFilter(v) { this.invSetFilter("status", v); }
+  get labelFilter() { return this.invState().f.label || ""; }
+  set labelFilter(v) { this.invSetFilter("label", v); }
   // The origin only means something for integrations: it is dropped with any other type.
   get originFilter() { return this.typeFilter === "config_entry" ? this.invState().f.origin || "" : ""; }
   set originFilter(v) { this.invSetFilter("origin", v); }
   get helperIdle() { return this.typeFilter === "helper" ? this.invState().f.idle || "" : ""; }
   set helperIdle(v) { this.invSetFilter("idle", v); }
 
+  // The objects the inventory lists: an automation, script or scene is one object, not also its registry entity.
+  invObjects() {
+    return this.memo("invObjects", [], () => {
+      const own = new Set(this.data.objects.filter(o => o.object_type === "automation" || o.object_type === "script" || o.object_type === "scene").map(o => o.object_id));
+      return this.data.objects.filter(o => !(o.object_type === "entity" && own.has(o.object_id)));
+    });
+  }
+
   filtered() {
     if (!this.data) return [];
     const st = this.invState(), q = st.q.trim().toLowerCase(), sort = st.sort, desc = st.dir === "desc";
-    const type = this.typeFilter, status = this.statusFilter, origin = this.originFilter, idle = this.helperIdle;
-    return this.memo("inventory", [q, type, status, origin, idle, sort, st.dir, this.lang], () => {
+    const type = this.typeFilter, status = this.statusFilter, origin = this.originFilter, idle = this.helperIdle, label = this.labelFilter;
+    return this.memo("inventory", [q, type, status, origin, idle, label, sort, st.dir, this.lang], () => {
       const { natural, ids } = this.collators();
       const reason = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? String(item.missing_reference_count) : "");
       const pick = item => sort === "status" ? item.status : sort === "type" ? item.object_type : sort === "since" ? item.status_since : sort === "version" ? item.integration_version : sort === "reason" ? reason(item) : sort === "entities" ? String(item.entity_count ?? "") : sort === "usedByCol" ? String(this.usedByCount(item) ?? "") : sort === "changedCol" ? (item.last_changed || "") : (item.name || item.object_id);
-      const rows = this.data.objects.filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : item.object_type === type))
+      const rows = this.invObjects().filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : item.object_type === type))
         && (!status || item.status === status)
+        && (!label || (item.labels || []).includes(label))
         && (!(type === "helper" && idle) || this.isIdleHelper(item, Number(idle)))
         && (!origin || (item.object_type === "config_entry" && !!item.custom === (origin === "custom")))).map(item => ({ item, key: pick(item) }));
       rows.sort((a, b) => {
@@ -87,18 +98,19 @@ class InventoryMixin {
     const st = this.invState();
     const rows = this.filtered();
     const pg = this.paginate("inventory", rows);
-    this._invPage = pg.rows.filter(item => item.object_type === "entity").map(item => item.object_id);
-    const { types, statuses } = this.memo("facets", [], () => ({
-      types: [...new Set(this.data.objects.map(x => x.object_type))].sort(),
-      statuses: [...new Set(this.data.objects.map(x => x.status))].sort(),
+    this._invPage = pg.rows.filter(item => this.invSelectable(item)).map(item => item.object_id);
+    const { types, statuses, labels } = this.memo("facets", [], () => ({
+      types: [...new Set(this.invObjects().map(x => x.object_type))].sort(),
+      statuses: [...new Set(this.invObjects().map(x => x.status))].sort(),
+      labels: [...new Set(this.invObjects().flatMap(x => x.labels || []))].map(id => [id, this.findObject(`label:${id}`)?.name || id]).sort((a, b) => a[1].localeCompare(b[1])),
     }));
-    const all = this.data.objects;
+    const all = this.invObjects();
     const tiles = this.invTypesCard(all);
     // Version and entity count only mean something for integrations; the helper columns for helpers.
     const integ = this.typeFilter === "config_entry", helperMode = this.typeFilter === "helper";
     const integCols = [...(integ ? ["version", "entities"] : []), ...(helperMode ? ["usedByCol", "changedCol"] : [])];
     const colValue = (item, k) => k === "version" ? (item.object_type === "config_entry" ? item.integration_version || "" : "") : k === "entities" ? (item.object_type === "config_entry" ? item.entity_count ?? 0 : "") : k === "usedByCol" ? this.usedByCount(item) ?? "" : item.last_changed || "";
-    const reasonText = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : "");
+    const reasonText = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : item.entity_status && item.entity_status !== "active" && item.entity_reason ? this.t(item.entity_reason) : "");
     this.setExporter("inventory", "inventory", [this.t("name"), "ID", this.t("type"), this.t("status"), this.t("reason"), this.t("since"), ...(integ ? [this.t("origin")] : []), ...integCols.map(k => this.t(k))], () => rows.map(i => [i.name, i.object_id, this.t(i.object_type), this.statusLabel(i.status), reasonText(i), i.status_since || "", ...(integ ? [i.object_type === "config_entry" ? this.t(i.custom ? "originKindCustom" : "originKindCore") : ""] : []), ...integCols.map(k => colValue(i, k))]));
     const sorts = [
       { key: "name", label: "sortName", dir: "asc" }, { key: "type", label: "sortType", dir: "asc" }, { key: "status", label: "sortStatus", dir: "asc" },
@@ -109,6 +121,7 @@ class InventoryMixin {
     const filters = [
       { name: "type", all: this.t("allTypes"), options: [["helper", this.t("helperKind")], ...types.map(x => [x, this.t(x)])] },
       { name: "status", all: this.t("allStatus"), options: statuses.map(x => [x, this.statusLabel(x)]) },
+      ...(labels.length ? [{ name: "label", all: this.t("allLabels"), options: labels }] : []),
       ...(integ ? [{ name: "origin", all: this.t("allOrigins"), options: [["core", this.t("originKindCore")], ["custom", this.t("originKindCustom")]] }] : []),
       ...(helperMode ? [{ name: "idle", all: this.t("helperIdleAny"), options: ["30", "90", "180"].map(d => [d, this.t("helperIdleOpt", { days: d })]) }] : []),
     ];
@@ -124,7 +137,7 @@ class InventoryMixin {
       ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
     ];
     const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
-    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(this.data.objects.length)} ${this.t("shown")}</span></div>`}</div></div>`;
+    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
   }
 
   // The types as a ring with a table beside it: the largest few, the rest behind a button. A row filters the list below (a

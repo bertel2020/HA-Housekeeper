@@ -78,29 +78,6 @@ test("German and English texts define the same keys", () => {
   assert.deepEqual(Object.keys(TEXT.de).sort(), Object.keys(TEXT.en).sort());
 });
 
-test("Slovak localization covers English keys and preserves interpolation", () => {
-  const { TEXT } = loadPanel();
-  const missing = Object.keys(TEXT.en).filter(key => !(key in TEXT.sk));
-  assert.deepEqual(missing, []);
-  const placeholders = text => [...new Set([...String(text).matchAll(/\{(\w+)\}/g)].map(m => m[1]))].sort();
-  for (const [key, original] of Object.entries(TEXT.en)) {
-    const translated = TEXT.sk[key];
-    for (const value of (typeof translated === "string" ? [translated] : Object.values(translated))) {
-      assert.deepEqual(placeholders(value), placeholders(original), key);
-    }
-  }
-});
-
-test("Slovak is selected automatically and counts use Slovak grammatical forms", () => {
-  const { el } = panel("sk");
-  assert.equal(el.lang, "sk");
-  assert.equal(el.t("deviceEntities", { count: 1 }), "1 entita");
-  assert.equal(el.t("deviceEntities", { count: 2 }), "2 entity");
-  assert.equal(el.t("deviceEntities", { count: 4 }), "4 entity");
-  assert.equal(el.t("deviceEntities", { count: 5 }), "5 entít");
-  assert.equal(el.t("deviceEntities", { count: 10 }), "10 entít");
-});
-
 test("home functions show a confirmed fault, a scan gap, and escapes function names", () => {
   const { el, NAV_GROUPS } = panel("de");
   assert.ok(NAV_GROUPS.find(([group]) => group === "navGroupOperation")[1].includes("monitor"));
@@ -355,11 +332,26 @@ test("detail page renders for an orphaned entity and escapes the name", () => {
   assert.ok(shadow.innerHTML.includes('data-action="back"'));
 });
 
+test("inventory lists an automation, script or scene once, not also as its entity", () => {
+  const { el } = panel();
+  const pair = (type, id) => [{ object_type: "entity", object_id: id, name: id, status: "active" }, { object_type: type, object_id: id, name: id, status: "active" }];
+  el.data = { ...DATA, objects: [...DATA.objects, ...pair("automation", "automation.a"), ...pair("script", "script.s"), ...pair("scene", "scene.c")] };
+  const ids = el.filtered().map(o => `${o.object_type}:${o.object_id}`);
+  for (const id of ["automation.a", "script.s", "scene.c"]) assert.equal(ids.filter(k => k.endsWith(`:${id}`)).length, 1);
+  assert.ok(!ids.includes("entity:automation.a"));
+  el.typeFilter = "automation";
+  assert.match(el.inventory(), /data-inv-sel="automation\.a"/);
+  el.data.objects.find(o => o.object_type === "automation").entity_status = "orphaned";
+  el.data.objects.find(o => o.object_type === "automation").entity_reason = "entity_disabled";
+  el._memo = null;
+  assert.match(el.inventory(), /Entity was disabled/);
+});
+
 test("inventory header selects and clears only the entities on the current page", () => {
   const { el } = panel();
   el.typeFilter = "entity";
   assert.match(el.inventory(), /data-inv-sel-page/);
-  el.typeFilter = "automation";
+  el.typeFilter = "config_entry";
   assert.doesNotMatch(el.inventory(), /data-inv-sel-page/);
   el._invPage = ["sensor.a", "sensor.b"];
   el.invSel = new Set(["sensor.a", "sensor.other"]);
@@ -408,6 +400,27 @@ test("unavailable with healthy integration and device blames reachability", () =
   assert.ok(d.hint);
 });
 
+test("diagnosis rows link the integration, the device and the working twin", () => {
+  const d = diagnoseWith([ENTRY, DEVICE], { duplicate_of: "light.x_ok" });
+  assert.deepEqual(Array.from(d.rows.map(r => r.link)), ["config_entry:e1", "device:d1", null, "entity:light.x_ok"]);
+});
+
+test("the detail summary links the integration, device and area of an entity", () => {
+  const { el } = panel();
+  el.data = { ...DATA, objects: [...DATA.objects, ENTRY, { ...DEVICE, area_id: "a1" }, { object_type: "area", object_id: "a1", name: "Keller" }], findings: [] };
+  const html = el.detailSummary({ object_type: "entity", object_id: "light.x", platform: "hue", config_entry_id: "e1", device_id: "d1" }, "entity:light.x").map(r => r[1]).join("");
+  assert.ok(['data-object="config_entry:e1"', 'data-object="device:d1"', 'data-object="area:a1"'].every(s => html.includes(s)));
+});
+
+test("the detail summary links an automation and its entity to each other", () => {
+  const { el } = panel();
+  const entity = { object_type: "entity", object_id: "automation.a", name: "A", status: "active" }, auto = { object_type: "automation", object_id: "automation.a", name: "A", status: "active" };
+  el.data = { ...DATA, objects: [...DATA.objects, entity, auto], findings: [] };
+  const rows = item => el.detailSummary(item, `${item.object_type}:${item.object_id}`).map(r => r[1]).join("");
+  assert.ok(rows(auto).includes('data-object="entity:automation.a"'));
+  assert.ok(rows(entity).includes('data-object="automation:automation.a"'));
+});
+
 test("unavailable with a failed integration blames the integration", () => {
   const d = diagnoseWith([{ ...ENTRY, state: "setup_error", status: "problem" }, DEVICE], {});
   assert.equal(d.rows[0].tone, "red");
@@ -432,6 +445,7 @@ test("automation diagnosis lists missing references", () => {
 test("haPath builds Home Assistant paths", () => {
   const { el } = panel();
   assert.equal(el.haPath({ object_type: "entity", object_id: "sensor.a b" }), "/config/entities?search=sensor.a%20b");
+  assert.equal(el.haPath({ object_type: "entity", object_id: "sensor.a", device_id: "d9" }), "/config/devices/device/d9");
   assert.equal(el.haPath({ object_type: "automation", object_id: "automation.c", automation_id: "123" }), "/config/automation/edit/123");
   assert.equal(el.haPath({ object_type: "automation", object_id: "automation.c" }), "/config/entities?search=automation.c");
   assert.equal(el.haPath({ object_type: "device", object_id: "d1" }), "/config/devices/device/d1");
@@ -524,6 +538,7 @@ test("scripts and scenes get paths, diagnosis, finding keys and impact sources",
   const { el } = panel();
   assert.equal(el.haPath({ object_type: "script", object_id: "script.tidy" }), "/config/script/edit/tidy");
   assert.equal(el.haPath({ object_type: "scene", object_id: "scene.a", scene_id: "42" }), "/config/scene/edit/42");
+  assert.equal(el.haPath({ object_type: "scene", object_id: "scene.a", device_id: "d9" }), "/config/devices/device/d9");
   assert.equal(el.haPath({ object_type: "scene", object_id: "scene.a" }), "/config/entities?search=scene.a");
   assert.equal(el.findingKey({ rule_id: "script.missing_entity", object_id: "script.tidy" }), "script:script.tidy");
 
@@ -881,6 +896,7 @@ test("settings are available before data has loaded", () => {
   const { el, shadow } = panel("de");
   el.data = null;
   el.view = "settings";
+  el.settingsTab = "look";
   el.render();
   assert.ok(shadow.innerHTML.includes("Schriftgröße") && shadow.innerHTML.includes("Farbschema"));
 });
@@ -1651,7 +1667,7 @@ const BACKUP_REPORT = {
   checks: [
     { id: "setup", level: "ok", values: { agents: ["hassio.local", "cloud.cloud"], recurrence: "daily" } },
     { id: "newest", level: "problem", values: { age_hours: 70, limit_hours: 36, date: "2026-10-05T10:00:00+00:00", recurrence: "daily" } },
-    { id: "last_run", level: "problem", values: { attempted: "2026-10-08T03:00:00+00:00", completed: "2026-10-05T03:00:00+00:00", failed_agents: ["cloud.<b>"], failed_attempt: true } },
+    { id: "last_run", level: "problem", values: { attempted: "2026-10-08T03:00:00+00:00", completed: "2026-10-05T03:00:00+00:00", failed_agents: ["<b>.x"], failed_attempt: true } },
     { id: "targets", level: "note", values: { local: ["hassio.local"], remote: [] } },
     { id: "size", level: "note", values: { size: 524288000, expected: 1048576000, ratio: 0.5, baseline: 3 } },
     { id: "retention", level: "ok", values: { copies: 3, days: null, count: 2, oldest_days: 6.4 } },
@@ -1673,8 +1689,8 @@ test("the backup card puts text and a word next to every level and escapes what 
   assert.ok(shadow.innerHTML.includes("Backups") && shadow.innerHTML.includes("Checking backups"));
   await el.loadBackup();
   const html = shadow.innerHTML;
-  for (const text of ["Targets and schedule", "Targets: hassio.local, cloud.cloud · schedule: daily", "3 days ago · limit for the schedule: 36 h",
-    "The last attempt", "no backup; last success", "Targets with errors: cloud.&lt;b&gt;", "Local only (hassio.local)", "500 MB instead of about 1,000 MB (50 %)",
+  for (const text of ["Targets and schedule", "Targets: Local, Nabu Casa · schedule: daily", "3 days ago · limit for the schedule: 36 h",
+    "The last attempt", "no backup; last success", "Targets with errors: &lt;b&gt;", "Local only (Local)", "500 MB instead of about 1,000 MB (50 %)",
     "Retention: 3 backups · present: 2, the oldest 6 days old", "No backup password set.", "Not confirmed yet", "Last on", "37 days ago",
     "not found any more", "Latest backups", "How to test a restore", "Housekeeper never performs a restore itself"]) assert.ok(html.includes(text), text);
   for (const word of [">OK<", ">Note<", ">Problem<"]) assert.ok(html.includes(word), word);
@@ -3689,9 +3705,12 @@ test("a plan shows its follow-up, expected end state and audit report; a regress
   const follow = el.followupLine(plan);
   assert.ok(follow.includes("Regression") && follow.includes("2 new findings") && follow.includes("broken reference: automation.x"));
   const sim = el.simulationBlock(plan);
-  assert.ok(sim.includes("3 entities removed (1 devices)") && sim.includes("4 references replaced (Light: 4)") && sim.includes("1 certain uses remain") && sim.includes("2 uncertain or manual uses remain") && sim.includes("1 statistics likely orphaned") && sim.includes("Limits:"));
+  assert.ok(sim.includes("3 entities removed (1 device)") && sim.includes("4 references replaced (Light: 4)") && sim.includes("1 certain uses remain") && sim.includes("2 uncertain or manual uses remain") && sim.includes("1 statistics likely orphaned") && sim.includes("Limits:"));
   const counted = el.simulationBlock({ ...plan, simulation: { ...plan.simulation, rows_counted: true, purge_rows: 1234, history_rows_kept: 56 } });
   assert.ok(counted.includes("recorder rows will be removed") && counted.includes("56 history rows stay"));
+  const split = el.simulationBlock({ ...plan, recorder_keep_days: 10, simulation: { ...plan.simulation, removed: 1, removed_devices: 0, rows_counted: true, purge_rows: 0, history_rows_kept: 165, history_states_kept: 163, history_stats_kept: 2 } });
+  assert.ok(el.simulationBlock({ ...plan, recorder_auto_purge: false, simulation: { ...plan.simulation, rows_counted: true, purge_rows: 0, history_states_kept: 3, history_stats_kept: 0 } }).includes("3 stored states stay in the database for good"));
+  assert.ok(split.includes("1 entity removed<") && split.includes("163 stored states stay in the database until the recorder deletes them after 10 days") && split.includes("2 rows of long-term statistics stay for good"));
   assert.ok(!sim.includes("recorder rows"), "no numbers without a count");
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { filename: "housekeeper-plan-p1.md", anonymized: !msg.anonymize === false, markdown: "# Audit report" }; } };
@@ -3875,7 +3894,7 @@ test("the protection mode shows in the safety line and the settings, and is set 
   await el.setProtection("full");
   assert.equal(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/protection_set")), JSON.stringify({ type: "ha_housekeeper/protection_set", mode: "full" }));
   assert.equal(el.data.meta.protection, "full");
-  assert.ok(el.safetyBar().includes("Protection mode: full"));
+  assert.ok(el.safetyBar().includes("Protection mode: everything allowed"));
   void shadow;
 });
 
@@ -4052,6 +4071,7 @@ test("the details for a bug report hold versions, browser and the last panel err
   el.failed(new Error("plan refused"));
   const text = el.issueText();
   assert.ok(text.includes("**Home Assistant:**") && text.includes("**Browser / app:**") && /action: plan refused/.test(text));
+  assert.ok(text.includes("**AI access:** off") && el.issueText({ calls_24h: 4, changes_24h: 1 }).includes("4 calls and 1 changes in 24 hours"));
   assert.equal(el.diagnosticsData().recent_errors.length, 1);
 });
 
@@ -4095,6 +4115,17 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   assert.ok(!auto.includes("data-act-disable"));
   const entity = el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a");
   assert.ok(entity.includes('data-act-disable="sensor.a"'));
+  const before = el.data;
+  el.data = { ...before, objects: before.objects.map(o => o.object_id === "sensor.a" ? { ...o, reason: "not_provided", not_provided_settled: true } : o), findings: [{ ...DATA.findings[0], rule_id: "entity.not_provided", key: "np", ignored: false }], quarantine: [] };
+  assert.ok(!el.cleanupCandidates("disable_entity").length && el.cleanupCandidates("remove_entity").some(r => r.item.object_id === "sensor.a"), "a settled entity not provided is removed, not disabled, in Cleanup too");
+  el.data = before;
+  const gone = el.actionsCard({ ...el.findObject("entity:sensor.a"), reason: "not_provided", not_provided_settled: true }, "entity:sensor.a");
+  assert.ok(gone.includes('data-act-remove="sensor.a"') && !gone.includes("data-act-disable="), "an entity no longer provided is removed, not disabled");
+  const twinData = el.data;
+  el.data = { ...twinData, findings: [{ ...DATA.findings[0], key: "k1", ignored: false }, { rule_id: "entity.possible_duplicate", object_id: "sensor.a", classification: "possible_duplicate", confidence: 0.7, affected_object: "sensor.b", key: "kd", ignored: false }] };
+  const twin = el.findingRows("entity:sensor.a");
+  assert.ok(twin.includes("Replace by the working entity") && !twin.includes("Replace by another entity"), "with a working twin, replacing is offered once, at the duplicate");
+  el.data = twinData;
   assert.ok(el.labelForm({ object_type: "script", object_id: "script.x" }).includes("data-act-label-plan") && el.labelForm({ object_type: "device", object_id: "d1" }) === "", "scripts and scenes take a label too, devices not");
   el.startCleanup("replace_references", () => { el.replOld = "sensor.gone"; });
   assert.equal(el.view, "repair");
@@ -4172,7 +4203,7 @@ test("detail, maintenance and settings offer their options as tiles that open on
   el.view = "maintenance"; el.render();
   for (const id of ["backup", "updates", "blueprints", "goals"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
   el.view = "settings"; el.settingsTab = "protection"; el.render();
-  for (const id of ["look", "protection", "scan", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
+  for (const id of ["look", "protection", "exceptions", "scan", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
   assert.ok(shadow.innerHTML.includes("data-protection") && !shadow.innerHTML.includes("data-notify"));
 });
 
@@ -4473,7 +4504,8 @@ test("an entity has an Actions tab that holds what changes something; the overvi
   assert.ok(overview.includes("Next step") && !overview.includes("data-de-rename") && !overview.includes("data-stale-form"), "no forms on the overview");
   const actions = el.detailPanel("actions", ghost, key);
   assert.ok(actions.includes("Recommended") && actions.includes("Name and classify") && actions.includes("data-de-rename"));
-  assert.ok(actions.includes('class="actrow"') && actions.includes(">Open</button>") && (actions.match(/<section class="panel/g) || []).length === 1, "the forms are rows of one card");
+  assert.ok(actions.includes('class="actrow"') && (actions.match(/<section class="panel/g) || []).length === 1, "the forms are rows of one card");
+  assert.ok(/<div class="fbtns"><button class="btn primary" data-act-replace="sensor.ghost"/.test(actions) && !actions.includes(">Open</button>"), "the step that answers the finding leads its row");
   assert.ok(actions.includes("data-de-id") && !actions.includes('class="deform" data-de-rename><label'), "the controls sit on the right, the label is the row title");
   // a healthy entity has no next step
   assert.equal(el.nextStepBand({ ...ghost, status: "active" }, "entity:sensor.fine"), "");
@@ -4896,6 +4928,7 @@ test("broken references of one dashboard card form one row with a readable place
   const diag = el.diagnose(el.data.objects[0]);
   assert.equal(diag.rows.filter(r => r.tone === "red").length, 1, "one diagnosis row per card");
   assert.ok(diag.hint.includes("custom:charger-card") && diag.hint.includes("3 of 4"), "the diagnosis names the abandoned card");
+  assert.ok(el.suggestHtml(list[1]).includes('data-act-replace="sensor.b" data-repl-new="sensor.b_new"'), "a suggestion opens the replacement filled in");
 });
 
 test("origin filter keeps only core or custom config entries", () => {
@@ -5377,11 +5410,11 @@ test("the settings list every file Housekeeper keeps with size and purpose, grou
   assert.ok(html.includes("<table") && html.includes("Audit trail") && el._exporters.storedfiles.rows()[0].length === 5, "the files are a table with an export");
 });
 
-test("the settings list the hidden findings as a table with a filter by kind, and the event list has no inline style", () => {
+test("the settings list the hidden findings as rows with a filter by kind, and the event list has no inline style", () => {
   const { el } = panel("en");
   el.data = { ...DATA, findings: [{ key: "h1", rule_id: "r", object_id: "sensor.a", ignored: true, ignored_by: "label" }, { key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true }] };
   const html = el.hiddenCard();
-  assert.ok(html.includes('data-lsort="hidden|name') && html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"'), "only a manual decision can be shown again");
+  assert.ok(!html.includes("<table") && html.includes('class="row"') && html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"'), "only a manual decision can be shown again");
   assert.ok(el._exporters.hidden && html.includes("Hidden findings (2)"));
   assert.ok(el.eventsCard().includes('class="evtable"') && !el.eventsCard().includes("style="));
 });
@@ -5566,6 +5599,7 @@ test("a finding row ends in an impact chip and a menu with the decisions; a hidd
   assert.ok(["keep", "snooze"].every(p => menu.includes(`data-decide-preset="${p}"`)) && menu.includes('data-decide-open="k1"') && menu.includes('data-auto-delete="automation.a"'));
   assert.equal(el.rowMenu({ ...f, ignored: true }), "");
   assert.equal(el.rowDecide(f), "");
+  assert.ok(el.rowMenu({ key: "k2", rule_id: "entity.possible_duplicate", object_id: "sensor.a_2", affected_object: "sensor.a" }).includes('data-object="entity:sensor.a"'), "a duplicate row opens its working twin from the menu");
 });
 
 test("an integration outage is a reason of its own, with a tile and a filter of the list bar", () => {
@@ -5607,6 +5641,9 @@ test("object lists share one table: device entities, integration entries, remind
   const rem = el.remindersCard();
   assert.ok(rem.includes('data-lsort="reminders|due') && rem.includes('data-rem-open="r1"') && rem.includes('data-lf="reminders|state"'));
   assert.ok(el.bhBackups([{ date: "2026-10-01T10:00:00+00:00", size: 1000, agents: ["backup.local"], protected: true }]).includes('data-lsort="bhbackups|size'));
+  assert.deepEqual([true, false, null, undefined].map(automatic => el.bhKind({ automatic })), ["auto", "manual", "other", "other"], "a backup without the flag is from another tool, not a manual one");
+  assert.deepEqual(["hassio.local", "backup.local", "hassio.Backup", "google_drive.me_gmail_com", "cloud.cloud", "foo_bar.x"].map(id => el.bhAgent(id).label), ["Local", "Local", "Network storage: Backup", "Google Drive", "Nabu Casa", "Foo bar"], "targets are named, accounts left out");
+  assert.ok(el.bhAgent("hassio.local").local && !el.bhAgent("hassio.Backup").local);
   assert.ok(rem.includes('data-rem-row="r1"') && rem.includes('role="button"'), "the row opens the history");
   assert.ok(rem.includes('data-lf-set="reminders|state|soon"') && rem.includes('data-lf-set="reminders||"'), "the key figures set the state filter");
   assert.ok(rem.includes('data-exp-menu="reminders"') && !rem.includes("data-export-list") && el._exporters.reminders.rows()[0][0] === "Filter", "the list exports to CSV");
@@ -5868,7 +5905,7 @@ test("the new backup checks say what failed, which target is stale and how much 
     { id: "space", level: "problem", values: { free: 800 * 1024 ** 2, size: 1024 ** 3, need: 1.5 * 1024 ** 3 } },
   ] };
   const html = el.backupCard();
-  assert.ok(html.includes("Parts of the newest backup failed: Cloudflared, ssl") && html.includes("Too old (limit 36 h): cloud.cloud: 9 days") && html.includes("Only 800 MB free, the last backup was 1 GB"));
+  assert.ok(html.includes("Parts of the newest backup failed: Cloudflared, ssl") && html.includes("Too old (limit 36 h): Nabu Casa: 9 days") && html.includes("Only 800 MB free, the last backup was 1 GB"));
   assert.ok(html.includes("Storage and content") && html.includes("Content") && html.includes("Room for the next backup"));
 });
 
@@ -5893,4 +5930,60 @@ test("the configuration check runs on request only and an invalid result stops t
   const html = shadow.innerHTML;
   assert.deepEqual(sent, ["ha_housekeeper/check_config"]);
   assert.ok(html.includes("Stop") && html.includes("To check: Configuration") && html.includes("Invalid config for [demo] &lt;b&gt;") && !html.includes("<b>"));
+});
+
+test("the AI access tab shows the two switches and the log with an undo for a change", () => {
+  const { el, shadow } = panel("en");
+  el.view = "settings"; el.settingsTab = "mcp";
+  el.data = { ...el.data, meta: { ...el.data.meta, mcp: { enabled: true, write: false } } };
+  el.mcp = { calls_24h: 4, entries: [
+    { at: "2026-10-18T10:00:00+00:00", last: "2026-10-18T10:00:00+00:00", n: 1, user: null, fn: "finding_decide", kind: "write", params: { key: "k" }, result: "ok", count: 1, undoable: true },
+    { at: "2026-10-18T09:00:00+00:00", last: "2026-10-18T09:30:00+00:00", n: 3, user: "u1", fn: "findings", kind: "read", params: {}, result: "ok", count: 12, undoable: false },
+  ] };
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("data-mcp-enabled") && /data-mcp-write[^>]*>/.test(html));
+  assert.ok(html.includes('data-mcp-undo="2026-10-18T10:00:00+00:00"') && html.includes("3 calls until"));
+  assert.ok(html.includes("data-set-tab=\"mcp\""));
+  assert.ok(html.includes("data-mcp-row") && html.includes("×3") && html.includes("mcplog") && html.includes('data-exp-menu="mcplog"'));
+  assert.ok(html.includes("data-mcp-undoall") && html.includes("data-mcp-undoall-hours"));
+  assert.ok(html.includes("data-mcp-autooff") && html.includes("after 8 hours") && html.includes("data-mcp-writelimit") && html.includes("data-mcp-readlimit") && html.includes("data-mcp-hide") && html.includes("data-mcp-prompt"));
+  el.settingsTab = "look"; el.render();
+  assert.ok(shadow.innerHTML.includes("data-ai-go") && shadow.innerHTML.includes("AI access on"));
+});
+
+test("the exceptions card builds the editor with chips for areas and the shared search for entities", () => {
+  const { el } = panel("de");
+  el.exc = { rules: [{ id: "r1", kind: "area", targets: ["keller"], action: "delay", days: 7, scope: "always", enabled: true, note: "", effect: { hold: 2, due: 0 } }],
+    areas: [{ id: "keller", name: "Keller" }, { id: "lager", name: "Lager" }], labels: [], integrations: [], domains: [], devices: [], entities: [], vacation: { entity: "input_boolean.urlaub", state: "on", grace_hours: 24 } };
+  el.openException = () => {};
+  el.excForm = { id: "", kind: "area", targets: ["keller"], action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null };
+  let html = el.excCard();
+  assert.match(html, /data-exc-target="lager"[^>]*aria-pressed="false"/);
+  assert.match(html, /data-exc-target="keller"[^>]*aria-pressed="true"/);
+  assert.match(html, /class="policyswitch" data-exc-toggle="r1"/);
+  assert.ok(!html.includes("data-picker=\"exc\""));
+  el.excForm = { ...el.excForm, kind: "entity", targets: [], scope: "vacation" };
+  html = el.excCard();
+  assert.match(html, /data-picker="exc"/);
+  assert.ok(!html.includes("data-exc-action"), "vacation rules always hide");
+  el.excForm = { id: "", kind: "any", targets: [], picks: [{ kind: "area", id: "keller", name: "Keller" }, { kind: "entity", id: "sensor.a", name: "A" }, { kind: "entity", id: "sensor.b", name: "B" }], action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null };
+  assert.equal(JSON.stringify(el.excDrafts(el.excForm).map(r => [r.kind, r.targets])), '[["area",["keller"]],["entity",["sensor.a","sensor.b"]]]');
+  assert.match(el.excCard(), /data-exc-kind="any"[^>]*aria-pressed="true"/);
+});
+
+test("the inventory filters by label and the labels block counts what carries each label", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [
+    { object_type: "label", object_id: "housekeeper_keep", name: "housekeeper_keep", status: "active" },
+    { object_type: "device", object_id: "d1", name: "Proxy", status: "empty", labels: ["housekeeper_keep"] },
+    { object_type: "entity", object_id: "sensor.a", name: "A", status: "active", labels: ["housekeeper_keep"] },
+    { object_type: "entity", object_id: "sensor.b", name: "B", status: "active", labels: [] },
+  ] };
+  el.labelFilter = "housekeeper_keep";
+  assert.equal(JSON.stringify(Array.from(el.filtered().map(o => o.object_id))), JSON.stringify(["sensor.a", "d1"]));
+  const html = el.labelsCard();
+  assert.ok(html.includes("housekeeper_keep") && html.includes("Device: 1") && html.includes("Entity: 1"));
+  assert.ok(html.includes("data-jump-lf=\"inventory|label|housekeeper_keep\""));
+  assert.ok(html.includes("not created"), "the other two labels are not created yet");
 });

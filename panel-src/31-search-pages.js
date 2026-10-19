@@ -27,7 +27,8 @@ const SEARCH_WORDS = {
   changes: "änderungen vergleich scan-vergleich logbuch changes compare logbook",
   settings: "einstellungen optionen konfiguration settings options preferences",
   look: "darstellung theme dunkel hell schrift farbe appearance dark light font",
-  protection: "schutz schutzmodus sicherheit ausgeblendet ignoriert ausnahmen protection mode hidden ignored exceptions",
+  protection: "schutz schutzmodus sicherheit protection mode",
+  exceptions: "ausgeblendet ignoriert ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
@@ -37,55 +38,11 @@ const SEARCH_WORDS = {
   compare: "scan-vergleich verlauf vergleich scans history compare",
   logbook: "logbuch notizen logbook notes",
 };
-// Slovak search synonyms supplement the original German/English ones.
-const SK_SEARCH_WORDS = {
-  overview: "prehľad stav domácnosť úvod",
-  findingsNav: "nálezy problémy chyby upozornenia osirotené",
-  cleanup: "upratovanie čistenie vymazať odstrániť karanténa",
-  repair: "oprava opraviť merač nahradiť vymeniť",
-  journal: "denník plány vrátiť história",
-  maintenance: "údržba zálohy obnovenie aktualizácie ciele",
-  batteries: "batérie batéria akumulátor vybíjanie",
-  reminders: "pripomienky termíny filter údržba",
-  policies: "pravidlá porušenia",
-  reliability: "spoľahlivosť výpadky nedostupnosť",
-  runs: "spustenia automatizácie behy",
-  recorder: "databáza štatistiky zaťaženie záznamy",
-  storage: "úložisko disk pamäť systém",
-  exposure: "sprístupnenie hlasový asistent",
-  dataflow: "prístupy údaje tok riziko oprávnenia",
-  secrets: "heslá prihlasovanie tokeny kľúče",
-  inventory: "inventár entity zariadenia objekty",
-  components: "aplikácie integrácie doplnky",
-  graph: "závislosti vzťahy graf",
-  changes: "zmeny porovnanie kontrol denník",
-  settings: "nastavenia konfigurácia možnosti",
-  look: "vzhľad tmavý svetlý písmo farby",
-  protection: "ochrana bezpečnosť",
-  scan: "kontrola interval limity",
-  notify: "upozornenie oznámenie",
-  goals: "ciele údržba",
-  hidden: "skryté ignorované",
-  info: "informácie verzia diagnostika",
-  compare: "porovnať históriu kontrol",
-  logbook: "denník poznámky"
-};
-for (const [key, words] of Object.entries(SK_SEARCH_WORDS)) SEARCH_WORDS[key] += " " + words;
-
 // What a person may type for a finding status, besides its label.
 const SEARCH_STATE_WORDS = {
   "": "offen open", new: "neu new", inwork: "in arbeit work", known: "bekannt behalten known keep",
   snoozed: "später zurückgestellt snoozed later", hidden: "ausgeblendet ignoriert hidden ignored", fixed: "behoben repariert fixed repaired",
 };
-Object.assign(SEARCH_STATE_WORDS, {
-  "": SEARCH_STATE_WORDS[""] + " otvorené",
-  new: SEARCH_STATE_WORDS.new + " nové",
-  inwork: SEARCH_STATE_WORDS.inwork + " rozpracované",
-  known: SEARCH_STATE_WORDS.known + " známe ponechané",
-  snoozed: SEARCH_STATE_WORDS.snoozed + " odložené",
-  hidden: SEARCH_STATE_WORDS.hidden + " skryté",
-  fixed: SEARCH_STATE_WORDS.fixed + " vyriešené opravené",
-});
 const SEARCH_PAGE_LIMIT = 5, SEARCH_FILTER_LIMIT = 5;
 
 class SearchPagesMixin {

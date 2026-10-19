@@ -41,6 +41,34 @@ def test_two_active_entities_or_other_integrations_are_not_duplicates() -> None:
     assert all(e["duplicate_of"] is None for e in entities)
 
 
+def test_a_leftover_without_suffix_points_to_its_one_working_suffixed_twin() -> None:
+    entities = [
+        {**_entity("sensor.level", "orphaned", "victron"), "original_name": "Level"},
+        {**_entity("sensor.level_2", "active", "victron"), "original_name": "Level"},
+        {**_entity("sensor.pm2", "unavailable", "air"), "original_name": "PM2"},
+        {**_entity("sensor.pm2_5", "active", "air"), "original_name": "PM2.5"},
+    ]
+    mark_duplicates(entities)
+
+    assert [e["duplicate_of"] for e in entities] == ["sensor.level_2", None, None, None]
+
+
+def test_a_lamp_and_a_room_without_names_on_other_devices_are_no_duplicates() -> None:
+    entities = [
+        {
+            **_entity("light.living", "unavailable", "hue"),
+            "original_name": None,
+            "device_id": "lamp",
+        },
+        {**_entity("light.living_2", "active", "hue"), "original_name": None, "device_id": "room"},
+        {**_entity("light.desk", "unavailable", "hue"), "original_name": None, "device_id": "d1"},
+        {**_entity("light.desk_2", "active", "hue"), "original_name": None, "device_id": "d1"},
+    ]
+    mark_duplicates(entities)
+
+    assert [e["duplicate_of"] for e in entities] == [None, None, "light.desk_2", None]
+
+
 def test_duplicate_findings_respect_the_outage_filter() -> None:
     entities = [
         _entity("a.x", "active"),

@@ -14,10 +14,10 @@ class DiagnosisMixin {
   integrationCheck(entryId) {
     const entry = this.findObject(`config_entry:${entryId}`), label = this.t("integration");
     if (!entry) return { row: this.check(label, "red", entryId, this.t("missing")), entry };
-    if (entry.disabled_by) return { row: this.check(label, "mute", entry.name, this.t("disabled")), entry };
+    if (entry.disabled_by) return { row: this.check(label, "mute", entry.name, this.t("disabled"), this.objectKey(entry)), entry };
     const state = entry.state || "not_loaded";
     const tone = state === "loaded" ? "ok" : ["setup_error", "migration_error", "failed_unload"].includes(state) ? "red" : "warn";
-    return { row: this.check(label, tone, entry.name, this.t(`cs_${state}`)), entry, broken: state !== "loaded", state };
+    return { row: this.check(label, tone, entry.name, this.t(`cs_${state}`), this.objectKey(entry)), entry, broken: state !== "loaded", state };
   }
 
   // Builds the check list and the plain-language cause for one object. Returns null when nothing is worth explaining.
@@ -33,8 +33,8 @@ class DiagnosisMixin {
       const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
       if (item.device_id) {
         rows.push(!device ? this.check(t("device"), "red", item.device_id, t("missing"))
-          : device.status === "disabled" ? this.check(t("device"), "mute", device.name, t("disabled"))
-          : this.check(t("device"), "ok", device.name, t("active")));
+          : device.status === "disabled" ? this.check(t("device"), "mute", device.name, t("disabled"), this.objectKey(device))
+          : this.check(t("device"), "ok", device.name, t("active"), this.objectKey(device)));
       }
       if (item.disabled_by) rows.push(this.check(t("entity"), "mute", t("entity_disabled"), t("disabled")));
       const state = item.state;
@@ -54,7 +54,7 @@ class DiagnosisMixin {
       if (logged) rows.push(this.check(t("logTitle"), logged.level === "warning" ? "warn" : "red", this.logLine(logged), ""));
       switch (item.reason) {
         case "state_available": cause = t("cause_ok"); break;
-        case "entity_disabled": case "device_disabled": case "integration_disabled": case "device_missing": case "config_entry_missing":
+        case "entity_disabled": case "device_disabled": case "integration_disabled": case "device_missing": case "config_entry_missing": case "not_provided":
           cause = t(`cause_${item.reason}`); break;
         case "state_missing": cause = broken ? t("cause_state_missing_integration", broken) : t("cause_state_missing"); break;
         case "state_unavailable": cause = broken ? t("cause_state_unavailable_integration", broken) : t("cause_state_unavailable"); break;
@@ -64,13 +64,13 @@ class DiagnosisMixin {
       const brokenMembers = this.data.findings.filter(f => f.rule_id === "entity.missing_member" && f.object_id === item.object_id);
       brokenMembers.forEach(f => rows.push(this.check(t("missing_member"), "red", f.affected_object, t("missing"))));
       if (item.duplicate_of) {
-        rows.push(this.check(t("duplicateTwin"), "violet", item.duplicate_of, t("possible_duplicate")));
+        rows.push(this.check(t("duplicateTwin"), "violet", item.duplicate_of, t("possible_duplicate"), `entity:${item.duplicate_of}`));
         cause = `${t("cause_duplicate", { twin: item.duplicate_of })} ${cause}`;
       }
       if (item.reason === "state_unavailable") hint = broken ? t("hint_integration") : t("hint_state_unavailable");
       else if (item.reason === "state_unknown") hint = t("hint_state_unknown");
       else if (item.reason === "state_missing" && broken) hint = t("hint_integration");
-      else if (["state_missing", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
+      else if (["state_missing", "not_provided", "device_missing", "config_entry_missing"].includes(item.reason)) hint = t("hint_orphan");
       if (item.duplicate_of) hint = t("hint_duplicate");
       if (stable?.info) {
         cause = `${t("cause_unstable", { level: t(stable.info.level === "flapping" ? "relFlapping" : "relUnstable") })} ${cause}`;
@@ -85,8 +85,15 @@ class DiagnosisMixin {
     } else if (item.object_type === "device") {
       const ids = item.config_entry_ids || [];
       ids.forEach(id => rows.push(this.integrationCheck(id).row));
-      rows.push(this.check(t("entities"), item.entity_count ? "ok" : "warn", this.formatNumber(item.entity_count), item.entity_count ? t("present") : t("empty")));
-      cause = item.status === "disabled" ? t("cause_device_off") : item.status === "empty" ? t("cause_device_empty") : t("cause_device_active");
+      const down = this.data.findings.some(f => f.rule_id === "device.down" && f.object_id === item.object_id && !f.ignored);
+      rows.push(down ? this.check(t("entities"), "red", t("devAllDown", { n: this.formatNumber(item.entity_count) }), t("unavailable"))
+        : this.check(t("entities"), item.entity_count ? "ok" : "warn", this.formatNumber(item.entity_count), item.entity_count ? t("present") : t("empty")));
+      const downSince = down ? this.data.findings.find(f => f.rule_id === "device.down" && f.object_id === item.object_id)?.first_detected_at : null;
+      if (down) {
+        cause = t("cause_device_unavailable", { n: this.formatNumber(item.entity_count), span: downSince ? this.spanText(Math.max(0, (Date.now() - Date.parse(downSince)) / 3600000)) : "?" });
+        hint = t("hint_device_unavailable");
+        tone = "red";
+      } else cause = item.status === "disabled" ? t("cause_device_off") : item.status === "empty" ? t("cause_device_empty") : t("cause_device_active");
     } else if (item.object_type === "config_entry") {
       const state = item.state || "not_loaded";
       if (item.disabled_by) { rows.push(this.check(t("status"), "mute", item.name, t("disabled"))); cause = t("cause_entry_off"); }
@@ -99,13 +106,13 @@ class DiagnosisMixin {
         cause = t(item.error ? "cause_entry_problem_error" : "cause_entry_problem", { state: t(`cs_${state}`), error: item.error || "" }); hint = t("hint_integration");
       }
       const helperBroken = this.data.findings.filter(f => f.rule_id === "config_entry.missing_entity" && f.object_id === item.object_id);
-      helperBroken.forEach(f => rows.push(this.check(t("missing_entity"), "red", [f.affected_object, this.placeText(f), this.suggestText(f)].filter(Boolean).join(" · "), t("missing"))));
+      helperBroken.forEach(f => rows.push(this.check(t("missing_entity"), "red", [f.affected_object, this.placeText(f)].filter(Boolean).join(" · "), t("missing"), null, this.suggestHtml(f))));
       if (helperBroken.length) { cause = t("cause_helper_broken", { count: helperBroken.length }); hint = t("hint_helper_broken"); tone = "red"; }
     } else if (["automation", "script", "scene", "dashboard"].includes(item.object_type)) {
       const key = this.objectKey(item);
       const broken = this.data.findings.filter(f => this.findingKey(f) === key && f.rule_id.includes(".missing_"));
       const grouped = this.groupBroken(broken);
-      grouped.forEach(g => rows.push(g.members ? this.brokenGroupRow(g) : this.check(t(g.rule_id.split(".")[1]), "red", [g.affected_object, this.placeText(g), this.suggestText(g)].filter(Boolean).join(" · "), t("missing"))));
+      grouped.forEach(g => rows.push(g.members ? this.brokenGroupRow(g) : this.check(t(g.rule_id.split(".")[1]), "red", [g.affected_object, this.placeText(g)].filter(Boolean).join(" · "), t("missing"), null, this.suggestHtml(g))));
       if (item.object_type === "automation" && item.status === "disabled") rows.push(this.check(t("status"), "mute", t("automationOff"), t("disabled")));
       if (!broken.length) rows.push(this.check(t("dependencies"), "ok", t("refsResolved"), t("present")));
       const unused = item.object_type === "automation" ? this.data.findings.find(f => this.findingKey(f) === key && f.classification === "unused") : null;
@@ -129,7 +136,7 @@ class DiagnosisMixin {
     const d = this.diagnose(item);
     if (!d) return "";
     const icon = { ok: "mdi:check-circle", warn: "mdi:alert-circle", red: "mdi:close-circle", mute: "mdi:minus-circle", violet: "mdi:help-circle" };
-    const rows = d.rows.map(r => `<div class="check ${r.tone}"><ha-icon icon="${icon[r.tone] || icon.ok}"></ha-icon><b>${this.esc(r.label)}</b><span class="val">${this.esc(r.value)}</span><i class="pill ${r.tone}">${this.esc(r.badge)}</i></div>`).join("");
+    const rows = d.rows.map(r => `<div class="check ${r.tone}"><ha-icon icon="${icon[r.tone] || icon.ok}"></ha-icon><b>${this.esc(r.label)}</b>${r.link && this.findObject(r.link) ? `<button type="button" class="linkbtn val" data-object="${this.esc(r.link)}">${this.esc(r.value)}</button>` : `<span class="val">${this.esc(r.value)}${r.extra ? ` · ${r.extra}` : ""}</span>`}<i class="pill ${r.tone}">${this.esc(r.badge)}</i></div>`).join("");
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("diagnosis")}</h2></div></div>
       <div class="diagcard">${this.ratingBlock(item, this.objectKey(item))}<div class="checks">${rows}</div>
       ${d.cause ? `<div class="cause ${d.tone}"><ha-icon icon="mdi:text-search"></ha-icon><div><strong>${this.t("causeLabel")}</strong><p>${this.esc(d.cause)}</p></div></div>` : ""}
@@ -297,14 +304,20 @@ class DiagnosisMixin {
     const areaId = item.area_id || device?.area_id, area = areaId ? this.findObject(`area:${areaId}`) : null;
     const integration = item.object_type === "entity" ? item.platform : item.object_type === "config_entry" ? (item.integration_name || item.domain) : null;
     const impact = this.impact(item, key);
+    // An entity names its config entry (the integration page needs one), else the integration itself.
+    const entryKey = item.object_type !== "entity" ? null : item.config_entry_id && this.findObject(`config_entry:${item.config_entry_id}`) ? `config_entry:${item.config_entry_id}` : `integration:${item.platform}`;
+    const linkTo = (k, text) => k && this.findObject(k) ? `<button class="link" data-object="${this.esc(k)}">${this.esc(text)}</button>` : this.esc(text);
     const risk = impact ? { tone: impact.tone, text: impact.hits.length ? this.t("riskHits", { n: impact.hits.length, c: impact.certain }) : this.t("riskNone") } : null;
     return [
       item.reason ? [this.t("sumCause"), this.esc(this.t(item.reason))] : null,
       item.status_since ? [this.t("since"), this.esc(this.formatDate(item.status_since))] : null,
-      integration ? [this.t("sumIntegration"), item.object_type === "config_entry" && this.findObject(`integration:${item.domain}`) ? `<button class="link" data-object="${this.esc(`integration:${item.domain}`)}" title="${this.esc(this.t("intToIntegration"))}">${this.esc(integration)}</button>` : this.esc(integration)] : null,
-      device ? [this.t("sumDevice"), this.esc(device.name)] : null,
-      area ? [this.t("sumArea"), this.esc(area.name)] : null,
-      risk ? [this.t("sumRisk"), `<span class="pill ${risk.tone}">${this.esc(risk.text)}</span>`] : null,
+      integration ? [this.t("sumIntegration"), item.object_type === "config_entry" && this.findObject(`integration:${item.domain}`) ? `<button class="link" data-object="${this.esc(`integration:${item.domain}`)}" title="${this.esc(this.t("intToIntegration"))}">${this.esc(integration)}</button>` : linkTo(entryKey, integration)] : null,
+      device ? [this.t("sumDevice"), linkTo(this.objectKey(device), device.name)] : null,
+      area ? [this.t("sumArea"), linkTo(this.objectKey(area), area.name)] : null,
+      // An automation, script or scene and its entity are one row in the inventory; each page links the other.
+      TWIN_TYPES.includes(item.object_type) && this.findObject(`entity:${item.object_id}`) ? [this.t("sumEntity"), linkTo(`entity:${item.object_id}`, item.object_id)] : null,
+      item.object_type === "entity" ? TWIN_TYPES.map(type => this.findObject(`${type}:${item.object_id}`)).filter(Boolean).map(twin => [this.t("sumBelongsTo"), linkTo(this.objectKey(twin), this.t(twin.object_type))])[0] || null : null,
+      risk ? [this.t(this.data.findings.some(f => this.findingKey(f) === key && !f.ignored && OUTAGE_RULES.includes(f.rule_id)) ? "sumRiskOutage" : "sumRisk"), `<span class="pill ${risk.tone}">${this.esc(risk.text)}</span>`] : null,
     ].filter(Boolean);
   }
 
@@ -349,7 +362,7 @@ class DiagnosisMixin {
     const tablist = tabs.map(([id, label, count, tone]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}${tone ? `<i class="tabdot ${tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div><div class="headpills">${this.pill(item.status)}<span class="pill mute">${this.t(item.object_type)}</span></div><h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
-      <div class="actions">${item.object_type === "entity" && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : ""}${path ? `<button class="btn" data-ha-path="${this.esc(path)}" data-ha-tab><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
+      <div class="actions">${(item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : ""}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
       <div class="panel sumline">${summary}</div>
       ${this.statusBand(item, key)}
       <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>

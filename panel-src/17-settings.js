@@ -13,13 +13,24 @@ class SettingsMixin {
   // The tab ids of the settings page, in display order.
   // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
-    const m = this.data?.meta || {};
+    const m = this.data?.meta || {}, hidden = (this.data?.findings || []).filter(f => f.ignored).length;
+    const mcp = m.mcp || {};
     return [
-      ["look", "mdi:palette-outline", "setTabLook", "setHintLook", ""],
-      ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`safeMode_${m.protection || "full"}`), (m.protection || "full") === "full" ? "ok" : "warn"],
+      ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`modeBadge_${m.protection || "full"}`), (m.protection || "full") === "full" ? "ok" : "warn"],
+      ["exceptions", "mdi:eye-off-outline", "setTabExceptions", "setHintExceptions", this.exceptionPills(m, hidden), "mute"],
       ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
-      ["info", "mdi:information-outline", "setTabInfo", "setHintInfo", ""],
+      ["mcp", "mdi:robot-outline", "setTabMcp", "setHintMcp", !mcp.enabled ? this.t("setOff") : this.t(mcp.write ? "mcpFilterWrite" : "mcpFilterRead"), !mcp.enabled ? "mute" : mcp.write ? "warn" : "ok"],
+      ["look", "mdi:palette-outline", "setTabLook", "setHintLook", this.t(`scheme${(this.prefs.scheme || "standard").replace(/^./, c => c.toUpperCase())}`), "mute"],
+      ["info", "mdi:information-outline", "setTabInfo", "setHintInfo", m.version ? `v${m.version}` : "–", "mute"],
     ];
+  }
+
+  // The exceptions tile: rules and hidden findings, and whether the vacation mode is on.
+  exceptionPills(m, hidden) {
+    const v = m.vacation, rules = this.exc?.rules ? this.exc.rules.length : m.exception_rules || 0;
+    const pills = [{ text: this.t(rules === 1 ? "setRuleOne" : "setRulesCount", { n: rules }) }, { text: hidden ? this.t("setHiddenCount", { n: hidden }) : this.t("setNoneHidden") }];
+    pills.push(v ? { text: this.t(v.active ? "setVacationOn" : "setVacationOff"), tone: v.active ? "warn" : "mute" } : { text: this.t("setVacationNone"), tone: "warn" });
+    return pills;
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.
@@ -42,7 +53,7 @@ class SettingsMixin {
     const modes = [["auto", "modeAuto", "mdi:theme-light-dark"], ["light", "modeLight", "mdi:white-balance-sunny"], ["dark", "modeDark", "mdi:weather-night"]].map(([id, key, icon]) => tile("mode", id, this.t(key), `<ha-icon icon="${icon}"></ha-icon>`)).join("");
     const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("setLanguage")}</h2><p>${this.t("setLanguageHint")}</p></div></div>
-      ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ["de", "Deutsch"], ["en", "English"], ["sk", "Slovenčina"]]))}
+      ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ...Object.keys(TEXT).map(lang => [lang, ({ de: "Deutsch", en: "English", sk: "Slovenčina", ru: "Русский" }[lang] || new Intl.DisplayNames([lang], { type: "language" }).of(lang))])]))}
       <div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles schemetiles">${schemes}</div>
       <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div></section>`;
   }
@@ -85,25 +96,24 @@ class SettingsMixin {
 
   hiddenCard() {
     const hidden = (this.data?.findings || []).filter(f => f.ignored);
-    const by = f => (f.ignored_by === "label" || f.ignored_by === "mark" ? f.ignored_by : "manual");
+    const by = f => (f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? f.ignored_by : "manual");
     const objectName = f => this.findObject(this.findingKey(f))?.name || f.object_id;
-    const decision = f => (f.ignore_info ? this.decisionLabel(f) : "") + (f.mark ? ` ${this.markLine(f.mark)}` : "");
-    const action = f => (by(f) === "manual" ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0">${this.t("showFinding")}</button>` : `<span class="pill mute">${this.t(f.ignored_by === "mark" ? "mark_" + f.mark.kind : "ignoredByLabel")}</span>`);
-    const table = this.sysList("hidden", hidden, {
-      sort: "name", dir: "asc", cls: "hid", tie: f => f.key, empty: "hiddenNone", exportName: "hidden-findings",
-      sorts: [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }],
-      text: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f)].join(" "),
-      filters: [{ name: "by", all: this.t("hidAllWays"), options: [["manual", this.t("hidByManual")], ["label", this.t("hidByLabel")], ["mark", this.t("hidByMark")]] }],
-      filterFns: { by: (f, v) => by(f) === v },
-      columns: [
-        { key: "name", label: "hidColObject", dir: "asc", cell: f => `<strong>${this.esc(objectName(f))}</strong><small>${this.esc(f.object_id)}</small>` },
-        { key: "finding", label: "hidColFinding", dir: "asc", cell: f => this.esc(this.findingTitle(f)) },
-        { key: "why", label: "hidColDecision", sortable: false, cell: f => this.esc(decision(f).trim() || "–") },
-        { key: "act", label: "hidColAction", sortable: false, cell: action },
-      ],
-      header: [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("hidColDecision")], rows: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f).trim()],
-    });
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${table}</section>`;
+    const decision = f => (f.ignore_info ? this.decisionLabel(f) : "") + (f.mark ? ` ${this.markLine(f.mark)}` : "") + (f.ignored_by === "rule" ? this.findingRuleLine(f) : "");
+    const action = f => (by(f) === "manual" ? `<button class="btn quiet" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : `<span class="pill mute">${this.t(f.ignored_by === "mark" ? "mark_" + f.mark.kind : f.ignored_by === "rule" ? "hidRuleLink" : "ignoredByLabel")}</span>`);
+    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }];
+    const filters = [{ name: "by", all: this.t("hidAllWays"), options: [["manual", this.t("hidByManual")], ["label", this.t("hidByLabel")], ["mark", this.t("hidByMark")], ["rule", this.t("hidByRule")]] }];
+    const st = this.lvState("hidden", "name", "asc");
+    this.setExporter("hidden", "hidden-findings", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("hidColDecision")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), decision(f).trim()]));
+    const bar = hidden.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("hidden", { sorts, filters }) : "";
+    const refined = this.refine("hidden", hidden, { text: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f)].join(" "), filters: { by: (f, v) => by(f) === v }, sorts, tie: f => f.key });
+    const pg = this.paginate("hidden", refined);
+    st.shown = refined.length;
+    const row = f => {
+      const key = this.findingKey(f), object = this.findObject(key), why = decision(f).trim();
+      return `<div class="row" ${object ? `data-object="${this.esc(key)}" tabindex="0" role="button" aria-label="${this.esc(objectName(f))}"` : ""} title="${this.esc(f.object_id)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="row-text"><strong>${this.esc(objectName(f))}</strong><small>${this.esc(this.findingTitle(f))}${why ? ` · ${this.esc(why)}` : ""}</small></span>${action(f)}</div>`;
+    };
+    const table = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${hidden.length ? this.noMatches("hidden") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("hiddenNone")}`}</div>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${bar}${table}${pg.footer}</section>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
@@ -119,19 +129,24 @@ class SettingsMixin {
       storage: storage || null, database: database || null,
       hacs_housekeeper: m.hacs_housekeeper || null,
       panel: { language: this.lang, size: this.prefs?.size, mode: this.prefs?.mode, scheme: this.prefs?.scheme, page_size: this.pageSize },
+      ai_access: { enabled: Boolean(m.mcp?.enabled), write: Boolean(m.mcp?.write), auto_off_hours: m.mcp?.auto_off_hours || 0 },
       browser: globalThis.navigator?.userAgent || null, recent_errors: this._recentErrors || [],
     };
   }
 
   // The few lines an issue needs, ready to paste: versions, browser or app, language and the last errors.
-  issueText() {
+  issueText(ai = null) {
     const d = this.diagnosticsData();
+    const mode = !d.ai_access.enabled ? "off" : d.ai_access.write ? "on, with changes" : "on, read-only";
+    const aiLine = `**AI access:** ${mode}${ai ? `, ${ai.calls_24h} calls and ${ai.changes_24h} changes in 24 hours` : ""}\n`;
     const errors = d.recent_errors.length ? d.recent_errors.map(e => `- ${e.at} ${e.where}: ${e.message}`).join("\n") : "- none";
-    return `**HA-Housekeeper:** ${d.housekeeper || "?"}\n**Home Assistant:** ${d.home_assistant || "?"}\n**Browser / app:** ${d.browser || "?"}\n**Language:** ${d.panel.language}\n**Recent panel errors:**\n${errors}\n`;
+    return `**HA-Housekeeper:** ${d.housekeeper || "?"}\n**Home Assistant:** ${d.home_assistant || "?"}\n**Browser / app:** ${d.browser || "?"}\n**Language:** ${d.panel.language}\n${aiLine}**Recent panel errors:**\n${errors}\n`;
   }
 
   async copyIssueText() {
-    try { await globalThis.navigator?.clipboard?.writeText(this.issueText()); this.toast(this.t("diagCopied")); } catch (err) { this.failed(err); }
+    let ai = null;
+    try { ai = await this._hass.callWS({ type: "ha_housekeeper/mcp_audit", limit: 1 }); } catch (_) { /* the line is shorter without counts */ }
+    try { await this.copyText(this.issueText(ai)); this.toast(this.t("diagCopied")); } catch (err) { this.failed(err); }
   }
 
   storedFiles(m) {
@@ -184,7 +199,7 @@ class SettingsMixin {
     else if (m.version && h.installed_version && !sameVersion(m.version, h.installed_version)) [tone, title, hint] = ["warn", "hkUpdateMismatch", "hkUpdateMismatchHint"];
     else if (sameVersion(m.version, h.available_version)) [tone, title, hint] = ["ok", "hkUpdateCurrent", "hkUpdateCurrentHint"];
     const facts = [fact("hkUpdateLoaded", m.version), h ? fact("hkUpdateHacsInstalled", h.installed_version) : "", h ? fact("hkUpdateLatest", h.available_version) : "", h?.last_fetched ? fact("hkUpdateChecked", this.formatDate(h.last_fetched)) : ""].join("");
-    const open = h?.id ? `<button class="btn" data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(h.id)}`)}" data-ha-tab><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("intHacsOpen")}</button>` : "";
+    const open = h?.id ? `<button class="btn" data-ha-path="${this.esc(`/hacs/repository/${encodeURIComponent(h.id)}`)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("intHacsOpen")}</button>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hkUpdateTitle")}</h2><p>${this.t("hkUpdateHint")}</p></div>${open}</div><div class="facts">${facts}</div><div class="row"><span class="tile ${tone}"><ha-icon icon="${tone === "ok" ? "mdi:check-circle-outline" : tone === "warn" ? "mdi:alert-outline" : "mdi:information-outline"}"></ha-icon></span><span class="row-text"><strong>${this.t(title)}</strong><small>${this.t(hint)}</small></span></div></section>`;
   }
 
@@ -211,10 +226,10 @@ class SettingsMixin {
 
   settingsView() {
     const tabs = this.settingsTabs();
-    const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "look";
-    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${pill ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${pill ? `<span class="pill ${tone || "mute"}">${this.esc(pill)}</span>` : ""}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => `${this.protectionCard()}${this.hiddenCard()}`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, info: () => this.infoCard() }[tab]();
-    return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
+    const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
+    const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => `${this.excCard()}${this.hiddenCard()}`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
   // "168 h" read as "= 7 days": only where the unit is minutes or hours and the number is large enough to say more.

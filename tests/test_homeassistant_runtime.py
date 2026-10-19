@@ -14,8 +14,13 @@ from homeassistant import config_entries  # noqa: E402
 from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.data_entry_flow import FlowResultType  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
+from homeassistant.helpers.dispatcher import async_dispatcher_send  # noqa: E402
 
-from custom_components.ha_housekeeper.const import API_SCHEMA, DOMAIN  # noqa: E402
+from custom_components.ha_housekeeper.const import (  # noqa: E402
+    API_SCHEMA,
+    DOMAIN,
+    SIGNAL_SCAN_STARTED,
+)
 from custom_components.ha_housekeeper.inventory import (  # noqa: E402
     InventoryScanner,
     _device_config_entry_ids,
@@ -463,6 +468,32 @@ async def test_groups_and_helpers_link_their_members(hass: HomeAssistant) -> Non
     )
 
 
+async def test_the_ignore_label_on_a_device_hides_the_findings_of_its_entities(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers import device_registry as dr
+    from homeassistant.helpers import label_registry as lr
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="test")
+    entry.add_to_hass(hass)
+    label = lr.async_get(hass).async_create("housekeeper_ignore")
+    device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id, identifiers={("test", "d")}
+    )
+    dr.async_get(hass).async_update_device(device.id, labels={label.label_id})
+    registry = er.async_get(hass)
+    inside = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="in", device_id=device.id
+    )
+    outside = registry.async_get_or_create(domain="sensor", platform="test", unique_id="out")
+
+    snapshot = await InventoryScanner(hass).async_scan()
+    by_object = {f["object_id"]: f for f in snapshot["findings"]}
+    assert by_object[inside.entity_id]["ignored_by"] == "label"
+    assert by_object[outside.entity_id]["ignored"] is False
+
+
 async def test_findings_can_be_hidden_by_the_user_or_by_label(hass: HomeAssistant) -> None:
     """Hidden findings stay in the snapshot but no longer produce Repairs hints."""
     from homeassistant.helpers import issue_registry as ir
@@ -541,6 +572,44 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
     scanner.set_finding_ignored(finding["key"], True)
     await hass.async_block_till_done(wait_background_tasks=True)
     assert hass.states.get("sensor.ha_housekeeper_findings").state == "0"
+
+
+async def test_scan_button_is_available_after_a_scan(hass: HomeAssistant) -> None:
+    """The button reads the status when the scan ends, so it must not still say running."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    scanner = hass.data[DOMAIN]["scanner"]
+    await scanner.async_scan()
+    await hass.async_block_till_done(wait_background_tasks=True)
+    button = next(state for state in hass.states.async_all("button"))
+    assert button.state != "unavailable"
+
+
+async def test_scan_button_stays_available_while_a_scan_runs(hass: HomeAssistant) -> None:
+    """Issue 35: Housekeeper saw its own button fail with every scan; the activity says it."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    scanner = hass.data[DOMAIN]["scanner"]
+    scanner.status["running"] = True
+    async_dispatcher_send(hass, SIGNAL_SCAN_STARTED)
+    await hass.async_block_till_done()
+    button = next(state for state in hass.states.async_all("button"))
+    assert button.state != "unavailable"
+    assert hass.states.get("sensor.ha_housekeeper_activity").state == "scanning"
+
+
+async def test_scan_survives_a_scene_that_lists_non_names(hass: HomeAssistant) -> None:
+    hass.states.async_set("scene.odd", "unknown", {"entity_id": [1, 2, "light.real"]})
+    scanner = InventoryScanner(hass)
+    await scanner.async_initialize()
+    await scanner.async_scan()
+    assert scanner.status["phase"] == "complete"
 
 
 async def _ws_setup(hass: HomeAssistant, hass_ws_client):

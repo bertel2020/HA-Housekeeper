@@ -14,7 +14,7 @@ Object.assign(TEXT.de, {
   btTableNote: "Prognose nur bis 90 Tage, aus den letzten fünf Wochen: eine Schätzung, keine Zusage. Ohne Prognose: {unknown} (zu wenige Tage oder stabil). Nach einem Wechsel zählt nur der Verlauf danach.",
   btFarMore: "{n} halten laut Prognose länger als 90 Tage.",
   fcTitle: "Wann welche Batterie leer ist", fcHint: "Was du in den nächsten 30 Tagen brauchst und wann die Batterien voraussichtlich die Grenze erreichen (bis 90 Tage, aus den letzten fünf Wochen). Eine Schätzung, keine Zusage.",
-  fcWindow: "In {from} bis {to} Tagen", fcTogether: "Gemeinsam wechseln",
+  fcWindow: "In {from} bis {to} Tagen", fcTogether: "Gemeinsam wechseln", 
 });
 Object.assign(TEXT.en, {
   btColName: "Device", btColArea: "Area", btColType: "Type", btColLevel: "Level", btColSlope: "Drain", btColLeft: "Empty in", btColAct: "Action", btColDate: "Date", btTypeChange: "Change type", btLevelOk: "ok",
@@ -24,7 +24,7 @@ Object.assign(TEXT.en, {
   btTableNote: "Forecast only up to 90 days, from the last five weeks: an estimate, not a promise. No forecast for {unknown} (too few days or stable). After a change only the time since counts.",
   btFarMore: "{n} last longer than 90 days by the forecast.",
   fcTitle: "When which battery runs out", fcHint: "What you need in the next 30 days and when the batteries will probably reach the limit (up to 90 days, from the last five weeks). An estimate, not a promise.",
-  fcWindow: "In {from} to {to} days", fcTogether: "Change them together",
+  fcWindow: "In {from} to {to} days", fcTogether: "Change them together", 
 });
 
 class BatteryTableMixin {
@@ -132,7 +132,7 @@ class BatteryTableMixin {
   batteryNeed(rows = this.batteryTableRows()) {
     const b = this.batteryTrend;
     const head = `<div class="panelhead"><div><h2>${this.t("fcTitle")}</h2><p>${this.t("fcHint")}</p></div></div>`;
-    if (this.batteryTrendError) return `<div class="panel"><div class="error">${this.esc(this.batteryTrendError)}</div></div>`;
+    if (this.batteryTrendError) return `<div class="panel">${this.notice("err", this.batteryTrendError)}</div>`;
     if (!b) return `<div class="panel">${head}${this.skeleton("btLoading")}</div>`;
     if (b.busy) return `<div class="panel"><p class="factnote">${this.t("relBusy")}</p></div>`;
     const soon = this.batteryNeedRows();
