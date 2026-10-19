@@ -28,6 +28,10 @@ TEXTS = {
         "HA Housekeeper: new broken references",
         "{count} new broken reference(s): {names}. [Open findings](/{url}?view=findingsNav&filter=broken_reference)",
     ),
+    "ru": (
+        "HA Housekeeper: новые отсутствующие ссылки",
+        "Новых отсутствующих ссылок: {count} ({names}). [Открыть находки](/{url}?view=findingsNav&filter=broken_reference)",
+    ),
 }
 
 

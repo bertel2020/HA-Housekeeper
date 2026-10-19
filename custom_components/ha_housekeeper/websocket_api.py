@@ -767,7 +767,7 @@ def websocket_plan_detail(
         vol.Required("type"): f"{DOMAIN}/plan_report",
         vol.Required("plan_id"): str,
         vol.Optional("anonymize", default=True): bool,
-        vol.Optional("lang", default="en"): vol.In(["de", "en"]),
+        vol.Optional("lang", default="en"): vol.In(["de", "en", "ru"]),
     }
 )
 @callback

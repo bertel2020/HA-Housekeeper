@@ -78,6 +78,28 @@ test("German and English texts define the same keys", () => {
   assert.deepEqual(Object.keys(TEXT.de).sort(), Object.keys(TEXT.en).sort());
 });
 
+test("Russian localization covers English keys and preserves interpolation", () => {
+  const { TEXT } = loadPanel();
+  const missing = Object.keys(TEXT.en).filter(key => !(key in TEXT.ru));
+  assert.deepEqual(missing, []);
+  const placeholders = text => [...new Set([...String(text).matchAll(/\{(\w+)\}/g)].map(m => m[1]))].sort();
+  for (const [key, original] of Object.entries(TEXT.en)) {
+    const translated = TEXT.ru[key];
+    for (const value of (typeof translated === "string" ? [translated] : Object.values(translated))) {
+      assert.deepEqual(placeholders(value), placeholders(original), key);
+    }
+  }
+});
+
+test("Russian is selected automatically and counts use Russian grammatical forms", () => {
+  const { el } = panel("ru");
+  assert.equal(el.lang, "ru");
+  assert.equal(el.t("deviceEntities", { count: 1 }), "1 сущность");
+  assert.equal(el.t("deviceEntities", { count: 2 }), "2 сущности");
+  assert.equal(el.t("deviceEntities", { count: 5 }), "5 сущностей");
+  assert.equal(el.t("deviceEntities", { count: 21 }), "21 сущность");
+});
+
 test("home functions show a confirmed fault, a scan gap, and escapes function names", () => {
   const { el, NAV_GROUPS } = panel("de");
   assert.ok(NAV_GROUPS.find(([group]) => group === "navGroupOperation")[1].includes("monitor"));

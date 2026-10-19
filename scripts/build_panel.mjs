@@ -15,17 +15,19 @@ const sourceDir = path.join(root, "panel-src");
 const target = path.join(root, "custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js");
 
 const HEADER = `// GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs\n\n`;
+// Windows checkouts hold CRLF sources; build and compare with LF so --check is stable everywhere.
+const normalizeLineEndings = text => text.replace(/\r\n?/g, "\n");
 
 export function buildPanel() {
   const files = fs.readdirSync(sourceDir).filter(name => name.endsWith(".js")).sort();
-  const parts = files.map(name => fs.readFileSync(path.join(sourceDir, name), "utf8").replace(/\n+$/, ""));
+  const parts = files.map(name => normalizeLineEndings(fs.readFileSync(path.join(sourceDir, name), "utf8")).replace(/\n+$/, ""));
   return HEADER + parts.join("\n\n") + "\n";
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const built = buildPanel();
   if (process.argv.includes("--check")) {
-    const current = fs.existsSync(target) ? fs.readFileSync(target, "utf8") : "";
+    const current = fs.existsSync(target) ? normalizeLineEndings(fs.readFileSync(target, "utf8")) : "";
     if (current !== built) {
       console.error("ha-housekeeper-panel.js is out of date. Run: node scripts/build_panel.mjs");
       process.exit(1);

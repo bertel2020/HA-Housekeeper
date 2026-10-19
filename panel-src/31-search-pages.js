@@ -43,6 +43,50 @@ const SEARCH_STATE_WORDS = {
   "": "offen open", new: "neu new", inwork: "in arbeit work", known: "bekannt behalten known keep",
   snoozed: "später zurückgestellt snoozed later", hidden: "ausgeblendet ignoriert hidden ignored", fixed: "behoben repariert fixed repaired",
 };
+// Russian search synonyms supplement the original German/English ones (round 1 + v1.8.0).
+const RU_SEARCH_WORDS = {
+  "overview": "обзор главная старт статус здоровье состояние порядок начало",
+  "findingsNav": "находки проблемы ошибки замечания диагностика сбои предупреждения",
+  "cleanup": "очистка уборка удалить отключить карантин порядок кандидаты убрать",
+  "repair": "ремонт починить счётчик перенести заменить ссылки устройство счетчик",
+  "journal": "журнал планы отмена откат история предпросмотр отменить",
+  "maintenance": "обслуживание резервная копия бэкап восстановление обновление предпроверка цели",
+  "batteries": "батареи батарейки аккумулятор заряд разряд питание прогноз батарея низкий",
+  "reminders": "напоминания обслуживание фильтр замена регламент срок",
+  "policies": "правила политика порядок стандарты схема именования нарушения политики условия",
+  "reliability": "надёжность доступность сбои отказы нестабильность дребезг надежность сбой нестабильно простой",
+  "runs": "запуски автоматизации сценарии выполнение трассировки ошибки трассировка автоматизация",
+  "recorder": "рекордер база данных статистика размер нагрузка строки история бд",
+  "storage": "хранилище система диск память процессор цп озу место",
+  "exposure": "внешний доступ голосовые ассистенты алиса ассистент мост голос",
+  "dataflow": "доступ потоки данных облако права вебхуки сеть поток вебхук",
+  "secrets": "учётные данные пароли ключи секреты токены авторизация",
+  "inventory": "инвентарь каталог объекты сущности устройства зоны список",
+  "components": "компоненты интеграции приложения аддоны дополнения версии",
+  "graph": "граф зависимости связи схема отношения путь сеть",
+  "changes": "изменения сравнение история проверок журнал заметок лог",
+  "settings": "настройки параметры опции конфигурация",
+  "look": "внешний вид тема тёмная светлая шрифт цвет оформление",
+  "protection": "защита режим защиты безопасность права доступ исключения скрыто",
+  "scan": "проверка сканирование пороги интервал расписание дни порог уведомление",
+  "goals": "цели ориентиры лимиты показатели задачи",
+  "info": "информация о программе версия хранение диагностика покрытие длительность инфо",
+  "compare": "сравнение проверок история снимки контрольные точки срез",
+  "logbook": "журнал заметки записи логбук история"
+};
+for (const [key, words] of Object.entries(RU_SEARCH_WORDS)) SEARCH_WORDS[key] += " " + words;
+
+// Russian words for the finding statuses, mirroring the panel labels.
+Object.assign(SEARCH_STATE_WORDS, {
+  "": SEARCH_STATE_WORDS[""] + " открытая открытые",
+  new: SEARCH_STATE_WORDS.new + " новая новые",
+  inwork: SEARCH_STATE_WORDS.inwork + " в работе",
+  known: SEARCH_STATE_WORDS.known + " известная известно",
+  snoozed: SEARCH_STATE_WORDS.snoozed + " отложено отложенная",
+  hidden: SEARCH_STATE_WORDS.hidden + " скрыто скрытая",
+  fixed: SEARCH_STATE_WORDS.fixed + " исправлено исправленная",
+});
+
 const SEARCH_PAGE_LIMIT = 5, SEARCH_FILTER_LIMIT = 5;
 
 class SearchPagesMixin {
