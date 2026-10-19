@@ -48,6 +48,8 @@ jobs:
         run: node scripts/build_panel.mjs --check
       - name: Check frontend syntax
         run: node --check custom_components/ha_housekeeper/frontend/ha-housekeeper-panel.js
+      - name: Run frontend tests
+        run: node --test tests/*.test.mjs
 
   hassfest:
     name: Hassfest

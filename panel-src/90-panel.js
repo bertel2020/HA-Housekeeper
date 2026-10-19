@@ -52,10 +52,10 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   set hass(value) {
-    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar;
+    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar, wasLanguage = this._hass?.language;
     this._hass = value;
     if (first) { this.load(false); this.loadUserPrefs(); }
-    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar) this.render();
+    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar || wasLanguage !== value?.language) this.render();
   }
 
   get hass() { return this._hass; }
@@ -168,13 +168,21 @@ class HAHousekeeperPanel extends HTMLElement {
 
   get lang() {
     const chosen = this.prefs?.language;
-    if (chosen === "de" || chosen === "en") return chosen;
-    return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+    if (chosen && Object.hasOwn(TEXT, chosen)) return chosen;
+    const detected = String(this._hass?.language || "en").toLowerCase().split(/[-_]/)[0];
+    return Object.hasOwn(TEXT, detected) ? detected : "en";
   }
 
+  // Plural forms are optional; language dictionaries may also use ordinary strings.
   t(key, vars) {
-    const text = TEXT[this.lang][key] || TEXT.en[key] || key;
-    return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
+    const value = TEXT[this.lang]?.[key] ?? TEXT.en[key] ?? key;
+    let output = value;
+    if (value && typeof value === "object") {
+      const count = Number(vars?.count ?? vars?.n);
+      const category = Number.isFinite(count) ? new Intl.PluralRules(this.lang).select(count) : "other";
+      output = value[category] ?? value.other ?? TEXT.en[key] ?? key;
+    }
+    return vars ? String(output).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : String(output);
   }
 
   esc(value) {

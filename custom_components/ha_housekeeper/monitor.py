@@ -99,7 +99,27 @@ REASONS_EN = {
     "rule_no_value": "no numeric value",
     "rule_no_timestamp": "update time unknown",
 }
-MONITOR_REASONS = {"de": REASONS_DE, "en": REASONS_EN}
+REASONS_SK = {
+    "missing": "objekt neexistuje",
+    "disabled": "vypnuté",
+    "orphaned": "osirotené",
+    "unavailable": "nedostupné",
+    "problem": "integrácia nie je načítaná",
+    "source_unread": "zdroj sa nepodarilo prečítať",
+    "scan_unverified": "kontrola nie je spoľahlivá",
+    "automation.blocked": "automatizácia je zablokovaná",
+    "automation.dead_actions": "akcia automatizácie obsahuje neplatný odkaz",
+    "automation.dead_condition": "podmienka automatizácie obsahuje neplatný odkaz",
+    "broken_reference": "neplatný odkaz",
+    "stopped": "aplikácia je zastavená",
+    "rule_stale": "hodnota sa dlho neaktualizovala",
+    "rule_below_min": "pod minimálnou hodnotou",
+    "rule_unavailable_long": "príliš dlho nedostupné",
+    "rule_waiting": "plynie ochranná lehota",
+    "rule_no_value": "chýba číselná hodnota",
+    "rule_no_timestamp": "čas aktualizácie nie je známy",
+}
+MONITOR_REASONS = {"de": REASONS_DE, "en": REASONS_EN, "sk": REASONS_SK}
 MONITOR_TEXTS = {
     "de": {
         "uncertain_open": "Prüfung unvollständig; letzter bestätigter Defekt ({last_reason}) bleibt ungeklärt.",
@@ -112,6 +132,12 @@ MONITOR_TEXTS = {
         "uncertain": "Check incomplete.",
         "impaired": "Important function impaired: {reason}",
         "link": "Open home functions",
+    },
+    "sk": {
+        "uncertain_open": "Kontrola nie je úplná; posledná potvrdená porucha ({last_reason}) zostáva nevyriešená.",
+        "uncertain": "Kontrola nie je úplná.",
+        "impaired": "Dôležitá funkcia je obmedzená: {reason}",
+        "link": "Otvoriť funkcie domácnosti",
     },
 }
 

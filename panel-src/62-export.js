@@ -127,7 +127,7 @@ class ExportMixin {
   xpRows() {
     const x = this.xp, g = x.g;
     let items = this.xpEntities().filter(o => x.sel.has(o.object_id)).map(o => ({ o, area: g.zuord || x.sort ? this.areaName(o) : "" }));
-    const collator = new Intl.Collator(this.lang === "en" ? "en" : "de", { numeric: true });
+    const collator = new Intl.Collator(this.lang, { numeric: true });
     items.sort((a, b) => (x.sort ? collator.compare(a.area, b.area) : 0) || collator.compare(a.o.name || a.o.object_id, b.o.name || b.o.object_id) || collator.compare(a.o.object_id, b.o.object_id));
     const labels = { area: new Map(), device: new Map(), used: new Map() };
     const label = (kind, key, word) => { const m = labels[kind]; if (!m.has(key)) m.set(key, `${word} ${m.size + 1}`); return m.get(key); };

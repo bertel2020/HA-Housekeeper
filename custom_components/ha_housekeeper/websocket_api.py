@@ -23,7 +23,7 @@ from . import (
     ws_system,
 )
 from . import refactor as refactor_module
-from .audit_report import build_report
+from .audit_report import TEXTS as AUDIT_TEXTS, build_report
 from .automation_delete import preview as preview_automation_delete
 from .backup_cleanup import KEEP_DAYS, KEEP_LAST, MAX_DAYS, MAX_LAST, list_backups
 from .cleanup import (
@@ -767,7 +767,7 @@ def websocket_plan_detail(
         vol.Required("type"): f"{DOMAIN}/plan_report",
         vol.Required("plan_id"): str,
         vol.Optional("anonymize", default=True): bool,
-        vol.Optional("lang", default="en"): vol.In(["de", "en"]),
+        vol.Optional("lang", default="en"): vol.In(sorted(AUDIT_TEXTS)),
     }
 )
 @callback
