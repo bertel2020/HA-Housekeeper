@@ -295,6 +295,7 @@ class FindingStatusMixin {
       const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason: b.reason.trim() };
       if (kind === "snooze") msg.days = Number(b.days) || 30;
       else if (b.kind === "status" && Number(b.days)) msg.days = Number(b.days);
+      else if (b.kind === "status" && kind === "keep" && this.findingCritical(this.data.findings.find(f => f.key === key))) msg.days = this.defaultDays("keep");
       await this._hass.callWS(msg);
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) {
@@ -330,6 +331,35 @@ class FindingStatusMixin {
     return failed;
   }
 
+  // "Keep it so": the same reason again, for the same length of time as before (90 days when it had none).
+  async keepOn(key) {
+    const finding = this.data.findings.find(f => f.key === key), info = finding?.due_info;
+    if (!finding || !info) return;
+    const span = info.until && info.at ? Math.round((Date.parse(info.until) - Date.parse(info.at)) / 864e5) : 0;
+    const days = Math.min(3650, Math.max(1, span || this.defaultDays("keep")));
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: info.reason || this.t("dueKeepReason"), days });
+      finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.due_info = null;
+      finding.ignore_info = { kind: "keep", reason: info.reason, until: new Date(Date.now() + days * 864e5).toISOString(), at: new Date().toISOString() };
+      this._rev++;
+      this.render();
+      await this.reloadAfterDecision();
+    } catch (err) { this.failed(err); this.render(); }
+  }
+
+  // After the update: the names changed and "intended" without a time got a review date. Said once, until it is read.
+  decisionNotice() {
+    const n = this.data?.decision_notice;
+    if (!n || !n.count) return "";
+    return `<div class="notice info decnotice" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t(n.count === 1 ? "decNoticeText1" : "decNoticeText", { n: this.formatNumber(n.count), days: n.days }))}</p><button type="button" class="btn" data-dnotice-ok>${this.t("decNoticeOk")}</button></div></div>`;
+  }
+
+  async dismissDecisionNotice() {
+    try { await this._hass.callWS({ type: "ha_housekeeper/decision_notice_dismiss" }); } catch (err) { this.failed(err); }
+    if (this.data) this.data.decision_notice = null;
+    this.render();
+  }
+
   // "This is no duplicate": a known finding with the reason filled in.
   async markNotDuplicate(key) {
     try {
@@ -349,8 +379,10 @@ class FindingStatusMixin {
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.bulk = { kind, state: "keep", reason: "", days: ["mark", "status"].includes(kind) ? 0 : 30, markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.bulk = { kind, state: "keep", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? 0 : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
+    root.querySelectorAll("[data-due-keep]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.keepOn(el.dataset.dueKeep); });
+    root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());
     const form = root.querySelector("[data-bulk-form]");
     if (form) {
       form.onsubmit = ev => { ev.preventDefault(); this.commitBulk(); };
@@ -364,7 +396,7 @@ class FindingStatusMixin {
       if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
-      form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = b.state === "snooze" ? 30 : 0; this.render(); });
+      form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = this.defaultDays(b.state); this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
       form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };
@@ -375,6 +407,9 @@ Object.assign(TEXT.de, {
   stateOpen: "Offen", freshNew: "Neu ({days} Tage)", stateDue: "Fällig", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Ist so gewollt", state_snoozed: "Später", state_hidden: "Ausgeblendet",
   doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", excCreate: "Ausnahme anlegen", fselStatus: "Status setzen …", fselStatusChange: "Status ändern …", outageStatusHint: "Ein Status beendet den Ausfall: Die {n} Entitäten dahinter zählen dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folgen aus und greift auch beim nächsten Mal.", outageStatusHint1: "Ein Status beendet den Ausfall: Die Entität dahinter zählt dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folge aus und greift auch beim nächsten Mal.", outageMarkInstead: "Stattdessen Vermerk setzen", statusTitle: "Status setzen · {n} Befunde",
   decideKindHint_keep: "Das ist bei mir normal. Bleibt still, bis du es änderst. Begründung nötig.", decideKindHint_snooze: "Stimmt, aber nicht jetzt. Kommt nach der Frist als „fällig“ zurück.", decideKindHint_ignore: "Die Regel irrt sich hier. Begründung freiwillig.",
+  dueSince: "seit {date}", dueExpired: "Frist abgelaufen am {date}", dueWorse: "schlechter geworden", dueWorseImpact: "Wirkung von {from} auf {to}", dueWorseFollowers: "mehr Folgen", dueKeepOn: "Weiter so gewollt", dueLater: "Noch später", dueKeepReason: "Weiter so gewollt",
+  statusCriticalHint: "Kritisches Objekt: „Ist so gewollt“ gilt höchstens befristet und wird danach wieder vorgelegt.",
+  decNoticeText: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. {n} Befunde mit „Ist so gewollt“ hatten keine Frist; sie werden nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich je Befund ändern.", decNoticeText1: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. Ein Befund mit „Ist so gewollt“ hatte keine Frist; er wird nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich ändern.", decNoticeOk: "Verstanden",
   statusScopeHint: "Gilt nur für diese Befunde; ein neuer Befund am selben Objekt ist wieder offen. Für das ganze Objekt: Vermerk oder Ausnahme.",
   markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Eigener Status", hiddenBy_mark: "Vermerk", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
   hiddenMarkOpen: "Vermerk ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
@@ -384,6 +419,9 @@ Object.assign(TEXT.en, {
   stateOpen: "Open", freshNew: "New ({days} days)", stateDue: "Due", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Intended", state_snoozed: "Later", state_hidden: "Hidden",
   doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", excCreate: "Add exception", fselStatus: "Set status …", fselStatusChange: "Change status …", outageStatusHint: "A status ends the outage: the {n} entities behind it then count one by one as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageStatusHint1: "A status ends the outage: the entity behind it then counts on its own as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageMarkInstead: "Set a mark instead", statusTitle: "Set status · {n} findings",
   decideKindHint_keep: "This is normal for me. Stays quiet until you change it. Needs a reason.", decideKindHint_snooze: "True, but not now. Comes back as “due” after the time.", decideKindHint_ignore: "The rule is wrong here. Reason optional.",
+  dueSince: "since {date}", dueExpired: "time ran out on {date}", dueWorse: "got worse", dueWorseImpact: "impact from {from} to {to}", dueWorseFollowers: "more follow-ups", dueKeepOn: "Still intended", dueLater: "Later still", dueKeepReason: "Still intended",
+  statusCriticalHint: "Critical object: “Intended” holds only for a time and is shown again afterwards.",
+  decNoticeText: "“Known” is now “Intended”, “Snoozed” is now “Later”. {n} findings marked Intended had no time; they are shown again under “Due” after {days} days. The time can be changed for each finding.", decNoticeText1: "“Known” is now “Intended”, “Snoozed” is now “Later”. One finding marked Intended had no time; it is shown again under “Due” after {days} days. The time can be changed.", decNoticeOk: "Understood",
   statusScopeHint: "Applies to these findings only; a new finding on the same object is open again. For the whole object: a mark or an exception.",
   markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Own status", hiddenBy_mark: "Mark", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
   hiddenMarkOpen: "View mark", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",

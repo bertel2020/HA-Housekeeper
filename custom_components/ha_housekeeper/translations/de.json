@@ -424,7 +424,10 @@
       "message": "Eine Entscheidung braucht einen Grund."
     },
     "days_required": {
-      "message": "Einen Befund zurückzustellen braucht eine Zahl von Tagen."
+      "message": "„Später“ braucht eine Zahl von Tagen."
+    },
+    "days_required_critical": {
+      "message": "Dieses Objekt ist kritisch: „Ist so gewollt“ braucht eine Zahl von Tagen, nach denen es wieder vorgelegt wird."
     },
     "finding_not_found": {
       "message": "Der Befund ist nicht im letzten Scan. Den Schlüssel aus „findings“ nehmen."

@@ -1972,6 +1972,20 @@ class InventoryScanner:
         self._refresh_finding(finding)
         return True
 
+    def _followers_of(self, key: str) -> int:
+        """How many follow-ups hang on the finding right now; 0 for something that is no cause."""
+        causes = (self._snapshot or {}).get("causes", [])
+        return next((c["total_followers"] for c in causes if c.get("finding_key") == key), 0)
+
+    def finding_is_critical(self, key: str) -> bool:
+        """Whether the object of this finding is critical (label, lock, alarm, detector)."""
+        finding = next(
+            (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
+        )
+        return bool(finding) and any(
+            fact.get("fact") == "critical" for fact in finding.get("impact_facts", [])
+        )
+
     def restore_decision(self, key: str, entry: dict[str, Any] | None) -> None:
         """Put the decision about a finding back as it was (``None``: there was none)."""
         self.ignored.restore(key, entry)

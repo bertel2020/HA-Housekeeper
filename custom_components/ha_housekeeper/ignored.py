@@ -1,4 +1,4 @@
-"""Decisions about findings: hidden, deliberately kept, or put off until later.
+"""Decisions about findings: hidden, meant to be so ("keep"), or put off until later ("snooze").
 
 Stored by Housekeeper only; Home Assistant objects stay untouched. Each entry says what was decided
 (``kind``), why (``reason``), until when (``until``, optional) and by whom. An entry whose time has
@@ -17,8 +17,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
 from .const import IGNORED_STORAGE_KEY, STORAGE_VERSION
+from .impact import RANK
 
 SAVE_DELAY = 10
+KEEP_REVIEW_DAYS = 90  # "meant to be so" without a time is looked at again after this long
 KINDS = ("ignore", "keep", "snooze")
 REASON_LIMIT = 200  # characters
 SEEN_STEP = timedelta(hours=1)  # "last seen" moves on at most once an hour, so a scan rarely writes
@@ -62,6 +64,8 @@ class IgnoreStore:
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, IGNORED_STORAGE_KEY)
         self._items: dict[str, dict[str, Any]] = {}
+        self._migrated = False
+        self._notice: dict[str, Any] | None = None
 
     async def async_load(self) -> None:
         """Load the decisions; anything of an unknown shape is dropped."""
@@ -71,6 +75,40 @@ class IgnoreStore:
             self._items = {
                 key: entry for key, entry in cleaned if isinstance(key, str) and entry is not None
             }
+        if isinstance(data, dict):
+            self._migrated = bool(data.get("migrated"))
+            notice = data.get("notice")
+            if isinstance(notice, dict) and isinstance(notice.get("count"), int):
+                self._notice = {"count": notice["count"], "days": KEEP_REVIEW_DAYS}
+        if not self._migrated:
+            self._migrate(datetime.now(UTC))
+
+    def _migrate(self, now: datetime) -> None:
+        """Once: "meant to be so" without a time gets a review date, and the panel says so.
+
+        Only the ``until`` field is added; nothing is deleted, and an older version reads the file as before.
+        """
+        until = (now + timedelta(days=KEEP_REVIEW_DAYS)).isoformat()
+        count = 0
+        for entry in self._items.values():
+            if entry["kind"] == "keep" and not entry["until"]:
+                entry["until"] = until
+                count += 1
+        self._migrated = True
+        self._notice = {"count": count, "days": KEEP_REVIEW_DAYS} if count else None
+        if count:  # with nothing to change, the flag goes into the next save anyway
+            self._save()
+
+    @property
+    def notice(self) -> dict[str, Any] | None:
+        """The one-time note about the review dates just added, until the user has seen it."""
+        return self._notice
+
+    def dismiss_notice(self) -> None:
+        """The user has read the note."""
+        if self._notice is not None:
+            self._notice = None
+            self._save()
 
     def is_ignored(self, key: str, now: datetime | None = None) -> bool:
         """Whether a decision hides this finding right now."""
@@ -155,4 +193,7 @@ class IgnoreStore:
         ]
 
     def _save(self) -> None:
-        self._store.async_delay_save(lambda: {"items": self._items}, SAVE_DELAY)
+        self._store.async_delay_save(self._data, SAVE_DELAY)
+
+    def _data(self) -> dict[str, Any]:
+        return {"items": self._items, "migrated": self._migrated, "notice": self._notice}

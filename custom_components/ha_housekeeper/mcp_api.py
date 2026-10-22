@@ -458,6 +458,13 @@ def finding_decide(
         raise McpError("reason_required")
     if deciding and data["kind"] == "snooze" and "days" not in data:
         raise McpError("days_required")
+    if (
+        deciding
+        and data["kind"] == "keep"
+        and "days" not in data
+        and scanner.finding_is_critical(key)
+    ):
+        raise McpError("days_required_critical")
     skip = withheld(scanner)
     if skip and any(
         f["key"] == key and f["object_id"] in skip for f in _snapshot(scanner)["findings"]

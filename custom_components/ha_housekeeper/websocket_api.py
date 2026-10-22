@@ -111,6 +111,7 @@ async def _send_inventory_result(
         "resting_decisions": scanner.ignored.resting(
             {f["key"] for f in result.get("findings", [])}
         ),
+        "decision_notice": scanner.ignored.notice,
     }
     send_sendable(connection, msg["id"], _versioned(result))
 
@@ -265,6 +266,21 @@ async def websocket_compare(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/decision_notice_dismiss"})
+@callback
+@with_scanner
+def websocket_decision_notice_dismiss(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The user has read the note about the review dates added to "meant to be so"."""
+    scanner.ignored.dismiss_notice()
+    connection.send_result(msg["id"], {"dismissed": True})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/ignore",
@@ -287,6 +303,15 @@ def websocket_ignore(
     if msg["ignored"]:
         if msg["kind"] == "keep" and not msg["reason"].strip():
             connection.send_error(msg["id"], "reason_required", "Keeping a finding needs a reason")
+            return
+        if (
+            msg["kind"] == "keep"
+            and "days" not in msg
+            and scanner.finding_is_critical(msg["finding_key"])
+        ):
+            connection.send_error(
+                msg["id"], "days_required_critical", "A critical object needs a review date"
+            )
             return
         if msg["kind"] == "snooze" and "days" not in msg:
             connection.send_error(msg["id"], "days_required", "Putting a finding off needs days")
@@ -1204,6 +1229,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_scan_point)
     websocket_api.async_register_command(hass, websocket_history_series)
     websocket_api.async_register_command(hass, websocket_ignore)
+    websocket_api.async_register_command(hass, websocket_decision_notice_dismiss)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_merge)

@@ -323,7 +323,7 @@ class FindingsMixin {
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
       ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -416,13 +416,34 @@ class FindingsMixin {
     return `${this.t(`decideKind_${info.kind}`)}${until}${info.reason ? ` · ${info.reason}` : ""}${info.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
 
-  // The status of one finding or of the selection: known, snoozed or hidden, each with what it means. Row and bar share it.
+  // A critical object (label, lock, alarm, detector) keeps "intended" only for a time; the facts say so.
+  findingCritical(f) { return Boolean(f) && (f.impact_facts || []).some(x => x.fact === "critical"); }
+
+  // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after 90, hidden for good.
+  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 90 : 0; }
+
+  // A finding that is due again, as one line: what was decided, since when, and what happened since.
+  dueLine(f) {
+    const info = f.due_info;
+    if (!info) return this.t("dueLabel");
+    const parts = [this.t(`decideKind_${info.kind}`)];
+    if (info.at) parts[0] += ` · ${this.t("dueSince", { date: this.formatDate(info.at) })}`;
+    if (info.worse) {
+      parts.push(this.t("dueWorse"));
+      if (info.impact_at && f.impact && info.impact_at !== f.impact) parts.push(this.t("dueWorseImpact", { from: this.t(`chip_${info.impact_at}`), to: this.t(`chip_${f.impact}`) }));
+      else parts.push(this.t("dueWorseFollowers"));
+    } else if (info.until) parts.push(this.t("dueExpired", { date: this.formatDate(info.until) }));
+    return parts.join(" · ");
+  }
+
+  // The status of one finding or of the selection: intended, later or hidden, each with what it means. Row and bar share it.
   statusFields(d, p, kind = d.kind) {
     const opt = k => `<label class="statusopt${kind === k ? " on" : ""}"><input type="radio" name="${p}-kind" value="${k}" data-${p}-kind ${kind === k ? "checked" : ""}><span><b>${this.t(`decideKind_${k}`)}</b><small>${this.t(`decideKindHint_${k}`)}</small></span></label>`;
-    const days = [...(kind === "snooze" ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
+    const days = [...(kind === "snooze" || (kind === "keep" && d.critical) ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
     return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideKind"))}">${["keep", "snooze", "ignore"].map(opt).join("")}</div>
       <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
       <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
+      ${kind === "keep" && d.critical ? `<small class="factnote">${this.t("statusCriticalHint")}</small>` : ""}
       <small class="factnote">${this.t("statusScopeHint")}</small>`;
   }
 
@@ -444,13 +465,14 @@ class FindingsMixin {
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }
 
-  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
+  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: this.defaultDays(kind), critical: this.findingCritical(this.data.findings.find(f => f.key === key)), reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
 
   async commitDecide() {
     const d = this.decide;
     if (!d) return;
     if (d.kind === "keep" && !d.reason.trim()) { d.error = "decideNeedReason"; this.render(); return; }
     if (d.kind === "snooze" && !Number(d.days)) d.days = 30;
+    if (d.kind === "keep" && d.critical && !Number(d.days)) d.days = 90;
     try {
       const msg = { type: "ha_housekeeper/ignore", finding_key: d.key, ignored: true, kind: d.kind, reason: d.reason.trim() };
       if (Number(d.days)) msg.days = Number(d.days);

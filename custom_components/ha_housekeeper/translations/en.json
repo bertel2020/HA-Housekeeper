@@ -424,7 +424,10 @@
       "message": "A decision needs a reason."
     },
     "days_required": {
-      "message": "Putting a finding off needs a number of days."
+      "message": "“Later” needs a number of days."
+    },
+    "days_required_critical": {
+      "message": "This object is critical: “Intended” needs a number of days after which it is shown again."
     },
     "finding_not_found": {
       "message": "The finding is not in the latest scan. Take the key from \"findings\"."
