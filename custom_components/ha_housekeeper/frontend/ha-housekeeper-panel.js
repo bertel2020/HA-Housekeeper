@@ -18659,7 +18659,7 @@ Object.assign(TEXT.de, {
   fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
   fcFinishTitle: "Fertig", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Zu den Befunden",
   firstcleanup: "Erstes Aufräumen", round: "Aufräum-Runde", firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
-  fcOffer: "{n} Befunde sind offen. Das erste Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Erstes Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Erstes Aufräumen",
+  fcOffer: "{n} Befunde sind offen. Das erste Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Erstes Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Aufräumen",
   fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
  
   fcStageFilter: "Etappe {n}: {name}", fcStage: "Etappe {n}",
@@ -18685,7 +18685,7 @@ Object.assign(TEXT.en, {
   fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
   fcFinishTitle: "Done", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "To the findings",
   firstcleanup: "First cleanup", round: "Cleanup round", firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
-  fcOffer: "{n} findings are open. The first cleanup goes through them in five stages.", fcBegin: "Begin the first cleanup", fcNotNow: "Not now", fcButton: "First cleanup",
+  fcOffer: "{n} findings are open. The first cleanup goes through them in five stages.", fcBegin: "Begin the first cleanup", fcNotNow: "Not now", fcButton: "Cleanup",
   fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
  
   fcStageFilter: "Stage {n}: {name}", fcStage: "Stage {n}",
