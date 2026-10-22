@@ -13,8 +13,12 @@ below included: a device that is down because its integration is, is one problem
 
 A cause with its own finding (an app, an integration that is not loaded, a device that is down)
 is always listed, even without follow-up findings, so the outage never goes unnoticed. A missing
-target (service, entity, device, area) has no object of its own: it is a cause only when several
-automations, scripts or dashboards point to it, and the cause is ``virtual``.
+target (service, entity, device, area, floor, label, tag) has no object of its own: it is a cause as soon as
+one automation, script or dashboard points to it, and the cause is ``virtual``.
+
+An automation or script that is dead only because the entities it depends on are dead with one
+common cause (``blocked``, ``dead_condition``, ``dead_actions``) is a follower of that cause and
+counts under the topic "down".
 """
 
 from __future__ import annotations
@@ -22,12 +26,13 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
+from .finding_topics import DOWN, topic_of
 from .impact import RANK, USAGE
 from .outage_levels import Levels, outage_level
 
 OUTAGE_STATES = frozenset({"unavailable", "unknown"})  # an entity without a value
 KEY_LIMIT = 500
-TARGET_MIN = 2  # automations, scripts and dashboards that point to the same missing target
+TARGET_MIN = 1  # automations, scripts and dashboards that point to the same missing target
 SERVICE_MIN = TARGET_MIN
 
 # The kinds of missing target: the end of the rule id (``automation.missing_service``) and the
@@ -38,7 +43,11 @@ MISSING_TARGETS = {
     "device": "device_missing",
     "area": "area_missing",
     "blueprint": "blueprint_missing",
+    "floor": "floor_missing",
+    "label": "label_missing",
+    "tag": "tag_missing",
 }
+DEAD_RULES = frozenset({"blocked", "dead_condition", "dead_actions"})
 OUTAGE_RULE = "config_entry.not_loaded"
 REAUTH_RULE = "config_entry.reauth"
 DEVICE_RULE = "device.down"
@@ -171,6 +180,7 @@ def apply_causes(
     """
     for finding in findings:
         finding.pop("cause_id", None)
+        finding["topic"] = topic_of(finding["rule_id"])
     entity = {o["object_id"]: o for o in objects if o["object_type"] == "entity"}
     by_object = {
         f["object_id"]: f
@@ -270,6 +280,26 @@ def apply_causes(
         for finding in followers:
             finding["cause_id"] = cause["id"]
         causes[cause["id"]] = cause
+
+    # 5. Automations and scripts that are dead because of dead entities with one common cause.
+    for finding in shown:
+        if finding["rule_id"].partition(".")[2] not in DEAD_RULES:
+            continue
+        evidence = (finding.get("evidence") or [{}])[0]
+        entities = evidence.get("entities") or []
+        if not entities or evidence.get("total") != len(entities):
+            continue  # the list is cut short: the rest could have another cause
+        owners = {by_object[e].get("cause_id") if e in by_object else None for e in entities}
+        cause = causes.get(owners.pop()) if len(owners) == 1 else None
+        if cause is None:
+            continue
+        finding["cause_id"] = cause["id"]
+        finding["topic"] = DOWN
+        cause["follower_count"] += 1
+        cause["total_followers"] += 1
+        if len(cause["follower_keys"]) < KEY_LIMIT:
+            cause["follower_keys"].append(finding["key"])
+        cause["impact"] = _top([cause["impact"], finding.get("impact", "none")])
 
     # The totals and the impact run up the chains: an app is as bad as the worst below it.
     def settle(cause: dict[str, Any]) -> None:

@@ -111,7 +111,7 @@ def test_the_device_hangs_below_the_integration_and_the_integration_below_its_ap
     assert app_finding["cause_id"] == "app_down:mosquitto"
 
 
-def test_a_missing_target_is_a_cause_only_when_several_point_to_it() -> None:
+def test_a_missing_target_is_a_cause_as_soon_as_one_points_to_it() -> None:
     def broken(domain, kind, object_id, target):
         return {
             "rule_id": f"{domain}.missing_{kind}",
@@ -129,18 +129,70 @@ def test_a_missing_target_is_a_cause_only_when_several_point_to_it() -> None:
         broken("script", "service", "script.s", "x.y"),
         broken("automation", "service", "automation.b", "x.y"),
         broken("automation", "area", "automation.c", "gone_area"),
+        broken("automation", "label", "automation.e", "gone_label"),
         broken("automation", "blueprint", "automation.d", "a/gone.yaml"),
         broken("script", "blueprint", "script.t", "a/gone.yaml"),
     ]
     causes = apply_causes([], [], findings)
     assert sorted((c["kind"], c["object_id"], c["follower_count"]) for c in causes) == [
+        ("area_missing", "gone_area", 1),
         ("blueprint_missing", "a/gone.yaml", 2),
+        ("entity_missing", "sensor.alone", 1),
         ("entity_missing", "sensor.gone", 2),
+        ("label_missing", "gone_label", 1),
         ("service_missing", "x.y", 2),
     ]
     assert all(c["virtual"] and c["parent_id"] is None for c in causes)
     assert findings[0]["cause_id"] == "entity_missing:sensor.gone"
-    assert "cause_id" not in findings[2]
+    assert findings[2]["cause_id"] == "entity_missing:sensor.alone"
+
+
+def test_an_automation_dead_because_of_one_cause_is_its_follower_and_counts_as_down() -> None:
+    def entity(object_id, device="d1"):
+        return {
+            "object_type": "entity",
+            "object_id": object_id,
+            "status": "unavailable",
+            "device_id": device,
+        }
+
+    def finding(rule, object_id, **extra):
+        return {
+            "rule_id": rule,
+            "object_id": object_id,
+            "classification": "unavailable" if rule.startswith("entity.") else "problem",
+            "key": f"{rule}|{object_id}|",
+            "ignored": False,
+            "impact": "medium",
+            **extra,
+        }
+
+    objects = [
+        {"object_type": "device", "object_id": "d1", "name": "Plug", "status": "unavailable"},
+        entity("sensor.a"),
+        entity("sensor.b"),
+        entity("sensor.c", device="d2"),
+    ]
+    findings = [
+        finding("device.down", "d1"),
+        finding("entity.state_unavailable", "sensor.a"),
+        finding("entity.state_unavailable", "sensor.b"),
+        finding("entity.state_unavailable", "sensor.c"),
+        finding(
+            "automation.blocked",
+            "automation.x",
+            evidence=[{"entities": ["sensor.a", "sensor.b"], "total": 2}],
+        ),
+        finding(
+            "automation.blocked",
+            "automation.y",
+            evidence=[{"entities": ["sensor.a", "sensor.c"], "total": 2}],
+        ),
+    ]
+    causes = {c["id"]: c for c in apply_causes(objects, [], findings)}
+    assert findings[4]["cause_id"] == "device_down:d1" and findings[4]["topic"] == "down"
+    assert "cause_id" not in findings[5] and findings[5]["topic"] == "failing_automations"
+    assert causes["device_down:d1"]["follower_count"] == 3
 
 
 def test_a_device_is_down_when_all_its_entities_are_and_one_has_a_finding() -> None:

@@ -37,7 +37,7 @@ def test_only_literal_services_that_are_not_registered_are_found() -> None:
     assert service_calls([{"action": "a.b"}]) == [("a.b", "actions/0/action")]
 
 
-def test_a_missing_service_with_several_callers_is_one_cause() -> None:
+def test_missing_services_are_causes_with_their_callers() -> None:
     def finding(object_id, service):
         return {
             "rule_id": "automation.missing_service",
@@ -54,9 +54,12 @@ def test_a_missing_service_with_several_callers_is_one_cause() -> None:
         finding("automation.c", "tado.x"),
     ]
     causes = apply_causes([], [], findings)
-    assert [(c["id"], c["follower_count"]) for c in causes] == [("service_missing:notify.old", 2)]
+    assert [(c["id"], c["follower_count"]) for c in causes] == [
+        ("service_missing:notify.old", 2),
+        ("service_missing:tado.x", 1),
+    ]
     assert [f.get("cause_id") for f in findings] == [
         "service_missing:notify.old",
         "service_missing:notify.old",
-        None,
+        "service_missing:tado.x",
     ]
