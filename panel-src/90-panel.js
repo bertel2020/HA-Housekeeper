@@ -334,7 +334,6 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // Back after a jump from one page to another (overview card to a list and the like).
   viewBack() {
-    this.fcWizEnd();
     const from = this.viewTrail.pop();
     if (!from) return;
     this.view = from.view; this.pages = {};
@@ -586,7 +585,7 @@ class HAHousekeeperPanel extends HTMLElement {
     // A view that throws shows a message under the top bar instead of freezing the panel on the last page.
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
-    try { page = this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
+    try { page = this.fcBand() + (this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`); } catch (err) { page = this.renderFailed(err); }
     const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
