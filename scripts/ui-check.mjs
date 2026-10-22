@@ -48,7 +48,7 @@ const language = arg("lang", "de") === "en" ? "en" : "de";
 
 const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 1700] };
 const VIEWS = {
-  overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
+  overview: "view=overview", findings: "view=findingsNav", firstcleanup: "view=firstcleanup", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
   attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
@@ -223,6 +223,17 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
           { slug: "core_mosquitto", name: "Mosquitto broker", state: "started", version: "6.5.1", checked: true, risk: "medium", access: [{ kind: "supervisor_api", detail: "default", level: "medium" }, { kind: "auth_api", detail: null, level: "medium" }] },
           { slug: "core_zwave_js", name: "Z-Wave JS", state: "stopped", version: "0.9.0", checked: true, risk: "low", access: [{ kind: "devices", detail: "/dev/ttyUSB0", level: "low" }] }] };
       if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 70 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
+      if (t.endsWith("/first_cleanup") || t.endsWith("/first_cleanup_set") || t.endsWith("/first_cleanup_later")) {
+        const fcs = window.__fc ||= { started_at: null, start_count: 0, stage: 1, done: [], finished_at: null };
+        const open = data.findings.filter(f => !f.ignored);
+        if (t.endsWith("/first_cleanup_set")) {
+          if (msg.action === "begin") Object.assign(fcs, { started_at: "2026-10-22T08:00:00+00:00", start_count: open.length });
+          else if (msg.action === "stage") { fcs.stage = msg.stage; if (msg.done === true && !fcs.done.includes(msg.stage)) fcs.done.push(msg.stage); if (fcs.done.length === 5) fcs.finished_at = "2026-10-22T09:00:00+00:00"; }
+        }
+        const stages = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+        open.forEach((f, i) => stages[i % 5 + 1].push(f.key));
+        return { state: { ...fcs, done: [...fcs.done] }, offered: !fcs.started_at, open: open.length, later_days: 90, stages, put_off: stages[5].length };
+      }
       return {}; } };
   for (let i = 0; i < 50 && !el.data; i++) await wait(100);
   const plan = q.get("plan");
