@@ -131,8 +131,9 @@ from .outage_scan import OutageScans, outage_start
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
 from .policies import PolicyStore
 from .protection import ProtectionStore, protection_rules
-from .queries import ReplyStore
+from .queries import ReplyStore, kept_reply
 from .refactor import RefactorStore
+from .reliability import CACHE_SECONDS, reply_key
 from .reminders import ReminderStore
 from .run_health import run_findings
 from .runs import RunStore
@@ -1728,7 +1729,17 @@ class InventoryScanner:
         causes = apply_causes(objects, edges, findings)
         if not preliminary:
             causes = self._review_decisions(objects, edges, findings, causes)
-        apply_certainty(findings, causes)
+        apply_certainty(
+            findings,
+            causes,
+            now=observed_at,
+            waits={
+                "outage_info_minutes": self.outage_info_minutes,
+                "stale_hours": self.stale_hours,
+                "unused_automation_days": self.unused_automation_days,
+            },
+            patterns=self._outage_patterns(),
+        )
 
         lap("analysis")
         self.status.update(phase="finalizing", progress=90)
@@ -1863,6 +1874,19 @@ class InventoryScanner:
         finding["resurfaced"] = not finding["ignored"] and self.ignored.is_due(finding["key"])
         due_entry = self.ignored.entry(finding["key"]) if finding["resurfaced"] else None
         finding["due_info"] = due_entry
+
+    def _outage_patterns(self) -> dict[str, int]:
+        """The hour at which the outages of an entity recur, from the reliability analysis if it was calculated.
+
+        Nothing is queried here: only a reply kept from before is read, so without one there is no pattern.
+        """
+        kept = kept_reply(self.replies, reply_key(7, False), time.time(), CACHE_SECONDS)
+        entities = ((kept or {}).get("unstable") or {}).get("entities") or {}
+        return {
+            entity_id: item["pattern_hour"]
+            for entity_id, item in entities.items()
+            if isinstance(item, dict) and item.get("pattern_hour") is not None
+        }
 
     def _review_decisions(
         self,

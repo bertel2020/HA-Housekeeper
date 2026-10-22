@@ -8,6 +8,7 @@ certain than its cause. The amounts are fixed, not measured. ``confidence_notes`
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from typing import Any, Final
 
 PROVEN: Final = "proven"
@@ -18,9 +19,20 @@ LEVEL_VALUE: Final = {PROVEN: 0.98, REPORTED: 0.90, DERIVED: 0.75, GUESSED: 0.60
 
 MIN_VALUE: Final = 0.30
 MAX_VALUE: Final = 0.99
-RUNTIME_REFERENCE: Final = (
-    -0.10
-)  # A: the reference comes from the runtime extraction of Home Assistant
+# A: the reference comes from the runtime extraction of Home Assistant
+RUNTIME_REFERENCE: Final = -0.10
+PATTERN: Final = -0.20  # B: the outage repeats at the same time of day
+LONG_LASTING: Final = 0.10  # C: the state has lasted much longer than the rule waits
+LONG_FACTOR: Final = 3
+DEFAULT_WAIT: Final = timedelta(days=7)  # for a rule that waits for nothing
+PATTERN_RULES: Final = ("entity.state_unavailable", "entity.state_unknown", "entity.stale")
+OUTAGE_RULES: Final = (
+    "entity.state_unavailable",
+    "entity.state_unknown",
+    "device.down",
+    "config_entry.not_loaded",
+)
+UNUSED_RULES: Final = ("automation.never_triggered", "automation.stale", "automation.disabled_long")
 
 _RULES: Final[dict[str, str]] = {
     "entity.not_provided": PROVEN,
@@ -65,10 +77,40 @@ def level_of(finding: dict[str, Any]) -> str:
     return GUESSED
 
 
-def apply_certainty(findings: list[dict[str, Any]], causes: list[dict[str, Any]]) -> None:
+def _wait(rule: str, waits: dict[str, float]) -> timedelta:
+    """How long the rule waits before it counts a state: the setting behind it, else a week."""
+    if rule in OUTAGE_RULES and "outage_info_minutes" in waits:
+        return timedelta(minutes=waits["outage_info_minutes"])
+    if rule == "entity.stale" and "stale_hours" in waits:
+        return timedelta(hours=waits["stale_hours"])
+    if rule in UNUSED_RULES and "unused_automation_days" in waits:
+        return timedelta(days=waits["unused_automation_days"])
+    return DEFAULT_WAIT
+
+
+def _since(finding: dict[str, Any]) -> datetime | None:
+    for field in ("first_detected_at", "first_seen_at"):
+        if finding.get(field):
+            try:
+                return datetime.fromisoformat(finding[field])
+            except ValueError:
+                return None
+    return None
+
+
+def apply_certainty(
+    findings: list[dict[str, Any]],
+    causes: list[dict[str, Any]],
+    *,
+    now: datetime | None = None,
+    waits: dict[str, float] | None = None,
+    patterns: dict[str, int] | None = None,
+) -> None:
     """Set ``confidence``, ``confidence_level`` and ``confidence_notes`` on every finding.
 
-    Call it after the causes are known: a follow-up is capped by the certainty of its cause.
+    ``patterns`` maps an entity to the hour at which its outages recur (from the reliability analysis, when it
+    has been calculated), ``waits`` holds the settings the rules wait by. An adjustment applies only when its
+    information is there. Call it after the causes are known: a follow-up is capped by its cause.
     """
     for finding in findings:
         level = level_of(finding)
@@ -78,6 +120,14 @@ def apply_certainty(findings: list[dict[str, Any]], causes: list[dict[str, Any]]
         if level == PROVEN and evidence.get("location") == "runtime_extraction":
             value += RUNTIME_REFERENCE
             notes.append({"code": "runtime_reference", "delta": RUNTIME_REFERENCE})
+        hour = (patterns or {}).get(finding.get("object_id", ""))
+        if hour is not None and finding["rule_id"] in PATTERN_RULES:
+            value += PATTERN
+            notes.append({"code": "pattern", "delta": PATTERN, "hour": hour})
+        since = _since(finding) if now is not None and level in (DERIVED, GUESSED) else None
+        if since is not None and now - since > LONG_FACTOR * _wait(finding["rule_id"], waits or {}):
+            value += LONG_LASTING
+            notes.append({"code": "duration", "delta": LONG_LASTING, "days": (now - since).days})
         finding["confidence_base"] = LEVEL_VALUE[level]
         finding["confidence"] = round(min(MAX_VALUE, max(MIN_VALUE, value)), 2)
         finding["confidence_level"] = level

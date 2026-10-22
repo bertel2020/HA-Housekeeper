@@ -65,3 +65,43 @@ def test_a_runtime_reference_is_less_certain_and_a_follow_up_is_never_more_certa
         "code": "cause",
         "cap": 0.9,
     }
+
+
+def test_a_recurring_outage_is_less_certain_and_a_long_lasting_state_more_certain() -> None:
+    from datetime import UTC, datetime
+
+    now = datetime(2026, 10, 22, 12, tzinfo=UTC)
+    waits = {"outage_info_minutes": 5, "stale_hours": 12, "unused_automation_days": 60}
+    repeating = finding(
+        "entity.state_unavailable",
+        "a",
+        object_id="sensor.r",
+        first_detected_at="2026-10-22T11:50:00+00:00",
+    )
+    lasting = finding(
+        "entity.state_unavailable",
+        "b",
+        object_id="sensor.l",
+        first_detected_at="2026-10-10T12:00:00+00:00",
+    )
+    both = finding(
+        "entity.stale", "c", object_id="sensor.r", first_detected_at="2026-10-01T12:00:00+00:00"
+    )
+    fact = finding(
+        "automation.missing_entity", "d", object_id="a", first_seen_at="2026-01-01T00:00:00+00:00"
+    )
+    idle = finding(
+        "automation.disabled_long", "e", object_id="a", first_seen_at="2026-01-01T00:00:00+00:00"
+    )
+    apply_certainty(
+        [repeating, lasting, both, fact, idle], [], now=now, waits=waits, patterns={"sensor.r": 3}
+    )
+    assert repeating["confidence"] == 0.55 and repeating["confidence_notes"][0]["hour"] == 3
+    assert lasting["confidence"] == 0.85 and lasting["confidence_notes"] == [
+        {"code": "duration", "delta": 0.1, "days": 12}
+    ]
+    assert both["confidence"] == 0.5, "pattern −20 %, long lasting +10 % on a guess"
+    assert fact["confidence"] == 0.98, "a fact does not get more certain with time"
+    assert idle["confidence"] == 0.7, "294 days is more than three times 60"
+    apply_certainty([repeating], [], now=now, waits=waits, patterns=None)
+    assert repeating["confidence"] == 0.75, "without a pattern there is no adjustment B"
