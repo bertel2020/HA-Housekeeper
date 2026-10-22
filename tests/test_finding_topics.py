@@ -145,7 +145,13 @@ def test_the_ways_to_fix_an_outage_follow_the_state_of_the_integration() -> None
     reauth = {"rule_id": "config_entry.reauth", "object_id": "e1", "topic": "down"}
     assert ways_for(reauth, snapshot)[0]["way"] == "reauth"
     assert (
-        ways_for({"rule_id": "automation.stale", "object_id": "a", "topic": "unneeded"}, snapshot)
+        ways_for({"rule_id": "automation.stale", "object_id": "a", "topic": "unneeded"}, snapshot)[
+            0
+        ]["way"]
+        == "cleanup_round"
+    )
+    assert (
+        ways_for({"rule_id": "x.y", "object_id": "a", "topic": "failing_automations"}, snapshot)
         == []
     )
 
@@ -175,3 +181,49 @@ def test_the_ways_to_fix_a_broken_reference_replace_an_entity_or_open_the_editor
     assert [w["way"] for w in only] == ["open_editor"] and only[0]["recommended"]
     scene = {**entity, "rule_id": "scene.missing_entity"}
     assert "remove_reference" not in [w["way"] for w in ways_for(scene, {})]
+
+
+def test_the_cleanup_round_sorts_by_what_the_plan_judged() -> None:
+    from custom_components.ha_housekeeper.cleanup_round import (
+        duplicate_rows,
+        needs_first_step,
+        removal_requests,
+        sort_row,
+    )
+
+    def finding(rule, object_id, **extra):
+        return {
+            "key": f"{rule}|{object_id}",
+            "rule_id": rule,
+            "object_id": object_id,
+            "topic": "unneeded",
+            **extra,
+        }
+
+    snapshot = {
+        "findings": [
+            finding("entity.not_provided", "sensor.a"),
+            finding("entity.state_missing", "sensor.a"),
+            finding("automation.stale", "automation.b"),
+            finding("entity.possible_duplicate", "sensor.c"),
+            finding("entity.not_provided", "sensor.d", ignored=True),
+        ],
+        "objects": [{"object_type": "entity", "object_id": "sensor.c", "duplicate_of": "sensor.e"}],
+    }
+    requests = removal_requests(snapshot)
+    assert [(r["kind"], r["object_id"]) for r in requests] == [
+        ("remove_entity", "sensor.a"),
+        ("delete_automation", "automation.b"),
+    ]
+    assert duplicate_rows(snapshot)[0]["duplicate_of"] == "sensor.e"
+    ok = {"kind": "remove_entity", "verdict": "ok", "reasons": []}
+    assert sort_row(requests[0], ok, None)["group"] == "safe"
+    review = {**ok, "verdict": "review", "reasons": ["used_probable"]}
+    assert sort_row(requests[0], review, None)["group"] == "look"
+    held = {**ok, "verdict": "blocked", "reasons": ["not_quarantined"]}
+    assert needs_first_step(requests[0], held)
+    disable = {"kind": "disable_entity", "verdict": "ok", "reasons": []}
+    row = sort_row(requests[0], held, disable)
+    assert row["group"] == "look" and row["kind"] == "disable_entity" and row["first_step"]
+    blocked = {**ok, "verdict": "blocked", "reasons": ["marked_keep"]}
+    assert sort_row(requests[0], blocked, None)["group"] == "blocked"

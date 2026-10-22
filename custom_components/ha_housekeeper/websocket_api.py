@@ -57,6 +57,7 @@ from .cleanup import (
     trim_is_plain,
 )
 from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable
+from .cleanup_round import duplicate_rows, needs_first_step, removal_requests, sort_row
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices
 from .fix_ways import ways_for
@@ -292,6 +293,46 @@ def websocket_fix_ways(
         msg["id"],
         {"ways": ways_for(finding, snapshot, refactor_enabled=scanner.refactor.enabled)},
     )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/cleanup_round"})
+@websocket_api.async_response
+@with_scanner
+async def websocket_cleanup_round(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Everything unneeded, judged for removal and sorted into groups. Judges only; nothing is changed."""
+    try:
+        snapshot = await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    requests = removal_requests(snapshot)
+
+    async def judge(batch: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+        found: dict[str, dict[str, Any]] = {}
+        for start in range(0, len(batch), MAX_ACTIONS):
+            plan = await _plan_from_requests(hass, snapshot, batch[start : start + MAX_ACTIONS])
+            found.update({a["object_id"]: a for a in plan["actions"]})
+        return found
+
+    first = await judge(requests)
+    held = [
+        {**r, "kind": "disable_entity"}
+        for r in requests
+        if r["object_id"] in first and needs_first_step(r, first[r["object_id"]])
+    ]
+    second = await judge(held) if held else {}
+    rows = [
+        sort_row(r, first[r["object_id"]], second.get(r["object_id"]))
+        for r in requests
+        if r["object_id"] in first
+    ]
+    connection.send_result(msg["id"], {"rows": [*rows, *duplicate_rows(snapshot)]})
 
 
 @websocket_api.require_admin
@@ -1287,6 +1328,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_decision_notice_dismiss)
     websocket_api.async_register_command(hass, websocket_visit_leave)
     websocket_api.async_register_command(hass, websocket_fix_ways)
+    websocket_api.async_register_command(hass, websocket_cleanup_round)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_merge)

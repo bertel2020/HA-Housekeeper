@@ -967,6 +967,27 @@ async def test_sensors_stay_unknown_for_preliminary_snapshots(hass: HomeAssistan
     assert compute_values(await scanner.async_scan())["findings"] == 0
 
 
+async def test_the_cleanup_round_judges_and_changes_nothing(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """An unneeded entity that was never disabled is a first step, not a removal; the registry stays."""
+    registry = er.async_get(hass)
+    orphan = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="r-1", suggested_object_id="round_sensor"
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    unneeded = [f for f in snapshot["findings"] if f.get("topic") == "unneeded"]
+    assert any(f["object_id"] == orphan.entity_id for f in unneeded)
+
+    await client.send_json_auto_id({"type": "ha_housekeeper/cleanup_round"})
+    reply = await client.receive_json()
+    assert reply["success"], reply
+    row = next(r for r in reply["result"]["rows"] if r["object_id"] == orphan.entity_id)
+    assert row["kind"] == "disable_entity" and row["group"] == "look" and row["first_step"]
+    assert registry.async_get(orphan.entity_id).disabled_by is None
+
+
 async def test_cleanup_is_locked_while_warming_up(hass: HomeAssistant, hass_ws_client) -> None:
     """Plans are neither created nor confirmed from preliminary data."""
     registry = er.async_get(hass)
