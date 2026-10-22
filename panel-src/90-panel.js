@@ -930,6 +930,7 @@ class HAHousekeeperPanel extends HTMLElement {
       // A jump into the findings starts from the plain list of open findings, then sets its own filter: what was
       // left from before (a status, a search, a filter of the list bar) would change the number the row said.
       if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
+      if (el.dataset.jumpStatus) this.findingStatus = el.dataset.jumpStatus; // e.g. "due": the entry of the findings that are due again
       this.findingScanNew = el.dataset.jumpScanNew !== undefined;
       // The outages of one level ("high", "medium") or all of them.
       this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;

@@ -6458,16 +6458,17 @@ test("a topic tile filters the list to its topic, and the note names it", () => 
   assert.ok(el.findingNote().includes("Down"));
 });
 
-test("the overview tiles count every finding, the faults and the tidying up, and jump to their group", () => {
+test("the overview tiles count every finding and the four topics, jump to their list, and name what is due", () => {
   const { el, shadow } = panel("en");
-  const f = (key, classification, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false, impact: "medium", ...extra });
-  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "stale"), f("c", "orphaned"), f("d", "unused")] };
-  el.series = { points: [{ at: "2026-10-18T00:00:00+00:00", reasons: { unavailable: 1, orphaned: 3 } }, { at: "2026-10-19T00:00:00+00:00", reasons: { unavailable: 2, orphaned: 2 } }, { at: "2026-10-20T00:00:00+00:00", reasons: { unavailable: 1, stale: 1, unused: 1, orphaned: 1 } }] };
+  const f = (key, topic, impact, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification: "unavailable", topic, confidence: 0.9, ignored: false, impact, ...extra });
+  el.data = { ...DATA, findings: [f("a", "down", "high"), f("b", "down", "low"), f("c", "unneeded", "info"), f("d", "unneeded", "info", { resurfaced: true })] };
+  el.series = { points: [{ at: "2026-10-18T00:00:00+00:00", topics: { down: 1, unneeded: 3 } }, { at: "2026-10-19T00:00:00+00:00", topics: { down: 2, unneeded: 2 } }, { at: "2026-10-20T00:00:00+00:00", topics: { down: 2, unneeded: 2 } }] };
   el._seriesFor = el.data; el.view = "overview"; el.render();
-  const html = shadow.innerHTML, tile = id => html.slice(html.indexOf(`data-filter="group:${id}"`), html.indexOf("</button>", html.indexOf(`data-filter="group:${id}"`)));
+  const html = shadow.innerHTML, tile = name => html.slice(html.indexOf(`data-filter="topic:${name}"`), html.indexOf("</button>", html.indexOf(`data-filter="topic:${name}"`)));
   assert.ok(html.includes(">Findings</small><strong>4</strong>"), "Findings counts all four");
-  assert.ok(tile("red").includes("Faults") && tile("red").includes("<strong>2</strong>") && tile("red").includes("+1 in 2 days"));
-  assert.ok(tile("tidy").includes("Tidying up") && tile("tidy").includes("<strong>2</strong>") && tile("tidy").includes("−1 in 2 days"));
+  assert.ok(tile("down").includes("Down") && tile("down").includes("<strong>2</strong>") && tile("down").includes("+1 in 2 days") && tile("down").includes('class="ibar"'));
+  assert.ok(tile("unneeded").includes("Unneeded") && tile("unneeded").includes("<strong>2</strong>") && tile("unneeded").includes("−1 in 2 days"));
+  assert.ok(html.includes('data-jump-status="due"') && html.includes("1 due"), "a line leads to the findings that are due");
 });
 
 test("a sparkline shows at most the last seven days", () => {
