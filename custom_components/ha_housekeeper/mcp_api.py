@@ -326,6 +326,8 @@ def findings(
             "name": clean_text(target.get("name")),
             "level": finding.get("impact") or "none",
             "topic": finding.get("topic"),
+            "certainty": finding.get("confidence"),
+            "certainty_level": finding.get("confidence_level"),
             "state": finding["classification"],
             "since": finding.get("first_detected_at"),
         }

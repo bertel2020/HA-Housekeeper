@@ -4923,6 +4923,14 @@ test("the overview counts batteries that report volts as low too", () => {
   assert.ok(el.lowBatteries().some(r => r.volt));
 });
 
+test("the certainty tooltip names the level, the adjustments and that it is an estimate", () => {
+  const { el } = panel("en");
+  assert.equal(el.certaintyText({ confidence_level: "derived", confidence_base: 0.75, confidence: 0.85, confidence_notes: [{ code: "duration", delta: 0.1, days: 12 }] }),
+    "Derived, 75 %. Has lasted 12 days +10 % = 85 %. An estimate, not a measurement.");
+  assert.equal(el.certaintyText({ confidence_level: "proven", confidence_base: 0.98, confidence: 0.98, confidence_notes: [] }), "Proven, 98 %. An estimate, not a measurement.");
+  assert.equal(el.certaintyText({}), "", "a finding from before the levels says nothing");
+});
+
 test("the topic tiles carry a sparkline for the total and each topic, the status line of the overview the one for the score", () => {
   const { el } = panel("en");
   const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused }, reasons: { unused }, topics: { unneeded: unused }, lead_topics: { unneeded: unused } });

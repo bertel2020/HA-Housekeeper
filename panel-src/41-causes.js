@@ -87,7 +87,7 @@ class CausesMixin {
     }
     return `<div class="rating"><h3 class="ratinghead">${this.t("ratingTitle")}</h3>
       <div class="rrow"><b>${this.t("sortImpact")}</b><div>${this.impactChip(level)}<div class="factnote">${reasons.map(x => this.esc(x)).join(" · ")}</div>${bar}</div></div>
-      <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${Math.round((finding.confidence || 0) * 100)} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div></div></div>
+      <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${Math.round((finding.confidence || 0) * 100)} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div>${finding.confidence_level ? `<div class="factnote">${this.esc(this.certaintyText(finding))}</div>` : ""}</div></div>
       <div class="rnext">${next}</div></div>`;
   }
 

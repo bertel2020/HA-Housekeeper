@@ -2883,7 +2883,7 @@ class FindingsMixin {
     const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
     const name = depth ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
     const detail = this.rowDecide(f);
-    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
+    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `<span title="${this.esc(this.certaintyText(f))}">${Math.round(f.confidence * 100)} %</span>`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
   }
 
   findingSorts() {
@@ -3028,7 +3028,7 @@ class FindingsMixin {
       ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : []),
     ];
     // The export button of the list bar, as on every list: the rows as shown, or only the selected ones.
-    const cols = ["rule_id", "topic", "classification", "confidence", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
+    const cols = ["rule_id", "topic", "classification", "confidence", "confidence_level", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
     this.setExporter("findings", "ha-housekeeper-findings", cols, () => this.exportRows().map(r => cols.map(c => r[c])));
     const bar = this.listBar("findings", { table: true, dense: true, note: false, sorts: this.findingSorts(), filters });
     this.ensureSeries();
@@ -3184,6 +3184,14 @@ class FindingsMixin {
   runLine(f) {
     const e = f.evidence?.[0] || {};
     return this.t(f.rule_id.endsWith(".never_ok") ? "runLineNever" : "runLineFailing", { errors: e.errors, runs: e.runs, days: e.window_days });
+  }
+
+  // How the certainty of a finding comes about, as the tooltip says it: "Derived, 75 %. Lasted 12 days +10 % = 85 %. An estimate, not a measurement."
+  certaintyText(f) {
+    if (!f.confidence_level) return "";
+    const pct = x => Math.round(x * 100), sign = d => `${d > 0 ? "+" : "−"}${Math.abs(pct(d))}`;
+    const notes = (f.confidence_notes || []).map(n => this.t(`certNote_${n.code}`, { delta: n.delta === undefined ? "" : sign(n.delta), hour: n.hour ?? "", days: n.days ?? "", cap: n.cap === undefined ? "" : pct(n.cap) }));
+    return [`${this.t(`certLevel_${f.confidence_level}`)}, ${pct(f.confidence_base ?? f.confidence)} %.`, notes.length ? `${notes.join(" · ")} = ${pct(f.confidence)} %.` : "", this.t("certDisclaimer")].filter(Boolean).join(" ");
   }
 
   // How much matters in a group of findings: one segment per impact level, as wide as the number it stands for.
@@ -9253,7 +9261,7 @@ Object.assign(TEXT.en, {
 
 Object.assign(TEXT.de, {
   ratingTitle: "Bewertung", ratingFollowers: "erklärt {n} Folgebefunde", ratingNoReason: "Nichts nutzt dieses Objekt", ratingFrom: "ab {span}",
-  ratingCertMeaning: "Wie gut die Diagnose belegt ist, nicht wie schlimm der Befund ist.",
+  ratingCertMeaning: "Wie gut die Diagnose belegt ist, nicht wie schlimm der Befund ist.", certLevel_proven: "Belegt", certLevel_reported: "Gemeldet", certLevel_derived: "Abgeleitet", certLevel_guessed: "Vermutet", certNote_runtime_reference: "Verweis aus der Laufzeit-Extraktion {delta} %", certNote_pattern: "Wiederkehrendes Muster um {hour} Uhr {delta} %", certNote_duration: "Besteht seit {days} Tagen {delta} %", certNote_cause: "Nie gewisser als die Ursache ({cap} %)", certDisclaimer: "Eine Abschätzung, keine Messung.",
   ratingTop: "Das ist die höchste Stufe, der Schweregrad kann nicht mehr steigen.",
   ratingNext_info: "ein Dashboard oder eine Automation darauf verweist", ratingNext_low: "eine aktive Automation oder ein aktives Skript es nutzt", ratingNext_medium: "es kritisch wird (Label, Art des Objekts) oder 5 oder mehr Abhängige hat",
   ratingNextCond: "{level}, sobald {cond}.", ratingNextBoth: "{level} in {span} oder sobald {cond}.", ratingNextDur: "Nach der Dauer: {level} in {span}.",
@@ -9262,7 +9270,7 @@ Object.assign(TEXT.de, {
 
 Object.assign(TEXT.en, {
   ratingTitle: "Rating", ratingFollowers: "explains {n} follow-up findings", ratingNoReason: "Nothing uses this object", ratingFrom: "from {span}",
-  ratingCertMeaning: "How well the diagnosis is supported, not how bad the finding is.",
+  ratingCertMeaning: "How well the diagnosis is supported, not how bad the finding is.", certLevel_proven: "Proven", certLevel_reported: "Reported", certLevel_derived: "Derived", certLevel_guessed: "Guessed", certNote_runtime_reference: "Reference from the runtime extraction {delta} %", certNote_pattern: "Recurring pattern at {hour}:00 {delta} %", certNote_duration: "Has lasted {days} days {delta} %", certNote_cause: "Never more certain than its cause ({cap} %)", certDisclaimer: "An estimate, not a measurement.",
   ratingTop: "This is the highest level; the severity cannot rise any further.",
   ratingNext_info: "a dashboard or an automation refers to it", ratingNext_low: "an active automation or script uses it", ratingNext_medium: "it becomes critical (label, kind of object) or has 5 or more dependents",
   ratingNextCond: "{level} as soon as {cond}.", ratingNextBoth: "{level} in {span} or as soon as {cond}.", ratingNextDur: "By duration: {level} in {span}.",
@@ -9358,7 +9366,7 @@ class CausesMixin {
     }
     return `<div class="rating"><h3 class="ratinghead">${this.t("ratingTitle")}</h3>
       <div class="rrow"><b>${this.t("sortImpact")}</b><div>${this.impactChip(level)}<div class="factnote">${reasons.map(x => this.esc(x)).join(" · ")}</div>${bar}</div></div>
-      <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${Math.round((finding.confidence || 0) * 100)} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div></div></div>
+      <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${Math.round((finding.confidence || 0) * 100)} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div>${finding.confidence_level ? `<div class="factnote">${this.esc(this.certaintyText(finding))}</div>` : ""}</div></div>
       <div class="rnext">${next}</div></div>`;
   }
 

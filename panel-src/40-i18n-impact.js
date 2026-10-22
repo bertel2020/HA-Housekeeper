@@ -18,7 +18,7 @@ Object.assign(TEXT.en, {
 
 Object.assign(TEXT.de, {
   ratingTitle: "Bewertung", ratingFollowers: "erklärt {n} Folgebefunde", ratingNoReason: "Nichts nutzt dieses Objekt", ratingFrom: "ab {span}",
-  ratingCertMeaning: "Wie gut die Diagnose belegt ist, nicht wie schlimm der Befund ist.",
+  ratingCertMeaning: "Wie gut die Diagnose belegt ist, nicht wie schlimm der Befund ist.", certLevel_proven: "Belegt", certLevel_reported: "Gemeldet", certLevel_derived: "Abgeleitet", certLevel_guessed: "Vermutet", certNote_runtime_reference: "Verweis aus der Laufzeit-Extraktion {delta} %", certNote_pattern: "Wiederkehrendes Muster um {hour} Uhr {delta} %", certNote_duration: "Besteht seit {days} Tagen {delta} %", certNote_cause: "Nie gewisser als die Ursache ({cap} %)", certDisclaimer: "Eine Abschätzung, keine Messung.",
   ratingTop: "Das ist die höchste Stufe, der Schweregrad kann nicht mehr steigen.",
   ratingNext_info: "ein Dashboard oder eine Automation darauf verweist", ratingNext_low: "eine aktive Automation oder ein aktives Skript es nutzt", ratingNext_medium: "es kritisch wird (Label, Art des Objekts) oder 5 oder mehr Abhängige hat",
   ratingNextCond: "{level}, sobald {cond}.", ratingNextBoth: "{level} in {span} oder sobald {cond}.", ratingNextDur: "Nach der Dauer: {level} in {span}.",
@@ -27,7 +27,7 @@ Object.assign(TEXT.de, {
 
 Object.assign(TEXT.en, {
   ratingTitle: "Rating", ratingFollowers: "explains {n} follow-up findings", ratingNoReason: "Nothing uses this object", ratingFrom: "from {span}",
-  ratingCertMeaning: "How well the diagnosis is supported, not how bad the finding is.",
+  ratingCertMeaning: "How well the diagnosis is supported, not how bad the finding is.", certLevel_proven: "Proven", certLevel_reported: "Reported", certLevel_derived: "Derived", certLevel_guessed: "Guessed", certNote_runtime_reference: "Reference from the runtime extraction {delta} %", certNote_pattern: "Recurring pattern at {hour}:00 {delta} %", certNote_duration: "Has lasted {days} days {delta} %", certNote_cause: "Never more certain than its cause ({cap} %)", certDisclaimer: "An estimate, not a measurement.",
   ratingTop: "This is the highest level; the severity cannot rise any further.",
   ratingNext_info: "a dashboard or an automation refers to it", ratingNext_low: "an active automation or script uses it", ratingNext_medium: "it becomes critical (label, kind of object) or has 5 or more dependents",
   ratingNextCond: "{level} as soon as {cond}.", ratingNextBoth: "{level} in {span} or as soon as {cond}.", ratingNextDur: "By duration: {level} in {span}.",
