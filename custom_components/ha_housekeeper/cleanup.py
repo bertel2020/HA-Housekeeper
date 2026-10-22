@@ -542,6 +542,43 @@ def judge_reference_action(
     return action
 
 
+def judge_id_replace_action(
+    object_id: str,
+    target: str | None,
+    target_kind: str,
+    target_exists: bool,
+    sources: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
+    """Judge replacing a missing area, floor or label by an existing one in every place that names it.
+
+    These are plain identifiers, replaced only under the key that names them (see ``references.rewrite_id``),
+    so there is nothing to compare but that the new one exists. The edit rewrites configuration: ``review``.
+    """
+    action: dict[str, Any] = {
+        "kind": "replace_references",
+        "object_id": object_id,
+        "object_type": target_kind,
+        "target_kind": target_kind,
+        "target": target,
+        "name": object_id,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+        "sources": sources or [],
+    }
+    reasons = action["reasons"]
+    if not target or not target_exists:
+        reasons.append("target_missing")
+    elif target == object_id:
+        reasons.append("same_entity")
+    if not [s for s in action["sources"] if s["writable"] and s["changes"]]:
+        reasons.append("nothing_to_replace")
+    reasons.append("config_rewrite")
+    _verdict(action)
+    return action
+
+
 def judge_rename_action(
     object_id: str,
     target: str | None,
@@ -1147,7 +1184,8 @@ def build_plan(
     restorable: Callable[[str], bool | None] | None = None,
     *,
     device_info: Callable[[str], tuple[str | None, dict[str, Any]]] | None = None,
-    reference_data: dict[tuple[str, str], tuple[str | None, list[dict[str, Any]]]] | None = None,
+    reference_data: dict[tuple[str, str, str], tuple[str | None, list[dict[str, Any]]]]
+    | None = None,
     meter_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
     statistic_exists: Callable[[str], bool] | None = None,
     refactor_data: dict[tuple[str, str, str], dict[str, Any]] | None = None,
@@ -1166,7 +1204,7 @@ def build_plan(
     ``fingerprint`` returns the registry fingerprint of an entity so that execution can
     detect changes made after the preview; ``restorable`` tells whether a removal could be
     undone. ``device_info`` gives a device's fingerprint and what its integration supports;
-    ``reference_data`` maps ``(old, new)`` entity IDs to the fingerprint and the sources found
+    ``reference_data`` maps ``(old, new, target kind)`` to the fingerprint and the sources found
     for a replacement; ``statistic_exists`` tells whether an entity carries a statistic ID now;
     ``meter_data`` maps ``(old, new, mode)`` to the fingerprint and judging data
     of a meter migration. A plan holds at most one action per object.
@@ -1308,15 +1346,30 @@ def build_plan(
             action["fingerprint"] = found.get("fingerprint")
         elif kind in REFERENCE_KINDS:
             target = request.get("target") or ""
-            reference_print, sources = (reference_data or {}).get((object_id, target), (None, []))
-            action = judge_action(
-                kind,
-                object_id,
-                objects,
-                snapshot["edges"],
-                target=target,
-                sources=sources,
+            target_kind = request.get("target_kind") or "entity"
+            reference_print, sources = (reference_data or {}).get(
+                (object_id, target, target_kind), (None, [])
             )
+            if target_kind == "entity":
+                action = judge_action(
+                    kind,
+                    object_id,
+                    objects,
+                    snapshot["edges"],
+                    target=target,
+                    sources=sources,
+                )
+            else:
+                action = judge_id_replace_action(
+                    object_id,
+                    target,
+                    target_kind,
+                    any(
+                        o["object_type"] == target_kind and o["object_id"] == target
+                        for o in snapshot["objects"]
+                    ),
+                    sources,
+                )
             action["fingerprint"] = reference_print
         else:
             action = judge_action(

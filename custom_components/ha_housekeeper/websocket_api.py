@@ -441,9 +441,12 @@ async def _plan_from_requests(
     reference_data = {}
     for action in requests:
         if action["kind"] in REFERENCE_KINDS and action.get("target"):
-            pair = (action["object_id"], action["target"])
+            target_kind = action.get("target_kind") or "entity"
+            pair = (action["object_id"], action["target"], target_kind)
             if pair not in reference_data and pair[0] != pair[1]:
-                reference_data[pair] = await preview_replacement(hass, snapshot, *pair)
+                reference_data[pair] = await preview_replacement(
+                    hass, snapshot, pair[0], pair[1], None, target_kind
+                )
 
     meter_data = {}
     for action in requests:
@@ -586,6 +589,7 @@ async def _plan_from_requests(
                     vol.Required("kind"): vol.In(sorted(ACTION_KINDS)),
                     vol.Required("object_id"): str,
                     vol.Optional("target"): str,
+                    vol.Optional("target_kind"): vol.In(("entity", "area", "floor", "label")),
                     vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.RANGE_MODES)),
                     vol.Optional("range"): {
                         vol.Required("from"): vol.Coerce(float),

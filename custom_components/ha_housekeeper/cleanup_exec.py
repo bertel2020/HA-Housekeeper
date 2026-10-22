@@ -93,6 +93,7 @@ from .cleanup import (
     end_interrupted,
     get_main_device,
     judge_action,
+    judge_id_replace_action,
     judge_purge_action,
     judge_rename_action,
     registry_fingerprint,
@@ -129,6 +130,7 @@ from .references import (
     load_source,
     preview_replacement,
     rewrite,
+    target_exists,
     yaml_hash,
 )
 from .texts import pick
@@ -1457,7 +1459,9 @@ class CleanupRunner:
                 loaded = await load_source(self.hass, snapshot, planned["source"])
                 if loaded["hash"] != planned["hash"]:
                     raise StepAbort("source_changed")
-                item, changes, _ = rewrite(loaded["item"], old, new)
+                item, changes, _ = rewrite(
+                    loaded["item"], old, new, action.get("target_kind") or "entity"
+                )
                 if not changes:
                     raise StepAbort("source_changed")
                 is_automation = loaded["format"] == "yaml" and planned["type"] == "automation"
@@ -1800,12 +1804,26 @@ class CleanupRunner:
                 return "needs_acknowledgement"
             return None
         elif kind in REFERENCE_KINDS:
+            target_kind = action.get("target_kind") or "entity"
             fingerprint, sources = await preview_replacement(
-                self.hass, snapshot, object_id, action["target"], self._lineage
+                self.hass, snapshot, object_id, action["target"], self._lineage, target_kind
             )
             if action.get("fingerprint") is None or fingerprint != action["fingerprint"]:
                 return "source_changed"
             action["sources"] = sources
+            if target_kind != "entity":
+                verdict = judge_id_replace_action(
+                    object_id,
+                    action["target"],
+                    target_kind,
+                    target_exists(snapshot, target_kind, action["target"]),
+                    sources,
+                )
+                if verdict["verdict"] == "blocked":
+                    return "now_blocked"
+                if verdict["verdict"] == "review" and object_id not in context["acknowledged"]:
+                    return "needs_acknowledgement"
+                return None
             verdict_args = {"target": action["target"], "sources": sources}
         else:
             entry = er.async_get(self.hass).async_get(object_id)

@@ -27,11 +27,17 @@ def _way(way: str, kind: str, recommended: bool = False, **fields: Any) -> dict[
 
 
 REMOVABLE_TARGETS = ("entity", "device", "area", "floor", "label")
+ID_TARGETS = (
+    "area",
+    "floor",
+    "label",
+)  # plain identifiers: replaced by an existing one of the same kind
+REWRITABLE_OWNERS = ("automation", "script", "scene", "dashboard")
 
 
 def _broken_ways(finding: dict[str, Any], refactor_enabled: bool) -> list[dict[str, Any]]:
     """The ways for a reference whose target is gone: replace the target (an entity), or open the editor."""
-    kind = finding["rule_id"].partition(".missing_")[2]
+    domain, _, kind = finding["rule_id"].partition(".missing_")
     ways: list[dict[str, Any]] = []
     if kind == "entity" and finding.get("affected_object"):
         suggestions = finding.get("suggestions") or []
@@ -42,6 +48,16 @@ def _broken_ways(finding: dict[str, Any], refactor_enabled: bool) -> list[dict[s
                 True,
                 target=finding["affected_object"],
                 suggestion=suggestions[0] if suggestions else None,
+            )
+        )
+    elif kind in ID_TARGETS and finding.get("affected_object") and domain in REWRITABLE_OWNERS:
+        ways.append(
+            _way(
+                "replace_target",
+                "panel",
+                True,
+                target=finding["affected_object"],
+                target_kind=kind,
             )
         )
     if (

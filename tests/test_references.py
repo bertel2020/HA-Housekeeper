@@ -172,7 +172,9 @@ def reload_services(hass: HomeAssistant) -> list[str]:
     return calls
 
 
-def automation_scanner_state(hass: HomeAssistant, scanner, automation_id: str = "auto-1"):
+def automation_scanner_state(
+    hass: HomeAssistant, scanner, automation_id: str = "auto-1", areas: set[str] | None = None
+):
     """Make the scanner see an automation by its entity and unique ID, like a real one."""
     hass.states.async_set(
         "automation.heating", "on", {"friendly_name": "Heating", "id": automation_id}
@@ -190,7 +192,7 @@ def automation_scanner_state(hass: HomeAssistant, scanner, automation_id: str = 
                 },
                 referenced_entities={OLD},
                 referenced_devices=set(),
-                referenced_areas=set(),
+                referenced_areas=set(areas or ()),
                 referenced_floors=set(),
                 referenced_labels=set(),
             )
@@ -246,7 +248,7 @@ def make_entities(hass: HomeAssistant, *, new_state: str = "21") -> None:
 async def make_reference_plan(scanner, hass: HomeAssistant, old: str = OLD, new: str = NEW):
     snapshot = await scanner.async_scan()
     registry = er.async_get(hass)
-    data = {(old, new): await preview_replacement(hass, snapshot, old, new)}
+    data = {(old, new, "entity"): await preview_replacement(hass, snapshot, old, new)}
     plan = build_plan(
         snapshot,
         [{"kind": "replace_references", "object_id": old, "target": new}],
@@ -298,6 +300,93 @@ async def test_replacing_references_in_an_automation_is_verified_and_undone(
         assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
         assert load_yaml(path) == load_yaml_text(before)
         assert plan["status"] == "undone" and reloads == ["automation", "automation"]
+
+
+AREA_AUTOMATIONS = """- id: auto-1
+  alias: Heating
+  trigger:
+    - platform: time
+      at: "06:00:00"
+  action:
+    - service: light.turn_on
+      target:
+        area_id: [gone, hall]
+    - service: notify.me
+      data:
+        message: gone
+"""
+
+
+def test_rewrite_replaces_an_area_only_under_its_own_key() -> None:
+    config = {"alias": "gone", "action": [{"target": {"area_id": ["gone", "hall"]}}]}
+    new, changes, manual = rewrite(config, "gone", "hall", "area")
+    assert new == {"alias": "gone", "action": [{"target": {"area_id": ["hall"]}}]}
+    assert [c["location"] for c in changes] == ["action/0/target/area_id"] and manual == []
+
+
+async def test_a_missing_area_is_replaced_in_the_places_that_name_it(hass: HomeAssistant) -> None:
+    from homeassistant.helpers import area_registry as ar
+
+    ar.async_get(hass).async_create("Lounge")
+    path = write_config(hass, "automations.yaml", AREA_AUTOMATIONS)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    with (
+        automation_scanner_state(hass, scanner, areas={"gone", "lounge"}),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        snapshot = await scanner.async_scan()
+        assert any(f["rule_id"] == "automation.missing_area" for f in snapshot["findings"])
+        data = {
+            ("gone", "lounge", "area"): await preview_replacement(
+                hass, snapshot, "gone", "lounge", None, "area"
+            )
+        }
+        plan = build_plan(
+            snapshot,
+            [
+                {
+                    "kind": "replace_references",
+                    "object_id": "gone",
+                    "target": "lounge",
+                    "target_kind": "area",
+                }
+            ],
+            datetime.now(UTC),
+            reference_data=data,
+        )
+        scanner.journal.add(plan)
+        action = plan["actions"][0]
+        assert action["verdict"] == "review" and action["executable"] is True
+        assert action["sources"][0]["change_count"] == 1
+        await run(scanner, plan, ["gone"])
+        saved = load_yaml(path)[0]["action"]
+        assert saved[0]["target"]["area_id"] == ["lounge", "hall"]
+        assert saved[1]["data"]["message"] == "gone"  # the same word elsewhere stays
+        assert plan["actions"][0]["result"]["state"] == "done"
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"] == [{"object_id": "gone", "outcome": "undone"}]
+        assert load_yaml(path)[0]["action"][0]["target"]["area_id"] == ["gone", "hall"]
+        missing = build_plan(
+            snapshot,
+            [
+                {
+                    "kind": "replace_references",
+                    "object_id": "gone",
+                    "target": "nowhere",
+                    "target_kind": "area",
+                }
+            ],
+            datetime.now(UTC),
+            reference_data={
+                ("gone", "nowhere", "area"): await preview_replacement(
+                    hass, snapshot, "gone", "nowhere", None, "area"
+                )
+            },
+        )
+        assert missing["actions"][0]["verdict"] == "blocked"
+        assert "target_missing" in missing["actions"][0]["reasons"]
 
 
 def load_yaml_text(text: str):

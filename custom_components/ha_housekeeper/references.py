@@ -25,6 +25,8 @@ from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
 MAX_LISTED = 50  # changes and mentions kept per source in a plan; totals stay exact
 YAML_FILES = {"automation": "automations.yaml", "script": "scripts.yaml", "scene": "scenes.yaml"}
 ENERGY_PARTS = ("energy_sources", "device_consumption", "device_consumption_water")
+# Targets that are plain identifiers and are replaced only under the key that names them.
+ID_KEYS = {"area": "area_id", "floor": "floor_id", "label": "label_id"}
 _ENTITY_ID = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
 _TAGS = re.compile(r"!\s*(secret|include\w*|env_var)\b")
 
@@ -38,12 +40,58 @@ def mentions(text: str, entity_id: str) -> bool:
     return re.search(rf"(?<![\w.]){re.escape(entity_id)}(?![\w])", text) is not None
 
 
-def rewrite(value: Any, old: str, new: str) -> tuple[Any, list[dict[str, str]], list[str]]:
+def rewrite_id(
+    value: Any, old: str, new: str, key: str
+) -> tuple[Any, list[dict[str, str]], list[str]]:
+    """Return ``value`` with the identifier ``old`` replaced by ``new`` where it stands under ``key``.
+
+    An area, a floor or a label is a plain identifier that any text could equal, so only the value of the key
+    that names it (alone, in a list or in a comma-separated text) is replaced; templates are never touched.
+    """
+    changes: list[dict[str, str]] = []
+
+    def walk(node: Any, path: str) -> Any:
+        if isinstance(node, Mapping):
+            result: dict[Any, Any] = {}
+            for name, child in node.items():
+                child_path = f"{path}/{name}" if path else str(name)
+                if name == key and isinstance(child, str) and "{{" not in child:
+                    tokens = [token.strip() for token in child.split(",")]
+                    if old in tokens:
+                        rest = [new if token == old else token for token in tokens]
+                        joined = ", ".join(dict.fromkeys(rest)) if "," in child else new
+                        changes.append({"location": child_path, "from": child, "to": joined})
+                        result[name] = joined
+                        continue
+                if name == key and isinstance(child, list) and old in child:
+                    rest = list(dict.fromkeys(new if token == old else token for token in child))
+                    changes.append(
+                        {"location": child_path, "from": json.dumps(child), "to": json.dumps(rest)}
+                    )
+                    result[name] = rest
+                    continue
+                result[name] = walk(child, child_path)
+            return result
+        if isinstance(node, list):
+            return [
+                walk(child, f"{path}/{index}" if path else str(index))
+                for index, child in enumerate(node)
+            ]
+        return node
+
+    return walk(value, ""), changes, []
+
+
+def rewrite(
+    value: Any, old: str, new: str, target_kind: str = "entity"
+) -> tuple[Any, list[dict[str, str]], list[str]]:
     """Return ``value`` with ``old`` replaced by ``new``, the changes made and the manual mentions.
 
     The input is never modified. Changes are ``{"location", "from", "to"}``; manual mentions are
     the locations of templates that contain the old ID.
     """
+    if target_kind in ID_KEYS:
+        return rewrite_id(value, old, new, ID_KEYS[target_kind])
     changes: list[dict[str, str]] = []
     manual: list[str] = []
 
@@ -204,8 +252,27 @@ async def load_source(
     raise SourceError("not_editable")
 
 
-def source_keys(snapshot: dict[str, Any], entity_id: str) -> list[str]:
-    """Objects that use ``entity_id``, in a stable order."""
+def target_exists(snapshot: dict[str, Any], target_kind: str, ident: str) -> bool:
+    """Whether an area, a floor or a label with this identifier exists in the last scan."""
+    return any(
+        o["object_type"] == target_kind and o["object_id"] == ident for o in snapshot["objects"]
+    )
+
+
+def source_keys(snapshot: dict[str, Any], entity_id: str, target_kind: str = "entity") -> list[str]:
+    """Objects that use ``entity_id``, in a stable order.
+
+    A missing area, floor or label has no object to hang edges on: its users are the findings about it.
+    """
+    if target_kind in ID_KEYS:
+        return sorted(
+            {
+                f"{finding['rule_id'].partition('.')[0]}:{finding['object_id']}"
+                for finding in snapshot.get("findings", [])
+                if finding["rule_id"].endswith(f".missing_{target_kind}")
+                and finding.get("affected_object") == entity_id
+            }
+        )
     return sorted(
         {
             edge["source"]
@@ -251,6 +318,7 @@ async def collect_sources(
     old: str,
     new: str,
     lineage: dict[str, dict[str, str]] | None = None,
+    target_kind: str = "entity",
 ) -> tuple[str, list[dict[str, Any]]]:
     """Preview a replacement: every source with the changes it would get.
 
@@ -258,7 +326,7 @@ async def collect_sources(
     list of sources. Sources that cannot be rewritten are listed with the reason.
     """
     sources: list[dict[str, Any]] = []
-    for key in source_keys(snapshot, old):
+    for key in source_keys(snapshot, old, target_kind):
         kind, _, ident = key.partition(":")
         entry: dict[str, Any] = {
             "source": key,
@@ -281,7 +349,7 @@ async def collect_sources(
                 }
             )
             continue
-        _, changes, manual = rewrite(loaded["item"], old, new)
+        _, changes, manual = rewrite(loaded["item"], old, new, target_kind)
         sources.append(
             {
                 **entry,
@@ -319,9 +387,12 @@ async def preview_replacement(
     old: str,
     new: str,
     lineage: dict[str, dict[str, str]] | None = None,
+    target_kind: str = "entity",
 ) -> tuple[str, list[dict[str, Any]]]:
-    """Fingerprint and sources of a replacement; the fingerprint also covers both entities."""
-    sources_print, sources = await collect_sources(hass, snapshot, old, new, lineage)
-    return text_hash(
-        f"{sources_print}|{entity_print(hass, old)}|{entity_print(hass, new)}"
-    ), sources
+    """Fingerprint and sources of a replacement; the fingerprint also covers both targets."""
+    sources_print, sources = await collect_sources(hass, snapshot, old, new, lineage, target_kind)
+    if target_kind in ID_KEYS:
+        both = f"{target_exists(snapshot, target_kind, old)}|{target_exists(snapshot, target_kind, new)}"
+    else:
+        both = f"{entity_print(hass, old)}|{entity_print(hass, new)}"
+    return text_hash(f"{sources_print}|{both}"), sources
