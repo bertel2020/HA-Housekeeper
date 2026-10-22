@@ -917,6 +917,35 @@ def test_refactoring_makes_exactly_the_named_edit() -> None:
         refactor.apply({**item, "description": "has one"}, "add_description", {"description": "z"})
 
 
+def test_removing_a_reference_only_takes_it_out_of_target_lists_that_keep_another() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    item = {
+        "alias": "Lights",
+        "trigger": [{"platform": "state", "entity_id": ["light.gone", "light.b"]}],
+        "condition": [
+            {"condition": "state", "entity_id": ["light.gone", "light.b"], "state": "on"}
+        ],
+        "action": [
+            {"service": "light.turn_off", "target": {"entity_id": ["light.gone", "light.a"]}},
+            {"action": "light.turn_on", "entity_id": "light.gone, light.a"},
+            {"action": "light.toggle", "target": {"entity_id": ["light.gone"]}},
+            {"condition": "state", "entity_id": ["light.gone", "light.a"], "state": "on"},
+        ],
+    }
+    new, diff = refactor.apply(item, "remove_reference", {"reference": "light.gone"})
+    assert new["action"][0]["target"]["entity_id"] == ["light.a"]
+    assert new["action"][1]["entity_id"] == "light.a"
+    assert new["action"][2:] == item["action"][2:], "the only target and the condition step stay"
+    assert new["trigger"] == item["trigger"] and new["condition"] == item["condition"]
+    assert [d["path"] for d in diff] == ["action/0/target/entity_id", "action/1/entity_id"]
+    assert refactor.applied(new, "remove_reference", {"reference": "light.gone"})
+    with pytest.raises(ValueError, match="nothing_to_do"):
+        refactor.apply(new, "remove_reference", {"reference": "light.gone"})
+    with pytest.raises(ValueError, match="invalid_fix"):
+        refactor.apply(item, "remove_reference", {})
+
+
 DOUBLED = AUTOMATIONS.replace(
     "      entity_id: sensor.old_temp\n  action:",
     "      entity_id: sensor.old_temp\n    - platform: state\n      entity_id: sensor.old_temp\n  action:",

@@ -26,7 +26,10 @@ def _way(way: str, kind: str, recommended: bool = False, **fields: Any) -> dict[
     return {"way": way, "kind": kind, "recommended": recommended, **fields}
 
 
-def _broken_ways(finding: dict[str, Any]) -> list[dict[str, Any]]:
+REMOVABLE_TARGETS = ("entity", "device", "area", "floor", "label")
+
+
+def _broken_ways(finding: dict[str, Any], refactor_enabled: bool) -> list[dict[str, Any]]:
     """The ways for a reference whose target is gone: replace the target (an entity), or open the editor."""
     kind = finding["rule_id"].partition(".missing_")[2]
     ways: list[dict[str, Any]] = []
@@ -41,14 +44,29 @@ def _broken_ways(finding: dict[str, Any]) -> list[dict[str, Any]]:
                 suggestion=suggestions[0] if suggestions else None,
             )
         )
+    if (
+        finding["rule_id"].startswith("automation.")
+        and kind in REMOVABLE_TARGETS
+        and finding.get("affected_object")
+    ):
+        ways.append(
+            _way(
+                "remove_reference",
+                "panel",
+                target=finding["affected_object"],
+                enabled=refactor_enabled,
+            )
+        )
     ways.append(_way("open_editor", "panel", not ways))
     return ways
 
 
-def ways_for(finding: dict[str, Any], snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+def ways_for(
+    finding: dict[str, Any], snapshot: dict[str, Any], *, refactor_enabled: bool = False
+) -> list[dict[str, Any]]:
     """The ways for one finding of the topics "down" and "broken references"; others have none yet."""
     if finding.get("topic") == BROKEN_REFERENCES:
-        return _broken_ways(finding)
+        return _broken_ways(finding, refactor_enabled)
     if finding.get("topic") != DOWN:
         return []
     rule = finding["rule_id"]

@@ -10498,6 +10498,7 @@ Object.assign(TEXT.de, {
   refactorFix_hint_long_delay: "Lange Verzögerung", refactorFixHint_hint_long_delay: "{count} Verzögerungen dauern fünf Minuten oder länger, die längste {longest} ({paths}). Bei einem Neustart von Home Assistant gehen sie verloren und der Rest läuft nie. Ein Trigger mit „for“ oder ein Warteschritt mit Zeitgrenze übersteht den Neustart. Das schreibt Housekeeper nicht um.",
   refactorFix_hint_dead_branch: "Zweig ohne Wirkung", refactorFixHint_hint_dead_branch: "{count} Zweige von „choose“ prüfen Entitäten, die es nicht gibt ({entities}); sie treffen nie zu ({paths}). Ob der Zweig gestrichen oder repariert wird, entscheidest du.", refactorHintOnly: "Nur ein Hinweis, Housekeeper schreibt hier nichts.",
   refactorDescription: "Beschreibung", refactorPlan: "Plan erstellen", refactorFailed: "Plan nicht erstellt: {reason}", refactorDiffBefore: "vorher", refactorDiffNone: "entfällt",
+  refactorFix_remove_reference: "Verweis entfernen", refactorFixHint_remove_reference: "",
   refactorFix_set_timeout: "Timeout bei Warteschritten ergänzen", refactorFixHint_set_timeout: "{count} Warteschritte (wait_template / wait_for_trigger) haben kein Timeout und können ewig warten: {paths}.",
   refactorTimeout: "Timeout (Sekunden)", refactorKeepGoing: "Nach Ablauf trotzdem weitermachen (Standard von Home Assistant)",
   refactorFix_set_mode: "Modus und Limit ändern", refactorFixHint_set_mode: "Jetzt: {mode}{limit}. Der Modus entscheidet, was bei einer Auslösung geschieht, während die Automation noch läuft.", refactorOverlap: "Läufe überschneiden sich bei dieser Automation.",
@@ -10520,6 +10521,7 @@ Object.assign(TEXT.en, {
   refactorFix_hint_long_delay: "Long delay", refactorFixHint_hint_long_delay: "{count} delays take five minutes or more, the longest {longest} ({paths}). A restart of Home Assistant loses them and the rest never runs. A trigger with “for” or a wait step with a time limit survives a restart. Housekeeper does not rewrite this.",
   refactorFix_hint_dead_branch: "Branch without effect", refactorFixHint_hint_dead_branch: "{count} branches of “choose” check entities that do not exist ({entities}); they never apply ({paths}). Whether to remove or repair the branch is up to you.", refactorHintOnly: "Only a hint, Housekeeper writes nothing here.",
   refactorDescription: "Description", refactorPlan: "Create plan", refactorFailed: "Plan not created: {reason}", refactorDiffBefore: "before", refactorDiffNone: "removed",
+  refactorFix_remove_reference: "Remove the reference", refactorFixHint_remove_reference: "",
   refactorFix_set_timeout: "Add a timeout to wait steps", refactorFixHint_set_timeout: "{count} wait steps (wait_template / wait_for_trigger) have no timeout and can wait forever: {paths}.",
   refactorTimeout: "Timeout (seconds)", refactorKeepGoing: "Carry on after the timeout (Home Assistant's default)",
   refactorFix_set_mode: "Change mode and limit", refactorFixHint_set_mode: "Now: {mode}{limit}. The mode decides what a trigger does while the automation is still running.", refactorOverlap: "Runs of this automation overlap.",
@@ -18023,6 +18025,9 @@ class FixMixin {
     let action = "";
     if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
     else if (w.way === "replace_target") action = `<button type="button" class="btn" data-fix-replace="${this.esc(w.target)}" data-fix-new="${this.esc(w.suggestion || "")}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button>`;
+    else if (w.way === "remove_reference") action = w.enabled
+      ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
+      : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixOpenActions")}</button>`;
@@ -18068,6 +18073,11 @@ class FixMixin {
     root.querySelectorAll("[data-fix-open]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openFix(el.dataset.fixOpen); });
     root.querySelectorAll("[data-fix-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fixObject); if (obj) { this._pendingTab = "actions"; this.openObject(obj); } });
     root.querySelectorAll("[data-fix-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.fixReplace; this.replNew = el.dataset.fixNew || ""; }));
+    root.querySelectorAll("[data-fix-remove]").forEach(el => el.onclick = async () => {
+      const f = this.data?.findings?.find(x => x.key === this.fixKey);
+      if (f) await this.newPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemove } }], "repair");
+    });
+    root.querySelectorAll("[data-fix-refactor-on]").forEach(el => el.onclick = async () => { await this._hass.callWS({ type: "ha_housekeeper/refactor_set", enabled: true }); this.loadFixWays(this.fixKey); });
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
     root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
     root.querySelectorAll("[data-fix-check]").forEach(el => el.onclick = () => { this.fixCheckedFrom = this.data?.meta?.scanned_at || ""; this.load(true); });
@@ -18090,6 +18100,7 @@ Object.assign(TEXT.de, {
   fixWay_object_actions: "Deaktivieren oder entfernen", fixWayHint_object_actions: "Die Aktionen des Objekts: deaktivieren, entfernen, austauschen, jeweils mit Vorschau.",
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen. Die Vorschau zeigt jede Stelle; Housekeeper schlägt ein ähnliches Ziel vor, wenn es eines gibt.",
   fixWay_open_editor: "Im Editor öffnen", fixWayHint_open_editor: "Die Stelle in Home Assistant selbst anpassen.", fixReplaceStart: "Ersetzen …",
+  fixWay_remove_reference: "Verweis entfernen", fixWayHint_remove_reference: "Nimmt das fehlende Ziel nur aus Ziellisten der Aktionen heraus, in denen weitere Ziele stehen bleiben. Trigger, Bedingungen und Ziele, die allein stehen, fasst Housekeeper nie an; dort bleibt der Editor. Mit Vorschau, Prüfung, Backup und Zurücknehmen.", fixRemoveStart: "Entfernen …", fixRefactorOn: "Verbessern einschalten (experimentell)",
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
@@ -18109,6 +18120,7 @@ Object.assign(TEXT.en, {
   fixWay_object_actions: "Disable or remove", fixWayHint_object_actions: "The actions of the object: disable, remove, exchange, each with a preview.",
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one. The preview shows each place; Housekeeper suggests a similar target when there is one.",
   fixWay_open_editor: "Open in the editor", fixWayHint_open_editor: "Adjust the place in Home Assistant yourself.", fixReplaceStart: "Replace …",
+  fixWay_remove_reference: "Remove the reference", fixWayHint_remove_reference: "Takes the missing target only out of target lists of the actions in which other targets stay. Housekeeper never touches triggers, conditions or a target that stands alone; the editor is for those. With preview, check, backup and undo.", fixRemoveStart: "Remove …", fixRefactorOn: "Turn on Improve (experimental)",
   fixWay_start_app: "Start the app", fixWayHint_start_app: "The app is stopped, its integration probably hangs on it. Start it in Home Assistant under Settings → Apps.",
 });
 

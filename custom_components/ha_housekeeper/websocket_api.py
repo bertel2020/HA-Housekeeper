@@ -288,7 +288,10 @@ def websocket_fix_ways(
     if finding is None:
         connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
         return
-    connection.send_result(msg["id"], {"ways": ways_for(finding, snapshot)})
+    connection.send_result(
+        msg["id"],
+        {"ways": ways_for(finding, snapshot, refactor_enabled=scanner.refactor.enabled)},
+    )
 
 
 @websocket_api.require_admin
@@ -602,6 +605,9 @@ async def _plan_from_requests(
                             int, vol.Range(min=1, max=refactor_module.TIMEOUT_MAX)
                         ),
                         vol.Optional("continue_on_timeout"): bool,
+                        vol.Optional("reference"): vol.All(
+                            str, vol.Length(max=refactor_module.REFERENCE_MAX)
+                        ),
                         vol.Optional("mode"): vol.In(refactor_module.MODES),
                         vol.Optional("max"): vol.All(
                             int, vol.Range(min=2, max=refactor_module.MAX_RUNS)

@@ -161,8 +161,16 @@ def test_the_ways_to_fix_a_broken_reference_replace_an_entity_or_open_the_editor
         "suggestions": ["sensor.new"],
     }
     ways = ways_for(entity, {})
-    assert [w["way"] for w in ways] == ["replace_target", "open_editor"]
+    assert [w["way"] for w in ways] == ["replace_target", "remove_reference", "open_editor"]
+    assert ways[1]["target"] == "sensor.old" and ways[1]["enabled"] is False
     assert ways[0]["recommended"] and ways[0]["suggestion"] == "sensor.new"
     area = {**entity, "rule_id": "automation.missing_area", "affected_object": "garden"}
-    only = ways_for(area, {})
+    assert [w["way"] for w in ways_for(area, {}, refactor_enabled=True)][-2:] == [
+        "remove_reference",
+        "open_editor",
+    ]
+    service = {**entity, "rule_id": "automation.missing_service", "affected_object": "x.y"}
+    only = ways_for(service, {})
     assert [w["way"] for w in only] == ["open_editor"] and only[0]["recommended"]
+    scene = {**entity, "rule_id": "scene.missing_entity"}
+    assert "remove_reference" not in [w["way"] for w in ways_for(scene, {})]
