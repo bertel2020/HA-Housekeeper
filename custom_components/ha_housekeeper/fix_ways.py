@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .finding_topics import DOWN
+from .finding_topics import BROKEN_REFERENCES, DOWN
 
 WAIT_STATES = ("setup_retry", "setup_in_progress")
 RESTART_STATES = ("migration_error", "failed_unload")
@@ -26,8 +26,29 @@ def _way(way: str, kind: str, recommended: bool = False, **fields: Any) -> dict[
     return {"way": way, "kind": kind, "recommended": recommended, **fields}
 
 
+def _broken_ways(finding: dict[str, Any]) -> list[dict[str, Any]]:
+    """The ways for a reference whose target is gone: replace the target (an entity), or open the editor."""
+    kind = finding["rule_id"].partition(".missing_")[2]
+    ways: list[dict[str, Any]] = []
+    if kind == "entity" and finding.get("affected_object"):
+        suggestions = finding.get("suggestions") or []
+        ways.append(
+            _way(
+                "replace_target",
+                "panel",
+                True,
+                target=finding["affected_object"],
+                suggestion=suggestions[0] if suggestions else None,
+            )
+        )
+    ways.append(_way("open_editor", "panel", not ways))
+    return ways
+
+
 def ways_for(finding: dict[str, Any], snapshot: dict[str, Any]) -> list[dict[str, Any]]:
-    """The ways for one finding of the topic "down"; other topics have none yet."""
+    """The ways for one finding of the topics "down" and "broken references"; others have none yet."""
+    if finding.get("topic") == BROKEN_REFERENCES:
+        return _broken_ways(finding)
     if finding.get("topic") != DOWN:
         return []
     rule = finding["rule_id"]
