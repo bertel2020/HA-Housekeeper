@@ -266,6 +266,41 @@ async def websocket_compare(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/visit"})
+@callback
+@with_scanner
+def websocket_visit(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The last visit of this user to the findings page and the findings as they stood then."""
+    connection.send_result(
+        msg["id"], scanner.visits.get(connection.user.id if connection.user else None)
+    )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/visit_leave"})
+@callback
+@with_scanner
+def websocket_visit_leave(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The user leaves the findings page: note the time and the findings as they stand now."""
+    snapshot = scanner.snapshot
+    if snapshot is None:
+        connection.send_result(msg["id"], None)
+        return
+    user = connection.user.id if connection.user else None
+    connection.send_result(msg["id"], scanner.visits.leave(user, snapshot, datetime.now(UTC)))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/decision_notice_dismiss"})
 @callback
 @with_scanner
@@ -1230,6 +1265,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_history_series)
     websocket_api.async_register_command(hass, websocket_ignore)
     websocket_api.async_register_command(hass, websocket_decision_notice_dismiss)
+    websocket_api.async_register_command(hass, websocket_visit)
+    websocket_api.async_register_command(hass, websocket_visit_leave)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_merge)

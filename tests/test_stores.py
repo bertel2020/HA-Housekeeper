@@ -25,6 +25,7 @@ from custom_components.ha_housekeeper.policies import PolicyStore  # noqa: E402
 from custom_components.ha_housekeeper.queries import ReplyStore  # noqa: E402
 from custom_components.ha_housekeeper.runs import RunStore  # noqa: E402
 from custom_components.ha_housekeeper.seen import FirstSeenStore  # noqa: E402
+from custom_components.ha_housekeeper.visits import VisitStore  # noqa: E402
 
 STORES = [
     (ObservationStore, const.STORAGE_KEY),
@@ -39,6 +40,7 @@ STORES = [
     (PolicyStore, const.POLICIES_STORAGE_KEY),
     (ReplyStore, const.REPLIES_STORAGE_KEY),
     (FirstSeenStore, const.FIRST_SEEN_STORAGE_KEY),
+    (VisitStore, const.VISITS_STORAGE_KEY),
 ]
 GARBAGE = [
     "text",
@@ -350,3 +352,25 @@ async def test_first_seen_marks_the_first_scan_as_before_tracking_and_forgets_wh
     store.update(set(), t2, complete=True)
     store.update({"c"}, datetime(2026, 10, 3, tzinfo=UTC), complete=True)
     assert store.get("c") == datetime(2026, 10, 3, tzinfo=UTC).isoformat(), "back again: new again"
+
+
+async def test_a_visit_records_the_findings_of_that_moment_per_user(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = VisitStore(hass)
+    await store.async_load()
+    assert store.get("u1") is None
+    snapshot = {
+        "causes": [{"finding_key": "a", "total_followers": 3}],
+        "findings": [
+            {"key": "a", "impact": "high"},
+            {"key": "b", "impact": "info"},
+            {"key": "c", "impact": "low", "ignored": True},
+            {"key": "d", "impact": "medium"},
+        ],
+    }
+    visit = store.leave("u1", snapshot, datetime(2026, 10, 22, tzinfo=UTC))
+    assert visit["state"] == {"a": ["high", 3], "d": ["medium", 0]}, (
+        "info and hidden ones are no news"
+    )
+    assert store.get("u1") == visit and store.get("u2") is None

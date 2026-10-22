@@ -146,6 +146,7 @@ from .signals import fire as signal_fire
 from .stale import StaleStore
 from .system_usage import supervisor_get, supervisor_token
 from .view_counts import view_counts
+from .visits import VisitStore
 from .watch import WATCH_KINDS, WatchStore, evaluate, make_before, next_due
 
 _LOGGER = logging.getLogger(__name__)
@@ -879,6 +880,7 @@ def storage_sizes(hass: HomeAssistant) -> dict[str, dict[str, float]]:
 STORE_NAMES = (
     "observations",
     "first_seen",
+    "visits",
     "history",
     "ignored",
     "exceptions",
@@ -918,6 +920,7 @@ class InventoryScanner:
         self.hass = hass
         self.observations = ObservationStore(hass)
         self.first_seen = FirstSeenStore(hass)
+        self.visits = VisitStore(hass)
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
         self.exceptions = ExceptionStore(hass)
