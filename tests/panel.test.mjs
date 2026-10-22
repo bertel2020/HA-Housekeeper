@@ -4923,6 +4923,31 @@ test("the overview counts batteries that report volts as low too", () => {
   assert.ok(el.lowBatteries().some(r => r.volt));
 });
 
+test("the Fix page names the ways, keeps the exits, collects what hangs on a cause and says whether it is fixed after a scan", async () => {
+  const calls = [];
+  const { el } = panel("en");
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { ways: [{ way: "wait", kind: "info", recommended: false }, { way: "open_integration", kind: "link", recommended: true, path: "/config/integrations/integration/hue" }, { way: "mark", kind: "panel", recommended: false }] }; } };
+  const f = (key, rule, extra = {}) => ({ key, rule_id: rule, object_id: key.split("|")[1], classification: "problem", topic: "down", confidence: 0.9, confidence_level: "reported", confidence_base: 0.9, confidence_notes: [], ignored: false, impact: "high", first_detected_at: "2026-10-20T00:00:00+00:00", ...extra });
+  const own = f("config_entry.not_loaded|e1|", "config_entry.not_loaded", { cause_id: "integration_down:e1" });
+  const a = f("entity.state_unavailable|s1|", "entity.state_unavailable", { cause_id: "integration_down:e1" }), b = f("entity.state_unavailable|s2|", "entity.state_unavailable", { cause_id: "integration_down:e1" });
+  const cause = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hue", finding_key: own.key, follower_count: 2, total_followers: 2, child_ids: [], consumers: {}, impact: "high", parent_id: null };
+  el.data = { ...DATA, objects: [{ object_type: "config_entry", object_id: "e1", name: "Hue" }], edges: [], causes: [cause], findings: [own, a, b] };
+  el.view = "findingsNav"; el.openFix(own.key);
+  assert.equal(el.view, "fix"); assert.equal(calls[0].type, "ha_housekeeper/fix_ways");
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const html = el.fixView();
+  assert.ok(["Understand", "Decide", "Carry out", "Check"].every(x => html.includes(x)), "four steps");
+  assert.ok(html.includes('data-ha-path="/config/integrations/integration/hue"') && html.indexOf("Look at the integration") < html.indexOf("Wait"), "the recommended way comes first");
+  assert.ok(html.includes('data-decide-preset="keep"') && html.includes('data-decide-preset="snooze"') && html.includes('data-decide-preset="ignore"'), "the three exits are always there");
+  assert.ok(html.includes('data-fix-pick="entity.state_unavailable|s1|"') && html.includes("Fix together"), "what hangs on the cause can be picked");
+  assert.ok(!html.includes("Fixed:") && !html.includes("Still open"), "no verdict before a check");
+  el.fixCheckedFrom = "old"; el.data.meta = { ...el.data.meta, scanned_at: "new" };
+  assert.ok(el.fixView().includes("Still open"));
+  el.data.findings = [a, b];
+  assert.ok(el.fixView().includes("Fixed:"));
+  assert.ok(el.rowMenu(own).includes(`data-fix-open="${own.key}"`), "the row menu starts it");
+});
+
 test("the certainty tooltip names the level, the adjustments and that it is an estimate", () => {
   const { el } = panel("en");
   assert.equal(el.certaintyText({ confidence_level: "derived", confidence_base: 0.75, confidence: 0.85, confidence_notes: [{ code: "duration", delta: 0.1, days: 12 }] }),

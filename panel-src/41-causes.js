@@ -88,7 +88,7 @@ class CausesMixin {
     return `<div class="rating"><h3 class="ratinghead">${this.t("ratingTitle")}</h3>
       <div class="rrow"><b>${this.t("sortImpact")}</b><div>${this.impactChip(level)}<div class="factnote">${reasons.map(x => this.esc(x)).join(" · ")}</div>${bar}</div></div>
       <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${Math.round((finding.confidence || 0) * 100)} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div>${finding.confidence_level ? `<div class="factnote">${this.esc(this.certaintyText(finding))}</div>` : ""}</div></div>
-      <div class="rnext">${next}</div></div>`;
+      <div class="rnext">${next}</div>${finding && !finding.ignored && finding.key ? `<div class="mbtns"><button type="button" class="btn primary" data-fix-open="${this.esc(finding.key)}"><ha-icon icon="mdi:wrench-outline"></ha-icon>${this.t("fixRowOpen")}</button></div>` : ""}</div>`;
   }
 
   // The short line of a row: the counts and, for an integration, how long it has been down; reason and log are for the detail page.
@@ -165,7 +165,8 @@ class CausesMixin {
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`) : "";
     const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))}` : "";
     const about = mark + exc;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}<hr class="menusep">`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 
   // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.
