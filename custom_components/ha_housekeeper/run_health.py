@@ -373,6 +373,43 @@ def evaluate(
     }
 
 
+RUN_RULES = {"failing": "run_failing", "never_ok": "never_ok"}
+RUN_CONFIDENCE = {"never_ok": 0.9, "failing": 0.75}  # reported by the run counts / drawn from them
+
+
+def run_findings(
+    items: dict[str, dict[str, Any]], objects: list[dict[str, Any]], now: datetime
+) -> list[dict[str, Any]]:
+    """The two judgements of the run counts that are a finding: failing again and again, never ending well.
+
+    Computed from the numbers the daily collection kept, without any query. ``run_level`` is the colour of
+    the judgement: red becomes a high impact, yellow a medium one.
+    """
+    result = evaluate(items, objects, {}, set(), [], now, None)
+    return [
+        {
+            "rule_id": f"{row['object_type']}.{RUN_RULES[found['kind']]}",
+            "object_id": row["entity_id"],
+            "classification": "problem",
+            "confidence": RUN_CONFIDENCE[found["kind"]],
+            "first_detected_at": None,
+            "run_level": found["level"],
+            "evidence": [
+                {
+                    "kind": RUN_RULES[found["kind"]],
+                    "source": "runs",
+                    "runs": row["runs"],
+                    "errors": row["errors"],
+                    "window_days": WINDOW_DAYS,
+                }
+            ],
+        }
+        for row in result["items"]
+        for found in row["findings"]
+        if found["kind"] in RUN_RULES
+    ]
+
+
 async def report(scanner: Any, snapshot: dict[str, Any] | None = None) -> RunsResult:
     """Collect the newest runs, then rate everything; reads traces and the snapshot only.
 

@@ -37,3 +37,34 @@ def test_every_rule_in_the_code_is_in_the_table() -> None:
         )
     assert found
     assert found <= set(_RULES), found - set(_RULES)
+
+
+def test_failing_runs_become_findings_with_their_impact() -> None:
+    from datetime import UTC, datetime
+
+    from custom_components.ha_housekeeper.run_health import run_findings
+    from custom_components.ha_housekeeper.runs import ERROR, FIELDS, OK, RUNS
+
+    now = datetime(2026, 10, 22, 12, tzinfo=UTC)
+
+    def day(runs: int, ok: int, errors: int) -> dict:
+        counts = [0] * FIELDS
+        counts[RUNS], counts[OK], counts[ERROR] = runs, ok, errors
+        return {"c": counts}
+
+    objects = [
+        {"object_type": "automation", "object_id": "automation.a", "name": "A"},
+        {"object_type": "script", "object_id": "script.b", "name": "B"},
+    ]
+    items = {
+        "automation.a": {"days": {"2026-10-21": day(6, 0, 6)}},
+        "script.b": {"days": {"2026-10-21": day(10, 7, 3)}},
+    }
+    from custom_components.ha_housekeeper.runs import run_key
+
+    items = {run_key(o): items[o["object_id"]] for o in objects}
+    found = {f["rule_id"]: f for f in run_findings(items, objects, now)}
+    assert found["automation.never_ok"]["run_level"] == "red"
+    assert found["automation.never_ok"]["confidence"] == 0.9
+    assert found["script.run_failing"]["run_level"] == "warn"
+    assert all(topic_of(rule) == FAILING_AUTOMATIONS for rule in found)

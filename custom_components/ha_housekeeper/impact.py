@@ -89,6 +89,12 @@ def apply_impact(
             level = max(level, aged, key=RANK.__getitem__)
         if finding["rule_id"] == REAUTH_RULE:  # nothing heals it by itself: it never starts quiet
             level = max(level, "medium", key=RANK.__getitem__)
+        if (
+            "run_level" in finding
+        ):  # red runs are high, yellow ones at least medium, as use adds to it
+            facts.append({"fact": "runs_failing", "level": finding["run_level"]})
+            floor = "high" if finding["run_level"] == "red" else "medium"
+            level = max(level, floor, key=RANK.__getitem__)
         finding["impact"], finding["impact_facts"] = level, facts[:FACT_LIMIT]
 
 

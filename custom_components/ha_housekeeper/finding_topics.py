@@ -45,7 +45,7 @@ def topic_of(rule_id: str) -> str:
     suffix = rule_id.partition(".")[2]
     if suffix.startswith("missing_"):
         return BROKEN_REFERENCES
-    if suffix in ("dead_condition", "dead_actions"):
+    if suffix in ("dead_condition", "dead_actions", "run_failing", "never_ok"):
         return FAILING_AUTOMATIONS
     return UNNEEDED
 

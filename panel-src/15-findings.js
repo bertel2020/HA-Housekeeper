@@ -81,6 +81,8 @@ class FindingsMixin {
         ? this.esc((finding.evidence?.[0]?.entities || []).slice(0, 3).join(", ") + ((finding.evidence?.[0]?.total || 0) > 3 ? " …" : ""))
       : finding.rule_id === "automation.goal_missed"
         ? this.esc(this.goalLine(finding))
+      : /\.(run_failing|never_ok)$/.test(finding.rule_id)
+        ? this.esc(this.runLine(finding))
         : finding.rule_id === "entity.stale"
         ? this.esc(this.staleLine(finding))
         : finding.affected_object
@@ -421,6 +423,12 @@ class FindingsMixin {
 
   // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after 90, hidden for good.
   defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 90 : 0; }
+
+  // What a failing automation rests on: the counts of the window.
+  runLine(f) {
+    const e = f.evidence?.[0] || {};
+    return this.t(f.rule_id.endsWith(".never_ok") ? "runLineNever" : "runLineFailing", { errors: e.errors, runs: e.runs, days: e.window_days });
+  }
 
   // A finding that is due again, as one line: what was decided, since when, and what happened since.
   dueLine(f) {

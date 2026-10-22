@@ -133,6 +133,7 @@ from .protection import ProtectionStore, protection_rules
 from .queries import ReplyStore
 from .refactor import RefactorStore
 from .reminders import ReminderStore
+from .run_health import run_findings
 from .runs import RunStore
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, ScanCoverage, retryable_gaps
 from .scan_health import ScanHealth
@@ -1633,6 +1634,7 @@ class InventoryScanner:
                     observed_at.date(), {a["object_id"] for a in automations}
                 )
             )
+            + ([] if preliminary else run_findings(self.runs.items, automations, observed_at))
             + dashboard_findings
             + helper_findings
             + group_findings

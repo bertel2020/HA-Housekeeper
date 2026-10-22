@@ -33,7 +33,7 @@ const TEXT = {
     integration_disabled: "Zugehörige Integration wurde deaktiviert",
     device_disabled: "Zugehöriges Gerät wurde deaktiviert",
     device_missing: "Zugehöriges Gerät existiert nicht mehr in der Geräte-Registry",
-    config_entry_missing: "Zugehöriger Konfigurationseintrag fehlt", "config_entry.not_loaded": "Integration nicht geladen", "config_entry.reauth": "Anmeldung nötig", "device.down": "Gerät ganz ausgefallen", "automation.blocked": "Automation kann nicht starten: alle Auslöser sind ausgefallen", "automation.dead_actions": "Automation ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "script.dead_actions": "Skript ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "automation.dead_condition": "Eine Bedingung kann nie wahr werden: ausgefallene Entität", "app.stopped_in_use": "App gestoppt, Integration hängt vermutlich daran",
+    config_entry_missing: "Zugehöriger Konfigurationseintrag fehlt", "config_entry.not_loaded": "Integration nicht geladen", "config_entry.reauth": "Anmeldung nötig", "device.down": "Gerät ganz ausgefallen", "automation.blocked": "Automation kann nicht starten: alle Auslöser sind ausgefallen", "automation.dead_actions": "Automation ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "script.dead_actions": "Skript ändert nichts: alle Aktionen zielen auf ausgefallene Entitäten", "automation.dead_condition": "Eine Bedingung kann nie wahr werden: ausgefallene Entität", "automation.run_failing": "Automation schlägt häufig fehl", "script.run_failing": "Skript schlägt häufig fehl", "automation.never_ok": "Automation endet nie erfolgreich", "script.never_ok": "Skript endet nie erfolgreich", runLineFailing: "{errors} von {runs} Läufen in {days} Tagen mit Fehler", runLineNever: "{runs} Läufe in {days} Tagen, keiner erfolgreich", "app.stopped_in_use": "App gestoppt, Integration hängt vermutlich daran",
     state_missing: "Entität ist registriert, besitzt aber keinen Zustand",
     not_provided: "Integration stellt die Entität nicht mehr bereit",
     state_unavailable: "Integration meldet den Zustand unavailable",
@@ -218,7 +218,7 @@ const TEXT = {
     integration_disabled: "Related integration was disabled",
     device_disabled: "Related device was disabled",
     device_missing: "Related device no longer exists in the device registry",
-    config_entry_missing: "Related config entry is missing", "config_entry.not_loaded": "Integration not loaded", "config_entry.reauth": "Login needed", "device.down": "Device is down completely", "automation.blocked": "Automation cannot start: all its triggers are out of order", "automation.dead_actions": "Automation changes nothing: all its actions target dead entities", "script.dead_actions": "Script changes nothing: all its actions target dead entities", "automation.dead_condition": "A condition can never be true: dead entity", "app.stopped_in_use": "App stopped, an integration probably depends on it",
+    config_entry_missing: "Related config entry is missing", "config_entry.not_loaded": "Integration not loaded", "config_entry.reauth": "Login needed", "device.down": "Device is down completely", "automation.blocked": "Automation cannot start: all its triggers are out of order", "automation.dead_actions": "Automation changes nothing: all its actions target dead entities", "script.dead_actions": "Script changes nothing: all its actions target dead entities", "automation.dead_condition": "A condition can never be true: dead entity", "automation.run_failing": "Automation fails often", "script.run_failing": "Script fails often", "automation.never_ok": "Automation never ends well", "script.never_ok": "Script never ends well", runLineFailing: "{errors} of {runs} runs in {days} days with an error", runLineNever: "{runs} runs in {days} days, none successful", "app.stopped_in_use": "App stopped, an integration probably depends on it",
     state_missing: "Entity is registered but has no state",
     not_provided: "The integration no longer provides the entity",
     state_unavailable: "Integration reports unavailable",
@@ -2837,6 +2837,8 @@ class FindingsMixin {
         ? this.esc((finding.evidence?.[0]?.entities || []).slice(0, 3).join(", ") + ((finding.evidence?.[0]?.total || 0) > 3 ? " …" : ""))
       : finding.rule_id === "automation.goal_missed"
         ? this.esc(this.goalLine(finding))
+      : /\.(run_failing|never_ok)$/.test(finding.rule_id)
+        ? this.esc(this.runLine(finding))
         : finding.rule_id === "entity.stale"
         ? this.esc(this.staleLine(finding))
         : finding.affected_object
@@ -3177,6 +3179,12 @@ class FindingsMixin {
 
   // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after 90, hidden for good.
   defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 90 : 0; }
+
+  // What a failing automation rests on: the counts of the window.
+  runLine(f) {
+    const e = f.evidence?.[0] || {};
+    return this.t(f.rule_id.endsWith(".never_ok") ? "runLineNever" : "runLineFailing", { errors: e.errors, runs: e.runs, days: e.window_days });
+  }
 
   // A finding that is due again, as one line: what was decided, since when, and what happened since.
   dueLine(f) {
