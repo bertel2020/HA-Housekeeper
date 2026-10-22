@@ -39,6 +39,7 @@ from .battery_care import BatteryStore
 from .battery_kind import apply_battery_kinds
 from .blueprints import async_available, blueprint_path, missing_blueprint_findings
 from .causes import apply_causes, device_down_findings
+from .certainty import apply_certainty
 from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
 from .cleanup_exec import CleanupRunner
 from .config_changes import ChangeStore, fingerprint
@@ -1727,6 +1728,7 @@ class InventoryScanner:
         causes = apply_causes(objects, edges, findings)
         if not preliminary:
             causes = self._review_decisions(objects, edges, findings, causes)
+        apply_certainty(findings, causes)
 
         lap("analysis")
         self.status.update(phase="finalizing", progress=90)
