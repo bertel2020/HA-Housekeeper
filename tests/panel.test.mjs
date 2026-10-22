@@ -6916,7 +6916,9 @@ test("the first cleanup is offered, opens each stage as a list filter and puts t
   let html = el.wizardView();
   assert.equal(el.fcWiz.step, 1, "a begun cleanup goes on at its stage");
   assert.ok(html.includes("Stage 1 of 5") && html.includes("Outages with many follow-ups") && html.includes("1 open in this stage"));
+  assert.ok(html.includes("data-fc-keep") && html.includes("data-fc-snooze") && html.includes("1 of 1"), "a stage shows one card with the answers");
   el.fcWizSet(3);
+  el.fcLook(true);
   assert.equal(el.view, "findingsNav");
   assert.deepEqual(el.visibleFindings().map(x => x.key), ["b"], "the list shows only the stage");
   assert.ok(!el.findingsView().includes("data-fc-open"), "inside the tour the list carries no entry to it");

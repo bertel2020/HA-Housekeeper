@@ -1743,7 +1743,7 @@ class StylesMixin {
       .ibar{display:flex;gap:2px;height:6px;margin-top:6px;border-radius:3px;overflow:hidden}.ibar i{display:block;min-width:4px;border-radius:2px;background:var(--hk-muted)}.ibar .high{background:var(--hk-red)}.ibar .medium{background:var(--hk-amber)}.ibar .low{background:var(--hk-blue)}
       .findsum.topics{grid-template-rows:auto}.findsum.topics .sumall{grid-row:1;margin-top:0}.findsum.topics .sumrow>.sumtile{grid-row:1}.chipsep{width:1px;align-self:stretch;background:var(--hk-border);margin:0 4px}.fnotes{flex-wrap:wrap;gap:6px}.fchip{display:inline-flex;gap:4px;align-items:center}.fchip ha-icon{--mdc-icon-size:14px}
       .spacebox{padding:4px 0 10px 22px}.spacehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0}.spacehead .factnote{margin:0}.spacehead .btn{flex:none}.spacekeys{padding:4px 0 10px 12px}.spaceacts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.spacechev{--mdc-icon-size:18px;color:var(--hk-muted);vertical-align:middle;margin-right:4px;float:left}
-      .fctop{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}.fcsteps{display:flex;align-items:center;gap:0}.fcstep{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:2px solid var(--hk-border);border-radius:50%;background:var(--hk-surface);color:var(--hk-muted);font:inherit;font-size:calc(13px*var(--hk-fs,1))}button.fcstep{cursor:pointer}button.fcstep:hover{border-color:var(--hk-blue)}.fcstep.done{border-color:var(--hk-green);color:var(--hk-green)}.fcstep.cur{border-color:var(--hk-blue);background:var(--hk-blue);color:#fff}.fcline{display:block;width:28px;height:2px;background:var(--hk-border)}.fccounter{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fceyebrow{color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.fchead h2{margin:2px 0 4px}.fchead p{margin:0;color:var(--hk-muted)}.fcleft{margin-left:8px;color:var(--hk-muted);font-size:calc(14px*var(--hk-fs,1));font-weight:400}.fcpanel .pad>p{margin:0 0 12px}.fcpanel .mbtns{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 0}.fcpanel .pad>.mbtns:first-child{margin-top:0}.fcfoot{position:sticky;bottom:8px;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px}@media(max-width:600px){.fcfoot{position:static}}.fcprogress{flex:1;text-align:center;color:var(--hk-muted);min-width:120px}.fclist{margin:12px 0;padding-left:20px;display:grid;gap:8px}.fclist small{display:block;color:var(--hk-muted)}.fcdays{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.fcdays input{width:80px;padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
+      .fctop{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}.fcsteps{display:flex;align-items:center;gap:0}.fcstep{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:2px solid var(--hk-border);border-radius:50%;background:var(--hk-surface);color:var(--hk-muted);font:inherit;font-size:calc(13px*var(--hk-fs,1))}button.fcstep{cursor:pointer}button.fcstep:hover{border-color:var(--hk-blue)}.fcstep.done{border-color:var(--hk-green);color:var(--hk-green)}.fcstep.cur{border-color:var(--hk-blue);background:var(--hk-blue);color:#fff}.fcline{display:block;width:28px;height:2px;background:var(--hk-border)}.fccounter{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fceyebrow{color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.fchead h2{margin:2px 0 4px}.fchead p{margin:0;color:var(--hk-muted)}.fcleft{margin-left:8px;color:var(--hk-muted);font-size:calc(14px*var(--hk-fs,1));font-weight:400}.fcpanel .pad>p{margin:0 0 12px}.fcpanel .mbtns{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 0}.fcpanel .pad>.mbtns:first-child{margin-top:0}.fcfoot{position:sticky;bottom:8px;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px}@media(max-width:600px){.fcfoot{position:static}}.fccard h3{margin:4px 0 2px;font-size:calc(20px*var(--hk-fs,1))}.fcwhat{margin:4px 0}.fcfacts{margin:0 0 14px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fcacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.fcact{display:grid;gap:4px;text-align:left;padding:12px 14px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);color:inherit;font:inherit;cursor:pointer}.fcact:hover{border-color:var(--hk-blue)}.fcact strong{font-size:calc(15px*var(--hk-fs,1))}.fcact small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fcact.primary{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface))}.fcmore{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.fcprogress{flex:1;text-align:center;color:var(--hk-muted);min-width:120px}.fclist{margin:12px 0;padding-left:20px;display:grid;gap:8px}.fclist small{display:block;color:var(--hk-muted)}.fcdays{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.fcdays input{width:80px;padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
       ${this.themeCss()}
     </style>`;
   }
@@ -9133,15 +9133,8 @@ class OftenMixin {
     return [...out.values()].sort((a, b) => b.hides - a.hides || a.key.localeCompare(b.key));
   }
 
-  // The card above the findings list: a fold with the count in its head, inside a list like every other one. Picked
-  // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
-  oftenCard() {
-    this.ensureStability?.();
-    const items = this.oftenSuggestions();
-    if (!items.length) return "";
-    const open = this.foldOpen("often", false), sel = (this.oftenSel ||= new Set());
-    for (const key of [...sel]) if (!items.some(s => s.key === key)) sel.delete(key);
-    const rows = items.map(({ key, often, hides }) => {
+  // One suggestion as a row: the object or group, the pattern in words, how many findings it hides.
+  oftenRowOf({ key, often, hides }) {
       const group = key.startsWith("group:"), link = group ? `device:${key.slice(6)}` : key, item = this.findObject(link), w = this.oftenWindow(often.info);
       const members = group ? this.oftenMembers(key) : [];
       const names = members.slice(0, 3).map(e => this.findObject(`entity:${e}`)?.name || e).join(", ") + (members.length > 3 ? " …" : "");
@@ -9150,7 +9143,17 @@ class OftenMixin {
       const restText = rest ? (rest === 1 ? this.t("oftenRest1") : this.t("oftenRest", { n: this.formatNumber(rest) })) : "";
       const title = group ? this.t("oftenGroup", { device: item?.name || link, n: this.formatNumber(members.length) }) : item?.name || key;
       return { key, link, type: item?.object_type || "entity", title, id: group ? names : link.split(":").slice(1).join(":"), note: restText, pattern: w ? this.t("oftenChipAt", w) : this.t("oftenChip"), hides };
-    });
+  }
+
+  // The card above the findings list: a fold with the count in its head, inside a list like every other one. Picked
+  // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
+  oftenCard() {
+    this.ensureStability?.();
+    const items = this.oftenSuggestions();
+    if (!items.length) return "";
+    const open = this.foldOpen("often", false), sel = (this.oftenSel ||= new Set());
+    for (const key of [...sel]) if (!items.some(s => s.key === key)) sel.delete(key);
+    const rows = items.map(s => this.oftenRowOf(s));
     const menu = r => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-often-take="${this.esc(r.key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("oftenTake")}</button><button type="button" class="menuitem" data-often-skip="${this.esc(r.key)}"><ha-icon icon="mdi:close"></ha-icon>${this.t("oftenSkip")}</button></div></details>`;
     const shown = this.selOnly?.often ? rows.filter(r => sel.has(r.key)) : rows;
     const list = this.sysList("often", shown, {
@@ -18385,7 +18388,9 @@ class FirstCleanupMixin {
   stageKeys(n) { return new Set(this.fc?.stages?.[String(n)] || []); }
 
   // Where the stages stand: open findings left in the lists (stage 2 counts the suggestions of the card).
-  stageCount(n) { return n === 2 ? (this.oftenSuggestions?.() || []).length : this.stageKeys(n).size; }
+  stageOpen(n) { const keys = this.stageKeys(n); return (this.data?.findings || []).filter(f => !f.ignored && keys.has(f.key)); }
+
+  stageCount(n) { return n === 2 ? (this.oftenSuggestions?.() || []).length : this.stageOpen(n).length; }
 
   openFirstCleanup() {
     this.noteJump("firstcleanup");
@@ -18433,7 +18438,12 @@ class FirstCleanupMixin {
     this.view = n === 4 ? "round" : n === 0 || n === 6 ? "firstcleanup" : "findingsNav";
     if (n === 4) { this.round = { rows: null, picked: new Set(), error: "" }; this.loadRound(); }
     else if (n === 2) (this.folds ||= {}).often = true;
-    else if (n === 1 || n === 3) this.findingStage = n;
+  }
+
+  // "As a list": the plain list (or card of suggestions) of the stage instead of the cards.
+  fcLook(on) {
+    this.fcWiz.look = on; this.findingStage = on && [1, 3, 5].includes(this.fcWiz.step) ? this.fcWiz.step : 0;
+    this.pages = {}; this.render();
   }
 
   fcWizGo(n, record = true) {
@@ -18477,8 +18487,9 @@ class FirstCleanupMixin {
   }
 
   fcFinish() {
-    const state = this.fc.state, left = this.data.findings.filter(f => !f.ignored).length;
-    return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("fcFinishTitle")}</strong><br>${this.t("fcFinishText", { start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</div><div class="pad mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-goto="5">${this.t("fcBack")}</button></div></section>`;
+    const state = this.fc.state, left = this.data.findings.filter(f => !f.ignored).length, tally = this.fcTally;
+    const summary = tally && (tally.keep || tally.later || tally.marked) ? this.t("fcSummary", { keep: this.formatNumber(tally.keep), later: this.formatNumber(tally.later), marked: this.formatNumber(tally.marked) }) : "";
+    return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("fcFinishTitle")}</strong><br>${this.t("fcFinishText", { start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}${summary ? `<br><small>${this.esc(summary)}</small>` : ""}</div><div class="pad mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-goto="5">${this.t("fcBack")}</button></div></section>`;
   }
 
   // Stage 5 asks one question; "Look first" shows the list of the stage in the same frame.
@@ -18486,6 +18497,88 @@ class FirstCleanupMixin {
     if (!count) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`;
     const days = this.esc(this.fcDays ?? this.fc.later_days);
     return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcLaterAsk", { n: this.formatNumber(count) })}</p><div class="mbtns"><button type="button" class="btn primary" data-fc-later>${this.t("fcLaterGo", { n: this.formatNumber(count) })}</button><label class="fcdays">${this.t("fcLaterDays")} <input type="number" min="1" max="3650" value="${days}" data-fc-days></label><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcLook")}</button></div></div></section>`;
+  }
+
+  fcEmpty() { return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`; }
+
+  fcFollowers(f) { return this.causeList().find(c => c.finding_key === f.key)?.total_followers || 0; }
+
+  // The findings of a stage still to be looked at, the worst first (stage 1: the most follow-ups first).
+  fcQueue(n) {
+    return this.stageOpen(n).filter(f => !this.fcSkip.has(f.key))
+      .sort((a, b) => (n === 1 ? this.fcFollowers(b) - this.fcFollowers(a) : 0) || this.impactScore(b) - this.impactScore(a) || a.key.localeCompare(b.key));
+  }
+
+  // "3 of 19": the total is what the stage held when it was first seen; every decision and every skip moves on.
+  fcPosition(n, left) {
+    const total = (this.fcTotal ||= {});
+    total[n] = Math.max(total[n] || 0, left);
+    return this.t("fcCardOf", { n: this.formatNumber(total[n] - left + 1), total: this.formatNumber(total[n]) });
+  }
+
+  // One action of a card: what it is called and, in a line, what it does.
+  fcAct(attr, label, hint, primary = false) {
+    return `<button type="button" class="fcact${primary ? " primary" : ""}" ${attr}><strong>${label}</strong><small>${hint}</small></button>`;
+  }
+
+  // The cards of stage 1 and 3: one finding at a time with the three answers and what each one does.
+  fcCards(n) {
+    this.fcSkip ||= new Set();
+    const queue = this.fcQueue(n), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
+    if (!queue.length) {
+      const rest = this.stageCount(n);
+      return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div>${rest ? `<div class="pad mbtns"><button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}</div>` : ""}</section>`;
+    }
+    const f = queue[0], key = this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
+    const follows = this.fcFollowers(f), facts = [this.impactLine(f), f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : ""].filter(Boolean);
+    const acts = [
+      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), true) : "",
+      this.fcAct(`data-fc-keep="${this.esc(f.key)}"`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") })),
+      this.fcAct(`data-fc-snooze="${this.esc(f.key)}"`, this.t("fcLater"), this.t("fcLaterHint", { days })),
+    ].join("");
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><h3>${this.esc(obj?.name || f.object_id)}</h3><p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong>${follows ? ` · ${this.t(follows === 1 ? "fcFollows1" : "fcFollows", { n: this.formatNumber(follows) })}` : ""}</p><p class="fcfacts">${this.esc(facts.join(" · "))}</p><div class="fcacts">${acts}</div><div class="fcmore"><button type="button" class="btn quiet" data-fc-skipcard="${this.esc(f.key)}">${this.t("fcSkipCard")}</button>${listBtn}</div></div></section>`;
+  }
+
+  // Stage 2: one suggestion at a time; the mark is set from the card.
+  fcOftenStep(count) {
+    const items = this.oftenSuggestions?.() || [];
+    if (!items.length) return this.fcEmpty();
+    const r = this.oftenRowOf(items[0]), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
+    const all = items.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(items.length) })}</button>` : "";
+    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), true) + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"));
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.esc(r.title)}</h3><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${all}${listBtn}</div></div></section>`;
+  }
+
+  async fcTake(keys) {
+    const marks = keys.reduce((n, k) => n + (k.startsWith("group:") ? this.oftenMembers(k).length : 1), 0);
+    await this.takeOften(keys);
+    (this.fcTally ||= { keep: 0, later: 0, marked: 0 }).marked += marks;
+  }
+
+  fcTakeAll() {
+    const items = this.oftenSuggestions?.() || [], keys = items.map(s => s.key);
+    if (!keys.length) return;
+    const hides = items.reduce((n, s) => n + s.hides, 0), marks = items.reduce((n, s) => n + (s.key.startsWith("group:") ? this.oftenMembers(s.key).length : 1), 0);
+    this.confirmAsk(this.t("oftenAllText", { n: this.formatNumber(marks), hides: this.formatNumber(hides) }), () => this.fcTake(keys), { title: this.t("oftenAllTitle"), yes: this.t("oftenTake"), danger: false });
+  }
+
+  // "Intended" or "Later" straight from the card; the card of the next finding follows.
+  async fcDecide(key, kind) {
+    const f = this.data.findings.find(x => x.key === key);
+    if (!f) return;
+    const days = kind === "snooze" ? (this.fc?.later_days || 90) : this.defaultDays("keep"), reason = this.t(kind === "snooze" ? "fcLaterOneReason" : "fcKeepReason");
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason, days });
+      f.ignored = true; f.ignored_by = "user"; f.resurfaced = false;
+      f.ignore_info = { kind, reason, until: new Date(Date.now() + days * 864e5).toISOString(), at: new Date().toISOString() };
+      this._rev++;
+      const tally = (this.fcTally ||= { keep: 0, later: 0, marked: 0 });
+      if (kind === "keep") tally.keep += 1; else tally.later += 1;
+      this.render();
+      await this.reloadAfterDecision();
+      return;
+    } catch (err) { this.failed(err); }
+    this.render();
   }
 
   wizardView() {
@@ -18499,14 +18592,15 @@ class FirstCleanupMixin {
     const counter = `<span class="fccounter">${this.t("fcCounter", { start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</span>`;
     const top = `<div class="fctop">${this.fcStepper(n)}${counter}</div>`;
     if (n === 6) return `<div class="stack">${error}${top}${this.fcFinish()}</div>`;
-    const count = this.stageCount(n), look = n === 5 && this.fcWiz.look;
+    const count = this.stageCount(n);
     const head = `<section class="panel fchead"><div class="pad"><small class="fceyebrow">${this.t("fcStageOf", { n })}</small><h2>${this.t(`fcStage${n}`)} <span class="fcleft">${this.t("fcLeft", { n: this.formatNumber(count) })}</span></h2><p>${this.t(`fcStage${n}Hint`)}</p></div></section>`;
+    const look = this.fcWiz.look && n !== 4;
     let body;
     if (n === 4) body = this.roundView();
-    else if (n === 2) body = this.oftenCard() || `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`;
-    else if (n === 5 && !look) body = this.fcLaterCard(count);
-    else body = this.findingsView();
-    const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t("fcLookOff")}</button>` : "";
+    else if (n === 2) body = look ? this.oftenCard() || this.fcEmpty() : this.fcOftenStep(count);
+    else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
+    else body = look ? this.findingsView() : this.fcCards(n);
+    const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : "fcToCards")}</button>` : "";
     const next = count
       ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
       : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
@@ -18515,15 +18609,21 @@ class FirstCleanupMixin {
   }
 
   bindFirstCleanup(root) {
-    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
+    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcSkip = new Set(); this.fcTotal = {}; this.fcTally = { keep: 0, later: 0, marked: 0 }; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
     root.querySelectorAll("[data-fc-goto]").forEach(el => el.onclick = () => this.fcWizGo(Number(el.dataset.fcGoto), Number(el.dataset.fcGoto) >= 1 && Number(el.dataset.fcGoto) <= 5));
     root.querySelector("[data-fc-next]")?.addEventListener("click", () => this.fcWizNext());
     root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
-    root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => {
-      this.fcWiz.look = el.dataset.fcLook === "1"; this.findingStage = this.fcWiz.look ? 5 : 0; this.pages = {}; this.render();
-    });
+    root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
+    root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(el.dataset.fcKeep, "keep"));
+    root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(el.dataset.fcSnooze, "snooze"));
+    root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
+    root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => { this.fcSkip.add(el.dataset.fcSkipcard); this.render(); });
+    root.querySelector("[data-fc-again]")?.addEventListener("click", () => { this.fcSkip.clear(); this.render(); });
+    root.querySelectorAll("[data-fc-take]").forEach(el => el.onclick = () => this.fcTake([el.dataset.fcTake]));
+    root.querySelectorAll("[data-fc-oskip]").forEach(el => el.onclick = () => this.skipOften(el.dataset.fcOskip));
+    root.querySelector("[data-fc-takeall]")?.addEventListener("click", () => this.fcTakeAll());
     root.querySelector("[data-fc-days]")?.addEventListener("change", e => { this.fcDays = Math.max(1, Math.min(3650, Number(e.target.value) || this.fc.later_days)); });
     root.querySelector("[data-fc-later]")?.addEventListener("click", () => this.fcLater());
   }
@@ -18531,12 +18631,13 @@ class FirstCleanupMixin {
   // Stage 5: the rest goes to "Later" with a date; it comes back through "Due". Housekeeper's own list only.
   fcLater() {
     const n = this.stageCount(5), days = this.fcDays ?? this.fc.later_days;
-    if (n) this.confirmAsk(this.t("fcLaterConfirm", { n: this.formatNumber(n), days }), () => this.fcLaterRun(days), { title: this.t("fcLaterTitle"), yes: this.t("fcLaterYes"), danger: false });
+    if (n) this.confirmAsk(this.t("fcLaterConfirm", { n: this.formatNumber(n), days }), () => this.fcLaterRun(days, n), { title: this.t("fcLaterTitle"), yes: this.t("fcLaterYes"), danger: false });
   }
 
-  async fcLaterRun(days) {
+  async fcLaterRun(days, n = this.stageCount(5)) {
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup_later", days, reason: this.t("fcLaterReason") });
+      (this.fcTally ||= { keep: 0, later: 0, marked: 0 }).later += n;
       this.fc = { ...reply, error: "" };
       await this.refreshData?.();
     } catch (err) { this.fc = { ...this.fc, error: this.errText(err) }; }
@@ -18544,7 +18645,14 @@ class FirstCleanupMixin {
   }
 }
 Object.assign(TEXT.de, {
-  fcStageOf: "Etappe {n} von 5", fcSkip: "Überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Rundgang beenden",
+  fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
+  fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
+  fcKeepReason: "Im ersten Aufräumen als gewollt bestätigt", fcLaterOneReason: "Im ersten Aufräumen zurückgestellt", fcSkipCard: "Diesen überspringen", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
+  fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
+  fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
+  fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
+  fcSummary: "{keep} bleiben bewusst · {later} zurückgestellt · {marked} Vermerke angelegt",
+  fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Rundgang beenden",
   fcLeft: "{n} offen", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
   fcCounter: "Begonnen mit {start}, jetzt {now} offen", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
@@ -18563,7 +18671,14 @@ Object.assign(TEXT.de, {
   fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage",  fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
-  fcStageOf: "Stage {n} of 5", fcSkip: "Skip", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "End the tour",
+  fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
+  fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
+  fcKeepReason: "Confirmed as intended in the first cleanup", fcLaterOneReason: "Put off in the first cleanup", fcSkipCard: "Skip this one", fcAsList: "View as list", fcToCards: "Back to the cards",
+  fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
+  fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
+  fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
+  fcSummary: "{keep} kept on purpose · {later} put off · {marked} marks set",
+  fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "End the tour",
   fcLeft: "{n} open", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
   fcCounter: "Started with {start}, {now} open now", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",

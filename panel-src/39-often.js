@@ -106,15 +106,8 @@ class OftenMixin {
     return [...out.values()].sort((a, b) => b.hides - a.hides || a.key.localeCompare(b.key));
   }
 
-  // The card above the findings list: a fold with the count in its head, inside a list like every other one. Picked
-  // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
-  oftenCard() {
-    this.ensureStability?.();
-    const items = this.oftenSuggestions();
-    if (!items.length) return "";
-    const open = this.foldOpen("often", false), sel = (this.oftenSel ||= new Set());
-    for (const key of [...sel]) if (!items.some(s => s.key === key)) sel.delete(key);
-    const rows = items.map(({ key, often, hides }) => {
+  // One suggestion as a row: the object or group, the pattern in words, how many findings it hides.
+  oftenRowOf({ key, often, hides }) {
       const group = key.startsWith("group:"), link = group ? `device:${key.slice(6)}` : key, item = this.findObject(link), w = this.oftenWindow(often.info);
       const members = group ? this.oftenMembers(key) : [];
       const names = members.slice(0, 3).map(e => this.findObject(`entity:${e}`)?.name || e).join(", ") + (members.length > 3 ? " …" : "");
@@ -123,7 +116,17 @@ class OftenMixin {
       const restText = rest ? (rest === 1 ? this.t("oftenRest1") : this.t("oftenRest", { n: this.formatNumber(rest) })) : "";
       const title = group ? this.t("oftenGroup", { device: item?.name || link, n: this.formatNumber(members.length) }) : item?.name || key;
       return { key, link, type: item?.object_type || "entity", title, id: group ? names : link.split(":").slice(1).join(":"), note: restText, pattern: w ? this.t("oftenChipAt", w) : this.t("oftenChip"), hides };
-    });
+  }
+
+  // The card above the findings list: a fold with the count in its head, inside a list like every other one. Picked
+  // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
+  oftenCard() {
+    this.ensureStability?.();
+    const items = this.oftenSuggestions();
+    if (!items.length) return "";
+    const open = this.foldOpen("often", false), sel = (this.oftenSel ||= new Set());
+    for (const key of [...sel]) if (!items.some(s => s.key === key)) sel.delete(key);
+    const rows = items.map(s => this.oftenRowOf(s));
     const menu = r => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-often-take="${this.esc(r.key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("oftenTake")}</button><button type="button" class="menuitem" data-often-skip="${this.esc(r.key)}"><ha-icon icon="mdi:close"></ha-icon>${this.t("oftenSkip")}</button></div></details>`;
     const shown = this.selOnly?.often ? rows.filter(r => sel.has(r.key)) : rows;
     const list = this.sysList("often", shown, {
