@@ -6863,3 +6863,16 @@ test("the cleanup round sorts what the backend judged and keeps with the decisio
   const kinds = calls.map(c => c.type.split("/")[1] + (c.kind ? `:${c.kind}` : ""));
   assert.ok(kinds.includes("ignore:keep") && kinds.includes("mark_set:keep"));
 });
+
+test("a finding someone started to fix is in work, and an expired start leaves a note", async () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [] }; el.journal = [];
+  const f = { key: "k", rule_id: "entity.state_unavailable", object_id: "sensor.a", in_work: { started_at: "2026-10-20T10:00:00+00:00", progress_at: "2026-10-20T10:00:00+00:00" } };
+  assert.ok(el.inWork(f) && !el.inWork({ ...f, in_work: undefined }) && !el.inWork({ ...f, ignored: true }));
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { in_work: null, work_expired: { started_at: "2026-10-01T10:00:00+00:00" } }; } };
+  el.data.findings = [{ ...f }]; el.fixKey = "k"; el.view = "fix"; el.render = () => {};
+  await el.fixWork(false);
+  assert.equal(calls[0].active, false);
+  assert.ok(!el.data.findings[0].in_work && el.data.findings[0].work_expired);
+});

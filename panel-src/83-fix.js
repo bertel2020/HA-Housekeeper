@@ -22,6 +22,18 @@ class FixMixin {
     } catch (_) { /* the last run is a convenience; the ways stand without it */ }
   }
 
+  // A step on a way is "in work": the finding stays open but is marked, and goes back after a week without a step.
+  async fixWork(active) {
+    const f = this.data?.findings?.find(x => x.key === this.fixKey);
+    if (!f) return;
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/work_set", finding_key: f.key, active });
+      f.in_work = reply?.in_work || undefined; f.work_expired = reply?.work_expired || undefined;
+      this._rev++;
+      if (this.view === "fix") this.render();
+    } catch (_) { /* a note of progress is a convenience */ }
+  }
+
   // Step 1: what is wrong, since when, what it affects, how sure Housekeeper is.
   fixUnderstand(f) {
     const cause = f.cause_id ? this.causeById(f.cause_id) : this.causeList().find(c => c.finding_key === f.key);
@@ -29,6 +41,7 @@ class FixMixin {
     const pattern = (f.confidence_notes || []).find(n => n.code === "pattern");
     const rows = [
       [this.t("fixWhat"), this.esc(this.findingTitle(f))],
+      f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) }))] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) }))] : null,
       since ? [this.t("sortSince"), this.esc(this.formatDate(since))] : null,
       f.impact ? [this.t("sortImpact"), this.esc(this.impactLine(f))] : null,
       cause && !own ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name }))] : null,
@@ -97,7 +110,7 @@ class FixMixin {
   fixCheck(f) {
     const checked = this.fixCheckedFrom && this.data?.meta?.scanned_at !== this.fixCheckedFrom;
     const verdict = !checked ? "" : f ? this.notice("warn", this.t("fixStillOpen")) : this.notice("info", this.t("fixDone"));
-    return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button></div>${verdict}`;
+    return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button>${f?.in_work ? `<button type="button" class="btn quiet" data-fix-work-off>${this.t("fixWorkOff")}</button>` : ""}</div>${verdict}`;
   }
 
   fixView() {
@@ -127,6 +140,8 @@ class FixMixin {
     root.querySelectorAll("[data-fix-refactor-on]").forEach(el => el.onclick = async () => { await this._hass.callWS({ type: "ha_housekeeper/refactor_set", enabled: true }); this.loadFixWays(this.fixKey); });
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
     root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
+    root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
+    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
     root.querySelectorAll("[data-fix-check]").forEach(el => el.onclick = () => { this.fixCheckedFrom = this.data?.meta?.scanned_at || ""; this.load(true); });
   }
 }
@@ -148,6 +163,7 @@ Object.assign(TEXT.de, {
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen: bei einer Entität mit einem ähnlichen Vorschlag, bei Bereich, Etage und Label nach deiner Wahl (nur dort, wo der Schlüssel dafür steht). Die Vorschau zeigt jede Stelle.",
   fixWay_open_editor: "Im Editor öffnen", fixWayHint_open_editor: "Die Stelle in Home Assistant selbst anpassen.", fixReplaceStart: "Ersetzen …", fixReplaceWith: "Ersetzen durch", fixReplaceNone: "Es gibt kein anderes Ziel dieser Art, auf das sich umstellen ließe.",
   fixWay_remove_reference: "Verweis entfernen", fixWayHint_remove_reference: "Nimmt das fehlende Ziel nur aus Ziellisten der Aktionen heraus, in denen weitere Ziele stehen bleiben. Trigger, Bedingungen und Ziele, die allein stehen, fasst Housekeeper nie an; dort bleibt der Editor. Mit Vorschau, Prüfung, Backup und Zurücknehmen.", fixRemoveStart: "Entfernen …", fixRefactorOn: "Verbessern einschalten (experimentell)",
+  fixWorkSince: "angefangen am {date}", fixWorkOff: "Nicht mehr bearbeiten",
   fixLastFailure: "Letzter Fehler", fixFailureStep: "bei {step}", fixFailureHint: "Hinweis", fixFailureHintText: "Der Fehlertext nennt {entity}, und die ist ausgefallen. Eine sichere Zuordnung ist das nicht.", fixToFinding: "Zum Befund",
   fixWay_fix_cause: "Erst die Ursache beheben", fixWayHint_fix_cause: "Die Automation scheitert, weil etwas darunter ausgefallen ist. Ist die Ursache behoben, läuft sie von selbst wieder.",
   fixWay_catch_error: "Fehler abfangen", fixWayHint_catch_error: "Setzt „bei Fehler weitermachen“ nur an der einen Aktion, die zuletzt gescheitert ist, nie für die ganze Automation. Der Fehler erscheint danach nicht mehr in den Läufen, und der Rest läuft weiter. Mit Vorschau, Prüfung, Backup und Zurücknehmen.", fixCatchStart: "Abfangen …", fixCatchNoStep: "Dafür braucht es einen letzten Fehler im Ablaufprotokoll von Home Assistant; der ist gerade nicht da.",
@@ -171,6 +187,7 @@ Object.assign(TEXT.en, {
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one: for an entity with a similar one proposed, for an area, floor or label as you choose (only where the key for it stands). The preview shows each place.",
   fixWay_open_editor: "Open in the editor", fixWayHint_open_editor: "Adjust the place in Home Assistant yourself.", fixReplaceStart: "Replace …", fixReplaceWith: "Replace with", fixReplaceNone: "There is no other target of this kind to move to.",
   fixWay_remove_reference: "Remove the reference", fixWayHint_remove_reference: "Takes the missing target only out of target lists of the actions in which other targets stay. Housekeeper never touches triggers, conditions or a target that stands alone; the editor is for those. With preview, check, backup and undo.", fixRemoveStart: "Remove …", fixRefactorOn: "Turn on Improve (experimental)",
+  fixWorkSince: "started on {date}", fixWorkOff: "Stop working on it",
   fixLastFailure: "Last failure", fixFailureStep: "at {step}", fixFailureHint: "Hint", fixFailureHintText: "The error text names {entity}, and that is down. It is no safe attribution.", fixToFinding: "Go to the finding",
   fixWay_fix_cause: "Fix the cause first", fixWayHint_fix_cause: "The automation fails because something below it is down. Once the cause is fixed, it runs again by itself.",
   fixWay_catch_error: "Catch the error", fixWayHint_catch_error: "Sets “continue on error” only on the one action that failed last, never for the whole automation. Afterwards the error no longer shows in the runs, and the rest keeps running. With preview, check, backup and undo.", fixCatchStart: "Catch …", fixCatchNoStep: "This needs a last failure in Home Assistant's trace buffer; there is none right now.",

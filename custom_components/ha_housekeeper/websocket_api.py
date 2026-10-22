@@ -383,6 +383,42 @@ async def websocket_cleanup_round(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/work_set",
+        vol.Required("finding_key"): str,
+        vol.Required("active"): bool,
+    }
+)
+@callback
+@with_scanner
+def websocket_work_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Note a step on the Fix page of a finding ("In work"), or give up on it. Hides nothing."""
+    finding = next(
+        (f for f in (scanner.snapshot or {}).get("findings", []) if f["key"] == msg["finding_key"]),
+        None,
+    )
+    if finding is None:
+        connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
+        return
+    if msg["active"]:
+        scanner.work.start(finding["key"], datetime.now(UTC))
+    else:
+        scanner.work.clear(finding["key"])
+    finding.pop("in_work", None)
+    finding.pop("work_expired", None)
+    scanner._mark_work(finding)
+    connection.send_result(
+        msg["id"], {"in_work": finding.get("in_work"), "work_expired": finding.get("work_expired")}
+    )
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/visit_leave"})
 @callback
 @with_scanner
@@ -1377,6 +1413,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_ignore)
     websocket_api.async_register_command(hass, websocket_decision_notice_dismiss)
     websocket_api.async_register_command(hass, websocket_visit_leave)
+    websocket_api.async_register_command(hass, websocket_work_set)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
     websocket_api.async_register_command(hass, websocket_failure_info)

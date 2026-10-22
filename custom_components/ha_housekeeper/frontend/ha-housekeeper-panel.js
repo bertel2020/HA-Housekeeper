@@ -2853,7 +2853,7 @@ class FindingsMixin {
         : finding.affected_object
           ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.hiddenWhy(finding)}` : ""}${finding.resurfaced ? ` · ${this.esc(this.dueLine(finding))}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
+    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.hiddenWhy(finding)}` : ""}${finding.resurfaced ? ` · ${this.esc(this.dueLine(finding))}` : ""}${finding.work_expired ? ` · ${this.esc(this.t("workExpired", { date: this.formatDate(finding.work_expired.started_at) }))}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
   }
 
   // pick = false outside the findings list: there is no bar for the actions on a selection there.
@@ -11436,7 +11436,7 @@ class FindingStatusMixin {
   // The findings the vacation mode holds back right now or until its grace ends: what the vacation bar counts.
   heldKeys() { return new Set((this.data?.findings || []).filter(f => f.ignored_by === "rule" && ["vacation", "after"].includes(f.ignore_rule?.phase)).map(f => f.key)); }
 
-  inWork(f) { return !f.ignored && this.planSets().active.has(f.object_id); }
+  inWork(f) { return !f.ignored && (!!f.in_work || this.planSets().active.has(f.object_id)); }
 
   // Does a finding belong to the chosen status? "" is the default: everything not decided.
   statusMatch(f) {
@@ -11758,7 +11758,7 @@ class FindingStatusMixin {
   }
 }
 Object.assign(TEXT.de, {
-  stateOpen: "Offen", freshNew: "Neu seit dem letzten Besuch", stateWorse: "Schlechter geworden", visitNothing: "Nichts Neues seit {date}.", visitSummary: "{fresh} neu · {worse} schlechter geworden seit {date}.", stateDue: "Fällig", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Ist so gewollt", state_snoozed: "Später", state_hidden: "Ausgeblendet",
+  workExpired: "angefangen am {date}", stateOpen: "Offen", freshNew: "Neu seit dem letzten Besuch", stateWorse: "Schlechter geworden", visitNothing: "Nichts Neues seit {date}.", visitSummary: "{fresh} neu · {worse} schlechter geworden seit {date}.", stateDue: "Fällig", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Ist so gewollt", state_snoozed: "Später", state_hidden: "Ausgeblendet",
   doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", excCreate: "Ausnahme anlegen", fselStatus: "Status setzen …", fselStatusChange: "Status ändern …", outageStatusHint: "Ein Status beendet den Ausfall: Die {n} Entitäten dahinter zählen dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folgen aus und greift auch beim nächsten Mal.", outageStatusHint1: "Ein Status beendet den Ausfall: Die Entität dahinter zählt dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folge aus und greift auch beim nächsten Mal.", outageMarkInstead: "Stattdessen Vermerk setzen", statusTitle: "Status setzen · {n} Befunde",
   decideKindHint_keep: "Das ist bei mir normal. Bleibt still, bis du es änderst. Begründung nötig.", decideKindHint_snooze: "Stimmt, aber nicht jetzt. Kommt nach der Frist als „fällig“ zurück.", decideKindHint_ignore: "Die Regel irrt sich hier. Begründung freiwillig.",
   overviewDue: "{n} fällig", overviewNew: "{n} neu", dueSince: "seit {date}", dueExpired: "Frist abgelaufen am {date}", dueWorse: "schlechter geworden", dueWorseImpact: "Wirkung von {from} auf {to}", dueWorseFollowers: "mehr Folgen", dueKeepOn: "Weiter so gewollt", dueLater: "Noch später", dueKeepReason: "Weiter so gewollt",
@@ -11770,7 +11770,7 @@ Object.assign(TEXT.de, {
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
 });
 Object.assign(TEXT.en, {
-  stateOpen: "Open", freshNew: "New since your last visit", stateWorse: "Got worse", visitNothing: "Nothing new since {date}.", visitSummary: "{fresh} new · {worse} got worse since {date}.", stateDue: "Due", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Intended", state_snoozed: "Later", state_hidden: "Hidden",
+  workExpired: "started on {date}", stateOpen: "Open", freshNew: "New since your last visit", stateWorse: "Got worse", visitNothing: "Nothing new since {date}.", visitSummary: "{fresh} new · {worse} got worse since {date}.", stateDue: "Due", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Intended", state_snoozed: "Later", state_hidden: "Hidden",
   doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", excCreate: "Add exception", fselStatus: "Set status …", fselStatusChange: "Change status …", outageStatusHint: "A status ends the outage: the {n} entities behind it then count one by one as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageStatusHint1: "A status ends the outage: the entity behind it then counts on its own as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageMarkInstead: "Set a mark instead", statusTitle: "Set status · {n} findings",
   decideKindHint_keep: "This is normal for me. Stays quiet until you change it. Needs a reason.", decideKindHint_snooze: "True, but not now. Comes back as “due” after the time.", decideKindHint_ignore: "The rule is wrong here. Reason optional.",
   overviewDue: "{n} due", overviewNew: "{n} new", dueSince: "since {date}", dueExpired: "time ran out on {date}", dueWorse: "got worse", dueWorseImpact: "impact from {from} to {to}", dueWorseFollowers: "more follow-ups", dueKeepOn: "Still intended", dueLater: "Later still", dueKeepReason: "Still intended",
@@ -18010,6 +18010,18 @@ class FixMixin {
     } catch (_) { /* the last run is a convenience; the ways stand without it */ }
   }
 
+  // A step on a way is "in work": the finding stays open but is marked, and goes back after a week without a step.
+  async fixWork(active) {
+    const f = this.data?.findings?.find(x => x.key === this.fixKey);
+    if (!f) return;
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/work_set", finding_key: f.key, active });
+      f.in_work = reply?.in_work || undefined; f.work_expired = reply?.work_expired || undefined;
+      this._rev++;
+      if (this.view === "fix") this.render();
+    } catch (_) { /* a note of progress is a convenience */ }
+  }
+
   // Step 1: what is wrong, since when, what it affects, how sure Housekeeper is.
   fixUnderstand(f) {
     const cause = f.cause_id ? this.causeById(f.cause_id) : this.causeList().find(c => c.finding_key === f.key);
@@ -18017,6 +18029,7 @@ class FixMixin {
     const pattern = (f.confidence_notes || []).find(n => n.code === "pattern");
     const rows = [
       [this.t("fixWhat"), this.esc(this.findingTitle(f))],
+      f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) }))] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) }))] : null,
       since ? [this.t("sortSince"), this.esc(this.formatDate(since))] : null,
       f.impact ? [this.t("sortImpact"), this.esc(this.impactLine(f))] : null,
       cause && !own ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name }))] : null,
@@ -18085,7 +18098,7 @@ class FixMixin {
   fixCheck(f) {
     const checked = this.fixCheckedFrom && this.data?.meta?.scanned_at !== this.fixCheckedFrom;
     const verdict = !checked ? "" : f ? this.notice("warn", this.t("fixStillOpen")) : this.notice("info", this.t("fixDone"));
-    return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button></div>${verdict}`;
+    return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button>${f?.in_work ? `<button type="button" class="btn quiet" data-fix-work-off>${this.t("fixWorkOff")}</button>` : ""}</div>${verdict}`;
   }
 
   fixView() {
@@ -18115,6 +18128,8 @@ class FixMixin {
     root.querySelectorAll("[data-fix-refactor-on]").forEach(el => el.onclick = async () => { await this._hass.callWS({ type: "ha_housekeeper/refactor_set", enabled: true }); this.loadFixWays(this.fixKey); });
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
     root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
+    root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
+    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
     root.querySelectorAll("[data-fix-check]").forEach(el => el.onclick = () => { this.fixCheckedFrom = this.data?.meta?.scanned_at || ""; this.load(true); });
   }
 }
@@ -18136,6 +18151,7 @@ Object.assign(TEXT.de, {
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen: bei einer Entität mit einem ähnlichen Vorschlag, bei Bereich, Etage und Label nach deiner Wahl (nur dort, wo der Schlüssel dafür steht). Die Vorschau zeigt jede Stelle.",
   fixWay_open_editor: "Im Editor öffnen", fixWayHint_open_editor: "Die Stelle in Home Assistant selbst anpassen.", fixReplaceStart: "Ersetzen …", fixReplaceWith: "Ersetzen durch", fixReplaceNone: "Es gibt kein anderes Ziel dieser Art, auf das sich umstellen ließe.",
   fixWay_remove_reference: "Verweis entfernen", fixWayHint_remove_reference: "Nimmt das fehlende Ziel nur aus Ziellisten der Aktionen heraus, in denen weitere Ziele stehen bleiben. Trigger, Bedingungen und Ziele, die allein stehen, fasst Housekeeper nie an; dort bleibt der Editor. Mit Vorschau, Prüfung, Backup und Zurücknehmen.", fixRemoveStart: "Entfernen …", fixRefactorOn: "Verbessern einschalten (experimentell)",
+  fixWorkSince: "angefangen am {date}", fixWorkOff: "Nicht mehr bearbeiten",
   fixLastFailure: "Letzter Fehler", fixFailureStep: "bei {step}", fixFailureHint: "Hinweis", fixFailureHintText: "Der Fehlertext nennt {entity}, und die ist ausgefallen. Eine sichere Zuordnung ist das nicht.", fixToFinding: "Zum Befund",
   fixWay_fix_cause: "Erst die Ursache beheben", fixWayHint_fix_cause: "Die Automation scheitert, weil etwas darunter ausgefallen ist. Ist die Ursache behoben, läuft sie von selbst wieder.",
   fixWay_catch_error: "Fehler abfangen", fixWayHint_catch_error: "Setzt „bei Fehler weitermachen“ nur an der einen Aktion, die zuletzt gescheitert ist, nie für die ganze Automation. Der Fehler erscheint danach nicht mehr in den Läufen, und der Rest läuft weiter. Mit Vorschau, Prüfung, Backup und Zurücknehmen.", fixCatchStart: "Abfangen …", fixCatchNoStep: "Dafür braucht es einen letzten Fehler im Ablaufprotokoll von Home Assistant; der ist gerade nicht da.",
@@ -18159,6 +18175,7 @@ Object.assign(TEXT.en, {
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one: for an entity with a similar one proposed, for an area, floor or label as you choose (only where the key for it stands). The preview shows each place.",
   fixWay_open_editor: "Open in the editor", fixWayHint_open_editor: "Adjust the place in Home Assistant yourself.", fixReplaceStart: "Replace …", fixReplaceWith: "Replace with", fixReplaceNone: "There is no other target of this kind to move to.",
   fixWay_remove_reference: "Remove the reference", fixWayHint_remove_reference: "Takes the missing target only out of target lists of the actions in which other targets stay. Housekeeper never touches triggers, conditions or a target that stands alone; the editor is for those. With preview, check, backup and undo.", fixRemoveStart: "Remove …", fixRefactorOn: "Turn on Improve (experimental)",
+  fixWorkSince: "started on {date}", fixWorkOff: "Stop working on it",
   fixLastFailure: "Last failure", fixFailureStep: "at {step}", fixFailureHint: "Hint", fixFailureHintText: "The error text names {entity}, and that is down. It is no safe attribution.", fixToFinding: "Go to the finding",
   fixWay_fix_cause: "Fix the cause first", fixWayHint_fix_cause: "The automation fails because something below it is down. Once the cause is fixed, it runs again by itself.",
   fixWay_catch_error: "Catch the error", fixWayHint_catch_error: "Sets “continue on error” only on the one action that failed last, never for the whole automation. Afterwards the error no longer shows in the runs, and the rest keeps running. With preview, check, backup and undo.", fixCatchStart: "Catch …", fixCatchNoStep: "This needs a last failure in Home Assistant's trace buffer; there is none right now.",

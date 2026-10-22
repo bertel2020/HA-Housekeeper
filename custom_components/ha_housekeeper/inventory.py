@@ -150,6 +150,7 @@ from .system_usage import supervisor_get, supervisor_token
 from .view_counts import view_counts
 from .visits import VisitStore
 from .watch import WATCH_KINDS, WatchStore, evaluate, make_before, next_due
+from .work import WorkStore
 
 _LOGGER = logging.getLogger(__name__)
 SUGGEST_LIMIT = 200
@@ -883,6 +884,7 @@ STORE_NAMES = (
     "observations",
     "first_seen",
     "visits",
+    "work",
     "history",
     "ignored",
     "exceptions",
@@ -923,6 +925,7 @@ class InventoryScanner:
         self.observations = ObservationStore(hass)
         self.first_seen = FirstSeenStore(hass)
         self.visits = VisitStore(hass)
+        self.work = WorkStore(hass)
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
         self.exceptions = ExceptionStore(hass)
@@ -1016,6 +1019,19 @@ class InventoryScanner:
             self.outage_medium_hours,
             self.outage_high_hours,
         )
+
+    def _mark_work(self, finding: dict[str, Any]) -> None:
+        """``in_work`` for a finding someone has started to fix, ``work_expired`` for one left standing."""
+        entry = self.work.get(finding["key"])
+        if entry is None:
+            return
+        if entry["expired"]:
+            finding["work_expired"] = {"started_at": entry["started_at"]}
+        else:
+            finding["in_work"] = {
+                "started_at": entry["started_at"],
+                "progress_at": entry["progress_at"],
+            }
 
     async def async_initialize(self) -> None:
         """Load persisted observations and read the installed version."""
@@ -1720,8 +1736,13 @@ class InventoryScanner:
             self.first_seen.update(
                 {f["key"] for f in findings}, datetime.now(UTC), complete=not self._unchecked
             )
+        if not preliminary:
+            self.work.update(
+                {f["key"] for f in findings}, datetime.now(UTC), complete=not self._unchecked
+            )
         for finding in findings:
             finding["first_seen_at"] = self.first_seen.get(finding["key"])
+            self._mark_work(finding)
         logged = log_facts(self.hass)
         for item in objects:
             if item["object_type"] == "config_entry" and item.get("domain") in logged:

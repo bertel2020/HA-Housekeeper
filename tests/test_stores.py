@@ -26,6 +26,7 @@ from custom_components.ha_housekeeper.queries import ReplyStore  # noqa: E402
 from custom_components.ha_housekeeper.runs import RunStore  # noqa: E402
 from custom_components.ha_housekeeper.seen import FirstSeenStore  # noqa: E402
 from custom_components.ha_housekeeper.visits import VisitStore  # noqa: E402
+from custom_components.ha_housekeeper.work import WorkStore  # noqa: E402
 
 STORES = [
     (ObservationStore, const.STORAGE_KEY),
@@ -41,6 +42,7 @@ STORES = [
     (ReplyStore, const.REPLIES_STORAGE_KEY),
     (FirstSeenStore, const.FIRST_SEEN_STORAGE_KEY),
     (VisitStore, const.VISITS_STORAGE_KEY),
+    (WorkStore, const.WORK_STORAGE_KEY),
 ]
 GARBAGE = [
     "text",
@@ -374,3 +376,28 @@ async def test_a_visit_records_the_findings_of_that_moment_per_user(
         "info and hidden ones are no news"
     )
     assert store.get("u1") == visit and store.get("u2") is None
+
+
+async def test_work_starts_goes_on_expires_after_a_week_and_goes_with_its_finding(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = WorkStore(hass)
+    await store.async_load()
+    t1 = datetime(2026, 10, 1, tzinfo=UTC)
+    store.start("a", t1)
+    store.start("a", t1 + timedelta(days=3))
+    assert store.get("a")["started_at"] == t1.isoformat() and not store.get("a")["expired"]
+    store.update({"a"}, t1 + timedelta(days=11), complete=True)
+    assert store.get("a")["expired"], "progress on day three, then eight days of nothing"
+    store.start("a", t1 + timedelta(days=12))
+    assert (
+        not store.get("a")["expired"]
+        and store.get("a")["started_at"] == (t1 + timedelta(days=12)).isoformat()
+    )
+    store.update(set(), t1 + timedelta(days=12), complete=False)
+    assert store.get("a"), "a scan that could not read a source forgets nothing"
+    store.update(set(), t1 + timedelta(days=12), complete=True)
+    assert store.get("a") is None, "fixed: the finding is gone"
+    store.start("b", t1)
+    store.clear("b")
+    assert store.get("b") is None
