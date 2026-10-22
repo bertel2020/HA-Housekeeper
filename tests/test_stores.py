@@ -24,6 +24,7 @@ from custom_components.ha_housekeeper.observations import ObservationStore  # no
 from custom_components.ha_housekeeper.policies import PolicyStore  # noqa: E402
 from custom_components.ha_housekeeper.queries import ReplyStore  # noqa: E402
 from custom_components.ha_housekeeper.runs import RunStore  # noqa: E402
+from custom_components.ha_housekeeper.seen import FirstSeenStore  # noqa: E402
 
 STORES = [
     (ObservationStore, const.STORAGE_KEY),
@@ -37,6 +38,7 @@ STORES = [
     (RunStore, const.RUNS_STORAGE_KEY),
     (PolicyStore, const.POLICIES_STORAGE_KEY),
     (ReplyStore, const.REPLIES_STORAGE_KEY),
+    (FirstSeenStore, const.FIRST_SEEN_STORAGE_KEY),
 ]
 GARBAGE = [
     "text",
@@ -329,3 +331,22 @@ async def test_a_keep_without_a_time_gets_a_review_date_once_and_a_later_that_ge
     assert (
         again.review({"s": ("high", 9)}, now) == [] and again.entry("s")["impact_at"] == "high"
     ), "a later from before takes the present state as its start"
+
+
+async def test_first_seen_marks_the_first_scan_as_before_tracking_and_forgets_what_is_gone(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = FirstSeenStore(hass)
+    await store.async_load()
+    t1, t2 = datetime(2026, 10, 1, tzinfo=UTC), datetime(2026, 10, 2, tzinfo=UTC)
+    store.update({"a", "b"}, t1, complete=True)
+    assert store.get("a") is None, "found by the first scan: before tracking, never new"
+    store.update({"a", "c"}, t2, complete=True)
+    assert store.get("c") == t2.isoformat() and store.get("b") is None
+    store.update({"c"}, t2, complete=False)
+    assert store.get("c"), "a scan that could not read a source forgets nothing"
+    store.update(set(), t2, complete=False)
+    store.update({"c"}, t2, complete=True)
+    store.update(set(), t2, complete=True)
+    store.update({"c"}, datetime(2026, 10, 3, tzinfo=UTC), complete=True)
+    assert store.get("c") == datetime(2026, 10, 3, tzinfo=UTC).isoformat(), "back again: new again"

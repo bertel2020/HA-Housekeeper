@@ -138,6 +138,7 @@ from .runs import RunStore
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, ScanCoverage, retryable_gaps
 from .scan_health import ScanHealth
 from .scan_trigger import ScanRefused, scan_request
+from .seen import FirstSeenStore
 from .sensitive_fields import reauth_entry_ids
 from .service_check import missing_service_findings
 from .signals import SignalStore, situations
@@ -877,6 +878,7 @@ def storage_sizes(hass: HomeAssistant) -> dict[str, dict[str, float]]:
 
 STORE_NAMES = (
     "observations",
+    "first_seen",
     "history",
     "ignored",
     "exceptions",
@@ -915,6 +917,7 @@ class InventoryScanner:
     def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
         self.observations = ObservationStore(hass)
+        self.first_seen = FirstSeenStore(hass)
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
         self.exceptions = ExceptionStore(hass)
@@ -1707,6 +1710,13 @@ class InventoryScanner:
         apply_battery_kinds(objects, self.batteries.kinds)
         apply_topics(findings)
         apply_impact(objects, edges, findings)
+        # When each finding was first seen; a preliminary scan misses findings and forgets none.
+        if not preliminary:
+            self.first_seen.update(
+                {f["key"] for f in findings}, datetime.now(UTC), complete=not self._unchecked
+            )
+        for finding in findings:
+            finding["first_seen_at"] = self.first_seen.get(finding["key"])
         logged = log_facts(self.hass)
         for item in objects:
             if item["object_type"] == "config_entry" and item.get("domain") in logged:
