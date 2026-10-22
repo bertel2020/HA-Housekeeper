@@ -92,7 +92,7 @@ const TEXT = {
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honig", schemeLagoon: "Lagune", schemeEmerald: "Smaragd", schemeFrost: "Frost", schemeMidnight: "Mitternacht", schemeOlive: "Olive", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
     decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Ist so gewollt", decideKind_snooze: "Später", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "„Ist so gewollt“ braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig",
-    sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel", sortRuleGrouped: "Befund",
+    sortBy: "Sortieren nach", sortCertainty: "Gewissheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel", sortRuleGrouped: "Befund",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
     denseOn: "Kompakte Zeilen", denseOff: "Ausführliche Zeilen", sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
     density: "Dichte", densityNormal: "Normal", densityCompact: "Kompakt", motion: "Animationen", motionAuto: "Wie System", motionReduced: "Reduziert",
@@ -153,7 +153,7 @@ const TEXT = {
     noUnreferenced: "Alle aktiven Entitäten werden irgendwo verwendet.", unrefShown: "{shown} von {total} angezeigt – nach Domäne filtern, um weitere zu sehen.", allDomains: "Alle Domänen",
     noBatteries: "Keine Batterie-Entitäten gefunden.", batteryLevel: "Ladestand",
     backTo: "Zurück zu", facts: "Eckdaten", relations: "Beziehungen", showInGraph: "Im Abhängigkeitsdiagramm", noState: "Kein Zustand vorhanden", notExpected: "Nicht erwartet",
-    available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Sicherheit", finding: "Befund", noFinding: "Kein Befund",
+    available: "Verfügbar", causeLabel: "Ursache", hintLabel: "Empfehlung", certainty: "Gewissheit", finding: "Befund", noFinding: "Kein Befund",
     belowThreshold: "Noch kein Befund: ein Ausfall wird erst nach {span} gemeldet.", refCount: "Verwendet von",
     automationOff: "Automation ist ausgeschaltet", refsResolved: "Alle Referenzen aufgelöst", entities: "Entitäten",
     cs_loaded: "Geladen", cs_setup_error: "Fehler beim Einrichten", cs_setup_retry: "Einrichtung wird wiederholt", cs_not_loaded: "Nicht geladen",
@@ -338,7 +338,7 @@ const TEXT = {
     noUnreferenced: "Every active entity is used somewhere.", unrefShown: "Showing {shown} of {total} – filter by domain to see more.", allDomains: "All domains",
     noBatteries: "No battery entities found.", batteryLevel: "Level",
     backTo: "Back to", facts: "Key facts", relations: "Relationships", showInGraph: "In dependency graph", noState: "No state available", notExpected: "Not expected",
-    available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Confidence", finding: "Finding", noFinding: "No finding",
+    available: "Available", causeLabel: "Cause", hintLabel: "Recommendation", certainty: "Certainty", finding: "Finding", noFinding: "No finding",
     belowThreshold: "Not a finding yet: an outage is reported only after {span}.", refCount: "Used by",
     automationOff: "Automation is turned off", refsResolved: "All references resolved", entities: "Entities",
     cs_loaded: "Loaded", cs_setup_error: "Setup error", cs_setup_retry: "Retrying setup", cs_not_loaded: "Not loaded",
@@ -9238,7 +9238,7 @@ Object.assign(TEXT.en, {
 
 Object.assign(TEXT.de, {
   ratingTitle: "Bewertung", ratingFollowers: "erklärt {n} Folgebefunde", ratingNoReason: "Nichts nutzt dieses Objekt", ratingFrom: "ab {span}",
-  ratingCertMeaning: "Die Zahl sagt, wie sicher die Diagnose ist, nicht wie schlimm es ist.",
+  ratingCertMeaning: "Wie gut die Diagnose belegt ist, nicht wie schlimm der Befund ist.",
   ratingTop: "Das ist die höchste Stufe, der Schweregrad kann nicht mehr steigen.",
   ratingNext_info: "ein Dashboard oder eine Automation darauf verweist", ratingNext_low: "eine aktive Automation oder ein aktives Skript es nutzt", ratingNext_medium: "es kritisch wird (Label, Art des Objekts) oder 5 oder mehr Abhängige hat",
   ratingNextCond: "{level}, sobald {cond}.", ratingNextBoth: "{level} in {span} oder sobald {cond}.", ratingNextDur: "Nach der Dauer: {level} in {span}.",
@@ -9247,7 +9247,7 @@ Object.assign(TEXT.de, {
 
 Object.assign(TEXT.en, {
   ratingTitle: "Rating", ratingFollowers: "explains {n} follow-up findings", ratingNoReason: "Nothing uses this object", ratingFrom: "from {span}",
-  ratingCertMeaning: "The number says how sure the diagnosis is, not how bad it is.",
+  ratingCertMeaning: "How well the diagnosis is supported, not how bad the finding is.",
   ratingTop: "This is the highest level; the severity cannot rise any further.",
   ratingNext_info: "a dashboard or an automation refers to it", ratingNext_low: "an active automation or script uses it", ratingNext_medium: "it becomes critical (label, kind of object) or has 5 or more dependents",
   ratingNextCond: "{level} as soon as {cond}.", ratingNextBoth: "{level} in {span} or as soon as {cond}.", ratingNextDur: "By duration: {level} in {span}.",
