@@ -9471,6 +9471,8 @@ class CausesMixin {
     const link = `${c.object_type}:${c.object_id}`;
     const canMark = c.kind === "device_down" && this.findObject(link) && !this.findObject(link).mark;
     if (own) return this.rowMenu(own);
+    // A missing target is a cause without a finding of its own: its menu leads to the Fix page for all places naming it.
+    if (c.virtual && c.kind.endsWith("_missing") && c.total_followers) return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-fix-all="${this.esc(c.id)}"><ha-icon icon="mdi:wrench-outline"></ha-icon>${this.t("fixAllOpen", { n: this.formatNumber(c.total_followers) })}</button></div></details>`;
     return canMark ? this.objectMenu(link) : "";
   }
 
@@ -18001,8 +18003,18 @@ class ObjectGroupsMixin {
 // existing steps (plan with preview, links into Home Assistant, marks, exits); it changes nothing by itself.
 const FIX_WATCH_MS = 15 * 60 * 1000, FIX_WATCH_STEP_MS = 30 * 1000;
 class FixMixin {
-  openFix(key) {
+  // "Fix all n": the page of a missing target; its follow-ups are the places that name it. One of them stands for the page.
+  openFixAll(causeId) {
+    const below = (this.data?.findings || []).filter(f => this.causeKeys(causeId).has(f.key));
+    const rep = below.find(f => f.rule_id.startsWith("automation.")) || below[0];
+    if (rep) this.openFix(rep.key, causeId);
+  }
+
+  fixAllFindings() { return this.fixAll ? (this.data?.findings || []).filter(f => this.causeKeys(this.fixAll).has(f.key)) : []; }
+
+  openFix(key, all = "") {
     this.noteJump("fix");
+    this.fixAll = all;
     this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
     this.render();
     this.loadFixWays(key);
@@ -18038,8 +18050,12 @@ class FixMixin {
     const cause = f.cause_id ? this.causeById(f.cause_id) : this.causeList().find(c => c.finding_key === f.key);
     const own = cause && cause.finding_key === f.key, since = f.first_detected_at || f.first_seen_at;
     const pattern = (f.confidence_notes || []).find(n => n.code === "pattern");
+    const all = this.fixAllFindings(), allCause = this.fixAll ? this.causeById(this.fixAll) : null;
+    const kinds = ["automation", "script", "dashboard"].map(k => [k, all.filter(x => x.rule_id.startsWith(`${k}.`)).length]).filter(([, n]) => n).map(([k, n]) => this.t(`fixAllKind_${k}`, { n: this.formatNumber(n) })).join(", ");
     const rows = [
-      [this.t("fixWhat"), this.esc(this.findingTitle(f))],
+      allCause ? [this.t("fixWhat"), this.esc(this.t(`cause_${allCause.kind}`, { name: allCause.name }))] : null,
+      allCause ? [this.t("fixAffects"), this.esc(`${this.t("fixAllPlaces", { n: this.formatNumber(all.length) })}${kinds ? ` (${kinds})` : ""}`)] : null,
+      allCause ? null : [this.t("fixWhat"), this.esc(this.findingTitle(f))],
       f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) }))] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) }))] : null,
       since ? [this.t("sortSince"), this.esc(this.formatDate(since))] : null,
       f.impact ? [this.t("sortImpact"), this.esc(this.impactLine(f))] : null,
@@ -18075,6 +18091,9 @@ class FixMixin {
       const options = (this.data?.objects || []).filter(o => o.object_type === w.target_kind && o.object_id !== w.target);
       action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
     } else if (w.way === "replace_target") action = `<button type="button" class="btn" data-fix-replace="${this.esc(w.target)}" data-fix-new="${this.esc(w.suggestion || "")}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button>`;
+    else if (w.way === "remove_reference" && this.fixAll) action = w.enabled
+      ? `<button type="button" class="btn" data-fix-remove-all="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveAll", { n: this.formatNumber(this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).length) })}</button>`
+      : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "remove_reference") action = w.enabled
       ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
@@ -18087,7 +18106,8 @@ class FixMixin {
   // Step 2: the ways of the topic, and always the three exits.
   fixDecide(f) {
     const ways = this.fixWays;
-    const list = ways === null ? `<p class="factnote">${this.t("loading")}</p>` : ways.length ? [...ways].sort((a, b) => Number(b.recommended) - Number(a.recommended)).map(w => this.fixWayCard(w, f)).join("") : `<p class="factnote">${this.t("fixNoWays")}</p>`;
+    const shown = ways && this.fixAll ? ways.filter(w => ["replace_target", "remove_reference"].includes(w.way)) : ways;
+    const list = shown === null ? `<p class="factnote">${this.t("loading")}</p>` : shown.length ? [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended)).map(w => this.fixWayCard(w, f)).join("") : `<p class="factnote">${this.t("fixNoWays")}</p>`;
     const key = this.esc(f.key);
     const exit = (kind, icon) => `<button type="button" class="btn" data-decide-open="${key}" data-decide-preset="${kind}"><ha-icon icon="${icon}"></ha-icon>${this.t(`decideKind_${kind}`)}<small>${this.t(`decideKindHint_${kind}`)}</small></button>`;
     return `${list}<h3 class="ratinghead">${this.t("fixExits")}</h3><div class="mbtns">${exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:eye-off-outline")}</div>${this.rowDecide(f)}`;
@@ -18161,16 +18181,22 @@ class FixMixin {
       const f = this.data?.findings?.find(x => x.key === this.fixKey);
       if (f) await this.newPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemove } }], "repair");
     });
+    root.querySelectorAll("[data-fix-all]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openFixAll(el.dataset.fixAll); });
+    root.querySelectorAll("[data-fix-remove-all]").forEach(el => el.onclick = async () => {
+      const requests = this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).map(x => ({ kind: "refactor_automation", object_id: x.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemoveAll } }));
+      if (requests.length) await this.newPlan(requests, "repair");
+    });
     root.querySelectorAll("[data-fix-refactor-on]").forEach(el => el.onclick = async () => { await this._hass.callWS({ type: "ha_housekeeper/refactor_set", enabled: true }); this.loadFixWays(this.fixKey); });
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
     root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
     root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
-    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-look],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
+    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-remove-all],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-look],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
     root.querySelectorAll("[data-fix-look]").forEach(el => el.onclick = () => this.startFixWatch());
     root.querySelectorAll("[data-fix-check]").forEach(el => el.onclick = () => { this.fixCheckedFrom = this.data?.meta?.scanned_at || ""; this.load(true); });
   }
 }
 Object.assign(TEXT.de, {
+  fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_script: "{n} Skripte", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen, entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben",
   fixStepUnderstand: "Verstehen", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
   fixWhat: "Was los ist", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder entscheiden, nicht zu beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
@@ -18195,6 +18221,7 @@ Object.assign(TEXT.de, {
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
+  fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_script: "{n} scripts", fixAllKind_dashboard: "{n} dashboard places", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand, decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix",
   fixStepUnderstand: "Understand", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
   fixWhat: "What is wrong", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or decide not to fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",

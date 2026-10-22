@@ -190,6 +190,8 @@ class CausesMixin {
     const link = `${c.object_type}:${c.object_id}`;
     const canMark = c.kind === "device_down" && this.findObject(link) && !this.findObject(link).mark;
     if (own) return this.rowMenu(own);
+    // A missing target is a cause without a finding of its own: its menu leads to the Fix page for all places naming it.
+    if (c.virtual && c.kind.endsWith("_missing") && c.total_followers) return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-fix-all="${this.esc(c.id)}"><ha-icon icon="mdi:wrench-outline"></ha-icon>${this.t("fixAllOpen", { n: this.formatNumber(c.total_followers) })}</button></div></details>`;
     return canMark ? this.objectMenu(link) : "";
   }
 

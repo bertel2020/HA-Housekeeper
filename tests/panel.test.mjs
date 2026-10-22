@@ -6925,3 +6925,27 @@ test("the first cleanup is offered, opens each stage as a list filter and puts t
   const later = calls.find(c => c.type.endsWith("/first_cleanup_later"));
   assert.equal(later.days, 30);
 });
+
+test("a missing target has Fix all n in its menu, and its page replaces or removes at every place that names it", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const f = (key, rule, object_id) => ({ key, rule_id: rule, object_id, topic: "broken_references", classification: "broken_reference", affected_object: "sensor.gone", cause_id: "entity_missing:sensor.gone", impact: "medium" });
+  const findings = [f("k1", "automation.missing_entity", "automation.a"), f("k2", "script.missing_entity", "script.b"), f("k3", "automation.missing_entity", "automation.c")];
+  const cause = { id: "entity_missing:sensor.gone", kind: "entity_missing", object_type: "entity", object_id: "sensor.gone", name: "sensor.gone", virtual: true, total_followers: 3, follower_keys: ["k1", "k2", "k3"], parent_id: null, child_ids: [] };
+  el.data = { ...DATA, findings, causes: [cause], objects: [] };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type.endsWith("/fix_ways") ? { ways: [{ way: "replace_target", kind: "panel", target: "sensor.gone", suggestion: "sensor.new", enabled: true }, { way: "remove_reference", kind: "panel", target: "sensor.gone", enabled: true }, { way: "open_editor", kind: "panel" }] } : {}; } };
+  el.render = () => {};
+  assert.ok(el.causeMenu(cause, null).includes('data-fix-all="entity_missing:sensor.gone"') && el.causeMenu(cause, null).includes("Fix all 3"));
+  el.openFixAll(cause.id);
+  assert.equal(el.fixKey, "k1", "an automation stands for the page");
+  await new Promise(r => setTimeout(r, 0));
+  const html = el.fixView();
+  assert.ok(html.includes("3 places refer to it") && html.includes("2 automations, 1 scripts") && html.includes("Remove from 2 automations") && html.includes("data-fix-replace") && !html.includes("Open in Home Assistant"));
+  let plan = null;
+  el.newPlan = async (requests, kind) => { plan = { requests, kind }; };
+  const root = { querySelectorAll: sel => sel === "[data-fix-remove-all]" ? [{ dataset: { fixRemoveAll: "sensor.gone" }, set onclick(fn) { this._fn = fn; fn.__el = this; plan = { fn }; } }] : [], querySelector: () => null };
+  el.bindFix(root);
+  await plan.fn();
+  assert.deepEqual(plan.requests.map(r => r.object_id), ["automation.a", "automation.c"]);
+  assert.equal(plan.requests[0].fix, "remove_reference");
+});
