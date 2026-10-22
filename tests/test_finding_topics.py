@@ -68,3 +68,30 @@ def test_failing_runs_become_findings_with_their_impact() -> None:
     assert found["automation.never_ok"]["confidence"] == 0.9
     assert found["script.run_failing"]["run_level"] == "warn"
     assert all(topic_of(rule) == FAILING_AUTOMATIONS for rule in found)
+
+
+def test_a_checkpoint_counts_the_topics_and_an_old_one_is_recounted_from_its_keys() -> None:
+    from custom_components.ha_housekeeper.history import _topics_from_keys, make_checkpoint
+
+    snapshot = {
+        "meta": {"scanned_at": "2026-10-22T10:00:00+00:00"},
+        "objects": [],
+        "causes": [],
+        "findings": [
+            {"rule_id": "device.down", "object_id": "d", "classification": "unavailable"},
+            {
+                "rule_id": "entity.state_unavailable",
+                "object_id": "sensor.a",
+                "classification": "unavailable",
+                "cause_id": "device_down:d",
+            },
+            {"rule_id": "automation.missing_entity", "object_id": "a", "classification": "x"},
+        ],
+    }
+    point = make_checkpoint(snapshot)
+    assert point["topics"] == {"down": 2, "broken_references": 1}
+    assert point["lead_topics"] == {"down": 1, "broken_references": 1}
+    assert _topics_from_keys({"findings": ["device.down|d|", "automation.stale|a|"]}) == {
+        "down": 1,
+        "unneeded": 1,
+    }

@@ -11,6 +11,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
 from .const import DEFAULT_HISTORY_DAYS, HISTORY_STORAGE_KEY, STORAGE_VERSION
+from .finding_topics import topic_of
 from .hygiene import finding_key as _finding_key
 from .outage_levels import is_quiet
 
@@ -143,6 +144,14 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
         if not _is_follower(finding):
             name = str(finding.get("classification") or "")
             lead_classes[name] = lead_classes.get(name, 0) + 1
+    # The open findings of each topic, with and without the follow-ups, for the sparklines of the topic tiles.
+    topics: dict[str, int] = {}
+    lead_topics: dict[str, int] = {}
+    for finding in open_findings:
+        name = str(finding.get("topic") or topic_of(finding["rule_id"]))
+        topics[name] = topics.get(name, 0) + 1
+        if not _is_follower(finding):
+            lead_topics[name] = lead_topics.get(name, 0) + 1
     health_base, health_load = _health(snapshot)
     return {
         "at": snapshot["meta"]["scanned_at"],
@@ -155,6 +164,8 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
         "lead": sum(lead_classes.values()),
         "lead_classes": lead_classes,
         "reasons": reasons,
+        "topics": topics,
+        "lead_topics": lead_topics,
         "health_base": health_base,
         "health_load": health_load,
         # The settings that decide whether some findings exist at all.
@@ -265,6 +276,22 @@ def diff_checkpoints(base: dict[str, Any], snapshot: dict[str, Any]) -> dict[str
         "ended_findings": cut(ended_findings),
         "new_rating": legacy,
     }
+
+
+def _topics_from_keys(checkpoint: dict[str, Any]) -> dict[str, int] | None:
+    """The findings of a point stored before the topics, counted by topic: the rule is the start of each key.
+
+    Hidden findings are among the keys, so the count can be a little high; the line without follow-ups cannot
+    be recounted and starts with the topics.
+    """
+    keys = checkpoint.get("findings")
+    if not isinstance(keys, list):
+        return None
+    counts: dict[str, int] = {}
+    for key in keys:
+        name = topic_of(str(key).split("|", 1)[0])
+        counts[name] = counts.get(name, 0) + 1
+    return counts
 
 
 def checkpoint_counts(checkpoint: dict[str, Any]) -> dict[str, int]:
@@ -422,6 +449,8 @@ class ScanHistory:
                     "lead": cp.get("lead"),
                     "lead_classes": cp.get("lead_classes"),
                     "reasons": cp.get("reasons"),
+                    "topics": cp.get("topics") or _topics_from_keys(cp),
+                    "lead_topics": cp.get("lead_topics"),
                     "health": health_percent(cp.get("health_base"), cp.get("health_load")),
                     "rated": cp.get("health_base"),
                     "unavailable": sum(
