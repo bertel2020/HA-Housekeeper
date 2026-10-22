@@ -89,6 +89,14 @@ function showcase(objects) {
     { source: "automation:automation.a1", target: "entity:sensor.removed_long_ago", relation: "TARGETS", confidence: "certain", location: "actions[2]" },
   );
   data.findings.unshift({ key: "automation:automation.a1", rule_id: "automation.missing_entity", object_id: "automation.a1", classification: "broken_reference", confidence: 0.95, affected_object: "sensor.removed_long_ago", first_detected_at: data.meta.scanned_at, evidence: [{ location: "actions[2]" }], ignored: false, ignored_by: null });
+  // One finding of each topic besides the unneeded ones the fixture makes: an outage and two failing runs.
+  const finding = (rule_id, object_id, classification, topic, impact) => ({ key: `${object_id}|${rule_id}`, rule_id, object_id, classification, topic, impact, confidence: 0.9, confidence_level: "reported", first_detected_at: data.meta.scanned_at, evidence: [], ignored: false, ignored_by: null });
+  data.findings.unshift(
+    finding("config_entry.not_loaded", "ce-hue", "unavailable", "down", "high"),
+    finding("automation.run_failing", "automation.a2", "run_failing", "failing_automations", "medium"),
+    finding("automation.never_ok", "automation.a3", "never_ok", "failing_automations", "medium"),
+  );
+  for (const f of data.findings) f.topic ||= f.rule_id.split(".")[1]?.startsWith("missing_") ? "broken_references" : "unneeded";
   data.quarantine = [{ object_id: "sensor.beispiel_4", object_type: "entity", since: new Date(Date.now() - 20 * 864e5).toISOString() }];
   return data;
 }
