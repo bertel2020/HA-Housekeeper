@@ -3544,7 +3544,7 @@ test("a finding can be kept on purpose with a reason, put off for days, and come
   assert.equal(JSON.stringify(sent[0]), JSON.stringify({ type: "ha_housekeeper/ignore", finding_key: "k1", ignored: true, kind: "keep", reason: "Reserve" }));
   const f = el.data.findings[0];
   assert.ok(f.ignored && f.ignore_info.kind === "keep" && el.decide === null);
-  assert.ok(el.decisionLabel(f).includes("Known") && el.decisionLabel(f).includes("Reserve"));
+  assert.ok(el.decisionLabel(f).includes("Intended") && el.decisionLabel(f).includes("Reserve"));
   el.openDecide("k2"); el.decide.kind = "snooze"; el.decide.days = 0; await el.commitDecide();
   assert.equal(sent[1].kind, "snooze"); assert.equal(sent[1].days, 30, "put off needs a time: 30 days by default");
   assert.equal(el.data.findings[1].resurfaced, false);
@@ -5650,7 +5650,7 @@ test("the search finds pages, settings tabs and finding filters, puts the better
   const kinds = query => { el.quickQuery = query; return el.quickEntries().map(e => `${e.kind}:${e.label || e.item?.object_id}`); };
   assert.equal(kinds("k").length, 0, "one letter does not search");
   const known1 = kinds("known");
-  assert.equal(known1[0], "filter:Findings: Known", "a filter that matches best comes first");
+  assert.equal(known1[0], "filter:Findings: Intended", "a filter that matches best comes first");
   assert.ok(kinds("battery").includes("page:Batteries"), "a page by its name");
   assert.ok(kinds("backup").includes("page:Maintenance"), "a page by a keyword");
   assert.ok(kinds("dunkel").includes("page:Appearance") && kinds("dark").includes("page:Appearance"), "keywords in both languages");

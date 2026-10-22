@@ -296,11 +296,11 @@
         },
         "action": {
           "name": "Aktion",
-          "description": "decide zum Ausblenden, Behalten oder Zurückstellen, restore zum Wiedereinblenden."
+          "description": "decide zum Ausblenden, für „Ist so gewollt“ oder „Später“, restore zum Wiedereinblenden."
         },
         "kind": {
           "name": "Entscheidung",
-          "description": "ignore blendet aus, keep sagt, dass es so gewollt ist (braucht einen Grund), snooze stellt zurück (braucht Tage)."
+          "description": "ignore blendet aus, keep sagt „Ist so gewollt“ (braucht einen Grund), snooze sagt „Später“ (braucht Tage)."
         },
         "reason": {
           "name": "Grund",
@@ -308,7 +308,7 @@
         },
         "days": {
           "name": "Tage",
-          "description": "Wie lange eine Zurückstellung oder andere Entscheidung gilt, 1 bis 3650."
+          "description": "Wie lange „Später“ oder eine andere Entscheidung gilt, 1 bis 3650."
         }
       }
     },

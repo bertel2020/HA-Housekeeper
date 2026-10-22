@@ -296,11 +296,11 @@
         },
         "action": {
           "name": "Action",
-          "description": "decide to hide, keep or put off, restore to show it again."
+          "description": "decide to hide, mark as “Intended” or as “Later”, restore to show it again."
         },
         "kind": {
           "name": "Decision",
-          "description": "ignore hides it for good, keep says it is meant to be so (needs a reason), snooze puts it off (needs days)."
+          "description": "ignore hides it for good, keep says “Intended” (needs a reason), snooze says “Later” (needs days)."
         },
         "reason": {
           "name": "Reason",
@@ -308,7 +308,7 @@
         },
         "days": {
           "name": "Days",
-          "description": "How long a snooze or another decision holds, 1 to 3650."
+          "description": "How long “Later” or another decision holds, 1 to 3650."
         }
       }
     },
