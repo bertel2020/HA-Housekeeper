@@ -1743,7 +1743,7 @@ class StylesMixin {
       .ibar{display:flex;gap:2px;height:6px;margin-top:6px;border-radius:3px;overflow:hidden}.ibar i{display:block;min-width:4px;border-radius:2px;background:var(--hk-muted)}.ibar .high{background:var(--hk-red)}.ibar .medium{background:var(--hk-amber)}.ibar .low{background:var(--hk-blue)}
       .findsum.topics{grid-template-rows:auto}.findsum.topics .sumall{grid-row:1;margin-top:0}.findsum.topics .sumrow>.sumtile{grid-row:1}.chipsep{width:1px;align-self:stretch;background:var(--hk-border);margin:0 4px}.fnotes{flex-wrap:wrap;gap:6px}.fchip{display:inline-flex;gap:4px;align-items:center}.fchip ha-icon{--mdc-icon-size:14px}
       .spacebox{padding:4px 0 10px 22px}.spacehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0}.spacehead .factnote{margin:0}.spacehead .btn{flex:none}.spacekeys{padding:4px 0 10px 12px}.spaceacts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.spacechev{--mdc-icon-size:18px;color:var(--hk-muted);vertical-align:middle;margin-right:4px;float:left}
-      .fctop{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}.fcsteps{display:flex;align-items:center;gap:0}.fcstep{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:2px solid var(--hk-border);border-radius:50%;background:var(--hk-surface);color:var(--hk-muted);font:inherit;font-size:calc(13px*var(--hk-fs,1))}button.fcstep{cursor:pointer}button.fcstep:hover{border-color:var(--hk-blue)}.fcstep.done{border-color:var(--hk-green);color:var(--hk-green)}.fcstep.cur{border-color:var(--hk-blue);background:var(--hk-blue);color:#fff}.fcline{display:block;width:28px;height:2px;background:var(--hk-border)}.fccounter{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fceyebrow{color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.fchead h2{margin:2px 0 4px}.fchead p{margin:0;color:var(--hk-muted)}.fcleft{margin-left:8px;color:var(--hk-muted);font-size:calc(14px*var(--hk-fs,1));font-weight:400}.fcpanel .pad>p{margin:0 0 12px}.fcpanel .mbtns{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 0}.fcpanel .pad>.mbtns:first-child{margin-top:0}.fcfoot{position:sticky;bottom:8px;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px}@media(max-width:600px){.fcfoot{position:static}}.fccard h3{margin:4px 0 2px;font-size:calc(20px*var(--hk-fs,1))}.fcwhat{margin:4px 0}.fcfacts{margin:0 0 14px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fcacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.fcact{display:grid;gap:4px;text-align:left;padding:12px 14px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);color:inherit;font:inherit;cursor:pointer}.fcact:hover{border-color:var(--hk-blue)}.fcact strong{font-size:calc(15px*var(--hk-fs,1))}.fcact small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fcact.primary{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface))}.fcmore{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.fcprogress{flex:1;text-align:center;color:var(--hk-muted);min-width:120px}.fclist{margin:12px 0;padding-left:20px;display:grid;gap:8px}.fclist small{display:block;color:var(--hk-muted)}.fcdays{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.fcdays input{width:80px;padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
+      .fctop{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}.fcsteps{display:flex;align-items:center;gap:0}.fcstep{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:2px solid var(--hk-border);border-radius:50%;background:var(--hk-surface);color:var(--hk-muted);font:inherit;font-size:calc(13px*var(--hk-fs,1))}button.fcstep{cursor:pointer}button.fcstep:hover{border-color:var(--hk-blue)}.fcstep.done{border-color:var(--hk-green);color:var(--hk-green)}.fcstep.cur{border-color:var(--hk-blue);background:var(--hk-blue);color:#fff}.fcline{display:block;width:28px;height:2px;background:var(--hk-border)}.fccounter{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fceyebrow{color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.fchead h2{margin:2px 0 4px}.fchead p{margin:0;color:var(--hk-muted)}.fcleft{margin-left:8px;color:var(--hk-muted);font-size:calc(14px*var(--hk-fs,1));font-weight:400}.fcpanel .pad>p{margin:0 0 12px}.fcpanel .mbtns{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 0}.fcpanel .pad>.mbtns:first-child{margin-top:0}.fcfoot{position:sticky;bottom:8px;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px}@media(max-width:600px){.fcfoot{position:static}}.fccard h3{margin:4px 0 2px;font-size:calc(20px*var(--hk-fs,1))}.fcwhat{margin:4px 0}.fcfacts{margin:0 0 14px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fcacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.fcact{display:grid;gap:4px;text-align:left;padding:12px 14px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);color:inherit;font:inherit;cursor:pointer}.fcact:hover{border-color:var(--hk-blue)}.fcact strong{font-size:calc(15px*var(--hk-fs,1))}.fcact small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fcact.primary{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface))}.fcsum{list-style:none;margin:0;padding:0 16px 8px;display:grid}.fcsum li{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:10px 0;border-top:1px solid var(--hk-border)}.fcsum span{color:var(--hk-muted);text-align:right}.fcmore{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}.fcprogress{flex:1;text-align:center;color:var(--hk-muted);min-width:120px}.fclist{margin:12px 0;padding-left:20px;display:grid;gap:8px}.fclist small{display:block;color:var(--hk-muted)}.fcdays{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.fcdays input{width:80px;padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
       ${this.themeCss()}
     </style>`;
   }
@@ -18363,6 +18363,8 @@ Object.assign(TEXT.en, {
 // FirstCleanupMixin: the first cleanup ("Erstes Aufräumen") as five stages through the open findings. The backend cuts
 // the stages and keeps the record for the whole house; every stage opens the normal list with a filter (or the cleanup
 // round, or the card of suggestions for marks). Only the last stage writes: it puts the quiet rest off together.
+const FC_LOG_KEY = "ha_housekeeper.firstcleanup";
+
 class FirstCleanupMixin {
   ensureFirstCleanup() {
     if (this._fcFor === this.data || !this._hass?.callWS) return;
@@ -18463,6 +18465,16 @@ class FirstCleanupMixin {
     else run();
   }
 
+  // "Cancel": the tour starts over from the welcome page; what was decided in it stays decided.
+  fcReset() {
+    this.confirmAsk(this.t("fcResetAsk"), async () => {
+      await this.firstCleanupSet({ action: "reset" });
+      this.fcLog = []; this.fcLogSave(); this.fcFocus = ""; this.fcTotal = {};
+      this.fcWizSet(0);
+      this.render();
+    }, { title: this.t("fcResetTitle"), yes: this.t("fcResetYes"), danger: true });
+  }
+
   fcWizExit() {
     this.fcWizEnd();
     this.view = "findingsNav"; this.selected = null; this.pages = {};
@@ -18486,10 +18498,33 @@ class FirstCleanupMixin {
     return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcIntro")}</p><ol class="fclist">${stages}</ol><div class="mbtns"><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button></div></div></section>`;
   }
 
+  // What was done in the tour, one line per stage; kept in the browser, as the backend holds only the stages.
+  fcLogGet() {
+    if (!this.fcLog) { try { this.fcLog = JSON.parse(globalThis.localStorage?.getItem(FC_LOG_KEY) || "[]"); } catch (_) { this.fcLog = []; } }
+    return this.fcLog;
+  }
+
+  fcLogSave() { try { globalThis.localStorage?.setItem(FC_LOG_KEY, JSON.stringify(this.fcLog || [])); } catch (_) { /* no storage */ } }
+
+  fcLogAdd(entry) { this.fcLogGet().push(entry); this.fcLogSave(); }
+
+  fcSkipped(n) { return new Set(this.fcLogGet().filter(e => e.stage === n && e.action === "skip").map(e => e.key)); }
+
+  fcSummaryRows() {
+    const log = this.fcLogGet();
+    return [1, 2, 3, 4, 5].map(n => {
+      const mine = log.filter(e => e.stage === n), sum = (...actions) => mine.filter(e => actions.includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
+      const parts = [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
+      const left = this.stageCount(n);
+      if (left) parts.push(this.t("fcSumLeft", { n: this.formatNumber(left) }));
+      if (!parts.length) parts.push(this.t("fcSumNone"));
+      return `<li><b>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)}</b><span>${this.esc(parts.join(" · "))}</span></li>`;
+    }).join("");
+  }
+
   fcFinish() {
-    const state = this.fc.state, left = this.data.findings.filter(f => !f.ignored).length, tally = this.fcTally;
-    const summary = tally && (tally.keep || tally.later || tally.marked) ? this.t("fcSummary", { keep: this.formatNumber(tally.keep), later: this.formatNumber(tally.later), marked: this.formatNumber(tally.marked) }) : "";
-    return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("fcFinishTitle")}</strong><br>${this.t("fcFinishText", { start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}${summary ? `<br><small>${this.esc(summary)}</small>` : ""}</div><div class="pad mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-goto="5">${this.t("fcBack")}</button></div></section>`;
+    const state = this.fc.state, left = this.data.findings.filter(f => !f.ignored).length;
+    return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("fcFinishTitle")}</strong><br>${this.t("fcFinishText", { start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</div><ul class="fcsum">${this.fcSummaryRows()}</ul><div class="pad mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-goto="5">${this.t("fcBack")}</button></div></section>`;
   }
 
   // Stage 5 asks one question; "Look first" shows the list of the stage in the same frame.
@@ -18505,7 +18540,7 @@ class FirstCleanupMixin {
 
   // The findings of a stage still to be looked at, the worst first (stage 1: the most follow-ups first).
   fcQueue(n) {
-    return this.stageOpen(n).filter(f => !this.fcSkip.has(f.key))
+    return this.stageOpen(n).filter(f => !this.fcSkipped(n).has(f.key))
       .sort((a, b) => (n === 1 ? this.fcFollowers(b) - this.fcFollowers(a) : 0) || this.impactScore(b) - this.impactScore(a) || a.key.localeCompare(b.key));
   }
 
@@ -18523,20 +18558,36 @@ class FirstCleanupMixin {
 
   // The cards of stage 1 and 3: one finding at a time with the three answers and what each one does.
   fcCards(n) {
-    this.fcSkip ||= new Set();
     const queue = this.fcQueue(n), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
+    const prevBtn = `<button type="button" class="btn" data-fc-prev ${this.fcLogGet().some(e => e.stage === n && ["keep", "later", "skip"].includes(e.action)) ? "" : "disabled"} title="${this.esc(this.t("fcPrevHint"))}"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcPrev")}</button>`;
     if (!queue.length) {
       const rest = this.stageCount(n);
-      return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div>${rest ? `<div class="pad mbtns"><button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}</div>` : ""}</section>`;
+      return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div><div class="pad mbtns">${prevBtn}${rest ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}` : ""}</div></section>`;
     }
-    const f = queue[0], key = this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
+    const f = (this.fcFocus && queue.find(x => x.key === this.fcFocus)) || queue[0], key = this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), facts = [this.impactLine(f), f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : ""].filter(Boolean);
     const acts = [
       obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), true) : "",
       this.fcAct(`data-fc-keep="${this.esc(f.key)}"`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") })),
       this.fcAct(`data-fc-snooze="${this.esc(f.key)}"`, this.t("fcLater"), this.t("fcLaterHint", { days })),
     ].join("");
-    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><h3>${this.esc(obj?.name || f.object_id)}</h3><p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong>${follows ? ` · ${this.t(follows === 1 ? "fcFollows1" : "fcFollows", { n: this.formatNumber(follows) })}` : ""}</p><p class="fcfacts">${this.esc(facts.join(" · "))}</p><div class="fcacts">${acts}</div><div class="fcmore"><button type="button" class="btn quiet" data-fc-skipcard="${this.esc(f.key)}">${this.t("fcSkipCard")}</button>${listBtn}</div></div></section>`;
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><h3>${this.esc(obj?.name || f.object_id)}</h3><p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong>${follows ? ` · ${this.t(follows === 1 ? "fcFollows1" : "fcFollows", { n: this.formatNumber(follows) })}` : ""}</p><p class="fcfacts">${this.esc(facts.join(" · "))}</p><div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+  }
+
+  // One card back: a skip is taken back, a decision is lifted again, and the card shows once more.
+  async fcPrev() {
+    const n = this.fcWiz.step, log = this.fcLogGet(), i = log.findLastIndex(e => e.stage === n && ["keep", "later", "skip"].includes(e.action));
+    if (i < 0) return;
+    const entry = log.splice(i, 1)[0];
+    this.fcLogSave(); this.fcFocus = entry.key;
+    if (entry.action === "skip") { this.render(); return; }
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: entry.key, ignored: false });
+      const f = this.data.findings.find(x => x.key === entry.key);
+      if (f) { f.ignored = false; f.ignore_info = null; this._rev++; }
+    } catch (err) { this.failed(err); }
+    this.render();
+    await this.reloadAfterDecision();
   }
 
   // Stage 2: one suggestion at a time; the mark is set from the card.
@@ -18552,7 +18603,7 @@ class FirstCleanupMixin {
   async fcTake(keys) {
     const marks = keys.reduce((n, k) => n + (k.startsWith("group:") ? this.oftenMembers(k).length : 1), 0);
     await this.takeOften(keys);
-    (this.fcTally ||= { keep: 0, later: 0, marked: 0 }).marked += marks;
+    this.fcLogAdd({ stage: 2, action: "mark", n: marks });
   }
 
   fcTakeAll() {
@@ -18572,8 +18623,8 @@ class FirstCleanupMixin {
       f.ignored = true; f.ignored_by = "user"; f.resurfaced = false;
       f.ignore_info = { kind, reason, until: new Date(Date.now() + days * 864e5).toISOString(), at: new Date().toISOString() };
       this._rev++;
-      const tally = (this.fcTally ||= { keep: 0, later: 0, marked: 0 });
-      if (kind === "keep") tally.keep += 1; else tally.later += 1;
+      this.fcLogAdd({ stage: this.fcWiz?.step, key, action: kind === "keep" ? "keep" : "later" });
+      if (this.fcFocus === key) this.fcFocus = "";
       this.render();
       await this.reloadAfterDecision();
       return;
@@ -18604,12 +18655,12 @@ class FirstCleanupMixin {
     const next = count
       ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
       : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
-    const foot = `<div class="panel fcfoot"><button type="button" class="btn" data-fc-goto="${n - 1}" ${n === 1 ? "disabled" : ""}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcBack")}</button><span class="fcprogress">${count ? this.t("fcLeftNow", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span>${lookOff}${next}<button type="button" class="btn quiet" data-fc-exit>${this.t("fcExit")}</button></div>`;
+    const foot = `<div class="panel fcfoot"><button type="button" class="btn" data-fc-goto="${n - 1}" ${n === 1 ? "disabled" : ""}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcBack")}</button><span class="fcprogress">${count ? this.t("fcLeftNow", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span>${lookOff}${next}<button type="button" class="btn quiet" data-fc-exit>${this.t("fcExit")}</button><button type="button" class="btn quiet" data-fc-reset>${this.t("fcReset")}</button></div>`;
     return `<div class="stack">${error}${top}${head}${body}${foot}</div>`;
   }
 
   bindFirstCleanup(root) {
-    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcSkip = new Set(); this.fcTotal = {}; this.fcTally = { keep: 0, later: 0, marked: 0 }; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
+    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcLog = []; this.fcLogSave(); this.fcFocus = ""; this.fcTotal = {}; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
     root.querySelectorAll("[data-fc-goto]").forEach(el => el.onclick = () => this.fcWizGo(Number(el.dataset.fcGoto), Number(el.dataset.fcGoto) >= 1 && Number(el.dataset.fcGoto) <= 5));
@@ -18619,8 +18670,14 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(el.dataset.fcKeep, "keep"));
     root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(el.dataset.fcSnooze, "snooze"));
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
-    root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => { this.fcSkip.add(el.dataset.fcSkipcard); this.render(); });
-    root.querySelector("[data-fc-again]")?.addEventListener("click", () => { this.fcSkip.clear(); this.render(); });
+    root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
+      this.fcLogAdd({ stage: this.fcWiz.step, key: el.dataset.fcSkipcard, action: "skip" });
+      if (this.fcFocus === el.dataset.fcSkipcard) this.fcFocus = "";
+      this.render();
+    });
+    root.querySelector("[data-fc-again]")?.addEventListener("click", () => { this.fcLog = this.fcLogGet().filter(e => !(e.stage === this.fcWiz.step && e.action === "skip")); this.fcLogSave(); this.render(); });
+    root.querySelector("[data-fc-prev]")?.addEventListener("click", () => this.fcPrev());
+    root.querySelector("[data-fc-reset]")?.addEventListener("click", () => this.fcReset());
     root.querySelectorAll("[data-fc-take]").forEach(el => el.onclick = () => this.fcTake([el.dataset.fcTake]));
     root.querySelectorAll("[data-fc-oskip]").forEach(el => el.onclick = () => this.skipOften(el.dataset.fcOskip));
     root.querySelector("[data-fc-takeall]")?.addEventListener("click", () => this.fcTakeAll());
@@ -18637,7 +18694,7 @@ class FirstCleanupMixin {
   async fcLaterRun(days, n = this.stageCount(5)) {
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup_later", days, reason: this.t("fcLaterReason") });
-      (this.fcTally ||= { keep: 0, later: 0, marked: 0 }).later += n;
+      this.fcLogAdd({ stage: 5, action: "later_all", n });
       this.fc = { ...reply, error: "" };
       await this.refreshData?.();
     } catch (err) { this.fc = { ...this.fc, error: this.errText(err) }; }
@@ -18647,11 +18704,13 @@ class FirstCleanupMixin {
 Object.assign(TEXT.de, {
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
-  fcKeepReason: "Im ersten Aufräumen als gewollt bestätigt", fcLaterOneReason: "Im ersten Aufräumen zurückgestellt", fcSkipCard: "Diesen überspringen", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
+  fcKeepReason: "Im ersten Aufräumen als gewollt bestätigt", fcLaterOneReason: "Im ersten Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
-  fcSummary: "{keep} bleiben bewusst · {later} zurückgestellt · {marked} Vermerke angelegt",
+  fcPrev: "Vorheriger", fcPrevHint: "Nimmt die letzte Entscheidung zurück und zeigt die Karte noch einmal.", fcReset: "Abbrechen", fcResetTitle: "Rundgang abbrechen?", fcResetYes: "Abbrechen und von vorn",
+  fcResetAsk: "Der Rundgang wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden.",
+  fcSumKeep: "{n} bleiben bewusst", fcSumLater: "{n} zurückgestellt", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Rundgang beenden",
   fcLeft: "{n} offen", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
@@ -18673,11 +18732,13 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
-  fcKeepReason: "Confirmed as intended in the first cleanup", fcLaterOneReason: "Put off in the first cleanup", fcSkipCard: "Skip this one", fcAsList: "View as list", fcToCards: "Back to the cards",
+  fcKeepReason: "Confirmed as intended in the first cleanup", fcLaterOneReason: "Put off in the first cleanup", fcSkipCard: "Skip", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
-  fcSummary: "{keep} kept on purpose · {later} put off · {marked} marks set",
+  fcPrev: "Previous", fcPrevHint: "Takes the last decision back and shows the card once more.", fcReset: "Cancel", fcResetTitle: "Cancel the tour?", fcResetYes: "Cancel and start over",
+  fcResetAsk: "The tour is reset and begins again at the welcome page. What you decided in it stays decided.",
+  fcSumKeep: "{n} kept on purpose", fcSumLater: "{n} put off", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
   fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "End the tour",
   fcLeft: "{n} open", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",

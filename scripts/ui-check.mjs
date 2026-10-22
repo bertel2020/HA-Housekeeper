@@ -228,6 +228,7 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         const open = data.findings.filter(f => !f.ignored);
         if (t.endsWith("/first_cleanup_set")) {
           if (msg.action === "begin") Object.assign(fcs, { started_at: "2026-10-22T08:00:00+00:00", start_count: open.length });
+          else if (msg.action === "reset") Object.assign(fcs, { started_at: null, start_count: 0, stage: 1, done: [], finished_at: null });
           else if (msg.action === "stage") { fcs.stage = msg.stage; if (msg.done === true && !fcs.done.includes(msg.stage)) fcs.done.push(msg.stage); if (fcs.done.length === 5) fcs.finished_at = "2026-10-22T09:00:00+00:00"; }
         }
         const stages = { 1: [], 2: [], 3: [], 4: [], 5: [] };

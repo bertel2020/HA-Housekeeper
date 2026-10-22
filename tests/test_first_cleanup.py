@@ -48,6 +48,11 @@ async def test_the_record_follows_the_cleanup_and_survives_a_reload(hass) -> Non
     assert not store.running and store.state()["finished_at"]
     store.begin(5, NOW)
     assert store.state()["done"] == [] and store.state()["start_count"] == 5, "starts over"
+    store.set_stage(2, True, NOW)
+    store.reset()
+    assert (
+        not store.running and store.state()["started_at"] is None and store.state()["done"] == []
+    ), "reset: as before it began"
 
     other = FirstCleanupStore(hass)
     await other.async_load()

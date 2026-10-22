@@ -481,7 +481,7 @@ def websocket_first_cleanup(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/first_cleanup_set",
-        vol.Required("action"): vol.In(("begin", "dismiss", "stage")),
+        vol.Required("action"): vol.In(("begin", "dismiss", "reset", "stage")),
         vol.Optional("stage"): vol.In(STAGES),
         vol.Optional("done"): bool,
     }
@@ -494,13 +494,15 @@ def websocket_first_cleanup_set(
     msg: dict[str, Any],
     scanner: InventoryScanner,
 ) -> None:
-    """Begin the first cleanup, decline the offer, or go to a stage and mark it done. Hides nothing."""
+    """Begin the first cleanup, decline the offer, start it over, or go to a stage and mark it done. Hides nothing."""
     store = scanner.first_cleanup
     now = datetime.now(UTC)
     if msg["action"] == "begin":
         store.begin(_first_cleanup_reply(scanner)["open"], now)
     elif msg["action"] == "dismiss":
         store.dismiss()
+    elif msg["action"] == "reset":
+        store.reset()
     elif "stage" not in msg:
         connection.send_error(msg["id"], "invalid_format", "A stage is needed")
         return

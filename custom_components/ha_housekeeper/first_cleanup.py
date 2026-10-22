@@ -110,6 +110,11 @@ class FirstCleanupStore:
         }
         self._save()
 
+    def reset(self) -> None:
+        """Drop the tour back to where it was before it began; the decisions made in it stay."""
+        self._state = {**_clean({}), "dismissed": self._state["dismissed"]}
+        self._save()
+
     def dismiss(self) -> None:
         """ "Not now": the offer goes, the button stays."""
         self._state["dismissed"] = True
