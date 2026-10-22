@@ -4923,17 +4923,18 @@ test("the overview counts batteries that report volts as low too", () => {
   assert.ok(el.lowBatteries().some(r => r.volt));
 });
 
-test("the findings tiles carry a sparkline for the total and each class, the status line of the overview the one for the score", () => {
+test("the topic tiles carry a sparkline for the total and each topic, the status line of the overview the one for the score", () => {
   const { el } = panel("en");
-  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused }, reasons: { unused } });
+  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused }, reasons: { unused }, topics: { unneeded: unused }, lead_topics: { unneeded: unused } });
   el.series = { points: [day(1, 90, 4, 2), day(2, 80, 6, 3), day(3, 70, 8, 5)] };
   const html = el.findingsView();
   assert.ok((html.match(/class="spark"/g) || []).length >= 2);
   assert.ok(el.sparkline("class:unused", "bad").includes("+3"));
-  assert.ok(el.sparkline("class:missing", "bad").includes("±0"));
   assert.ok(el.sparkline("lead:unused", "bad").includes("+3"));
-  assert.ok(el.sparkline("lead:unused", "bad").includes("spark-hint") === false);
-  assert.ok(el.sparkline("reason:unused", "bad").includes("+3"), "the tiles read the open findings by reason");
+  assert.ok(el.sparkline("reason:unused", "bad").includes("+3"));
+  assert.ok(el.sparkline("topic:unneeded", "bad").includes("+3"), "the tiles read the open findings by topic");
+  assert.ok(el.sparkline("leadtopic:unneeded", "bad").includes("+3"));
+  assert.ok(el.sparkline("topic:down", "bad").includes("±0"));
   assert.ok(!html.includes(`${el.health().percent} %`), "the score is not a tile of this page any more");
   el.view = "overview"; el.render();
   assert.ok(el.shadowRoot.innerHTML.includes("statustext") && /statustext[\s\S]*?class="spark"/.test(el.shadowRoot.innerHTML), "the score history sits under the headline");
@@ -6242,13 +6243,16 @@ test("the headline names what is urgent, the to-do card has the same groups, and
   assert.equal(el.statusHeadline(), "Outages (5) and 2 more urgent items");
 });
 
-test("the reason tiles are grouped by their colour: orphaned is tidying up, not a fault", () => {
+test("the findings page shows four topic tiles in a fixed order, each with its count and a bar by impact", () => {
   const { el } = panel("en");
-  const f = (key, classification) => ({ key, rule_id: "entity.x", object_id: key, classification, confidence: 0.9, ignored: false, impact: "low" });
-  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a", "orphaned"), f("b", "unavailable")] };
+  const f = (key, topic, impact, extra = {}) => ({ key, rule_id: "entity.x", object_id: key, classification: "unavailable", topic, confidence: 0.9, ignored: false, impact, ...extra });
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a", "unneeded", "low"), f("b", "down", "high"), f("c", "down", "info", { cause_id: "x" })] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
-  const html = el.findingsView(), tidy = html.indexOf(">Tidying up · 1<"), faults = html.indexOf(">Faults · 1<"), orphaned = html.indexOf(`>${el.statusLabel("orphaned")}<`);
-  assert.ok(faults > 0 && tidy > faults && orphaned > tidy, "orphaned sits under tidying up, which follows the faults");
+  const html = el.findingsView(), at = name => html.indexOf(`>${name}<`);
+  assert.ok(at("Down") > 0 && at("Down") < at("Broken references") && at("Broken references") < at("Failing automations") && at("Failing automations") < at("Unneeded"), "from the cause to the leftovers");
+  const down = html.slice(html.indexOf('data-finding-filter="topic:down"'), html.indexOf("</button>", html.indexOf('data-finding-filter="topic:down"')));
+  assert.ok(down.includes("<b class=\"sumvalue\">2</b>") && down.includes("1 of them follow-ups") && down.includes('class="ibar"') && down.includes('class="high"'), "two findings, the bar knows the levels");
+  assert.ok(html.includes('class="sumtile zero"'), "a topic without open findings is a quiet 0");
 });
 
 test("the findings page: outages are one reason, stale is a fault, a tile starts from a plain list and the head counts within it", () => {
@@ -6441,17 +6445,17 @@ test("a battery tile shows the batteries it counts, without a search left over",
   assert.equal(`${el.batteryFilter}|${el.lv.batteries.q}|${Object.keys(el.lv.batteries.f).length}`, "low||0");
 });
 
-test("the group heads of the findings page filter the list to all faults or all tidying up", () => {
+test("a topic tile filters the list to its topic, and the note names it", () => {
   const { el } = panel("en");
-  const f = (key, classification, rule_id = "entity.x") => ({ key, rule_id, object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false });
-  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "broken_reference"), f("c", "orphaned"), f("d", "unused")] };
+  const f = (key, topic) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification: "unavailable", topic, confidence: 0.9, ignored: false });
+  el.data = { ...DATA, findings: [f("a", "down"), f("b", "broken_references"), f("c", "unneeded"), f("d", "unneeded")] };
   el.view = "findingsNav";
-  assert.ok(el.findingsView().includes('data-finding-filter="group:red"'));
-  el.findingFilter = "group:red";
-  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "a,b");
-  el.findingFilter = "group:tidy";
+  assert.ok(el.findingsView().includes('data-finding-filter="topic:down"'));
+  el.findingFilter = "topic:unneeded";
   assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "c,d");
-  assert.ok(el.findingNote().includes("Tidying up"));
+  el.findingFilter = "topic:down";
+  assert.equal(el.visibleFindings().map(x => x.key).join(), "a");
+  assert.ok(el.findingNote().includes("Down"));
 });
 
 test("the overview tiles count every finding, the faults and the tidying up, and jump to their group", () => {
@@ -6472,30 +6476,29 @@ test("a sparkline shows at most the last seven days", () => {
   assert.ok(el.sparkline("open", "bad").includes("+7 in 7 days"));
 });
 
-test("the findings tiles are fixed: they count the open findings whatever the status, show every reason, and a click opens the open list", () => {
+test("the topic tiles are fixed: they count the open findings whatever the status, and a click opens the open list", () => {
   const { el, shadow } = panel("en", { requestAnimationFrame: () => {} });
-  const f = (key, classification, ignored = false) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored, ignored_by: ignored ? "user" : null });
-  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "orphaned"), f("c", "orphaned", true)] };
+  const f = (key, topic, ignored = false) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification: "unavailable", topic, confidence: 0.9, ignored, ignored_by: ignored ? "user" : null });
+  el.data = { ...DATA, findings: [f("a", "down"), f("b", "unneeded"), f("c", "unneeded", true)] };
   el.view = "findingsNav"; el.findingStatus = "hidden";
   const html = el.findingsView();
-  assert.ok(html.includes('class="sumtile zero"') && !html.includes('data-finding-filter="unused"'), "a reason without open findings is a quiet 0");
-  const orphaned = html.slice(html.indexOf('data-finding-filter="orphaned"'), html.indexOf("</button>", html.indexOf('data-finding-filter="orphaned"')));
-  assert.ok(orphaned.includes(">1<"), "the hidden one does not count");
-  const tile = { dataset: { findingFilter: "orphaned" } };
+  const unneeded = html.slice(html.indexOf('data-finding-filter="topic:unneeded"'), html.indexOf("</button>", html.indexOf('data-finding-filter="topic:unneeded"')));
+  assert.ok(unneeded.includes(">1<"), "the hidden one does not count");
+  const tile = { dataset: { findingFilter: "topic:unneeded" } };
   shadow.querySelectorAll = selector => (selector === "[data-finding-filter]" ? [tile] : []);
   el.bind();
   tile.onclick();
-  assert.equal(`${el.findingStatus}|${el.findingFilter}`, "|orphaned");
+  assert.equal(`${el.findingStatus}|${el.findingFilter}`, "|topic:unneeded");
 });
 
-test("All findings stands over both rows of reason tiles and names the follow-ups inside the tile", () => {
+test("All findings stands left of the topic tiles and names the follow-ups inside the tile", () => {
   const { el } = panel("en");
-  const f = (key, classification, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false, ...extra });
-  el.data = { ...DATA, findings: [f("a", "unavailable", { cause_id: "c1" }), f("b", "orphaned")] };
+  const f = (key, topic, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification: "unavailable", topic, confidence: 0.9, ignored: false, ...extra });
+  el.data = { ...DATA, findings: [f("a", "down", { cause_id: "c1" }), f("b", "unneeded")] };
   el.view = "findingsNav";
-  const html = el.findingsView(), all = html.slice(html.indexOf('class="sumall"'), html.indexOf('class="sumhead"'));
+  const html = el.findingsView(), all = html.slice(html.indexOf('class="sumall"'), html.indexOf('class="sumrow"'));
   assert.ok(all.includes("data-finding-followers") && all.includes('data-finding-filter=""'), "the follow-ups link sits in the tile");
-  assert.ok(html.includes('style="--r:2"') && html.includes('style="--r:4"'), "faults in the first row, tidying up in the second");
+  assert.ok(html.includes('class="findsum topics"') && html.includes('style="--r:1"'), "the four topics in one row");
 });
 
 test("another status than open puts a note above the list: the tiles count the open findings, one button goes back", () => {

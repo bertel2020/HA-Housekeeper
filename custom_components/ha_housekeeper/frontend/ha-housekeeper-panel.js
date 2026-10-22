@@ -92,7 +92,7 @@ const TEXT = {
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honig", schemeLagoon: "Lagune", schemeEmerald: "Smaragd", schemeFrost: "Frost", schemeMidnight: "Mitternacht", schemeOlive: "Olive", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
     decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Ist so gewollt", decideKind_snooze: "Später", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "„Ist so gewollt“ braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig",
-    sortBy: "Sortieren nach", sortCertainty: "Gewissheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel", sortRuleGrouped: "Befund",
+    sortBy: "Sortieren nach", sortCertainty: "Gewissheit", sortTopic: "Thema", topic_down: "Ausgefallen", topic_broken_references: "Kaputte Verweise", topic_failing_automations: "Fehlerhafte Automationen", topic_unneeded: "Überflüssig", topicHint_down: "Geräte, Integrationen, Apps und Entitäten, die nicht laufen", topicHint_broken_references: "Verweise auf Ziele, die es nicht mehr gibt", topicHint_failing_automations: "Automationen und Skripte, die nicht tun, was sie sollen", topicHint_unneeded: "Reste, die nichts mehr tun und weg können", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel", sortRuleGrouped: "Befund",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
     denseOn: "Kompakte Zeilen", denseOff: "Ausführliche Zeilen", sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
     density: "Dichte", densityNormal: "Normal", densityCompact: "Kompakt", motion: "Animationen", motionAuto: "Wie System", motionReduced: "Reduziert",
@@ -277,7 +277,7 @@ const TEXT = {
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
     colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honey", schemeLagoon: "Lagoon", schemeEmerald: "Emerald", schemeFrost: "Frost", schemeMidnight: "Midnight", schemeOlive: "Olive", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
     decideKind: "Kind of decision", decideKind_ignore: "Hidden", decideKind_keep: "Intended", decideKind_snooze: "Later", decideReason: "Reason (optional)", decideReasonNeeded: "Reason (required)", decideNeedReason: "“Intended” needs a reason.", decideHow: "For how long", decideForever: "Indefinitely", decideDays: "{n} days", decideUntil: "until {date}", dueLabel: "Due again", dueFilter: "Due again",
-    sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule", sortRuleGrouped: "Finding",
+    sortBy: "Sort by", sortCertainty: "Certainty", sortTopic: "Topic", topic_down: "Down", topic_broken_references: "Broken references", topic_failing_automations: "Failing automations", topic_unneeded: "Unneeded", topicHint_down: "Devices, integrations, apps and entities that are not running", topicHint_broken_references: "References to targets that no longer exist", topicHint_failing_automations: "Automations and scripts that do not do what they should", topicHint_unneeded: "Leftovers that do nothing any more and can go", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule", sortRuleGrouped: "Finding",
     sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
     denseOn: "Compact rows", denseOff: "Detailed rows", sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
     density: "Density", densityNormal: "Normal", densityCompact: "Compact", motion: "Animation", motionAuto: "Like system", motionReduced: "Reduced",
@@ -497,6 +497,8 @@ const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"]
 const FINDING_ORDER = ["outage", "unavailable", "stale", "broken_reference", "problem", "unknown", "orphaned", "unused", "possible_duplicate"];
 // Reasons shown red, as faults, besides the classes that are red anyway: a sensor that stopped reporting is mostly broken.
 const FAULT_REASONS = ["outage", "stale"];
+// The four topics of the findings page, in the order of the tiles: what is wrong, from the cause to the leftovers.
+const TOPIC_ORDER = ["down", "broken_references", "failing_automations", "unneeded"];
 // A filter that leaves at most this many findings opens the heads of the grouped list by itself.
 // The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
@@ -1736,7 +1738,9 @@ class StylesMixin {
       .statustext h2 .headlink{text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:color-mix(in srgb,currentColor 25%,transparent);text-underline-offset:5px}.statustext p .link{font-size:inherit}.todogrp{display:flex;gap:8px;align-items:center}.foldhd small{text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}.todogrp.red{color:var(--hk-red)}.relpills{display:flex;flex-wrap:wrap;gap:4px;max-width:240px}.btctl .btn.miss,.btn.quiet.miss{border:1px dashed color-mix(in srgb,var(--hk-amber) 60%,var(--hk-border));padding:2px 8px;gap:4px}@media(max-width:560px){.listbar{gap:8px}.listbar>input{flex:1 1 100%}.listbar .sortgroup{flex:1 1 calc(100% - 120px);min-width:0;margin-left:0}.listbar .sortgroup select{flex:1 1 auto}.listbar-actions{flex:none;margin-left:0}}@media(max-width:640px){.tablewrap.lt.objs tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:10px 12px}.tablewrap.lt.objs td{display:block;padding:0;border:0;margin:0}.tablewrap.lt.objs td.selcol{flex:0 0 24px;width:24px;min-width:24px;max-width:24px}.tablewrap.lt.objs td:nth-child(2){flex:1 1 calc(100% - 44px);min-width:0}.tablewrap.lt.objs td:nth-child(n+3){display:inline-flex;align-items:center;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.tablewrap.lt.objs td:nth-child(3){margin-left:32px}.tablewrap.lt.objs td[data-label]::before{display:none}.tablewrap.lt.objs .agestamp{display:none}}.levelsrow .row-text small{white-space:normal;overflow:visible;text-overflow:clip}.row.zero{opacity:.55;cursor:default}.row.zero:hover{background:none}.todogrp .todofold{display:inline-flex;align-items:center;gap:8px;padding:0;border:0;background:none;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.todogrp .todofold ha-icon{--mdc-icon-size:16px;margin-left:-2px}.todogrp.care{margin-top:18px;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--hk-border)}.whygroups{display:grid;gap:4px;margin-bottom:10px}.whygroups p{margin:0}.why-red{color:var(--hk-red)}.why-open{color:var(--hk-amber)}.why-care{color:var(--hk-muted)}
       .decbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.decbar .kpi{text-align:left}.decbar .warntext{color:var(--hk-amber)}@media(max-width:640px){.decbar{grid-template-columns:repeat(2,minmax(0,1fr))}}.row.duerow{background:color-mix(in srgb,var(--hk-amber) 7%,transparent)}.rowacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.link.strong{font-weight:600;color:inherit;text-align:left}
       .findsum{display:grid;grid-template-columns:minmax(150px,200px) 1fr;gap:10px 14px;align-items:start;margin-bottom:12px}.sumall{display:grid;gap:4px;margin-top:22px}.sumrows{display:grid;gap:8px;min-width:0}.findsum .sumgroup{display:grid;gap:4px}.findsum .sumgrouphead{margin:0 0 0 2px;font-weight:600}.sumtile.zero{background:transparent;border-style:dashed;border-left-style:solid;box-shadow:none}.sumtile.zero .sumvalue{color:var(--hk-muted);font-weight:500}.findsum .sumgrouphead.zero{color:var(--hk-muted)}.dbfold{display:grid;gap:6px;padding:8px 16px 12px}.dbfold .sectionlabel{margin-top:4px}.dbshare{display:flex;align-items:center;gap:10px;min-width:140px}.dbshare .sysshare{flex:1}.dbshare b{min-width:3.2em;text-align:right;font-weight:500}.findsum{grid-template-columns:minmax(150px,190px) repeat(var(--k,5),minmax(0,1fr));grid-template-rows:auto 1fr auto 1fr;gap:6px 8px;align-items:stretch}.findsum .sumall{grid-column:1;grid-row:2/5;margin-top:0;display:grid}.findsum .sumhead{grid-column:2/-1;display:flex;align-items:end}.findsum .sumrow{display:contents}.findsum .sumrow>.sumtile{grid-row:var(--r)}.findsum .sumtile{grid-template-rows:auto auto 1fr auto}.findsum .sumtile .sumlabel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sumtotal{position:relative}.sumtotal .sumstretch{position:absolute;inset:0;border:0;border-radius:inherit;background:none;cursor:pointer;padding:0}.sumtotal:hover{background:var(--hk-soft)}.sumtotal>.sumsubs{grid-row:3;align-self:start;display:grid;gap:2px;justify-items:start;position:relative;z-index:1;pointer-events:none}.sumtotal>.sumsubs .sumfollow{pointer-events:auto;text-align:left;padding:0;margin:0}@media(max-width:760px){.findsum{display:block}.findsum .sumall{margin-bottom:8px}.findsum .sumhead{margin:8px 0 4px}.findsum .sumrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:6px}.findsum .sumrow>.sumtile{grid-row:auto}}.findsum button.sumgrouphead{justify-self:start;display:inline-flex;align-items:center;gap:4px;padding:1px 9px 1px 7px;border:1px solid var(--hk-border);border-radius:999px;background:var(--hk-surface);box-shadow:var(--hk-sh1);font:inherit;font-size:calc(12px*var(--hk-fs,1));font-weight:600;cursor:pointer;margin-left:0}.findsum button.sumgrouphead:hover{background:var(--hk-soft)}.findsum button.sumgrouphead[aria-pressed=true]{border-color:var(--hk-blue);color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface))}.findsum button.sumgrouphead ha-icon{--mdc-icon-size:14px}.findsum button.sumgrouphead[aria-pressed=true] ha-icon{display:none}.findsum button.sumgrouphead[aria-pressed=true]:before{content:"\\2713";margin-right:.2em}.findsum .sumgrouphead.red{color:color-mix(in srgb,var(--hk-red) 75%,var(--hk-muted))}.findsum .sumgrouphead.warn{color:color-mix(in srgb,var(--hk-amber) 75%,var(--hk-muted))}.sumtiles.compact{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.sumtiles.compact .sumtile{padding:8px 10px;gap:0}.sumtiles.compact .sumvalue{font-size:calc(19px*var(--hk-fs,1))}.sumtiles.compact .spark{height:24px}.sumtiles.compact .spark-row{padding-top:2px}.sumtiles.compact small{font-size:calc(11.5px*var(--hk-fs,1))}/* Every tile of a row shares four lines: title, figure, the text that may run over several lines, and the curve at the bottom; the free space sits between text and curve. */.sumtiles,.sumtiles.even{grid-auto-rows:auto}.sumtile{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:2px;align-content:start}.sumtiles.compact .sumtile{row-gap:0}.sumtile>.sumlabel{grid-row:1}.sumtile>.sumvalue{grid-row:2}.sumtile>small{grid-row:3;align-self:start}.sumtile>.spark-row{grid-row:4;align-self:end;margin-top:0}.kpis{grid-auto-rows:auto}.kpis>.kpi{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:2px;align-content:start}.kpis>.kpi>.kpilabel{grid-row:1}.kpis>.kpi>strong{grid-row:2}.kpis>.kpi>.kpisub{grid-row:3;align-self:start}.kpis>.kpi>.spark-row{grid-row:4;align-self:end;margin-top:0}.navtiles.compact{grid-auto-rows:auto}.navtiles.compact .taskcard{grid-row:span 4;grid-template-rows:subgrid;align-content:start;align-items:start}.navtiles.compact .taskcard>ha-icon{align-self:center}.navtiles.compact .taskcard>strong{grid-row:1}.navtiles.compact .taskcard>.setpill{grid-row:2}.navtiles.compact .taskcard>small{grid-row:3}.navtiles.compact .taskcard>.navfacts{grid-row:4;align-self:end}.sumfollow{justify-self:start;font-size:calc(12.5px*var(--hk-fs,1))}.sumfollow.on{text-decoration:underline}@media(max-width:700px){.findsum{grid-template-columns:1fr}.sumall{margin-top:0}}.hintrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;margin-bottom:0}.hintlabel{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.04em}.hintbtn{display:inline-flex;gap:6px;align-items:center;padding:5px 12px;border-radius:99px;border:1px solid var(--hk-border);background:var(--hk-soft);font:inherit;color:inherit;cursor:pointer}.hintbtn.warn{background:color-mix(in srgb,var(--hk-amber) 14%,var(--hk-surface))}.hintbtn.on{border-color:var(--hk-blue-solid)}.hintbtn ha-icon{--mdc-icon-size:18px}.chip.sub{border-style:dashed}
-      .chip.warn:not(.active){border-color:var(--hk-amber)}.chipsep{width:1px;align-self:stretch;background:var(--hk-border);margin:0 4px}.fnotes{flex-wrap:wrap;gap:6px}.fchip{display:inline-flex;gap:4px;align-items:center}.fchip ha-icon{--mdc-icon-size:14px}
+      .chip.warn:not(.active){border-color:var(--hk-amber)}
+      .ibar{display:flex;gap:2px;height:6px;margin-top:6px;border-radius:3px;overflow:hidden}.ibar i{display:block;min-width:4px;border-radius:2px;background:var(--hk-muted)}.ibar .high{background:var(--hk-red)}.ibar .medium{background:var(--hk-amber)}.ibar .low{background:var(--hk-blue)}
+      .findsum.topics{grid-template-rows:auto}.findsum.topics .sumall{grid-row:1;margin-top:0}.findsum.topics .sumrow>.sumtile{grid-row:1}.chipsep{width:1px;align-self:stretch;background:var(--hk-border);margin:0 4px}.fnotes{flex-wrap:wrap;gap:6px}.fchip{display:inline-flex;gap:4px;align-items:center}.fchip ha-icon{--mdc-icon-size:14px}
       .spacebox{padding:4px 0 10px 22px}.spacehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0}.spacehead .factnote{margin:0}.spacehead .btn{flex:none}.spacekeys{padding:4px 0 10px 12px}.spaceacts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.spacechev{--mdc-icon-size:18px;color:var(--hk-muted);vertical-align:middle;margin-right:4px;float:left}
       ${this.themeCss()}
     </style>`;
@@ -2766,11 +2770,12 @@ class FindingsMixin {
   // An outage is whatever starts a chain (integration not loaded or asking for a login, device down, app stopped);
   // what is left of "problem" then are automations and scripts that cannot work.
   findingReason(f) { return CAUSE_OWN_RULES.includes(f.rule_id) ? "outage" : f.classification; }
-  reasonLabel(r) { return r === "group:red" ? this.t("sumGroupUrgent") : r === "group:tidy" ? this.t("sumGroupTidy") : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
+  reasonLabel(r) { return r.startsWith("topic:") ? this.t(`topic_${r.slice(6)}`) : r === "group:red" ? this.t("sumGroupUrgent") : r === "group:tidy" ? this.t("sumGroupTidy") : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
   // The two groups of the tiles: red reasons are faults, the rest is tidying up.
   findingTileGroup(f) { return this.reasonTone(this.findingReason(f)) === "red" ? "red" : "tidy"; }
   // The tile filter: one reason (or rule), or a whole group as "group:red" / "group:tidy".
-  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("group:") ? this.findingTileGroup(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
+  findingTopic(f) { return f.topic || "unneeded"; }
+  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("topic:") ? this.findingTopic(f) === filter.slice(6) : filter.startsWith("group:") ? this.findingTileGroup(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
   reasonTone(r) { const tone = FAULT_REASONS.includes(r) ? "red" : this.tone(r); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; }
 
   // Impact first, then how sure the diagnosis is: the fraction keeps the certainty from outranking a level.
@@ -2861,7 +2866,7 @@ class FindingsMixin {
       return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
     };
     const idSort = `<button type="button" class="thbtn th-alt" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
+    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
     // In the grouped view every row is a head of an object; in the flat one every row is a finding.
     const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
@@ -2874,12 +2879,13 @@ class FindingsMixin {
     const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
     const name = depth ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
     const detail = this.rowDecide(f);
-    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
+    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
   }
 
   findingSorts() {
     return [
       { key: "impact", label: "sortImpact", dir: "desc", get: f => this.impactScore(f) },
+      { key: "topic", label: "sortTopic", dir: "asc", get: f => TOPIC_ORDER.indexOf(this.findingTopic(f)) },
       { key: "certainty", label: "sortCertainty", dir: "desc", get: f => f.confidence },
       { key: "name", label: "sortName", dir: "asc", get: f => this.findObject(this.findingKey(f))?.name || f.object_id },
       { key: "id", label: "sortId", dir: "asc", get: f => f.object_id },
@@ -3020,7 +3026,7 @@ class FindingsMixin {
       ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : []),
     ];
     // The export button of the list bar, as on every list: the rows as shown, or only the selected ones.
-    const cols = ["rule_id", "classification", "confidence", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
+    const cols = ["rule_id", "topic", "classification", "confidence", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
     this.setExporter("findings", "ha-housekeeper-findings", cols, () => this.exportRows().map(r => cols.map(c => r[c])));
     const bar = this.listBar("findings", { table: true, dense: true, note: false, sorts: this.findingSorts(), filters });
     this.ensureSeries();
@@ -3032,32 +3038,22 @@ class FindingsMixin {
     // The tiles are fixed: they count the open findings whatever status the list shows, every finding of a reason with
     // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
     const openAll = this.data.findings.filter(f => !f.ignored);
-    const tile = c => {
-      const mine = openAll.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length;
-      if (!mine.length) return { label: this.reasonLabel(c), value: "0", tone: "zero", spark: spark(`reason:${c}`, "bad") };
-      return { label: this.reasonLabel(c), value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: this.reasonTone(c), filter: c, active: this.findingFilter === c, spark: spark(`reason:${c}`, "bad") };
+    const topicTile = name => {
+      const mine = openAll.filter(f => this.findingTopic(f) === name), follows = mine.filter(isFollower).length, label = this.t(`topic_${name}`);
+      if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`topic:${name}`, "bad") };
+      const worst = mine.reduce((m, f) => Math.max(m, IMPACT_RANK[f.impact] ?? 0), 0);
+      return { label, value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "mute", bar: this.impactBar(mine), hint: this.t(`topicHint_${name}`), filter: `topic:${name}`, active: this.findingFilter === `topic:${name}`, spark: spark(`topic:${name}`, "bad") };
     };
-    // A fixed order, from the cause to what it does; a reason no list names comes last.
-    const ordered = [...FINDING_ORDER, ...new Set(openAll.map(f => this.findingReason(f)).filter(c => !FINDING_ORDER.includes(c)))];
-    // The groups follow the colour of a reason: red ones are faults, the rest is tidying up, also a reason no list names.
-    const faults = ordered.filter(c => this.reasonTone(c) === "red"), tidy = ordered.filter(c => this.reasonTone(c) !== "red");
     const followers = openAll.filter(isFollower).length;
     const allObjects = this.countObjects(this.objectTree(openAll, openAll, true));
     // "All findings" clears the filters; it is not marked itself, only a filter that is on is.
     const total = { label: this.t("allFindings"), value: this.formatNumber(openAll.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("open", "bad") };
     const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
-    // The head of a group filters the list to the whole group, like a tile to one reason; without open findings it is a quiet label.
-    const group = (title, list, tone, id, row) => {
-      const n = openAll.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
-      const text = this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }));
-      const head = n ? `<button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}"><ha-icon icon="mdi:filter-variant"></ha-icon>${text}</button>` : `<span class="sumgrouphead zero">${text}</span>`;
-      return `<div class="sumhead" style="grid-row:${row}">${head}</div><div class="sumrow" style="--r:${row + 1}">${this.sumTileCells(list.map(c => ({ ...tile(c), hint: this.reasonLabel(c) })))}</div>`;
-    };
-    // "All findings" stands left over both rows; the follow-ups are named inside it. The whole tile clears the filters,
+    // "All findings" stands left of the topics; the follow-ups are named inside it. The whole tile clears the filters,
     // the link to the follow-ups lies above that.
     const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(this.t("allFindings"))}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
-    // One grid: the faults in the first row, the tidying up in the second, every tile of the same width and height.
-    const tiles = `<div class="findsum" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${Math.max(faults.length, tidy.length)}">${totalTile}${group("sumGroupUrgent", faults, "red", "red", 1)}${group("sumGroupTidy", tidy, "warn", "tidy", 3)}</div>`;
+    // One grid: "All" on the left, the four topics beside it, every tile of the same width and height.
+    const tiles = `<div class="findsum topics" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${TOPIC_ORDER.length}">${totalTile}<div class="sumrow" style="--r:1">${this.sumTileCells(TOPIC_ORDER.map(topicTile))}</div></div>`;
     const fixedView = this.findingStatus === "fixed";
     // Every head starts folded, however few the filter leaves; a head opened or closed by hand stays so.
     // Grouped: the heads of the objects, sorted by the chosen column. Flat: every finding for itself, in the same order.
@@ -3184,6 +3180,13 @@ class FindingsMixin {
   runLine(f) {
     const e = f.evidence?.[0] || {};
     return this.t(f.rule_id.endsWith(".never_ok") ? "runLineNever" : "runLineFailing", { errors: e.errors, runs: e.runs, days: e.window_days });
+  }
+
+  // How much matters in a group of findings: one segment per impact level, as wide as the number it stands for.
+  impactBar(list) {
+    const counts = ["high", "medium", "low", "info"].map(level => [level, list.filter(f => (f.impact || "info") === level).length]).filter(([, n]) => n);
+    const label = counts.map(([level, n]) => `${n} ${this.t(`chip_${level}`)}`).join(", ");
+    return `<span class="ibar" role="img" aria-label="${this.esc(`${this.t("sortImpact")}: ${label}`)}">${counts.map(([level, n]) => `<i class="${level}" style="flex:${n}"></i>`).join("")}</span>`;
   }
 
   // A finding that is due again, as one line: what was decided, since when, and what happened since.
@@ -8207,7 +8210,7 @@ class LayoutMixin {
   // The tiles alone, for a page that lays them out in a grid of its own.
   sumTileCells(tiles) {
     return tiles.filter(Boolean).map(t => {
-      const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}${t.spark ? `<span class="spark-row">${t.spark}</span>` : ""}`;
+      const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}${t.bar || ""}${t.spark ? `<span class="spark-row">${t.spark}</span>` : ""}`;
       const hint = t.hint ? ` title="${this.esc(t.hint)}"` : "";
       // Three kinds, told apart by a cue in the corner: a figure only (flat), a filter of the list below (funnel, marked when on), a link to another page (arrow).
       const filter = (attr, active) => `<button class="sumtile filter ${t.tone || "mute"}"${hint} ${attr} aria-pressed="${Boolean(active)}"><ha-icon class="sumcue" icon="mdi:filter-variant"></ha-icon>${inner}</button>`;
@@ -17795,7 +17798,8 @@ class ObjectGroupsMixin {
     const impact = Object.keys(IMPACT_RANK).find(k => IMPACT_RANK[k] === rank) || "none";
     const conf = one ? [one.confidence, one.confidence] : [Math.min(...list.map(f => f.confidence ?? 0)), Math.max(...list.map(f => f.confidence ?? 0))];
     const times = (one ? [one.first_detected_at] : list.map(f => f.first_detected_at)).filter(Boolean).sort();
-    return (n._facts = { list, own, one, impact, conf: list.length || own ? conf : [null, null], since: [times[0] || null, times[times.length - 1] || null] });
+    const topics = new Set([...list, ...(own ? [own] : [])].map(f => this.findingTopic(f)));
+    return (n._facts = { list, own, one, impact, topic: topics.size === 1 ? [...topics][0] : null, conf: list.length || own ? conf : [null, null], since: [times[0] || null, times[times.length - 1] || null] });
   }
 
   nodeName(n) { return n.cause ? n.cause.name : this.findObject(n.key)?.name || n.key.slice(n.key.indexOf(":") + 1); }
@@ -17852,6 +17856,7 @@ class ObjectGroupsMixin {
         case "id": return n.key;
         case "since": return f.since[desc ? 1 : 0];
         case "certainty": return f.conf[desc ? 1 : 0];
+        case "topic": return f.topic ? TOPIC_ORDER.indexOf(f.topic) : null;
         case "rule": return f.own?.rule_id || f.list[0]?.rule_id || n.cause?.kind;
         default: return (IMPACT_RANK[f.impact] ?? 0) + (f.conf[1] || 0) / 2;
       }
@@ -17889,9 +17894,9 @@ class ObjectGroupsMixin {
     // What a person reads first: the reason in words, or how many findings the object has; the rule ID small below.
     const rule = f.own ? `<span class="finding-label">${this.t("chip_outage")}</span><small class="finding-rule">${this.esc(f.own.rule_id)}</small>` : `<span class="finding-label">${this.esc(this.t(f.list.length === 1 ? "ogFindings1" : "ogFindings", { n: this.formatNumber(f.list.length) }))}</span>`;
     const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object && MARK_TYPES.includes(type) ? this.objectMenu(n.key) : "";
-    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRuleGrouped")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortTopic")}">${f.topic ? this.esc(this.t(`topic_${f.topic}`)) : `<span class="muted">–</span>`}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRuleGrouped")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
     const decision = n.cause && f.own ? this.rowDecide(f.own) : "";
-    const decide = decision ? `<tr class="finding-detail"><td colspan="7">${decision}</td></tr>` : "";
+    const decide = decision ? `<tr class="finding-detail"><td colspan="8">${decision}</td></tr>` : "";
     if (!open) return head + decide;
     const own = n.findings.filter(x => x !== f.own);
     const cards = n.key.startsWith("dashboard:") ? this.groupBroken(own) : own;
@@ -17906,8 +17911,8 @@ class ObjectGroupsMixin {
     const title = [...this.placeParts(p)].join(" › ") || f.object_id;
     const sub = [this.t("brokenCount", { n: keys.length }), this.isOrphan(p) ? this.t("brokenOrphanShort") : ""].filter(Boolean).join(" · ");
     const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
-    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td><div class="finding-link-group">${fold}<button type="button" class="finding-link" data-fold="${this.esc(id)}">${this.tile("dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span></button></div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRuleGrouped")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action"></td></tr>`;
-    const hint = open && this.isOrphan(p) ? `<tr class="finding-detail"><td colspan="7"><div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div></td></tr>` : "";
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td><div class="finding-link-group">${fold}<button type="button" class="finding-link" data-fold="${this.esc(id)}">${this.tile("dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span></button></div></td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRuleGrouped")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action"></td></tr>`;
+    const hint = open && this.isOrphan(p) ? `<tr class="finding-detail"><td colspan="8"><div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div></td></tr>` : "";
     return head + hint + (open ? g.members.map(m => this.findingTableRow(m, depth + 1, true)).join("") : "");
   }
 }

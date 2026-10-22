@@ -95,7 +95,8 @@ class ObjectGroupsMixin {
     const impact = Object.keys(IMPACT_RANK).find(k => IMPACT_RANK[k] === rank) || "none";
     const conf = one ? [one.confidence, one.confidence] : [Math.min(...list.map(f => f.confidence ?? 0)), Math.max(...list.map(f => f.confidence ?? 0))];
     const times = (one ? [one.first_detected_at] : list.map(f => f.first_detected_at)).filter(Boolean).sort();
-    return (n._facts = { list, own, one, impact, conf: list.length || own ? conf : [null, null], since: [times[0] || null, times[times.length - 1] || null] });
+    const topics = new Set([...list, ...(own ? [own] : [])].map(f => this.findingTopic(f)));
+    return (n._facts = { list, own, one, impact, topic: topics.size === 1 ? [...topics][0] : null, conf: list.length || own ? conf : [null, null], since: [times[0] || null, times[times.length - 1] || null] });
   }
 
   nodeName(n) { return n.cause ? n.cause.name : this.findObject(n.key)?.name || n.key.slice(n.key.indexOf(":") + 1); }
@@ -152,6 +153,7 @@ class ObjectGroupsMixin {
         case "id": return n.key;
         case "since": return f.since[desc ? 1 : 0];
         case "certainty": return f.conf[desc ? 1 : 0];
+        case "topic": return f.topic ? TOPIC_ORDER.indexOf(f.topic) : null;
         case "rule": return f.own?.rule_id || f.list[0]?.rule_id || n.cause?.kind;
         default: return (IMPACT_RANK[f.impact] ?? 0) + (f.conf[1] || 0) / 2;
       }
@@ -189,9 +191,9 @@ class ObjectGroupsMixin {
     // What a person reads first: the reason in words, or how many findings the object has; the rule ID small below.
     const rule = f.own ? `<span class="finding-label">${this.t("chip_outage")}</span><small class="finding-rule">${this.esc(f.own.rule_id)}</small>` : `<span class="finding-label">${this.esc(this.t(f.list.length === 1 ? "ogFindings1" : "ogFindings", { n: this.formatNumber(f.list.length) }))}</span>`;
     const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object && MARK_TYPES.includes(type) ? this.objectMenu(n.key) : "";
-    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRuleGrouped")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortTopic")}">${f.topic ? this.esc(this.t(`topic_${f.topic}`)) : `<span class="muted">–</span>`}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRuleGrouped")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
     const decision = n.cause && f.own ? this.rowDecide(f.own) : "";
-    const decide = decision ? `<tr class="finding-detail"><td colspan="7">${decision}</td></tr>` : "";
+    const decide = decision ? `<tr class="finding-detail"><td colspan="8">${decision}</td></tr>` : "";
     if (!open) return head + decide;
     const own = n.findings.filter(x => x !== f.own);
     const cards = n.key.startsWith("dashboard:") ? this.groupBroken(own) : own;
@@ -206,8 +208,8 @@ class ObjectGroupsMixin {
     const title = [...this.placeParts(p)].join(" › ") || f.object_id;
     const sub = [this.t("brokenCount", { n: keys.length }), this.isOrphan(p) ? this.t("brokenOrphanShort") : ""].filter(Boolean).join(" · ");
     const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
-    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td><div class="finding-link-group">${fold}<button type="button" class="finding-link" data-fold="${this.esc(id)}">${this.tile("dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span></button></div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRuleGrouped")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action"></td></tr>`;
-    const hint = open && this.isOrphan(p) ? `<tr class="finding-detail"><td colspan="7"><div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div></td></tr>` : "";
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td><div class="finding-link-group">${fold}<button type="button" class="finding-link" data-fold="${this.esc(id)}">${this.tile("dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span></button></div></td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRuleGrouped")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action"></td></tr>`;
+    const hint = open && this.isOrphan(p) ? `<tr class="finding-detail"><td colspan="8"><div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div></td></tr>` : "";
     return head + hint + (open ? g.members.map(m => this.findingTableRow(m, depth + 1, true)).join("") : "");
   }
 }

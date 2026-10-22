@@ -122,6 +122,8 @@ const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"]
 const FINDING_ORDER = ["outage", "unavailable", "stale", "broken_reference", "problem", "unknown", "orphaned", "unused", "possible_duplicate"];
 // Reasons shown red, as faults, besides the classes that are red anyway: a sensor that stopped reporting is mostly broken.
 const FAULT_REASONS = ["outage", "stale"];
+// The four topics of the findings page, in the order of the tiles: what is wrong, from the cause to the leftovers.
+const TOPIC_ORDER = ["down", "broken_references", "failing_automations", "unneeded"];
 // A filter that leaves at most this many findings opens the heads of the grouped list by itself.
 // The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
 const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };

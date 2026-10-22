@@ -10,11 +10,12 @@ class FindingsMixin {
   // An outage is whatever starts a chain (integration not loaded or asking for a login, device down, app stopped);
   // what is left of "problem" then are automations and scripts that cannot work.
   findingReason(f) { return CAUSE_OWN_RULES.includes(f.rule_id) ? "outage" : f.classification; }
-  reasonLabel(r) { return r === "group:red" ? this.t("sumGroupUrgent") : r === "group:tidy" ? this.t("sumGroupTidy") : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
+  reasonLabel(r) { return r.startsWith("topic:") ? this.t(`topic_${r.slice(6)}`) : r === "group:red" ? this.t("sumGroupUrgent") : r === "group:tidy" ? this.t("sumGroupTidy") : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
   // The two groups of the tiles: red reasons are faults, the rest is tidying up.
   findingTileGroup(f) { return this.reasonTone(this.findingReason(f)) === "red" ? "red" : "tidy"; }
   // The tile filter: one reason (or rule), or a whole group as "group:red" / "group:tidy".
-  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("group:") ? this.findingTileGroup(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
+  findingTopic(f) { return f.topic || "unneeded"; }
+  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("topic:") ? this.findingTopic(f) === filter.slice(6) : filter.startsWith("group:") ? this.findingTileGroup(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
   reasonTone(r) { const tone = FAULT_REASONS.includes(r) ? "red" : this.tone(r); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; }
 
   // Impact first, then how sure the diagnosis is: the fraction keeps the certainty from outranking a level.
@@ -105,7 +106,7 @@ class FindingsMixin {
       return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
     };
     const idSort = `<button type="button" class="thbtn th-alt" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
+    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
     // In the grouped view every row is a head of an object; in the flat one every row is a finding.
     const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
@@ -118,12 +119,13 @@ class FindingsMixin {
     const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
     const name = depth ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
     const detail = this.rowDecide(f);
-    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
+    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
   }
 
   findingSorts() {
     return [
       { key: "impact", label: "sortImpact", dir: "desc", get: f => this.impactScore(f) },
+      { key: "topic", label: "sortTopic", dir: "asc", get: f => TOPIC_ORDER.indexOf(this.findingTopic(f)) },
       { key: "certainty", label: "sortCertainty", dir: "desc", get: f => f.confidence },
       { key: "name", label: "sortName", dir: "asc", get: f => this.findObject(this.findingKey(f))?.name || f.object_id },
       { key: "id", label: "sortId", dir: "asc", get: f => f.object_id },
@@ -264,7 +266,7 @@ class FindingsMixin {
       ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : []),
     ];
     // The export button of the list bar, as on every list: the rows as shown, or only the selected ones.
-    const cols = ["rule_id", "classification", "confidence", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
+    const cols = ["rule_id", "topic", "classification", "confidence", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
     this.setExporter("findings", "ha-housekeeper-findings", cols, () => this.exportRows().map(r => cols.map(c => r[c])));
     const bar = this.listBar("findings", { table: true, dense: true, note: false, sorts: this.findingSorts(), filters });
     this.ensureSeries();
@@ -276,32 +278,22 @@ class FindingsMixin {
     // The tiles are fixed: they count the open findings whatever status the list shows, every finding of a reason with
     // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
     const openAll = this.data.findings.filter(f => !f.ignored);
-    const tile = c => {
-      const mine = openAll.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length;
-      if (!mine.length) return { label: this.reasonLabel(c), value: "0", tone: "zero", spark: spark(`reason:${c}`, "bad") };
-      return { label: this.reasonLabel(c), value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: this.reasonTone(c), filter: c, active: this.findingFilter === c, spark: spark(`reason:${c}`, "bad") };
+    const topicTile = name => {
+      const mine = openAll.filter(f => this.findingTopic(f) === name), follows = mine.filter(isFollower).length, label = this.t(`topic_${name}`);
+      if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`topic:${name}`, "bad") };
+      const worst = mine.reduce((m, f) => Math.max(m, IMPACT_RANK[f.impact] ?? 0), 0);
+      return { label, value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "mute", bar: this.impactBar(mine), hint: this.t(`topicHint_${name}`), filter: `topic:${name}`, active: this.findingFilter === `topic:${name}`, spark: spark(`topic:${name}`, "bad") };
     };
-    // A fixed order, from the cause to what it does; a reason no list names comes last.
-    const ordered = [...FINDING_ORDER, ...new Set(openAll.map(f => this.findingReason(f)).filter(c => !FINDING_ORDER.includes(c)))];
-    // The groups follow the colour of a reason: red ones are faults, the rest is tidying up, also a reason no list names.
-    const faults = ordered.filter(c => this.reasonTone(c) === "red"), tidy = ordered.filter(c => this.reasonTone(c) !== "red");
     const followers = openAll.filter(isFollower).length;
     const allObjects = this.countObjects(this.objectTree(openAll, openAll, true));
     // "All findings" clears the filters; it is not marked itself, only a filter that is on is.
     const total = { label: this.t("allFindings"), value: this.formatNumber(openAll.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("open", "bad") };
     const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
-    // The head of a group filters the list to the whole group, like a tile to one reason; without open findings it is a quiet label.
-    const group = (title, list, tone, id, row) => {
-      const n = openAll.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
-      const text = this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }));
-      const head = n ? `<button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}"><ha-icon icon="mdi:filter-variant"></ha-icon>${text}</button>` : `<span class="sumgrouphead zero">${text}</span>`;
-      return `<div class="sumhead" style="grid-row:${row}">${head}</div><div class="sumrow" style="--r:${row + 1}">${this.sumTileCells(list.map(c => ({ ...tile(c), hint: this.reasonLabel(c) })))}</div>`;
-    };
-    // "All findings" stands left over both rows; the follow-ups are named inside it. The whole tile clears the filters,
+    // "All findings" stands left of the topics; the follow-ups are named inside it. The whole tile clears the filters,
     // the link to the follow-ups lies above that.
     const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(this.t("allFindings"))}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
-    // One grid: the faults in the first row, the tidying up in the second, every tile of the same width and height.
-    const tiles = `<div class="findsum" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${Math.max(faults.length, tidy.length)}">${totalTile}${group("sumGroupUrgent", faults, "red", "red", 1)}${group("sumGroupTidy", tidy, "warn", "tidy", 3)}</div>`;
+    // One grid: "All" on the left, the four topics beside it, every tile of the same width and height.
+    const tiles = `<div class="findsum topics" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${TOPIC_ORDER.length}">${totalTile}<div class="sumrow" style="--r:1">${this.sumTileCells(TOPIC_ORDER.map(topicTile))}</div></div>`;
     const fixedView = this.findingStatus === "fixed";
     // Every head starts folded, however few the filter leaves; a head opened or closed by hand stays so.
     // Grouped: the heads of the objects, sorted by the chosen column. Flat: every finding for itself, in the same order.
@@ -428,6 +420,13 @@ class FindingsMixin {
   runLine(f) {
     const e = f.evidence?.[0] || {};
     return this.t(f.rule_id.endsWith(".never_ok") ? "runLineNever" : "runLineFailing", { errors: e.errors, runs: e.runs, days: e.window_days });
+  }
+
+  // How much matters in a group of findings: one segment per impact level, as wide as the number it stands for.
+  impactBar(list) {
+    const counts = ["high", "medium", "low", "info"].map(level => [level, list.filter(f => (f.impact || "info") === level).length]).filter(([, n]) => n);
+    const label = counts.map(([level, n]) => `${n} ${this.t(`chip_${level}`)}`).join(", ");
+    return `<span class="ibar" role="img" aria-label="${this.esc(`${this.t("sortImpact")}: ${label}`)}">${counts.map(([level, n]) => `<i class="${level}" style="flex:${n}"></i>`).join("")}</span>`;
   }
 
   // A finding that is due again, as one line: what was decided, since when, and what happened since.
