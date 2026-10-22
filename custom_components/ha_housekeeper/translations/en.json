@@ -106,6 +106,9 @@
       "low_batteries": {
         "name": "Low batteries"
       },
+      "new_findings": {
+        "name": "New findings"
+      },
       "last_scan": {
         "name": "Last scan"
       },
