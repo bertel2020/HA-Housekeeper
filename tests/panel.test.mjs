@@ -6942,7 +6942,7 @@ test("a missing target has Fix all n in its menu, and its page replaces or remov
   assert.equal(el.fixKey, "k1", "an automation stands for the page");
   await new Promise(r => setTimeout(r, 0));
   const html = el.fixView();
-  assert.ok(html.includes("3 places refer to it") && html.includes("2 automations, 1 scripts") && html.includes("Remove from 2 automations") && html.includes("data-fix-replace") && !html.includes("Open in Home Assistant"));
+  assert.ok(html.includes("3 places refer to it") && html.includes("2 automations, 1 script") && html.includes("Remove from 2 automations") && html.includes("data-fix-replace") && !html.includes("Open in Home Assistant"));
   let plan = null;
   el.newPlan = async (requests, kind) => { plan = { requests, kind }; };
   const root = { querySelectorAll: sel => sel === "[data-fix-remove-all]" ? [{ dataset: { fixRemoveAll: "sensor.gone" }, set onclick(fn) { this._fn = fn; fn.__el = this; plan = { fn }; } }] : [], querySelector: () => null };

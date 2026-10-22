@@ -727,6 +727,7 @@ class HAHousekeeperPanel extends HTMLElement {
   eyebrowFor(view) {
     if (view === "settings") return this.t("title");
     if (view === "overview") return this.t("navGroupOverview");
+    if (["fix", "round", "firstcleanup"].includes(view)) return ""; // pages below the findings carry no group heading
     const group = NAV_GROUPS.find(([, views]) => views.includes(view));
     // The first group holds the entries that stand alone in the bar; it is no heading.
     return group ? (group === NAV_GROUPS[0] ? "" : this.t(group[0])) : this.t("navGroupOverview");

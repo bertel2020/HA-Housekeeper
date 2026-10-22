@@ -50,7 +50,7 @@ class FirstCleanupMixin {
   firstCleanupOffer() {
     this.ensureFirstCleanup();
     if (!this.fc?.offered) return "";
-    return `<div class="panel hintrow fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="hintlabel">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><span class="spacer"></span><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
+    return `<div class="panel fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="fctext">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
   }
 
   fcStageRow(n, state) {
@@ -89,7 +89,7 @@ class FirstCleanupMixin {
   // Stage 5: the rest goes to "Later" with a date; it comes back through "Due". Housekeeper's own list only.
   fcLater() {
     const n = this.stageCount(5), days = this.fcDays ?? this.fc.later_days;
-    if (n) this.confirmAsk(this.t("fcLaterConfirm", { n: this.formatNumber(n), days }), () => this.fcLaterRun(days), { label: this.t("fcLaterAll", { n: this.formatNumber(n) }) });
+    if (n) this.confirmAsk(this.t("fcLaterConfirm", { n: this.formatNumber(n), days }), () => this.fcLaterRun(days), { title: this.t("fcLaterTitle"), yes: this.t("fcLaterYes"), danger: false });
   }
 
   async fcLaterRun(days) {
@@ -102,7 +102,7 @@ class FirstCleanupMixin {
   }
 }
 Object.assign(TEXT.de, {
-  firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
+  firstcleanup: "Erstes Aufräumen", round: "Aufräum-Runde", firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
   fcOffer: "{n} Befunde sind offen. Das erste Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Erstes Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Erstes Aufräumen",
   fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
   fcProgress: "Begonnen am {date} mit {start} offenen Befunden, jetzt {now} offen, {done} von 5 Etappen erledigt.", fcFinished: "Fertig am {date}.",
@@ -112,10 +112,10 @@ Object.assign(TEXT.de, {
   fcStage3: "Hohe und mittlere Wirkung", fcStage3Hint: "Ausgefallen, kaputte Verweise und fehlerhafte Automationen mit Wirkung Hoch oder Mittel.",
   fcStage4: "Überflüssiges", fcStage4Hint: "Die Aufräum-Runde: sicher Entfernbares gesammelt, der Rest einzeln.",
   fcStage5: "Der ruhige Rest", fcStage5Hint: "Wirkung Niedrig oder Info: gesammelt auf „Später“; es kommt über „Fällig“ zurück.",
-  fcLaterDays: "Tage", fcLaterAll: "Alle {n} auf „Später“", fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
+  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage", fcLaterAll: "Alle {n} auf „Später“", fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
-  firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
+  firstcleanup: "First cleanup", round: "Cleanup round", firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
   fcOffer: "{n} findings are open. The first cleanup goes through them in five stages.", fcBegin: "Begin the first cleanup", fcNotNow: "Not now", fcButton: "First cleanup",
   fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
   fcProgress: "Begun on {date} with {start} open findings, {now} open now, {done} of 5 stages done.", fcFinished: "Finished on {date}.",
@@ -125,5 +125,5 @@ Object.assign(TEXT.en, {
   fcStage3: "High and medium impact", fcStage3Hint: "Down, broken references and failing automations with impact High or Medium.",
   fcStage4: "Unneeded", fcStage4Hint: "The cleanup round: what is safe to remove together, the rest one by one.",
   fcStage5: "The quiet rest", fcStage5Hint: "Impact Low or Info: put off together to “Later”; it comes back through “Due”.",
-  fcLaterDays: "Days", fcLaterAll: "Put all {n} off", fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
+  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterDays: "Days", fcLaterAll: "Put all {n} off", fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
 });

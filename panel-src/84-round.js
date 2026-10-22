@@ -30,7 +30,7 @@ class RoundMixin {
       ? (r.duplicate_of ? `<button type="button" class="btn" data-round-merge="${this.esc(r.object_id)}" data-round-into="${this.esc(r.duplicate_of)}">${this.t(action)}</button>` : "")
       : `<button type="button" class="btn" data-round-one="${this.esc(r.finding_key)}">${this.t(action)}</button>`;
     const why = r.kind === "merge" ? this.t("roundDuplicateOf", { name: r.duplicate_of || "?" }) : [r.first_step ? this.t("roundFirstStep") : "", reasons].filter(Boolean).join(" · ");
-    return `<div class="row">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${main}${keep}</div>`;
+    return `<div class="row${box ? "" : " fixway"}">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${main}${keep}</div>`;
   }
 
   roundGroup(title, hint, rows, picked, withAll) {

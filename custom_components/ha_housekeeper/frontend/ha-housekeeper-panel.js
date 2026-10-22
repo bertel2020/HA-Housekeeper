@@ -1568,6 +1568,7 @@ class StylesMixin {
       .remform{display:grid;gap:14px;padding:16px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.remgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:start}.remfield{display:grid;grid-template-rows:auto 40px auto;gap:4px;font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted);min-width:0}.remfield input{height:40px;min-width:0}.remfield.full{grid-column:1/-1;grid-template-rows:auto 40px}.remchips{display:flex;gap:6px;flex-wrap:wrap}.remchips .chip{padding:2px 10px;font-size:calc(12px*var(--hk-fs,1))}.remhint{color:var(--hk-blue-text);font-weight:600}.remactions{display:flex;gap:14px;align-items:center;justify-content:flex-end}
       .tablewrap.rem td:first-child{white-space:normal}.chevbtn{display:inline-flex;vertical-align:middle;padding:0;margin-right:4px;border:0;background:none;color:var(--hk-muted);cursor:pointer}.remnote{display:block;color:var(--hk-muted)}.remact{text-align:right;white-space:nowrap}.remact .btn{margin-left:6px}.remhist td{padding:10px 16px 14px 44px;background:var(--hk-soft)}.remhist h3{margin:0 0 6px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.remhist ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}.remhist li{display:flex;gap:12px;align-items:center}.remhist li .linkbtn{margin-left:auto;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.remhist p{margin:0}.bhgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;padding-left:28px}@media(max-width:760px){.bhgrid{grid-template-columns:minmax(0,1fr);padding-left:0}}.bhgrid small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.bhgrid .wide{grid-column:1/-1}.bh .statcell{align-items:center}.pill.bhfail{margin-left:6px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
       @media(max-width:700px){.remact{display:flex;flex-wrap:wrap;gap:8px;white-space:normal}.remact .btn{margin-left:0}.remgrid{grid-template-columns:1fr}.remfield.wide,.remfield.full{grid-column:auto}}
+      .row.fixway{grid-template-columns:minmax(0,1fr) auto}.row.fixway .row-text small{overflow:visible;white-space:normal;text-overflow:clip}.rrow small.factnote{display:block}.fcoffer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 16px}.fcoffer .fctext{flex:1 1 240px;font-weight:600;font-size:calc(13px*var(--hk-fs,1))}.fixrating{margin:0;padding:12px 16px}.fixway~.ratinghead{margin:14px 16px 6px}.fixway~.mbtns{margin:0 16px 14px}
       .rating{display:grid;gap:8px;margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid var(--hk-border)}.ratinghead{margin:0;font-size:calc(12px*var(--hk-fs,1));font-weight:500;color:var(--hk-muted)}.rrow{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:baseline}.rrow>b{font-weight:500}.rbar{height:6px;border-radius:3px;background:var(--hk-soft);overflow:hidden;margin:8px 0 3px}.rbar span{display:block;height:100%;background:var(--hk-amber)}.rticks{display:grid;grid-template-columns:repeat(4,1fr);font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.rnext{display:flex;gap:8px;align-items:flex-start;padding-top:8px;border-top:1px solid var(--hk-border)}.ratingicon{--mdc-icon-size:16px;color:var(--hk-muted);flex:none}
       .stack>.hint{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent);background:color-mix(in srgb,var(--hk-blue) 8%,transparent);border-radius:12px;font-size:13px}.stack>.hint>span{flex:1}.linkbtn{background:none;border:0;padding:0;color:var(--hk-blue);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
       .helpcard{display:grid;gap:14px}.helphead{display:flex;align-items:center;justify-content:space-between}.helpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 22px}.helpgrid h3{margin:0 0 3px;font-size:calc(13px*var(--hk-fs,1));font-weight:500}.helpgrid p{margin:0;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.helpnums{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:6px 14px;padding-top:12px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}.helpnums b{font-weight:500}.helpnums span{color:var(--hk-muted)}@media(max-width:560px){.helpnums{grid-template-columns:1fr}}
@@ -18051,22 +18052,22 @@ class FixMixin {
     const own = cause && cause.finding_key === f.key, since = f.first_detected_at || f.first_seen_at;
     const pattern = (f.confidence_notes || []).find(n => n.code === "pattern");
     const all = this.fixAllFindings(), allCause = this.fixAll ? this.causeById(this.fixAll) : null;
-    const kinds = ["automation", "script", "dashboard"].map(k => [k, all.filter(x => x.rule_id.startsWith(`${k}.`)).length]).filter(([, n]) => n).map(([k, n]) => this.t(`fixAllKind_${k}`, { n: this.formatNumber(n) })).join(", ");
+    const kinds = ["automation", "script", "dashboard"].map(k => [k, all.filter(x => x.rule_id.startsWith(`${k}.`)).length]).filter(([, n]) => n).map(([k, n]) => this.tCount(`fixAllKind_${k}`, n)).join(", ");
     const rows = [
       allCause ? [this.t("fixWhat"), this.esc(this.t(`cause_${allCause.kind}`, { name: allCause.name }))] : null,
-      allCause ? [this.t("fixAffects"), this.esc(`${this.t("fixAllPlaces", { n: this.formatNumber(all.length) })}${kinds ? ` (${kinds})` : ""}`)] : null,
+      allCause ? [this.t("fixAffects"), this.esc(`${this.tCount("fixAllPlaces", all.length)}${kinds ? ` (${kinds})` : ""}`)] : null,
       allCause ? null : [this.t("fixWhat"), this.esc(this.findingTitle(f))],
       f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) }))] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) }))] : null,
       since ? [this.t("sortSince"), this.esc(this.formatDate(since))] : null,
       f.impact ? [this.t("sortImpact"), this.esc(this.impactLine(f))] : null,
-      cause && !own ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name }))] : null,
+      cause && !own && !allCause ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name }))] : null,
       cause && own && cause.total_followers ? [this.t("fixAffects"), this.esc(this.tCount("causeFollowers", cause.total_followers))] : null,
       this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure))] : null,
       this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`] : null,
       pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour }))] : null,
       f.confidence_level ? [this.t("sortCertainty"), `${Math.round(f.confidence * 100)} %<small class="factnote">${this.esc(this.certaintyText(f))}</small>`] : null,
     ].filter(Boolean);
-    return `<div class="rating">${rows.map(([label, value]) => `<div class="rrow"><b>${label}</b><div>${value}</div></div>`).join("")}</div>`;
+    return `<div class="rating fixrating">${rows.map(([label, value]) => `<div class="rrow"><b>${label}</b><div>${value}</div></div>`).join("")}</div>`;
   }
 
   fixFailureText(failure) {
@@ -18092,7 +18093,7 @@ class FixMixin {
       action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
     } else if (w.way === "replace_target") action = `<button type="button" class="btn" data-fix-replace="${this.esc(w.target)}" data-fix-new="${this.esc(w.suggestion || "")}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button>`;
     else if (w.way === "remove_reference" && this.fixAll) action = w.enabled
-      ? `<button type="button" class="btn" data-fix-remove-all="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveAll", { n: this.formatNumber(this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).length) })}</button>`
+      ? `<button type="button" class="btn" data-fix-remove-all="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.tCount("fixRemoveAll", this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).length)}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "remove_reference") action = w.enabled
       ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
@@ -18100,7 +18101,7 @@ class FixMixin {
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixOpenActions")}</button>`;
-    return `<div class="row"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
+    return `<div class="row fixway"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
   }
 
   // Step 2: the ways of the topic, and always the three exits.
@@ -18110,6 +18111,8 @@ class FixMixin {
     const list = shown === null ? `<p class="factnote">${this.t("loading")}</p>` : shown.length ? [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended)).map(w => this.fixWayCard(w, f)).join("") : `<p class="factnote">${this.t("fixNoWays")}</p>`;
     const key = this.esc(f.key);
     const exit = (kind, icon) => `<button type="button" class="btn" data-decide-open="${key}" data-decide-preset="${kind}"><ha-icon icon="${icon}"></ha-icon>${this.t(`decideKind_${kind}`)}<small>${this.t(`decideKindHint_${kind}`)}</small></button>`;
+    // The exits decide one finding; for a missing target the selection below decides several.
+    if (this.fixAll) return list;
     return `${list}<h3 class="ratinghead">${this.t("fixExits")}</h3><div class="mbtns">${exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:eye-off-outline")}</div>${this.rowDecide(f)}`;
   }
 
@@ -18117,7 +18120,7 @@ class FixMixin {
   fixCollect(f) {
     const cause = f.cause_id ? this.causeById(f.cause_id) : this.causeList().find(c => c.finding_key === f.key);
     if (!cause) return "";
-    const below = this.data.findings.filter(x => !x.ignored && x.key !== f.key && this.causeKeys(cause.id).has(x.key));
+    const below = this.data.findings.filter(x => !x.ignored && (this.fixAll || x.key !== f.key) && this.causeKeys(cause.id).has(x.key));
     if (below.length < 2) return "";
     const rows = below.map(x => `<label class="row"><input type="checkbox" data-fix-pick="${this.esc(x.key)}" ${this.findSel.has(x.key) ? "checked" : ""}><span class="row-text"><strong>${this.esc(this.findObject(this.findingKey(x))?.name || x.object_id)}</strong><small>${this.esc(this.findingTitle(x))}</small></span></label>`).join("");
     const picked = below.filter(x => this.findSel.has(x.key)).length, off = picked ? "" : "disabled";
@@ -18196,7 +18199,7 @@ class FixMixin {
   }
 }
 Object.assign(TEXT.de, {
-  fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_script: "{n} Skripte", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixRemoveAll: "Aus {n} Automationen entfernen",
+  fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen, entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben",
   fixStepUnderstand: "Verstehen", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
   fixWhat: "Was los ist", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder entscheiden, nicht zu beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
@@ -18221,7 +18224,7 @@ Object.assign(TEXT.de, {
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
-  fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_script: "{n} scripts", fixAllKind_dashboard: "{n} dashboard places", fixRemoveAll: "Remove from {n} automations",
+  fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand, decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix",
   fixStepUnderstand: "Understand", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
   fixWhat: "What is wrong", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or decide not to fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",
@@ -18278,7 +18281,7 @@ class RoundMixin {
       ? (r.duplicate_of ? `<button type="button" class="btn" data-round-merge="${this.esc(r.object_id)}" data-round-into="${this.esc(r.duplicate_of)}">${this.t(action)}</button>` : "")
       : `<button type="button" class="btn" data-round-one="${this.esc(r.finding_key)}">${this.t(action)}</button>`;
     const why = r.kind === "merge" ? this.t("roundDuplicateOf", { name: r.duplicate_of || "?" }) : [r.first_step ? this.t("roundFirstStep") : "", reasons].filter(Boolean).join(" · ");
-    return `<div class="row">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${main}${keep}</div>`;
+    return `<div class="row${box ? "" : " fixway"}">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${main}${keep}</div>`;
   }
 
   roundGroup(title, hint, rows, picked, withAll) {
@@ -18403,7 +18406,7 @@ class FirstCleanupMixin {
   firstCleanupOffer() {
     this.ensureFirstCleanup();
     if (!this.fc?.offered) return "";
-    return `<div class="panel hintrow fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="hintlabel">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><span class="spacer"></span><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
+    return `<div class="panel fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="fctext">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
   }
 
   fcStageRow(n, state) {
@@ -18442,7 +18445,7 @@ class FirstCleanupMixin {
   // Stage 5: the rest goes to "Later" with a date; it comes back through "Due". Housekeeper's own list only.
   fcLater() {
     const n = this.stageCount(5), days = this.fcDays ?? this.fc.later_days;
-    if (n) this.confirmAsk(this.t("fcLaterConfirm", { n: this.formatNumber(n), days }), () => this.fcLaterRun(days), { label: this.t("fcLaterAll", { n: this.formatNumber(n) }) });
+    if (n) this.confirmAsk(this.t("fcLaterConfirm", { n: this.formatNumber(n), days }), () => this.fcLaterRun(days), { title: this.t("fcLaterTitle"), yes: this.t("fcLaterYes"), danger: false });
   }
 
   async fcLaterRun(days) {
@@ -18455,7 +18458,7 @@ class FirstCleanupMixin {
   }
 }
 Object.assign(TEXT.de, {
-  firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
+  firstcleanup: "Erstes Aufräumen", round: "Aufräum-Runde", firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
   fcOffer: "{n} Befunde sind offen. Das erste Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Erstes Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Erstes Aufräumen",
   fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
   fcProgress: "Begonnen am {date} mit {start} offenen Befunden, jetzt {now} offen, {done} von 5 Etappen erledigt.", fcFinished: "Fertig am {date}.",
@@ -18465,10 +18468,10 @@ Object.assign(TEXT.de, {
   fcStage3: "Hohe und mittlere Wirkung", fcStage3Hint: "Ausgefallen, kaputte Verweise und fehlerhafte Automationen mit Wirkung Hoch oder Mittel.",
   fcStage4: "Überflüssiges", fcStage4Hint: "Die Aufräum-Runde: sicher Entfernbares gesammelt, der Rest einzeln.",
   fcStage5: "Der ruhige Rest", fcStage5Hint: "Wirkung Niedrig oder Info: gesammelt auf „Später“; es kommt über „Fällig“ zurück.",
-  fcLaterDays: "Tage", fcLaterAll: "Alle {n} auf „Später“", fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
+  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage", fcLaterAll: "Alle {n} auf „Später“", fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
-  firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
+  firstcleanup: "First cleanup", round: "Cleanup round", firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
   fcOffer: "{n} findings are open. The first cleanup goes through them in five stages.", fcBegin: "Begin the first cleanup", fcNotNow: "Not now", fcButton: "First cleanup",
   fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
   fcProgress: "Begun on {date} with {start} open findings, {now} open now, {done} of 5 stages done.", fcFinished: "Finished on {date}.",
@@ -18478,7 +18481,7 @@ Object.assign(TEXT.en, {
   fcStage3: "High and medium impact", fcStage3Hint: "Down, broken references and failing automations with impact High or Medium.",
   fcStage4: "Unneeded", fcStage4Hint: "The cleanup round: what is safe to remove together, the rest one by one.",
   fcStage5: "The quiet rest", fcStage5Hint: "Impact Low or Info: put off together to “Later”; it comes back through “Due”.",
-  fcLaterDays: "Days", fcLaterAll: "Put all {n} off", fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
+  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterDays: "Days", fcLaterAll: "Put all {n} off", fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -19210,6 +19213,7 @@ class HAHousekeeperPanel extends HTMLElement {
   eyebrowFor(view) {
     if (view === "settings") return this.t("title");
     if (view === "overview") return this.t("navGroupOverview");
+    if (["fix", "round", "firstcleanup"].includes(view)) return ""; // pages below the findings carry no group heading
     const group = NAV_GROUPS.find(([, views]) => views.includes(view));
     // The first group holds the entries that stand alone in the bar; it is no heading.
     return group ? (group === NAV_GROUPS[0] ? "" : this.t(group[0])) : this.t("navGroupOverview");
