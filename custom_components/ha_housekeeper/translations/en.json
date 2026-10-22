@@ -398,6 +398,24 @@
           "description": "The \"at\" of the log entry."
         }
       }
+    },
+    "finding_fix_plan": {
+      "name": "AI access: create a plan to fix a finding",
+      "description": "Creates the plan for one way to fix a finding (replace a missing target, remove a reference, catch an error, clean up an unneeded object). The plan is only a preview: it is not run. An administrator reviews and confirms it in the Housekeeper panel. Needs \"AI access\" and \"Fix findings\" to be switched on. Get the key and the ways from \"finding_fix_options\".",
+      "fields": {
+        "key": {
+          "name": "Finding key",
+          "description": "The key of the finding."
+        },
+        "way": {
+          "name": "Way",
+          "description": "The way from \"finding_fix_options\": replace_target, remove_reference, catch_error or cleanup_round."
+        },
+        "target": {
+          "name": "New target",
+          "description": "For replace_target: the entity, area, floor or label that takes the place of the missing one."
+        }
+      }
     }
   },
   "exceptions": {
@@ -457,6 +475,27 @@
     },
     "too_many": {
       "message": "The list is full."
+    },
+    "fix_disabled": {
+      "message": "Creating plans for fixes is switched off. Switch on “Fix findings” in the Housekeeper settings."
+    },
+    "way_not_offered": {
+      "message": "That way is not offered for this finding. Ask finding_fix_options for the ways."
+    },
+    "target_required": {
+      "message": "This way needs the new target in \"target\"."
+    },
+    "refactor_disabled": {
+      "message": "This way needs “Improve” to be switched on in the Housekeeper panel."
+    },
+    "no_last_failure": {
+      "message": "There is no failed run in the trace buffer of Home Assistant to take the step from."
+    },
+    "way_not_plannable": {
+      "message": "This way cannot be made a plan; it is for the panel."
+    },
+    "plan_blocked": {
+      "message": "The plan is blocked: {detail}."
     }
   }
 }

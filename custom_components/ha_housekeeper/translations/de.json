@@ -398,6 +398,24 @@
           "description": "Das „at“ des Protokolleintrags."
         }
       }
+    },
+    "finding_fix_plan": {
+      "name": "KI-Zugriff: Plan zum Beheben eines Befunds anlegen",
+      "description": "Legt den Plan für einen Weg an, einen Befund zu beheben (fehlendes Ziel ersetzen, Verweis entfernen, Fehler abfangen, Überflüssiges aufräumen). Der Plan ist nur eine Vorschau: Er läuft nicht. Ein Administrator prüft und bestätigt ihn im Housekeeper-Panel. Braucht den eingeschalteten „KI-Zugriff“ und „Befunde beheben“. Schlüssel und Wege liefert „finding_fix_options“.",
+      "fields": {
+        "key": {
+          "name": "Schlüssel des Befunds",
+          "description": "Der Schlüssel des Befunds."
+        },
+        "way": {
+          "name": "Weg",
+          "description": "Der Weg aus „finding_fix_options“: replace_target, remove_reference, catch_error oder cleanup_round."
+        },
+        "target": {
+          "name": "Neues Ziel",
+          "description": "Für replace_target: die Entität, der Bereich, die Etage oder das Label, das an die Stelle des fehlenden tritt."
+        }
+      }
     }
   },
   "exceptions": {
@@ -457,6 +475,27 @@
     },
     "too_many": {
       "message": "Die Liste ist voll."
+    },
+    "fix_disabled": {
+      "message": "Pläne zum Beheben anzulegen ist ausgeschaltet. Schalte „Befunde beheben“ in den Housekeeper-Einstellungen ein."
+    },
+    "way_not_offered": {
+      "message": "Dieser Weg wird für den Befund nicht angeboten. Die Wege nennt finding_fix_options."
+    },
+    "target_required": {
+      "message": "Dieser Weg braucht das neue Ziel in „target“."
+    },
+    "refactor_disabled": {
+      "message": "Dieser Weg braucht das eingeschaltete „Verbessern“ im Housekeeper-Panel."
+    },
+    "no_last_failure": {
+      "message": "Im Ablaufprotokoll von Home Assistant gibt es keinen fehlgeschlagenen Lauf, dem sich der Schritt entnehmen ließe."
+    },
+    "way_not_plannable": {
+      "message": "Dieser Weg lässt sich nicht als Plan anlegen; er ist für das Panel."
+    },
+    "plan_blocked": {
+      "message": "Der Plan ist gesperrt: {detail}."
     }
   }
 }

@@ -2,7 +2,8 @@
 
 Two switches, both off until you switch them on: "AI access" allows the read-only functions,
 "change the list" additionally allows the ones that write Housekeeper's own lists (never Home
-Assistant). The log keeps who called what and how it went, as counts and shortened parameters,
+Assistant). A third switch, "fix findings", lets an agent create a plan for a way to fix a finding; the
+plan is only a preview, confirming and running it stays with an administrator in the panel. The log keeps who called what and how it went, as counts and shortened parameters,
 never the content of an answer. Many reads in a row from one caller are one line with a counter.
 """
 
@@ -56,6 +57,7 @@ class McpStore:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, MCP_STORAGE_KEY)
         self.enabled = False
         self.write = False
+        self.fix = False
         self.hide_sensitive = True
         self.auto_off_hours = 0
         self.write_limit = 200
@@ -69,6 +71,7 @@ class McpStore:
             return
         self.enabled = data.get("enabled") is True
         self.write = data.get("write") is True
+        self.fix = data.get("fix") is True
         self.hide_sensitive = data.get("hide_sensitive") is not False
         if data.get("auto_off_hours") in AUTO_OFF_CHOICES:
             self.auto_off_hours = data["auto_off_hours"]
@@ -89,6 +92,11 @@ class McpStore:
         """Writing needs both switches."""
         return self.enabled and self.write
 
+    @property
+    def can_fix(self) -> bool:
+        """Creating plans needs AI access and its own switch."""
+        return self.enabled and self.fix
+
     def set_switches(
         self,
         enabled: bool | None = None,
@@ -97,7 +105,10 @@ class McpStore:
         hide_sensitive: bool | None = None,
         write_limit: int | None = None,
         read_limit: int | None = None,
+        fix: bool | None = None,
     ) -> None:
+        if fix is not None:
+            self.fix = fix
         if enabled is not None:
             if enabled and not self.enabled:
                 self.enabled_at = datetime.now(UTC).isoformat()
@@ -130,7 +141,7 @@ class McpStore:
         if due is None or (now or datetime.now(UTC)) < due:
             return False
         hours = self.auto_off_hours
-        self.enabled = self.write = False
+        self.enabled = self.write = self.fix = False
         self.enabled_at = None
         self.log(None, "auto_off", "write", {"hours": hours}, "ok", None)
         return True
@@ -144,6 +155,7 @@ class McpStore:
         return {
             "enabled": self.enabled,
             "write": self.write,
+            "fix": self.fix,
             "hide_sensitive": self.hide_sensitive,
             "auto_off_hours": self.auto_off_hours,
             "write_limit": self.write_limit,
@@ -240,6 +252,7 @@ class McpStore:
             lambda: {
                 "enabled": self.enabled,
                 "write": self.write,
+                "fix": self.fix,
                 "hide_sensitive": self.hide_sensitive,
                 "auto_off_hours": self.auto_off_hours,
                 "write_limit": self.write_limit,

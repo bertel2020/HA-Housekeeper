@@ -18,6 +18,22 @@ ERROR_MAX = 300
 _ENTITY = re.compile(r"\b[a-z_]+\.[a-z0-9_]+\b")
 
 
+def item_id_of(snapshot: dict[str, Any], finding: dict[str, Any]) -> str | None:
+    """The id Home Assistant's trace buffer knows an automation or script by."""
+    domain = finding["rule_id"].partition(".")[0]
+    if domain == "script":
+        return finding["object_id"].partition(".")[2] or None
+    item = next(
+        (
+            o
+            for o in snapshot.get("objects", [])
+            if o["object_type"] == domain and o["object_id"] == finding["object_id"]
+        ),
+        {},
+    )
+    return str(item["automation_id"]) if item.get("automation_id") else None
+
+
 async def last_failure(hass: HomeAssistant, domain: str, item_id: str) -> dict[str, Any] | None:
     """The newest run that ended in an error: when, at which step, and what Home Assistant said."""
     from homeassistant.components.trace.util import async_list_traces  # noqa: PLC0415

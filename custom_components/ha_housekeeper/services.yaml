@@ -99,6 +99,22 @@ finding_fix_options:
       selector:
         text:
 
+finding_fix_plan:
+  fields:
+    key:
+      required: true
+      selector:
+        text:
+    way:
+      required: true
+      selector:
+        select:
+          options: [replace_target, remove_reference, catch_error, cleanup_round]
+    target:
+      required: false
+      selector:
+        text:
+
 finding_decide:
   fields:
     key:

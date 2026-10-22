@@ -387,3 +387,97 @@ async def test_the_ways_to_fix_a_finding_are_named_and_nothing_changes(hass: Hom
     with pytest.raises(mcp_api.McpError) as off:
         await mcp_api.run(hass, scanner, "finding_fix_options", {"key": broken["key"]}, None)
     assert off.value.reason == "disabled"
+
+
+async def test_a_plan_for_a_fix_needs_its_own_switch_and_is_never_run(hass: HomeAssistant) -> None:
+    from types import SimpleNamespace as NS
+    from unittest.mock import patch
+
+    scanner = scanner_with(hass, 3)
+    scanner.hass = hass
+    scanner.refactor = NS(enabled=False)
+    scanner.journal = NS(added=[], add=lambda plan: scanner.journal.added.append(plan))
+    broken = {
+        "key": "k1",
+        "rule_id": "automation.missing_entity",
+        "object_id": "automation.a",
+        "topic": "broken_references",
+        "affected_object": "sensor.old",
+    }
+    scanner.snapshot["findings"].append(broken)
+    scanner.mcp.enabled = True
+    with pytest.raises(mcp_api.McpError) as off:
+        await mcp_api.run(
+            hass, scanner, "finding_fix_plan", {"key": "k1", "way": "replace_target"}, None
+        )
+    assert off.value.reason == "fix_disabled"
+    scanner.mcp.fix = True
+    with pytest.raises(mcp_api.McpError) as none:
+        await mcp_api.run(
+            hass, scanner, "finding_fix_plan", {"key": "k1", "way": "replace_target"}, None
+        )
+    assert none.value.reason == "target_required"
+    with pytest.raises(mcp_api.McpError) as noswitch:
+        await mcp_api.run(
+            hass, scanner, "finding_fix_plan", {"key": "k1", "way": "remove_reference"}, None
+        )
+    assert noswitch.value.reason == "refactor_disabled"
+    with pytest.raises(mcp_api.McpError) as wrong:
+        await mcp_api.run(
+            hass, scanner, "finding_fix_plan", {"key": "k1", "way": "catch_error"}, None
+        )
+    assert wrong.value.reason == "way_not_offered"
+
+    plan = {
+        "plan_id": "p1",
+        "actions": [
+            {
+                "kind": "replace_references",
+                "object_id": "sensor.old",
+                "verdict": "review",
+                "executable": True,
+                "reasons": ["config_rewrite"],
+            }
+        ],
+    }
+
+    async def fake_plan(hass, snapshot, requests, refactor_enabled=False):
+        fake_plan.requests = requests
+        return plan
+
+    with patch("custom_components.ha_housekeeper.websocket_api._plan_from_requests", fake_plan):
+        answer = await mcp_api.run(
+            hass,
+            scanner,
+            "finding_fix_plan",
+            {"key": "k1", "way": "replace_target", "target": "sensor.new"},
+            None,
+        )
+    assert fake_plan.requests == [
+        {"kind": "replace_references", "object_id": "sensor.old", "target": "sensor.new"}
+    ]
+    assert answer["plan_id"] == "p1" and "Not run" in answer["next"]
+    assert scanner.journal.added == [plan] and plan["via"] == "mcp", (
+        "journaled as a preview, not executed"
+    )
+    assert scanner.mcp.recent()[0]["kind"] == "write", (
+        "it counts as a change in the log and the limit"
+    )
+    plan["actions"][0]["executable"] = False
+    with (
+        patch("custom_components.ha_housekeeper.websocket_api._plan_from_requests", fake_plan),
+        pytest.raises(mcp_api.McpError) as blocked,
+    ):
+        await mcp_api.run(
+            hass,
+            scanner,
+            "finding_fix_plan",
+            {"key": "k1", "way": "replace_target", "target": "sensor.new"},
+            None,
+        )
+    assert blocked.value.reason == "plan_blocked"
+    scanner.mcp.enabled = False
+    scanner.mcp.expire()
+    assert scanner.mcp.fix is True and not scanner.mcp.can_fix, (
+        "AI access off means no plans either"
+    )

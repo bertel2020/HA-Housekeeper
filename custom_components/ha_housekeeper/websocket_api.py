@@ -60,7 +60,7 @@ from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable
 from .cleanup_round import duplicate_rows, needs_first_step, removal_requests, sort_row
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices
-from .failure_info import error_hint, last_failure
+from .failure_info import error_hint, item_id_of, last_failure
 from .fix_ways import ways_for
 from .history import PinError
 from .ignored import KINDS as IGNORE_KINDS
@@ -318,20 +318,8 @@ async def websocket_failure_info(
     if finding is None or domain not in ("automation", "script"):
         connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
         return
-    item = next(
-        (
-            o
-            for o in snapshot.get("objects", [])
-            if o["object_type"] == domain and o["object_id"] == finding["object_id"]
-        ),
-        {},
-    )
-    item_id = (
-        item.get("automation_id")
-        if domain == "automation"
-        else finding["object_id"].partition(".")[2]
-    )
-    failure = await last_failure(hass, domain, str(item_id)) if item_id else None
+    item_id = item_id_of(snapshot, finding)
+    failure = await last_failure(hass, domain, item_id) if item_id else None
     down = {
         f["object_id"]: f["key"]
         for f in snapshot.get("findings", [])

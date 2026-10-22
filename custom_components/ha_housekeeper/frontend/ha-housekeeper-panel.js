@@ -14505,6 +14505,7 @@ Object.assign(TEXT.de, {
   mcpTitle: "KI-Zugriff (MCP)",
   mcpHint: "Ein Programm oder KI-Agent, das Home-Assistant-Dienste aufrufen kann (zum Beispiel ha-mcp), kann Housekeeper dann wie das Panel nutzen: Befunde ansehen, prüfen, ignorieren und markieren. Housekeeper startet dafür keinen Server und öffnet keinen Port.",
   mcpEnable: "KI-Zugriff aktivieren", mcpEnableDetail: "Nur lesend: Status, Befunde, Objekte und das Protokoll. Aus, solange du es nicht einschaltest.",
+  mcpFix: "Befunde beheben", mcpFixDetail: "Ein Agent darf für einen Weg zum Beheben einen Plan anlegen (finding_fix_plan). Der Plan ist nur eine Vorschau: Bestätigen und Ausführen kann nur ein Administrator hier im Panel.",
   mcpWrite: "Merkliste ändern", mcpWriteDetail: "Befunde ausblenden, als „ist so gewollt“ markieren oder auf „später“ legen, Objekte markieren, Logbuch-Einträge schreiben. Nur Housekeepers eigene Liste, nie Home Assistant; alles lässt sich im Protokoll zurücknehmen.", mcpWriteNeeds: "Zuerst „KI-Zugriff aktivieren“ einschalten.",
   mcpStateOff: "Aus", mcpStateRead: "Aktiv, nur lesend", mcpStateWrite: "Aktiv, mit Ändern",
   mcpPrivacy: "Das Modell sieht Namen und IDs, Bereiche, Befunde und die Struktur deiner Konfiguration; läuft es in der Cloud, gehen diese Angaben dorthin. Nie übertragen werden Passwörter, Tokens, Webhook-IDs und Zugangsdaten. Nur Administratoren können die Dienste nutzen.",
@@ -14518,14 +14519,14 @@ Object.assign(TEXT.de, {
   mcpExObject: "Objekt", mcpExUser: "Benutzer", mcpExResult: "Ergebnis", mcpExCalls: "Aufrufe",
   mcpAllKinds: "Alle Arten", mcpColTime: "Zeit", mcpColKind: "Art", mcpColFn: "Dienst", mcpColWhat: "Objekt und Ergebnis", mcpColUndo: "Zurücknehmen", mcpFilterAll: "Alle", mcpFilterRead: "Lesen", mcpFilterWrite: "Ändern", mcpFilterDenied: "Abgewiesen", mcpFilterFailed: "Fehler",
   mcpKind_read: "Lesen", mcpKind_write: "Ändern", mcpKind_denied: "Abgewiesen", mcpBadgeError: "Fehler",
-  mcpResult_ok: "ok", mcpResult_disabled: "KI-Zugriff war aus", mcpResult_write_disabled: "Ändern war aus", mcpResult_not_admin: "kein Administrator", mcpResult_invalid_format: "Angaben unvollständig oder falsch", mcpResult_rate_limited: "zu viele Änderungen", mcpResult_too_many_calls: "zu viele Aufrufe", mcpResult_reason_required: "Grund fehlt", mcpResult_error: "Fehler",
+  mcpResult_ok: "ok", mcpResult_disabled: "KI-Zugriff war aus", mcpResult_write_disabled: "Ändern war aus", mcpResult_fix_disabled: "Befunde beheben war aus", mcpResult_not_admin: "kein Administrator", mcpResult_invalid_format: "Angaben unvollständig oder falsch", mcpResult_rate_limited: "zu viele Änderungen", mcpResult_too_many_calls: "zu viele Aufrufe", mcpResult_reason_required: "Grund fehlt", mcpResult_error: "Fehler",
   mcpUndoAll: "Zurücknehmen", mcpUndoAllHint: "Änderungen durch KI-Zugriff", mcpUndoHour: "der letzten Stunde", mcpUndoDay: "der letzten 24 Stunden", mcpUndoEverything: "alle", mcpUndoneCount: "{n} Änderungen zurückgenommen", mcpFn_undo_all: "Alles zurücknehmen",
   mcpWriteLimit: "Änderungen pro 5 Minuten", mcpWriteLimitDetail: "Mehr Änderungen werden abgewiesen. Schützt vor einem Agenten, der in Schleife läuft.", mcpReadLimit: "Lesezugriffe pro Minute", mcpReadLimitDetail: "Mehr Abfragen werden abgewiesen.", mcpAutoOff: "Automatisch ausschalten", mcpAutoOffDetail: "Schaltet KI-Zugriff und „Merkliste ändern“ nach dieser Zeit selbst aus, damit sie nicht aus Versehen an bleiben.", mcpAutoNever: "nie", mcpAutoHours: "nach {n} Stunden", mcpAutoHour: "nach 1 Stunde", mcpOffAt: "Schaltet sich aus: {date}", mcpFn_auto_off: "Automatisch ausgeschaltet",
   mcpBarRead: "nur lesend", mcpBarWrite: "mit Ändern der Merkliste",
   mcpHide: "Sensible Objekte zurückhalten", mcpHideDetail: "Schlösser, Alarmanlagen, Kameras, Sirenen, Ventile, Personen, Standort-Tracker sowie Garagen- und Tortore kommen in keiner Antwort vor. Empfohlen, vor allem bei einem Modell in der Cloud.",
   mcpTimes: "{n} Aufrufe bis {date}", mcpCount: "{n} Treffer", mcpUndo: "Rückgängig", mcpUndone: "zurückgenommen", mcpUndoFailed: "Nicht zurückgenommen: {reason}",
   mcpUserSystem: "Automation oder System", mcpUserYou: "du", mcpUserOther: "anderer Benutzer",
-  mcpFn_status: "Status", mcpFn_summary: "Zusammenfassung", mcpFn_findings: "Befunde", mcpFn_object: "Objekt", mcpFn_finding_fix_options: "Wege zum Beheben", mcpFn_finding_decide: "Befund entscheiden", mcpFn_mark: "Objekt markieren", mcpFn_note_set: "Logbuch-Eintrag", mcpFn_undo: "Zurücknehmen",
+  mcpFn_status: "Status", mcpFn_summary: "Zusammenfassung", mcpFn_findings: "Befunde", mcpFn_object: "Objekt", mcpFn_finding_fix_options: "Wege zum Beheben", mcpFn_finding_fix_plan: "Plan zum Beheben anlegen", mcpFn_finding_decide: "Befund entscheiden", mcpFn_mark: "Objekt markieren", mcpFn_note_set: "Logbuch-Eintrag", mcpFn_undo: "Zurücknehmen",
   viaMcp: "über KI-Zugriff", noteSrcAgent: "Von KI-Zugriff geschrieben",
 });
 Object.assign(TEXT.en, {
@@ -14533,6 +14534,7 @@ Object.assign(TEXT.en, {
   mcpTitle: "AI access (MCP)",
   mcpHint: "A program or AI agent that can call Home Assistant services (for example ha-mcp) can then use Housekeeper like the panel: look at findings, check them, ignore and mark them. Housekeeper starts no server and opens no port for this.",
   mcpEnable: "Switch on AI access", mcpEnableDetail: "Read-only: status, findings, objects and the log. Off until you switch it on.",
+  mcpFix: "Fix findings", mcpFixDetail: "An agent may create a plan for a way to fix a finding (finding_fix_plan). The plan is only a preview: only an administrator can confirm and run it here in the panel.",
   mcpWrite: "Change the list", mcpWriteDetail: "Hide findings, mark them as intended or put them off to “later”, mark objects, write logbook entries. Only Housekeeper's own list, never Home Assistant; everything can be taken back in the log.", mcpWriteNeeds: "Switch on “Switch on AI access” first.",
   mcpStateOff: "Off", mcpStateRead: "On, read-only", mcpStateWrite: "On, with changes",
   mcpPrivacy: "The model sees names and ids, areas, findings and the structure of your configuration; if it runs in the cloud, these details go there. Passwords, tokens, webhook ids and credentials are never sent. Only administrators can use the services.",
@@ -14546,14 +14548,14 @@ Object.assign(TEXT.en, {
   mcpExObject: "Object", mcpExUser: "User", mcpExResult: "Result", mcpExCalls: "Calls",
   mcpAllKinds: "All kinds", mcpColTime: "Time", mcpColKind: "Kind", mcpColFn: "Service", mcpColWhat: "Object and result", mcpColUndo: "Undo", mcpFilterAll: "All", mcpFilterRead: "Reads", mcpFilterWrite: "Changes", mcpFilterDenied: "Refused", mcpFilterFailed: "Errors",
   mcpKind_read: "Read", mcpKind_write: "Change", mcpKind_denied: "Refused", mcpBadgeError: "Error",
-  mcpResult_ok: "ok", mcpResult_disabled: "AI access was off", mcpResult_write_disabled: "changing was off", mcpResult_not_admin: "not an administrator", mcpResult_invalid_format: "invalid parameters", mcpResult_rate_limited: "too many changes", mcpResult_too_many_calls: "too many calls", mcpResult_reason_required: "reason missing", mcpResult_error: "error",
+  mcpResult_ok: "ok", mcpResult_disabled: "AI access was off", mcpResult_write_disabled: "changing was off", mcpResult_fix_disabled: "fixing findings was off", mcpResult_not_admin: "not an administrator", mcpResult_invalid_format: "invalid parameters", mcpResult_rate_limited: "too many changes", mcpResult_too_many_calls: "too many calls", mcpResult_reason_required: "reason missing", mcpResult_error: "error",
   mcpUndoAll: "Take back", mcpUndoAllHint: "Changes through AI access", mcpUndoHour: "of the last hour", mcpUndoDay: "of the last 24 hours", mcpUndoEverything: "all", mcpUndoneCount: "{n} changes taken back", mcpFn_undo_all: "Take everything back",
   mcpWriteLimit: "Changes per 5 minutes", mcpWriteLimitDetail: "More changes are refused. Protects against an agent stuck in a loop.", mcpReadLimit: "Reads per minute", mcpReadLimitDetail: "More requests are refused.", mcpAutoOff: "Switch off automatically", mcpAutoOffDetail: "Switches AI access and “Change the list” off by itself after this time, so they do not stay on by mistake.", mcpAutoNever: "never", mcpAutoHours: "after {n} hours", mcpAutoHour: "after 1 hour", mcpOffAt: "Switches off: {date}", mcpFn_auto_off: "Switched off automatically",
   mcpBarRead: "read-only", mcpBarWrite: "with changes to the list",
   mcpHide: "Keep sensitive objects back", mcpHideDetail: "Locks, alarm panels, cameras, sirens, valves, people, location trackers and garage doors and gates appear in no answer. Recommended, above all with a model in the cloud.",
   mcpTimes: "{n} calls until {date}", mcpCount: "{n} results", mcpUndo: "Undo", mcpUndone: "taken back", mcpUndoFailed: "Not taken back: {reason}",
   mcpUserSystem: "Automation or system", mcpUserYou: "you", mcpUserOther: "another user",
-  mcpFn_status: "Status", mcpFn_summary: "Summary", mcpFn_findings: "Findings", mcpFn_object: "Object", mcpFn_finding_fix_options: "Ways to fix a finding", mcpFn_finding_decide: "Decide about a finding", mcpFn_mark: "Mark an object", mcpFn_note_set: "Logbook entry", mcpFn_undo: "Undo",
+  mcpFn_status: "Status", mcpFn_summary: "Summary", mcpFn_findings: "Findings", mcpFn_object: "Object", mcpFn_finding_fix_options: "Ways to fix a finding", mcpFn_finding_fix_plan: "Create a plan to fix", mcpFn_finding_decide: "Decide about a finding", mcpFn_mark: "Mark an object", mcpFn_note_set: "Logbook entry", mcpFn_undo: "Undo",
   viaMcp: "via AI access", noteSrcAgent: "Written by AI access",
 });
 
@@ -14648,10 +14650,11 @@ class McpMixin {
 
   mcpCard() {
     const m = this.data?.meta?.mcp || {};
-    const on = Boolean(m.enabled), write = Boolean(m.write);
+    const on = Boolean(m.enabled), write = Boolean(m.write), fix = Boolean(m.fix);
     const chips = list => list.map(n => `<code class="mcpchip">${n}</code>`).join("");
     const switches = this.mcpSwitch("data-mcp-enabled", on, this.t("mcpEnable"), this.t("mcpEnableDetail"), "mdi:robot-outline")
-      + this.mcpSwitch("data-mcp-write", write && on, this.t("mcpWrite"), this.t("mcpWriteDetail"), "mdi:pencil-outline", !on, on ? "" : this.t("mcpWriteNeeds"));
+      + this.mcpSwitch("data-mcp-write", write && on, this.t("mcpWrite"), this.t("mcpWriteDetail"), "mdi:pencil-outline", !on, on ? "" : this.t("mcpWriteNeeds"))
+      + this.mcpSwitch("data-mcp-fix", fix && on, this.t("mcpFix"), this.t("mcpFixDetail"), "mdi:wrench-outline", !on, on ? "" : this.t("mcpWriteNeeds"));
     const auto = Number(m.auto_off_hours) || 0;
     const label = h => h === 0 ? this.t("mcpAutoNever") : h === 1 ? this.t("mcpAutoHour") : this.t("mcpAutoHours", { n: h });
     const offAt = on && m.off_at ? `<small class="mcpneeds">${this.t("mcpOffAt", { date: `${this.mcpDay(m.off_at)}, ${this.mcpTime(m.off_at).slice(0, 5)}` })}</small>` : "";
@@ -14663,7 +14666,7 @@ class McpMixin {
     const state = !on ? ["mute", "mcpStateOff"] : write ? ["", "mcpStateWrite"] : ["ok", "mcpStateRead"];
     const calls = on && this.mcp ? ` <span class="mcpcalls">${this.t("mcpLogCalls", { n: this.formatNumber(this.mcp.calls_24h || 0) })}</span>` : "";
     const privacy = `<div class="mcpnote"><ha-icon icon="mdi:shield-lock-outline"></ha-icon><span>${this.t("mcpPrivacy")}</span></div>`;
-    const how = `<details class="howto mcphow"><summary>${this.t("mcpHowTitle")}</summary><ol class="mcpsteps"><li>${this.t("mcpHow1")}</li><li>${this.t("mcpHow2")} ${chips(["status", "summary", "findings", "object", "finding_fix_options", "audit"])}<br>${this.t("mcpHowWrite")} ${chips(["finding_decide", "mark", "note_set", "undo"])}</li><li>${this.t("mcpHow3")}</li></ol><p class="factnote">${this.t("mcpHowNote")}</p><button class="btn small" data-mcp-prompt><ha-icon icon="mdi:content-copy"></ha-icon>${this.t("mcpPromptButton")}</button></details>`;
+    const how = `<details class="howto mcphow"><summary>${this.t("mcpHowTitle")}</summary><ol class="mcpsteps"><li>${this.t("mcpHow1")}</li><li>${this.t("mcpHow2")} ${chips(["status", "summary", "findings", "object", "finding_fix_options", "audit"])}<br>${this.t("mcpHowWrite")} ${chips(["finding_decide", "mark", "note_set", "undo", "finding_fix_plan"])}</li><li>${this.t("mcpHow3")}</li></ol><p class="factnote">${this.t("mcpHowNote")}</p><button class="btn small" data-mcp-prompt><ha-icon icon="mdi:content-copy"></ha-icon>${this.t("mcpPromptButton")}</button></details>`;
     const main = `<section class="panel"><div class="panelhead"><div><h2>${this.t("mcpTitle")} <span class="pill ${state[0]}">${this.t(state[1])}</span>${calls}</h2><p>${this.t("mcpHint")}</p></div></div>${switches}${hide}${timer}${limits}${privacy}${how}</section>`;
     if (!this.mcp) { this.loadMcp(); return `${main}<section class="panel"><div class="panelhead"><h2>${this.t("mcpLogTitle")}</h2></div><div class="pad"><p class="factnote">${this.t("mcpLogLoading")}</p></div></section>`; }
     const multi = new Set(this.mcp.entries.map(x => x.user)).size > 1;
@@ -14683,6 +14686,7 @@ class McpMixin {
     };
     root.querySelector("[data-mcp-enabled]")?.addEventListener("change", ev => set({ enabled: ev.target.checked }));
     root.querySelector("[data-mcp-write]")?.addEventListener("change", ev => set({ write: ev.target.checked }));
+    root.querySelector("[data-mcp-fix]")?.addEventListener("change", ev => set({ fix: ev.target.checked }));
     root.querySelector("[data-mcp-prompt]")?.addEventListener("click", async () => {
       try { await this.copyText(this.t("mcpPrompt")); this.toast(this.t("mcpPromptCopied")); } catch (err) { this.failed(err); }
     });
