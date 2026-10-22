@@ -17989,10 +17989,11 @@ class ObjectGroupsMixin {
 // FixMixin: the page "Fix" (Beheben) of one finding: understand, decide, carry out, check. A page of its own without a
 // menu entry; "back" returns to the list with its selection and scroll position. It names the ways and opens the
 // existing steps (plan with preview, links into Home Assistant, marks, exits); it changes nothing by itself.
+const FIX_WATCH_MS = 15 * 60 * 1000, FIX_WATCH_STEP_MS = 30 * 1000;
 class FixMixin {
   openFix(key) {
     this.noteJump("fix");
-    this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.selected = null; this.pages = {};
+    this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
     this.render();
     this.loadFixWays(key);
   }
@@ -18094,12 +18095,37 @@ class FixMixin {
       <div class="mbtns"><button type="button" class="btn" data-fix-pick-all="${this.esc(below.map(x => x.key).join("|"))}">${this.t("fixPickAll")}</button><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("fselStatus")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></div>${this.bulkForm()}</section>`;
   }
 
-  // Step 4: check by scanning again; the verdict stands once a scan after the click is in.
+  // Step 4: a quick look at the object for 15 minutes, then the next regular scan decides; a whole new scan is the second button.
   fixCheck(f) {
-    const checked = this.fixCheckedFrom && this.data?.meta?.scanned_at !== this.fixCheckedFrom;
-    const verdict = !checked ? "" : f ? this.notice("warn", this.t("fixStillOpen")) : this.notice("info", this.t("fixDone"));
-    return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button>${f?.in_work ? `<button type="button" class="btn quiet" data-fix-work-off>${this.t("fixWorkOff")}</button>` : ""}</div>${verdict}`;
+    const scanned = this.fixCheckedFrom && this.data?.meta?.scanned_at !== this.fixCheckedFrom;
+    const live = this.fixLive, watching = this.fixWatchUntil && Date.now() < this.fixWatchUntil;
+    let verdict = "";
+    if (scanned) verdict = f ? this.notice("warn", this.t("fixStillOpen")) : this.notice("info", this.t("fixDone"));
+    else if (live) verdict = live.result === "fixed" ? this.notice("info", this.t("fixLooksFixed")) : live.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: this.esc(live.detail || "") })) : this.notice("info", this.t("fixLiveUnknown"));
+    const watch = watching ? `<p class="factnote">${this.t("fixWatching")}</p>` : "";
+    return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-look><ha-icon icon="mdi:magnify"></ha-icon>${this.t("fixLookNow")}</button><button type="button" class="btn" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button>${f?.in_work ? `<button type="button" class="btn quiet" data-fix-work-off>${this.t("fixWorkOff")}</button>` : ""}</div>${watch}${verdict}`;
   }
+
+  // The quick look: asks the backend for the live state now, and again every 30 seconds for 15 minutes while the page is open.
+  async fixLook() {
+    const key = this.fixKey;
+    try {
+      this.fixLive = await this._hass.callWS({ type: "ha_housekeeper/fix_check", finding_key: key });
+    } catch (_) { this.fixLive = { result: "unknown", detail: "" }; }
+    if (this.view === "fix" && this.fixKey === key) this.render();
+  }
+
+  startFixWatch() {
+    this.stopFixWatch();
+    this.fixWatchUntil = Date.now() + FIX_WATCH_MS;
+    this._fixTimer = window.setInterval(() => {
+      if (this.view !== "fix" || Date.now() >= this.fixWatchUntil || this.fixLive?.result === "fixed") { this.stopFixWatch(); if (this.view === "fix") this.render(); return; }
+      this.fixLook();
+    }, FIX_WATCH_STEP_MS);
+    this.fixLook();
+  }
+
+  stopFixWatch() { if (this._fixTimer) window.clearInterval(this._fixTimer); this._fixTimer = null; }
 
   fixView() {
     const f = this.data?.findings?.find(x => x.key === this.fixKey);
@@ -18129,7 +18155,8 @@ class FixMixin {
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
     root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
     root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
-    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
+    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-look],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
+    root.querySelectorAll("[data-fix-look]").forEach(el => el.onclick = () => this.startFixWatch());
     root.querySelectorAll("[data-fix-check]").forEach(el => el.onclick = () => { this.fixCheckedFrom = this.data?.meta?.scanned_at || ""; this.load(true); });
   }
 }
@@ -18139,7 +18166,7 @@ Object.assign(TEXT.de, {
   fixWhat: "Was los ist", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder entscheiden, nicht zu beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
   fixOpenHA: "In Home Assistant öffnen", fixOpenActions: "Aktionen des Objekts", fixCollectTitle: "Gesammelt beheben", fixCollectHint: "Wähle aus, was einbezogen wird, dann ein Weg für alle.", fixPickAll: "Alle wählen",
   fixRunHint: "Was etwas ändert, läuft über einen Plan mit Vorschau, Bestätigung, Backup und Zurücknehmen. Wege in Home Assistant öffnen sich dort. Nichts geschieht ohne deinen Klick.",
-  fixCheckHint: "Housekeeper scannt neu und sagt, ob der Befund noch da ist.", fixCheckNow: "Neu scannen und prüfen", fixDone: "Behoben: der Befund ist im neuen Scan nicht mehr da.", fixStillOpen: "Bleibt offen: der Befund ist im neuen Scan noch da. Prüfe, ob der gewählte Weg schon durchgelaufen ist, oder warte auf den nächsten Scan.", fixGone: "Der Befund ist nicht mehr da.",
+  fixCheckHint: "Housekeeper schaut sich das Objekt jetzt an und danach 15 Minuten lang alle 30 Sekunden, solange diese Seite offen ist. Entscheiden tut erst der nächste reguläre Scan; der Befund bleibt bis dahin „In Arbeit“.", fixLookNow: "Jetzt ansehen", fixCheckNow: "Ganz neu scannen", fixLooksFixed: "Sieht behoben aus. Vorläufig: der nächste reguläre Scan entscheidet.", fixLiveOpen: "Noch nicht behoben ({detail}).", fixLiveUnknown: "Für diese Art von Befund lässt sich das nicht auf einen Blick sagen; der nächste Scan zeigt es.", fixWatching: "Schaut 15 Minuten lang nach, solange diese Seite offen ist.", fixDone: "Behoben: der Befund ist im neuen Scan nicht mehr da.", fixStillOpen: "Bleibt offen: der Befund ist im neuen Scan noch da. Prüfe, ob der gewählte Weg schon durchgelaufen ist, oder warte auf den nächsten Scan.", fixGone: "Der Befund ist nicht mehr da.",
   fixWay_wait: "Abwarten", fixWayHint_wait: "Die Integration versucht es von selbst noch einmal.",
   fixWay_restart_or_update: "Home Assistant neu starten oder aktualisieren", fixWayHint_restart_or_update: "Eine Migration oder das Entladen ist hängen geblieben; meist hilft ein Neustart oder ein Update der Integration.",
   fixWay_open_integration: "Integration ansehen", fixWayHint_open_integration: "Die Integrationsseite zeigt den Fehler und bietet dort „Neu laden“ an.",
@@ -18163,7 +18190,7 @@ Object.assign(TEXT.en, {
   fixWhat: "What is wrong", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or decide not to fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",
   fixOpenHA: "Open in Home Assistant", fixOpenActions: "Actions of the object", fixCollectTitle: "Fix together", fixCollectHint: "Choose what is included, then one way for all.", fixPickAll: "Pick all",
   fixRunHint: "Whatever changes something goes through a plan with preview, confirmation, backup and undo. Ways in Home Assistant open there. Nothing happens without your click.",
-  fixCheckHint: "Housekeeper scans again and says whether the finding is still there.", fixCheckNow: "Scan again and check", fixDone: "Fixed: the finding is gone in the new scan.", fixStillOpen: "Still open: the finding is still there in the new scan. Check whether the chosen way has finished, or wait for the next scan.", fixGone: "The finding is gone.",
+  fixCheckHint: "Housekeeper looks at the object now and then every 30 seconds for 15 minutes while this page is open. Only the next regular scan decides; until then the finding stays “In work”.", fixLookNow: "Look now", fixCheckNow: "Scan everything again", fixLooksFixed: "Looks fixed. Provisional: the next regular scan decides.", fixLiveOpen: "Not fixed yet ({detail}).", fixLiveUnknown: "For this kind of finding that cannot be told at a glance; the next scan shows it.", fixWatching: "Looks for 15 minutes while this page is open.", fixDone: "Fixed: the finding is gone in the new scan.", fixStillOpen: "Still open: the finding is still there in the new scan. Check whether the chosen way has finished, or wait for the next scan.", fixGone: "The finding is gone.",
   fixWay_wait: "Wait", fixWayHint_wait: "The integration tries again by itself.",
   fixWay_restart_or_update: "Restart or update Home Assistant", fixWayHint_restart_or_update: "A migration or an unload got stuck; a restart or an update of the integration usually helps.",
   fixWay_open_integration: "Look at the integration", fixWayHint_open_integration: "The integration page shows the error and offers “Reload” there.",

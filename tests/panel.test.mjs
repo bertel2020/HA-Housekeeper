@@ -6876,3 +6876,23 @@ test("a finding someone started to fix is in work, and an expired start leaves a
   assert.equal(calls[0].active, false);
   assert.ok(!el.data.findings[0].in_work && el.data.findings[0].work_expired);
 });
+
+test("the quick look of the Fix page says looks fixed or not yet, and the watch stops when the page is left", async () => {
+  const cleared = [];
+  const { el } = panel("en", { window: { setInterval: () => 7, clearInterval: id => cleared.push(id) } });
+  const answers = [{ result: "open", detail: "unavailable" }, { result: "fixed", detail: "21" }];
+  el._hass = { language: "en", callWS: async () => answers.shift() };
+  el.data = { ...DATA, findings: [{ key: "k", rule_id: "entity.state_unavailable", object_id: "sensor.a" }] };
+  el.fixKey = "k"; el.view = "fix"; el.render = () => {};
+  const f = el.data.findings[0];
+  await el.fixLook();
+  assert.ok(el.fixCheck(f).includes("Not fixed yet (unavailable)"));
+  await el.fixLook();
+  assert.ok(el.fixCheck(f).includes("Looks fixed") && el.fixCheck(f).includes("next regular scan decides"));
+  el.startFixWatch();
+  assert.equal(el._fixTimer, 7);
+  el.view = "overview";
+  el.stopFixWatch();
+  assert.equal(el._fixTimer, null);
+  assert.deepEqual(cleared, [7]);
+});

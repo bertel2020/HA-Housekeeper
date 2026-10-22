@@ -1022,6 +1022,35 @@ async def test_failure_info_reads_the_last_failed_run(hass: HomeAssistant, hass_
     assert reply["result"]["hint"] is None  # nothing in the scan says cover.bath is down
 
 
+async def test_fix_check_looks_at_the_live_state_and_closes_nothing(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """An entity that has a value again looks fixed; one that still has none is open; a rule it cannot tell stays unknown."""
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    hass.states.async_set("sensor.back", "21")
+    hass.states.async_set("sensor.still", "unavailable")
+    for name, rule in (
+        ("back", "entity.state_unavailable"),
+        ("still", "entity.state_unavailable"),
+        ("auto", "automation.stale"),
+    ):
+        snapshot["findings"].append(
+            {"key": f"k_{name}", "rule_id": rule, "object_id": f"sensor.{name}"}
+        )
+
+    async def check(key):
+        await client.send_json_auto_id({"type": "ha_housekeeper/fix_check", "finding_key": key})
+        reply = await client.receive_json()
+        assert reply["success"], reply
+        return reply["result"]["result"]
+
+    assert await check("k_back") == "fixed"
+    assert await check("k_still") == "open"
+    assert await check("k_auto") == "unknown"
+    assert any(f["key"] == "k_back" for f in snapshot["findings"]), "nothing was closed"
+
+
 async def test_the_cleanup_round_judges_and_changes_nothing(
     hass: HomeAssistant, hass_ws_client
 ) -> None:

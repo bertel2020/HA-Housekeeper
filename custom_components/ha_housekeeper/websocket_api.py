@@ -67,6 +67,7 @@ from .ignored import KINDS as IGNORE_KINDS
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
 from .lifecycle import removed_objects
+from .live_check import check_finding
 from .meter import prepare_meter
 from .monitor import MonitorError, MonitorStore, evaluate
 from .outage_levels import OUTAGE_KEYS, thresholds_from_options, thresholds_rise
@@ -340,6 +341,29 @@ async def websocket_failure_info(
         msg["id"],
         {"failure": failure, "hint": error_hint((failure or {}).get("error"), down)},
     )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/fix_check", vol.Required("finding_key"): str}
+)
+@callback
+@with_scanner
+def websocket_fix_check(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """A quick look at the object of a finding as it is now. Reads only; the next scan decides."""
+    finding = next(
+        (f for f in (scanner.snapshot or {}).get("findings", []) if f["key"] == msg["finding_key"]),
+        None,
+    )
+    if finding is None:
+        connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
+        return
+    connection.send_result(msg["id"], check_finding(hass, finding))
 
 
 @websocket_api.require_admin
@@ -1416,6 +1440,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_work_set)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
+    websocket_api.async_register_command(hass, websocket_fix_check)
     websocket_api.async_register_command(hass, websocket_failure_info)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
