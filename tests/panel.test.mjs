@@ -6160,6 +6160,8 @@ test("the AI access tab shows the two switches and the log with an undo for a ch
   el.data.meta.mcp = { enabled: true, write: true };
   assert.equal(el.safetyItems().find(i => i[0] === "ai")[1], "warn", "yellow while the AI may change the list");
   assert.ok(html.includes("data-mcp-autooff") && html.includes("after 8 hours") && html.includes("data-mcp-writelimit") && html.includes("data-mcp-readlimit") && html.includes("data-mcp-hide") && html.includes("data-mcp-prompt"));
+  const { TEXT } = loadPanel();
+  assert.ok(["finding_fix_options", "finding_fix_plan", "nur eine Vorschau"].every(x => TEXT.de.mcpPrompt.includes(x)) && ["finding_fix_options", "finding_fix_plan", "only a preview"].every(x => TEXT.en.mcpPrompt.includes(x)), "the instruction names the services of the Fix switch and says a plan is a preview");
   el.settingsTab = "look"; el.render();
   assert.ok(shadow.innerHTML.includes('data-safe-key="ai"') && shadow.innerHTML.includes("AI access: with changes to the list") && !shadow.innerHTML.includes("aibar"), "no strip of its own any more");
 });
