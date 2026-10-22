@@ -3545,6 +3545,9 @@ test("a finding can be kept on purpose with a reason, put off for days, and come
   const f = el.data.findings[0];
   assert.ok(f.ignored && f.ignore_info.kind === "keep" && el.decide === null);
   assert.ok(el.decisionLabel(f).includes("Intended") && el.decisionLabel(f).includes("Reserve"));
+  const due = { resurfaced: true, impact: "high", due_info: { kind: "snooze", at: "2026-07-01T00:00:00+00:00", until: "2026-10-01T00:00:00+00:00", worse: "2026-10-20T00:00:00+00:00", impact_at: "low" } };
+  assert.ok(el.dueLine(due).includes("Later") && el.dueLine(due).includes("got worse") && el.dueLine(due).includes("impact from"), "a later that got worse says so");
+  assert.equal(el.defaultDays("keep"), 90); assert.equal(el.findingCritical({ impact_facts: [{ fact: "critical" }] }), true);
   el.openDecide("k2"); el.decide.kind = "snooze"; el.decide.days = 0; await el.commitDecide();
   assert.equal(sent[1].kind, "snooze"); assert.equal(sent[1].days, 30, "put off needs a time: 30 days by default");
   assert.equal(el.data.findings[1].resurfaced, false);

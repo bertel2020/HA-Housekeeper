@@ -153,6 +153,8 @@ class CausesMixin {
     // The top block says where the finding stands: open, decided by the person (the way back and a change), or hidden by a
     // mark, a rule or a label (the way to it).
     const owner = f.ignored ? this.markOwner(f) : null;
+    // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
+    const due = f.resurfaced && f.due_info ? `${f.due_info.kind === "keep" ? item("mdi:check", "dueKeepOn", `data-due-keep="${key}"`) : ""}${item("mdi:clock-outline", "dueLater", `data-decide-open="${key}" data-decide-preset="snooze"`)}<hr class="menusep">` : "";
     const status = !f.ignored ? item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`)
       : f.ignored_by === "mark" && owner ? item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)
       : f.ignored_by === "rule" && f.ignore_rule?.id ? item(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)
@@ -163,7 +165,7 @@ class CausesMixin {
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`) : "";
     const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))}` : "";
     const about = mark + exc;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 
   // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.

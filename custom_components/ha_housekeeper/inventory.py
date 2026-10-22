@@ -1708,6 +1708,8 @@ class InventoryScanner:
             if item["object_type"] == "config_entry" and item.get("domain") in logged:
                 item["log"] = logged[item["domain"]]
         causes = apply_causes(objects, edges, findings)
+        if not preliminary:
+            causes = self._review_decisions(objects, edges, findings, causes)
 
         lap("analysis")
         self.status.update(phase="finalizing", progress=90)
@@ -1840,6 +1842,44 @@ class InventoryScanner:
         info = self.ignored.info(finding["key"])
         finding["ignore_info"] = info if finding["ignored_by"] == "user" else None
         finding["resurfaced"] = not finding["ignored"] and self.ignored.is_due(finding["key"])
+        due_entry = self.ignored.entry(finding["key"]) if finding["resurfaced"] else None
+        finding["due_info"] = due_entry
+
+    def _review_decisions(
+        self,
+        objects: list[dict[str, Any]],
+        edges: list[dict[str, Any]],
+        findings: list[dict[str, Any]],
+        causes: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Lift a "later" whose finding got worse; the causes, recomputed when one was lifted.
+
+        A hidden cause is no cause, so the follow-ups are counted in a copy in which the held ones are shown.
+        """
+        held = {
+            f["key"]: f
+            for f in findings
+            if f.get("ignored_by") == "user"
+            and (f.get("ignore_info") or {}).get("kind") == "snooze"
+        }
+        if not held:
+            return causes
+        probe = [dict(f, ignored=False) if f["key"] in held else dict(f) for f in findings]
+        followers = {
+            c["finding_key"]: c["total_followers"]
+            for c in apply_causes(objects, edges, probe)
+            if c.get("finding_key")
+        }
+        lifted = self.ignored.review(
+            {key: (f.get("impact", "none"), followers.get(key, 0)) for key, f in held.items()},
+            datetime.now(UTC),
+        )
+        if not lifted:
+            return causes
+        registry = er.async_get(self.hass)
+        for key in lifted:
+            self._mark_ignored(held[key], registry)
+        return apply_causes(objects, edges, findings)
 
     def _apply_exception(self, finding: dict[str, Any]) -> None:
         """Let the exception rules hide or hold back a finding, or mark it as due after a delay."""
@@ -1948,13 +1988,26 @@ class InventoryScanner:
         A policy violation (key ``policy.<rule>|...``) is no finding: only the ignore list changes.
         """
         now = datetime.now(UTC)
+        finding = next(
+            (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
+        )
 
         def store() -> bool:
             if not ignored:
                 self.ignored.set_ignored(key, False, now)
                 return True
             until = now + timedelta(days=days) if days else None
-            return self.ignored.decide(key, kind, now, reason=reason, until=until, by=by, via=via)
+            return self.ignored.decide(
+                key,
+                kind,
+                now,
+                reason=reason,
+                until=until,
+                by=by,
+                via=via,
+                impact=finding.get("impact") if finding else None,
+                followers=self._followers_of(key),
+            )
 
         # A decision whose finding is away right now (it rests) can be changed or taken away as well.
         if key.startswith(POLICY_KEY_PREFIX) or (
@@ -1962,9 +2015,6 @@ class InventoryScanner:
             and not any(f["key"] == key for f in (self._snapshot or {}).get("findings", []))
         ):
             return store()
-        finding = next(
-            (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
-        )
         if finding is None:
             return False
         if not store():

@@ -6,6 +6,8 @@ passed no longer hides the finding; it stays so the finding can be shown as due 
 A decision outlives its finding: when the object works again, the entry rests and holds again the
 next time. ``seen`` is when a full scan last found the finding, so a resting entry can say how long
 its finding has been away.
+A "later" remembers how bad its finding was (``impact_at``, ``followers_at``); when the scan finds it
+worse, the decision is lifted (``worse``) and the finding comes back as due.
 """
 
 from __future__ import annotations
@@ -37,6 +39,9 @@ def _clean(value: Any) -> dict[str, Any] | None:
     until = value.get("until")
     by = value.get("by")
     seen = value.get("seen")
+    impact = value.get("impact_at")
+    followers = value.get("followers_at")
+    worse = value.get("worse")
     return {
         "kind": value["kind"],
         "at": value["at"] if isinstance(value.get("at"), str) else "",
@@ -45,6 +50,9 @@ def _clean(value: Any) -> dict[str, Any] | None:
         "by": by if isinstance(by, str) else None,
         "via": value["via"] if value.get("via") in VIAS else None,
         "seen": seen if isinstance(seen, str) else None,
+        "impact_at": impact if impact in RANK else None,
+        "followers_at": followers if isinstance(followers, int) and followers >= 0 else None,
+        "worse": worse if isinstance(worse, str) else None,
     }
 
 
@@ -134,8 +142,13 @@ class IgnoreStore:
         until: datetime | None = None,
         by: str | None = None,
         via: str | None = None,
+        impact: str | None = None,
+        followers: int | None = None,
     ) -> bool:
-        """Record a decision; False when the store is full."""
+        """Record a decision; False when the store is full.
+
+        ``impact`` and ``followers`` say how bad the finding is right now, so a "later" can tell when it gets worse.
+        """
         if kind not in KINDS or (key not in self._items and len(self._items) >= ITEM_LIMIT):
             return False
         self._items[key] = {
@@ -146,6 +159,9 @@ class IgnoreStore:
             "by": by,
             "via": via,
             "seen": now.isoformat(),
+            "impact_at": impact if kind == "snooze" and impact in RANK else None,
+            "followers_at": followers if kind == "snooze" else None,
+            "worse": None,
         }
         self._save()
         return True
@@ -183,6 +199,29 @@ class IgnoreStore:
                 changed = True
         if changed:
             self._save()
+
+    def review(self, current: dict[str, tuple[str, int]], now: datetime) -> list[str]:
+        """Lift every "later" whose finding got worse; the keys lifted.
+
+        ``current`` is the impact and the number of follow-ups now. A "later" from before this was kept
+        has no earlier value: it takes the present one and is judged from the next scan on.
+        """
+        lifted: list[str] = []
+        changed = False
+        for key, (impact, followers) in current.items():
+            entry = self._items.get(key)
+            if entry is None or entry["kind"] != "snooze" or due(entry, now):
+                continue
+            if entry["impact_at"] is None or entry["followers_at"] is None:
+                entry["impact_at"], entry["followers_at"] = impact, followers
+                changed = True
+            elif RANK[impact] > RANK[entry["impact_at"]] or followers > entry["followers_at"]:
+                entry["until"] = entry["worse"] = now.isoformat()
+                lifted.append(key)
+                changed = True
+        if changed:
+            self._save()
+        return lifted
 
     def resting(self, present: set[str]) -> list[dict[str, Any]]:
         """The decisions whose finding is not there right now, with their key; policy violations stay out."""

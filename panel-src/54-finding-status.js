@@ -112,10 +112,11 @@ class FindingStatusMixin {
   // decided and what was done. The tiles count within the chosen chip.
   statusChips() {
     const chip = (state, label, count, sub = false) => `<button class="chip${sub ? " sub" : ""} ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}" aria-pressed="${(this.findingStatus || "") === state}">${label} (${this.formatNumber(count)})</button>`;
-    const parts = [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")], ["due", this.t("stateDue")]].map(([s, label]) => [s, label, this.statusCount(s)]).filter(([, , n]) => n);
+    const parts = [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")]].map(([s, label]) => [s, label, this.statusCount(s)]).filter(([, , n]) => n);
     const decided = FINDING_STATES.filter(s => this.statusCount(s)), fixed = this.doneCount();
     const rest = [...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])];
-    return [chip("", this.t("stateOpen"), this.findingTotal()), ...parts.map(([s, label, n]) => chip(s, label, n, true)), ...(rest.length ? ['<span class="chipsep" aria-hidden="true"></span>', ...rest] : [])].join("");
+    const due = this.statusCount("due");
+    return [chip("", this.t("stateOpen"), this.findingTotal()), ...parts.map(([s, label, n]) => chip(s, label, n, true)), ...(due ? [chip("due", this.t("stateDue"), due).replace('class="chip', 'class="chip warn')] : []), ...(rest.length ? ['<span class="chipsep" aria-hidden="true"></span>', ...rest] : [])].join("");
   }
 
   doneDays() { return this.doneDaysSel || 30; }

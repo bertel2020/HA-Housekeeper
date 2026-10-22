@@ -295,3 +295,37 @@ async def test_previews_older_than_a_day_are_dropped_but_plans_that_ran_stay(
     ]
     assert journal.drop_stale_previews() == 1
     assert [p["plan_id"] for p in journal.plans] == ["fresh", "ran"]
+
+
+async def test_a_keep_without_a_time_gets_a_review_date_once_and_a_later_that_gets_worse_is_lifted(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    then = datetime(2026, 9, 1, tzinfo=UTC)
+    entry = {"at": then.isoformat(), "reason": "r", "until": None, "by": None}
+    put(
+        hass_storage,
+        const.IGNORED_STORAGE_KEY,
+        {"items": {"k": {"kind": "keep", **entry}, "s": {"kind": "snooze", **entry}}},
+    )
+    store = IgnoreStore(hass)
+    await store.async_load()
+    assert store.entry("k")["until"] and store.entry("s")["until"] is None
+    assert store.notice == {"count": 1, "days": 90}
+    await flush(hass)
+    store.dismiss_notice()
+    await flush(hass)
+    again = IgnoreStore(hass)
+    await again.async_load()
+    assert again.notice is None, "said once"
+
+    now = datetime.now(UTC)
+    again.decide("s", "snooze", now, until=now + timedelta(days=30), impact="low", followers=2)
+    assert again.review({"s": ("low", 2)}, now) == [], "as bad as before"
+    assert again.review({"s": ("medium", 2)}, now) == ["s"], "the impact rose"
+    assert again.is_due("s") and again.entry("s")["worse"]
+    again.decide("s", "snooze", now, until=now + timedelta(days=30), impact="low", followers=2)
+    assert again.review({"s": ("low", 3)}, now) == ["s"], "more follow-ups"
+    again.decide("s", "snooze", now, until=now + timedelta(days=30))
+    assert (
+        again.review({"s": ("high", 9)}, now) == [] and again.entry("s")["impact_at"] == "high"
+    ), "a later from before takes the present state as its start"
