@@ -180,3 +180,38 @@ class BatteryTableMixin {
     return `<div class="panel">${head}${this.batterySuggestions()}${body}${b.available ? "" : `<p class="factnote">${this.t("btNoRecorder")}</p>`}</div>`;
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "btColName": "设备",
+  "btColArea": "区域",
+  "btColType": "类型",
+  "btColLevel": "电量",
+  "btColSlope": "耗电速度",
+  "btColLeft": "预计耗尽",
+  "btColAct": "操作",
+  "btColDate": "日期",
+  "btTypeChange": "更改类型",
+  "btLevelOk": "正常",
+  "btSlopeDay": "{n} %/天",
+  "btVoltDay": "{n} V/天",
+  "btSlopeStable": "稳定",
+  "btLeftLow": "现在",
+  "btLeftLowHint": "已低于阈值",
+  "btLeftDays": "{n} 天",
+  "btLeftFar": "> {n} 天",
+  "btLeftStable": "无预测",
+  "btFilterSoon": "即将耗尽",
+  "btFilterUntyped": "无类型",
+  "btAllTypes": "所有类型",
+  "needNone": "没有电池低于其阈值，也没有电池预计在 30 天内达到阈值。",
+  "needUntyped": "无类型",
+  "needUntypedHint": "在表格中设置类型",
+  "needNow": "当前电量低",
+  "btTableNote": "预测仅涵盖未来 90 天，基于最近五周的数据：这只是估算，并非承诺。{unknown} 无预测（天数太少或电量稳定）。更换电池后只计算此后的时间。",
+  "btFarMore": "按预测，{n} 个可使用超过 90 天。",
+  "fcTitle": "各电池何时耗尽",
+  "fcHint": "未来 30 天内需要更换的电池，以及电池可能达到阈值的时间（最长 90 天，基于最近五周）。这只是估算，并非承诺。",
+  "fcWindow": "{from} 至 {to} 天内",
+  "fcTogether": "一起更换",
+});

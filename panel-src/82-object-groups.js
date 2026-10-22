@@ -211,3 +211,26 @@ class ObjectGroupsMixin {
     return head + hint + (open ? g.members.map(m => this.findingTableRow(m, depth + 1, true)).join("") : "");
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "ogNoValue": "{m} 个实体中有 {n} 个没有值",
+  "ogNoValue1": "{m} 个实体中有 1 个没有值",
+  "ogKind": "{label}（{n}）",
+  "ogMatch": "{m} 个发现项中有 {n} 个符合筛选条件",
+  "ogMarkHides": "{mark} · 隐藏 {n} 个故障",
+  "ogMarkHides1": "{mark} · 隐藏 1 个故障",
+  "ogFindings": "{n} 个发现项",
+  "ogFindings1": "1 个发现项",
+  "ogViewCount": "{m} 个对象上有 {n} 个发现项",
+  "ogViewCount1": "1 个对象上有 {n} 个发现项",
+  "ogViewCountOne": "1 个对象上有 1 个发现项",
+  "ogViewOutages": "{o} 个故障，含 {n} 个发现项",
+  "ogViewOutage1": "1 个故障，含 {n} 个发现项",
+  "ogViewOutageOne": "1 个故障，含 1 个发现项",
+  "ogNew": "最新：{age}",
+  "selectObjectFindings": "选择 {name} 的所有发现项",
+  "certSpanHint": "此对象从最不确定到最确定的发现项的确信度",
+  "ogOf": "设备 {name}",
+  "fselPart": "{n}/{m}",
+});

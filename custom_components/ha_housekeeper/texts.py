@@ -9,8 +9,16 @@ from homeassistant.core import HomeAssistant
 
 
 def language_of(hass: HomeAssistant) -> str:
-    """The language Home Assistant speaks, without the region: de_AT and de-AT become de."""
-    return str(hass.config.language).lower().replace("_", "-").split("-")[0]
+    """The language Home Assistant speaks, without the region: de_AT and de-AT become de.
+
+    Chinese keeps its script: zh-Hant and zh-TW are not simplified Chinese and fall back to English.
+    """
+    language = str(hass.config.language).lower().replace("_", "-")
+    if language.startswith("zh") and (
+        "hant" in language or language.endswith(("-tw", "-hk", "-mo"))
+    ):
+        return "zh-hant"
+    return language.split("-")[0]
 
 
 def pick[T](hass: HomeAssistant, table: dict[str, T]) -> T:

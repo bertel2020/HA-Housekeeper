@@ -70,3 +70,22 @@ class EntityRecorderMixin {
     root.querySelectorAll("[data-erec]").forEach(el => el.onclick = () => this.loadEntityRecorder(el.dataset.erec));
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "erecTitle": "记录器中",
+  "erecHint": "数据库为此实体保存的内容。在大型数据库上统计可能需要几秒钟。",
+  "erecCount": "统计",
+  "erecRunning": "正在统计…",
+  "erecBusy": "记录器正忙。请稍后重试。",
+  "erecFailed": "统计失败：{reason}",
+  "erecStates": "原始数据（状态）",
+  "erecShort": "短期统计（5 分钟）",
+  "erecLong": "长期统计（1 小时）",
+  "erecRows": "{count} 条记录",
+  "erecFirst": "最早：{date}",
+  "erecLast": "最新：{date}",
+  "erecNone": "无存储数据",
+  "erecKeep": "原始数据可追溯 {days} 天；记录器保留期：{keep} 天。",
+  "erecKeepOff": "原始数据可追溯 {days} 天。",
+});

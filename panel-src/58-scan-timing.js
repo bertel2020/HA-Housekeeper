@@ -24,3 +24,16 @@ class ScanTimingMixin {
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("timingTitle")}</h2><p>${this.t("timingHint", { total: this.formatNumber(Math.round(total * 10) / 10) })}</p></div></div>${rows}</section>`;
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "timingTitle": "上次扫描的耗时",
+  "timingHint": "总计 {total} 秒。耗时最长的阶段排在最前；在大型安装中，当扫描变慢时它是首要排查对象。",
+  "timingPhase_entities": "读取实体",
+  "timingPhase_devices": "设备、集成和应用",
+  "timingPhase_automations": "自动化、脚本和场景",
+  "timingPhase_dashboards": "仪表板和能源",
+  "timingPhase_tracking": "观察项、统计和辅助元素",
+  "timingPhase_analysis": "评估发现项",
+  "timingPhase_finalizing": "收尾（文件大小、数据库）",
+});

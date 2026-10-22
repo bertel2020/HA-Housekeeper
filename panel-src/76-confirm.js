@@ -28,3 +28,18 @@ class ConfirmMixin {
     if (this._confirmFocus) { this._confirmFocus = false; modal.querySelector("[data-confirm-no]")?.focus(); }
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "deleteSelectedPlans": "删除所选（{count}）",
+  "confirmPlansDelete": "将从日志中删除 {count} 个预览。已执行的计划会保留；预览可随时重新创建。",
+  "confirmRunTitle": "立即运行该计划？",
+  "confirmTitle": "确定要删除吗？",
+  "confirmDelete": "删除",
+  "confirmCancel": "取消",
+  "confirmRem": "提醒「{name}」及其历史记录将被删除。",
+  "confirmRemDay": "将从「{name}」的历史中删除 {date} 的记录。到期日仍会保留。",
+  "confirmPlanDelete": "将从日志中删除 {date} 的计划。已执行的计划在 Home Assistant 中仍然生效；此后将无法撤销。",
+  "confirmView": "已保存的视图「{name}」将被删除。",
+  "confirmTpl": "模板「{name}」将被删除。",
+});

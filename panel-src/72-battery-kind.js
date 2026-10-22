@@ -145,3 +145,34 @@ class BatteryKindMixin {
     root.querySelector("[data-bk-take]")?.addEventListener("click", () => this.bkTakePicked());
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "bkSet": "不是可更换电池？",
+  "bkLabel": "{name} 是什么？",
+  "bkSave": "保存",
+  "bkBack": "它是电池",
+  "bkConfirm": "确认",
+  "bkNote": "确认后，该传感器将不再计入最低电量、预测和状态。仅存储在 Housekeeper 中。",
+  "bkKind_device": "设备自带电池组",
+  "bkKind_storage": "储能",
+  "bkKind_vehicle": "车辆",
+  "bkKind_other": "其他",
+  "bkProposed": "可能不是可更换电池",
+  "bkProposedHint": "同时报告功率、电能或充电状态的设备。在你确认或恢复之前，它们不计入最低电量和预测。",
+  "bkMine": "不是可更换电池",
+  "bkMineHint": "由你设置或从建议中确认。",
+  "bkTakeN": "确认（{n}）",
+  "bkWhy": "设备还报告 {list}",
+  "bkWhyMower": "设备是割草机器人",
+  "bkWhyVacuum": "设备是吸尘器",
+  "bkSig_power": "功率",
+  "bkSig_energy": "电能",
+  "bkSig_energy_storage": "储能",
+  "bkSig_current": "电流",
+  "bkSig_battery_charging": "充电",
+  "bkSig_plug": "插头",
+  "bkFailed": "操作未成功：{detail}",
+  "bkColReason": "原因",
+  "bkColKind": "类型",
+});

@@ -73,9 +73,25 @@ test("the overview has one findings link and shows active policy violations amon
   assert.equal(el.t("dbOvHint"), "Größe und Wachstum des Recorders.");
 });
 
-test("German and English texts define the same keys", () => {
+test("German, English and Chinese texts define the same keys", () => {
   const { TEXT } = loadPanel();
-  assert.deepEqual(Object.keys(TEXT.de).sort(), Object.keys(TEXT.en).sort());
+  const keys = Object.keys(TEXT.en).sort();
+  assert.deepEqual(Object.keys(TEXT.de).sort(), keys);
+  assert.deepEqual(Object.keys(TEXT.zh).sort(), keys);
+});
+
+test("the panel follows a Simplified Chinese Home Assistant and keeps English for traditional Chinese", () => {
+  const { PanelClass } = loadPanel();
+  const at = language => {
+    const el = new PanelClass();
+    el._hass = { language };
+    return { lang: el.lang, text: el.t("overview") };
+  };
+  assert.deepEqual(at("zh-Hans"), { lang: "zh", text: "概览" });
+  assert.deepEqual(at("zh-CN"), { lang: "zh", text: "概览" });
+  assert.equal(at("zh-Hant").lang, "en");
+  assert.equal(at("fr").lang, "en");
+  assert.equal(at("de-AT").lang, "de");
 });
 
 test("home functions show a confirmed fault, a scan gap, and escapes function names", () => {

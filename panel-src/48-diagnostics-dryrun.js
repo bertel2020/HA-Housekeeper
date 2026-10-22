@@ -61,3 +61,35 @@ class DryRunMixin {
     root.querySelectorAll("[data-dry-state]").forEach(el => el.oninput = () => { dry().states[Number(el.dataset.dryState)].state = el.value; });
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "dryRun": "试算",
+  "dryTitle": "测试运行（说明）",
+  "dryHint": "根据当前状态和你的测试状态推演自动化会执行的操作。不会执行任何操作，也不会向设备发送任何内容。",
+  "dryStateEntity": "实体",
+  "dryStateValue": "测试状态",
+  "dryAddState": "添加测试状态",
+  "dryRemove": "移除",
+  "dryRunning": "处理中…",
+  "dryFailed": "无法执行：{reason}",
+  "dryTriggers": "触发器",
+  "dryConditions": "条件",
+  "dryBranches": "可能的路径",
+  "dryCalls": "调用的服务",
+  "dryNoCalls": "计算出的路径上没有服务调用。",
+  "dryYes": "会触发",
+  "dryNo": "不会触发",
+  "dryOpen": "开放",
+  "dryTrue": "已满足",
+  "dryFalse": "未满足，自动化将在此停止",
+  "dryUnknown": "无法判断",
+  "dryUncertain": "路径的某些部分无法可靠判断；从那里开始的服务会标记为「不确定」。",
+  "dryCertain": "确定",
+  "dryMaybe": "不确定",
+  "dryCritical": "关键（门锁、警报、车库）",
+  "dryMissing": "缺失：{list}",
+  "dryDisabled": "已禁用：{list}",
+  "dryTemplated": "通过模板指定目标",
+  "dryLimits": "限制：模板、太阳、区域（zone）、设备条件以及 Home Assistant 之外的任何内容均不做判断。",
+});

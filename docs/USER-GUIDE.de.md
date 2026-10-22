@@ -374,7 +374,7 @@ Jede Beziehung besitzt eine Vertrauensstufe. Explizite Registry- und Konfigurati
 
 #### Sprachen
 
-Panel und Einrichtungsdialog stehen auf Deutsch und Englisch zur Verfügung. Standardmäßig bestimmt die in Home Assistant gewählte Sprache die Sprache des Panels; unter **Einstellungen → Darstellung** lässt sie sich von Hand auf Deutsch oder Englisch festlegen.
+Panel und Einrichtungsdialog stehen auf Deutsch, Englisch und vereinfachtem Chinesisch zur Verfügung. Standardmäßig bestimmt die in Home Assistant gewählte Sprache die Sprache des Panels; unter **Einstellungen → Darstellung** lässt sie sich von Hand auf Deutsch, Englisch oder Chinesisch festlegen. Traditionelles Chinesisch fällt auf Englisch zurück.
 
 #### Einstellungen, Sensoren und Anbindung
 

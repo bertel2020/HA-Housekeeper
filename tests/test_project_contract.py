@@ -54,6 +54,12 @@ def test_german_and_english_translation_keys_match() -> None:
     assert _leaf_paths(german) == _leaf_paths(english)
 
 
+def test_simplified_chinese_translation_keys_match() -> None:
+    chinese = _json(COMPONENT / "translations" / "zh-Hans.json")
+    english = _json(COMPONENT / "translations" / "en.json")
+    assert _leaf_paths(chinese) == _leaf_paths(english)
+
+
 def test_frontend_bundle_is_packaged() -> None:
     bundle = COMPONENT / "frontend" / "ha-housekeeper-panel.js"
     assert bundle.stat().st_size > 1_000

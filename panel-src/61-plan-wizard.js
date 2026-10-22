@@ -70,3 +70,22 @@ class PlanWizardMixin {
     root.querySelector("[data-plan-back]")?.addEventListener("click", () => { this.confirmation = null; this.confirmWord = ""; this.render(); });
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "wzLabel": "计划的步骤",
+  "wzReview": "检查",
+  "wzConfirm": "确认",
+  "wzRun": "运行",
+  "wzResult": "结果",
+  "wzSumEntries": "{n} 个条目",
+  "wzSumRun": "已完成 {done}/{total}",
+  "wzIdleTitle": "没有可运行的内容",
+  "wzIdleBlocked": "全部 {n} 个条目均被阻止。原因显示在各条目旁。",
+  "wzIdleBlockedOne": "该条目已被阻止。原因显示在条目旁。",
+  "wzIdleNothingTitle": "没有需要更改的内容",
+  "wzIdleNothing": "Housekeeper 已检查，未发现可更改的内容。你无需执行任何操作。",
+  "verdictNothing": "没有需要更改的内容",
+  "wzIdleNone": "此计划中没有可运行的操作。",
+  "wzBack": "返回",
+});

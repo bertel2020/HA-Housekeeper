@@ -50,3 +50,21 @@ class CriteriaHistoryMixin {
     root.querySelector("[data-crit-range]")?.addEventListener("change", e => { this.critRange = Number(e.target.value) || 30; this.render(); });
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "chTitle": "目标历史",
+  "chRange": "时间范围",
+  "chDays": "{days} 天",
+  "chQuota": "已达成",
+  "chMissed": "{days} 天内未达成",
+  "chLast": "最后一次未达成",
+  "chNone": "此时间段内还没有带条件的运行记录。",
+  "chNever": "无",
+  "chQuota7": "最近 7 天：{percent} %",
+  "chBars": "每日运行次数；红色：有未达成运行的日期",
+  "chAxisFrom": "{days} 天前",
+  "chAxisTo": "今天",
+  "automation.goal_missed": "目标未达成",
+  "goalLine": "最近 {days} 天内目标在 {total} 次中未达成 {missed} 次 · 条件由你设定",
+});

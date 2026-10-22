@@ -373,7 +373,7 @@ Each relationship includes a confidence level. Explicit registry and configurati
 
 #### Languages
 
-The panel and configuration flow are available in German and English. By default the active Home Assistant language determines the panel language; under **Settings → Appearance** you can set German or English by hand.
+The panel and configuration flow are available in German, English and Simplified Chinese. By default the active Home Assistant language determines the panel language; under **Settings → Appearance** you can set German, English or Chinese by hand. Traditional Chinese falls back to English.
 
 #### Settings, sensors and connections
 

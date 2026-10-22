@@ -146,3 +146,23 @@ class PolicyRowMixin {
     }));
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "polOpenRow": "显示详情",
+  "polCloseRow": "隐藏详情",
+  "polWhy": "原因",
+  "polActRename": "重命名",
+  "polOpenObject": "打开对象",
+  "polToCleanup": "前往清理",
+  "polNameFree": "可用",
+  "polNameTaken": "已被 {name}（{id}）占用",
+  "polNameTakenDead": "已被占用：{id} 已不存在。清理后可释放该名称。",
+  "polNameSame": "未更改",
+  "polSuggestHint": "建议：",
+  "polRecommended": "推荐",
+  "polPickHint": "选择一个建议或输入 ID。",
+  "polNoSuggest": "无法根据名称和区域生成可用建议。请输入 ID。",
+  "polSuggTaken": "{id} 已被占用：{why}",
+  "polExpectedNote": "此处 ID 以「{prefix}」开头。",
+});

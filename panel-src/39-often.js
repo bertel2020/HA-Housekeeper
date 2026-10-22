@@ -219,3 +219,32 @@ class OftenMixin {
     });
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "oftenChip": "频繁失效",
+  "oftenChipAt": "通常在 {from} 至 {to} 之间失效",
+  "oftenTitle": "是有意为之吗？",
+  "oftenText": "{lines} 如果这是有意为之，可设置标记予以记录，Housekeeper 便会停止报告该故障。",
+  "oftenSet": "设置带时间窗口的标记",
+  "oftenSetPlain": "设置标记",
+  "oftenSkip": "不再询问",
+  "oftenDevice": "此设备的多个实体会同时失效。",
+  "oftenGroup": "{device}：{n} 个实体",
+  "oftenRest": "其余 {n} 个实体继续被监视",
+  "oftenRest1": "其余实体继续被监视",
+  "oftenCardTitle": "建议的标记",
+  "oftenCardHint": "它们会规律性地失效或失去数值，例如处于待机状态时。「有意离线」标记会将其发现项隐藏 90 天。",
+  "oftenCount": "{n} 条建议",
+  "oftenFindings1": "1 个发现项",
+  "oftenFindings": "{n} 个发现项",
+  "oftenTake": "标记",
+  "oftenTakeN": "标记（{n}）",
+  "oftenColObject": "对象",
+  "oftenColPattern": "模式",
+  "oftenColFindings": "发现项",
+  "oftenNone": "未选择任何项。",
+  "oftenAllTitle": "标记所选的建议？",
+  "oftenAllText": "将设置 {n} 个「有意离线」标记，若检测到时间窗口还会一并设置。它们会隐藏 {hides} 个发现项，且可逐个移除。",
+  "oftenReason": "建议：频繁失效",
+});

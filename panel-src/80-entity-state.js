@@ -78,3 +78,27 @@ class EntityStateMixin {
     this.render();
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "stateSel": "已选择 {count} 项",
+  "stateAllFiltered": "列表中的全部 {count} 个实体",
+  "stateClear": "清除选择",
+  "stateDisable": "禁用",
+  "stateEnable": "启用",
+  "stateHide": "隐藏",
+  "stateUnhide": "显示",
+  "stateTooMany": "一个计划最多包含 {max} 个实体。请减少选择数量。",
+  "stateNoItems": "请选择实体。",
+  "stateTarget_disable": "禁用",
+  "stateTarget_enable": "启用",
+  "stateTarget_hide": "隐藏",
+  "stateTarget_unhide": "显示",
+  "reason_already_in_state": "已经是此状态。",
+  "reason_not_user_disabled": "并非由你禁用（集成或设备）。它将保持原状。",
+  "reason_bad_state": "未知操作。",
+  "check_entity_state": "状态已设置",
+  "result_entity_state": "已切换",
+  "actKind_set_entity_state": "实体已切换",
+  "confirmedSummaryState": "{count} 个实体将被禁用、启用、隐藏或显示。此操作可完全撤销。",
+});

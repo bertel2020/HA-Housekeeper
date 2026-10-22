@@ -80,3 +80,23 @@ class HistoryTabMixin {
     return `<div class="detailgrid"><div class="stack">${this.noteCard(item)}</div><div class="stack">${right}</div></div>`;
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "tabHistory": "历史",
+  "histPlans": "此对象的计划",
+  "histPlansHint": "日志中涉及此对象的已确认和已计划的更改。",
+  "histPlansNone": "目前没有针对此对象的计划。",
+  "histPlansLoading": "正在加载日志……",
+  "lifeTitle": "生命周期",
+  "histNoticed": "Housekeeper 的发现",
+  "histNoticedHint": "Housekeeper 从扫描、注册表和可靠性数据中了解到的此对象信息，最新的在前。",
+  "histNoticedNone": "尚未发现任何内容。",
+  "histSeen": "观测起始",
+  "histFinding": "检测到发现项：{kind}",
+  "histQuarantine": "已隔离 {days} 天",
+  "histOpenNow": "当前",
+  "histUnstable": "在可靠性窗口内不稳定",
+  "histFlapping": "在可靠性窗口内频繁波动",
+  "histOpen": "显示历史（{n}）",
+});
