@@ -1,5 +1,67 @@
 # Changelog
 
+## Unreleased (2.0.0)
+
+### Neu
+
+- **Themen statt Klassen:** Jeder Befund gehört zu einem von vier Themen: Ausgefallen, Kaputte Verweise, Fehlerhafte Automationen, Überflüssig. Die Wirkung (Hoch bis Info) sagt, wie dringend es ist.
+  - Themenkacheln mit Wirkungsbalken, eine Spalte und ein Filter „Thema“.
+  - Ein fehlendes Ziel ist ab dem ersten Verweis eine Ursache, die verweisenden Automationen sind die Folgen.
+  - Automationen und Skripte mit wiederholten Fehlern sind jetzt eigene Befunde.
+  - Die Spalte „Sicherheit“ heißt „Gewissheit“, mit vier Stufen und einer Begründung im Tooltip.
+- **Seit dem letzten Besuch:** Die Befunde-Seite öffnet auf dem, was neu oder schlechter geworden ist, je Benutzer. Dazu der Sensor „Neue Befunde“. Ein „Später“, das schlechter wird, kommt sofort zurück; „Fällig“ sammelt, was wieder angesehen werden will.
+- **Beheben:** Jeder Befund hat eine eigene Seite mit vier Schritten (Verstehen, Entscheiden, Ausführen, Nachprüfen) und den Wegen seines Themas.
+  - Ziel ersetzen, auch bei Bereich, Etage und Label; Verweis entfernen und Fehler abfangen (beide über „Verbessern“); „Alle n beheben“ für ein fehlendes Ziel.
+  - Der letzte Fehler einer Automation aus dem Ablaufprotokoll, die Aufräum-Runde für alles Überflüssige und „Jetzt ansehen“ zum Nachprüfen.
+  - „In Arbeit“ merkt, was jemand angefangen hat, ohne etwas auszublenden.
+  - Geändert wird nur über einen Plan mit Vorschau und Bestätigung.
+- **Erstes Aufräumen:** Ab 50 offenen Befunden führt ein Durchgang in fünf Etappen durch die Liste, vom Wichtigsten bis zum ruhigen Rest, der gesammelt auf „Später“ gelegt werden kann. Der Stand gilt fürs ganze Haus.
+- **KI-Zugriff:** Neue Dienste `finding_fix_options` (lesend) und `finding_fix_plan` hinter dem neuen Schalter „Befunde beheben“ (standardmäßig aus). Der Plan ist nur eine Vorschau, bestätigen kann ihn nur ein Administrator im Panel. Befunde lassen sich nach Thema filtern; der kopierbare Anweisungstext ist angepasst.
+
+### Geändert
+
+- **Neue Namen für die Ausgänge:** „Bekannt“ heißt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“ (englisch Intended und Later). Gespeicherte Entscheidungen und der Dienst `finding_decide` bleiben unverändert.
+  - „Ist so gewollt“ ohne Frist bekommt einmalig 90 Tage; ein Hinweis erklärt das. Bei kritischen Objekten ist eine Frist Pflicht.
+  - Die Daten bleiben lesbar: Wer auf 1.x zurückgeht, verliert nur die neuen Felder.
+- **Befunde-Seite und Übersicht:** Die Themenkacheln ersetzen die Kacheln je Klasse. Die Übersichtszeile „Neu kritisch seit dem letzten Scan“ ist durch „n neu · n fällig“ ersetzt und führt auf die Befunde-Seite.
+- **Oberfläche, Korrekturen:**
+  - Der Zurück-Knopf nennt seine Seite statt der internen Bezeichnung.
+  - Karten und Zeilen ohne Auswahlkästchen behalten ihren Knopf im Blick.
+  - „Alle n beheben“ und die Auswahl mit jedem Ort ohne einzelne Befunde zeigen die richtigen Einzahl-Texte.
+  - Die Frage in Etappe 5 spricht nicht mehr von Löschen.
+  - Die Seiten unterhalb der Befunde tragen keine falsche Gruppenüberschrift mehr.
+
+### English
+
+#### New
+
+- **Topics instead of classes:** Every finding belongs to one of four topics: Down, Broken references, Failing automations, Unneeded. The impact (High to Info) says how urgent it is.
+  - Topic tiles with an impact bar, a column and a filter “Topic”.
+  - A missing target is a cause from the first reference on; the automations that refer to it are the follow-ups.
+  - Automations and scripts with repeated failures are now findings of their own.
+  - The column “Sicherheit” is now “Certainty”, with four levels and a reason in the tooltip.
+- **Since your last visit:** The findings page opens on what is new or got worse, for each user. Also the sensor “New findings”. A “Later” that gets worse comes back at once; “Due” collects what wants another look.
+- **Fix:** Every finding has a page of its own with four steps (Understand, Decide, Carry out, Check) and the ways of its topic.
+  - Replace the target, also for an area, floor and label; remove the reference and catch the error (both through “Improve”); “Fix all n” for a missing target.
+  - The last error of an automation from the run log, the cleanup round for everything unneeded, and “Look now” to check.
+  - “In work” remembers what someone has started, without hiding anything.
+  - Anything is changed only through a plan with preview and confirmation.
+- **First cleanup:** From 50 open findings a walk-through in five stages goes through the list, from the most important to the quiet rest, which can be put off together to “Later”. The state is for the whole house.
+- **AI access:** New services `finding_fix_options` (read) and `finding_fix_plan` behind the new switch “Fix findings” (off by default). The plan is only a preview that only an administrator can confirm in the panel. Findings can be filtered by topic; the copyable instruction is updated.
+
+#### Changed
+
+- **New names for the exits:** “Bekannt” is now “Ist so gewollt” and “Zurückgestellt” is now “Später” (in English Intended and Later). Stored decisions and the service `finding_decide` stay as they are.
+  - “Intended” without a time gets 90 days once; a note explains it. A critical object needs a time.
+  - The data stay readable: going back to 1.x loses only the new fields.
+- **Findings page and overview:** The topic tiles replace the tiles per class. The overview line “New critical since the last scan” is replaced by “n new · n due” and leads to the findings page.
+- **Interface, corrections:**
+  - The back button names its page instead of the internal name.
+  - Cards and rows without a checkbox keep their button in view.
+  - “Fix all n” and a selection with every place but no single findings show the right singular texts.
+  - The question of stage 5 no longer speaks of deleting.
+  - The pages below the findings no longer carry a wrong group heading.
+
 ## 1.12.0 - 2026-10-22
 
 ### Neu
