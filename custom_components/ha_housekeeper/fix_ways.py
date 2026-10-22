@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .finding_topics import BROKEN_REFERENCES, DOWN, UNNEEDED
+from .finding_topics import BROKEN_REFERENCES, DOWN, FAILING_AUTOMATIONS, UNNEEDED
 
 WAIT_STATES = ("setup_retry", "setup_in_progress")
 RESTART_STATES = ("migration_error", "failed_unload")
@@ -83,6 +83,13 @@ def ways_for(
     """The ways for one finding of the topics "down" and "broken references"; others have none yet."""
     if finding.get("topic") == BROKEN_REFERENCES:
         return _broken_ways(finding, refactor_enabled)
+    if finding.get("topic") == FAILING_AUTOMATIONS:
+        caused = bool(finding.get("cause_id"))
+        ways = [_way("fix_cause", "panel", True)] if caused else []
+        ways.append(_way("open_editor", "panel", not caused))
+        if finding["rule_id"] == "automation.blocked":
+            ways.append(_way("object_actions", "panel"))
+        return ways
     if finding.get("topic") == UNNEEDED:
         return [
             _way("cleanup_round", "panel", True),

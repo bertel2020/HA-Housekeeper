@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -965,6 +965,61 @@ async def test_sensors_stay_unknown_for_preliminary_snapshots(hass: HomeAssistan
     assert compute_values(snapshot) == {}
     scanner._warmup_until = 0.0
     assert compute_values(await scanner.async_scan())["findings"] == 0
+
+
+async def test_failure_info_reads_the_last_failed_run(hass: HomeAssistant, hass_ws_client) -> None:
+    """The newest run that ended in an error: its step and text; the hint names an entity that is down."""
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    snapshot["objects"].append(
+        {"object_type": "automation", "object_id": "automation.f", "automation_id": "f1"}
+    )
+    snapshot["findings"].append(
+        {
+            "key": "automation:automation.f|automation.run_failing",
+            "rule_id": "automation.run_failing",
+            "object_id": "automation.f",
+            "topic": "failing_automations",
+        }
+    )
+    heads = [
+        {
+            "run_id": "r1",
+            "state": "stopped",
+            "script_execution": "finished",
+            "timestamp": {"start": "2026-10-22T08:00:00+00:00"},
+        },
+        {
+            "run_id": "r2",
+            "state": "stopped",
+            "script_execution": "error",
+            "last_step": "action/2",
+            "error": "Entity cover.bath is unavailable",
+            "timestamp": {"start": "2026-10-22T09:00:00+00:00"},
+        },
+        {
+            "run_id": "r3",
+            "state": "stopped",
+            "script_execution": "error",
+            "last_step": "action/0",
+            "error": "older",
+            "timestamp": {"start": "2026-10-21T09:00:00+00:00"},
+        },
+    ]
+    with patch(
+        "homeassistant.components.trace.util.async_list_traces", AsyncMock(return_value=heads)
+    ):
+        await client.send_json_auto_id(
+            {
+                "type": "ha_housekeeper/failure_info",
+                "finding_key": "automation:automation.f|automation.run_failing",
+            }
+        )
+        reply = await client.receive_json()
+    assert reply["success"], reply
+    failure = reply["result"]["failure"]
+    assert failure["step"] == "action/2" and failure["error"] == "Entity cover.bath is unavailable"
+    assert reply["result"]["hint"] is None  # nothing in the scan says cover.bath is down
 
 
 async def test_the_cleanup_round_judges_and_changes_nothing(

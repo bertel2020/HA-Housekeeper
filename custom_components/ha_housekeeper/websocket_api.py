@@ -60,6 +60,7 @@ from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable
 from .cleanup_round import duplicate_rows, needs_first_step, removal_requests, sort_row
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices
+from .failure_info import error_hint, last_failure
 from .fix_ways import ways_for
 from .history import PinError
 from .ignored import KINDS as IGNORE_KINDS
@@ -292,6 +293,52 @@ def websocket_fix_ways(
     connection.send_result(
         msg["id"],
         {"ways": ways_for(finding, snapshot, refactor_enabled=scanner.refactor.enabled)},
+    )
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/failure_info", vol.Required("finding_key"): str}
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_failure_info(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The last failed run of the automation or script of a finding, with a hint. Reads only."""
+    snapshot = scanner.snapshot or {}
+    finding = next(
+        (f for f in snapshot.get("findings", []) if f["key"] == msg["finding_key"]), None
+    )
+    domain = finding["rule_id"].partition(".")[0] if finding else ""
+    if finding is None or domain not in ("automation", "script"):
+        connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
+        return
+    item = next(
+        (
+            o
+            for o in snapshot.get("objects", [])
+            if o["object_type"] == domain and o["object_id"] == finding["object_id"]
+        ),
+        {},
+    )
+    item_id = (
+        item.get("automation_id")
+        if domain == "automation"
+        else finding["object_id"].partition(".")[2]
+    )
+    failure = await last_failure(hass, domain, str(item_id)) if item_id else None
+    down = {
+        f["object_id"]: f["key"]
+        for f in snapshot.get("findings", [])
+        if f.get("topic") == "down" and not f.get("ignored") and f["rule_id"].startswith("entity.")
+    }
+    connection.send_result(
+        msg["id"],
+        {"failure": failure, "hint": error_hint((failure or {}).get("error"), down)},
     )
 
 
@@ -1329,6 +1376,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_visit_leave)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
+    websocket_api.async_register_command(hass, websocket_failure_info)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_merge)

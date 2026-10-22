@@ -151,7 +151,7 @@ def test_the_ways_to_fix_an_outage_follow_the_state_of_the_integration() -> None
         == "cleanup_round"
     )
     assert (
-        ways_for({"rule_id": "x.y", "object_id": "a", "topic": "failing_automations"}, snapshot)
+        ways_for({"rule_id": "x.y", "object_id": "a", "topic": "other"}, snapshot)
         == []
     )
 
@@ -227,3 +227,31 @@ def test_the_cleanup_round_sorts_by_what_the_plan_judged() -> None:
     assert row["group"] == "look" and row["kind"] == "disable_entity" and row["first_step"]
     blocked = {**ok, "verdict": "blocked", "reasons": ["marked_keep"]}
     assert sort_row(requests[0], blocked, None)["group"] == "blocked"
+
+
+def test_the_ways_to_fix_a_failing_automation_start_with_its_cause() -> None:
+    from custom_components.ha_housekeeper.failure_info import error_hint
+    from custom_components.ha_housekeeper.fix_ways import ways_for
+
+    caused = {
+        "rule_id": "automation.blocked",
+        "object_id": "automation.a",
+        "topic": "failing_automations",
+        "cause_id": "c1",
+    }
+    ways = ways_for(caused, {})
+    assert [w["way"] for w in ways] == ["fix_cause", "open_editor", "object_actions"]
+    assert ways[0]["recommended"] and not ways[1]["recommended"]
+    own = {
+        "rule_id": "automation.run_failing",
+        "object_id": "automation.a",
+        "topic": "failing_automations",
+    }
+    assert [(w["way"], w["recommended"]) for w in ways_for(own, {})] == [("open_editor", True)]
+    down = {"cover.bath": "entity:cover.bath"}
+    hint = error_hint("Entity cover.bath is unavailable", down)
+    assert hint == {"entity_id": "cover.bath", "finding_key": "entity:cover.bath"}
+    assert (
+        error_hint("Entity light.other is unavailable", down) is None
+        and error_hint(None, down) is None
+    )
