@@ -404,3 +404,25 @@ async def test_work_starts_goes_on_expires_after_a_week_and_goes_with_its_findin
     store.start("b", t1)
     store.clear("b")
     assert store.get("b") is None
+
+
+async def test_data_written_by_1x_loads_again(hass: HomeAssistant, hass_storage) -> None:
+    """The way back 2.0 -> 1.x -> 2.0: 1.x drops the new fields, 2.0 reads what is left and migrates again."""
+    now = datetime.now(UTC)
+    old = {
+        "kind": "keep",
+        "at": now.isoformat(),
+        "reason": "",
+        "until": None,
+        "by": None,
+        "via": None,
+    }
+    put(
+        hass_storage,
+        const.IGNORED_STORAGE_KEY,
+        {"items": {"a": old, "b": {**old, "kind": "snooze"}}},
+    )
+    store = IgnoreStore(hass)
+    await store.async_load()
+    assert store.entry("a")["until"] and store.entry("b")["impact_at"] is None
+    assert store.notice == {"count": 1, "days": 90}
