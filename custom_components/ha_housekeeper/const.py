@@ -47,6 +47,7 @@ LOAD_STORAGE_KEY: Final = f"{DOMAIN}.load"
 FIRST_SEEN_STORAGE_KEY: Final = f"{DOMAIN}.first_seen"
 WORK_STORAGE_KEY: Final = f"{DOMAIN}.work"
 VISITS_STORAGE_KEY: Final = f"{DOMAIN}.visits"
+FIRST_CLEANUP_STORAGE_KEY: Final = f"{DOMAIN}.first_cleanup"
 WATCH_STORAGE_KEY: Final = f"{DOMAIN}.watch"
 STORAGE_VERSION: Final = 1
 

@@ -84,6 +84,7 @@ from .events import EventLog
 from .exceptions import ExceptionStore, entry_traits, traits, verdict
 from .exceptions import matches as _hits
 from .finding_topics import apply_topics
+from .first_cleanup import FirstCleanupStore
 from .goals import GoalStore
 from .hacs import hacs_by_domain, removed_issues
 from .hints import HintStore
@@ -885,6 +886,7 @@ STORE_NAMES = (
     "first_seen",
     "visits",
     "work",
+    "first_cleanup",
     "history",
     "ignored",
     "exceptions",
@@ -926,6 +928,7 @@ class InventoryScanner:
         self.first_seen = FirstSeenStore(hass)
         self.visits = VisitStore(hass)
         self.work = WorkStore(hass)
+        self.first_cleanup = FirstCleanupStore(hass)
         self.history = ScanHistory(hass)
         self.ignored = IgnoreStore(hass)
         self.exceptions = ExceptionStore(hass)
@@ -2112,11 +2115,41 @@ class InventoryScanner:
     def _refresh_finding(self, finding: dict[str, Any]) -> None:
         assert self._snapshot is not None
         self._mark_ignored(finding, er.async_get(self.hass))
+        self._after_decisions()
+
+    def _after_decisions(self) -> None:
+        """Count the causes anew and tell the others, once the findings carry their decisions."""
+        assert self._snapshot is not None
         self._snapshot["causes"] = apply_causes(
             self._snapshot["objects"], self._snapshot["edges"], self._snapshot["findings"]
         )
         self._sync_issues(self._snapshot)
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+
+    def snooze_many(self, keys: list[str], days: int, reason: str, by: str | None) -> int:
+        """Put several findings off together, with one recount at the end; how many were put off."""
+        now = datetime.now(UTC)
+        found = {f["key"]: f for f in (self._snapshot or {}).get("findings", [])}
+        registry = er.async_get(self.hass)
+        done = 0
+        for key in keys:
+            finding = found.get(key)
+            if finding is None or not self.ignored.decide(
+                key,
+                "snooze",
+                now,
+                reason=reason,
+                until=now + timedelta(days=days),
+                by=by,
+                impact=finding.get("impact"),
+                followers=self._followers_of(key),
+            ):
+                continue
+            self._mark_ignored(finding, registry)
+            done += 1
+        if done:
+            self._after_decisions()
+        return done
 
     def set_mark(
         self,

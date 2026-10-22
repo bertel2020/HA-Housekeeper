@@ -5,6 +5,8 @@ const ERR_MESSAGE_KEYS = {
   "Unknown automation": "err_unknown_automation",
   "Unknown device": "err_unknown_device",
   "Finding not found in the latest scan": "err_finding_not_found",
+  "The first cleanup has not begun": "err_not_running",
+  "A stage is needed": "err_stage_needed",
   "Object not found in the latest scan": "err_object_not_found",
   "A run is no longer in the trace buffer": "err_run_gone",
   "Two different known devices are needed": "err_two_devices",
@@ -37,6 +39,7 @@ Object.assign(TEXT.de, {
   err_invalid_limit: "Der Grenzwert liegt außerhalb des erlaubten Bereichs.", err_no_recorder: "Der Recorder ist nicht verfügbar.", err_nothing_to_merge: "Nach den Konflikten bleibt nichts übrig.",
   err_invalid_format: "Eine Angabe ist nicht gültig. Prüfe die Eingaben und versuche es noch einmal.", err_rules_too_many: "Zu viele Regeln.", err_rules_invalid: "Die Regel ist nicht gültig.", err_invalid: "Die Eingabe ist nicht gültig.",
   err_too_many: "Zu viele Aktionen in einem Plan.", err_thresholds_order: "Info, niedrig, mittel und hoch müssen ansteigen.",
+  err_not_running: "Das erste Aufräumen hat noch nicht begonnen.", err_stage_needed: "Es fehlt die Etappe.",
   err_failed: "Fehlgeschlagen: {detail}", err_not_accepted: "Nicht angenommen: {detail}",
 });
 Object.assign(TEXT.en, {
@@ -50,5 +53,6 @@ Object.assign(TEXT.en, {
   err_invalid_limit: "The limit is outside the allowed range.", err_no_recorder: "The recorder is not available.", err_nothing_to_merge: "Nothing is left after the conflicts.",
   err_invalid_format: "A value is not valid. Check the entries and try again.", err_rules_too_many: "Too many rules.", err_rules_invalid: "The rule is not valid.", err_invalid: "The input is not valid.",
   err_too_many: "Too many actions in one plan.", err_thresholds_order: "Info, low, medium and high must rise.",
+  err_not_running: "The first cleanup has not begun.", err_stage_needed: "A stage is needed.",
   err_failed: "Failed: {detail}", err_not_accepted: "Not accepted: {detail}",
 });

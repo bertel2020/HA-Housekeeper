@@ -16,6 +16,7 @@ from custom_components.ha_housekeeper import const  # noqa: E402
 from custom_components.ha_housekeeper.backup_health import AttestStore  # noqa: E402
 from custom_components.ha_housekeeper.cleanup import JournalStore  # noqa: E402
 from custom_components.ha_housekeeper.events import EventLog  # noqa: E402
+from custom_components.ha_housekeeper.first_cleanup import FirstCleanupStore  # noqa: E402
 from custom_components.ha_housekeeper.goals import GoalStore  # noqa: E402
 from custom_components.ha_housekeeper.history import ScanHistory  # noqa: E402
 from custom_components.ha_housekeeper.ignored import IgnoreStore, _clean  # noqa: E402
@@ -43,6 +44,7 @@ STORES = [
     (FirstSeenStore, const.FIRST_SEEN_STORAGE_KEY),
     (VisitStore, const.VISITS_STORAGE_KEY),
     (WorkStore, const.WORK_STORAGE_KEY),
+    (FirstCleanupStore, const.FIRST_CLEANUP_STORAGE_KEY),
 ]
 GARBAGE = [
     "text",

@@ -61,6 +61,7 @@ from .cleanup_round import duplicate_rows, needs_first_step, removal_requests, s
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices
 from .failure_info import error_hint, item_id_of, last_failure
+from .first_cleanup import BULK_LIMIT, LATER_DAYS, STAGES, stage_keys
 from .fix_ways import ways_for
 from .history import PinError
 from .ignored import KINDS as IGNORE_KINDS
@@ -447,6 +448,92 @@ def websocket_visit_leave(
         return
     user = connection.user.id if connection.user else None
     connection.send_result(msg["id"], scanner.visits.leave(user, snapshot, datetime.now(UTC)))
+
+
+def _first_cleanup_reply(scanner: InventoryScanner) -> dict[str, Any]:
+    snapshot = scanner.snapshot or {}
+    stages = stage_keys(snapshot)
+    open_count = sum(1 for f in snapshot.get("findings", []) if not f.get("ignored"))
+    return {
+        "state": scanner.first_cleanup.state(),
+        "offered": scanner.first_cleanup.offered(open_count),
+        "open": open_count,
+        "stages": {str(n): keys for n, keys in stages.items()},
+        "later_days": LATER_DAYS,
+    }
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/first_cleanup"})
+@callback
+@with_scanner
+def websocket_first_cleanup(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Where the first cleanup stands, whether it is offered, and the findings of each stage. Reads only."""
+    connection.send_result(msg["id"], _first_cleanup_reply(scanner))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/first_cleanup_set",
+        vol.Required("action"): vol.In(("begin", "dismiss", "stage")),
+        vol.Optional("stage"): vol.In(STAGES),
+        vol.Optional("done"): bool,
+    }
+)
+@callback
+@with_scanner
+def websocket_first_cleanup_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Begin the first cleanup, decline the offer, or go to a stage and mark it done. Hides nothing."""
+    store = scanner.first_cleanup
+    now = datetime.now(UTC)
+    if msg["action"] == "begin":
+        store.begin(_first_cleanup_reply(scanner)["open"], now)
+    elif msg["action"] == "dismiss":
+        store.dismiss()
+    elif "stage" not in msg:
+        connection.send_error(msg["id"], "invalid_format", "A stage is needed")
+        return
+    else:
+        store.set_stage(msg["stage"], msg.get("done"), now)
+    connection.send_result(msg["id"], _first_cleanup_reply(scanner))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/first_cleanup_later",
+        vol.Optional("days", default=LATER_DAYS): vol.All(int, vol.Range(min=1, max=3650)),
+        vol.Optional("reason", default=""): vol.All(str, vol.Length(max=IGNORE_REASON_LIMIT)),
+    }
+)
+@callback
+@with_scanner
+def websocket_first_cleanup_later(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Stage 5: put the rest off together ("Later"); it comes back as due. Housekeeper's own list only."""
+    if not scanner.first_cleanup.running:
+        connection.send_error(msg["id"], "not_running", "The first cleanup has not begun")
+        return
+    keys = stage_keys(scanner.snapshot or {})[5][:BULK_LIMIT]
+    done = scanner.snooze_many(
+        keys, msg["days"], msg["reason"], connection.user.id if connection.user else None
+    )
+    connection.send_result(msg["id"], {"put_off": done, **_first_cleanup_reply(scanner)})
 
 
 @websocket_api.require_admin
@@ -1426,6 +1513,9 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_decision_notice_dismiss)
     websocket_api.async_register_command(hass, websocket_visit_leave)
     websocket_api.async_register_command(hass, websocket_work_set)
+    websocket_api.async_register_command(hass, websocket_first_cleanup)
+    websocket_api.async_register_command(hass, websocket_first_cleanup_set)
+    websocket_api.async_register_command(hass, websocket_first_cleanup_later)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
     websocket_api.async_register_command(hass, websocket_fix_check)

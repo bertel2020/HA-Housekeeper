@@ -1948,3 +1948,30 @@ async def test_kept_recorder_views_are_renewed_in_the_background_and_a_failing_o
     assert asked == ["costs"]  # the most overdue first; it fails without disturbing anything
     await _later(hass, now + timedelta(seconds=2 * REFRESH_TICK + 120))
     assert asked[:2] == ["costs", "db_health"] and asked.count("costs") == 1
+
+
+async def test_first_cleanup_puts_the_rest_off_together_and_hides_nothing_else(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """Stage 5 puts only the quiet findings off, each with a date; it needs the cleanup to have begun."""
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    snapshot["findings"] = [
+        {**f, "classification": "x", "rule_id": "entity.stale", "object_type": "entity"}
+        for f in (
+            {"key": "k_loud", "object_id": "sensor.d", "topic": "down", "impact": "high"},
+            {"key": "k_quiet", "object_id": "sensor.e", "topic": "down", "impact": "low"},
+        )
+    ]
+
+    async def call(payload):
+        await client.send_json_auto_id(payload)
+        return await client.receive_json()
+
+    assert (await call({"type": "ha_housekeeper/first_cleanup_later"}))["success"] is False
+    reply = await call({"type": "ha_housekeeper/first_cleanup_set", "action": "begin"})
+    assert reply["success"] and reply["result"]["stages"]["5"] == ["k_quiet"]
+    reply = await call({"type": "ha_housekeeper/first_cleanup_later", "days": 30})
+    assert reply["result"]["put_off"] == 1
+    entry = scanner.ignored.entry("k_quiet")
+    assert entry["kind"] == "snooze" and entry["until"] and scanner.ignored.entry("k_loud") is None
