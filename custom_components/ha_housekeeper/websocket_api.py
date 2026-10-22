@@ -112,6 +112,8 @@ async def _send_inventory_result(
             {f["key"] for f in result.get("findings", [])}
         ),
         "decision_notice": scanner.ignored.notice,
+        # The last visit of this user: the base of "new since your last visit".
+        "visit": scanner.visits.get(connection.user.id if connection.user else None),
     }
     send_sendable(connection, msg["id"], _versioned(result))
 
@@ -263,22 +265,6 @@ async def websocket_compare(
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
     connection.send_result(msg["id"], scanner.history.compare(snapshot, msg["baseline"]))
-
-
-@websocket_api.require_admin
-@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/visit"})
-@callback
-@with_scanner
-def websocket_visit(
-    hass: HomeAssistant,
-    connection: websocket_api.ActiveConnection,
-    msg: dict[str, Any],
-    scanner: InventoryScanner,
-) -> None:
-    """The last visit of this user to the findings page and the findings as they stood then."""
-    connection.send_result(
-        msg["id"], scanner.visits.get(connection.user.id if connection.user else None)
-    )
 
 
 @websocket_api.require_admin
@@ -1265,7 +1251,6 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_history_series)
     websocket_api.async_register_command(hass, websocket_ignore)
     websocket_api.async_register_command(hass, websocket_decision_notice_dismiss)
-    websocket_api.async_register_command(hass, websocket_visit)
     websocket_api.async_register_command(hass, websocket_visit_leave)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)

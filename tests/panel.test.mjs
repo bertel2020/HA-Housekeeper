@@ -1966,11 +1966,10 @@ test("the overview starts with what needs doing, most urgent first", () => {
   el.trend = TREND;
   el.backup = { available: true, overall: "problem", checks: [{ id: "newest", level: "problem" }, { id: "emergency_kit", level: "note" }, { id: "last_run", level: "problem" }] };
   const keys = el.todoItems().map(i => i.key);
-  assert.equal(JSON.stringify(keys), JSON.stringify(["outages", "critical", "stale", "backup", "quarantine"]));
+  assert.equal(JSON.stringify(keys), JSON.stringify(["outages", "stale", "backup", "quarantine"]));
   const byKey = Object.fromEntries(el.todoItems().map(i => [i.key, i]));
   assert.equal(byKey.outages.count, 1);
   assert.equal(byKey.outages.hintText, "1 integration", "an outage without any affected entity still counts");
-  assert.equal(byKey.critical.count, 2, "hidden findings and other classes do not count");
   assert.equal(byKey.quarantine.count, 1, "only entries past the quarantine period");
   assert.equal(byKey.backup.tone, "red");
   assert.equal(byKey.backup.hintText, "Latest backup, Last automatic run", "only the problems are named, not the notes");
@@ -1978,7 +1977,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
   el.view = "overview"; el.folds = { todo_later: true }; el.render();
   const html = shadow.innerHTML;
   assert.ok(html.indexOf("What needs doing now?") > html.indexOf('class="summary"'), "the list comes after the key figures");
-  assert.ok(html.indexOf('data-todo="outages"') < html.indexOf('data-todo="critical"') && html.indexOf('data-todo="critical"') < html.indexOf('data-todo="stale"'));
+  assert.ok(html.indexOf('data-todo="outages"') < html.indexOf('data-todo="stale"'));
   assert.equal(html.split("Integration Hub is not loaded").length - 1, 1, "an outage appears once on the overview, not as a second card");
   assert.ok(html.includes("no entity affected") && !html.includes("Integrations with problems"));
   assert.ok(html.indexOf('class="summary"') < html.indexOf('class="ring') && html.indexOf('class="ring') < html.indexOf('data-jump="inventory" data-status'), "the health card is the first card of the statistics row");
@@ -4018,10 +4017,11 @@ test("findings get a status: known, snoozed, hidden, new and in work, and the li
   const findings = [
     { ...base, key: "a", object_id: "sensor.a", ignored: true, ignored_by: "user", ignore_info: { kind: "keep", reason: "ok" } },
     { ...base, key: "b", object_id: "sensor.b", ignored: true, ignored_by: "user", ignore_info: { kind: "snooze", until: now } },
-    { ...base, key: "c", object_id: "sensor.c", ignored: false, first_detected_at: now },
-    { ...base, key: "d", object_id: "sensor.d", ignored: false, first_detected_at: "2020-01-01T00:00:00Z" },
+    { ...base, key: "c", object_id: "sensor.c", ignored: false, impact: "medium", first_seen_at: now },
+    { ...base, key: "d", object_id: "sensor.d", ignored: false, impact: "medium", first_seen_at: "2020-01-01T00:00:00Z" },
   ];
   el.data = { ...DATA, findings };
+  el.visit = { at: "2026-01-01T00:00:00+00:00", state: {} };
   el.journal = [{ plan_id: "p1", status: "dry_run", objects: ["sensor.d"], done_objects: [] }, { plan_id: "p2", status: "executed", finished_at: now, objects: ["sensor.z"], done_objects: ["sensor.z"] }];
   const keys = status => { el.findingStatus = status; return findings.filter(f => el.statusMatch(f)).map(f => f.key).join(""); };
   assert.equal(keys(""), "cd");
@@ -5710,8 +5710,9 @@ test("an integration outage is a reason of its own, with a tile and a filter of 
   el.findingFilter = "outage";
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
   el.findingFilter = "";
-  el.data.findings[1].first_detected_at = "2020-01-01T00:00:00Z";
-  el.data.findings[0].first_detected_at = new Date().toISOString();
+  el.visit = { at: "2026-10-10T00:00:00+00:00", state: {} };
+  el.data.findings[1].first_seen_at = "2026-10-01T00:00:00+00:00";
+  el.data.findings[0].first_seen_at = "2026-10-15T00:00:00+00:00";
   el.findingStatus = "new";
   assert.ok(el.findingsView().includes('data-fstatus="new"'), "the chip appears while there is something new");
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
@@ -6275,20 +6276,30 @@ test("the findings page: outages are one reason, stale is a fault, a tile starts
   assert.ok(!el.inWork(el.data.findings[0]), "a preview older than a day does not count");
 });
 
-test("the jump to new critical findings is a filter: outage heads without a matching finding stay away", () => {
+test("new since the last visit: new findings and findings that got worse, a follow-up only with its cause, and nothing without a visit", () => {
   const { el } = panel("en");
-  const f = (key, rule, classification, extra = {}) => ({ key, rule_id: rule, object_id: key.split("|")[1], classification, confidence: 0.9, ignored: false, impact: "high", ...extra });
-  const down = f("device.down|d1|", "device.down", "problem", { cause_id: "device_down:d1" });
-  const follower = f("entity.state_unavailable|s1|", "entity.state_unavailable", "unavailable", { cause_id: "device_down:d1" });
-  const fresh = f("entity.missing_entity|a1|", "entity.missing_entity", "broken_reference");
-  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d1", name: "Echo Office" }, { object_type: "entity", object_id: "s1", name: "Alarm", device_id: "d1" }], edges: [],
-    causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Echo Office", impact: "high", follower_count: 1, total_followers: 1, finding_key: down.key, child_ids: [], consumers: {} }], findings: [down, follower, fresh] };
-  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
-  el.trend = { new_findings: { items: [{ ...fresh }] } };
-  el.findingScanNew = true;
-  const html = el.findingsView();
-  assert.ok(!html.includes("Echo Office is down completely") && !html.includes("match the filter"), "no head of an outage that has nothing new");
-  assert.ok(html.includes("1 finding on 1 object") && !html.includes("1 of 3 findings") && html.includes("New critical findings (1)"), "counted as the overview row, named like it");
+  const f = (key, rule, extra = {}) => ({ key, rule_id: rule, object_id: key.split("|")[1], classification: "unavailable", confidence: 0.9, ignored: false, impact: "high", first_seen_at: "2026-09-01T00:00:00+00:00", ...extra });
+  const down = f("device.down|d1|", "device.down", { cause_id: "device_down:d1", first_seen_at: "2026-10-20T00:00:00+00:00" });
+  const follower = f("entity.state_unavailable|s1|", "entity.state_unavailable", { cause_id: "device_down:d1", first_seen_at: "2026-10-20T00:00:00+00:00" });
+  const old = f("entity.state_unavailable|s2|", "entity.state_unavailable", { cause_id: "device_down:d9", first_seen_at: "2026-10-20T00:00:00+00:00" });
+  const worse = f("automation.stale|a1|", "automation.stale", { impact: "medium" });
+  const same = f("automation.stale|a2|", "automation.stale", { impact: "low" });
+  const quiet = f("entity.stale|q|", "entity.stale", { impact: "info", first_seen_at: "2026-10-20T00:00:00+00:00" });
+  el.data = { ...DATA, objects: [], edges: [],
+    causes: [{ id: "device_down:d1", kind: "device_down", finding_key: down.key, total_followers: 1, follower_count: 1, child_ids: [], consumers: {}, impact: "high" }, { id: "device_down:d9", kind: "device_down", finding_key: "device.down|d9|", total_followers: 1, follower_count: 1, child_ids: [], consumers: {}, impact: "high" }],
+    findings: [down, follower, old, worse, same, quiet] };
+  assert.equal(el.visitSets().all.size, 0, "without an earlier visit nothing is new");
+  assert.equal(el.defaultFindingStatus(), "");
+  el.visit = { at: "2026-10-10T00:00:00+00:00", state: { [worse.key]: ["low", 0], [same.key]: ["low", 0] } };
+  el._visitKeys = null;
+  const sets = el.visitSets();
+  assert.equal([...sets.fresh].sort().join(), `${down.key},${follower.key}`, "new from impact low up; a follow-up of a cause that is not shown does not count");
+  assert.equal([...sets.worse].join(), worse.key);
+  assert.equal(el.defaultFindingStatus(), "new", "with news the page opens at the new ones");
+  el.findingStatus = "new";
+  assert.ok(el.findingsView().includes("2 new · 1 got worse"));
+  el.visit = { at: "2026-10-30T00:00:00+00:00", state: {} }; el._visitKeys = null;
+  assert.ok(el.findingsView().includes("Nothing new since"));
 });
 
 test("the vacation bar says why nothing is held back and offers no empty list", () => {

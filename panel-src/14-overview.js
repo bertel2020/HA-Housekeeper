@@ -139,8 +139,6 @@ class OverviewMixin {
     // A missed criterion is a finding of its automation: counted and shown as those findings, hidden ones left out.
     const missed = (this.data.findings || []).filter(f => f.rule_id === "automation.goal_missed" && !f.ignored).length;
     if (missed) items.push({ key: "criteria", area: "care", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, jump: 'data-jump="findingsNav" data-filter="automation.goal_missed"' });
-    const fresh = this.scanNewKeys().size;
-    if (fresh) items.push({ key: "critical", area: "findings", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, jump: 'data-jump="findingsNav" data-filter="" data-jump-scan-new' });
     // A nearly full disk, from the light read of the overview; red from 90 % takes points off the ring like any urgent topic.
     this.ensureSysLight();
     const disk = this.sysLight?.disk;
@@ -345,12 +343,13 @@ class OverviewMixin {
       return [`topic_${name}`, mine.length, worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "", "findingsNav", "", `topic:${name}`, "bad", follows ? this.t("findingsOfFollow", { n: this.formatNumber(follows) }) : "", `topic:${name}`, mine.length ? this.impactBar(mine) : ""];
     };
     const due = open.filter(f => f.resurfaced).length;
+    const fresh = this.visitSets().all.size;
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter, bar]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small class="kpilabel">${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small class="kpisub">${this.esc(extra)}</small>` : ""}${bar || ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ...TOPIC_ORDER.map(topicKpi)].map(kpi).join("")}</div>${due ? `<p class="kpiline"><button type="button" class="link" data-jump="findingsNav" data-jump-status="due">${this.esc(this.t("overviewDue", { n: this.formatNumber(due) }))}</button></p>` : ""}</section>${why}${this.watchBand()}
+      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ...TOPIC_ORDER.map(topicKpi)].map(kpi).join("")}</div>${fresh || due ? `<p class="kpiline">${[fresh ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="new">${this.esc(this.t("overviewNew", { n: this.formatNumber(fresh) }))}</button>` : "", due ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="due">${this.esc(this.t("overviewDue", { n: this.formatNumber(due) }))}</button>` : ""].filter(Boolean).join(" · ")}</p>` : ""}</section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }
