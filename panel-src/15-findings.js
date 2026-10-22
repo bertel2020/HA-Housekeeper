@@ -208,7 +208,7 @@ class FindingsMixin {
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
     // The findings of one incident: the note names it, as its row in the card does.
     if (this.findingCorr) { const g = (this.corr?.groups || []).find(x => x.id === this.findingCorr); notes.push(["corr", this.t("corrFilterOne", { what: this.plainText(g ? this.corrText(g) : this.findingCorr), n: this.formatNumber(this.corrKeys(this.findingCorr).size) })]); }
-    if (this.findingStage) notes.push(["stage", this.t("fcStageFilter", { n: this.findingStage, name: this.t(`fcStage${this.findingStage}`) })]);
+    if (this.findingStage && !this.fcWizOn()) notes.push(["stage", this.t("fcStageFilter", { n: this.findingStage, name: this.t(`fcStage${this.findingStage}`) })]);
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
     // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
     if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
@@ -250,6 +250,7 @@ class FindingsMixin {
   }
 
   findingsView() {
+    const wiz = this.fcWizOn();
     if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const sorted = this.visibleFindings();
@@ -317,7 +318,7 @@ class FindingsMixin {
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<button type="button" class="chip" data-fc-open><ha-icon icon="mdi:broom"></ha-icon> ${this.t("fcButton")}</button><span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+    return `<div class="stack">${wiz ? "" : `${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}`}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}${wiz ? "" : `<button type="button" class="chip" data-fc-open><ha-icon icon="mdi:broom"></ha-icon> ${this.t("fcButton")}</button>`}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
       ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
   }
 

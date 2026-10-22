@@ -1743,6 +1743,7 @@ class StylesMixin {
       .ibar{display:flex;gap:2px;height:6px;margin-top:6px;border-radius:3px;overflow:hidden}.ibar i{display:block;min-width:4px;border-radius:2px;background:var(--hk-muted)}.ibar .high{background:var(--hk-red)}.ibar .medium{background:var(--hk-amber)}.ibar .low{background:var(--hk-blue)}
       .findsum.topics{grid-template-rows:auto}.findsum.topics .sumall{grid-row:1;margin-top:0}.findsum.topics .sumrow>.sumtile{grid-row:1}.chipsep{width:1px;align-self:stretch;background:var(--hk-border);margin:0 4px}.fnotes{flex-wrap:wrap;gap:6px}.fchip{display:inline-flex;gap:4px;align-items:center}.fchip ha-icon{--mdc-icon-size:14px}
       .spacebox{padding:4px 0 10px 22px}.spacehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0}.spacehead .factnote{margin:0}.spacehead .btn{flex:none}.spacekeys{padding:4px 0 10px 12px}.spaceacts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.spacechev{--mdc-icon-size:18px;color:var(--hk-muted);vertical-align:middle;margin-right:4px;float:left}
+      .fctop{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}.fcsteps{display:flex;align-items:center;gap:0}.fcstep{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:2px solid var(--hk-border);border-radius:50%;background:var(--hk-surface);color:var(--hk-muted);font:inherit;font-size:calc(13px*var(--hk-fs,1))}button.fcstep{cursor:pointer}button.fcstep:hover{border-color:var(--hk-blue)}.fcstep.done{border-color:var(--hk-green);color:var(--hk-green)}.fcstep.cur{border-color:var(--hk-blue);background:var(--hk-blue);color:#fff}.fcline{display:block;width:28px;height:2px;background:var(--hk-border)}.fccounter{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.fceyebrow{color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.fchead h2{margin:2px 0 4px}.fchead p{margin:0;color:var(--hk-muted)}.fcleft{margin-left:8px;color:var(--hk-muted);font-size:calc(14px*var(--hk-fs,1));font-weight:400}.fcfoot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px}.fcprogress{flex:1;text-align:center;color:var(--hk-muted);min-width:120px}.fclist{margin:12px 0;padding-left:20px;display:grid;gap:8px}.fclist small{display:block;color:var(--hk-muted)}.fcdays{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.fcdays input{width:80px;padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}
       ${this.themeCss()}
     </style>`;
   }
@@ -2973,7 +2974,7 @@ class FindingsMixin {
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
     // The findings of one incident: the note names it, as its row in the card does.
     if (this.findingCorr) { const g = (this.corr?.groups || []).find(x => x.id === this.findingCorr); notes.push(["corr", this.t("corrFilterOne", { what: this.plainText(g ? this.corrText(g) : this.findingCorr), n: this.formatNumber(this.corrKeys(this.findingCorr).size) })]); }
-    if (this.findingStage) notes.push(["stage", this.t("fcStageFilter", { n: this.findingStage, name: this.t(`fcStage${this.findingStage}`) })]);
+    if (this.findingStage && !this.fcWizOn()) notes.push(["stage", this.t("fcStageFilter", { n: this.findingStage, name: this.t(`fcStage${this.findingStage}`) })]);
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
     // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
     if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
@@ -3015,6 +3016,7 @@ class FindingsMixin {
   }
 
   findingsView() {
+    const wiz = this.fcWizOn();
     if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const sorted = this.visibleFindings();
@@ -3082,7 +3084,7 @@ class FindingsMixin {
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<button type="button" class="chip" data-fc-open><ha-icon icon="mdi:broom"></ha-icon> ${this.t("fcButton")}</button><span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+    return `<div class="stack">${wiz ? "" : `${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}`}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}${wiz ? "" : `<button type="button" class="chip" data-fc-open><ha-icon icon="mdi:broom"></ha-icon> ${this.t("fcButton")}</button>`}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
       ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -18294,7 +18296,7 @@ class RoundMixin {
 
   roundView() {
     const round = this.round || { rows: null, picked: new Set(), error: "" };
-    const back = `<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div>`;
+    const back = this.fcWizOn() ? "" : `<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div>`;
     if (round.rows === null) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section>${back}</div>`;
     const rows = round.rows, by = group => rows.filter(r => r.group === group);
     const chosen = rows.filter(r => round.picked.has(r.finding_key) && r.kind !== "merge" && r.group !== "blocked");
@@ -18370,7 +18372,7 @@ class FirstCleanupMixin {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup" });
       if (this.data !== data) return;
       this.fc = reply || null;
-      if (["findingsNav", "firstcleanup"].includes(this.view) && !this.selected) this.render();
+      if (["findingsNav", "round", "firstcleanup"].includes(this.view) && !this.selected) this.render();
     } catch (_) { if (this.data === data) this.fc = null; }
   }
 
@@ -18388,18 +18390,8 @@ class FirstCleanupMixin {
   openFirstCleanup() {
     this.noteJump("firstcleanup");
     this.view = "firstcleanup"; this.selected = null; this.pages = {};
+    this.fcWiz = { step: null, look: false };
     this._fcFor = null; this.ensureFirstCleanup();
-    this.render();
-  }
-
-  // A stage opens the normal list: the keys of the stage as a filter, the card of suggestions for stage 2, the round for 4.
-  openStage(n) {
-    this.firstCleanupSet({ action: "stage", stage: n });
-    if (n === 4) { this.openRound(); return; }
-    this.noteJump("findingsNav");
-    this.view = "findingsNav"; this.pages = {}; this.selected = null;
-    this.clearFindingFilters(); this.findingStatus = "";
-    if (n === 2) (this.folds ||= {}).often = true; else this.findingStage = n;
     this.render();
   }
 
@@ -18410,35 +18402,128 @@ class FirstCleanupMixin {
     return `<div class="panel fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="fctext">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
   }
 
-  fcStageRow(n, state) {
-    const count = this.stageCount(n), done = state.done.includes(n), current = state.stage === n && !done;
-    const later = n === 5 && count ? `<label class="fcdays">${this.t("fcLaterDays")} <input type="number" min="1" max="3650" value="${this.esc(this.fcDays ?? this.fc.later_days)}" data-fc-days></label><button type="button" class="btn" data-fc-later>${this.t("fcLaterAll", { n: this.formatNumber(count) })}</button>` : "";
-    const open = n === 5 ? "" : `<button type="button" class="btn" data-fc-stage="${n}">${this.t("fcOpen")}</button>`;
-    const mark = `<button type="button" class="btn quiet" data-fc-done="${n}" data-fc-undo="${done ? 1 : 0}">${this.t(done ? "fcReopen" : "fcDone")}</button>`;
-    const list = n === 5 && count ? `<button type="button" class="btn quiet" data-fc-stage="5">${this.t("fcOpen")}</button>` : "";
-    return `<div class="row${done ? " fcdone" : ""}"><ha-icon icon="${done ? "mdi:check-circle" : current ? "mdi:arrow-right-circle-outline" : "mdi:circle-outline"}"></ha-icon><span class="row-text"><strong>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)} (${this.formatNumber(count)})</strong><small>${this.t(`fcStage${n}Hint`)}</small></span>${later}${list}${open}${mark}</div>`;
+  // The cleanup as a wizard: one frame (steps, title, back and next) around the normal list, the card of suggestions, the
+  // round or the question of stage 5. Step 0 is the welcome, 6 the end. Leaving the pages of the cleanup ends it.
+  fcWizOn() {
+    if (this.view === "firstcleanup" && !this.fcWiz) this.fcWiz = { step: null, look: false };
+    if (!this.fcWiz) return false;
+    if (!["findingsNav", "round", "firstcleanup"].includes(this.view)) { this.fcWizEnd(); return false; }
+    return true;
   }
 
-  firstCleanupView() {
+  fcWizEnd() {
+    if (!this.fcWiz) return;
+    this.fcWiz = null; this.findingStage = 0;
+  }
+
+  // Where a cleanup that was begun goes on: the stage it stood at, else the first one not done, else the end.
+  fcResumeStep() {
+    const state = this.fc?.state;
+    if (!state?.started_at) return 0;
+    const done = state.done || [];
+    if (state.finished_at || done.length >= 5) return 6;
+    return done.includes(state.stage) ? [1, 2, 3, 4, 5].find(n => !done.includes(n)) : state.stage;
+  }
+
+  // The state of the page for a step, without drawing: the view, the filter of the stage, the round loading.
+  fcWizSet(n) {
+    this.fcWiz = { step: n, look: false };
+    this.selected = null; this.pages = {};
+    this.clearFindingFilters(); this.findingStatus = "";
+    this.view = n === 4 ? "round" : n === 0 || n === 6 ? "firstcleanup" : "findingsNav";
+    if (n === 4) { this.round = { rows: null, picked: new Set(), error: "" }; this.loadRound(); }
+    else if (n === 2) (this.folds ||= {}).often = true;
+    else if (n === 1 || n === 3) this.findingStage = n;
+  }
+
+  fcWizGo(n, record = true) {
+    this.fcWizSet(n);
+    if (record && n >= 1 && n <= 5) this.firstCleanupSet({ action: "stage", stage: n });
+    else this.render();
+  }
+
+  // "Next" marks the stage done and goes on; with findings left it asks first.
+  fcWizNext() {
+    const n = this.fcWiz.step, left = this.stageCount(n);
+    const run = async () => {
+      await this.firstCleanupSet({ action: "stage", stage: n, done: true });
+      if (n === 5) this.fcWizGo(6, false); else this.fcWizGo(n + 1);
+    };
+    if (left) this.confirmAsk(this.t("fcSkipAsk", { n: this.formatNumber(left) }), run, { title: this.t("fcSkipTitle"), yes: this.t("fcSkipYes"), danger: false });
+    else run();
+  }
+
+  fcWizExit() {
+    this.fcWizEnd();
+    this.view = "findingsNav"; this.selected = null; this.pages = {};
+    this.clearFindingFilters(); this.findingStatus = this.defaultFindingStatus();
+    this.render();
+  }
+
+  fcStepper(n) {
+    const done = this.fc?.state?.done || [];
+    const steps = [1, 2, 3, 4, 5].map(i => {
+      const isDone = done.includes(i), back = i < n && n <= 5;
+      const cls = `fcstep${isDone ? " done" : ""}${i === n ? " cur" : ""}`;
+      const label = this.t("fcStage", { n: i });
+      return `<${back ? "button type=\"button\"" : "span"} class="${cls}" ${back ? `data-fc-goto="${i}"` : ""} ${i === n ? "aria-current=\"step\"" : ""} title="${this.esc(`${label} · ${this.t(`fcStage${i}`)}`)}"><b>${isDone ? "✓" : i}</b></${back ? "button" : "span"}>`;
+    });
+    return `<nav class="fcsteps" aria-label="${this.esc(this.t("fcStepsLabel"))}">${steps.join('<i class="fcline"></i>')}</nav>`;
+  }
+
+  fcWelcome() {
+    const stages = [1, 2, 3, 4, 5].map(n => `<li><strong>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)}</strong><small>${this.t(`fcStage${n}Hint`)}</small></li>`).join("");
+    return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcIntro")}</p><ol class="fclist">${stages}</ol><div class="mbtns"><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button></div></div></section>`;
+  }
+
+  fcFinish() {
+    const state = this.fc.state, left = this.data.findings.filter(f => !f.ignored).length;
+    return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("fcFinishTitle")}</strong><br>${this.t("fcFinishText", { start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</div><div class="pad mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-goto="5">${this.t("fcBack")}</button></div></section>`;
+  }
+
+  // Stage 5 asks one question; "Look first" shows the list of the stage in the same frame.
+  fcLaterCard(count) {
+    if (!count) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`;
+    const days = this.esc(this.fcDays ?? this.fc.later_days);
+    return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcLaterAsk", { n: this.formatNumber(count) })}</p><div class="mbtns"><button type="button" class="btn primary" data-fc-later>${this.t("fcLaterGo", { n: this.formatNumber(count) })}</button><label class="fcdays">${this.t("fcLaterDays")} <input type="number" min="1" max="3650" value="${days}" data-fc-days></label><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcLook")}</button></div></div></section>`;
+  }
+
+  wizardView() {
     this.ensureFirstCleanup();
-    const back = `<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div>`;
     const fc = this.fc;
-    if (!fc) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section>${back}</div>`;
-    const state = fc.state || { done: [] }, error = fc.error ? this.notice("warn", this.esc(fc.error)) : "";
-    const left = this.data.findings.filter(f => !f.ignored).length;
-    const head = state.started_at
-      ? `<p>${this.t("fcProgress", { date: this.formatDate(state.started_at), start: this.formatNumber(state.start_count), now: this.formatNumber(left), done: this.formatNumber(state.done.length) })}</p>${state.finished_at ? `<p>${this.t("fcFinished", { date: this.formatDate(state.finished_at) })}</p>` : ""}`
-      : `<p>${this.t("fcIntro")}</p><div class="mbtns"><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button></div>`;
-    const rows = state.started_at ? [1, 2, 3, 4, 5].map(n => this.fcStageRow(n, state)).join("") : "";
-    return `<div class="stack">${error}<section class="panel"><div class="panelhead"><div><h2>${this.t("firstTitle")}</h2>${head}</div></div>${rows}</section>${back}</div>`;
+    if (!fc) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section></div>`;
+    if (this.fcWiz.step === null) this.fcWizSet(this.fcResumeStep());
+    const n = this.fcWiz.step, error = fc.error ? this.notice("warn", this.esc(fc.error)) : "";
+    if (n === 0) return `<div class="stack">${error}${this.fcWelcome()}</div>`;
+    const state = fc.state || { done: [] }, left = this.data.findings.filter(f => !f.ignored).length;
+    const counter = `<span class="fccounter">${this.t("fcCounter", { start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</span>`;
+    const top = `<div class="fctop">${this.fcStepper(n)}${counter}</div>`;
+    if (n === 6) return `<div class="stack">${error}${top}${this.fcFinish()}</div>`;
+    const count = this.stageCount(n), look = n === 5 && this.fcWiz.look;
+    const head = `<section class="panel fchead"><div class="pad"><small class="fceyebrow">${this.t("fcStageOf", { n })}</small><h2>${this.t(`fcStage${n}`)} <span class="fcleft">${this.t("fcLeft", { n: this.formatNumber(count) })}</span></h2><p>${this.t(`fcStage${n}Hint`)}</p></div></section>`;
+    let body;
+    if (n === 4) body = this.roundView();
+    else if (n === 2) body = this.oftenCard() || `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`;
+    else if (n === 5 && !look) body = this.fcLaterCard(count);
+    else body = this.findingsView();
+    const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t("fcLookOff")}</button>` : "";
+    const next = count
+      ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
+      : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
+    const foot = `<div class="panel fcfoot"><button type="button" class="btn" data-fc-goto="${n - 1}" ${n === 1 ? "disabled" : ""}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcBack")}</button><span class="fcprogress">${count ? this.t("fcLeftNow", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span>${lookOff}${next}<button type="button" class="btn quiet" data-fc-exit>${this.t("fcExit")}</button></div>`;
+    return `<div class="stack">${error}${top}${head}${body}${foot}</div>`;
   }
 
   bindFirstCleanup(root) {
     root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
-    root.querySelectorAll("[data-fc-stage]").forEach(el => el.onclick = () => this.openStage(Number(el.dataset.fcStage)));
-    root.querySelectorAll("[data-fc-done]").forEach(el => el.onclick = () => this.firstCleanupSet({ action: "stage", stage: Number(el.dataset.fcDone), done: el.dataset.fcUndo !== "1" }));
+    root.querySelectorAll("[data-fc-goto]").forEach(el => el.onclick = () => this.fcWizGo(Number(el.dataset.fcGoto), Number(el.dataset.fcGoto) >= 1 && Number(el.dataset.fcGoto) <= 5));
+    root.querySelector("[data-fc-next]")?.addEventListener("click", () => this.fcWizNext());
+    root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
+    root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => {
+      this.fcWiz.look = el.dataset.fcLook === "1"; this.findingStage = this.fcWiz.look ? 5 : 0; this.pages = {}; this.render();
+    });
     root.querySelector("[data-fc-days]")?.addEventListener("change", e => { this.fcDays = Math.max(1, Math.min(3650, Number(e.target.value) || this.fc.later_days)); });
     root.querySelector("[data-fc-later]")?.addEventListener("click", () => this.fcLater());
   }
@@ -18459,30 +18544,42 @@ class FirstCleanupMixin {
   }
 }
 Object.assign(TEXT.de, {
+  fcStageOf: "Etappe {n} von 5", fcSkip: "Überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Rundgang beenden",
+  fcLeft: "{n} offen", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
+  fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
+  fcCounter: "Begonnen mit {start}, jetzt {now} offen", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
+  fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
+  fcFinishTitle: "Fertig", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Zu den Befunden",
   firstcleanup: "Erstes Aufräumen", round: "Aufräum-Runde", firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
   fcOffer: "{n} Befunde sind offen. Das erste Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Erstes Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Erstes Aufräumen",
   fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
-  fcProgress: "Begonnen am {date} mit {start} offenen Befunden, jetzt {now} offen, {done} von 5 Etappen erledigt.", fcFinished: "Fertig am {date}.",
-  fcStageFilter: "Etappe {n}: {name}", fcStage: "Etappe {n}", fcOpen: "Öffnen", fcDone: "Erledigt", fcReopen: "Wieder öffnen",
+ 
+  fcStageFilter: "Etappe {n}: {name}", fcStage: "Etappe {n}",
   fcStage1: "Ausfälle mit vielen Folgen", fcStage1Hint: "Eine Ursache beseitigt viele Folgen auf einmal.",
   fcStage2: "Vorschläge für Vermerke", fcStage2Hint: "Was oft ausfällt, bekommt besser einen Vermerk als einen Befund.",
   fcStage3: "Hohe und mittlere Wirkung", fcStage3Hint: "Ausgefallen, kaputte Verweise und fehlerhafte Automationen mit Wirkung Hoch oder Mittel.",
   fcStage4: "Überflüssiges", fcStage4Hint: "Die Aufräum-Runde: sicher Entfernbares gesammelt, der Rest einzeln.",
   fcStage5: "Der ruhige Rest", fcStage5Hint: "Wirkung Niedrig oder Info: gesammelt auf „Später“; es kommt über „Fällig“ zurück.",
-  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage", fcLaterAll: "Alle {n} auf „Später“", fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
+  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage",  fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
+  fcStageOf: "Stage {n} of 5", fcSkip: "Skip", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "End the tour",
+  fcLeft: "{n} open", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
+  fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
+  fcCounter: "Started with {start}, {now} open now", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",
+  fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
+  fcFinishTitle: "Done", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "To the findings",
   firstcleanup: "First cleanup", round: "Cleanup round", firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
   fcOffer: "{n} findings are open. The first cleanup goes through them in five stages.", fcBegin: "Begin the first cleanup", fcNotNow: "Not now", fcButton: "First cleanup",
   fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
-  fcProgress: "Begun on {date} with {start} open findings, {now} open now, {done} of 5 stages done.", fcFinished: "Finished on {date}.",
-  fcStageFilter: "Stage {n}: {name}", fcStage: "Stage {n}", fcOpen: "Open", fcDone: "Done", fcReopen: "Reopen",
+ 
+  fcStageFilter: "Stage {n}: {name}", fcStage: "Stage {n}",
   fcStage1: "Outages with many follow-ups", fcStage1Hint: "One cause clears many follow-ups at once.",
   fcStage2: "Suggestions for marks", fcStage2Hint: "What often goes down is better held by a mark than reported as a finding.",
   fcStage3: "High and medium impact", fcStage3Hint: "Down, broken references and failing automations with impact High or Medium.",
   fcStage4: "Unneeded", fcStage4Hint: "The cleanup round: what is safe to remove together, the rest one by one.",
   fcStage5: "The quiet rest", fcStage5Hint: "Impact Low or Info: put off together to “Later”; it comes back through “Due”.",
-  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterDays: "Days", fcLaterAll: "Put all {n} off", fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
+  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterDays: "Days",  fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -18821,6 +18918,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // Back after a jump from one page to another (overview card to a list and the like).
   viewBack() {
+    this.fcWizEnd();
     const from = this.viewTrail.pop();
     if (!from) return;
     this.view = from.view; this.pages = {};
@@ -19260,7 +19358,7 @@ class HAHousekeeperPanel extends HTMLElement {
       dataflow: [this.t("dataflow"), this.t("dataflowSubtitle")],
       secrets: [this.t("secrets"), this.t("secretsSubtitle")],
     };
-    const [title, sub] = titles[this.view] || titles.overview;
+    const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
     const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor"].includes(this.view);
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
@@ -19270,7 +19368,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
-    return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
+    return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" && !this.fcWizOn() ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
       <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
   }
 
@@ -19278,6 +19376,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
     if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
+    if (this.fcWizOn()) return this.wizardView();
     if (this.view === "inventory") return this.inventory();
     if (this.view === "monitor") return this.monitorView();
     if (this.view === "findingsNav") return this.findingsView();
@@ -19291,7 +19390,6 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "plan") return this.planView();
     if (this.view === "fix") return this.fixView();
     if (this.view === "round") return this.roundView();
-    if (this.view === "firstcleanup") return this.firstCleanupView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -19320,7 +19418,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.fcWizEnd(); this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });

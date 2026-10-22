@@ -42,7 +42,7 @@ class RoundMixin {
 
   roundView() {
     const round = this.round || { rows: null, picked: new Set(), error: "" };
-    const back = `<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div>`;
+    const back = this.fcWizOn() ? "" : `<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div>`;
     if (round.rows === null) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section>${back}</div>`;
     const rows = round.rows, by = group => rows.filter(r => r.group === group);
     const chosen = rows.filter(r => round.picked.has(r.finding_key) && r.kind !== "merge" && r.group !== "blocked");

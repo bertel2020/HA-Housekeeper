@@ -334,6 +334,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // Back after a jump from one page to another (overview card to a list and the like).
   viewBack() {
+    this.fcWizEnd();
     const from = this.viewTrail.pop();
     if (!from) return;
     this.view = from.view; this.pages = {};
@@ -773,7 +774,7 @@ class HAHousekeeperPanel extends HTMLElement {
       dataflow: [this.t("dataflow"), this.t("dataflowSubtitle")],
       secrets: [this.t("secrets"), this.t("secretsSubtitle")],
     };
-    const [title, sub] = titles[this.view] || titles.overview;
+    const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
     const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor"].includes(this.view);
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
@@ -783,7 +784,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
-    return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
+    return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" && !this.fcWizOn() ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
       <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
   }
 
@@ -791,6 +792,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "settings") return this.settingsView();
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
     if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
+    if (this.fcWizOn()) return this.wizardView();
     if (this.view === "inventory") return this.inventory();
     if (this.view === "monitor") return this.monitorView();
     if (this.view === "findingsNav") return this.findingsView();
@@ -804,7 +806,6 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "plan") return this.planView();
     if (this.view === "fix") return this.fixView();
     if (this.view === "round") return this.roundView();
-    if (this.view === "firstcleanup") return this.firstCleanupView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -833,7 +834,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.fcWizEnd(); this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
