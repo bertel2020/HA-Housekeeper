@@ -10499,6 +10499,7 @@ Object.assign(TEXT.de, {
   refactorFix_hint_dead_branch: "Zweig ohne Wirkung", refactorFixHint_hint_dead_branch: "{count} Zweige von „choose“ prüfen Entitäten, die es nicht gibt ({entities}); sie treffen nie zu ({paths}). Ob der Zweig gestrichen oder repariert wird, entscheidest du.", refactorHintOnly: "Nur ein Hinweis, Housekeeper schreibt hier nichts.",
   refactorDescription: "Beschreibung", refactorPlan: "Plan erstellen", refactorFailed: "Plan nicht erstellt: {reason}", refactorDiffBefore: "vorher", refactorDiffNone: "entfällt",
   refactorFix_remove_reference: "Verweis entfernen", refactorFixHint_remove_reference: "",
+  refactorFix_continue_on_error: "Fehler abfangen", refactorFixHint_continue_on_error: "",
   refactorFix_set_timeout: "Timeout bei Warteschritten ergänzen", refactorFixHint_set_timeout: "{count} Warteschritte (wait_template / wait_for_trigger) haben kein Timeout und können ewig warten: {paths}.",
   refactorTimeout: "Timeout (Sekunden)", refactorKeepGoing: "Nach Ablauf trotzdem weitermachen (Standard von Home Assistant)",
   refactorFix_set_mode: "Modus und Limit ändern", refactorFixHint_set_mode: "Jetzt: {mode}{limit}. Der Modus entscheidet, was bei einer Auslösung geschieht, während die Automation noch läuft.", refactorOverlap: "Läufe überschneiden sich bei dieser Automation.",
@@ -10522,6 +10523,7 @@ Object.assign(TEXT.en, {
   refactorFix_hint_dead_branch: "Branch without effect", refactorFixHint_hint_dead_branch: "{count} branches of “choose” check entities that do not exist ({entities}); they never apply ({paths}). Whether to remove or repair the branch is up to you.", refactorHintOnly: "Only a hint, Housekeeper writes nothing here.",
   refactorDescription: "Description", refactorPlan: "Create plan", refactorFailed: "Plan not created: {reason}", refactorDiffBefore: "before", refactorDiffNone: "removed",
   refactorFix_remove_reference: "Remove the reference", refactorFixHint_remove_reference: "",
+  refactorFix_continue_on_error: "Catch the error", refactorFixHint_continue_on_error: "",
   refactorFix_set_timeout: "Add a timeout to wait steps", refactorFixHint_set_timeout: "{count} wait steps (wait_template / wait_for_trigger) have no timeout and can wait forever: {paths}.",
   refactorTimeout: "Timeout (seconds)", refactorKeepGoing: "Carry on after the timeout (Home Assistant's default)",
   refactorFix_set_mode: "Change mode and limit", refactorFixHint_set_mode: "Now: {mode}{limit}. The mode decides what a trigger does while the automation is still running.", refactorOverlap: "Runs of this automation overlap.",
@@ -18036,7 +18038,12 @@ class FixMixin {
     const key = this.findingKey(f), object = this.findObject(key);
     let action = "";
     if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
-    else if (w.way === "fix_cause") {
+    else if (w.way === "catch_error") {
+      const step = this.fixFailure?.failure?.step;
+      action = !step ? `<small class="factnote">${this.t("fixCatchNoStep")}</small>` : w.enabled
+        ? `<button type="button" class="btn" data-fix-catch="${this.esc(step)}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("fixCatchStart")}</button>`
+        : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
+    } else if (w.way === "fix_cause") {
       const cause = f.cause_id ? this.causeById(f.cause_id) : null;
       if (cause?.finding_key) action = `<button type="button" class="btn" data-fix-open="${this.esc(cause.finding_key)}"><ha-icon icon="mdi:arrow-right"></ha-icon>${this.t("fixToFinding")}</button>`;
     } else if (w.way === "cleanup_round") action = `<button type="button" class="btn" data-fix-round><ha-icon icon="mdi:broom"></ha-icon>${this.t("fixRoundStart")}</button>`;
@@ -18096,6 +18103,10 @@ class FixMixin {
       const target = el.closest(".row")?.querySelector("[data-fix-id-new]")?.value;
       if (target) await this.newPlan([{ kind: "replace_references", object_id: el.dataset.fixIdReplace, target, target_kind: el.dataset.fixIdKind }], "repair");
     });
+    root.querySelectorAll("[data-fix-catch]").forEach(el => el.onclick = async () => {
+      const f = this.data?.findings?.find(x => x.key === this.fixKey);
+      if (f) await this.newPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "continue_on_error", values: { path: el.dataset.fixCatch } }], "repair");
+    });
     root.querySelectorAll("[data-fix-round]").forEach(el => el.onclick = () => this.openRound());
     root.querySelectorAll("[data-fix-remove]").forEach(el => el.onclick = async () => {
       const f = this.data?.findings?.find(x => x.key === this.fixKey);
@@ -18127,6 +18138,7 @@ Object.assign(TEXT.de, {
   fixWay_remove_reference: "Verweis entfernen", fixWayHint_remove_reference: "Nimmt das fehlende Ziel nur aus Ziellisten der Aktionen heraus, in denen weitere Ziele stehen bleiben. Trigger, Bedingungen und Ziele, die allein stehen, fasst Housekeeper nie an; dort bleibt der Editor. Mit Vorschau, Prüfung, Backup und Zurücknehmen.", fixRemoveStart: "Entfernen …", fixRefactorOn: "Verbessern einschalten (experimentell)",
   fixLastFailure: "Letzter Fehler", fixFailureStep: "bei {step}", fixFailureHint: "Hinweis", fixFailureHintText: "Der Fehlertext nennt {entity}, und die ist ausgefallen. Eine sichere Zuordnung ist das nicht.", fixToFinding: "Zum Befund",
   fixWay_fix_cause: "Erst die Ursache beheben", fixWayHint_fix_cause: "Die Automation scheitert, weil etwas darunter ausgefallen ist. Ist die Ursache behoben, läuft sie von selbst wieder.",
+  fixWay_catch_error: "Fehler abfangen", fixWayHint_catch_error: "Setzt „bei Fehler weitermachen“ nur an der einen Aktion, die zuletzt gescheitert ist, nie für die ganze Automation. Der Fehler erscheint danach nicht mehr in den Läufen, und der Rest läuft weiter. Mit Vorschau, Prüfung, Backup und Zurücknehmen.", fixCatchStart: "Abfangen …", fixCatchNoStep: "Dafür braucht es einen letzten Fehler im Ablaufprotokoll von Home Assistant; der ist gerade nicht da.",
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
@@ -18149,6 +18161,7 @@ Object.assign(TEXT.en, {
   fixWay_remove_reference: "Remove the reference", fixWayHint_remove_reference: "Takes the missing target only out of target lists of the actions in which other targets stay. Housekeeper never touches triggers, conditions or a target that stands alone; the editor is for those. With preview, check, backup and undo.", fixRemoveStart: "Remove …", fixRefactorOn: "Turn on Improve (experimental)",
   fixLastFailure: "Last failure", fixFailureStep: "at {step}", fixFailureHint: "Hint", fixFailureHintText: "The error text names {entity}, and that is down. It is no safe attribution.", fixToFinding: "Go to the finding",
   fixWay_fix_cause: "Fix the cause first", fixWayHint_fix_cause: "The automation fails because something below it is down. Once the cause is fixed, it runs again by itself.",
+  fixWay_catch_error: "Catch the error", fixWayHint_catch_error: "Sets “continue on error” only on the one action that failed last, never for the whole automation. Afterwards the error no longer shows in the runs, and the rest keeps running. With preview, check, backup and undo.", fixCatchStart: "Catch …", fixCatchNoStep: "This needs a last failure in Home Assistant's trace buffer; there is none right now.",
   fixWay_start_app: "Start the app", fixWayHint_start_app: "The app is stopped, its integration probably hangs on it. Start it in Home Assistant under Settings → Apps.",
 });
 

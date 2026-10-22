@@ -150,10 +150,7 @@ def test_the_ways_to_fix_an_outage_follow_the_state_of_the_integration() -> None
         ]["way"]
         == "cleanup_round"
     )
-    assert (
-        ways_for({"rule_id": "x.y", "object_id": "a", "topic": "other"}, snapshot)
-        == []
-    )
+    assert ways_for({"rule_id": "x.y", "object_id": "a", "topic": "other"}, snapshot) == []
 
 
 def test_the_ways_to_fix_a_broken_reference_replace_an_entity_or_open_the_editor() -> None:
@@ -247,7 +244,10 @@ def test_the_ways_to_fix_a_failing_automation_start_with_its_cause() -> None:
         "object_id": "automation.a",
         "topic": "failing_automations",
     }
-    assert [(w["way"], w["recommended"]) for w in ways_for(own, {})] == [("open_editor", True)]
+    assert [(w["way"], w["recommended"]) for w in ways_for(own, {})] == [
+        ("open_editor", True),
+        ("catch_error", False),
+    ]
     down = {"cover.bath": "entity:cover.bath"}
     hint = error_hint("Entity cover.bath is unavailable", down)
     assert hint == {"entity_id": "cover.bath", "finding_key": "entity:cover.bath"}

@@ -1035,6 +1035,35 @@ def test_removing_a_reference_only_takes_it_out_of_target_lists_that_keep_anothe
         refactor.apply(item, "remove_reference", {})
 
 
+def test_catching_an_error_changes_only_the_one_named_service_call() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    item = {
+        "alias": "Cover",
+        "actions": [
+            {"delay": "00:00:05"},
+            {"action": "cover.close_cover", "target": {"entity_id": "cover.bath"}},
+            {
+                "if": [{"condition": "state", "entity_id": "x.y", "state": "on"}],
+                "then": [{"action": "notify.me"}],
+            },
+        ],
+    }
+    new, diff = refactor.apply(item, "continue_on_error", {"path": "action/1"})
+    assert new["actions"][1]["continue_on_error"] is True
+    assert new["actions"][0] == item["actions"][0] and new["actions"][2] == item["actions"][2]
+    assert diff == [{"path": "action/1/continue_on_error", "before": None, "after": True}]
+    assert "continue_on_error" not in item["actions"][1], "the input is untouched"
+    assert refactor.applied(new, "continue_on_error", {"path": "action/1"})
+    nested, _ = refactor.apply(item, "continue_on_error", {"path": "action/2/then/0"})
+    assert nested["actions"][2]["then"][0]["continue_on_error"] is True
+    for path in ("action/0", "action/9", "", "action/2"):  # a delay, nothing, nothing, a block
+        with pytest.raises(ValueError, match="invalid_fix"):
+            refactor.apply(item, "continue_on_error", {"path": path})
+    with pytest.raises(ValueError, match="nothing_to_do"):
+        refactor.apply(new, "continue_on_error", {"path": "action/1"})
+
+
 DOUBLED = AUTOMATIONS.replace(
     "      entity_id: sensor.old_temp\n  action:",
     "      entity_id: sensor.old_temp\n    - platform: state\n      entity_id: sensor.old_temp\n  action:",

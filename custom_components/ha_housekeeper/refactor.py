@@ -25,6 +25,7 @@ FIXES = (
     "set_timeout",
     "set_mode",
     "remove_reference",
+    "continue_on_error",
 )
 DESCRIPTION_MAX = 300
 TIMEOUT_MAX = 86400  # seconds
@@ -233,6 +234,21 @@ def removable_references(item: dict[str, Any], reference: str) -> list[dict[str,
     return found
 
 
+def action_step(item: dict[str, Any], path: str) -> dict[str, Any] | None:
+    """The service call at ``path`` as Home Assistant's trace names it (``action/2``), or None.
+
+    Only a step that calls a service qualifies: a condition, a wait or a delay does not fail the way the
+    option is for.
+    """
+    key = _action_key(item)
+    if key is None:
+        return None
+    for found, step in _walk(item[key], key):
+        if "action" + found[len(key) :] == path and ("action" in step or "service" in step):
+            return step
+    return None
+
+
 def current_mode(item: dict[str, Any]) -> tuple[str, int | None]:
     """The mode of the automation and, for queued and parallel, its limit."""
     mode = item.get("mode") if item.get("mode") in MODES else "single"
@@ -361,6 +377,18 @@ def apply(
             place["holder"][place["name"]] = ", ".join(rest) if place["as_text"] else rest
             diff.append({"path": place["path"], "before": place["tokens"], "after": rest})
         return new, diff
+    if fix == "continue_on_error":
+        path = values.get("path")
+        step = (
+            action_step(new, path) if isinstance(path, str) and len(path) <= REFERENCE_MAX else None
+        )
+        if step is None:
+            raise ValueError("invalid_fix")
+        if step.get("continue_on_error") is True:
+            raise ValueError("nothing_to_do")
+        before = step.get("continue_on_error")
+        step["continue_on_error"] = True
+        return new, [{"path": f"{path}/continue_on_error", "before": before, "after": True}]
     raise ValueError("invalid_fix")
 
 
@@ -379,6 +407,9 @@ def applied(item: dict[str, Any], fix: str, values: dict[str, Any]) -> bool:
         )
     if fix == "remove_reference":
         return not removable_references(item, values.get("reference") or "")
+    if fix == "continue_on_error":
+        step = action_step(item, values.get("path") or "")
+        return step is not None and step.get("continue_on_error") is True
     return False
 
 

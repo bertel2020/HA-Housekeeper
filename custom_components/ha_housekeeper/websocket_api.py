@@ -697,6 +697,9 @@ async def _plan_from_requests(
                             int, vol.Range(min=1, max=refactor_module.TIMEOUT_MAX)
                         ),
                         vol.Optional("continue_on_timeout"): bool,
+                        vol.Optional("path"): vol.All(
+                            str, vol.Length(max=refactor_module.REFERENCE_MAX)
+                        ),
                         vol.Optional("reference"): vol.All(
                             str, vol.Length(max=refactor_module.REFERENCE_MAX)
                         ),

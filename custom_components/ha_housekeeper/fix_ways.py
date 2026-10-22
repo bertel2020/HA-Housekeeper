@@ -87,6 +87,8 @@ def ways_for(
         caused = bool(finding.get("cause_id"))
         ways = [_way("fix_cause", "panel", True)] if caused else []
         ways.append(_way("open_editor", "panel", not caused))
+        if finding["rule_id"] in ("automation.run_failing", "automation.never_ok"):
+            ways.append(_way("catch_error", "panel", enabled=refactor_enabled))
         if finding["rule_id"] == "automation.blocked":
             ways.append(_way("object_actions", "panel"))
         return ways
