@@ -59,6 +59,7 @@ from .cleanup import (
 from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices
+from .fix_ways import ways_for
 from .history import PinError
 from .ignored import KINDS as IGNORE_KINDS
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
@@ -265,6 +266,29 @@ async def websocket_compare(
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
     connection.send_result(msg["id"], scanner.history.compare(snapshot, msg["baseline"]))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/fix_ways", vol.Required("finding_key"): str}
+)
+@callback
+@with_scanner
+def websocket_fix_ways(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The ways to fix one finding. Only names them; nothing is changed."""
+    snapshot = scanner.snapshot or {}
+    finding = next(
+        (f for f in snapshot.get("findings", []) if f["key"] == msg["finding_key"]), None
+    )
+    if finding is None:
+        connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
+        return
+    connection.send_result(msg["id"], {"ways": ways_for(finding, snapshot)})
 
 
 @websocket_api.require_admin
@@ -1252,6 +1276,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_ignore)
     websocket_api.async_register_command(hass, websocket_decision_notice_dismiss)
     websocket_api.async_register_command(hass, websocket_visit_leave)
+    websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_set_options)
     websocket_api.async_register_command(hass, websocket_plan_create)
     websocket_api.async_register_command(hass, websocket_plan_merge)

@@ -122,3 +122,29 @@ def test_the_sensor_counts_new_findings_of_high_or_medium_impact_in_the_last_day
         ],
     }
     assert compute_values(snapshot)["new_findings"] == 2
+
+
+def test_the_ways_to_fix_an_outage_follow_the_state_of_the_integration() -> None:
+    from custom_components.ha_housekeeper.fix_ways import ways_for
+
+    snapshot = {"objects": [{"object_type": "config_entry", "object_id": "e1", "domain": "hue"}]}
+
+    def entry(state):
+        return {
+            "rule_id": "config_entry.not_loaded",
+            "object_id": "e1",
+            "topic": "down",
+            "evidence": [{"kind": state}],
+        }
+
+    wait = ways_for(entry("setup_retry"), snapshot)
+    assert wait[0]["way"] == "wait" and wait[0]["recommended"]
+    error = ways_for(entry("setup_error"), snapshot)
+    assert error[0]["way"] == "open_integration" and error[0]["path"].endswith("/hue")
+    assert ways_for(entry("migration_error"), snapshot)[0]["way"] == "restart_or_update"
+    reauth = {"rule_id": "config_entry.reauth", "object_id": "e1", "topic": "down"}
+    assert ways_for(reauth, snapshot)[0]["way"] == "reauth"
+    assert (
+        ways_for({"rule_id": "automation.stale", "object_id": "a", "topic": "unneeded"}, snapshot)
+        == []
+    )
