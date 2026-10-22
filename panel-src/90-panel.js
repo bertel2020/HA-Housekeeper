@@ -168,8 +168,12 @@ class HAHousekeeperPanel extends HTMLElement {
 
   get lang() {
     const chosen = this.prefs?.language;
-    if (chosen === "de" || chosen === "en") return chosen;
-    return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+    if (chosen === "de" || chosen === "en" || chosen === "zh") return chosen;
+    const language = String(this._hass?.language || "en").toLowerCase();
+    if (language.startsWith("de")) return "de";
+    // Simplified Chinese only; traditional Chinese falls back to English.
+    if (language === "zh" || /^zh-(hans|cn|sg)\b/.test(language)) return "zh";
+    return "en";
   }
 
   t(key, vars) {

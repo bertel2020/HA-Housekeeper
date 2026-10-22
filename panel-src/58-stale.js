@@ -68,3 +68,23 @@ class StaleMixin {
     root.querySelectorAll("[data-stale-default]").forEach(el => el.onclick = () => this.setStaleLimit(el.dataset.staleDefault, null));
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "stale": "停止上报",
+  "staleIdle": "已 {hours} 小时无新上报（上限 {limit} 小时）",
+  "staleTitle": "停止上报",
+  "staleHint": "如果传感器保持最后的值，但超过上限没有上报新数据，就会显示为发现项。带测量值的传感器默认受监控；其他传感器仅在设置了自身上限时才受监控（例如至少每天上报一次的门磁）。",
+  "staleStateDefault": "默认上限：{hours} 小时",
+  "staleStateOwn": "自身上限：{hours} 小时",
+  "staleStateOff": "未监控（已关闭）",
+  "staleStateNone": "未监控：不是测量型传感器。请使用自身上限开启。",
+  "staleLast": "最后活动：{date}",
+  "staleSet": "设置上限",
+  "staleOff": "关闭",
+  "staleDefault": "使用默认值",
+  "staleHours": "小时",
+  "staleFailed": "无法保存上限：{reason}",
+  "optStaleTitle": "没有新数值的传感器",
+  "optStaleHint": "带测量值的传感器在上报中断超过这么多小时后会显示为发现项。0 表示关闭检测。可按传感器单独更改。",
+});

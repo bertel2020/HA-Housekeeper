@@ -78,3 +78,24 @@ class ScanPointsMixin {
     if (this._pinFocus && root.querySelector("[data-pin-form]")) { this._pinFocus = false; root.querySelector("[data-pin-name]")?.focus(); }
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "pinSet": "设置扫描点",
+  "pinDialogTitle": "设置扫描点",
+  "pinDialogHint": "Housekeeper 现在进行扫描，并保留此状态，直到你将其删除。",
+  "pinName": "名称（可选）",
+  "pinNamePh": "例如：重建之前",
+  "pinChipRebuild": "重建之前",
+  "pinChipUpdate": "更新之前",
+  "pinChipOk": "一切正常运行",
+  "pinNote": "这不会更改 Home Assistant 中的任何内容。不填写名称时，该扫描点以时间命名。",
+  "pinGo": "扫描并保留",
+  "pinCancel": "取消",
+  "pinMine": "自己的扫描点",
+  "pinDelete": "删除",
+  "confirmPin": "扫描点「{name}」将被删除。",
+  "pinFailed": "无法保存扫描点：{reason}",
+  "pinSaving": "正在保存扫描点…",
+  "storedPin": "自己的扫描点",
+});

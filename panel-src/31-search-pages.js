@@ -119,3 +119,11 @@ class SearchPagesMixin {
     if (view === "changes" && !this.compare) this.loadCompare();
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "quickGroupPages": "页面",
+  "quickGroupFilters": "筛选",
+  "quickGroupObjects": "对象",
+  "quickFilterHint": "筛选列表",
+});

@@ -63,3 +63,17 @@ class BrokenCardsMixin {
     return this.check(this.t("brokenCardLabel"), "red", [...this.placeParts(p), this.t("brokenCount", { n: g.members.length })].join(" · "), this.t("missing"));
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "brokenView": "标签页「{view}」",
+  "brokenCard": "卡片 {card}",
+  "brokenSection": "区块 {n}",
+  "brokenMaybe": "可能：{ids}",
+  "brokenRuntimeScene": "某个自动化或脚本会自行创建此场景（scene.create）；它仅在该操作运行后才存在，重启后也需等到下一次运行才会再次存在。",
+  "brokenCount": "{n} 个失效引用",
+  "brokenCardLabel": "卡片",
+  "brokenOrphanShort": "疑似已废弃",
+  "brokenOrphanHint": "卡片 {card}（标签页「{view}」）疑似已废弃：{total} 个引用中有 {missing} 个失效。请考虑是否可以整体移除，而不是逐行修复。",
+  "brokenOrphan": "该卡片疑似已废弃：{total} 个引用中有 {missing} 个失效。请考虑是否可以整体移除，而不是逐行修复。",
+});

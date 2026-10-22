@@ -90,3 +90,42 @@ class TraceDiagMixin {
     this.bindDryRun?.(root);
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "covTitle": "触发器与分支覆盖率",
+  "covHint": "根据运行结构统计哪个触发器被触发、哪个分支被执行。变量和负载不会被存储。",
+  "covOffNote": "此功能已关闭。为进行统计，Housekeeper 会在内存中短暂读取每次运行的跟踪记录（其中包含变量），并且仅保留计数。",
+  "covOn": "开启统计",
+  "covOff": "关闭统计",
+  "covClear": "清除计数",
+  "covRuns": "自 {date} 起已统计 {runs} 次运行",
+  "covNeverNote": "只有在运行 {runs} 次且经过 {days} 天后才会判定为从未到达。",
+  "covNever": "从未到达",
+  "covCount": "{n}×",
+  "covMean": "平均 {time}",
+  "covNoRows": "未找到触发器或分支。",
+  "covKind_trigger": "触发器",
+  "covKind_choose": "分支（choose）",
+  "covKind_default": "默认分支",
+  "covKind_then": "Then 分支",
+  "covKind_else": "Else 分支",
+  "cmpTitle": "比较两次运行",
+  "cmpHint": "比较 Home Assistant 跟踪缓冲区中两次运行的结构。不存储任何内容。",
+  "cmpNoRuns": "Home Assistant 中没有已完成的运行记录。",
+  "cmpOlder": "较早的运行",
+  "cmpNewer": "较新的运行",
+  "cmpRun": "比较",
+  "cmpSame": "结构相同：相同的触发器、相同的分支、相同的结束方式。",
+  "cmp_trigger": "触发器不同：{a} → {b}",
+  "cmp_branch": "分支不同。仅第一次运行中：{a}。仅第二次运行中：{b}。",
+  "cmp_execution": "结果不同：{a} → {b}",
+  "cmp_last_step": "结束方式不同：{a} → {b}",
+  "cmp_duration": "运行时间 {a} ms → {b} ms（倍数 {factor}）",
+  "cmpUpdates": "期间更新：{list}",
+  "cmpCriterion": "成功标准：较早运行 {a}，较新运行 {b}",
+  "cmpReached": "已达标",
+  "cmpMissed": "未达标",
+  "cmpUnknown": "未知",
+  "cmpFailed": "无法比较：{reason}",
+});

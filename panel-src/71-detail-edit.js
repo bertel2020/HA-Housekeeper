@@ -79,3 +79,18 @@ class DetailEditMixin {
     });
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "deTitle": "重命名与区域",
+  "deNewId": "新 ID",
+  "deBadId": "只允许 a–z、0–9 和 _。",
+  "deRename": "准备重命名",
+  "deAssign": "分配区域",
+  "deRenameShort": "准备",
+  "deAssignShort": "分配",
+  "deArea": "区域",
+  "deNoArea": "无区域",
+  "deAreaNow": "当前：{area}",
+  "deRenameNote": "Housekeeper 还会重写自动化、脚本和场景中的引用。",
+});

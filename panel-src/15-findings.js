@@ -492,3 +492,10 @@ Object.assign(TEXT.en, {
   refersTo: "Refers to {kind} {target}",
   statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones",
 });
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "refersTo": "引用 {kind} {target}",
+  "statusNoteText": "列表显示状态「{status}」。上方磁贴统计的是未关闭的发现项；点击其中一个会返回「待处理」。",
+  "statusNoteBack": "返回未关闭项",
+});

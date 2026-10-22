@@ -127,3 +127,36 @@ class BatteryTypeMixin {
     root.querySelectorAll("[data-bt-dismiss]").forEach(el => el.addEventListener("click", () => this.batterySettle(el.dataset.btDismiss, el.dataset.day, "dismiss")));
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "btTypeSet": "类型",
+  "btTypeNone": "缺少类型",
+  "btTypeSave": "保存",
+  "btTypeCustom": "自定义文本…",
+  "btTypeLabel": "{name} 的电池类型",
+  "btTypeHint": "仅存储在 Housekeeper 中。",
+  "btCtTitle": "自定义电池类型",
+  "btCtHint": "自定义类型会出现在每个传感器的选择列表中。内置和正在使用的类型无法删除。",
+  "btCtNone": "还没有自定义类型。你为传感器输入的类型会出现在这里。",
+  "btCtUsed": "被 {n} 个传感器使用",
+  "btCtUsed1": "被 1 个传感器使用",
+  "btCtUnused": "未使用",
+  "btCtAdd": "添加",
+  "btCtNew": "新建类型",
+  "btCtRename": "重命名",
+  "btCtDelete": "删除",
+  "btCtInUse": "正在使用：请先更改相关传感器",
+  "btCtSave": "保存",
+  "btReplTitle": "检测到更换",
+  "btReplHint": "电量至少上升了 15 个百分点。这只是一个提示，并非证据：传感器也可能重新校准。",
+  "btReplLine": "{name}：可能在 {date} 更换了新电池",
+  "btReplLevels": "电量 {from} % → {to} %",
+  "btReplEnter": "录入",
+  "btReplDismiss": "没有更换",
+  "btReplNote": "「录入」会在「更改」中添加一条记录，并为名称包含该设备名称的提醒设置「上次完成」。不会创建任何内容。",
+  "btReplTitleEntry": "电池已更换：{name}",
+  "btReplDone": "已录入。",
+  "btReplDoneRem": "已录入，更新了 {count} 个提醒。",
+  "btReplFailed": "操作未成功：{detail}",
+});

@@ -66,3 +66,22 @@ class AreaAssignMixin {
     this.render();
   }
 }
+
+// Simplified Chinese texts; merged into TEXT.
+Object.assign(TEXT.zh, {
+  "fselArea": "分配区域",
+  "state_area": "分配区域",
+  "areaChoose": "区域",
+  "areaSuggest": "按建议逐项处理",
+  "areaNone": "还没有区域。请在 Home Assistant 中创建。",
+  "areaNoItems": "请选择实体或设备。",
+  "areaSuggested": "建议",
+  "areaNote": "建议来自设备或集成，绝不来自名称。",
+  "reason_no_suggestion": "没有可靠的建议。请选择一个区域。",
+  "reason_area_missing": "该区域不存在。",
+  "reason_has_area": "现在已有区域。",
+  "check_area_set": "区域已设置",
+  "confirmedSummaryArea": "{count} 个条目将获得区域。此操作可以完全撤销。",
+  "result_area": "区域已设置",
+  "abort_area_not_allowed": "Home Assistant 不允许在此处设置该区域。请在设备上设置。",
+});

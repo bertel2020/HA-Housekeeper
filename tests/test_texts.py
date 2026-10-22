@@ -19,10 +19,14 @@ def hass(language: str) -> SimpleNamespace:
 
 def test_the_region_does_not_matter_and_english_is_the_fallback() -> None:
     assert language_of(hass("de_AT")) == language_of(hass("DE-ch")) == "de"
+    assert language_of(hass("zh-Hans")) == language_of(hass("ZH_cn")) == "zh"
     assert pick(hass("de-AT"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["de"]
+    assert pick(hass("zh-Hans"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["zh"]
+    assert pick(hass("zh-TW"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["en"]
     assert pick(hass("fr"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["en"]
 
 
 def test_every_language_has_the_same_texts() -> None:
     assert MONITOR_TEXTS["de"].keys() == MONITOR_TEXTS["en"].keys()
+    assert MONITOR_TEXTS["zh"].keys() == MONITOR_TEXTS["en"].keys()
     assert MONITOR_REASONS["de"].keys() == MONITOR_REASONS["en"].keys()
