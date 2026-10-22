@@ -748,6 +748,7 @@ class HAHousekeeperPanel extends HTMLElement {
       inventory: [this.t("inventory"), this.t("inventorySubtitle")],
       findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
       fix: [this.t("fixTitle"), this.t("fixSubtitle")],
+      round: [this.t("roundTitle"), this.t("roundSubtitle")],
       changes: [this.t("changes"), this.t("changesSubtitle")],
       components: [this.t("components"), this.t("componentsSubtitle")],
       batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
@@ -800,6 +801,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "repair") return this.repairView();
     if (this.view === "plan") return this.planView();
     if (this.view === "fix") return this.fixView();
+    if (this.view === "round") return this.roundView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -980,6 +982,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.originFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     this.bindFindingStatus(root);
     this.bindFix(root);
+    this.bindRound(root);
     this.bindDetailActions(root);
     // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });

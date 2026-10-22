@@ -6841,3 +6841,25 @@ test("a reminder keeps Done in its row, changes and deletes through its menu, an
   assert.deepEqual(calls, ["r1", "r2"]);
   assert.equal(el.remSel.size, 0);
 });
+
+test("the cleanup round sorts what the backend judged and keeps with the decision and the mark", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const rows = [
+    { finding_key: "k1", object_type: "entity", object_id: "sensor.a", name: "Old A", kind: "remove_entity", group: "safe", verdict: "ok", reasons: [], first_step: false },
+    { finding_key: "k2", object_type: "automation", object_id: "automation.b", name: "Auto B", kind: "delete_automation", group: "look", verdict: "review", reasons: ["used_probable"], first_step: false },
+    { finding_key: "k3", object_type: "entity", object_id: "sensor.c", name: "Dup C", kind: "merge", group: "look", reasons: [], duplicate_of: "sensor.e" },
+  ];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type.endsWith("/cleanup_round") ? { rows } : {}; } };
+  el.data = { ...DATA, findings: [{ key: "k1", rule_id: "entity.not_provided", object_id: "sensor.a", classification: "orphaned" }] };
+  el.openRound();
+  await new Promise(r => setTimeout(r, 0));
+  assert.ok(el.round.picked.has("k1") && !el.round.picked.has("k2"), "only the safe ones start picked");
+  const html = el.roundView();
+  assert.ok(html.includes("Safe to remove") && html.includes("Look first") && html.includes("Create plan (1)"));
+  assert.ok(html.includes('data-round-merge="sensor.c"') && html.includes("possible duplicate of sensor.e"));
+  el.refreshData = async () => {};
+  await el.roundKeepOne("k1");
+  const kinds = calls.map(c => c.type.split("/")[1] + (c.kind ? `:${c.kind}` : ""));
+  assert.ok(kinds.includes("ignore:keep") && kinds.includes("mark_set:keep"));
+});

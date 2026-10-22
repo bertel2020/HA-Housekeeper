@@ -4191,7 +4191,7 @@ class CleanupMixin {
     try {
       const actions = plan.actions.map(a => {
         const r = { kind: a.kind, object_id: a.object_id };
-        for (const key of ["target", "mode", "range", "recorder", "fix", "values", "tables"]) if (a[key]) r[key] = a[key];
+        for (const key of ["target", "target_kind", "mode", "range", "recorder", "fix", "values", "tables"]) if (a[key]) r[key] = a[key];
         if (a.kind === "purge_statistics") r.states = Boolean(a.states);
         if (a.kind === "trim_history") r.keep_days = a.keep_days;
         return r;
@@ -18024,6 +18024,7 @@ class FixMixin {
     const key = this.findingKey(f), object = this.findObject(key);
     let action = "";
     if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
+    else if (w.way === "cleanup_round") action = `<button type="button" class="btn" data-fix-round><ha-icon icon="mdi:broom"></ha-icon>${this.t("fixRoundStart")}</button>`;
     else if (w.way === "replace_target" && w.target_kind) {
       const options = (this.data?.objects || []).filter(o => o.object_type === w.target_kind && o.object_id !== w.target);
       action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
@@ -18080,6 +18081,7 @@ class FixMixin {
       const target = el.closest(".row")?.querySelector("[data-fix-id-new]")?.value;
       if (target) await this.newPlan([{ kind: "replace_references", object_id: el.dataset.fixIdReplace, target, target_kind: el.dataset.fixIdKind }], "repair");
     });
+    root.querySelectorAll("[data-fix-round]").forEach(el => el.onclick = () => this.openRound());
     root.querySelectorAll("[data-fix-remove]").forEach(el => el.onclick = async () => {
       const f = this.data?.findings?.find(x => x.key === this.fixKey);
       if (f) await this.newPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemove } }], "repair");
@@ -18129,6 +18131,111 @@ Object.assign(TEXT.en, {
   fixWay_open_editor: "Open in the editor", fixWayHint_open_editor: "Adjust the place in Home Assistant yourself.", fixReplaceStart: "Replace …", fixReplaceWith: "Replace with", fixReplaceNone: "There is no other target of this kind to move to.",
   fixWay_remove_reference: "Remove the reference", fixWayHint_remove_reference: "Takes the missing target only out of target lists of the actions in which other targets stay. Housekeeper never touches triggers, conditions or a target that stands alone; the editor is for those. With preview, check, backup and undo.", fixRemoveStart: "Remove …", fixRefactorOn: "Turn on Improve (experimental)",
   fixWay_start_app: "Start the app", fixWayHint_start_app: "The app is stopped, its integration probably hangs on it. Start it in Home Assistant under Settings → Apps.",
+});
+
+// RoundMixin: the cleanup round (Aufräum-Runde) over everything unneeded. The backend judges each object with the cleanup
+// plan and sorts it: removable at once, to look at first, not removable now. The round only names and collects; the
+// removals run as one plan with preview and confirmation, "keep" is the decision "intended" with the mark "do not remove".
+class RoundMixin {
+  openRound() {
+    this.noteJump("round");
+    this.view = "round"; this.round = { rows: null, picked: new Set(), error: "" }; this.selected = null; this.pages = {};
+    this.render();
+    this.loadRound();
+  }
+
+  async loadRound() {
+    const round = this.round;
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/cleanup_round" });
+      if (this.round !== round) return;
+      round.rows = reply?.rows || [];
+      round.rows.filter(r => r.group === "safe").forEach(r => round.picked.add(r.finding_key));
+    } catch (err) { if (this.round === round) { round.rows = []; round.error = this.errText(err); } }
+    if (this.view === "round") this.render();
+  }
+
+  roundRow(r, picked) {
+    const finding = this.data.findings.find(f => f.key === r.finding_key);
+    const action = { remove_entity: "roundRemove", delete_automation: "roundDelete", disable_entity: "roundDisable", merge: "roundMerge" }[r.kind];
+    const reasons = (r.reasons || []).filter(x => x !== "config_rewrite").map(x => this.t(`reason_${x}`)).join(" ");
+    const box = r.kind !== "merge" && r.group !== "blocked" ? `<input type="checkbox" data-round-pick="${this.esc(r.finding_key)}" ${picked.has(r.finding_key) ? "checked" : ""} aria-label="${this.esc(r.name)}">` : "";
+    const keep = `<button type="button" class="btn quiet" data-round-keep="${this.esc(r.finding_key)}">${this.t("roundKeep")}</button>`;
+    const main = r.group === "blocked" ? "" : r.kind === "merge"
+      ? (r.duplicate_of ? `<button type="button" class="btn" data-round-merge="${this.esc(r.object_id)}" data-round-into="${this.esc(r.duplicate_of)}">${this.t(action)}</button>` : "")
+      : `<button type="button" class="btn" data-round-one="${this.esc(r.finding_key)}">${this.t(action)}</button>`;
+    const why = r.kind === "merge" ? this.t("roundDuplicateOf", { name: r.duplicate_of || "?" }) : [r.first_step ? this.t("roundFirstStep") : "", reasons].filter(Boolean).join(" · ");
+    return `<div class="row">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${main}${keep}</div>`;
+  }
+
+  roundGroup(title, hint, rows, picked, withAll) {
+    if (!rows.length) return "";
+    const keys = rows.filter(r => r.kind !== "merge" && r.group !== "blocked").map(r => r.finding_key);
+    const all = withAll && keys.length ? `<button type="button" class="btn" data-round-all="${this.esc(keys.join("|"))}">${this.t("roundPickAll")}</button>` : "";
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t(title)} (${this.formatNumber(rows.length)})</h2><p>${this.t(hint)}</p></div>${all}</div>${rows.map(r => this.roundRow(r, picked)).join("")}</section>`;
+  }
+
+  roundView() {
+    const round = this.round || { rows: null, picked: new Set(), error: "" };
+    const back = `<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div>`;
+    if (round.rows === null) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section>${back}</div>`;
+    const rows = round.rows, by = group => rows.filter(r => r.group === group);
+    const chosen = rows.filter(r => round.picked.has(r.finding_key) && r.kind !== "merge" && r.group !== "blocked");
+    const error = round.error ? this.notice("warn", this.esc(round.error)) : "";
+    const empty = rows.length ? "" : `<section class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("roundEmpty")}</div></section>`;
+    const bar = chosen.length ? `<div class="mbtns"><button type="button" class="btn primary" data-round-plan ${this.planBusy ? "disabled" : ""}><ha-icon icon="mdi:clipboard-list-outline"></ha-icon>${this.t("roundPlan", { n: chosen.length })}</button></div><p class="factnote">${this.t("roundPlanHint")}</p>` : "";
+    return `<div class="stack">${error}${empty}${this.roundGroup("roundSafe", "roundSafeHint", by("safe"), round.picked, true)}${this.roundGroup("roundLook", "roundLookHint", by("look"), round.picked, false)}${this.roundGroup("roundBlocked", "roundBlockedHint", by("blocked"), round.picked, false)}${bar ? `<section class="panel">${bar}</section>` : ""}${back}</div>`;
+  }
+
+  // "Keep": the decision "intended" with the usual 90 days, and for an entity or device also the mark that locks cleanup steps.
+  async roundKeepOne(key) {
+    const finding = this.data.findings.find(f => f.key === key);
+    if (!finding) return;
+    const days = this.defaultDays("keep");
+    await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("roundKeepReason"), days });
+    const [type, ...rest] = this.findingKey(finding).split(":");
+    if (["entity", "device"].includes(type)) await this._hass.callWS({ type: "ha_housekeeper/mark_set", object_type: type, object_id: rest.join(":"), kind: "keep", reason: this.t("roundKeepReason") });
+  }
+
+  async roundPlan(keys) {
+    const round = this.round, rows = round.rows.filter(r => keys.includes(r.finding_key));
+    round.error = "";
+    try { await this.newPlan(rows.map(r => ({ kind: r.kind, object_id: r.object_id })), "cleanup"); }
+    catch (err) { round.error = this.errText(err); this.render(); }
+  }
+
+  bindRound(root) {
+    root.querySelectorAll("[data-round-pick]").forEach(el => el.onchange = () => { if (el.checked) this.round.picked.add(el.dataset.roundPick); else this.round.picked.delete(el.dataset.roundPick); this.render(); });
+    root.querySelectorAll("[data-round-all]").forEach(el => el.onclick = () => { el.dataset.roundAll.split("|").forEach(k => this.round.picked.add(k)); this.render(); });
+    root.querySelectorAll("[data-round-one]").forEach(el => el.onclick = () => this.roundPlan([el.dataset.roundOne]));
+    root.querySelector("[data-round-plan]")?.addEventListener("click", () => this.roundPlan([...this.round.picked]));
+    root.querySelectorAll("[data-round-merge]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.roundMerge; this.replNew = el.dataset.roundInto; }));
+    root.querySelectorAll("[data-round-keep]").forEach(el => el.onclick = async () => {
+      try { await this.roundKeepOne(el.dataset.roundKeep); await this.refreshData(); this.round.rows = this.round.rows.filter(r => r.finding_key !== el.dataset.roundKeep); }
+      catch (err) { this.round.error = this.errText(err); }
+      this.render();
+    });
+  }
+}
+Object.assign(TEXT.de, {
+  roundTitle: "Aufräum-Runde", roundSubtitle: "Alles Überflüssige auf einmal durchgehen.",
+  roundSafe: "Sicher entfernbar", roundSafeHint: "Nirgends verwendet, ohne Vermerk „Nicht entfernen“, nicht kritisch. Die Auswahl lässt sich ändern.",
+  roundLook: "Erst ansehen", roundLookHint: "Verwendet, nur ein erster Schritt (erst deaktivieren) oder ein mögliches Duplikat: jedes einzeln entscheiden.",
+  roundBlocked: "Jetzt nicht entfernbar", roundBlockedHint: "Der Plan würde es sperren. Du kannst es behalten.",
+  roundRemove: "Entfernen", roundDelete: "Löschen", roundDisable: "Deaktivieren", roundMerge: "Zusammenführen", roundKeep: "Behalten", roundPickAll: "Alle wählen",
+  roundFirstStep: "erst deaktivieren (Quarantäne)", roundDuplicateOf: "mögliches Duplikat von {name}",
+  roundPlan: "Plan anlegen ({n})", roundPlanHint: "Der Plan zeigt jede Änderung zur Vorschau; nichts läuft ohne deine Bestätigung. Backup und Zurücknehmen wie sonst.",
+  roundEmpty: "Nichts Überflüssiges offen.", roundKeepReason: "In der Aufräum-Runde behalten", fixWay_cleanup_round: "Aufräum-Runde", fixWayHint_cleanup_round: "Alles Überflüssige durchgehen: sicher Entfernbares gesammelt, den Rest einzeln, jeweils mit Behalten.", fixRoundStart: "Aufräum-Runde öffnen",
+});
+Object.assign(TEXT.en, {
+  roundTitle: "Cleanup round", roundSubtitle: "Go through everything unneeded at once.",
+  roundSafe: "Safe to remove", roundSafeHint: "Used nowhere, without the mark “do not remove”, not critical. The selection can be changed.",
+  roundLook: "Look first", roundLookHint: "Used, only a first step (disable first) or a possible duplicate: decide each one on its own.",
+  roundBlocked: "Not removable now", roundBlockedHint: "The plan would block it. You can keep it.",
+  roundRemove: "Remove", roundDelete: "Delete", roundDisable: "Disable", roundMerge: "Merge", roundKeep: "Keep", roundPickAll: "Pick all",
+  roundFirstStep: "disable first (quarantine)", roundDuplicateOf: "possible duplicate of {name}",
+  roundPlan: "Create plan ({n})", roundPlanHint: "The plan shows every change as a preview; nothing runs without your confirmation. Backup and undo as usual.",
+  roundEmpty: "Nothing unneeded is open.", roundKeepReason: "Kept in the cleanup round", fixWay_cleanup_round: "Cleanup round", fixWayHint_cleanup_round: "Go through everything unneeded: what is safe to remove together, the rest one by one, each with Keep.", fixRoundStart: "Open the cleanup round",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -18881,6 +18988,7 @@ class HAHousekeeperPanel extends HTMLElement {
       inventory: [this.t("inventory"), this.t("inventorySubtitle")],
       findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
       fix: [this.t("fixTitle"), this.t("fixSubtitle")],
+      round: [this.t("roundTitle"), this.t("roundSubtitle")],
       changes: [this.t("changes"), this.t("changesSubtitle")],
       components: [this.t("components"), this.t("componentsSubtitle")],
       batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
@@ -18933,6 +19041,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "repair") return this.repairView();
     if (this.view === "plan") return this.planView();
     if (this.view === "fix") return this.fixView();
+    if (this.view === "round") return this.roundView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -19113,6 +19222,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.originFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
     this.bindFindingStatus(root);
     this.bindFix(root);
+    this.bindRound(root);
     this.bindDetailActions(root);
     // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
@@ -19426,7 +19536,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

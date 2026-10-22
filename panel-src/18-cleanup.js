@@ -301,7 +301,7 @@ class CleanupMixin {
     try {
       const actions = plan.actions.map(a => {
         const r = { kind: a.kind, object_id: a.object_id };
-        for (const key of ["target", "mode", "range", "recorder", "fix", "values", "tables"]) if (a[key]) r[key] = a[key];
+        for (const key of ["target", "target_kind", "mode", "range", "recorder", "fix", "values", "tables"]) if (a[key]) r[key] = a[key];
         if (a.kind === "purge_statistics") r.states = Boolean(a.states);
         if (a.kind === "trim_history") r.keep_days = a.keep_days;
         return r;

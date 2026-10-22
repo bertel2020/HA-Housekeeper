@@ -38,6 +38,7 @@ class FixMixin {
     const key = this.findingKey(f), object = this.findObject(key);
     let action = "";
     if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
+    else if (w.way === "cleanup_round") action = `<button type="button" class="btn" data-fix-round><ha-icon icon="mdi:broom"></ha-icon>${this.t("fixRoundStart")}</button>`;
     else if (w.way === "replace_target" && w.target_kind) {
       const options = (this.data?.objects || []).filter(o => o.object_type === w.target_kind && o.object_id !== w.target);
       action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
@@ -94,6 +95,7 @@ class FixMixin {
       const target = el.closest(".row")?.querySelector("[data-fix-id-new]")?.value;
       if (target) await this.newPlan([{ kind: "replace_references", object_id: el.dataset.fixIdReplace, target, target_kind: el.dataset.fixIdKind }], "repair");
     });
+    root.querySelectorAll("[data-fix-round]").forEach(el => el.onclick = () => this.openRound());
     root.querySelectorAll("[data-fix-remove]").forEach(el => el.onclick = async () => {
       const f = this.data?.findings?.find(x => x.key === this.fixKey);
       if (f) await this.newPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemove } }], "repair");
