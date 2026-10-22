@@ -6896,3 +6896,32 @@ test("the quick look of the Fix page says looks fixed or not yet, and the watch 
   assert.equal(el._fixTimer, null);
   assert.deepEqual(cleared, [7]);
 });
+
+test("the first cleanup is offered, opens each stage as a list filter and puts the rest off after one confirmation", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const fc = { state: { started_at: "2026-10-22T08:00:00+00:00", start_count: 60, stage: 1, done: [], finished_at: null }, offered: false, open: 60, later_days: 90, stages: { 1: ["a"], 2: [], 3: ["b"], 4: ["c"], 5: ["d", "e"] } };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type.endsWith("/first_cleanup_later") ? { ...fc, put_off: 2 } : fc; } };
+  const f = (key, impact) => ({ key, rule_id: "entity.state_unavailable", object_id: `sensor.${key}`, classification: "unavailable", impact });
+  el.data = { ...DATA, findings: ["a", "b", "c", "d", "e"].map(k => f(k, "low")) };
+  el.refreshData = async () => {}; el.render = () => {};
+  el.fc = { ...fc, offered: true };
+  assert.ok(el.firstCleanupOffer().includes("60 findings are open") && el.firstCleanupOffer().includes("data-fc-dismiss"));
+  el.fc = fc;
+  assert.equal(el.firstCleanupOffer(), "", "begun: no offer");
+  const html = el.firstCleanupView();
+  assert.ok(html.includes("Stage 1") && html.includes("Outages with many follow-ups (1)") && html.includes("Put all 2 off"));
+  el.openStage(3);
+  assert.equal(el.view, "findingsNav");
+  assert.deepEqual(el.visibleFindings().map(x => x.key), ["b"], "the list shows only the stage");
+  assert.ok(el.findingNote().includes("Stage 3"));
+  el.clearFindingFilters();
+  assert.equal(el.findingStage, 0);
+  el.fc = fc; el.fcDays = 30;
+  let asked = "";
+  el.confirmAsk = (text, run) => { asked = text; return run(); };
+  await el.fcLater();
+  assert.ok(asked.includes("2 findings") && asked.includes("30 days"));
+  const later = calls.find(c => c.type.endsWith("/first_cleanup_later"));
+  assert.equal(later.days, 30);
+});

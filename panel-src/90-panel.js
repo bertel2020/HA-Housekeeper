@@ -5,7 +5,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -749,6 +749,7 @@ class HAHousekeeperPanel extends HTMLElement {
       findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
       fix: [this.t("fixTitle"), this.t("fixSubtitle")],
       round: [this.t("roundTitle"), this.t("roundSubtitle")],
+      firstcleanup: [this.t("firstTitle"), this.t("firstSubtitle")],
       changes: [this.t("changes"), this.t("changesSubtitle")],
       components: [this.t("components"), this.t("componentsSubtitle")],
       batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
@@ -802,6 +803,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "plan") return this.planView();
     if (this.view === "fix") return this.fixView();
     if (this.view === "round") return this.roundView();
+    if (this.view === "firstcleanup") return this.firstCleanupView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -830,7 +832,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -983,6 +985,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindFindingStatus(root);
     this.bindFix(root);
     this.bindRound(root);
+    this.bindFirstCleanup(root);
     this.bindDetailActions(root);
     // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
@@ -1004,7 +1007,7 @@ class HAHousekeeperPanel extends HTMLElement {
     // One note of the filters above the list: its ✕ takes off just that filter.
     root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
       const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
-      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "cause") this.findingCause = ""; else if (key === "corr") this.findingCorr = "";
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "stage") this.findingStage = 0; else if (key === "cause") this.findingCause = ""; else if (key === "corr") this.findingCorr = "";
       else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
       this.pages = {}; this.render();
     });

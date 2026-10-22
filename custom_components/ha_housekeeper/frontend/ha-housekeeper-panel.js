@@ -2908,7 +2908,8 @@ class FindingsMixin {
     const held = this.findingHeld ? this.heldKeys() : null;
     const cause = this.findingCause ? this.causeKeys(this.findingCause) : null;
     const corr = this.findingCorr ? this.corrKeys(this.findingCorr) : null;
-    const byClass = [outages, held, cause, corr].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
+    const stage = this.findingStage ? this.stageKeys(this.findingStage) : null;
+    const byClass = [outages, held, cause, corr, stage].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
     const kept = this.lvState("findings", "impact", "desc").f;
     delete kept.fresh; // new and in work are chips of the status row now
     if (kept.type === "_causes") delete kept.type; // "causes only" is gone: the outage tile and the grouped list show them
@@ -2971,6 +2972,7 @@ class FindingsMixin {
     if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
     // The findings of one incident: the note names it, as its row in the card does.
     if (this.findingCorr) { const g = (this.corr?.groups || []).find(x => x.id === this.findingCorr); notes.push(["corr", this.t("corrFilterOne", { what: this.plainText(g ? this.corrText(g) : this.findingCorr), n: this.formatNumber(this.corrKeys(this.findingCorr).size) })]); }
+    if (this.findingStage) notes.push(["stage", this.t("fcStageFilter", { n: this.findingStage, name: this.t(`fcStage${this.findingStage}`) })]);
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
     // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
     if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
@@ -2983,7 +2985,7 @@ class FindingsMixin {
 
   // Back to the plain list of the chosen status: the tiles, the notes and the list bar start empty.
   clearFindingFilters() {
-    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = "";
+    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = "";
     const st = this.lvState("findings", "impact", "desc");
     st.q = ""; st.f = {}; this.persistLv("findings");
   }
@@ -3016,7 +3018,7 @@ class FindingsMixin {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const sorted = this.visibleFindings();
     const st = this.lv.findings;
-    const open = this.findingStatus !== "new" && !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingOutages && !this.findingHeld && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
+    const open = this.findingStatus !== "new" && !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingOutages && !this.findingHeld && !this.findingStage && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
     const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
@@ -3065,7 +3067,7 @@ class FindingsMixin {
     // The same count in both views: findings and the objects they belong to.
     const objects = this.countObjects(grouped ? nodes : this.objectTree(sorted, all, open));
     // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
-    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingAfter ? all.filter(f => this.corr?.by_key?.[f.key]).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : this.findingCorr ? all.filter(f => this.corrKeys(this.findingCorr).has(f.key)).length : all.length;
+    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingAfter ? all.filter(f => this.corr?.by_key?.[f.key]).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingStage ? all.filter(f => this.stageKeys(this.findingStage).has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : this.findingCorr ? all.filter(f => this.corrKeys(this.findingCorr).has(f.key)).length : all.length;
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     // Filtered to outages, the head counts them as the overview does (chains at their top) instead of every object below.
     const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
@@ -3079,7 +3081,7 @@ class FindingsMixin {
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<button type="button" class="chip" data-fc-open><ha-icon icon="mdi:broom"></ha-icon> ${this.t("fcButton")}</button><span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
       ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -18322,6 +18324,136 @@ Object.assign(TEXT.en, {
   roundEmpty: "Nothing unneeded is open.", roundKeepReason: "Kept in the cleanup round", fixWay_cleanup_round: "Cleanup round", fixWayHint_cleanup_round: "Go through everything unneeded: what is safe to remove together, the rest one by one, each with Keep.", fixRoundStart: "Open the cleanup round",
 });
 
+// FirstCleanupMixin: the first cleanup ("Erstes Aufräumen") as five stages through the open findings. The backend cuts
+// the stages and keeps the record for the whole house; every stage opens the normal list with a filter (or the cleanup
+// round, or the card of suggestions for marks). Only the last stage writes: it puts the quiet rest off together.
+class FirstCleanupMixin {
+  ensureFirstCleanup() {
+    if (this._fcFor === this.data || !this._hass?.callWS) return;
+    this._fcFor = this.data;
+    this.loadFirstCleanup(this.data);
+  }
+
+  async loadFirstCleanup(data) {
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup" });
+      if (this.data !== data) return;
+      this.fc = reply || null;
+      if (["findingsNav", "firstcleanup"].includes(this.view) && !this.selected) this.render();
+    } catch (_) { if (this.data === data) this.fc = null; }
+  }
+
+  async firstCleanupSet(msg) {
+    try { this.fc = { ...(await this._hass.callWS({ type: "ha_housekeeper/first_cleanup_set", ...msg })), error: "" }; }
+    catch (err) { this.fc = { ...(this.fc || {}), error: this.errText(err) }; }
+    this.render();
+  }
+
+  stageKeys(n) { return new Set(this.fc?.stages?.[String(n)] || []); }
+
+  // Where the stages stand: open findings left in the lists (stage 2 counts the suggestions of the card).
+  stageCount(n) { return n === 2 ? (this.oftenSuggestions?.() || []).length : this.stageKeys(n).size; }
+
+  openFirstCleanup() {
+    this.noteJump("firstcleanup");
+    this.view = "firstcleanup"; this.selected = null; this.pages = {};
+    this._fcFor = null; this.ensureFirstCleanup();
+    this.render();
+  }
+
+  // A stage opens the normal list: the keys of the stage as a filter, the card of suggestions for stage 2, the round for 4.
+  openStage(n) {
+    this.firstCleanupSet({ action: "stage", stage: n });
+    if (n === 4) { this.openRound(); return; }
+    this.noteJump("findingsNav");
+    this.view = "findingsNav"; this.pages = {}; this.selected = null;
+    this.clearFindingFilters(); this.findingStatus = "";
+    if (n === 2) (this.folds ||= {}).often = true; else this.findingStage = n;
+    this.render();
+  }
+
+  // The offer above the findings: shown while the cleanup has not begun and many findings are open; "Not now" hides it.
+  firstCleanupOffer() {
+    this.ensureFirstCleanup();
+    if (!this.fc?.offered) return "";
+    return `<div class="panel hintrow fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="hintlabel">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><span class="spacer"></span><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
+  }
+
+  fcStageRow(n, state) {
+    const count = this.stageCount(n), done = state.done.includes(n), current = state.stage === n && !done;
+    const later = n === 5 && count ? `<label class="fcdays">${this.t("fcLaterDays")} <input type="number" min="1" max="3650" value="${this.esc(this.fcDays ?? this.fc.later_days)}" data-fc-days></label><button type="button" class="btn" data-fc-later>${this.t("fcLaterAll", { n: this.formatNumber(count) })}</button>` : "";
+    const open = n === 5 ? "" : `<button type="button" class="btn" data-fc-stage="${n}">${this.t("fcOpen")}</button>`;
+    const mark = `<button type="button" class="btn quiet" data-fc-done="${n}" data-fc-undo="${done ? 1 : 0}">${this.t(done ? "fcReopen" : "fcDone")}</button>`;
+    const list = n === 5 && count ? `<button type="button" class="btn quiet" data-fc-stage="5">${this.t("fcOpen")}</button>` : "";
+    return `<div class="row${done ? " fcdone" : ""}"><ha-icon icon="${done ? "mdi:check-circle" : current ? "mdi:arrow-right-circle-outline" : "mdi:circle-outline"}"></ha-icon><span class="row-text"><strong>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)} (${this.formatNumber(count)})</strong><small>${this.t(`fcStage${n}Hint`)}</small></span>${later}${list}${open}${mark}</div>`;
+  }
+
+  firstCleanupView() {
+    this.ensureFirstCleanup();
+    const back = `<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div>`;
+    const fc = this.fc;
+    if (!fc) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section>${back}</div>`;
+    const state = fc.state || { done: [] }, error = fc.error ? this.notice("warn", this.esc(fc.error)) : "";
+    const left = this.data.findings.filter(f => !f.ignored).length;
+    const head = state.started_at
+      ? `<p>${this.t("fcProgress", { date: this.formatDate(state.started_at), start: this.formatNumber(state.start_count), now: this.formatNumber(left), done: this.formatNumber(state.done.length) })}</p>${state.finished_at ? `<p>${this.t("fcFinished", { date: this.formatDate(state.finished_at) })}</p>` : ""}`
+      : `<p>${this.t("fcIntro")}</p><div class="mbtns"><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button></div>`;
+    const rows = state.started_at ? [1, 2, 3, 4, 5].map(n => this.fcStageRow(n, state)).join("") : "";
+    return `<div class="stack">${error}<section class="panel"><div class="panelhead"><div><h2>${this.t("firstTitle")}</h2>${head}</div></div>${rows}</section>${back}</div>`;
+  }
+
+  bindFirstCleanup(root) {
+    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
+    root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
+    root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
+    root.querySelectorAll("[data-fc-stage]").forEach(el => el.onclick = () => this.openStage(Number(el.dataset.fcStage)));
+    root.querySelectorAll("[data-fc-done]").forEach(el => el.onclick = () => this.firstCleanupSet({ action: "stage", stage: Number(el.dataset.fcDone), done: el.dataset.fcUndo !== "1" }));
+    root.querySelector("[data-fc-days]")?.addEventListener("change", e => { this.fcDays = Math.max(1, Math.min(3650, Number(e.target.value) || this.fc.later_days)); });
+    root.querySelector("[data-fc-later]")?.addEventListener("click", () => this.fcLater());
+  }
+
+  // Stage 5: the rest goes to "Later" with a date; it comes back through "Due". Housekeeper's own list only.
+  fcLater() {
+    const n = this.stageCount(5), days = this.fcDays ?? this.fc.later_days;
+    if (n) this.confirmAsk(this.t("fcLaterConfirm", { n: this.formatNumber(n), days }), () => this.fcLaterRun(days), { label: this.t("fcLaterAll", { n: this.formatNumber(n) }) });
+  }
+
+  async fcLaterRun(days) {
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup_later", days, reason: this.t("fcLaterReason") });
+      this.fc = { ...reply, error: "" };
+      await this.refreshData?.();
+    } catch (err) { this.fc = { ...this.fc, error: this.errText(err) }; }
+    this.render();
+  }
+}
+Object.assign(TEXT.de, {
+  firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
+  fcOffer: "{n} Befunde sind offen. Das erste Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Erstes Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Erstes Aufräumen",
+  fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
+  fcProgress: "Begonnen am {date} mit {start} offenen Befunden, jetzt {now} offen, {done} von 5 Etappen erledigt.", fcFinished: "Fertig am {date}.",
+  fcStageFilter: "Etappe {n}: {name}", fcStage: "Etappe {n}", fcOpen: "Öffnen", fcDone: "Erledigt", fcReopen: "Wieder öffnen",
+  fcStage1: "Ausfälle mit vielen Folgen", fcStage1Hint: "Eine Ursache beseitigt viele Folgen auf einmal.",
+  fcStage2: "Vorschläge für Vermerke", fcStage2Hint: "Was oft ausfällt, bekommt besser einen Vermerk als einen Befund.",
+  fcStage3: "Hohe und mittlere Wirkung", fcStage3Hint: "Ausgefallen, kaputte Verweise und fehlerhafte Automationen mit Wirkung Hoch oder Mittel.",
+  fcStage4: "Überflüssiges", fcStage4Hint: "Die Aufräum-Runde: sicher Entfernbares gesammelt, der Rest einzeln.",
+  fcStage5: "Der ruhige Rest", fcStage5Hint: "Wirkung Niedrig oder Info: gesammelt auf „Später“; es kommt über „Fällig“ zurück.",
+  fcLaterDays: "Tage", fcLaterAll: "Alle {n} auf „Später“", fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
+});
+Object.assign(TEXT.en, {
+  firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
+  fcOffer: "{n} findings are open. The first cleanup goes through them in five stages.", fcBegin: "Begin the first cleanup", fcNotNow: "Not now", fcButton: "First cleanup",
+  fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
+  fcProgress: "Begun on {date} with {start} open findings, {now} open now, {done} of 5 stages done.", fcFinished: "Finished on {date}.",
+  fcStageFilter: "Stage {n}: {name}", fcStage: "Stage {n}", fcOpen: "Open", fcDone: "Done", fcReopen: "Reopen",
+  fcStage1: "Outages with many follow-ups", fcStage1Hint: "One cause clears many follow-ups at once.",
+  fcStage2: "Suggestions for marks", fcStage2Hint: "What often goes down is better held by a mark than reported as a finding.",
+  fcStage3: "High and medium impact", fcStage3Hint: "Down, broken references and failing automations with impact High or Medium.",
+  fcStage4: "Unneeded", fcStage4Hint: "The cleanup round: what is safe to remove together, the rest one by one.",
+  fcStage5: "The quiet rest", fcStage5Hint: "Impact Low or Info: put off together to “Later”; it comes back through “Due”.",
+  fcLaterDays: "Days", fcLaterAll: "Put all {n} off", fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
+});
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -18329,7 +18461,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -19073,6 +19205,7 @@ class HAHousekeeperPanel extends HTMLElement {
       findingsNav: [this.t("findings"), this.t("findingsSubtitle")],
       fix: [this.t("fixTitle"), this.t("fixSubtitle")],
       round: [this.t("roundTitle"), this.t("roundSubtitle")],
+      firstcleanup: [this.t("firstTitle"), this.t("firstSubtitle")],
       changes: [this.t("changes"), this.t("changesSubtitle")],
       components: [this.t("components"), this.t("componentsSubtitle")],
       batteries: [this.t("batteries"), this.t("batteriesSubtitle")],
@@ -19126,6 +19259,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "plan") return this.planView();
     if (this.view === "fix") return this.fixView();
     if (this.view === "round") return this.roundView();
+    if (this.view === "firstcleanup") return this.firstCleanupView();
     if (this.view === "journal") return this.journalView();
     if (this.view === "maintenance") return this.maintenanceView();
     if (this.view === "reliability") return this.reliabilityView();
@@ -19154,7 +19288,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { const wasFindings = this.view === "findingsNav"; this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; if (this.view === "findingsNav" && !wasFindings) this.findingStatus = this.defaultFindingStatus(); this.pages = {}; this.findingOutages = false; this.findingHeld = false; this.findingStage = 0; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -19307,6 +19441,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindFindingStatus(root);
     this.bindFix(root);
     this.bindRound(root);
+    this.bindFirstCleanup(root);
     this.bindDetailActions(root);
     // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
@@ -19328,7 +19463,7 @@ class HAHousekeeperPanel extends HTMLElement {
     // One note of the filters above the list: its ✕ takes off just that filter.
     root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
       const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
-      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "cause") this.findingCause = ""; else if (key === "corr") this.findingCorr = "";
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "stage") this.findingStage = 0; else if (key === "cause") this.findingCause = ""; else if (key === "corr") this.findingCorr = "";
       else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
       this.pages = {}; this.render();
     });
@@ -19620,7 +19755,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, FirstCleanupMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }
