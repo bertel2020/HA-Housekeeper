@@ -232,6 +232,10 @@
           "name": "State",
           "description": "Only this state, e.g. unavailable, unknown, stale or broken_reference."
         },
+        "topic": {
+          "name": "Topic",
+          "description": "Only this topic: down, broken_references, failing_automations or unneeded."
+        },
         "object_type": {
           "name": "Object type",
           "description": "Only this kind of object, e.g. entity, device, automation or config_entry."

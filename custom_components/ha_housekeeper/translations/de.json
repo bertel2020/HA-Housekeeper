@@ -232,6 +232,10 @@
           "name": "Zustand",
           "description": "Nur dieser Zustand, z. B. unavailable, unknown, stale oder broken_reference."
         },
+        "topic": {
+          "name": "Thema",
+          "description": "Nur dieses Thema: down (ausgefallen), broken_references (kaputte Verweise), failing_automations (fehlerhafte Automationen) oder unneeded (überflüssig)."
+        },
         "object_type": {
           "name": "Objektart",
           "description": "Nur diese Art von Objekt, z. B. entity, device, automation oder config_entry."

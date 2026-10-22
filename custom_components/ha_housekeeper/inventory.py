@@ -82,6 +82,7 @@ from .entry_states import EntryStateHistory
 from .events import EventLog
 from .exceptions import ExceptionStore, entry_traits, traits, verdict
 from .exceptions import matches as _hits
+from .finding_topics import apply_topics
 from .goals import GoalStore
 from .hacs import hacs_by_domain, removed_issues
 from .hints import HintStore
@@ -1702,6 +1703,7 @@ class InventoryScanner:
             if item["object_id"] in stuck:
                 item["blocked_automation"] = True
         apply_battery_kinds(objects, self.batteries.kinds)
+        apply_topics(findings)
         apply_impact(objects, edges, findings)
         logged = log_facts(self.hass)
         for item in objects:

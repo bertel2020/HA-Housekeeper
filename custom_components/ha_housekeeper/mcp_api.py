@@ -23,6 +23,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import API_SCHEMA, EVENT_AI_CHANGE
 from .exposure import SENSITIVE_COVERS, SENSITIVE_DOMAINS
+from .finding_topics import TOPICS
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
 from .marks import KINDS as MARK_KINDS
@@ -64,6 +65,7 @@ FINDINGS_SCHEMA = vol.Schema(
         vol.Optional("rule"): vol.All(str, vol.Length(max=80)),
         vol.Optional("level"): vol.In(LEVELS),
         vol.Optional("classification"): vol.All(str, vol.Length(max=40)),
+        vol.Optional("topic"): vol.In(TOPICS),
         vol.Optional("object_type"): vol.All(str, vol.Length(max=40)),
         vol.Optional("search"): vol.All(str, vol.Length(max=80)),
         vol.Optional("ignored", default="hide"): vol.In(DECISIONS),
@@ -290,6 +292,8 @@ def findings(
             continue
         if "classification" in data and finding["classification"] != data["classification"]:
             continue
+        if "topic" in data and finding.get("topic") != data["topic"]:
+            continue
         target = objects.get(finding["object_id"], {})
         if "object_type" in data and target.get("object_type") != data["object_type"]:
             continue
@@ -321,6 +325,7 @@ def findings(
             "type": target.get("object_type"),
             "name": clean_text(target.get("name")),
             "level": finding.get("impact") or "none",
+            "topic": finding.get("topic"),
             "state": finding["classification"],
             "since": finding.get("first_detected_at"),
         }
@@ -430,6 +435,7 @@ def object_card(
             {
                 "key": f["key"],
                 "rule": f["rule_id"],
+                "topic": f.get("topic"),
                 "level": f.get("impact") or "none",
                 "state": f["classification"],
                 "since": f.get("first_detected_at"),

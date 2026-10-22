@@ -26,6 +26,11 @@ findings:
       required: false
       selector:
         text:
+    topic:
+      required: false
+      selector:
+        select:
+          options: [down, broken_references, failing_automations, unneeded]
     object_type:
       required: false
       selector:
