@@ -39,7 +39,7 @@
   - Topic tiles with an impact bar, a column and a filter “Topic”.
   - A missing target is a cause from the first reference on; the automations that refer to it are the follow-ups.
   - Automations and scripts with repeated failures are now findings of their own.
-  - The column “Sicherheit” is now “Certainty”, with four levels and a reason in the tooltip.
+  - The column “Certainty” (German “Sicherheit”, now “Gewissheit”) shows four levels and a reason in the tooltip.
 - **Since your last visit:** The findings page opens on what is new or got worse, for each user. Also the sensor “New findings”. A “Later” that gets worse comes back at once; “Due” collects what wants another look.
 - **Fix:** Every finding has a page of its own with four steps (Understand, Decide, Carry out, Check) and the ways of its topic.
   - Replace the target, also for an area, floor and label; remove the reference and catch the error (both through “Improve”); “Fix all n” for a missing target.
