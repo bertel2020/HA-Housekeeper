@@ -293,6 +293,16 @@
         }
       }
     },
+    "finding_fix_options": {
+      "name": "KI-Zugriff: Wege zum Beheben eines Befunds",
+      "description": "Nennt die Wege, einen Befund zu beheben, den empfohlenen zuerst (fehlendes Ziel ersetzen, Editor öffnen, abwarten, die Integration ansehen und dergleichen). Nennt sie nur: nichts wird geändert, und ein Weg, der schreibt, läuft im Panel als Plan mit Vorschau und Bestätigung. Braucht den eingeschalteten „KI-Zugriff“. Den Schlüssel liefert „findings“.",
+      "fields": {
+        "key": {
+          "name": "Schlüssel des Befunds",
+          "description": "Der Schlüssel des Befunds, wie ihn „findings“ auflistet."
+        }
+      }
+    },
     "finding_decide": {
       "name": "KI-Zugriff: über einen Befund entscheiden",
       "description": "Blendet einen Befund in Housekeeper aus, behält ihn oder stellt ihn zurück, oder zeigt ihn wieder. Nur Housekeepers eigene Liste ändert sich, nie Home Assistant; die Änderung lässt sich mit „undo“ oder im Panel zurücknehmen. Braucht „KI-Zugriff aktivieren“ und „Merkliste ändern“. Den Schlüssel liefert „findings“.",

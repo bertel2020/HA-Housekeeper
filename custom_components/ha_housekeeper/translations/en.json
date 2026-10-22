@@ -293,6 +293,16 @@
         }
       }
     },
+    "finding_fix_options": {
+      "name": "AI access: ways to fix a finding",
+      "description": "Names the ways to fix one finding, the recommended one first (replace a missing target, open the editor, wait, look at the integration and the like). Only names them: nothing is changed, and a way that writes runs in the panel as a plan with preview and confirmation. Needs \"AI access\" to be switched on. Get the key from \"findings\".",
+      "fields": {
+        "key": {
+          "name": "Finding key",
+          "description": "The key of the finding, as listed by \"findings\"."
+        }
+      }
+    },
     "finding_decide": {
       "name": "AI access: decide about a finding",
       "description": "Hides, keeps or puts off one finding in Housekeeper, or shows it again. Only Housekeeper's own list changes, never Home Assistant; the change can be taken back with \"undo\" or in the panel. Needs \"AI access\" and \"Change the list\" to be switched on. Get the key from \"findings\".",

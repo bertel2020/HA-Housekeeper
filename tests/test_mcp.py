@@ -358,3 +358,32 @@ async def test_reads_are_limited_per_minute(hass: HomeAssistant) -> None:
         await mcp_api.run(hass, scanner, "status", {}, None)
     assert limited.value.reason == "too_many_calls"
     await mcp_api.run(hass, scanner, "audit", {}, None)  # the log can always be read
+
+
+async def test_the_ways_to_fix_a_finding_are_named_and_nothing_changes(hass: HomeAssistant) -> None:
+    scanner = scanner_with(hass, 5)
+    scanner.mcp.enabled = True
+    broken = {
+        "key": "automation.missing_entity|automation.a|sensor.old",
+        "rule_id": "automation.missing_entity",
+        "object_id": "automation.a",
+        "topic": "broken_references",
+        "affected_object": "sensor.old",
+        "suggestions": ["sensor.new"],
+    }
+    scanner.snapshot["findings"].append(broken)
+    answer = await mcp_api.run(hass, scanner, "finding_fix_options", {"key": broken["key"]}, None)
+    assert [w["way"] for w in answer["ways"]] == [
+        "replace_target",
+        "remove_reference",
+        "open_editor",
+    ]
+    assert answer["ways"][0]["recommended"] and answer["ways"][0]["suggestion"] == "sensor.new"
+    assert answer["exits"] == ["ignore", "keep", "snooze"] and answer["total"] == 3
+    with pytest.raises(mcp_api.McpError) as unknown:
+        await mcp_api.run(hass, scanner, "finding_fix_options", {"key": "nope"}, None)
+    assert unknown.value.reason == "finding_not_found"
+    scanner.mcp.enabled = False
+    with pytest.raises(mcp_api.McpError) as off:
+        await mcp_api.run(hass, scanner, "finding_fix_options", {"key": broken["key"]}, None)
+    assert off.value.reason == "disabled"

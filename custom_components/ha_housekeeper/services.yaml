@@ -92,6 +92,13 @@ audit:
           max: 50
           mode: box
 
+finding_fix_options:
+  fields:
+    key:
+      required: true
+      selector:
+        text:
+
 finding_decide:
   fields:
     key:
