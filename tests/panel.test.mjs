@@ -3391,11 +3391,11 @@ test("the selection row of the findings list names the size of the view at its r
   const f = key => ({ key, rule_id: "entity.stale", object_id: key, classification: "unused", confidence: 0.7, ignored: false, impact: "info", impact_facts: [] });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c")] };
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
-  assert.ok(/viewcount" role="status">3 findings on 3 objects/.test(el.findingsView()));
+  assert.ok(/viewcount" role="status">3 objects with 3 findings/.test(el.findingsView()));
   el.findSel = new Set(["a"]);
-  assert.ok(/1 selected.*viewcount" role="status">3 findings on 3 objects/s.test(el.findingsView()));
+  assert.ok(/1 selected.*viewcount" role="status">3 objects with 3 findings/s.test(el.findingsView()));
   el.showFollowers = true;
-  assert.ok(/viewcount" role="status">3 findings on 3 objects/.test(el.findingsView()), "the flat list counts the same way");
+  assert.ok(/viewcount" role="status">3 objects with 3 findings/.test(el.findingsView()), "the flat list counts the same way");
 });
 
 test("a reason tile counts every finding of its reason and names the follow-ups below it", () => {
@@ -3415,7 +3415,7 @@ test("the button for findings after an update counts every finding and names the
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
   el.findingAfter = true; el.folds = { corr: true };
   const html = el.findingsView();
-  assert.ok(html.includes("3 findings began together with an update") && html.includes("1 of them follow-ups") && html.includes("3 findings on 3 objects"));
+  assert.ok(html.includes("3 findings began together with an update") && html.includes("1 of them follow-ups") && html.includes("3 objects with 3 findings"));
 });
 
 test("the detail page rates a finding: level with reasons, certainty, and what the next level takes", () => {
