@@ -148,8 +148,11 @@ class FirstCleanupMixin {
   }
 
   fcWelcome() {
-    const stages = [1, 2, 3, 4, 5].map(n => `<li><strong>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)}</strong><small>${this.t(`fcStage${n}Hint`)}</small></li>`).join("");
-    return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcIntro")}</p><ol class="fclist">${stages}</ol><div class="mbtns"><button type="button" class="btn primary" data-fc-begin><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcBegin")}</button></div></div></section>`;
+    const icons = { 1: "mdi:link-variant-off", 2: "mdi:lightbulb-on-outline", 3: "mdi:alert-circle-outline", 4: "mdi:broom", 5: "mdi:bell-sleep-outline" };
+    const stages = [1, 2, 3, 4, 5].map(n => { const c = this.stageCount(n); return `<li class="fcstagetile"><span class="fcicon"><ha-icon icon="${icons[n]}"></ha-icon></span><strong>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)}</strong><small>${this.t(`fcStage${n}Hint`)}</small>${c ? `<span class="pill mute">${this.t("fcLeft", { n: this.formatNumber(c) })}</span>` : ""}</li>`; }).join("");
+    const cards = this.stageCount(1) + this.stageCount(2) + this.fcUnits(3).length, minutes = Math.max(1, Math.round(cards / 4));
+    const time = cards ? `<p class="fctip">${this.t("fcMinutes", { c: this.formatNumber(cards), n: this.formatNumber(minutes) })}</p>` : "";
+    return `<section class="panel fcpanel${this.fcAnim("welcome")}"><div class="pad"><p>${this.t("fcIntro")}</p><ol class="fcstagegrid">${stages}</ol>${time}<div class="mbtns"><button type="button" class="btn primary fcbig" data-fc-begin><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcBegin")}</button></div></div></section>`;
   }
 
   // What was done in the tour, one line per stage; kept in the browser, as the backend holds only the stages.
@@ -248,7 +251,8 @@ class FirstCleanupMixin {
     const open = [1, 2, 3, 4, 5].map(n => ({ n, c: this.stageCount(n) })).filter(x => x.c)
       .map(x => `<li><span><b>${this.t("fcStage", { n: x.n })} · ${this.t(`fcStage${x.n}`)}</b> · ${this.t("fcSumLeft", { n: this.formatNumber(x.c) })}</span><button type="button" class="btn" data-fc-openlist="${x.n}">${this.t("fcSee")}</button></li>`).join("");
     const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang === "en" ? "en" : "de");
-    return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("fcFinishTitle")}</strong><br>${this.t("fcFinishText2", { d: this.formatNumber(this.fcDecided()), start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</div>
+    const kpi = (label, value, tone) => `<div class="fckpi ${tone}"><b>${this.formatNumber(value)}</b><span>${label}</span></div>`;
+    return `<section class="panel fcpanel${this.fcAnim("finish")}"><div class="fcdone"><span class="fcbigcheck"><ha-icon icon="mdi:check-bold"></ha-icon></span><strong>${this.t("fcFinishTitle")}</strong><div class="fckpis">${kpi(this.t("fcKpiDecided"), this.fcDecided(), "ok")}${kpi(this.t("fcKpiOpen"), left, left ? "warn" : "ok")}${kpi(this.t("fcKpiLater"), later, "mute")}</div><small>${this.t("fcFinishText2", { d: this.formatNumber(this.fcDecided()), start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</small></div>
       <div class="pad"><h3>${this.t("fcNextTitle")}</h3>${open ? `<ul class="fcnext">${open}</ul>` : `<p>${this.t("fcNextNone")}</p>`}${later ? `<p>${this.t("fcNextLater", { n: this.formatNumber(later), date: until })}</p>` : ""}<p class="fctip">${this.t("fcNextTip")}</p>
       <div class="mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-history="1">${this.t("fcHistory")}</button><button type="button" class="btn quiet" data-fc-goto="5">${this.t("fcBack")}</button></div>
       <details class="fcdetails"><summary>${this.t("fcSumTitle")}</summary><ul class="fcsum">${this.fcSummaryRows()}</ul></details></div></section>`;
@@ -305,8 +309,15 @@ class FirstCleanupMixin {
   }
 
   // One action of a card: what it is called and, in a line, what it does.
-  fcAct(attr, label, hint, primary = false) {
-    return `<button type="button" class="fcact${primary ? " primary" : ""}" ${attr}><strong>${label}</strong><small>${hint}</small></button>`;
+  fcAct(attr, label, hint, primary = false, icon = "", tone = "") {
+    return `<button type="button" class="fcact${primary ? " primary" : ""}${tone ? ` ${tone}` : ""}" ${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt"><strong>${label}</strong><small>${hint}</small></span></button>`;
+  }
+
+  // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.
+  fcAnim(id) {
+    const now = Date.now();
+    if (this._fcAnim?.id !== id) this._fcAnim = { id, at: now };
+    return now - this._fcAnim.at < 400 ? " fcin" : "";
   }
 
   // The cards of stage 1 and 3: one finding at a time with the three answers and what each one does.
@@ -318,13 +329,15 @@ class FirstCleanupMixin {
       return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div><div class="pad mbtns">${prevBtn}${rest ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}` : ""}</div></section>`;
     }
     const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
-    const follows = this.fcFollowers(f), facts = [this.impactLine(f), f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : ""].filter(Boolean);
+    const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
     const acts = [
-      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), true) : "",
-      this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") })),
-      this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days })),
+      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), true, "mdi:wrench-outline", "blue") : "",
+      this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green"),
+      this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber"),
     ].join("");
-    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id)}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small>${many ? this.fcGroupList(unit) : `<p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong></p>`}<p class="fcfacts">${this.esc(facts.join(" · "))}</p>${this.fcFollowList(f, follows)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}${since ? `<small>${this.esc(since)}</small>` : ""}</p>`;
+    const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div>${many ? this.fcGroupList(unit) : `<p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong></p>`}${chips}${this.fcFollowList(f, follows)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
@@ -356,8 +369,8 @@ class FirstCleanupMixin {
     if (!items.length) return this.fcEmpty();
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const all = items.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(items.length) })}</button>` : "";
-    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), true) + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"));
-    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${all}${listBtn}</div></div></section>`;
+    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), true, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
+    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${all}${listBtn}</div></div></section>`;
   }
 
   async fcTake(keys) {
@@ -416,11 +429,12 @@ class FirstCleanupMixin {
     if (n === 0) return `<div class="stack">${error}${this.fcWelcome()}</div>`;
     const state = fc.state || { done: [] }, left = this.data.findings.filter(f => !f.ignored).length;
     const counter = `<span class="fccounter">${this.t("fcCounter", { start: this.formatNumber(state.start_count), now: this.formatNumber(left), d: this.formatNumber(this.fcDecided()) })}</span>`;
-    const top = `<div class="fctop">${this.fcStepper(n)}${counter}</div>`;
+    const startN = state.start_count || 0, pct = startN ? Math.max(0, Math.min(100, Math.round(((startN - left) / startN) * 100))) : 0;
+    const top = `<div class="fctop">${this.fcStepper(n)}${counter}</div><div class="fcbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${this.esc(this.t("fcProgress"))}"><i style="width:${pct}%"></i></div>`;
     if (this.fcWiz.history) return `<div class="stack">${error}${top}${this.fcHistoryPanel()}</div>`;
     if (n === 6) return `<div class="stack">${error}${top}${this.fcFinish()}</div>`;
     const count = this.stageCount(n);
-    const head = `<section class="panel fchead"><div class="pad"><small class="fceyebrow">${this.t("fcStageOf", { n })}</small><h2>${this.t(`fcStage${n}`)} <span class="fcleft">${this.t("fcLeft", { n: this.formatNumber(count) })}</span></h2><p>${this.t(`fcStage${n}Hint`)}</p></div></section>`;
+    const head = `<section class="panel fchead"><div class="pad"><div class="fcheadrow"><div><small class="fceyebrow">${this.t("fcStageOf", { n })}</small><h2>${this.t(`fcStage${n}`)}</h2></div><span class="pill ${count ? "warn" : "ok"}">${count ? this.t("fcLeft", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span></div><p>${this.t(`fcStage${n}Hint`)}</p></div></section>`;
     const look = this.fcWiz.look && n !== 4;
     let body;
     if (n === 4) body = this.roundView();
@@ -505,7 +519,7 @@ Object.assign(TEXT.de, {
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
   fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
   fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
-  fcFinishTitle: "Fertig", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
+  fcFinishTitle: "Fertig", fcKpiDecided: "Entschieden", fcKpiOpen: "Noch offen", fcKpiLater: "Zurückgestellt", fcProgress: "Fortschritt", fcMinutes: "{c} Karten, etwa {n} Minuten.", fcFollowsChip: "{n} Folgen", fcFollowsChip1: "1 Folge", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
   firstcleanup: "Aufräumen", round: "Aufräum-Runde", firstTitle: "Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
   fcOffer: "{n} Befunde sind offen. Das Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Aufräumen",
   fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
@@ -538,7 +552,7 @@ Object.assign(TEXT.en, {
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
   fcCounter: "{start} at the start · {now} open now · {d} decided", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",
   fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
-  fcFinishTitle: "Done", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
+  fcFinishTitle: "Done", fcKpiDecided: "Decided", fcKpiOpen: "Still open", fcKpiLater: "Put off", fcProgress: "Progress", fcMinutes: "{c} cards, about {n} minutes.", fcFollowsChip: "{n} follow-ups", fcFollowsChip1: "1 follow-up", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
   firstcleanup: "Cleanup", round: "Cleanup round", firstTitle: "Cleanup", firstSubtitle: "Go through the open findings in five stages.",
   fcOffer: "{n} findings are open. The cleanup goes through them in five stages.", fcBegin: "Begin the cleanup", fcNotNow: "Not now", fcButton: "Cleanup",
   fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
