@@ -85,7 +85,8 @@ class MarksMixin {
     if (!obj) return;
     if (this.decide && this.findingKey(this.data.findings.find(x => x.key === this.decide.key) || {}) === key) this.decide = null;
     this.openMark(key);
-    if (this.shadowRoot?.querySelector?.("[data-mark-form]")) return;
+    const form = this.shadowRoot?.querySelector?.("[data-mark-form]");
+    if (form) { form.scrollIntoView?.({ block: "nearest" }); return; }
     this._pendingTab = "actions"; await this.openObject(obj); this.openMark(key);
   }
 

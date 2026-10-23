@@ -64,10 +64,18 @@ class DetailActionsMixin {
     const notes = this.markRows(item);
     const record = [...this.entityTrimRows(item), this.staleRow(item)];
     const group = (title, rows, sub = "") => { const html = rows.filter(Boolean).join(""); return html ? `<div class="actsec">${this.t(title)}${sub ? `<small>${sub}</small>` : ""}</div>${html}` : ""; };
+    // What always exists (tools, name, record) is folded away while something answers a finding; it opens when nothing else is there.
+    const lead = [recommended, notes].some(rows => rows.filter(Boolean).length);
+    const fold = (id, title, rows, sub = "") => {
+      const html = rows.filter(Boolean).join("");
+      if (!html) return "";
+      const open = this.foldOpen(id, !lead);
+      return `<button type="button" class="actsec actfold" data-fold="${id}" aria-expanded="${open}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon>${this.t(title)}</button>${open ? `${sub ? `<div class="pad"><small class="factnote">${sub}</small></div>` : ""}${html}` : ""}`;
+    };
     const preview = this.t("actPreviewOnly");
     // A tab with nothing but the mark (a healthy integration or app) says what it is for.
     const onlyMark = notes.length && ![recommended, tools, name, record].some(rows => rows.filter(Boolean).length);
-    const body = [group("actGroupRecommended", recommended, items.some(it => it.finding) ? preview : ""), group("actGroupNotes", notes), group("moreActions", tools, preview), group("actGroupName", name), group("actGroupRecord", record)].join("") + (onlyMark ? `<div class="pad"><p class="factnote">${this.t("actOnlyNotes")}</p></div>` : "");
+    const body = [group("actGroupRecommended", recommended, items.some(it => it.finding) ? preview : ""), group("actGroupNotes", notes), fold("act_tools", "moreActions", tools, preview), fold("act_name", "actGroupName", name), fold("act_record", "actGroupRecord", record)].join("") + (onlyMark ? `<div class="pad"><p class="factnote">${this.t("actOnlyNotes")}</p></div>` : "");
     return body ? `<section class="panel actpanel">${body}</section>` : `<p class="factnote">${this.t("actNone")}</p>`;
   }
 

@@ -4578,6 +4578,9 @@ test("an entity has an Actions tab that holds what changes something; the overvi
   assert.ok(band.includes("Next step") && band.includes("data-act-replace") && band.includes('data-detail-tab="actions"'));
   const overview = el.detailPanel("overview", ghost, key);
   assert.ok(overview.includes("Next step") && !overview.includes("data-de-rename") && !overview.includes("data-stale-form"), "no forms on the overview");
+  const folded = el.detailPanel("actions", ghost, key);
+  assert.ok(folded.includes("Recommended") && folded.includes("Name and classify") && !folded.includes("data-de-rename"), "what always exists is folded while a finding has its answer");
+  el.folds = { act_name: true };
   const actions = el.detailPanel("actions", ghost, key);
   assert.ok(actions.includes("Recommended") && actions.includes("Name and classify") && actions.includes("data-de-rename"));
   assert.ok(actions.includes('class="actrow"') && (actions.match(/<section class="panel/g) || []).length === 1, "the forms are rows of one card");
@@ -4603,6 +4606,7 @@ test("devices, automations and integrations share the layout: the overview reads
   assert.ok(!el.detailPanel("actions", device, "device:d1").includes("Here you say what is normal"), "not when there is more");
   const overview = el.detailPanel("overview", device, "device:d1");
   assert.ok(!overview.includes("data-de-area") && !overview.includes("data-act-exchange"), "no forms on the overview");
+  el.folds = { act_tools: true, act_name: true };
   const actions = el.detailPanel("actions", device, "device:d1");
   assert.ok(actions.includes("data-act-exchange") && actions.includes("data-de-area") && actions.includes("Name and classify"));
   const at = text => actions.indexOf(`>${text}<`);
