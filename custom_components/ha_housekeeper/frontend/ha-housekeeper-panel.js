@@ -18570,7 +18570,7 @@ class FirstCleanupMixin {
   }
 
   // The cards of a stage are all gone through; what is left is what was skipped, and going on needs no question.
-  fcSeen(n) { return [1, 3].includes(n) && !this.fcWiz?.look && this.stageCount(n) > 0 && !this.fcUnits(n).length; }
+  fcSeen(n) { return [1, 2, 3].includes(n) && !this.fcWiz?.look && this.stageCount(n) > 0 && !(n === 2 ? this.fcOftenQueue() : this.fcUnits(n)).length; }
 
   // "Next" marks the stage done and goes on; with findings left that were not looked at it asks first.
   fcWizNext() {
@@ -18849,7 +18849,7 @@ class FirstCleanupMixin {
 
   // One card back: the last skip or decision of the stage is taken back, and the card shows once more.
   // The actions of a stage that "Previous" can take back: the answers of the cards, or in stage 2 the marks and refusals.
-  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks"] : ["keep", "later", "skip"]; }
+  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : ["keep", "later", "skip"]; }
 
   fcPrevButton(n) {
     const some = this.fcLogGet().some(e => e.stage === n && this.fcPrevActions(n).includes(e.action));
@@ -18861,14 +18861,21 @@ class FirstCleanupMixin {
     if (last) this.fcUndo(last.id);
   }
 
+  // The suggestions of stage 2 still to be looked at: those skipped wait until the others are through.
+  fcOftenQueue() {
+    const skipped = this.fcSkipped(2);
+    return (this.oftenSuggestions?.() || []).filter(x => !skipped.has(x.key));
+  }
+
   // Stage 2: one suggestion at a time; the mark is set from the card.
   fcOftenStep(count) {
-    const items = this.oftenSuggestions?.() || [];
-    if (!items.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div><div class="pad mbtns">${this.fcPrevButton(2)}</div></section>`;
+    const all = this.oftenSuggestions?.() || [], items = this.fcOftenQueue();
+    if (!all.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div><div class="pad mbtns">${this.fcPrevButton(2)}</div></section>`;
+    if (!items.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcCardsLeft", { n: this.formatNumber(all.length) })}</div><div class="pad mbtns">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></section>`;
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
-    const all = items.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(items.length) })}</button>` : "";
+    const takeAll = all.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(all.length) })}</button>` : "";
     const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
-    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}${all}${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
   }
 
   async fcTake(keys) {

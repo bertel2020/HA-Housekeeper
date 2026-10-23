@@ -7100,3 +7100,20 @@ test("the activity tab groups the entries by day, offers undo only where an entr
   assert.equal(html.split("data-act-undo=").length - 1, 1, "only the entry with an undo reference");
   assert.ok(html.includes("data-act-more") && html.includes("Cleanup") && html.includes("Anna"));
 });
+
+test("stage 2 can skip a suggestion: it waits behind the others and the stage reads as seen when only skipped ones are left", () => {
+  const { el } = panel("en");
+  el.fc = { state: { started_at: "2026-10-23T08:00:00+00:00", start_count: 2, stage: 2, done: [], finished_at: null, log: [] }, stages: { 1: [], 2: [], 3: [], 4: [], 5: [] } };
+  el._hass = { language: "en", callWS: async () => el.fc };
+  el.oftenSuggestions = () => [{ key: "entity:a" }, { key: "entity:b" }];
+  el.fcWiz = { step: 2, look: false, on: true };
+  assert.deepEqual(el.fcOftenQueue().map(x => x.key), ["entity:a", "entity:b"]);
+  assert.ok(!el.fcSeen(2));
+  el.fcLogAdd({ stage: 2, key: "entity:a", keys: ["entity:a"], action: "skip" });
+  assert.deepEqual(el.fcOftenQueue().map(x => x.key), ["entity:b"]);
+  el.fcLogAdd({ stage: 2, key: "entity:b", keys: ["entity:b"], action: "skip" });
+  assert.ok(el.fcSeen(2), "only skipped ones left: on to the next stage");
+  const html = el.fcOftenStep(2);
+  assert.ok(html.includes("2 skipped ones stay open") && html.includes("data-fc-again"));
+  assert.ok(!el.fcPrevButton(2).includes("disabled"), "the skip can be taken back");
+});
