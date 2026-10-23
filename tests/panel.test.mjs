@@ -7354,3 +7354,16 @@ test("a device that is down and belongs to one integration offers reloading it a
   el.data = { ...DATA, objects: [device(["e1", "e2"])], causes: [], findings: [f] };
   assert.ok(!el.fcFixable(f, "device:d"), "two integrations: no single one to reload");
 });
+
+test("a start compares each integration with its usual time and links to the ones the scan knows", () => {
+  const { el } = panel("en");
+  const item = (seconds, extra = {}) => ({ domain: "alexa_devices", title: "rrm", seconds, state: "loaded", entries: 1, ...extra });
+  const starts = [item(75), item(20), item(22), item(21)].map((i, n) => ({ at: `2026-10-2${3 - n}T10:00:00Z`, items: [i] }));
+  el.sysState("starts").data = { starts };
+  assert.match(el.startCompare(starts[0], starts[0].items[0]), /pill warn[^>]*>54 s slower than usual/);
+  assert.match(el.startCompare(starts[1], starts[1].items[0]), /pill mute[^>]*>as usual</, "close to the average");
+  assert.match(el.startCompare(starts[3], starts[3].items[0]), /class="muted"/, "no earlier starts to compare with");
+  const row = el.startRow(starts[0], starts[0].items[0], 75, new Map([["alexa_devices", { custom: true }]]));
+  assert.match(row, /data-object="integration:alexa_devices"/);
+  assert.match(row, />custom</);
+});

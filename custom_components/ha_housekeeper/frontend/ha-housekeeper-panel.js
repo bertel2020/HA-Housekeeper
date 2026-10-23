@@ -1783,7 +1783,7 @@ class StylesMixin {
       .fcact.rec{border-color:color-mix(in srgb,var(--hk-blue) 45%,var(--hk-border))}.fcact.sel{border:2px solid var(--hk-blue);padding:13px 15px;background:color-mix(in srgb,var(--hk-blue) 8%,var(--hk-surface))}.fcrectag{display:inline-block;justify-self:start;margin-bottom:3px;padding:1px 8px;border-radius:10px;font-style:normal;font-size:calc(11px*var(--hk-fs,1));background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}
       .actpanel .actrow{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center;padding:12px 16px}@media (min-width:760px){.actpanel .actrow{grid-template-columns:minmax(0,1fr) auto}}.actpanel .actrow .actctl{justify-content:flex-start}.actfold{display:flex;align-items:center;gap:6px;width:100%;border:0;border-top:1px solid var(--hk-border);text-align:left;cursor:pointer;font:inherit;font-size:calc(11.5px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}.actfold ha-icon{--mdc-icon-size:18px}.actpanel .actblock .finding{padding:8px 0;border-top:0}.fcopt{margin:12px 0;padding:12px 14px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-card)}.fcopt .markform{padding:0}.fcopt .statusform{padding:0}.fcchecklist{margin:6px 0 8px;padding-left:20px;display:grid;gap:6px}.dtabs{display:inline-flex;border:1px solid var(--hk-border);border-radius:10px;overflow:hidden;margin:0 0 12px}.dtabs button{border:0;background:var(--hk-card);padding:7px 18px;font:inherit;color:var(--hk-muted);cursor:pointer}.dtabs button+button{border-left:1px solid var(--hk-border)}.dtabs button.on{background:var(--hk-soft);color:var(--hk-text);font-weight:600}.fixsteps{display:flex;gap:6px;flex-wrap:wrap}.fixstep{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--hk-border);border-radius:999px;background:var(--hk-card);color:var(--hk-muted);font:inherit;cursor:pointer}.fixstep b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1))}.fixstep.past b{background:var(--hk-green-soft,var(--hk-soft));color:var(--hk-green,inherit)}.fixstep.on{border-color:var(--hk-blue);color:var(--hk-text);font-weight:600}.fixstep.on b{background:var(--hk-blue);color:#fff}.fixstep:disabled{opacity:.5;cursor:default}.fixrec{padding:4px 14px 2px;border-left:3px solid var(--hk-blue)}.fixmore{padding:0 14px}.fixmore summary{cursor:pointer;padding:10px 0;color:var(--hk-muted)}.fixexits{padding:8px 14px 12px}.fixexits .fceyebrow{display:block;margin:4px 0 8px}.fixexits .mbtns{display:flex;flex-wrap:wrap;gap:8px}.fixobjways{margin:8px 14px 12px}.fixrating{padding:0 14px 12px}.fcways{margin:12px 0 12px;padding:6px 14px 10px;border:1px solid var(--hk-blue);border-radius:12px}.fcways .fceyebrow{display:block;margin:4px 0 2px}.fcway{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--hk-border)}.fcways .fceyebrow+.fcway{border-top:0}.fcway .fctxt{display:grid;gap:2px}.fcway small{color:var(--hk-muted)}.fcii-mute{background:var(--hk-soft);color:var(--hk-muted)}.fcplan{border-color:var(--hk-blue)}.fcplanbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}.fcplan h3{margin:2px 0 8px}.fcplanrows{list-style:none;margin:0 0 8px;padding:0;display:grid}.fcplanrows li{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--hk-border)}.fcplanrows li:first-child{border-top:0}.fcplanrows small{color:var(--hk-muted)}
       .fccard.fixcard .pad{padding:18px 20px}.fixcard h3{margin:4px 0 12px}.fixbody>.fixrec,.fixbody>.fixmore,.fixbody>.fixexits,.fixbody>.fixrating{padding-left:0;padding-right:0}.fixbody>.fixobjways{margin-left:0;margin-right:0}.fixbody>:last-child{margin-bottom:0}.fixsub{margin:20px 0 8px;font-size:calc(14px*var(--hk-fs,1));font-weight:600}.fixinfo{margin:0;height:auto}.fixinfo .fcirow{grid-template-columns:24px 110px minmax(0,1fr) 0;height:auto;min-height:40px;padding:9px 0;align-items:start}.fixinfo .fcirow>span:nth-child(3){white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.fixinfo .fcirow small{display:block;margin-top:2px;color:var(--hk-muted)}@media(max-width:600px){.fixinfo .fcirow{grid-template-columns:24px minmax(0,1fr)}.fixinfo .fcirow>span:nth-child(3){grid-column:2}}.fcstep:disabled{opacity:.5;cursor:default}
-      .startint{display:grid;grid-template-columns:minmax(0,1fr) 110px 80px 90px;gap:6px 12px;align-items:center;font-size:13px;padding:5px 0;border-top:1px solid var(--hk-border)}.startname{display:flex;flex-direction:column;min-width:0}.startint b{font-weight:500;text-align:right}
+      .startint{display:grid;grid-template-columns:minmax(0,2fr) 110px 70px minmax(120px,1.3fr) minmax(80px,1fr);gap:6px 12px;align-items:center;font-size:13px;padding:6px 0;border-top:1px solid var(--hk-border)}.startint .sysshare{min-width:0}.startint.link{cursor:pointer;border-radius:6px}.startint.link:hover{background:var(--hk-surface)}.startint.link:focus-visible{outline:2px solid var(--hk-blue);outline-offset:0}.startint small{font-size:calc(11.5px*var(--hk-fs,1))}@media(max-width:700px){.startint{grid-template-columns:minmax(0,1fr) auto auto}.startint>:nth-child(4),.startint>:nth-child(5){display:none}}.startname{display:flex;flex-direction:column;min-width:0}.startint b{font-weight:500;text-align:right}
       ${this.themeCss()}
 .acttools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.actsearch{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.actday{margin:14px 16px 4px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.actlist{list-style:none;margin:0;padding:0 16px}.actrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--hk-border)}.acttext{flex:1;min-width:0}.acttext small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.actrow time{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
 .fcinfo{margin:10px 0 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);height:140px;box-sizing:border-box;padding:0 12px;overflow:hidden}.fcirow{display:grid;grid-template-columns:24px 92px minmax(0,1fr) 16px;gap:10px;align-items:center;width:100%;height:34px;margin:0;padding:0;border:0;border-top:1px solid var(--hk-border);background:none;color:inherit;font:inherit;font-size:calc(13px*var(--hk-fs,1));text-align:left}.fcinfo>:first-child{border-top:0}.fcinfo.hasrec{height:auto;padding-bottom:6px}@media(max-width:600px){.fcirow.fcirec{grid-template-columns:24px minmax(0,1fr);row-gap:2px}.fcirow.fcirec>span:nth-child(3){grid-column:2}.fcirow.fcirec>i{display:none}}.fcirow>span:nth-child(2){color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase}.fcirow>span:nth-child(3){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fcirow>ha-icon{--mdc-icon-size:16px;color:var(--hk-muted);opacity:.45}.fcii{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%}.fcii ha-icon{--mdc-icon-size:15px}.fcii-blue{background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}.fcii-amber{background:color-mix(in srgb,var(--hk-amber) 18%,transparent);color:var(--hk-amber)}.fcii-red{background:color-mix(in srgb,var(--hk-red) 14%,transparent);color:var(--hk-red)}.fcii-green{background:color-mix(in srgb,var(--hk-green) 16%,transparent);color:var(--hk-green-text,var(--hk-green))}.fcipill{display:inline-block;padding:1px 10px;border-radius:99px;background:color-mix(in srgb,var(--hk-green) 14%,transparent);color:var(--hk-green-text,var(--hk-green));font-size:calc(12px*var(--hk-fs,1))}button.fcirow{cursor:pointer}button.fcirow:hover,button.fcirow:focus-visible{background:var(--hk-soft)}button.fcirow:hover>ha-icon,button.fcirow:focus-visible>ha-icon{opacity:1}.fcino{color:var(--hk-muted)}.fciok{color:var(--hk-green-text,var(--hk-green))}.fcwhat{height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle{min-height:56px}.fctitle h3,.fctitle .fcid{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle>div:last-child{min-width:0}
@@ -16793,32 +16793,40 @@ Object.assign(TEXT.de, {
   startsTileLoaded: "bis alles geladen {x}", startsTileNone: "Wird beim nächsten Start gemessen.", startsTileCap: "letzte {n} Starts · Schnitt {avg}",
   startsBuilding: "Der Verlauf entsteht mit weiteren Starts.",
   startsEmpty: "Noch kein Start gemessen. Der erste erscheint, wenn Home Assistant das nächste Mal gestartet und die Anlaufphase vorbei ist.",
-  startColAt: "Start", startColTotal: "Gesamt", startColLoaded: "Alles geladen", startColSlowest: "Langsamste Integration", startColShare: "Anteil",
+  startColAt: "Start", startColTotal: "Gesamt", startColLoaded: "Alles geladen", startColSlowest: "Langsamste Integration", startColShare: "Im Vergleich",
   startsCrash: "nach Absturz", startsCrashHint: "Der Start davor hat sich nie abgemeldet: Absturz, Stromausfall oder beendeter Prozess.", startsDown: "{x} aus", startsDownHint: "So lange war Home Assistant vor diesem Start aus (vom letzten Lebenszeichen an).", startsUnit_s: "s", startsUnit_m: "Min.", startsUnit_h: "Std.", startsUnit_d: "Tage",
   startsUpdate: "nach Update", startsUpdateHint: "Die Version von Home Assistant war eine andere als beim Start davor.",
   startsFromHk: "ab Housekeeper", startsFromHkHint: "Der Beginn des Prozesses ließ sich nicht lesen; die Zeit zählt ab dem Einrichten von Housekeeper und ist deshalb kürzer als der ganze Start.",
   startsOpen: "Integrationen dieses Starts zeigen", startsClose: "Integrationen dieses Starts verbergen",
+  startsLoadingHint: "Beim Speichern dieses Starts war die Einrichtung noch nicht fertig; die Zeit ist ein Mindestwert.",
+  startsEntries: "{n} Einträge", startsOwn: "eigene", startsOwnHint: "Eigene Integration, nicht von Home Assistant mitgeliefert.", startsOpenObject: "Öffnet die Seite dieser Integration",
+  startsVsMore: "{x} langsamer als üblich", startsVsLess: "{x} schneller als üblich", startsVsSame: "wie üblich", startsVsSlow: "wie üblich langsam",
+  startsVsAvg: "Schnitt der letzten {n} Starts: {x}", startsVsNone: "Zu wenige frühere Starts zum Vergleichen.",
   startsHaVersion: "Home Assistant {v}", startsDetailHead: "Einrichtung je Integration, langsamste zuerst",
   startsMore: "{n} weitere unter einer Sekunde", startsNoItems: "Für diesen Start liegen keine Zeiten je Integration vor.",
   startState_loaded: "geladen", startState_setup_error: "Fehler", startState_setup_retry: "Wiederholung", startState_not_loaded: "nicht geladen",
   startState_migration_error: "Fehler", startState_failed_unload: "Fehler", startState_setup_in_progress: "lädt",
-  startsNote: "Die Zeit je Integration misst Home Assistant selbst, vom Beginn bis zum Ende ihrer Einrichtung. Integrationen starten gleichzeitig; die Zeiten ergeben deshalb nicht die Dauer des Starts. „Alles geladen“ ist der Moment, in dem keine Integration mehr geladen hat. Aufgenommen wird ein Start, wenn die Anlaufphase vorbei ist.",
+  startsNote: "Der Balken vergleicht in der Tabelle mit dem längsten Start, in der Liste mit der langsamsten Integration dieses Starts. Die Zeit je Integration misst Home Assistant selbst, vom Beginn bis zum Ende ihrer Einrichtung. Integrationen starten gleichzeitig; die Zeiten ergeben deshalb nicht die Dauer des Starts. „Alles geladen“ ist der Moment, in dem keine Integration mehr geladen hat. Aufgenommen wird ein Start, wenn die Anlaufphase vorbei ist.",
 });
 Object.assign(TEXT.en, {
   sysByStarts: "Starts", sysHeadStarts: "Earlier starts", sysTileStart: "Last start", startsMin: "min",
   startsTileLoaded: "everything loaded after {x}", startsTileNone: "Measured at the next start.", startsTileCap: "last {n} starts · average {avg}",
   startsBuilding: "The line appears with more starts.",
   startsEmpty: "No start measured yet. The first one appears after Home Assistant has started the next time and the warm-up is over.",
-  startColAt: "Start", startColTotal: "Total", startColLoaded: "All loaded", startColSlowest: "Slowest integration", startColShare: "Share",
+  startColAt: "Start", startColTotal: "Total", startColLoaded: "All loaded", startColSlowest: "Slowest integration", startColShare: "Compared",
   startsCrash: "after crash", startsCrashHint: "The start before never signed off: a crash, a power cut or a killed process.", startsDown: "{x} down", startsDownHint: "How long Home Assistant was down before this start (from its last sign of life).", startsUnit_s: "s", startsUnit_m: "min", startsUnit_h: "h", startsUnit_d: "days",
   startsUpdate: "after update", startsUpdateHint: "The version of Home Assistant was a different one than at the start before.",
   startsFromHk: "from Housekeeper", startsFromHkHint: "The start of the process could not be read; the time counts from the set-up of Housekeeper and is therefore shorter than the whole start.",
   startsOpen: "Show the integrations of this start", startsClose: "Hide the integrations of this start",
+  startsLoadingHint: "The set-up was not finished when this start was saved; the time is a minimum.",
+  startsEntries: "{n} entries", startsOwn: "custom", startsOwnHint: "A custom integration, not shipped with Home Assistant.", startsOpenObject: "Opens the page of this integration",
+  startsVsMore: "{x} slower than usual", startsVsLess: "{x} faster than usual", startsVsSame: "as usual", startsVsSlow: "as usual, and slow",
+  startsVsAvg: "Average of the last {n} starts: {x}", startsVsNone: "Too few earlier starts to compare with.",
   startsHaVersion: "Home Assistant {v}", startsDetailHead: "Set-up per integration, slowest first",
   startsMore: "{n} more under a second", startsNoItems: "There are no times per integration for this start.",
   startState_loaded: "loaded", startState_setup_error: "Error", startState_setup_retry: "Retrying", startState_not_loaded: "not loaded",
   startState_migration_error: "Error", startState_failed_unload: "Error", startState_setup_in_progress: "loading",
-  startsNote: "Home Assistant itself measures the time per integration, from the beginning to the end of its set-up. Integrations start at the same time, so the times do not add up to the length of the start. \"All loaded\" is the moment no integration was loading any more. A start is recorded when the warm-up is over.",
+  startsNote: "The bar compares with the longest start in the table, and with the slowest integration of this start in the list. Home Assistant itself measures the time per integration, from the beginning to the end of its set-up. Integrations start at the same time, so the times do not add up to the length of the start. \"All loaded\" is the moment no integration was loading any more. A start is recorded when the warm-up is over.",
 });
 
 class StartsMixin {
@@ -16883,7 +16891,38 @@ class StartsMixin {
     if (!item.state) return `<span class="muted">–</span>`;
     const key = `startState_${item.state}`, text = this.t(key);
     const tone = item.state === "loaded" ? "ok" : item.state === "setup_retry" ? "warn" : item.state === "not_loaded" || item.state === "setup_in_progress" ? "mute" : "red";
-    return `<span class="pill ${tone}">${this.esc(text === key ? item.state : text)}</span>`;
+    const hint = item.state === "setup_in_progress" ? ` title="${this.esc(this.t("startsLoadingHint"))}"` : "";
+    return `<span class="pill ${tone}"${hint}>${this.esc(text === key ? item.state : text)}</span>`;
+  }
+
+  // What an integration usually needs: the average of its set-up in up to five earlier starts; null under two.
+  startUsual(start, item) {
+    const list = this.startList(), older = list.slice(list.indexOf(start) + 1, list.indexOf(start) + 6);
+    const times = older.map(o => (o.items || []).find(i => i.domain === item.domain)).filter(Boolean).map(i => i.seconds);
+    return times.length < 2 ? null : { avg: times.reduce((a, b) => a + b, 0) / times.length, n: times.length };
+  }
+
+  // The set-up of one integration against its usual time, as words.
+  startCompare(start, item) {
+    const usual = this.startUsual(start, item);
+    if (!usual) return `<span class="muted" title="${this.esc(this.t("startsVsNone"))}">–</span>`;
+    const delta = item.seconds - usual.avg, edge = Math.max(5, usual.avg * 0.25);
+    const [tone, text] = delta >= edge ? ["warn", this.t("startsVsMore", { x: this.startSeconds(delta) })]
+      : delta <= -edge ? ["ok", this.t("startsVsLess", { x: this.startSeconds(-delta) })]
+      : ["mute", this.t(usual.avg >= 30 ? "startsVsSlow" : "startsVsSame")];
+    const hint = this.t("startsVsAvg", { n: this.formatNumber(usual.n), x: this.startSeconds(usual.avg) });
+    return `<span class="pill ${tone}" title="${this.esc(hint)}">${this.esc(text)}</span>`;
+  }
+
+  // One integration of a start: name (a link to its page where the scan knows it), entries, origin, reason, state, time.
+  startRow(start, i, max, known) {
+    const group = known.get(i.domain);
+    const link = group ? ` data-object="${this.esc(`integration:${i.domain}`)}" tabindex="0" role="button" title="${this.esc(this.t("startsOpenObject"))}"` : "";
+    const sub = [i.title ? i.domain : "", i.entries > 1 ? this.t("startsEntries", { n: this.formatNumber(i.entries) }) : ""].filter(Boolean).map(x => this.esc(x)).join(" · ");
+    const own = group?.custom ? ` <span class="pill mute" title="${this.esc(this.t("startsOwnHint"))}">${this.t("startsOwn")}</span>` : "";
+    const reason = i.reason ? `<small class="muted cut" title="${this.esc(i.reason)}">${this.esc(i.reason)}</small>` : "";
+    const name = `<span class="startname"><strong class="cut">${this.esc(this.startName(i))}${own}</strong>${sub ? `<span class="id cut">${sub}</span>` : ""}${reason}</span>`;
+    return `<div class="startint${group ? " link" : ""}"${link}>${name}<span>${this.startState(i)}</span><b>${this.esc(this.startSeconds(i.seconds))}</b><span>${this.startCompare(start, i)}</span>${this.sysShare(i.seconds, max)}</div>`;
   }
 
   // The integrations of one start: those that took a second or more, and every one that did not load.
@@ -16892,7 +16931,8 @@ class StartsMixin {
     const items = start.items || [];
     const shown = items.filter(i => i.seconds >= 1 || (i.state && !["loaded", "not_loaded"].includes(i.state)));
     const max = Math.max(0, ...shown.map(i => i.seconds));
-    const rows = shown.map(i => `<div class="startint"><span class="startname"><strong class="cut">${this.esc(this.startName(i))}</strong>${i.title ? `<span class="id cut">${this.esc(i.domain)}</span>` : ""}</span><span>${this.startState(i)}</span><b>${this.esc(this.startSeconds(i.seconds))}</b>${this.sysShare(i.seconds, max)}</div>`).join("");
+    const known = new Map(this.compIntegrations().map(g => [g.domain, g]));
+    const rows = shown.map(i => this.startRow(start, i, max, known)).join("");
     const rest = items.length - shown.length;
     const body = shown.length ? `<div class="sectionlabel">${this.t("startsDetailHead")}</div>${rows}${rest > 0 ? `<p class="factnote">${this.t("startsMore", { n: this.formatNumber(rest) })}</p>` : ""}` : `<p class="factnote">${this.t("startsNoItems")}</p>`;
     return `<tr class="static remhist"><td colspan="5">${body}</td></tr>`;
@@ -21181,6 +21221,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.click) el.click(); else el.onclick?.();
     };
     root.querySelectorAll("tr[data-object], g[data-graph]").forEach(openByKey);
+    root.querySelectorAll("div.startint[data-object]").forEach(openByKey);
     root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit], tr[data-inc-row], tr[data-bh-row]").forEach(openByKey);
     root.querySelectorAll("g[data-graph-group]").forEach(openByKey);
     root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
