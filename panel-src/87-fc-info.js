@@ -1,6 +1,10 @@
 // FcInfoMixin: the block "Why is this here?" of a card of the cleanup. Four rows with fixed labels and a fixed height, so
 // the answers of every card stand in the same place; a row with nothing to say reads "No information". A row with a
 // detail page behind it opens that tab of the object (the band on top leads back to the cleanup).
+const FC_INFO_LOOK = {
+  duration: ["clock-outline", "blue"], state: ["pulse", "amber"], links: ["link-variant", "blue"], impact: ["eye-off-outline", "green"],
+  pattern: ["chart-timeline-variant", "amber"], often: ["repeat", "red"], mean: ["clock-outline", "blue"], hides: ["eye-off-outline", "green"],
+};
 class FcInfoMixin {
   // The first of the wanted tabs the object has, else its overview.
   fcTabFor(item, key, wanted) {
@@ -46,7 +50,8 @@ class FcInfoMixin {
 
   fcInfoHtml(list, key) {
     const rows = list.map(r => {
-      const text = `<span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${this.esc(r.text)}</span>`;
+      const look = FC_INFO_LOOK[r.id] || FC_INFO_LOOK.duration, pill = !r.empty && (r.id === "impact" || r.id === "hides");
+      const text = `<span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${pill ? `<span class="fcipill">${this.esc(r.text)}</span>` : this.esc(r.text)}</span>`;
       return r.tab ? `<button type="button" class="fcirow" data-fc-info="${this.esc(`${key}|${r.tab}`)}" title="${this.esc(r.text)}" aria-label="${this.esc(`${r.label}: ${r.text}`)}">${text}<ha-icon icon="mdi:chevron-right"></ha-icon></button>` : `<div class="fcirow static">${text}<i></i></div>`;
     }).join("");
     return `<div class="fcinfo" role="group" aria-label="${this.esc(this.t("fcInfoTitle"))}">${rows}</div>`;
