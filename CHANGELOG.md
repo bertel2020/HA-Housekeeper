@@ -30,6 +30,7 @@
   - „Ist so gewollt“ ohne Frist bekommt einmalig 90 Tage; ein Hinweis erklärt das. Bei kritischen Objekten ist eine Frist Pflicht.
   - Die Daten bleiben lesbar: Wer auf 1.x zurückgeht, verliert nur die neuen Felder.
   - „Ausgeblendet“ heißt „Fehlalarm“ (die Regel irrt sich); der Reiter „Ausgeblendet“ heißt „Nicht gezeigt“ und sammelt alles, was gerade nicht erscheint.
+  - Die Ausnahmen haben eine eigene Seite unter „Betrieb“ mit den Reitern Ausnahmeregeln, Urlaubsmodus, Befunde und Objekte; Seitenleiste und Übersicht zählen, was zu prüfen ist.
   - Bei den Ausnahmeregeln heißt „Ausblenden“ jetzt „Nicht melden“. Es hat ein Prüfdatum (30 bis 365 Tage, 180 vorgewählt); danach wirkt die Regel weiter und steht als „zu prüfen“ in der Liste und auf der Übersicht. Auf eine ganze Domain braucht es einen Grund.
   - Die Labels heißen in der Liste „Nicht anfassen“ (`housekeeper_keep`), „Ganz ausnehmen“ (`housekeeper_ignore`, auch Ausfälle werden nicht mehr gemeldet) und „Kritisch“; die Namen in Home Assistant bleiben.
   - „Vermerk“ heißt „Objekt-Notiz“, „Nicht entfernen“ heißt „Nicht anfassen“. Bei „Ist so gewollt“ und „Fehlalarm“ füllt eine Auswahl den Grund vor; „Ist so gewollt“ schlägt 365 Tage vor.
@@ -71,6 +72,7 @@
   - “Intended” without a time gets 90 days once; a note explains it. A critical object needs a time.
   - The data stay readable: going back to 1.x loses only the new fields.
   - “Hidden” is now “False alarm” (the rule is wrong); the tab “Hidden” is now “Not shown” and collects everything that is not shown right now.
+  - The exceptions have a page of their own under “Operation” with the tabs Exception rules, Vacation mode, Findings and Objects; the sidebar and the overview count what is to review.
   - In the exception rules “Ausblenden” is now “Do not report”. It has a review date (30 to 365 days, 180 preselected); after it the rule keeps working and shows as “to review” in the list and on the overview. For a whole domain it needs a reason.
   - The labels are called “Do not touch” (`housekeeper_keep`), “Leave out completely” (`housekeeper_ignore`, outages are not reported either) and “Critical” in the list; the names in Home Assistant stay.
   - “Vermerk” (mark) is now “Object note” and “Do not remove” is now “Do not touch”. For “Intended” and “False alarm” a choice fills in the reason; “Intended” proposes 365 days.
