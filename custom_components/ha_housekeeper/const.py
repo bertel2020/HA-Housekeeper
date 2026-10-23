@@ -35,6 +35,7 @@ SIGNALS_STORAGE_KEY: Final = f"{DOMAIN}.signals"
 ENTRY_STATES_STORAGE_KEY: Final = f"{DOMAIN}.entry_states"
 REMINDERS_STORAGE_KEY: Final = f"{DOMAIN}.reminders"
 NOTES_STORAGE_KEY: Final = f"{DOMAIN}.notes"
+ACTIVITY_STORAGE_KEY: Final = f"{DOMAIN}.activity"
 BATTERY_STORAGE_KEY: Final = f"{DOMAIN}.batteries"
 WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"  # removed feature: the file is deleted on start
 NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"

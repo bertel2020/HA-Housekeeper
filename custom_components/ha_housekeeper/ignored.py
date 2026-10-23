@@ -166,6 +166,10 @@ class IgnoreStore:
         self._save()
         return True
 
+    def entries(self) -> dict[str, dict[str, Any]]:
+        """Copies of all stored decisions, for the activity record."""
+        return {key: dict(entry) for key, entry in self._items.items()}
+
     def entry(self, key: str) -> dict[str, Any] | None:
         """A copy of the stored decision, whether it holds or has run out; None if there is none."""
         return dict(self._items[key]) if key in self._items else None

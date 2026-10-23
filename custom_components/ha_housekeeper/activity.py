@@ -1,0 +1,225 @@
+"""The activity: what was done in Housekeeper, when, by whom and why, for all kinds of action.
+
+Decisions on findings, marks, plans, logbook entries and what happened by itself all write one
+entry here through ``record``; the records of the single features stay as they are (they hold the
+state), this one only appends. The newest entries within a count and an age are kept. Entries that
+were taken over from the older records (``backfilled``) have no undo.
+"""
+
+from __future__ import annotations
+
+import secrets
+from datetime import datetime, timedelta
+from typing import Any, Final
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
+
+from .const import ACTIVITY_STORAGE_KEY, STORAGE_VERSION
+
+SAVE_DELAY = 10
+KINDS: Final = ("decision", "mark", "plan", "note", "auto")
+ITEM_LIMIT: Final = 2000
+KEEP_DAYS: Final = 365
+TEXT_LIMIT: Final = 300
+PAGE_LIMIT: Final = 100
+SOURCES: Final = ("cleanup", "list", "plan", "mcp", "system")
+UNDO_KINDS: Final = ("ignore", "mark", "plan")  # what an undo reference can point at
+
+
+def _text(value: Any, limit: int = TEXT_LIMIT) -> str | None:
+    return value.strip()[:limit] or None if isinstance(value, str) else None
+
+
+def _clean(value: Any) -> dict[str, Any] | None:
+    """One entry in its known shape, or None."""
+    if not isinstance(value, dict):
+        return None
+    entry_id, at, action = (
+        _text(value.get("id"), 40),
+        _text(value.get("at"), 40),
+        _text(value.get("action"), 40),
+    )
+    if not entry_id or not at or not action or value.get("kind") not in KINDS:
+        return None
+    undo = value.get("undo")
+    return {
+        "id": entry_id,
+        "at": at,
+        "kind": value["kind"],
+        "action": action,
+        "key": _text(value.get("key")),
+        "name": _text(value.get("name")),
+        "reason": _text(value.get("reason")),
+        "until": _text(value.get("until"), 40),
+        "by": _text(value.get("by"), 80),
+        "source": value["source"] if value.get("source") in SOURCES else None,
+        "undo": {"type": undo["type"], "key": _text(undo.get("key")) or ""}
+        if isinstance(undo, dict) and undo.get("type") in UNDO_KINDS
+        else None,
+        "backfilled": value.get("backfilled") is True,
+    }
+
+
+class ActivityStore:
+    """The append-only record of what was done."""
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, ACTIVITY_STORAGE_KEY)
+        self._items: list[dict[str, Any]] = []  # newest first
+        self._backfilled = False
+
+    async def async_load(self) -> None:
+        """Load the entries; anything of an unknown shape is dropped."""
+        data = await self._store.async_load()
+        if not isinstance(data, dict):
+            return
+        items = data.get("items")
+        cleaned = [e for item in items if (e := _clean(item))] if isinstance(items, list) else []
+        self._items = sorted(cleaned, key=lambda e: e["at"], reverse=True)[:ITEM_LIMIT]
+        self._backfilled = data.get("backfilled") is True
+
+    def _save(self) -> None:
+        self._store.async_delay_save(
+            lambda: {"items": self._items, "backfilled": self._backfilled}, SAVE_DELAY
+        )
+
+    def record(
+        self,
+        kind: str,
+        action: str,
+        now: datetime,
+        *,
+        key: str | None = None,
+        name: str | None = None,
+        reason: str | None = None,
+        until: str | None = None,
+        by: str | None = None,
+        source: str | None = None,
+        undo: dict[str, str] | None = None,
+    ) -> None:
+        """Append one entry; an unknown kind is dropped."""
+        entry = _clean(
+            {
+                "id": secrets.token_hex(6),
+                "at": now.isoformat(),
+                "kind": kind,
+                "action": action,
+                "key": key,
+                "name": name,
+                "reason": reason,
+                "until": until,
+                "by": by,
+                "source": source,
+                "undo": undo,
+            }
+        )
+        if entry is None:
+            return
+        self._items.insert(0, entry)
+        self._trim(now)
+        self._save()
+
+    def _trim(self, now: datetime) -> None:
+        cutoff = (now - timedelta(days=KEEP_DAYS)).isoformat()
+        self._items = [e for e in self._items[:ITEM_LIMIT] if e["at"] >= cutoff]
+
+    def backfill(
+        self,
+        decisions: dict[str, dict[str, Any]],
+        marks: dict[str, dict[str, Any]],
+        notes: list[dict[str, Any]],
+        plans: list[dict[str, Any]],
+    ) -> None:
+        """Once: take over what the older records know, without undo."""
+        if self._backfilled:
+            return
+        rows: list[dict[str, Any]] = []
+        for key, entry in decisions.items():
+            rows.append(
+                {
+                    "kind": "decision",
+                    "action": entry.get("kind"),
+                    "key": key,
+                    "at": entry.get("at"),
+                    "reason": entry.get("reason"),
+                    "until": entry.get("until"),
+                    "by": entry.get("by"),
+                    "source": "mcp" if entry.get("via") == "mcp" else None,
+                }
+            )
+        for key, entry in marks.items():
+            rows.append(
+                {
+                    "kind": "mark",
+                    "action": entry.get("kind"),
+                    "key": key,
+                    "at": entry.get("at"),
+                    "name": entry.get("target"),
+                    "reason": entry.get("reason"),
+                    "until": entry.get("until"),
+                    "by": entry.get("by"),
+                    "source": "mcp" if entry.get("via") == "mcp" else None,
+                }
+            )
+        for note in notes:
+            rows.append(
+                {
+                    "kind": "note",
+                    "action": "note",
+                    "key": note.get("target"),
+                    "at": note.get("at"),
+                    "name": note.get("title"),
+                    "reason": note.get("note"),
+                }
+            )
+        for plan in plans:
+            if plan.get("executed"):
+                rows.append(
+                    {
+                        "kind": "plan",
+                        "action": plan.get("status") or "executed",
+                        "key": plan.get("plan_id"),
+                        "at": (plan.get("run") or {}).get("finished_at") or plan.get("created_at"),
+                        "source": "plan",
+                    }
+                )
+        known = {e["id"] for e in self._items}
+        for row in rows:
+            entry = _clean({**row, "id": f"b{secrets.token_hex(5)}", "backfilled": True})
+            if entry and entry["id"] not in known:
+                self._items.append(entry)
+        self._items.sort(key=lambda e: e["at"], reverse=True)
+        del self._items[ITEM_LIMIT:]
+        self._backfilled = True
+        self._save()
+
+    def view(
+        self,
+        kinds: tuple[str, ...] | None = None,
+        query: str = "",
+        before: str | None = None,
+        limit: int = 50,
+    ) -> dict[str, Any]:
+        """A page of entries, newest first; ``next`` is the cursor for the page after it (or None)."""
+        needle = query.strip().casefold()
+        rows = [
+            e
+            for e in self._items
+            if (not kinds or e["kind"] in kinds)
+            and (before is None or e["at"] < before)
+            and (
+                not needle
+                or needle
+                in " ".join(
+                    str(e.get(f) or "") for f in ("key", "name", "reason", "by", "action")
+                ).casefold()
+            )
+        ]
+        limit = max(1, min(limit, PAGE_LIMIT))
+        page = rows[:limit]
+        return {
+            "items": [dict(e) for e in page],
+            "next": page[-1]["at"] if len(rows) > limit else None,
+            "total": len(rows),
+        }

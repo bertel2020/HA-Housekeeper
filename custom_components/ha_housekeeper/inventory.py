@@ -26,6 +26,7 @@ from homeassistant.loader import IntegrationNotFound, async_get_integration, asy
 from homeassistant.util import dt as dt_util
 
 from . import followup
+from .activity import ActivityStore
 from .app_links import app_edges, stopped_app_findings
 from .automation_analysis import (
     is_concrete_id,
@@ -917,6 +918,7 @@ STORE_NAMES = (
     "monitor",
     "runs",
     "config_changes",
+    "activity",
 )
 
 
@@ -961,6 +963,7 @@ class InventoryScanner:
         self.health = ScanHealth(hass)
         self.reminders = ReminderStore(hass)
         self.notes = NoteStore(hass)
+        self.activity = ActivityStore(hass)
         self.batteries = BatteryStore(hass)
         self.notify = NotifyStore(hass)
         self.hints = HintStore(hass)
@@ -1052,6 +1055,12 @@ class InventoryScanner:
                 # One unreadable file must not take the whole integration down; that part starts empty.
                 _LOGGER.exception("The saved data of %s could not be read, starting it empty", name)
                 self.load_failures.append(name)
+        try:
+            self.activity.backfill(
+                self.ignored.entries(), self.marks.items, self.notes.items, self.journal.plans()
+            )
+        except Exception:
+            _LOGGER.exception("The earlier decisions could not be put into the activity")
         # Features that were removed leave a file behind that is of no use any more.
         for key in (WINDOW_STORAGE_KEY, PREFLIGHT_STORAGE_KEY):
             try:
