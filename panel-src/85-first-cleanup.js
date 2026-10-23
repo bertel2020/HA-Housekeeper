@@ -457,7 +457,8 @@ class FirstCleanupMixin {
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
     else body = look ? this.findingsView() : this.fcCards(n);
     const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : "fcToCards")}</button>` : "";
-    const next = count
+    const seen = count && !look && (n === 1 || n === 3) && !this.fcUnits(n).length;
+    const next = count && !seen
       ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
       : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
     const menu = `<details class="rowmenu fcmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-fc-history="1"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcHistory")}</button><button type="button" class="menuitem" data-fc-exit><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("fcExit")}</button><button type="button" class="menuitem" data-fc-reset><ha-icon icon="mdi:restart"></ha-icon>${this.t("fcReset")}</button></div></details>`;
