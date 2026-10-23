@@ -37,13 +37,13 @@ class FixMixin {
   async loadFixWays(key) {
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/fix_ways", finding_key: key });
-      if (this.fixKey === key) { this.fixWays = reply?.ways || []; if (this.view === "fix") this.render(); }
-    } catch (_) { if (this.fixKey === key) { this.fixWays = []; if (this.view === "fix") this.render(); } }
+      if (this.fixKey === key) { this.fixWays = reply?.ways || []; if (["fix", "firstcleanup"].includes(this.view)) this.render(); }
+    } catch (_) { if (this.fixKey === key) { this.fixWays = []; if (["fix", "firstcleanup"].includes(this.view)) this.render(); } }
     const finding = this.data?.findings?.find(x => x.key === key);
     if (finding?.topic !== "failing_automations") return;
     try {
       const info = await this._hass.callWS({ type: "ha_housekeeper/failure_info", finding_key: key });
-      if (this.fixKey === key) { this.fixFailure = info || {}; if (this.view === "fix") this.render(); }
+      if (this.fixKey === key) { this.fixFailure = info || {}; if (["fix", "firstcleanup"].includes(this.view)) this.render(); }
     } catch (_) { /* the last run is a convenience; the ways stand without it */ }
   }
 

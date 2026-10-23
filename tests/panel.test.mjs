@@ -7290,3 +7290,30 @@ test("one block decides a finding: the tabs Status and Mark lead from one form t
   el.openDecide("k1", "keep");
   assert.equal(el.markForm, null, "the status form takes the place of the mark form");
 });
+
+test("the cards of the cleanup open the answers with their reason and days, for all findings of a card, and log what was done", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return {}; } };
+  el.reloadAfterDecision = async () => {};
+  el.render = () => {};
+  el.fc = { later_days: 60, state: { stage: 3, done: [], log: [] }, stages: { 1: [], 2: [], 3: ["a", "b"], 4: [], 5: [] } };
+  el.fcWiz = { step: 3, on: true };
+  const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact: "low", ignored: false });
+  el.data = { ...DATA, findings: [f("a"), f("b")] };
+  el.fcOpen(["a", "b"], "keep");
+  assert.equal(el.decide.reason, "Confirmed as intended in the cleanup");
+  assert.equal(el.decide.days, 90);
+  el.decideKindSet("snooze");
+  assert.equal(el.decide.days, 60, "Later takes the days of the cleanup");
+  assert.equal(el.decide.reason, "Put off in the cleanup", "the standard reason follows the kind");
+  el.decide.reason = "my reason"; el.decideKindSet("ignore");
+  assert.equal(el.decide.reason, "my reason", "a written reason stays");
+  el.decide.kind = "keep"; el.decide.days = 30;
+  await el.commitDecide();
+  const sent = calls.filter(c => c.type === "ha_housekeeper/ignore");
+  assert.equal(JSON.stringify(sent.map(c => [c.finding_key, c.reason, c.days, c.source])), JSON.stringify([["a", "my reason", 30, "cleanup"], ["b", "my reason", 30, "cleanup"]]));
+  const log = el.fcLogGet();
+  assert.equal(log.length, 1);
+  assert.equal(JSON.stringify([log[0].action, log[0].n, log[0].keys]), JSON.stringify(["keep", 2, ["a", "b"]]));
+});

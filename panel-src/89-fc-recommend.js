@@ -93,9 +93,12 @@ class FcRecommendMixin {
   fcFixWays(key, obj) {
     if (!obj || this.fcFixOpen !== key || this.fcPlanKey) return "";
     const items = this.fixItems(obj, key).items;
-    const rows = items.map(it => this.fcWayRow(it, key)).join("");
+    // The ways of the finding itself (replace the target, remove the reference, catch the error), as on the page Fix.
+    const finding = this.data?.findings?.find(x => x.key === this.fixKey && (this.findingKey(x) === key || this.ownerKey(x) === key));
+    const own = finding && this.fixWays ? this.fixWays.filter(w => w.kind !== "panel" && w.way !== "mark").map(w => this.fixWayCard(w, finding)).join("") : "";
+    const rows = items.map(it => this.fcWayRow(it, key)).join("") + own;
     const object = `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:open-in-new"></ha-icon></span><span class="fctxt"><strong>${this.t("fcFixObject")}</strong><small>${this.t("fcFixObjectHint")}</small></span><button type="button" class="btn quiet" data-fc-object="${this.esc(key)}">${this.t("actOpen")}</button></div>`;
-    return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${object}${items.length ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
+    return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${object}${rows ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
   }
 
   // A way that Housekeeper can run on its own is judged in the card: the preview, one click to run it, the check afterwards.

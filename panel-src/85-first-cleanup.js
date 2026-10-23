@@ -205,7 +205,7 @@ class FirstCleanupMixin {
   fcEntryLabel(e) {
     if (e.action === "later_all") return this.t("fcLogLaterAll", { n: this.formatNumber(e.n || 0) });
     if (["keep", "later"].includes(e.action) && e.n > 1) return `${this.t(e.action === "keep" ? "fcKeep" : "fcLater")} · ${this.t("fcLogN", { n: this.formatNumber(e.n) })}`;
-    return this.t({ keep: "fcKeep", later: "fcLater", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip", pick: "fcLogPick" }[e.action] || "fcLogSkip");
+    return this.t({ keep: "fcKeep", later: "fcLater", hidden: "fcLogHidden", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip", pick: "fcLogPick" }[e.action] || "fcLogSkip");
   }
 
   // The note under the card after an answer for many findings at once: what was done, with the way back for a few
@@ -233,7 +233,7 @@ class FirstCleanupMixin {
     if (i < 0) return;
     const entry = log[i];
     try {
-      if (entry.action === "keep" || entry.action === "later") {
+      if (["keep", "later", "hidden"].includes(entry.action)) {
         await this.fcLift(entry.keys || [entry.key]);
         if (entry.stage === 4) for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
       } else if (entry.action === "pick") (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
@@ -273,7 +273,9 @@ class FirstCleanupMixin {
   fcFacts() {
     const log = this.fcLogGet(), sum = (...actions) => log.filter(e => actions.includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
     const keep = sum("keep"), later = sum("later", "later_all"), marks = sum("mark"), declined = sum("nothanks");
-    const left = this.fcStaged().length, start = this.fc.state.start_count || 0, findings = keep + later;
+    // Answers of the cards that hide a finding, and the marks set from a card (they stand for findings, not for suggestions of stage 2).
+    const cardMarks = log.filter(e => e.action === "mark" && e.stage !== 2).reduce((c, e) => c + (e.n || 1), 0);
+    const left = this.fcStaged().length, start = this.fc.state.start_count || 0, findings = keep + later + sum("hidden") + cardMarks;
     const picked = new Set(log.filter(e => e.action === "pick").flatMap(e => e.keys || [e.key]));
     const pending = (this.data?.findings || []).filter(f => !f.ignored && picked.has(f.key)).length;
     return { keep, later, marks, declined, findings, done: findings + marks + declined, left, start, pending, fresh: Math.max(0, left - (start - findings)) };
@@ -283,7 +285,7 @@ class FirstCleanupMixin {
   // What the log says about one stage: the answers by kind, as words.
   fcStageParts(n) {
     const mine = this.fcLogGet().filter(e => e.stage === n), sum = (...actions) => mine.filter(e => actions.includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
-    return [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"], [sum("nothanks"), "fcSumDeclined"], [sum("pick"), "fcSumPick"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
+    return [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("hidden"), "fcSumHidden"], [sum("mark"), "fcSumMark"], [sum("nothanks"), "fcSumDeclined"], [sum("pick"), "fcSumPick"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
   }
 
   // The closing page: how it went in three figures, what is still pending, and one list of the stages with their result and what is left.
@@ -394,13 +396,13 @@ class FirstCleanupMixin {
     const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
     const rec = many ? null : this.fcRecCard(f, key);
     const acts = [
-      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix") : "",
+      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix") : "",
       this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green"),
       this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber", rec?.act === "later"),
     ].join("");
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
-    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}<div class="fcacts">${acts}</div>${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}<div class="fcacts">${acts}</div>${this.fcOptBlock(f, keys, key, obj)}${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}${this.fcCanMark(obj) ? `<button type="button" class="btn quiet" data-fc-markopen="${this.esc(key)}" ${kattr}><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>` : ""}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
@@ -422,7 +424,7 @@ class FirstCleanupMixin {
 
   // One card back: the last skip or decision of the stage is taken back, and the card shows once more.
   // The actions of a stage that "Previous" can take back: the answers of the cards, or in stage 2 the marks and refusals.
-  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : n === 4 ? ["keep", "later", "skip", "pick"] : ["keep", "later", "skip"]; }
+  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : n === 4 ? ["keep", "later", "skip", "pick"] : ["keep", "later", "hidden", "mark", "skip"]; }
 
   fcPrevButton(n) {
     const some = this.fcLogGet().some(e => e.stage === n && this.fcPrevActions(n).includes(e.action));
@@ -477,7 +479,55 @@ class FirstCleanupMixin {
     this.confirmAsk(this.t("oftenAllText", { n: this.formatNumber(marks), hides: this.formatNumber(hides) }), () => this.fcTake(keys), { title: this.t("oftenAllTitle"), yes: this.t("oftenTake"), danger: false });
   }
 
-  // "Intended" or "Later" straight from the card; the card of the next finding follows.
+  // "Intended", "Later" or "Hidden" from the card: the form opens under the answers with its reason and days filled in,
+  // and the card of the next finding follows once it is saved.
+  fcOpen(keys, kind) {
+    const list = keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean);
+    if (!list.length) return;
+    this.markForm = null; this.fcMarkCtx = null;
+    this.decide = { key: list[0].key, keys: list.map(x => x.key), fc: true, kind, days: this.fcStatusDays(kind), critical: this.findingCritical(list[0]), reason: this.fcReason(kind), error: "" };
+    this.render();
+  }
+
+  fcStatusDays(kind) { return kind === "snooze" ? this.fc?.later_days || 90 : this.defaultDays(kind); }
+
+  fcReason(kind) { return kind === "keep" ? this.t("fcKeepReason") : kind === "snooze" ? this.t("fcLaterOneReason") : ""; }
+
+  fcCanMark(obj) { return Boolean(obj && MARK_TYPES.includes(obj.object_type) && !obj.mark); }
+
+  // The mark of the object opens in the card, with the tab back to the status.
+  fcMarkOpen(key, keys) {
+    const obj = this.findObject(key);
+    if (!obj) return;
+    this.decide = null;
+    this.fcMarkCtx = { keys, stage: this.fcWiz?.step, name: obj.name || obj.object_id };
+    this.openMark(key);
+  }
+
+  // The form of the card: the status (all three kinds with reason and days) or the mark, with tabs where both are possible.
+  fcOptBlock(f, keys, key, obj) {
+    const d = this.decide, m = this.markForm, t = k => this.t(k);
+    const status = Boolean(d?.fc && keys.includes(d.key)), mark = Boolean(m && m.key === key && this.fcMarkCtx);
+    if (!status && !mark) return "";
+    const kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`;
+    const tabs = this.fcCanMark(obj) ? `<div class="dtabs" role="tablist"><button type="button" class="${status ? "on" : ""}" data-fc-opt="${status ? d.kind : "keep"}" ${kattr}>${t("decideTabStatus")}</button><button type="button" class="${mark ? "on" : ""}" data-fc-markopen="${this.esc(key)}" ${kattr}>${t("decideTabMark")}</button></div>` : "";
+    const body = status
+      ? `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.statusFields(d, "decide")}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div>${d.error ? this.notice("err", t(d.error)) : ""}</form>`
+      : this.markFormHtml(m, m.key);
+    return `<div class="fcopt">${tabs}${body}</div>`;
+  }
+
+  // Open the ways of "Fix": what Housekeeper runs for the object, and the ways of this finding (replace, remove, catch the error).
+  fcFixToggle(key, findingKey) {
+    this.fcFixOpen = this.fcFixOpen === key ? "" : key;
+    if (this.fcFixOpen && findingKey) {
+      this.fixKey = findingKey; this.fixAll = ""; this.fixWays = null; this.fixFailure = null;
+      this.loadFixWays(findingKey);
+    }
+    this.render();
+  }
+
+  // Kept for the callers that decide with the defaults (nothing in the cards any more).
   async fcDecide(keyOrKeys, kind) {
     const keys = [].concat(keyOrKeys), key = keys[0], list = keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), f = list[0];
     if (!f) return;
@@ -540,11 +590,13 @@ class FirstCleanupMixin {
     root.querySelector("[data-fc-next]")?.addEventListener("click", () => this.fcWizNext());
     root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
-    root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "keep"));
-    root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "snooze"));
+    root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), "keep"));
+    root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), "snooze"));
+    root.querySelectorAll("[data-fc-opt]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), el.dataset.fcOpt));
+    root.querySelectorAll("[data-fc-markopen]").forEach(el => el.onclick = () => this.fcMarkOpen(el.dataset.fcMarkopen, this.fcKeysOf(el)));
     this.bindFcInfo(root);
     this.bindFcRound(root);
-    root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { this.fcFixOpen = this.fcFixOpen === el.dataset.fcFix ? "" : el.dataset.fcFix; this.render(); });
+    root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => this.fcFixToggle(el.dataset.fcFix, el.dataset.fcFixf));
     this.bindFcPlan(root);
     root.querySelectorAll("[data-fc-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcObject); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
@@ -598,7 +650,7 @@ Object.assign(TEXT.de, {
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Zeigt die Wege, die zu diesem Objekt passen.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
-  fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
+  fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen", fcLogHidden: "Ausgeblendet", fcSumHidden: "{n} ausgeblendet", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
@@ -636,7 +688,7 @@ Object.assign(TEXT.en, {
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Shows the ways that fit this object.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
-  fcKeepReason: "Confirmed as intended in the cleanup", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
+  fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply", fcLogHidden: "Hidden", fcSumHidden: "{n} hidden", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",

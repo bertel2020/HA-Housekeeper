@@ -486,6 +486,15 @@ class FindingsMixin {
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }
 
+  // Another kind in the form: its days, and in the cleanup its reason too while the person has not written one.
+  decideKindSet(kind) {
+    const d = this.decide, plain = !d.reason || [this.fcReason?.("keep"), this.fcReason?.("snooze")].includes(d.reason);
+    d.kind = kind; d.error = "";
+    d.days = d.fc ? this.fcStatusDays(kind) : this.defaultDays(kind);
+    if (d.fc && plain) d.reason = this.fcReason(kind);
+    this.render();
+  }
+
   openDecide(key, kind = "ignore") { if (this.markForm && this.findingKey(this.data.findings.find(f => f.key === key) || {}) === this.markForm.key && !(this.selected && this.objectKey(this.selected) === this.markForm.key)) this.markForm = null; this.decide = { key, kind, days: this.defaultDays(kind), critical: this.findingCritical(this.data.findings.find(f => f.key === key)), reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
 
   async commitDecide() {
@@ -495,16 +504,25 @@ class FindingsMixin {
     if (d.kind === "snooze" && !Number(d.days)) d.days = 30;
     if (d.kind === "keep" && d.critical && !Number(d.days)) d.days = 90;
     try {
-      const msg = { type: "ha_housekeeper/ignore", finding_key: d.key, ignored: true, kind: d.kind, reason: d.reason.trim() };
-      if (Number(d.days)) msg.days = Number(d.days);
-      await this._hass.callWS(msg);
-      if (d.key.startsWith("policy.")) { this.decide = null; await this.loadPolicies(); return; }  // a policy violation is no finding
-      const finding = this.data.findings.find(f => f.key === d.key);
-      if (finding) {
-        const until = msg.days ? new Date(Date.now() + msg.days * 864e5).toISOString() : null;
-        finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false;
-        finding.ignore_info = { kind: d.kind, reason: msg.reason, until, at: new Date().toISOString() };
-        this._rev++;
+      const keys = d.keys || [d.key], decided = [];
+      for (const key of keys) {
+        const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: d.kind, reason: d.reason.trim(), ...(d.fc ? { source: "cleanup" } : {}) };
+        if (Number(d.days)) msg.days = Number(d.days);
+        await this._hass.callWS(msg);
+        if (key.startsWith("policy.")) { this.decide = null; await this.loadPolicies(); return; }  // a policy violation is no finding
+        const finding = this.data.findings.find(f => f.key === key);
+        if (finding) {
+          const until = msg.days ? new Date(Date.now() + msg.days * 864e5).toISOString() : null;
+          finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false;
+          finding.ignore_info = { kind: d.kind, reason: msg.reason, until, at: new Date().toISOString() };
+          decided.push(finding);
+          this._rev++;
+        }
+      }
+      if (d.fc && decided.length) {
+        const first = decided[0], owner = decided.length > 1 ? this.ownerKey(first) : this.findingKey(first);
+        this.fcNotify(this.fcLogAdd({ stage: this.fcWiz?.step, key: first.key, keys: decided.map(x => x.key), n: decided.length, action: d.kind === "keep" ? "keep" : d.kind === "snooze" ? "later" : "hidden", name: this.findObject(owner)?.name || first.object_id }));
+        if (decided.some(x => x.key === this.fcFocus)) this.fcFocus = "";
       }
       this.decide = null;
       this.render();

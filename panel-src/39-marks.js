@@ -137,6 +137,9 @@ class MarksMixin {
     try {
       await this._hass.callWS(msg);
       this.markForm = null;
+      const ctx = this.fcMarkCtx;
+      this.fcMarkCtx = null;
+      if (ctx) this.fcNotify(this.fcLogAdd({ stage: ctx.stage, key: ctx.keys[0], keys: ctx.keys, targets: [f.key], n: ctx.keys.length, action: "mark", name: ctx.name }));
       await this.refreshData();
     } catch (err) { f.error = this.t("markFailed", { reason: this.errText(err) }); }
     this.render();
@@ -154,7 +157,7 @@ class MarksMixin {
   bindMarks(root) {
     root.querySelectorAll("[data-mark-open]").forEach(el => el.onclick = () => this.openMark(el.dataset.markOpen));
     root.querySelectorAll("[data-mark-clear]").forEach(el => el.onclick = () => this.clearMark(el.dataset.markClear));
-    root.querySelectorAll("[data-mark-cancel]").forEach(el => el.onclick = () => { this.markForm = null; this.render(); });
+    root.querySelectorAll("[data-mark-cancel]").forEach(el => el.onclick = () => { this.markForm = null; this.fcMarkCtx = null; this.render(); });
     root.querySelectorAll("[data-mark-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitMark(); };
       form.querySelector("[data-mark-kind]").onchange = ev => { this.markForm.kind = ev.target.value; this.render(); };
