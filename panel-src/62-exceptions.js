@@ -2,7 +2,7 @@
 Object.assign(TEXT.de, {
   allLabels: "Alle Labels", lblTitle: "Labels", lblHint: "Housekeeper kennt drei feste Labels. Du legst sie in Home Assistant mit genau diesem Namen an und weist sie Objekten zu; Housekeeper erstellt sie nicht selbst.",
   lblOpenHa: "Labels in Home Assistant öffnen", lblCreated: "angelegt", lblMissing: "nicht angelegt", lblNoUse: "an keinem Objekt", lblUse: "an", lblShow: "Objekte anzeigen", lblCopy: "Name kopieren", lblCopied: "Kopiert",
-  lblKind_keep: "Geschützt", lblKind_ignore: "Ignorieren", lblKind_critical: "Kritisch",
+  lblKind_keep: "Nicht anfassen", lblKind_ignore: "Ignorieren", lblKind_critical: "Kritisch",
   lblFx_keep_1: "Sperrt alle Bereinigungsschritte (deaktivieren, entfernen); das Gerät fehlt in „Bereinigen → Geräte deaktivieren“", lblFx_keep_0: "Blendet keine Befunde aus: Ein Ausfall wird weiter gemeldet",
   lblFx_ignore_1: "Blendet die Befunde der Entität, Automation oder des Geräts (samt seiner Entitäten) aus", lblFx_ignore_2: "Nimmt das Objekt aus Richtlinien, Zuverlässigkeit, Ausfallstürmen und Exposition und sperrt Bereinigungsschritte", lblFx_ignore_0: "Auch Ausfälle werden nicht mehr gemeldet",
   lblFx_critical_1: "Das Objekt zählt als wichtig; Ausfälle werden höher eingestuft", lblFx_critical_2: "Bereinigungsschritte müssen einzeln bestätigt werden; wirkt an Entität, Gerät oder Bereich", lblFx_critical_0: "Schlösser, Alarme, Rauch- und Wassermelder sind auch ohne Label kritisch",
@@ -45,7 +45,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   allLabels: "All labels", lblTitle: "Labels", lblHint: "Housekeeper knows three fixed labels. You create them in Home Assistant with exactly this name and assign them to objects; Housekeeper does not create them itself.",
   lblOpenHa: "Open labels in Home Assistant", lblCreated: "created", lblMissing: "not created", lblNoUse: "on no object", lblUse: "on", lblShow: "Show objects", lblCopy: "Copy name", lblCopied: "Copied",
-  lblKind_keep: "Protected", lblKind_ignore: "Ignore", lblKind_critical: "Critical",
+  lblKind_keep: "Do not touch", lblKind_ignore: "Ignore", lblKind_critical: "Critical",
   lblFx_keep_1: "Blocks every cleanup step (disable, remove); the device is missing from “Cleanup → Disable devices”", lblFx_keep_0: "Hides no findings: an outage is still reported",
   lblFx_ignore_1: "Hides the findings of the entity, automation or device (and its entities)", lblFx_ignore_2: "Takes the object out of policies, reliability, outage storms and exposure and blocks cleanup steps", lblFx_ignore_0: "Outages are no longer reported either",
   lblFx_critical_1: "The object counts as important; outages are rated higher", lblFx_critical_2: "Cleanup steps must be confirmed one by one; works on an entity, device or area", lblFx_critical_0: "Locks, alarms, smoke and water sensors are critical without the label too",

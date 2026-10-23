@@ -88,7 +88,7 @@ class RoundMixin {
 }
 Object.assign(TEXT.de, {
   roundTitle: "Aufräum-Runde", roundSubtitle: "Alles Überflüssige auf einmal durchgehen.",
-  roundSafe: "Sicher entfernbar", roundSafeHint: "Nirgends verwendet, ohne Objekt-Notiz „Geschützt“, nicht kritisch. Die Auswahl lässt sich ändern.",
+  roundSafe: "Sicher entfernbar", roundSafeHint: "Nirgends verwendet, ohne Objekt-Notiz „Nicht anfassen“, nicht kritisch. Die Auswahl lässt sich ändern.",
   roundLook: "Erst ansehen", roundLookHint: "Verwendet, nur ein erster Schritt (erst deaktivieren) oder ein mögliches Duplikat: jedes einzeln entscheiden.",
   roundBlocked: "Jetzt nicht entfernbar", roundBlockedHint: "Der Plan würde es sperren. Du kannst es behalten.",
   roundRemove: "Entfernen", roundDelete: "Löschen", roundDisable: "Deaktivieren", roundMerge: "Zusammenführen", roundKeep: "Behalten", roundPickAll: "Alle wählen",
@@ -98,7 +98,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   roundTitle: "Cleanup round", roundSubtitle: "Go through everything unneeded at once.",
-  roundSafe: "Safe to remove", roundSafeHint: "Used nowhere, without the object note “Protected”, not critical. The selection can be changed.",
+  roundSafe: "Safe to remove", roundSafeHint: "Used nowhere, without the object note “Do not touch”, not critical. The selection can be changed.",
   roundLook: "Look first", roundLookHint: "Used, only a first step (disable first) or a possible duplicate: decide each one on its own.",
   roundBlocked: "Not removable now", roundBlockedHint: "The plan would block it. You can keep it.",
   roundRemove: "Remove", roundDelete: "Delete", roundDisable: "Disable", roundMerge: "Merge", roundKeep: "Keep", roundPickAll: "Pick all",

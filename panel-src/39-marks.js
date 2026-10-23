@@ -3,21 +3,21 @@ Object.assign(TEXT.de, {
   decideTabStatus: "Status", decideTabMark: "Objekt-Notiz",
   markTitle: "Objekt-Notiz", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
   markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
-  mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Geschützt", mark_replaced: "Wird ersetzt",
+  mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht anfassen", mark_replaced: "Wird ersetzt",
   markWindowKind: "Wann gilt die Objekt-Notiz", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Objekt-Notiz gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
-  markHiddenHint: "Ausgeblendet durch eine Objekt-Notiz am Objekt.", reason_marked_keep: "Trägt eine Objekt-Notiz, die das Aufräumen ausschließt, oder das Label housekeeper_keep.",
+  markHiddenHint: "Ausgeblendet durch eine Objekt-Notiz am Objekt.", markScopeHint: "Gilt für das Objekt und künftige Ausfälle. Für einen einzelnen Befund: Ist so gewollt.", markEffect_expected_offline: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_seasonal: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_spare: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_replaced: "Blendet den Ausfall aus; das Objekt darf später aufgeräumt werden.", markEffect_keep: "Der Ausfall wird weiter gemeldet. Housekeeper schlägt das Objekt nie zum Aufräumen vor.", reason_marked_keep: "Trägt eine Objekt-Notiz, die das Aufräumen ausschließt, oder das Label housekeeper_keep.",
 });
 Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
   markTitle: "Object note", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
   markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
-  mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Protected", mark_replaced: "Being replaced",
+  mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not touch", mark_replaced: "Being replaced",
   markWindowKind: "When the object note applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Object note does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
-  markHiddenHint: "Hidden by an object note on the object.", reason_marked_keep: "Carries an object note that rules out cleanup, or the label housekeeper_keep.",
+  markHiddenHint: "Hidden by an object note on the object.", markScopeHint: "Applies to the object and future outages. For a single finding: Intended.", markEffect_expected_offline: "Hides the outage and keeps cleanup away at the same time.", markEffect_seasonal: "Hides the outage and keeps cleanup away at the same time.", markEffect_spare: "Hides the outage and keeps cleanup away at the same time.", markEffect_replaced: "Hides the outage; the object may be cleaned up later.", markEffect_keep: "The outage is still reported. Housekeeper never proposes the object for cleanup.", reason_marked_keep: "Carries an object note that rules out cleanup, or the label housekeeper_keep.",
 });
 
 class MarksMixin {
@@ -54,6 +54,7 @@ class MarksMixin {
       + (windowed ? field("markGrace", `<select data-mark-grace>${graces}</select>`) : "")
       + field("markReview", `<select data-mark-days>${days}</select>`);
     return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>
+        <small class="factnote">${this.t(`markEffect_${f.kind}`)} ${this.t("markScopeHint")}</small>
         ${windowed ? `<small class="factnote">${this.t("markWindowHint")}</small>` : ""}${noSun ? `${this.notice("err", this.t("markNoSun"))}` : ""}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
         <div class="mbtns"><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div></form>`;
@@ -92,7 +93,7 @@ class MarksMixin {
 
   openMark(key) {
     const item = this.findObject(key), mark = item?.mark;
-    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: 0, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30 };
+    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: mark ? 0 : 365, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30 };
     this.render();
     this.shadowRoot?.querySelector?.("[data-mark-kind]")?.focus?.();
   }

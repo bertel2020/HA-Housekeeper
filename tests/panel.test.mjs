@@ -4696,6 +4696,15 @@ test("the export started from a detail page returns to that page", () => {
   el.selected = null; el.xpOpen(); assert.ok(!shadow.innerHTML.includes("data-xp-return"));
 });
 
+test("a new object note proposes a review in 365 days and says what its kind does", () => {
+  const { el } = panel("en");
+  el.openMark("entity:sensor.new");
+  assert.equal(el.markForm.days, 365);
+  const html = el.markFormHtml({ ...el.markForm, kind: "keep" }, "entity:sensor.new");
+  assert.ok(html.includes("Do not touch") && html.includes("still reported") && html.includes("single finding"));
+  assert.ok(el.markFormHtml({ ...el.markForm, kind: "spare" }, "entity:sensor.new").includes("keeps cleanup away"));
+});
+
 test("the mark is a row of the Actions tab and a line of what is known, no longer a card under the dependencies", () => {
   const { el } = panel("en");
   const item = { object_type: "entity", object_id: "sensor.m", name: "M", status: "unavailable", state: "unavailable", mark: { kind: "seasonal", reason: "winter", until: "2026-12-12T00:00:00+00:00" } };

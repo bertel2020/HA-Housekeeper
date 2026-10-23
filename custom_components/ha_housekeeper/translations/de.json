@@ -335,7 +335,7 @@
     },
     "mark": {
       "name": "KI-Zugriff: Objekt-Notiz setzen",
-      "description": "Sagt Housekeeper, was bei einem Objekt zu erwarten ist (absichtlich offline, saisonal, Reserve, geschützt, ersetzt), oder nimmt die Objekt-Notiz weg. Nur Housekeepers eigene Liste ändert sich; die Änderung lässt sich zurücknehmen. Braucht „KI-Zugriff aktivieren“ und „Merkliste ändern“.",
+      "description": "Sagt Housekeeper, was bei einem Objekt zu erwarten ist (absichtlich offline, saisonal, Reserve, nicht anfassen, ersetzt), oder nimmt die Objekt-Notiz weg. Nur Housekeepers eigene Liste ändert sich; die Änderung lässt sich zurücknehmen. Braucht „KI-Zugriff aktivieren“ und „Merkliste ändern“.",
       "fields": {
         "action": {
           "name": "Aktion",
