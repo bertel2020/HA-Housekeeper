@@ -15,7 +15,12 @@
   - Der letzte Fehler einer Automation aus dem Ablaufprotokoll, die Aufräum-Runde für alles Überflüssige und „Jetzt ansehen“ zum Nachprüfen.
   - „In Arbeit“ merkt, was jemand angefangen hat, ohne etwas auszublenden.
   - Geändert wird nur über einen Plan mit Vorschau und Bestätigung.
-- **Aufräumen:** Ab 50 offenen Befunden führt ein Durchgang in fünf Etappen durch die Liste, vom Wichtigsten bis zum ruhigen Rest, der gesammelt auf „Später“ gelegt werden kann. Der Stand gilt fürs ganze Haus.
+- **Aufräumen:** Ab 50 offenen Befunden führt ein geführter Rundgang in fünf Etappen durch die Liste, vom Wichtigsten bis zum ruhigen Rest. Der Stand gilt fürs ganze Haus.
+  - Eine Karte je Befund (bei Etappe 3 je Objekt) mit Link zum Objekt und seinen Folgen; „Beheben“ öffnet die Seite, ein Band führt zurück.
+  - „Ist so gewollt“, „Später erinnern“, „Vorheriger“, „Überspringen“ und „Als Liste ansehen“ je Karte.
+  - Jede Antwort lässt sich gleich oder über den Verlauf zurücknehmen; Pause und Zurücksetzen im Menü.
+  - Der Schluss zeigt, was offen bleibt, mit Weg dorthin, und wann Zurückgestelltes wiederkommt.
+  - Der Rest in Etappe 5 kann gesammelt auf „Später“ gelegt werden.
 - **KI-Zugriff:** Neue Dienste `finding_fix_options` (lesend) und `finding_fix_plan` hinter dem neuen Schalter „Befunde beheben“ (standardmäßig aus). Der Plan ist nur eine Vorschau, bestätigen kann ihn nur ein Administrator im Panel. Befunde lassen sich nach Thema filtern; der kopierbare Anweisungstext ist angepasst.
 
 ### Geändert
@@ -46,7 +51,12 @@
   - The last error of an automation from the run log, the cleanup round for everything unneeded, and “Look now” to check.
   - “In work” remembers what someone has started, without hiding anything.
   - Anything is changed only through a plan with preview and confirmation.
-- **Cleanup:** From 50 open findings a walk-through in five stages goes through the list, from the most important to the quiet rest, which can be put off together to “Later”. The state is for the whole house.
+- **Cleanup:** From 50 open findings a guided tour in five stages goes through the list, from the most important to the quiet rest. The state is for the whole house.
+  - One card per finding (per object in stage 3) with a link to the object and its follow-ups; “Fix” opens the page, a band leads back.
+  - “Intended”, “Remind me later”, “Previous”, “Skip” and “View as list” on each card.
+  - Every answer can be taken back at once or through the history; pause and reset are in the menu.
+  - The end shows what stays open, with a way to it, and when what was put off comes back.
+  - The rest in stage 5 can be put off together to “Later”.
 - **AI access:** New services `finding_fix_options` (read) and `finding_fix_plan` behind the new switch “Fix findings” (off by default). The plan is only a preview that only an administrator can confirm in the panel. Findings can be filtered by topic; the copyable instruction is updated.
 
 #### Changed
