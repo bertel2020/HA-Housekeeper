@@ -169,6 +169,7 @@ class FirstCleanupMixin {
 
   fcEntryLabel(e) {
     if (e.action === "later_all") return this.t("fcLogLaterAll", { n: this.formatNumber(e.n || 0) });
+    if (["keep", "later"].includes(e.action) && e.n > 1) return `${this.t(e.action === "keep" ? "fcKeep" : "fcLater")} · ${this.t("fcLogN", { n: this.formatNumber(e.n) })}`;
     return this.t({ keep: "fcKeep", later: "fcLater", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip" }[e.action] || "fcLogSkip");
   }
 
@@ -194,7 +195,7 @@ class FirstCleanupMixin {
     if (i < 0) return;
     const entry = log[i];
     try {
-      if (entry.action === "keep" || entry.action === "later") await this.fcLift([entry.key]);
+      if (entry.action === "keep" || entry.action === "later") await this.fcLift(entry.keys || [entry.key]);
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") {
         for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); }
@@ -218,7 +219,13 @@ class FirstCleanupMixin {
     } catch (_) { /* no storage */ }
   }
 
-  fcSkipped(n) { return new Set(this.fcLogGet().filter(e => e.stage === n && e.action === "skip").map(e => e.key)); }
+  // The keys a card button stands for: all findings of the card, or the one named by the button.
+  fcKeysOf(el) {
+    try { const keys = JSON.parse(el.dataset.keys || "null"); if (Array.isArray(keys) && keys.length) return keys; } catch (_) { /* one key */ }
+    return [el.dataset.fcKeep || el.dataset.fcSnooze || el.dataset.fcSkipcard];
+  }
+
+  fcSkipped(n) { return new Set(this.fcLogGet().filter(e => e.stage === n && e.action === "skip").flatMap(e => e.keys || [e.key])); }
 
   fcSummaryRows() {
     const log = this.fcLogGet();
@@ -281,6 +288,15 @@ class FirstCleanupMixin {
       .sort((a, b) => (n === 1 ? this.fcFollowers(b) - this.fcFollowers(a) : 0) || this.impactScore(b) - this.impactScore(a) || a.key.localeCompare(b.key));
   }
 
+  // The cards of a stage: the findings of one object are one card (stage 3), so one answer covers them all.
+  fcUnits(n) {
+    const queue = this.fcQueue(n);
+    if (n !== 3) return queue.map(f => [f]);
+    const groups = new Map();
+    for (const f of queue) { const owner = this.ownerKey(f); (groups.get(owner) || groups.set(owner, []).get(owner)).push(f); }
+    return [...groups.values()];
+  }
+
   // "3 of 19": the total is what the stage held when it was first seen; every decision and every skip moves on.
   fcPosition(n, left) {
     const total = (this.fcTotal ||= {});
@@ -295,20 +311,26 @@ class FirstCleanupMixin {
 
   // The cards of stage 1 and 3: one finding at a time with the three answers and what each one does.
   fcCards(n) {
-    const queue = this.fcQueue(n), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
+    const units = this.fcUnits(n), queue = units, listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const prevBtn = `<button type="button" class="btn" data-fc-prev ${this.fcLogGet().some(e => e.stage === n && ["keep", "later", "skip"].includes(e.action)) ? "" : "disabled"} title="${this.esc(this.t("fcPrevHint"))}"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcPrev")}</button>`;
     if (!queue.length) {
       const rest = this.stageCount(n);
       return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div><div class="pad mbtns">${prevBtn}${rest ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}` : ""}</div></section>`;
     }
-    const f = (this.fcFocus && queue.find(x => x.key === this.fcFocus)) || queue[0], key = this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
+    const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), facts = [this.impactLine(f), f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : ""].filter(Boolean);
     const acts = [
       obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), true) : "",
-      this.fcAct(`data-fc-keep="${this.esc(f.key)}"`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") })),
-      this.fcAct(`data-fc-snooze="${this.esc(f.key)}"`, this.t("fcLater"), this.t("fcLaterHint", { days })),
+      this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") })),
+      this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days })),
     ].join("");
-    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id)}</h3><small class="fcid">${this.esc(f.object_id)}</small><p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong></p><p class="fcfacts">${this.esc(facts.join(" · "))}</p>${this.fcFollowList(f, follows)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id)}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small>${many ? this.fcGroupList(unit) : `<p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong></p>`}<p class="fcfacts">${this.esc(facts.join(" · "))}</p>${this.fcFollowList(f, follows)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+  }
+
+  // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
+  fcGroupList(unit) {
+    const rows = unit.map(x => `<li>${this.esc(this.findingTitle(x))}${this.findingKey(x) !== this.ownerKey(x) && this.findObject(this.findingKey(x)) ? ` <small>${this.esc(this.findObject(this.findingKey(x)).name)}</small>` : ""}</li>`).join("");
+    return `<p class="fcwhat"><strong>${this.t("fcGroupHead", { n: this.formatNumber(unit.length) })}</strong></p><ul class="fcgroup">${rows}</ul><p class="fcfacts">${this.t("fcGroupNote")}</p>`;
   }
 
   // The findings that hang on this one, each a link to its object.
@@ -364,17 +386,20 @@ class FirstCleanupMixin {
   }
 
   // "Intended" or "Later" straight from the card; the card of the next finding follows.
-  async fcDecide(key, kind) {
-    const f = this.data.findings.find(x => x.key === key);
+  async fcDecide(keyOrKeys, kind) {
+    const keys = [].concat(keyOrKeys), key = keys[0], list = keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), f = list[0];
     if (!f) return;
     const days = kind === "snooze" ? (this.fc?.later_days || 90) : this.defaultDays("keep"), reason = this.t(kind === "snooze" ? "fcLaterOneReason" : "fcKeepReason");
     try {
-      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason, days });
-      f.ignored = true; f.ignored_by = "user"; f.resurfaced = false;
-      f.ignore_info = { kind, reason, until: new Date(Date.now() + days * 864e5).toISOString(), at: new Date().toISOString() };
-      this._rev++;
-      this.fcNotify(this.fcLogAdd({ stage: this.fcWiz?.step, key, action: kind === "keep" ? "keep" : "later", name: this.findObject(this.findingKey(f))?.name || f.object_id }));
-      if (this.fcFocus === key) this.fcFocus = "";
+      for (const x of list) {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: x.key, ignored: true, kind, reason, days });
+        x.ignored = true; x.ignored_by = "user"; x.resurfaced = false;
+        x.ignore_info = { kind, reason, until: new Date(Date.now() + days * 864e5).toISOString(), at: new Date().toISOString() };
+        this._rev++;
+      }
+      const owner = list.length > 1 ? this.ownerKey(f) : this.findingKey(f);
+      this.fcNotify(this.fcLogAdd({ stage: this.fcWiz?.step, key, keys: list.map(x => x.key), n: list.length, action: kind === "keep" ? "keep" : "later", name: this.findObject(owner)?.name || f.object_id }));
+      if (list.some(x => x.key === this.fcFocus)) this.fcFocus = "";
       this.render();
       await this.reloadAfterDecision();
       return;
@@ -420,12 +445,13 @@ class FirstCleanupMixin {
     root.querySelector("[data-fc-next]")?.addEventListener("click", () => this.fcWizNext());
     root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
-    root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(el.dataset.fcKeep, "keep"));
-    root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(el.dataset.fcSnooze, "snooze"));
+    root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "keep"));
+    root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "snooze"));
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
-      this.fcLogAdd({ stage: this.fcWiz.step, key: el.dataset.fcSkipcard, action: "skip" });
-      if (this.fcFocus === el.dataset.fcSkipcard) this.fcFocus = "";
+      const keys = this.fcKeysOf(el);
+      this.fcLogAdd({ stage: this.fcWiz.step, key: keys[0], keys, action: "skip" });
+      if (keys.includes(this.fcFocus)) this.fcFocus = "";
       this.render();
     });
     root.querySelector("[data-fc-again]")?.addEventListener("click", () => { this.fcLog = this.fcLogGet().filter(e => !(e.stage === this.fcWiz.step && e.action === "skip")); this.fcLogSave(); this.render(); });
@@ -467,7 +493,7 @@ Object.assign(TEXT.de, {
   fcNextTip: "Neue Befunde erscheinen unter „Neu“. Schau in etwa 30 Tagen noch einmal in den Rundgang.", fcSumTitle: "Übersicht pro Etappe",
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
-  fcKeepReason: "Im ersten Aufräumen als gewollt bestätigt", fcLaterOneReason: "Im ersten Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
+  fcKeepReason: "Im ersten Aufräumen als gewollt bestätigt", fcLaterOneReason: "Im ersten Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
@@ -500,7 +526,7 @@ Object.assign(TEXT.en, {
   fcNextTip: "New findings show up under “New”. Go through the tour once more in about 30 days.", fcSumTitle: "Overview per stage",
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
-  fcKeepReason: "Confirmed as intended in the first cleanup", fcLaterOneReason: "Put off in the first cleanup", fcSkipCard: "Skip", fcAsList: "View as list", fcToCards: "Back to the cards",
+  fcKeepReason: "Confirmed as intended in the first cleanup", fcLaterOneReason: "Put off in the first cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",

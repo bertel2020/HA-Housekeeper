@@ -6980,3 +6980,23 @@ test("a decided list shows only its findings, not the outages that explain nothi
   el.findingStatus = "";
   assert.ok(el.findingsView().includes('data-fold="og:config_entry:z"'));
 });
+
+test("the first cleanup shows the findings of one object as one card and answers them together", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const fc = { state: { started_at: "2026-10-22T08:00:00+00:00", start_count: 3, stage: 3, done: [], finished_at: null }, offered: false, open: 3, later_days: 90, stages: { 1: [], 2: [], 3: ["a", "b", "c"], 4: [], 5: [] } };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return fc; } };
+  const f = (key, object_id) => ({ key, rule_id: "entity.unused", object_id, classification: "unused", impact: "medium", ignored: false });
+  el.data = { ...DATA, findings: [f("a", "sensor.x"), f("b", "sensor.x"), f("c", "sensor.y")] };
+  el.refreshData = async () => {}; el.reloadAfterDecision = async () => {}; el.render = () => {};
+  el.fc = fc; el.view = "firstcleanup";
+  el.fcWiz = { step: 3, look: false, on: true };
+  assert.equal(JSON.stringify(el.fcUnits(3).map(u => u.map(x => x.key))), '[["a","b"],["c"]]', "findings of one object are one card");
+  const html = el.wizardView();
+  assert.ok(html.includes("2 findings on this object") && html.includes("1 of 2"));
+  await el.fcDecide(["a", "b"], "keep");
+  assert.equal(calls.filter(c => c.type.endsWith("/ignore")).length, 2);
+  assert.ok(el.data.findings.slice(0, 2).every(x => x.ignored) && el.fcLogGet().length === 1 && el.fcLogGet()[0].n === 2);
+  await el.fcUndo(el.fcToast.id);
+  assert.ok(el.data.findings.every(x => !x.ignored), "one step back lifts both");
+});
