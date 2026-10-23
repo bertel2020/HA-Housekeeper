@@ -401,7 +401,8 @@ class FirstCleanupMixin {
     const chosen = this.decide?.fc ? this.decide.kind : this.markForm && this.fcMarkCtx ? "mark" : this.fcFixOpen === key ? "fix" : "";
     const opt = k => `data-fc-opt="${k}" ${kattr}`;
     const acts = [
-      obj && this.fcFixable(f, key) ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix", chosen === "fix") : "",
+      obj && this.fcFixable(f, key) ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix", chosen === "fix")
+        : obj && OUTAGE_RULES.includes(f.rule_id) ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcCheck"), this.t("fcCheckHint"), false, "mdi:clipboard-check-outline", "blue", false, chosen === "fix") : "",
       this.fcAct(opt("keep"), this.t("fcKeep"), this.t("fcKeepHint"), false, "mdi:check-circle-outline", "green", false, chosen === "keep"),
       this.fcAct(opt("snooze"), this.t("fcLater"), this.t("fcLaterHint"), false, "mdi:clock-outline", "amber", rec?.act === "later", chosen === "snooze"),
       this.fcAct(opt("ignore"), this.t("decideKind_ignore"), this.t("fcIgnoreHint"), false, "mdi:eye-off-outline", "", false, chosen === "ignore"),
@@ -600,6 +601,7 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
     root.querySelectorAll("[data-fc-opt]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), el.dataset.fcOpt));
+    root.querySelectorAll("[data-fc-looknow]").forEach(el => el.onclick = () => this.fcLookNow(el.dataset.fcLooknow));
     root.querySelectorAll("[data-fc-markopen]").forEach(el => el.onclick = () => this.fcMarkOpen(el.dataset.fcMarkopen, this.fcKeysOf(el)));
     this.bindFcInfo(root);
     this.bindFcRound(root);

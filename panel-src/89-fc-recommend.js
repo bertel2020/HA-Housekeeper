@@ -21,6 +21,8 @@ Object.assign(TEXT.de, {
   fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
   fcFixWaysHead: "Wege zum Beheben",
   fcPlanPreview: "Vorschau", fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
+  fcCheck: "Prüfen", fcCheckHint: "Strom, Netz und Hersteller ansehen, dann prüft Housekeeper, ob es wieder meldet.", fcCheckHead: "Das Gerät prüfen",
+  fcCheck1: "Strom und Netzwerk des Geräts prüfen: ist es eingeschaltet und im WLAN?", fcCheck2: "Beim Hersteller oder in dessen App nachsehen, ob eine Störung gemeldet ist.", fcCheck3: "Hängt das Gerät an einer Integration, kann ein Neuladen helfen: Einstellungen → Geräte & Dienste.", fcCheckThen: "Danach schaut Housekeeper noch einmal nach. Den Befund schließt erst der nächste Scan.",
   fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt ein Vermerk den Ausfall samt Folgen still.",
   fcRecNoFixLong: "Seit {span} aus, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk; sonst sieh nach dem Gerät.",
   fcRecNoFixNoSince: "Seit wann es besteht, ist nicht bekannt, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk.",
@@ -45,6 +47,8 @@ Object.assign(TEXT.en, {
   fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
   fcFixWaysHead: "Ways to fix it",
   fcPlanPreview: "Preview", fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
+  fcCheck: "Check", fcCheckHint: "Look at power, network and the maker, then Housekeeper checks whether it reports again.", fcCheckHead: "Check the device",
+  fcCheck1: "Check the power and network of the device: is it on and on the Wi-Fi?", fcCheck2: "Look at the maker or its app for a reported fault.", fcCheck3: "If the device belongs to an integration, reloading it can help: Settings → Devices & services.", fcCheckThen: "Afterwards Housekeeper looks once more. Only the next scan closes the finding.",
   fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, a mark silences the outage with everything that follows.",
   fcRecNoFixLong: "Down for {span}, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits; otherwise look at the device.",
   fcRecNoFixNoSince: "It is not known since when this has been the case, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits.",
@@ -116,7 +120,22 @@ class FcRecommendMixin {
     const finding = this.data?.findings?.find(x => x.key === this.fixKey && (this.findingKey(x) === key || this.ownerKey(x) === key));
     const own = finding && this.fixWays ? this.fixWays.filter(w => w.kind !== "panel" && w.way !== "mark").map(w => this.fixWayCard(w, finding)).join("") : "";
     const rows = items.map(it => this.fcWayRow(it, key)).join("") + own;
+    if (finding && !this.fcFixable(finding, key)) return this.fcCheckBlock(finding, rows);
     return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${rows ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
+  }
+
+  // What the person can do for an outage Housekeeper cannot repair: look at the device, then let Housekeeper look again.
+  fcCheckBlock(finding, rows) {
+    const t = k => this.t(k), seen = this.fcCheck?.key === finding.key ? this.fcCheck.result : null;
+    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: this.esc(seen.detail || "") })) : this.notice("info", t("fixLiveUnknown"));
+    return `<div class="fcways"><small class="fceyebrow">${t("fcCheckHead")}</small><ol class="fcchecklist"><li>${t("fcCheck1")}</li><li>${t("fcCheck2")}</li><li>${t("fcCheck3")}</li></ol><p class="fcfacts">${t("fcCheckThen")}</p>${verdict}<div class="fcplanbtns"><button type="button" class="btn primary" data-fc-looknow="${this.esc(finding.key)}"><ha-icon icon="mdi:magnify"></ha-icon>${t("fixLookNow")}</button></div>${rows}</div>`;
+  }
+
+  async fcLookNow(key) {
+    let result;
+    try { result = await this._hass.callWS({ type: "ha_housekeeper/fix_check", finding_key: key }); } catch (_) { result = { result: "unknown", detail: "" }; }
+    this.fcCheck = { key, result };
+    this.render();
   }
 
   // A way that Housekeeper can run on its own is judged in the card: the preview, one click to run it, the check afterwards.

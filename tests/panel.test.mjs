@@ -7321,3 +7321,22 @@ test("the cards of the cleanup open the answers with their reason and days, for 
   assert.equal(log.length, 1);
   assert.equal(JSON.stringify([log[0].action, log[0].n, log[0].keys]), JSON.stringify(["keep", 2, ["a", "b"]]));
 });
+
+test("an offline device has a tile Check with what to look at and a look now, and no tile Fix", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type.endsWith("/fix_check") ? { result: "open", detail: "unavailable" } : {}; } };
+  el.render = () => {};
+  const f = { key: "k1", rule_id: "device.down", object_id: "d", classification: "unavailable", topic: "down", impact: "low", ignored: false, first_detected_at: new Date(Date.now() - 9 * 3600000).toISOString(), confidence: 0.9 };
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d", name: "Echo" }], causes: [], findings: [f] };
+  el.fc = { later_days: 90, state: { stage: 3, done: [], log: [], start_count: 1 }, stages: { 1: [], 2: [], 3: ["k1"], 4: [], 5: [] } };
+  el.fcWiz = { step: 3, on: true };
+  let html = el.fcCards(3);
+  assert.ok(html.includes("Check</strong>") && !html.includes("Fix</strong>") && html.includes('data-fc-opt="keep"'), "Check instead of Fix");
+  el.fcFixToggle("device:d", "k1");
+  html = el.fcCards(3);
+  assert.ok(html.includes("data-fc-looknow") && html.includes("Check the device") && !html.includes("data-fc-object"));
+  await el.fcLookNow("k1");
+  assert.ok(calls.some(c => c.type === "ha_housekeeper/fix_check" && c.finding_key === "k1"));
+  assert.ok(el.fcCards(3).includes("Not fixed yet"), "the answer of the look is shown");
+});
