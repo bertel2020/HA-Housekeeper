@@ -7196,5 +7196,20 @@ test("the closing page counts each unit on its own: marking for the plan is no d
   assert.equal(facts.fresh, 2, "9 open now, 10 at the start, 3 answered: 2 came in");
   const html = el.fcFinish();
   assert.ok(html.includes("1 findings are marked and there is no plan yet") && html.includes('data-fc-goto="4"'));
-  assert.ok(html.includes("2 of them new"), "the rise is explained");
+  assert.ok(html.includes("10 at the start, 2 new since"), "the rise is explained");
+});
+
+test("the closing page names its state in the title and offers the fitting way on", () => {
+  const { el } = panel("en");
+  el.fc = { later_days: 90, state: { started_at: "2026-10-23T08:00:00+00:00", start_count: 2, stage: 5, done: [], finished_at: null, log: [] }, stages: { 1: [], 2: [], 3: ["a", "b"], 4: [], 5: [] } };
+  el._hass = { language: "en", callWS: async () => el.fc };
+  const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact: "medium", ignored: false });
+  el.data = { ...DATA, findings: [f("a"), f("b")], causes: [] };
+  let html = el.fcFinish();
+  assert.ok(html.includes("Nothing decided yet") && html.includes("Start with stage 1") && html.includes("All 2 findings are still open"), "nothing answered: no 'done'");
+  el.fcLogAdd({ stage: 3, action: "keep", key: "x", keys: ["x"], n: 1 });
+  html = el.fcFinish();
+  assert.ok(html.includes("Pass finished") && html.includes("1 intended") && html.includes("data-fc-newround") && !html.includes("Start with stage 1"));
+  el.data = { ...DATA, findings: [], causes: [] }; el.fc = { ...el.fc, stages: { 1: [], 2: [], 3: [], 4: [], 5: [] } };
+  assert.ok(el.fcFinish().includes("All looked at"), "nothing left open");
 });
