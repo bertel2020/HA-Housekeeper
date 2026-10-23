@@ -1975,3 +1975,7 @@ async def test_first_cleanup_puts_the_rest_off_together_and_hides_nothing_else(
     assert reply["result"]["put_off"] == 1
     entry = scanner.ignored.entry("k_quiet")
     assert entry["kind"] == "snooze" and entry["until"] and scanner.ignored.entry("k_loud") is None
+    activity = (await call({"type": "ha_housekeeper/activity", "kinds": ["decision"]}))["result"]
+    assert [(e["key"], e["action"], e["source"]) for e in activity["items"]] == [
+        ("k_quiet", "snooze", "cleanup")
+    ]

@@ -23,6 +23,7 @@ from . import (
     ws_system,
 )
 from . import refactor as refactor_module
+from .activity import KINDS as ACTIVITY_KINDS
 from .audit_report import build_report
 from .automation_delete import preview as preview_automation_delete
 from .backup_cleanup import KEEP_DAYS, KEEP_LAST, MAX_DAYS, MAX_LAST, list_backups
@@ -553,6 +554,41 @@ def websocket_first_cleanup_later(
         "cleanup",
     )
     connection.send_result(msg["id"], {"put_off": done, **_first_cleanup_reply(scanner)})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/activity",
+        vol.Optional("kinds"): [vol.In(ACTIVITY_KINDS)],
+        vol.Optional("query", default=""): vol.All(str, vol.Length(max=100)),
+        vol.Optional("before"): str,
+        vol.Optional("limit", default=50): vol.All(int, vol.Range(min=1, max=100)),
+    }
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_activity(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """What was done, newest first, in pages; the user of an entry is named. Reads only."""
+    page = scanner.activity.view(
+        tuple(msg["kinds"]) if msg.get("kinds") else None,
+        msg["query"],
+        msg.get("before"),
+        msg["limit"],
+    )
+    names: dict[str, str | None] = {}
+    for item in page["items"]:
+        user_id = item.get("by")
+        if user_id and user_id not in names:
+            user = await hass.auth.async_get_user(user_id)
+            names[user_id] = user.name if user else None
+        item["by_name"] = names.get(user_id) if user_id else None
+    connection.send_result(msg["id"], page)
 
 
 @websocket_api.require_admin
@@ -1537,6 +1573,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_first_cleanup)
     websocket_api.async_register_command(hass, websocket_first_cleanup_set)
     websocket_api.async_register_command(hass, websocket_first_cleanup_later)
+    websocket_api.async_register_command(hass, websocket_activity)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
     websocket_api.async_register_command(hass, websocket_fix_check)
