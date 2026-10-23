@@ -8997,6 +8997,16 @@ class MarksMixin {
     return [this.actRow(`${this.esc(this.t("markTitle"))}: ${this.esc(this.t(`mark_${mark.kind}`))}`, `${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}`, `<button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("markClear")}</button>`)];
   }
 
+  // The form opens where the button is (under the row of the finding); only where no row can hold it, the page of the object does.
+  async openMarkHere(key) {
+    const obj = this.findObject(key);
+    if (!obj) return;
+    if (this.decide && this.findingKey(this.data.findings.find(x => x.key === this.decide.key) || {}) === key) this.decide = null;
+    this.openMark(key);
+    if (this.shadowRoot?.querySelector?.("[data-mark-form]")) return;
+    this._pendingTab = "actions"; await this.openObject(obj); this.openMark(key);
+  }
+
   openMark(key) {
     const item = this.findObject(key), mark = item?.mark;
     this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: 0, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30 };
@@ -9577,7 +9587,14 @@ class CausesMixin {
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${about ? `${about}<hr class="menusep">` : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
   }
 
-  rowDecide(f) { return f && this.decide && this.decide.key === f.key ? `<div class="pad">${this.decideForm(f)}</div>` : ""; }
+  rowDecide(f) {
+    if (!f) return "";
+    if (this.decide && this.decide.key === f.key) return `<div class="pad">${this.decideForm(f)}</div>`;
+    // The mark of the object opens under its first open finding, unless its own page shows the form.
+    const m = this.markForm;
+    if (!m || this.selected && this.objectKey(this.selected) === m.key || this.findingKey(f) !== m.key) return "";
+    return (this.data.findings.find(x => this.findingKey(x) === m.key) || f).key === f.key ? this.markFormHtml(m, m.key) : "";
+  }
 
   causeEntry(c) {
     const total = this.causeTotal(c), link = `${c.object_type}:${c.object_id}`;
@@ -20935,7 +20952,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-levels-go]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.noteJump("settings"); this.settingsTab = "scan"; this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     this.bindOften(root);
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
-    root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); const obj = this.findObject(el.dataset.watchMark); if (!obj) return; this._pendingTab = "actions"; await this.openObject(obj); this.openMark(el.dataset.watchMark); });
+    root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); await this.openMarkHere(el.dataset.watchMark); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
     // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.
     const decSel = () => (this.decSel ||= new Set());

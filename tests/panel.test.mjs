@@ -7256,3 +7256,18 @@ test("the closing page names its state in the title and offers the fitting way o
   el.data = { ...DATA, findings: [], causes: [] }; el.fc = { ...el.fc, stages: { 1: [], 2: [], 3: [], 4: [], 5: [] } };
   assert.ok(el.fcFinish().includes("All looked at"), "nothing left open");
 });
+
+test("a mark opens under the first finding of its object, and the page of the object only where no row can hold it", async () => {
+  const { el } = panel("en");
+  const f = (key, rule) => ({ key, rule_id: rule, object_id: "d1", classification: "problem", topic: "down", confidence: 0.9 });
+  const a = f("k1", "device.down"), b = f("k2", "device.down");
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d1", name: "Lamp" }], findings: [a, b] };
+  el.render = () => {};
+  let opened = false;
+  el.openObject = async () => { opened = true; };
+  const key = el.findingKey(a);
+  await el.openMarkHere(key);
+  assert.ok(opened, "no row on screen: the page of the object holds the form");
+  el.selected = null;
+  assert.ok(el.rowDecide(a).includes(`data-mark-form="${key}"`) && el.rowDecide(b) === "", "one form, under the first finding");
+});

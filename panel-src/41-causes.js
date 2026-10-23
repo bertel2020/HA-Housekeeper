@@ -204,7 +204,14 @@ class CausesMixin {
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${about ? `${about}<hr class="menusep">` : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
   }
 
-  rowDecide(f) { return f && this.decide && this.decide.key === f.key ? `<div class="pad">${this.decideForm(f)}</div>` : ""; }
+  rowDecide(f) {
+    if (!f) return "";
+    if (this.decide && this.decide.key === f.key) return `<div class="pad">${this.decideForm(f)}</div>`;
+    // The mark of the object opens under its first open finding, unless its own page shows the form.
+    const m = this.markForm;
+    if (!m || this.selected && this.objectKey(this.selected) === m.key || this.findingKey(f) !== m.key) return "";
+    return (this.data.findings.find(x => this.findingKey(x) === m.key) || f).key === f.key ? this.markFormHtml(m, m.key) : "";
+  }
 
   causeEntry(c) {
     const total = this.causeTotal(c), link = `${c.object_type}:${c.object_id}`;

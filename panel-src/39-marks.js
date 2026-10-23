@@ -77,6 +77,16 @@ class MarksMixin {
     return [this.actRow(`${this.esc(this.t("markTitle"))}: ${this.esc(this.t(`mark_${mark.kind}`))}`, `${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}`, `<button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("markClear")}</button>`)];
   }
 
+  // The form opens where the button is (under the row of the finding); only where no row can hold it, the page of the object does.
+  async openMarkHere(key) {
+    const obj = this.findObject(key);
+    if (!obj) return;
+    if (this.decide && this.findingKey(this.data.findings.find(x => x.key === this.decide.key) || {}) === key) this.decide = null;
+    this.openMark(key);
+    if (this.shadowRoot?.querySelector?.("[data-mark-form]")) return;
+    this._pendingTab = "actions"; await this.openObject(obj); this.openMark(key);
+  }
+
   openMark(key) {
     const item = this.findObject(key), mark = item?.mark;
     this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: 0, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30 };
