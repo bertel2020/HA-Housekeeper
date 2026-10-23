@@ -138,7 +138,7 @@ class FindingsMixin {
   visibleFindings() {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const classed = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)) : all;
-    const follows = this.findingFollowers ? classed.filter(f => this.isFollowUp(f)) : classed;
+    const follows = this.findingFollowers ? classed.filter(f => this.isOutageFollower(f)) : classed;
     const afterOnly = this.findingAfter ? follows.filter(f => this.corr?.by_key?.[f.key]) : follows;
     const outages = this.findingOutages ? this.outageKeys(this.findingOutages === true ? "" : this.findingOutages) : null;
     const held = this.findingHeld ? this.heldKeys() : null;
@@ -273,7 +273,7 @@ class FindingsMixin {
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
     this.ensureCorrelations();
-    const isFollower = f => this.isFollowUp(f);
+    const isFollower = f => this.isOutageFollower(f);
     const afterAll = all.filter(f => this.corr?.by_key?.[f.key]);
     const afterFollows = afterAll.filter(isFollower).length, afterCount = afterAll.length;
     // The tiles are fixed: they count the open findings whatever status the list shows, every finding of a reason with

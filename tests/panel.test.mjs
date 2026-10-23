@@ -7021,3 +7021,15 @@ test("the outages beneath the down tile are real outages: a missing target is no
   el.data = { ...DATA, objects: [], causes: [device, missing], findings: [f("own", "down", { rule_id: "device.down", object_id: "d", cause_id: device.id }), f("x", "down", { cause_id: device.id })] };
   assert.equal(el.topicFigures("down", el.data.findings).outages, 1);
 });
+
+test("a topic tile counts the callers of a missing target one by one, and a cause without a finding of its own as the object to fix", () => {
+  const { el } = panel("en");
+  const missing = { id: "entity_missing:sensor.gone", kind: "entity_missing", object_type: "entity", object_id: "sensor.gone", name: "sensor.gone", follower_count: 3, total_followers: 3, child_ids: [], consumers: {}, impact: "medium", parent_id: null, virtual: true };
+  const hub = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hub", follower_count: 2, total_followers: 2, child_ids: [], consumers: {}, impact: "medium", parent_id: null, virtual: false };
+  const f = (key, topic, extra = {}) => ({ key, rule_id: "automation.missing_entity", object_id: key, classification: "broken_reference", topic, impact: "medium", ignored: false, ...extra });
+  el.data = { ...DATA, objects: [], causes: [missing, hub], findings: [f("a1", "broken_references", { cause_id: missing.id }), f("a2", "broken_references", { cause_id: missing.id }), f("a3", "broken_references", { cause_id: missing.id }), f("s1", "down", { rule_id: "entity.state_unavailable", cause_id: hub.id }), f("s2", "down", { rule_id: "entity.state_unavailable", cause_id: hub.id })] };
+  const refs = el.topicFigures("broken_references", el.data.findings);
+  assert.equal(refs.objects, 3, "each caller is a job of its own, so ten callers never read as one");
+  assert.equal(refs.follows, 0);
+  assert.equal(el.topicFigures("down", el.data.findings).objects, 1, "two entities of an integration without a finding of its own: the integration is the object");
+});

@@ -118,12 +118,15 @@ def _is_follower(finding: dict[str, Any]) -> bool:
     return bool(finding.get("cause_id")) and finding.get("rule_id") not in CAUSE_OWN_RULES
 
 
-def _is_follow_up(finding: dict[str, Any], parents: dict[str, Any]) -> bool:
-    """A follow-up as the panel counts it: below a cause, or the own finding of a cause that hangs below another."""
-    cause_id = finding.get("cause_id")
-    if not cause_id:
+def _is_follow_up(finding: dict[str, Any], causes: dict[str, dict[str, Any]]) -> bool:
+    """A follow-up as the panel counts it: below a real cause, or the own finding of a cause that hangs below another.
+
+    The callers of a missing target (a virtual cause) are no follow-ups: each of them is a job of its own.
+    """
+    cause = causes.get(finding.get("cause_id") or "")
+    if not finding.get("cause_id") or (cause and cause.get("virtual")):
         return False
-    return finding.get("rule_id") not in CAUSE_OWN_RULES or bool(parents.get(cause_id))
+    return finding.get("rule_id") not in CAUSE_OWN_RULES or bool(cause and cause.get("parent_id"))
 
 
 def _owner(finding: dict[str, Any], devices: set[str], entity_device: dict[str, str]) -> str:
@@ -176,18 +179,22 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
         for i in snapshot["objects"]
         if i["object_type"] == "entity" and i.get("device_id")
     }
-    parents = {c.get("id"): c.get("parent_id") for c in snapshot.get("causes", [])}
+    causes = {c.get("id"): c for c in snapshot.get("causes", [])}
     affected: set[str] = set()
-    lead_sites: dict[str, set[str]] = {}
-    all_sites: dict[str, set[str]] = {}
+    sites: dict[str, set[str]] = {}
     for finding in open_findings:
         owner = _owner(finding, devices, entity_device)
         name = str(finding.get("topic") or topic_of(finding["rule_id"]))
         affected.add(owner)
-        all_sites.setdefault(name, set()).add(owner)
-        if not _is_follow_up(finding, parents):
-            lead_sites.setdefault(name, set()).add(owner)
-    lead_object_topics = {name: len(lead_sites.get(name) or all_sites[name]) for name in all_sites}
+        site = sites.setdefault(name, set())
+        if not _is_follow_up(finding, causes):
+            site.add(owner)
+            continue
+        # A cause without a finding of its own is the site of work of its follow-ups.
+        cause = causes.get(finding.get("cause_id") or "") or {}
+        if cause and not cause.get("finding_key"):
+            site.add(f"{cause['object_type']}:{cause['object_id']}")
+    lead_object_topics = {name: len(site) for name, site in sites.items()}
     health_base, health_load = _health(snapshot)
     return {
         "at": snapshot["meta"]["scanned_at"],

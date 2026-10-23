@@ -301,3 +301,55 @@ def test_the_ways_to_fix_a_failing_automation_start_with_its_cause() -> None:
         error_hint("Entity light.other is unavailable", down) is None
         and error_hint(None, down) is None
     )
+
+
+def test_the_callers_of_a_missing_target_and_a_cause_without_a_finding_are_counted_as_the_panel_does() -> (
+    None
+):
+    from custom_components.ha_housekeeper.history import make_checkpoint
+
+    def cause(kind: str, object_type: str, object_id: str, **extra: object) -> dict:
+        return {
+            "id": f"{kind}:{object_id}",
+            "object_type": object_type,
+            "object_id": object_id,
+            **extra,
+        }
+
+    snapshot = {
+        "meta": {"scanned_at": "2026-10-22T10:00:00+00:00"},
+        "objects": [],
+        "causes": [
+            cause("entity_missing", "entity", "sensor.gone", virtual=True),
+            cause("integration_down", "config_entry", "e1", virtual=False),
+        ],
+        "findings": [
+            {
+                "rule_id": "automation.missing_entity",
+                "object_id": "a1",
+                "classification": "x",
+                "cause_id": "entity_missing:sensor.gone",
+            },
+            {
+                "rule_id": "automation.missing_entity",
+                "object_id": "a2",
+                "classification": "x",
+                "cause_id": "entity_missing:sensor.gone",
+            },
+            {
+                "rule_id": "entity.state_unavailable",
+                "object_id": "sensor.a",
+                "classification": "u",
+                "cause_id": "integration_down:e1",
+            },
+            {
+                "rule_id": "entity.state_unavailable",
+                "object_id": "sensor.b",
+                "classification": "u",
+                "cause_id": "integration_down:e1",
+            },
+        ],
+    }
+    point = make_checkpoint(snapshot)
+    assert point["lead_object_topics"] == {"broken_references": 2, "down": 1}
+    assert make_checkpoint({**snapshot, "findings": []})["lead_object_topics"] == {}

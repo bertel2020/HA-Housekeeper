@@ -40,14 +40,29 @@ class ObjectGroupsMixin {
     return !CAUSE_OWN_RULES.includes(f.rule_id) || Boolean(this.causeById(f.cause_id)?.parent_id);
   }
 
-  // What a tile of a topic counts. Of the outages only the real ones count: a missing target (virtual) is a topic of its own. The main number is the objects that are a site of work: those with a finding of their
-  // own (a follow-up is a consequence of its cause, not a second job); the findings and follow-ups stand beneath it.
+  // A follow-up of an outage: below a real cause. The callers of a missing target (a virtual cause) are not: each of them
+  // is its own job, so they count as findings of their own.
+  isOutageFollower(f) { return this.isFollowUp(f) && !this.causeById(f.cause_id)?.virtual; }
+
+  // The objects a topic tile counts, the sites of work: the object of every finding of its own; of a follow-up, its cause
+  // when that has no finding of its own to stand for it (an integration that is down shows only through its entities).
+  // The same rule runs on the server for the curves (`make_checkpoint` in history.py).
+  topicSites(list) {
+    const sites = new Set();
+    for (const f of list) {
+      if (!this.isOutageFollower(f)) { sites.add(this.ownerKey(f)); continue; }
+      const c = this.causeById(f.cause_id);
+      if (c && !c.finding_key) sites.add(`${c.object_type}:${c.object_id}`);
+    }
+    return sites;
+  }
+
+  // What a tile of a topic counts. The main number is the sites of work; the findings and the follow-ups that hang on
+  // the causes stand beneath it. Of the outages only the real ones count: a missing target (virtual) is a topic of its own.
   // The same figures serve the findings page and the overview, so the two never differ.
   topicFigures(name, open) {
-    const mine = open.filter(f => this.findingTopic(f) === name), lead = mine.filter(f => !this.isFollowUp(f));
-    const owners = list => new Set(list.map(f => this.ownerKey(f))).size;
-    const follows = mine.length - lead.length;
-    return { mine, follows, objects: lead.length ? owners(lead) : owners(mine), outages: name === "down" ? this.countedOutages().filter(c => !c.virtual).length : 0 };
+    const mine = open.filter(f => this.findingTopic(f) === name);
+    return { mine, follows: mine.filter(f => this.isOutageFollower(f)).length, objects: this.topicSites(mine).size, outages: name === "down" ? this.countedOutages().filter(c => !c.virtual).length : 0 };
   }
 
   // The line beneath the main number of a topic tile: what it counts, the findings, and the follow-ups that hang on them.
