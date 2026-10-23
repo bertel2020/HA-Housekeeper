@@ -6967,3 +6967,16 @@ test("a missing target has Fix all n in its menu, and its page replaces or remov
   assert.deepEqual(plan.requests.map(r => r.object_id), ["automation.a", "automation.c"]);
   assert.equal(plan.requests[0].fix, "remove_reference");
 });
+
+test("a decided list shows only its findings, not the outages that explain nothing there", () => {
+  const { el } = panel("en");
+  const cause = { id: "outage-z", kind: "integration_down", object_type: "config_entry", object_id: "z", name: "Cloud", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high" };
+  const f = (key, ignore_info) => ({ key, rule_id: "entity.unused", object_id: key, classification: "unused", confidence: 0.9, impact: "low", ignored: Boolean(ignore_info), ignored_by: ignore_info ? "user" : null, ignore_info });
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "config_entry", object_id: "z", name: "Cloud" }], causes: [cause], findings: [f("a", { kind: "snooze" }), f("b", { kind: "keep" }), { ...f("c"), cause_id: cause.id }] };
+  for (const status of ["snoozed", "known", "hidden"]) {
+    el.findingStatus = status;
+    assert.ok(!el.findingsView().includes('data-fold="og:config_entry:z"'), status);
+  }
+  el.findingStatus = "";
+  assert.ok(el.findingsView().includes('data-fold="og:config_entry:z"'));
+});

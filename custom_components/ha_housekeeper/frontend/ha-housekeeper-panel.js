@@ -3021,7 +3021,7 @@ class FindingsMixin {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
     const sorted = this.visibleFindings();
     const st = this.lv.findings;
-    const open = this.findingStatus !== "new" && !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingOutages && !this.findingHeld && !this.findingStage && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
+    const open = ["", "all"].includes(this.findingStatus) && !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingOutages && !this.findingHeld && !this.findingStage && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
     const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
