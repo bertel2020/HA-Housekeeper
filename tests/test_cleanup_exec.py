@@ -1271,3 +1271,22 @@ async def test_a_reload_that_raises_stops_the_plan(hass: HomeAssistant) -> None:
         await run(scanner, plan)
     assert plan["status"] != "verified"
     assert "reload_failed" in str(plan)
+
+
+async def test_a_reload_that_ends_in_a_sign_in_request_says_so(hass: HomeAssistant) -> None:
+    from unittest.mock import MagicMock, patch
+
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    config = MockConfigEntry(domain="test")
+    config.add_to_hass(hass)
+    scanner = await make_scanner(hass)
+    flows = [{"context": {"source": "reauth", "entry_id": config.entry_id}}]
+    with patch.object(
+        hass.config_entries.flow, "async_progress_by_handler", MagicMock(return_value=flows)
+    ):
+        checks = scanner.cleanup._verify_reload(config.entry_id)
+    assert [(c["check"], c["ok"]) for c in checks] == [
+        ("entry_loaded", False),
+        ("entry_reauth", False),
+    ]

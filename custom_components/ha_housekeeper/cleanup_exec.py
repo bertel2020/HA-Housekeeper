@@ -2341,6 +2341,14 @@ class CleanupRunner:
                 "state": state,
             }
         ]
+        if state != "loaded" and entry is not None:
+            wants_login = any(
+                (flow.get("context") or {}).get("source") == "reauth"
+                and (flow.get("context") or {}).get("entry_id") == entry_id
+                for flow in self.hass.config_entries.flow.async_progress_by_handler(entry.domain)
+            )
+            if wants_login:
+                checks.append({"check": "entry_reauth", "object_id": entry_id, "ok": False})
         if state == "loaded":
             ids = [
                 e.entity_id
