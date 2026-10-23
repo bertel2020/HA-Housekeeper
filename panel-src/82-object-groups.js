@@ -40,14 +40,14 @@ class ObjectGroupsMixin {
     return !CAUSE_OWN_RULES.includes(f.rule_id) || Boolean(this.causeById(f.cause_id)?.parent_id);
   }
 
-  // What a tile of a topic counts. The main number is the objects that are a site of work: those with a finding of their
+  // What a tile of a topic counts. Of the outages only the real ones count: a missing target (virtual) is a topic of its own. The main number is the objects that are a site of work: those with a finding of their
   // own (a follow-up is a consequence of its cause, not a second job); the findings and follow-ups stand beneath it.
   // The same figures serve the findings page and the overview, so the two never differ.
   topicFigures(name, open) {
     const mine = open.filter(f => this.findingTopic(f) === name), lead = mine.filter(f => !this.isFollowUp(f));
     const owners = list => new Set(list.map(f => this.ownerKey(f))).size;
     const follows = mine.length - lead.length;
-    return { mine, follows, objects: lead.length ? owners(lead) : owners(mine), outages: name === "down" ? this.countedOutages().length : 0 };
+    return { mine, follows, objects: lead.length ? owners(lead) : owners(mine), outages: name === "down" ? this.countedOutages().filter(c => !c.virtual).length : 0 };
   }
 
   // The line beneath the main number of a topic tile: what it counts, the findings, and the follow-ups that hang on them.

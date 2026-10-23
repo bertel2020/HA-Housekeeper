@@ -7012,3 +7012,12 @@ test("the texts say Marketplace instead of HACS only when the store is the Marke
   el._hass = { language: "en" };
   assert.equal(el.t("hkUpdateHacsInstalled"), "Installed by the Marketplace");
 });
+
+test("the outages beneath the down tile are real outages: a missing target is not one", () => {
+  const { el } = panel("en");
+  const device = { id: "device_down:d", kind: "device_down", object_type: "device", object_id: "d", name: "Lamp", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high", parent_id: null, virtual: false, finding_key: "own" };
+  const missing = { id: "entity_missing:sensor.gone", kind: "entity_missing", object_type: "entity", object_id: "sensor.gone", name: "sensor.gone", follower_count: 3, total_followers: 3, child_ids: [], consumers: {}, impact: "medium", parent_id: null, virtual: true };
+  const f = (key, topic, extra = {}) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", topic, impact: "medium", ignored: false, ...extra });
+  el.data = { ...DATA, objects: [], causes: [device, missing], findings: [f("own", "down", { rule_id: "device.down", object_id: "d", cause_id: device.id }), f("x", "down", { cause_id: device.id })] };
+  assert.equal(el.topicFigures("down", el.data.findings).outages, 1);
+});
