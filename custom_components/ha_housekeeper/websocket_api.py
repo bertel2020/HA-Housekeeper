@@ -481,9 +481,13 @@ def websocket_first_cleanup(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/first_cleanup_set",
-        vol.Required("action"): vol.In(("begin", "dismiss", "reset", "stage")),
+        vol.Required("action"): vol.In(
+            ("begin", "dismiss", "reset", "stage", "log_add", "log_remove", "log_unskip")
+        ),
         vol.Optional("stage"): vol.In(STAGES),
         vol.Optional("done"): bool,
+        vol.Optional("entry"): dict,
+        vol.Optional("entry_id"): vol.All(str, vol.Length(min=1, max=40)),
     }
 )
 @callback
@@ -494,7 +498,7 @@ def websocket_first_cleanup_set(
     msg: dict[str, Any],
     scanner: InventoryScanner,
 ) -> None:
-    """Begin the cleanup, decline the offer, start it over, or go to a stage and mark it done. Hides nothing."""
+    """Begin the cleanup, decline the offer, start it over, go to a stage, or keep its history. Hides nothing."""
     store = scanner.first_cleanup
     now = datetime.now(UTC)
     if msg["action"] == "begin":
@@ -503,6 +507,15 @@ def websocket_first_cleanup_set(
         store.dismiss()
     elif msg["action"] == "reset":
         store.reset()
+    elif msg["action"] == "log_add":
+        store.log_add(msg.get("entry"))
+    elif msg["action"] == "log_remove" and "entry_id" in msg:
+        store.log_remove(msg["entry_id"])
+    elif msg["action"] == "log_unskip" and "stage" in msg:
+        store.log_unskip(msg["stage"])
+    elif msg["action"] in ("log_remove", "log_unskip"):
+        connection.send_error(msg["id"], "invalid_format", "An entry or a stage is needed")
+        return
     elif "stage" not in msg:
         connection.send_error(msg["id"], "invalid_format", "A stage is needed")
         return

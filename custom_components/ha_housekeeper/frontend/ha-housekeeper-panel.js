@@ -18775,7 +18775,7 @@ class FirstCleanupMixin {
   // The cards of stage 1 and 3: one finding at a time with the three answers and what each one does.
   fcCards(n) {
     const units = this.fcUnits(n), queue = units, listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
-    const prevBtn = `<button type="button" class="btn" data-fc-prev ${this.fcLogGet().some(e => e.stage === n && ["keep", "later", "skip"].includes(e.action)) ? "" : "disabled"} title="${this.esc(this.t("fcPrevHint"))}"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcPrev")}</button>`;
+    const prevBtn = this.fcPrevButton(n);
     if (!queue.length) {
       const rest = this.stageCount(n);
       return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div><div class="pad mbtns">${prevBtn}${rest ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}` : ""}</div></section>`;
@@ -18810,8 +18810,16 @@ class FirstCleanupMixin {
   }
 
   // One card back: the last skip or decision of the stage is taken back, and the card shows once more.
+  // The actions of a stage that "Previous" can take back: the answers of the cards, or in stage 2 the marks and refusals.
+  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks"] : ["keep", "later", "skip"]; }
+
+  fcPrevButton(n) {
+    const some = this.fcLogGet().some(e => e.stage === n && this.fcPrevActions(n).includes(e.action));
+    return `<button type="button" class="btn" data-fc-prev ${some ? "" : "disabled"} title="${this.esc(this.t("fcPrevHint"))}"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcPrev")}</button>`;
+  }
+
   fcPrev() {
-    const n = this.fcWiz.step, last = [...this.fcLogGet()].reverse().find(e => e.stage === n && ["keep", "later", "skip"].includes(e.action));
+    const n = this.fcWiz.step, last = [...this.fcLogGet()].reverse().find(e => e.stage === n && this.fcPrevActions(n).includes(e.action));
     if (last) this.fcUndo(last.id);
   }
 
@@ -18822,7 +18830,7 @@ class FirstCleanupMixin {
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const all = items.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(items.length) })}</button>` : "";
     const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
-    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${all}${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}${all}${listBtn}</div></div></section>`;
   }
 
   async fcTake(keys) {
@@ -18889,7 +18897,7 @@ class FirstCleanupMixin {
     const head = `<section class="panel fchead"><div class="pad"><div class="fcheadrow"><div><small class="fceyebrow">${this.t("fcStageOf", { n })}</small><h2>${this.t(`fcStage${n}`)}</h2></div><span class="pill ${count ? "warn" : "ok"}">${count ? this.t("fcLeft", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span></div><p>${this.t(`fcStage${n}Hint`)}</p></div></section>`;
     const look = this.fcWiz.look && n !== 4;
     let body;
-    if (n === 4) body = this.roundView();
+    if (n === 4) body = `<p class="fctip fcroundnote">${this.t("fcRoundUndo")} <button type="button" class="link" data-jump="journal" data-jump-tab="plans">${this.t("fcOpenJournal")}</button></p>${this.roundView()}`;
     else if (n === 2) body = look ? this.oftenCard() || this.fcEmpty() : this.fcOftenStep(count);
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
     else body = look ? this.findingsView() : this.fcCards(n);
@@ -18971,7 +18979,7 @@ Object.assign(TEXT.de, {
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
   fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
   fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
-  fcFinishTitle: "Fertig", fcKpiDecided: "Entschieden", fcKpiOpen: "Noch offen", fcKpiLater: "Zurückgestellt", fcProgress: "Fortschritt", fcMinutes: "{c} Karten, etwa {n} Minuten.", fcFollowsChip: "{n} Folgen", fcFollowsChip1: "1 Folge", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
+  fcRoundUndo: "Was die Runde ändert, steht danach im Journal und lässt sich dort zurücknehmen.", fcOpenJournal: "Journal öffnen", fcFinishTitle: "Fertig", fcKpiDecided: "Entschieden", fcKpiOpen: "Noch offen", fcKpiLater: "Zurückgestellt", fcProgress: "Fortschritt", fcMinutes: "{c} Karten, etwa {n} Minuten.", fcFollowsChip: "{n} Folgen", fcFollowsChip1: "1 Folge", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
   firstcleanup: "Aufräumen", round: "Aufräum-Runde", firstTitle: "Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
   fcOffer: "{n} Befunde sind offen. Das Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Aufräumen",
   fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
@@ -19004,7 +19012,7 @@ Object.assign(TEXT.en, {
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
   fcCounter: "{start} at the start · {now} open now · {d} decided", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",
   fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
-  fcFinishTitle: "Done", fcKpiDecided: "Decided", fcKpiOpen: "Still open", fcKpiLater: "Put off", fcProgress: "Progress", fcMinutes: "{c} cards, about {n} minutes.", fcFollowsChip: "{n} follow-ups", fcFollowsChip1: "1 follow-up", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
+  fcRoundUndo: "What the round changes is listed in the journal afterwards, where it can be taken back.", fcOpenJournal: "Open the journal", fcFinishTitle: "Done", fcKpiDecided: "Decided", fcKpiOpen: "Still open", fcKpiLater: "Put off", fcProgress: "Progress", fcMinutes: "{c} cards, about {n} minutes.", fcFollowsChip: "{n} follow-ups", fcFollowsChip1: "1 follow-up", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
   firstcleanup: "Cleanup", round: "Cleanup round", firstTitle: "Cleanup", firstSubtitle: "Go through the open findings in five stages.",
   fcOffer: "{n} findings are open. The cleanup goes through them in five stages.", fcBegin: "Begin the cleanup", fcNotNow: "Not now", fcButton: "Cleanup",
   fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",

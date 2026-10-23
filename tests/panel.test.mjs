@@ -7055,3 +7055,21 @@ test("the panel counts the tile figures of the shared fixture to the numbers the
   assert.equal(el.countObjects(el.objectTree(open, open, true)), fixture.expected.affected, "objects with findings: the tile and the curve");
   for (const [topic, n] of Object.entries(fixture.expected.lead_object_topics)) assert.equal(el.topicFigures(topic, open).objects, n, topic);
 });
+
+test("the history of the cleanup is kept on the server, and stage 2 can take its last answer back", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el.fc = { state: { started_at: "2026-10-23T08:00:00+00:00", start_count: 10, stage: 2, done: [], finished_at: null, log: [] }, offered: false, open: 10, later_days: 90, stages: { 1: [], 2: [], 3: [], 4: [], 5: [] } };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return el.fc; } };
+  el.data = { ...DATA, findings: [] }; el.render = () => {}; el.refreshData = async () => {};
+  el.fcWiz = { step: 2, look: false, on: true };
+  assert.ok(el.fcPrevButton(2).includes("disabled"), "nothing to take back yet");
+  const entry = el.fcLogAdd({ stage: 2, action: "nothanks", key: "entity:sensor.x", name: "X" });
+  const add = calls.find(c => c.action === "log_add");
+  assert.equal(add.entry.id, entry.id, "a decision is told to the server");
+  assert.ok(!el.fcPrevButton(2).includes("disabled"), "stage 2 offers Previous now");
+  el.fcPrev();
+  await new Promise(r => setTimeout(r, 0));
+  assert.equal(calls.find(c => c.action === "log_remove")?.entry_id, entry.id, "taking it back removes it there too");
+  assert.equal(el.fcLogGet().length, 0);
+});

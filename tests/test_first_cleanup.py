@@ -58,3 +58,37 @@ async def test_the_record_follows_the_cleanup_and_survives_a_reload(hass) -> Non
     await other.async_load()
     other.dismiss()
     assert other.offered(80) is False
+
+
+async def test_the_history_of_the_tour_is_kept_for_the_house_and_cleared_with_it(hass) -> None:
+    store = FirstCleanupStore(hass)
+    store.begin(60, NOW)
+    keep = {
+        "id": "a1",
+        "at": "2026-10-23T08:00:00+00:00",
+        "stage": 3,
+        "action": "keep",
+        "key": "k1",
+        "keys": ["k1", "k2"],
+        "n": 2,
+    }
+    store.log_add(keep)
+    store.log_add(keep)
+    store.log_add({"id": "bad", "stage": 9, "action": "keep"})
+    store.log_add({"id": "s1", "stage": 3, "action": "skip", "key": "k3"})
+    assert [e["id"] for e in store.state()["log"]] == ["a1", "s1"], (
+        "a repeat and an unknown shape are dropped"
+    )
+    store.log_unskip(3)
+    assert [e["id"] for e in store.state()["log"]] == ["a1"], "the skips of a stage leave"
+    other = FirstCleanupStore(hass)
+    other._state = store.state()
+    other.log_remove("a1")
+    assert other.state()["log"] == [] and store.state()["log"][0]["keys"] == ["k1", "k2"]
+    for i in range(400):
+        store.log_add({"id": f"e{i}", "stage": 1, "action": "later", "key": f"k{i}"})
+    assert len(store.state()["log"]) == 300 and store.state()["log"][-1]["id"] == "e399", (
+        "the newest are kept"
+    )
+    store.reset()
+    assert store.state()["log"] == [], "reset clears the history"

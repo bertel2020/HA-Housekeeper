@@ -25,6 +25,11 @@ CHAIN_MIN: Final = 3  # an outage with at least this many follow-ups is a "large
 OFFER_MIN: Final = 50  # open findings from which the cleanup is offered
 LATER_DAYS: Final = 90  # default time for the rest put off in stage 5
 BULK_LIMIT: Final = 1000  # findings put off in one step
+LOG_ACTIONS: Final = ("keep", "later", "skip", "mark", "nothanks", "later_all")
+LOG_LIMIT: Final = 300  # entries of the history kept
+LOG_KEYS_LIMIT: Final = (
+    5000  # keys the entries of the history name in all; the oldest entries go first
+)
 
 
 def stage_keys(snapshot: dict[str, Any]) -> dict[int, list[str]]:
@@ -56,12 +61,51 @@ def stage_keys(snapshot: dict[str, Any]) -> dict[int, list[str]]:
     return stages
 
 
+def _text(value: Any, limit: int) -> str | None:
+    return value[:limit] if isinstance(value, str) and value else None
+
+
+def clean_entry(value: Any) -> dict[str, Any] | None:
+    """One entry of the history of the tour (what was decided on a card); anything of an unknown shape is dropped."""
+    if not isinstance(value, dict):
+        return None
+    entry_id, action, stage = _text(value.get("id"), 40), value.get("action"), value.get("stage")
+    if not entry_id or action not in LOG_ACTIONS or stage not in STAGES:
+        return None
+    entry: dict[str, Any] = {
+        "id": entry_id,
+        "at": _text(value.get("at"), 40) or "",
+        "stage": stage,
+        "action": action,
+    }
+    for field in ("key", "name"):
+        if text := _text(value.get(field), 400):
+            entry[field] = text
+    for field, limit in (("keys", BULK_LIMIT), ("targets", 200)):
+        items = value.get(field)
+        if isinstance(items, list):
+            entry[field] = [t for item in items[:limit] if (t := _text(item, 400))]
+    count = value.get("n")
+    if isinstance(count, int) and 0 <= count <= BULK_LIMIT * 10:
+        entry["n"] = count
+    return entry
+
+
+def _trim(log: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The newest entries within the limits."""
+    log = log[-LOG_LIMIT:]
+    while len(log) > 1 and sum(len(e.get("keys", [])) for e in log) > LOG_KEYS_LIMIT:
+        log = log[1:]
+    return log
+
+
 def _clean(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict):
         value = {}
     done = value.get("done")
     stage = value.get("stage")
     count = value.get("start_count")
+    log = value.get("log")
     return {
         "started_at": value["started_at"] if isinstance(value.get("started_at"), str) else None,
         "finished_at": value["finished_at"] if isinstance(value.get("finished_at"), str) else None,
@@ -69,6 +113,9 @@ def _clean(value: Any) -> dict[str, Any]:
         "start_count": count if isinstance(count, int) and count >= 0 else 0,
         "done": sorted(s for s in set(done) if s in STAGES) if isinstance(done, list) else [],
         "dismissed": value.get("dismissed") is True,
+        "log": _trim([e for item in log if (e := clean_entry(item))])
+        if isinstance(log, list)
+        else [],
     }
 
 
@@ -87,7 +134,7 @@ class FirstCleanupStore:
         self._store.async_delay_save(lambda: dict(self._state), SAVE_DELAY)
 
     def state(self) -> dict[str, Any]:
-        return {**self._state, "done": list(self._state["done"])}
+        return {**self._state, "done": list(self._state["done"]), "log": list(self._state["log"])}
 
     @property
     def running(self) -> bool:
@@ -113,6 +160,26 @@ class FirstCleanupStore:
     def reset(self) -> None:
         """Drop the tour back to where it was before it began; the decisions made in it stay."""
         self._state = {**_clean({}), "dismissed": self._state["dismissed"]}
+        self._save()
+
+    def log_add(self, value: Any) -> None:
+        """Put a decision of the tour into the history, so it can be undone from any browser."""
+        if (entry := clean_entry(value)) and all(
+            e["id"] != entry["id"] for e in self._state["log"]
+        ):
+            self._state["log"] = _trim([*self._state["log"], entry])
+            self._save()
+
+    def log_remove(self, entry_id: str) -> None:
+        """Take an entry out of the history (it was undone)."""
+        self._state["log"] = [e for e in self._state["log"] if e["id"] != entry_id]
+        self._save()
+
+    def log_unskip(self, stage: int) -> None:
+        """Show the skipped cards of a stage again: its skips leave the history."""
+        self._state["log"] = [
+            e for e in self._state["log"] if not (e["stage"] == stage and e["action"] == "skip")
+        ]
         self._save()
 
     def dismiss(self) -> None:
