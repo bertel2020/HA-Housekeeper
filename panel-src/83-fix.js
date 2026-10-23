@@ -66,21 +66,23 @@ class FixMixin {
     const pattern = (f.confidence_notes || []).find(n => n.code === "pattern");
     const all = this.fixAllFindings(), allCause = this.fixAll ? this.causeById(this.fixAll) : null;
     const kinds = ["automation", "script", "dashboard"].map(k => [k, all.filter(x => x.rule_id.startsWith(`${k}.`)).length]).filter(([, n]) => n).map(([k, n]) => this.tCount(`fixAllKind_${k}`, n)).join(", ");
+    const [R, A, B, G, M] = ["alert-circle-outline:red", "progress-wrench:amber", "clock-outline:blue", "eye-off-outline:green", "link-variant:blue"];
+    const certainty = f.confidence_level ? this.esc(this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "")) : "";
     const rows = [
-      allCause ? [this.t("fixWhat"), this.esc(this.t(`cause_${allCause.kind}`, { name: allCause.name }))] : null,
-      allCause ? [this.t("fixAffects"), this.esc(`${this.tCount("fixAllPlaces", all.length)}${kinds ? ` (${kinds})` : ""}`)] : null,
-      allCause ? null : [this.t("fixWhat"), this.esc(this.findingTitle(f))],
-      f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) }))] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) }))] : null,
-      since ? [this.t("sortSince"), this.esc(this.formatDate(since))] : null,
-      f.impact ? [this.t("sortImpact"), this.esc(this.impactLine(f))] : null,
-      cause && !own && !allCause ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name }))] : null,
-      cause && own && cause.total_followers ? [this.t("fixAffects"), this.esc(this.tCount("causeFollowers", cause.total_followers))] : null,
-      this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure))] : null,
-      this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`] : null,
-      pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour }))] : null,
-      f.confidence_level ? [this.t("sortCertainty"), `${Math.round(f.confidence * 100)} %<small class="factnote">${this.esc(this.certaintyText(f))}</small>`] : null,
+      allCause ? [this.t("fixWhat"), this.esc(this.t(`cause_${allCause.kind}`, { name: allCause.name })), R] : null,
+      allCause ? [this.t("fixAffects"), this.esc(`${this.tCount("fixAllPlaces", all.length)}${kinds ? ` (${kinds})` : ""}`), M] : null,
+      allCause ? null : [this.t("fixWhat"), this.esc(this.findingTitle(f)), R],
+      f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) })), A] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) })), A] : null,
+      since ? [this.t("sortSince"), this.esc(this.formatDate(since)), B] : null,
+      f.impact ? [this.t("sortImpact"), this.esc(this.impactLine(f)), G] : null,
+      cause && !own && !allCause ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name })), M] : null,
+      cause && own && cause.total_followers ? [this.t("fixAffects"), this.esc(this.tCount("causeFollowers", cause.total_followers)), M] : null,
+      this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure)), A] : null,
+      this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`, "lightbulb-on-outline:blue"] : null,
+      pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour })), "chart-timeline-variant:amber"] : null,
+      f.confidence_level ? [this.t("sortCertainty"), `<strong>${Math.round(f.confidence * 100)} %</strong>${certainty ? `<small class="factnote">${certainty}</small>` : ""}`, "shield-check-outline:green"] : null,
     ].filter(Boolean);
-    return `<div class="rating fixrating">${rows.map(([label, value]) => `<div class="rrow"><b>${label}</b><div>${value}</div></div>`).join("")}</div>`;
+    return `<div class="fcinfo hasrec fixinfo" role="group">${rows.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>`;
   }
 
   fixFailureText(failure) {
@@ -195,12 +197,12 @@ class FixMixin {
 
   fixView() {
     const f = this.data?.findings?.find(x => x.key === this.fixKey);
-    const step = (n, title, body) => `<section class="panel"><div class="panelhead"><div><h2>${n} · ${this.t(title)}</h2></div></div>${body}</section>`;
+    const step = (n, title, body) => `<section class="panel fccard fixcard"><div class="pad"><small class="fceyebrow">${this.t("fixStepOf", { n })}</small><h3>${this.t(title)}</h3><div class="fixbody">${body}</div></div></section>`;
     if (!f) return `<div class="stack">${step(4, "fixStepCheck", `${this.fixCheckedFrom ? this.notice("info", this.t("fixDone")) : this.notice("info", this.t("fixGone"))}`)}<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div></div>`;
     const cur = Math.min(this.fixStep || 1, this.fixMax || 1), max = this.fixMax || 1, planOpen = Boolean(this.fcPlanKey && this.plan);
     const names = ["fixStepUnderstand", "fixStepDecide", "fixStepRun", "fixStepCheck"];
-    const bar = `<div class="fixsteps" role="tablist">${names.map((n, i) => `<button type="button" class="fixstep${i + 1 === cur ? " on" : ""}${i + 1 < cur ? " past" : ""}" data-fix-step="${i + 1}" ${i + 1 > max ? "disabled" : ""}><b>${i + 1}</b>${this.t(n)}</button>`).join("")}</div>`;
-    const nav = (back, next) => `<div class="fcplanbtns">${back ? `<button type="button" class="btn" data-fix-step="${back}">${this.t("fixBack")}</button>` : ""}${next ? `<button type="button" class="btn primary" data-fix-step="${next}">${this.t("fixNext")}</button>` : ""}</div>`;
+    const bar = `<div class="fctop"><nav class="fcsteps" aria-label="${this.esc(this.t("fixTitle"))}">${names.map((n, i) => `<button type="button" class="fcstep${i + 1 < cur ? " done" : ""}${i + 1 === cur ? " cur" : ""}" data-fix-step="${i + 1}" title="${this.esc(this.t(n))}" ${i + 1 === cur ? 'aria-current="step"' : ""} ${i + 1 > max ? "disabled" : ""}><b>${i + 1 < cur ? "✓" : i + 1}</b></button>`).join('<i class="fcline"></i>')}</nav></div>`;
+    const nav = (back, next) => `<div class="panel fcfoot"><button type="button" class="btn" ${back ? `data-fix-step="${back}"` : "disabled"}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fixBack")}</button><span class="fcprogress"></span>${next ? `<button type="button" class="btn primary" data-fix-step="${next}">${this.t("fixNext")}</button>` : ""}</div>`;
     let body;
     if (cur === 1) body = `${step(1, "fixStepUnderstand", this.fixUnderstand(f))}${nav(0, 2)}`;
     else if (cur === 2) body = `${step(2, "fixStepDecide", this.fixDecide(f))}${this.fixCollect(f)}${nav(1, 0)}`;
@@ -244,7 +246,7 @@ class FixMixin {
   }
 }
 Object.assign(TEXT.de, {
-  fixNext: "Weiter", fixObjectWays: "Am Objekt", fixMoreActionsHint: "Weitere Aktionen dieses Objekts, etwa austauschen oder Werte reparieren.", fixOtherWays: "Andere Wege ({n})", fixSelfDone: "Selbst erledigt: nachprüfen", fixRunNone: "Hier läuft noch nichts. Wähle bei „Entscheiden“ einen Weg: was Housekeeper selbst ausführen kann, zeigt sich zuerst als Vorschau, und erst dein Klick ändert etwas.", fixPickCount: "{picked} von {total} gewählt, dann ein Weg für alle.", fixPickNone: "Wähle mindestens eine Stelle, dann ein Weg für alle.",
+  fixNext: "Weiter", fixStepOf: "Schritt {n} von 4", fixObjectWays: "Am Objekt", fixMoreActionsHint: "Weitere Aktionen dieses Objekts, etwa austauschen oder Werte reparieren.", fixOtherWays: "Andere Wege ({n})", fixSelfDone: "Selbst erledigt: nachprüfen", fixRunNone: "Hier läuft noch nichts. Wähle bei „Entscheiden“ einen Weg: was Housekeeper selbst ausführen kann, zeigt sich zuerst als Vorschau, und erst dein Klick ändert etwas.", fixPickCount: "{picked} von {total} gewählt, dann ein Weg für alle.", fixPickNone: "Wähle mindestens eine Stelle, dann ein Weg für alle.",
   fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen, entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben",
   fixStepUnderstand: "Verstehen", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
@@ -270,7 +272,7 @@ Object.assign(TEXT.de, {
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
-  fixNext: "Next", fixObjectWays: "On the object", fixMoreActionsHint: "More actions of this object, such as exchanging it or repairing values.", fixOtherWays: "Other ways ({n})", fixSelfDone: "Did it myself: check", fixRunNone: "Nothing runs here yet. Choose a way under “Decide”: what Housekeeper can run itself shows as a preview first, and only your click changes anything.", fixPickCount: "{picked} of {total} chosen, then one way for all.", fixPickNone: "Choose at least one place, then one way for all.",
+  fixNext: "Next", fixStepOf: "Step {n} of 4", fixObjectWays: "On the object", fixMoreActionsHint: "More actions of this object, such as exchanging it or repairing values.", fixOtherWays: "Other ways ({n})", fixSelfDone: "Did it myself: check", fixRunNone: "Nothing runs here yet. Choose a way under “Decide”: what Housekeeper can run itself shows as a preview first, and only your click changes anything.", fixPickCount: "{picked} of {total} chosen, then one way for all.", fixPickNone: "Choose at least one place, then one way for all.",
   fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand, decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix",
   fixStepUnderstand: "Understand", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
