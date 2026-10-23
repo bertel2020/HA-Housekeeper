@@ -7178,3 +7178,23 @@ test("stage 4 of the cleanup is a card per object: the safe ones first as one ca
   await new Promise(r => setTimeout(r, 0));
   assert.ok(!el.fcLogGet().some(e => e.action === "skip"), "undo takes the last answer back");
 });
+
+test("the closing page counts each unit on its own: marking for the plan is no decision, new findings are named, and a marked finding without a plan is warned about", () => {
+  const { el } = panel("en");
+  el.fc = { later_days: 90, state: { started_at: "2026-10-23T08:00:00+00:00", start_count: 10, stage: 5, done: [1, 2, 3, 4, 5], finished_at: "2026-10-23T09:00:00+00:00", log: [] }, stages: { 1: [], 2: [], 3: ["a", "b", "c", "d", "e", "f", "g", "h"], 4: ["p"], 5: [] } };
+  el._hass = { language: "en", callWS: async () => el.fc };
+  const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact: "medium", ignored: false });
+  el.data = { ...DATA, findings: ["a", "b", "c", "d", "e", "f", "g", "h", "p"].map(f), causes: [] };
+  el.fcLogAdd({ stage: 3, action: "keep", key: "x", keys: ["x"], n: 1 });
+  el.fcLogAdd({ stage: 3, action: "later", key: "y", keys: ["y", "z"], n: 2 });
+  el.fcLogAdd({ stage: 2, action: "mark", key: "entity:m", n: 3 });
+  el.fcLogAdd({ stage: 4, action: "pick", key: "p", keys: ["p"], n: 1 });
+  el.fcLogAdd({ stage: 3, action: "skip", key: "s", keys: ["s"] });
+  const facts = el.fcFacts();
+  assert.equal(facts.done, 6, "1 kept + 2 later + 3 marks; the mark for the plan and the skip are no decisions");
+  assert.equal(facts.pending, 1, "one finding is marked and still there");
+  assert.equal(facts.fresh, 2, "9 open now, 10 at the start, 3 answered: 2 came in");
+  const html = el.fcFinish();
+  assert.ok(html.includes("1 findings are marked and there is no plan yet") && html.includes('data-fc-goto="4"'));
+  assert.ok(html.includes("2 of them new"), "the rise is explained");
+});

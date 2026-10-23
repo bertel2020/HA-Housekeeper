@@ -18759,26 +18759,37 @@ class FirstCleanupMixin {
     const log = this.fcLogGet();
     return [1, 2, 3, 4, 5].map(n => {
       const mine = log.filter(e => e.stage === n), sum = (...actions) => mine.filter(e => actions.includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
-      const parts = [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"], [sum("pick"), "fcSumPick"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
+      const parts = [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"], [sum("nothanks"), "fcSumDeclined"], [sum("pick"), "fcSumPick"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
       const left = this.stageCount(n);
-      if (left) parts.push(this.t("fcSumLeft", { n: this.formatNumber(left) }));
+      if (left) parts.push(this.t(n === 2 ? "fcSumSuggest" : "fcSumLeft", { n: this.formatNumber(left) }));
       if (!parts.length) parts.push(this.t("fcSumNone"));
       return `<li><b>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)}</b><span>${this.esc(parts.join(" · "))}</span></li>`;
     }).join("");
   }
 
-  fcDecided() { return this.fcLogGet().filter(e => e.action !== "skip").reduce((c, e) => c + (e.n || 1), 0); }
+  // What was answered: not the skips, and not what is only marked for the plan (nothing happened to it yet).
+  fcDecided() { return this.fcLogGet().filter(e => !["skip", "pick"].includes(e.action)).reduce((c, e) => c + (e.n || 1), 0); }
+
+  // The figures of the closing page, each in its own unit: findings answered, marks set, suggestions declined, findings
+  // marked for the plan that no plan has removed yet, and how many findings came in since the start.
+  fcFacts() {
+    const log = this.fcLogGet(), sum = (...actions) => log.filter(e => actions.includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
+    const keep = sum("keep"), later = sum("later", "later_all"), marks = sum("mark"), declined = sum("nothanks");
+    const left = this.fcStaged().length, start = this.fc.state.start_count || 0, findings = keep + later;
+    const picked = new Set(log.filter(e => e.action === "pick").flatMap(e => e.keys || [e.key]));
+    const pending = (this.data?.findings || []).filter(f => !f.ignored && picked.has(f.key)).length;
+    return { keep, later, marks, declined, findings, done: findings + marks + declined, left, start, pending, fresh: Math.max(0, left - (start - findings)) };
+  }
 
   // The end: what was done, what is still open with a way to each part, what comes back, and the next visit.
   fcFinish() {
-    const state = this.fc.state, left = this.fcStaged().length, following = this.fcFollowing(), log = this.fcLogGet();
-    const later = log.filter(e => ["later", "later_all"].includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
+    const facts = this.fcFacts(), left = facts.left, following = this.fcFollowing(), later = facts.later;
     const open = [1, 2, 3, 4, 5].map(n => ({ n, c: this.stageCount(n) })).filter(x => x.c)
-      .map(x => `<li><span><b>${this.t("fcStage", { n: x.n })} · ${this.t(`fcStage${x.n}`)}</b> · ${this.t("fcSumLeft", { n: this.formatNumber(x.c) })}</span><button type="button" class="btn" data-fc-openlist="${x.n}">${this.t("fcSee")}</button></li>`).join("");
+      .map(x => `<li><span><b>${this.t("fcStage", { n: x.n })} · ${this.t(`fcStage${x.n}`)}</b> · ${this.t(x.n === 2 ? "fcSumSuggest" : "fcSumLeft", { n: this.formatNumber(x.c) })}</span><button type="button" class="btn" data-fc-openlist="${x.n}">${this.t("fcSee")}</button></li>`).join("");
     const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang === "en" ? "en" : "de");
     const kpi = (label, value, tone) => `<div class="fckpi ${tone}"><b>${this.formatNumber(value)}</b><span>${label}</span></div>`;
-    return `<section class="panel fcpanel${this.fcAnim("finish")}"><div class="fcdone"><span class="fcbigcheck"><ha-icon icon="mdi:check-bold"></ha-icon></span><strong>${this.t("fcFinishTitle")}</strong><div class="fckpis">${kpi(this.t("fcKpiDecided"), this.fcDecided(), "ok")}${kpi(this.t("fcKpiOpen"), left, left ? "warn" : "ok")}${kpi(this.t("fcKpiLater"), later, "mute")}</div><small>${this.t("fcFinishText2", { d: this.formatNumber(this.fcDecided()), start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</small></div>
-      <div class="pad"><h3>${this.t("fcNextTitle")}</h3>${open ? `<ul class="fcnext">${open}</ul>` : `<p>${this.t("fcNextNone")}</p>`}${following ? `<p>${this.t(following === 1 ? "fcNextFollow1" : "fcNextFollow", { n: this.formatNumber(following) })} <button type="button" class="btn" data-fc-openlist="0">${this.t("fcSee")}</button></p>` : ""}${later ? `<p>${this.t("fcNextLater", { n: this.formatNumber(later), date: until })}</p>` : ""}<p class="fctip">${this.t("fcNextTip")}</p>
+    return `<section class="panel fcpanel${this.fcAnim("finish")}"><div class="fcdone"><span class="fcbigcheck"><ha-icon icon="mdi:check-bold"></ha-icon></span><strong>${this.t("fcFinishTitle")}</strong><div class="fckpis">${kpi(this.t("fcKpiDecided"), facts.done, "ok")}${kpi(this.t("fcKpiOpen"), left, left ? "warn" : "ok")}${kpi(this.t("fcKpiLater"), later, "mute")}</div><small>${this.t(facts.fresh ? "fcFinishText3" : "fcFinishText2", { d: this.formatNumber(facts.done), start: this.formatNumber(facts.start), now: this.formatNumber(left), fresh: this.formatNumber(facts.fresh) })}</small></div>
+      <div class="pad">${facts.pending ? `<div class="fcband"><ha-icon icon="mdi:clipboard-alert-outline"></ha-icon><span>${this.t("fcPendingPlan", { n: this.formatNumber(facts.pending) })}</span><button type="button" class="btn" data-fc-goto="4">${this.t("fcPendingGo")}</button></div>` : ""}<h3>${this.t("fcNextTitle")}</h3>${open ? `<ul class="fcnext">${open}</ul>` : `<p>${this.t("fcNextNone")}</p>`}${following ? `<p>${this.t(following === 1 ? "fcNextFollow1" : "fcNextFollow", { n: this.formatNumber(following) })} <button type="button" class="btn" data-fc-openlist="0">${this.t("fcSee")}</button></p>` : ""}${later ? `<p>${this.t("fcNextLater", { n: this.formatNumber(later), date: until })}</p>` : ""}<p class="fctip">${this.t("fcNextTip")}</p>
       <div class="mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-history="1">${this.t("fcHistory")}</button><button type="button" class="btn" data-fc-newround>${this.t("fcNewRound")}</button><button type="button" class="btn quiet" data-fc-goto="5">${this.t("fcBack")}</button></div>
       <details class="fcdetails"><summary>${this.t("fcSumTitle")}</summary><ul class="fcsum">${this.fcSummaryRows()}</ul></details></div></section>`;
   }
@@ -19057,6 +19068,7 @@ Object.assign(TEXT.de, {
   fcAllActivity: "Gesamte Aktivität", fcBandText: "Du bist mitten im Aufräumen, bei Etappe {n}.", fcBandBack: "Zurück zum Aufräumen", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du beim Aufräumen entschieden hast, das Neueste zuerst.",
   fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Vermerk angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
   fcFollowMore: "… und {n} weitere", fcFinishText2: "Du hast {d} Entscheidungen getroffen. Zu Beginn waren {start} Befunde offen, jetzt sind es {now}.", fcNextTitle: "So geht es weiter",
+  fcFinishText3: "Du hast {d} bearbeitet. Zu Beginn waren {start} Befunde offen, jetzt sind es {now}, {fresh} sind neu dazugekommen.", fcSumSuggest: "{n} Vorschläge", fcSumDeclined: "{n} abgelehnt", fcPendingPlan: "{n} Befunde sind vorgemerkt, es gibt noch keinen Plan. Bisher wurde nichts entfernt.", fcPendingGo: "Zu Etappe 4",
   fcNextNone: "Nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcSee: "Ansehen", fcNextLater: "Befunde auf „Später“ ({n}) kommen ab {date} unter „Fällig“ wieder.",
   fcNextTip: "Neue Befunde erscheinen unter „Neu“. Beginne in etwa 30 Tagen einen neuen Durchgang.", fcSumTitle: "Übersicht pro Etappe",
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
@@ -19090,6 +19102,7 @@ Object.assign(TEXT.en, {
   fcAllActivity: "All activity", fcBandText: "You are in the middle of the cleanup, at stage {n}.", fcBandBack: "Back to the cleanup", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the cleanup, the newest first.",
   fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the cleanup", fcLogMark: "Mark set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings on “Later”", fcLogSeveral: "{n} suggestions",
   fcFollowMore: "… and {n} more", fcFinishText2: "You made {d} decisions. {start} findings were open at the start, {now} are now.", fcNextTitle: "What next",
+  fcFinishText3: "You handled {d}. {start} findings were open at the start, {now} are now, {fresh} of them new.", fcSumSuggest: "{n} suggestions", fcSumDeclined: "{n} declined", fcPendingPlan: "{n} findings are marked and there is no plan yet. Nothing was removed so far.", fcPendingGo: "To stage 4",
   fcNextNone: "Nothing left open. New findings show up under “New”.", fcSee: "View", fcNextLater: "Findings on “Later” ({n}) come back under “Due” from {date}.",
   fcNextTip: "New findings show up under “New”. Start a new pass in about 30 days.", fcSumTitle: "Overview per stage",
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
