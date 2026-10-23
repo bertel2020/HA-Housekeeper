@@ -40,6 +40,7 @@ from .cleanup import (
     RECORDER_CHOICES,
     REFACTOR_KINDS,
     REFERENCE_KINDS,
+    RELOAD_KINDS,
     RENAME_KINDS,
     REPAIR_KINDS,
     STATE_KINDS,
@@ -57,7 +58,7 @@ from .cleanup import (
     registry_fingerprint,
     trim_is_plain,
 )
-from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable
+from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable, reload_info
 from .cleanup_round import duplicate_rows, needs_first_step, removal_requests, sort_row
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices
@@ -866,6 +867,12 @@ async def _plan_from_requests(
                 "fingerprint": registry_fingerprint(entry) if entry else None,
             }
 
+    reload_data = {
+        action["object_id"]: reload_info(hass, action["object_id"])
+        for action in requests
+        if action["kind"] in RELOAD_KINDS
+    }
+
     area_data = {
         action["object_id"]: area_assign.prepare(
             hass, action["object_id"], action.get("target") or ""
@@ -939,6 +946,7 @@ async def _plan_from_requests(
         trim_data=trim_data,
         backup_data=backup_data,
         delete_data=delete_data,
+        reload_data=reload_data,
     )
     await _add_history(hass, snapshot, plan)
     return plan

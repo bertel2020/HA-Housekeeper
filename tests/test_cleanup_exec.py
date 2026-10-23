@@ -1211,3 +1211,63 @@ async def test_the_check_before_a_step_refuses_a_gone_or_changed_target(
 
         monkeypatch.setattr(cleanup_exec, "count_older", count)
         assert await check(trim, context) == reason
+
+
+async def test_reloading_an_integration_is_judged_run_verified_and_not_undone(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    from homeassistant.config_entries import ConfigEntryState
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper.cleanup_exec import reload_info
+
+    config = MockConfigEntry(domain="test", title="Test box")
+    config.add_to_hass(hass)
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    requests = [
+        {"kind": "reload_integration", "object_id": config.entry_id},
+        {"kind": "reload_integration", "object_id": "nope"},
+    ]
+    data = {r["object_id"]: reload_info(hass, r["object_id"]) for r in requests}
+    plan = build_plan(snapshot, requests, datetime.now(UTC), reload_data=data)
+    scanner.journal.add(plan)
+    assert [(a["verdict"], a["name"]) for a in plan["actions"]] == [
+        ("ok", "Test box"),
+        ("blocked", "nope"),
+    ]
+
+    async def load(_entry_id: str) -> None:
+        config.mock_state(hass, ConfigEntryState.LOADED)
+
+    with patch.object(hass.config_entries, "async_reload", AsyncMock(side_effect=load)) as reload:
+        await run(scanner, plan)
+    reload.assert_awaited_once_with(config.entry_id)
+    assert plan["status"] == "verified" and plan["verification"]["ok"] is True
+    assert plan["verification"]["checks"][0]["check"] == "entry_loaded"
+
+    result = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert {r["outcome"] for r in result["results"]} == {"irreversible"}
+
+
+async def test_a_reload_that_raises_stops_the_plan(hass: HomeAssistant) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper.cleanup_exec import reload_info
+
+    config = MockConfigEntry(domain="test")
+    config.add_to_hass(hass)
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    requests = [{"kind": "reload_integration", "object_id": config.entry_id}]
+    data = {config.entry_id: reload_info(hass, config.entry_id)}
+    plan = build_plan(snapshot, requests, datetime.now(UTC), reload_data=data)
+    scanner.journal.add(plan)
+    with patch.object(hass.config_entries, "async_reload", AsyncMock(side_effect=ValueError)):
+        await run(scanner, plan)
+    assert plan["status"] != "verified"
+    assert "reload_failed" in str(plan)

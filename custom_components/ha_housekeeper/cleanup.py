@@ -48,6 +48,8 @@ STATE_TARGETS = ("disable", "enable", "hide", "unhide")
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
 RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})
+# Loads one integration entry anew; nothing is written, so there is no backup and no way back.
+RELOAD_KINDS = frozenset({"reload_integration"})
 ACTION_KINDS = (
     ENTITY_KINDS
     | DEVICE_KINDS
@@ -63,6 +65,7 @@ ACTION_KINDS = (
     | LABEL_KINDS
     | AREA_KINDS
     | STATE_KINDS
+    | RELOAD_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
@@ -318,6 +321,10 @@ BLOCKING_REASONS = frozenset(
         "already_disabled",
         "already_in_state",
         "bad_state",
+        "entry_missing",
+        "entry_disabled",
+        "entry_own",
+        "entry_no_reload",
         "not_user_disabled",
         "marked_keep",
         "not_quarantined",
@@ -1033,6 +1040,38 @@ def judge_state_action(
     return action
 
 
+def judge_reload_action(entry_id: str, info: dict[str, Any]) -> dict[str, Any]:
+    """Judge loading one integration entry anew; ``info`` is what the config entries hold now.
+
+    Reloading deletes nothing and is harmless, so a plan that may run is ``ok``; it only cuts the
+    integration off for a few seconds. The entry of Housekeeper itself is never reloaded here.
+    """
+    action: dict[str, Any] = {
+        "kind": "reload_integration",
+        "object_id": entry_id,
+        "object_type": "integration",
+        "name": info.get("title") or info.get("domain") or entry_id,
+        "domain": info.get("domain"),
+        "entry_state": info.get("state"),
+        "entities": info.get("entities", 0),
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+    }
+    reasons = action["reasons"]
+    if not info.get("exists"):
+        reasons.append("entry_missing")
+    elif info.get("own"):
+        reasons.append("entry_own")
+    elif info.get("disabled"):
+        reasons.append("entry_disabled")
+    elif not info.get("can_reload"):
+        reasons.append("entry_no_reload")
+    _verdict(action)
+    return action
+
+
 def judge_meter_action(
     object_id: str,
     target: str | None,
@@ -1198,6 +1237,7 @@ def build_plan(
     trim_data: dict[tuple[str, int], dict[str, Any] | None] | None = None,
     backup_data: dict[str, dict[str, Any]] | None = None,
     delete_data: dict[str, dict[str, Any]] | None = None,
+    reload_data: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -1283,6 +1323,9 @@ def build_plan(
             entry = objects.get(object_id) or devices.get(object_id) or {}
             action = judge_area_action(object_id, entry.get("name") or object_id, info)
             action["fingerprint"] = info.get("fingerprint")
+        elif kind in RELOAD_KINDS:
+            action = judge_reload_action(object_id, (reload_data or {}).get(object_id, {}))
+            action["fingerprint"] = (reload_data or {}).get(object_id, {}).get("fingerprint")
         elif kind in STATE_KINDS:
             info = (state_data or {}).get(object_id, {})
             item = objects.get(object_id) or {}

@@ -83,6 +83,7 @@ from .cleanup import (
     PURGE_KINDS,
     REFACTOR_KINDS,
     REFERENCE_KINDS,
+    RELOAD_KINDS,
     REMOVAL_KINDS,
     RENAME_KINDS,
     REPAIR_KINDS,
@@ -154,6 +155,8 @@ INDEPENDENT_KINDS = PURGE_KINDS | TRIM_KINDS
 GLOBAL_STOPS = {"recorder_busy", "no_recorder"}
 LOCAL_AGENT = "backup.local"
 BACKUP_TIMEOUT = 30 * 60  # seconds; large installations can take a while
+RELOAD_TIMEOUT = 120  # seconds an integration may take to load again
+RELOADABLE_STATES = frozenset({"loaded", "setup_error", "setup_retry", "not_loaded"})
 BUSY_BACKUP_STATES = {"create_backup", "receive_backup", "restore_backup", "blocked"}
 RECORDER_BACKLOG_STOP = 10_000  # queued recorder writes; the recorder normally keeps this near zero
 INTEGRITY_TIMEOUT = (
@@ -205,6 +208,24 @@ def entity_restorable(hass: HomeAssistant, entry: Any) -> bool | None:
     if entry.config_entry_id is None:
         return True
     return hass.config_entries.async_get_entry(entry.config_entry_id) is not None
+
+
+def reload_info(hass: HomeAssistant, entry_id: str) -> dict[str, Any]:
+    """What the config entries hold about one entry now, as the reload plan judges it."""
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if entry is None:
+        return {"exists": False}
+    state = entry.state.value
+    return {
+        "exists": True,
+        "title": str(entry.title or ""),
+        "domain": entry.domain,
+        "state": state,
+        "own": entry.domain == DOMAIN,
+        "disabled": entry.disabled_by is not None,
+        "can_reload": state in RELOADABLE_STATES and (state != "loaded" or entry.supports_unload),
+        "entities": len(er.async_entries_for_config_entry(er.async_get(hass), entry_id)),
+    }
 
 
 def _state_reached(entry: Any, target: str) -> bool:
@@ -920,6 +941,8 @@ class CleanupRunner:
             return await self._rename_entity(action), "entity_renamed"
         if kind in STATE_KINDS:
             return self._set_entity_state(action), "entity_state_set"
+        if kind in RELOAD_KINDS:
+            return await self._reload_integration(action), "integration_reloaded"
         if kind in LABEL_KINDS:
             registry = er.async_get(self.hass)
             entry = registry.async_get(object_id)
@@ -1690,6 +1713,8 @@ class CleanupRunner:
             if ar.async_get(self.hass).async_get_area(action["target"]) is None:
                 return "now_blocked"
             return None
+        if kind in RELOAD_KINDS:
+            return None if reload_info(self.hass, object_id).get("can_reload") else "now_blocked"
         if kind in STATE_KINDS:
             entry = er.async_get(self.hass).async_get(object_id)
             if entry is None:
@@ -1948,6 +1973,8 @@ class CleanupRunner:
                 entry = self._area_entry(object_id)
                 ok = entry is not None and entry.area_id == action["target"]
                 checks.append({"check": "area_set", "object_id": object_id, "ok": ok})
+            elif kind in RELOAD_KINDS:
+                checks.extend(self._verify_reload(object_id))
             elif kind in STATE_KINDS:
                 entry = registry.async_get(object_id)
                 ok = entry is not None and _state_reached(entry, action["target"])
@@ -2139,7 +2166,7 @@ class CleanupRunner:
                     outcome = stop.reason
             elif kind in DELETE_AUTOMATION_KINDS:
                 outcome = await self._undo_automation_delete(result)
-            elif kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS:
+            elif kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS | RELOAD_KINDS:
                 outcome = "irreversible"
             else:
                 outcome = self._reenable(registry, action["object_id"], result)
@@ -2288,6 +2315,54 @@ class CleanupRunner:
             return "conflict_changed"
         self._write_area(object_id, result.get("previous"))
         return "undone"
+
+    async def _reload_integration(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Load the entry anew; whatever it does afterwards is what the verification reports."""
+        if not reload_info(self.hass, action["object_id"]).get("can_reload"):
+            raise StepAbort("now_blocked")
+        try:
+            async with asyncio.timeout(RELOAD_TIMEOUT):
+                await self.hass.config_entries.async_reload(action["object_id"])
+        except TimeoutError as err:
+            raise StepAbort("reload_timeout") from err
+        except Exception as err:  # noqa: BLE001 - whatever the integration raises ends the plan
+            raise StepAbort("reload_failed") from err
+        return {"irreversible": True}
+
+    def _verify_reload(self, entry_id: str) -> list[dict[str, Any]]:
+        """Is the entry loaded again, and do its entities report values?"""
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        state = entry.state.value if entry else "gone"
+        checks = [
+            {
+                "check": "entry_loaded",
+                "object_id": entry_id,
+                "ok": state == "loaded",
+                "state": state,
+            }
+        ]
+        if state == "loaded":
+            ids = [
+                e.entity_id
+                for e in er.async_entries_for_config_entry(er.async_get(self.hass), entry_id)
+                if e.disabled_by is None
+            ]
+            live = [
+                i
+                for i in ids
+                if (s := self.hass.states.get(i)) is not None
+                and s.state not in ("unavailable", "unknown")
+            ]
+            checks.append(
+                {
+                    "check": "entities_report",
+                    "object_id": entry_id,
+                    "ok": bool(live) or not ids,
+                    "count": len(live),
+                    "of": len(ids),
+                }
+            )
+        return checks
 
     def _set_entity_state(self, action: dict[str, Any]) -> dict[str, Any]:
         registry = er.async_get(self.hass)
