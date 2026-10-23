@@ -405,7 +405,7 @@ class FirstCleanupMixin {
       this.fcAct(opt("keep"), this.t("fcKeep"), this.t("fcKeepHint"), false, "mdi:check-circle-outline", "green", false, chosen === "keep"),
       this.fcAct(opt("snooze"), this.t("fcLater"), this.t("fcLaterHint"), false, "mdi:clock-outline", "amber", rec?.act === "later", chosen === "snooze"),
       this.fcAct(opt("ignore"), this.t("decideKind_ignore"), this.t("fcIgnoreHint"), false, "mdi:eye-off-outline", "", false, chosen === "ignore"),
-      this.fcCanMark(obj) ? this.fcAct(`data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), this.t("fcMarkHint"), false, FSEL_ICONS.mark, "blue", false, chosen === "mark") : "",
+      this.fcCanMark(obj) ? this.fcAct(`data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), this.t("fcMarkHint"), false, FSEL_ICONS.mark, "blue", rec?.act === "mark", chosen === "mark") : "",
     ].join("");
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);

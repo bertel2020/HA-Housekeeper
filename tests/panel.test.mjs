@@ -7017,7 +7017,8 @@ test("a card of the cleanup recommends one answer from its facts, never keeping,
   el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d", name: "Echo" }], causes: [], findings: [] };
   const short = el.fcRecCard(f("a", "device.down", "unavailable", 9), "device:d"), long = el.fcRecCard(f("b", "device.down", "unavailable", 30), "device:d");
   const broken = el.fcRecCard(f("c", "automation.missing_entity", "broken_reference", 1), "automation:c");
-  assert.deepEqual([short.act, long.act, broken.act], ["later", "fix", "fix"]);
+  assert.deepEqual([short.act, long.act, broken.act], ["later", "mark", "fix"], "a device that is only offline has nothing to fix: a long outage recommends the mark");
+  assert.ok(long.body.includes("cannot repair"));
   assert.ok(short.body.includes("9 hr") || short.body.includes("9 h"), "the reason names how long it is down");
   const html = el.fcInfoHtml([el.fcRecRow(short)], "device:d");
   assert.ok(html.includes("fcirec") && html.includes("Recommendation") && html.includes(short.head));

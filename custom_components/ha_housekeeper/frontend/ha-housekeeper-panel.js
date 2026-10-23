@@ -19175,7 +19175,7 @@ class FirstCleanupMixin {
       this.fcAct(opt("keep"), this.t("fcKeep"), this.t("fcKeepHint"), false, "mdi:check-circle-outline", "green", false, chosen === "keep"),
       this.fcAct(opt("snooze"), this.t("fcLater"), this.t("fcLaterHint"), false, "mdi:clock-outline", "amber", rec?.act === "later", chosen === "snooze"),
       this.fcAct(opt("ignore"), this.t("decideKind_ignore"), this.t("fcIgnoreHint"), false, "mdi:eye-off-outline", "", false, chosen === "ignore"),
-      this.fcCanMark(obj) ? this.fcAct(`data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), this.t("fcMarkHint"), false, FSEL_ICONS.mark, "blue", false, chosen === "mark") : "",
+      this.fcCanMark(obj) ? this.fcAct(`data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), this.t("fcMarkHint"), false, FSEL_ICONS.mark, "blue", rec?.act === "mark", chosen === "mark") : "",
     ].join("");
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
@@ -19871,6 +19871,9 @@ Object.assign(TEXT.de, {
   fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
   fcFixWaysHead: "Wege zum Beheben", fcFixObject: "Zum Objekt", fcFixObjectHint: "Selbst ansehen und lösen. Von dort kommst du hierher zurück.",
   fcPlanPreview: "Vorschau", fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
+  fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt ein Vermerk den Ausfall samt Folgen still.",
+  fcRecNoFixLong: "Seit {span} aus, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk; sonst sieh nach dem Gerät.",
+  fcRecNoFixNoSince: "Seit wann es besteht, ist nicht bekannt, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk.",
   fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
 });
 Object.assign(TEXT.en, {
@@ -19892,6 +19895,9 @@ Object.assign(TEXT.en, {
   fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
   fcFixWaysHead: "Ways to fix it", fcFixObject: "Go to the object", fcFixObjectHint: "Look at it and solve it yourself. You come back here from there.",
   fcPlanPreview: "Preview", fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
+  fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, a mark silences the outage with everything that follows.",
+  fcRecNoFixLong: "Down for {span}, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits; otherwise look at the device.",
+  fcRecNoFixNoSince: "It is not known since when this has been the case, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits.",
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
 
@@ -19902,14 +19908,27 @@ class FcRecommendMixin {
     const cause = this.causeList().find(c => c.finding_key === f.key);
     const outage = Boolean(cause) || OUTAGE_RULES.includes(f.rule_id);
     if (!outage) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixBroken") };
+    // "Fix" is only recommended where Housekeeper has a way to fix it; an outage it cannot repair gets the mark instead.
+    const fixable = this.fcFixable(f, key), obj = this.findObject(key);
+    const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
-    if (followers >= 5) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixFollows", { n: this.formatNumber(followers) }) };
-    if (!since) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixNoSince") };
+    if (followers >= 5) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixFollows", { n: this.formatNumber(followers) }) } : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
+    if (!since) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixNoSince") } : instead(t("fcRecNoFixNoSince"));
     const hours = Math.max(0, (Date.now() - since) / 3600000), steps = this.outageSteps();
-    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixLong", { span: this.spanText(hours) }) };
+    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixLong", { span: this.spanText(hours) }) } : instead(t("fcRecNoFixLong", { span: this.spanText(hours) }));
     if (this.oftenFor?.(f)) return { act: "later", head: t("fcRecLater"), body: t("fcRecLaterOften") };
     const next = steps.find(([, at]) => at > hours);
     return { act: "later", head: t("fcRecLater"), body: next ? t("fcRecLaterShort", { span: this.spanText(hours), level: t(`chip_${next[0]}`), next: this.spanText(next[1] - hours) }) : t("fcRecLaterOften") };
+  }
+
+  // Whether Housekeeper has a way of its own for this finding: a plan it runs, or the faults it guides through (a broken
+  // reference, a failing automation, an integration or app that is down). A device that is merely offline has none.
+  fcFixable(f, key) {
+    const obj = this.findObject(key);
+    if (!obj) return false;
+    if (f.classification === "broken_reference" || f.topic === "failing_automations") return true;
+    if (["config_entry.not_loaded", "config_entry.reauth", "app.stopped_in_use"].includes(f.rule_id)) return true;
+    return this.fixItems(obj, key).items.some(it => it.plan);
   }
 
   // A suggestion of stage 2: always "set the mark"; the reason names the pattern.
