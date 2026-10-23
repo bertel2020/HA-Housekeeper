@@ -1,4 +1,4 @@
-"""The first cleanup: which stage a finding is in, and how far the house has come."""
+"""The cleanup: which stage a finding is in, and how far the house has come."""
 
 from __future__ import annotations
 

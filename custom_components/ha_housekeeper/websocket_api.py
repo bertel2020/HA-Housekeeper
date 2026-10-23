@@ -473,7 +473,7 @@ def websocket_first_cleanup(
     msg: dict[str, Any],
     scanner: InventoryScanner,
 ) -> None:
-    """Where the first cleanup stands, whether it is offered, and the findings of each stage. Reads only."""
+    """Where the cleanup stands, whether it is offered, and the findings of each stage. Reads only."""
     connection.send_result(msg["id"], _first_cleanup_reply(scanner))
 
 
@@ -494,7 +494,7 @@ def websocket_first_cleanup_set(
     msg: dict[str, Any],
     scanner: InventoryScanner,
 ) -> None:
-    """Begin the first cleanup, decline the offer, start it over, or go to a stage and mark it done. Hides nothing."""
+    """Begin the cleanup, decline the offer, start it over, or go to a stage and mark it done. Hides nothing."""
     store = scanner.first_cleanup
     now = datetime.now(UTC)
     if msg["action"] == "begin":
@@ -529,7 +529,7 @@ def websocket_first_cleanup_later(
 ) -> None:
     """Stage 5: put the rest off together ("Later"); it comes back as due. Housekeeper's own list only."""
     if not scanner.first_cleanup.running:
-        connection.send_error(msg["id"], "not_running", "The first cleanup has not begun")
+        connection.send_error(msg["id"], "not_running", "The cleanup has not begun")
         return
     keys = stage_keys(scanner.snapshot or {})[5][:BULK_LIMIT]
     done = scanner.snooze_many(

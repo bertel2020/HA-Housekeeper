@@ -1,4 +1,4 @@
-"""The first cleanup ("Erstes Aufräumen"): five stages through the open findings, and where the house stands.
+"""The cleanup ("Aufräumen"): five stages through the open findings, and where the house stands.
 
 The stages are cut from the topics and the impact, with no outline of their own: (1) outages that
 hold up many follow-ups, (2) suggestions for marks (the panel's card; it has no findings of its own
@@ -73,7 +73,7 @@ def _clean(value: Any) -> dict[str, Any]:
 
 
 class FirstCleanupStore:
-    """Remember how far the first cleanup of the house has come."""
+    """Remember how far the cleanup of the house has come."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, FIRST_CLEANUP_STORAGE_KEY)

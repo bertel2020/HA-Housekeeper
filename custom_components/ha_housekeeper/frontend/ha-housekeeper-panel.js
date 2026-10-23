@@ -11979,7 +11979,7 @@ const ERR_MESSAGE_KEYS = {
   "Unknown automation": "err_unknown_automation",
   "Unknown device": "err_unknown_device",
   "Finding not found in the latest scan": "err_finding_not_found",
-  "The first cleanup has not begun": "err_not_running",
+  "The cleanup has not begun": "err_not_running",
   "A stage is needed": "err_stage_needed",
   "Object not found in the latest scan": "err_object_not_found",
   "A run is no longer in the trace buffer": "err_run_gone",
@@ -12013,7 +12013,7 @@ Object.assign(TEXT.de, {
   err_invalid_limit: "Der Grenzwert liegt außerhalb des erlaubten Bereichs.", err_no_recorder: "Der Recorder ist nicht verfügbar.", err_nothing_to_merge: "Nach den Konflikten bleibt nichts übrig.",
   err_invalid_format: "Eine Angabe ist nicht gültig. Prüfe die Eingaben und versuche es noch einmal.", err_rules_too_many: "Zu viele Regeln.", err_rules_invalid: "Die Regel ist nicht gültig.", err_invalid: "Die Eingabe ist nicht gültig.",
   err_too_many: "Zu viele Aktionen in einem Plan.", err_thresholds_order: "Info, niedrig, mittel und hoch müssen ansteigen.",
-  err_not_running: "Das erste Aufräumen hat noch nicht begonnen.", err_stage_needed: "Es fehlt die Etappe.",
+  err_not_running: "Das Aufräumen hat noch nicht begonnen.", err_stage_needed: "Es fehlt die Etappe.",
   err_failed: "Fehlgeschlagen: {detail}", err_not_accepted: "Nicht angenommen: {detail}",
 });
 Object.assign(TEXT.en, {
@@ -12027,7 +12027,7 @@ Object.assign(TEXT.en, {
   err_invalid_limit: "The limit is outside the allowed range.", err_no_recorder: "The recorder is not available.", err_nothing_to_merge: "Nothing is left after the conflicts.",
   err_invalid_format: "A value is not valid. Check the entries and try again.", err_rules_too_many: "Too many rules.", err_rules_invalid: "The rule is not valid.", err_invalid: "The input is not valid.",
   err_too_many: "Too many actions in one plan.", err_thresholds_order: "Info, low, medium and high must rise.",
-  err_not_running: "The first cleanup has not begun.", err_stage_needed: "A stage is needed.",
+  err_not_running: "The cleanup has not begun.", err_stage_needed: "A stage is needed.",
   err_failed: "Failed: {detail}", err_not_accepted: "Not accepted: {detail}",
 });
 
@@ -18360,7 +18360,7 @@ Object.assign(TEXT.en, {
   roundEmpty: "Nothing unneeded is open.", roundKeepReason: "Kept in the cleanup round", fixWay_cleanup_round: "Cleanup round", fixWayHint_cleanup_round: "Go through everything unneeded: what is safe to remove together, the rest one by one, each with Keep.", fixRoundStart: "Open the cleanup round",
 });
 
-// FirstCleanupMixin: the first cleanup ("Erstes Aufräumen") as five stages through the open findings. The backend cuts
+// FirstCleanupMixin: the cleanup ("Aufräumen") as five stages through the open findings. The backend cuts
 // the stages and keeps the record for the whole house; every stage opens the normal list with a filter (or the cleanup
 // round, or the card of suggestions for marks). Only the last stage writes: it puts the quiet rest off together.
 const FC_LOG_KEY = "ha_housekeeper.firstcleanup";
@@ -18406,7 +18406,7 @@ class FirstCleanupMixin {
   firstCleanupOffer() {
     this.ensureFirstCleanup();
     if (!this.fc?.offered) return "";
-    return `<div class="panel fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="fctext">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
+    return `<div class="panel fcoffer"><ha-icon icon="mdi:broom"></ha-icon><span class="fctext">${this.t("fcOffer", { n: this.formatNumber(this.fc.open) })}</span><button type="button" class="btn primary" data-fc-begin><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcBegin")}</button><button type="button" class="btn quiet" data-fc-dismiss>${this.t("fcNotNow")}</button></div>`;
   }
 
   // The cleanup as a wizard: one frame (steps, title, back and next) around the normal list, the card of suggestions, the
@@ -18511,7 +18511,7 @@ class FirstCleanupMixin {
 
   fcWelcome() {
     const stages = [1, 2, 3, 4, 5].map(n => `<li><strong>${this.t("fcStage", { n })} · ${this.t(`fcStage${n}`)}</strong><small>${this.t(`fcStage${n}Hint`)}</small></li>`).join("");
-    return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcIntro")}</p><ol class="fclist">${stages}</ol><div class="mbtns"><button type="button" class="btn primary" data-fc-begin>${this.t("fcBegin")}</button></div></div></section>`;
+    return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcIntro")}</p><ol class="fclist">${stages}</ol><div class="mbtns"><button type="button" class="btn primary" data-fc-begin><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcBegin")}</button></div></div></section>`;
   }
 
   // What was done in the tour, one line per stage; kept in the browser, as the backend holds only the stages.
@@ -18855,7 +18855,7 @@ Object.assign(TEXT.de, {
   fcNextTip: "Neue Befunde erscheinen unter „Neu“. Schau in etwa 30 Tagen noch einmal in den Rundgang.", fcSumTitle: "Übersicht pro Etappe",
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
-  fcKeepReason: "Im ersten Aufräumen als gewollt bestätigt", fcLaterOneReason: "Im ersten Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
+  fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
@@ -18868,8 +18868,8 @@ Object.assign(TEXT.de, {
   fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
   fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
   fcFinishTitle: "Fertig", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
-  firstcleanup: "Erstes Aufräumen", round: "Aufräum-Runde", firstTitle: "Erstes Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
-  fcOffer: "{n} Befunde sind offen. Das erste Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Erstes Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Aufräumen",
+  firstcleanup: "Aufräumen", round: "Aufräum-Runde", firstTitle: "Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
+  fcOffer: "{n} Befunde sind offen. Das Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Aufräumen",
   fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
  
   fcStageFilter: "Etappe {n}: {name}", fcStage: "Etappe {n}",
@@ -18878,7 +18878,7 @@ Object.assign(TEXT.de, {
   fcStage3: "Hohe und mittlere Wirkung", fcStage3Hint: "Ausgefallen, kaputte Verweise und fehlerhafte Automationen mit Wirkung Hoch oder Mittel.",
   fcStage4: "Überflüssiges", fcStage4Hint: "Die Aufräum-Runde: sicher Entfernbares gesammelt, der Rest einzeln.",
   fcStage5: "Der ruhige Rest", fcStage5Hint: "Wirkung Niedrig oder Info: gesammelt auf „Später“; es kommt über „Fällig“ zurück.",
-  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage",  fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Im ersten Aufräumen gesammelt zurückgestellt",
+  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage",  fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Beim Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
   fcBandText: "The tour stands at stage {n}.", fcBandBack: "Back to the tour", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the tour, the newest first.",
@@ -18888,7 +18888,7 @@ Object.assign(TEXT.en, {
   fcNextTip: "New findings show up under “New”. Go through the tour once more in about 30 days.", fcSumTitle: "Overview per stage",
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
-  fcKeepReason: "Confirmed as intended in the first cleanup", fcLaterOneReason: "Put off in the first cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
+  fcKeepReason: "Confirmed as intended in the cleanup", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
@@ -18901,8 +18901,8 @@ Object.assign(TEXT.en, {
   fcCounter: "{start} at the start · {now} open now · {d} decided", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",
   fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
   fcFinishTitle: "Done", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
-  firstcleanup: "First cleanup", round: "Cleanup round", firstTitle: "First cleanup", firstSubtitle: "Go through the open findings in five stages.",
-  fcOffer: "{n} findings are open. The first cleanup goes through them in five stages.", fcBegin: "Begin the first cleanup", fcNotNow: "Not now", fcButton: "Cleanup",
+  firstcleanup: "Cleanup", round: "Cleanup round", firstTitle: "Cleanup", firstSubtitle: "Go through the open findings in five stages.",
+  fcOffer: "{n} findings are open. The cleanup goes through them in five stages.", fcBegin: "Begin the cleanup", fcNotNow: "Not now", fcButton: "Cleanup",
   fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
  
   fcStageFilter: "Stage {n}: {name}", fcStage: "Stage {n}",
@@ -18911,7 +18911,7 @@ Object.assign(TEXT.en, {
   fcStage3: "High and medium impact", fcStage3Hint: "Down, broken references and failing automations with impact High or Medium.",
   fcStage4: "Unneeded", fcStage4Hint: "The cleanup round: what is safe to remove together, the rest one by one.",
   fcStage5: "The quiet rest", fcStage5Hint: "Impact Low or Info: put off together to “Later”; it comes back through “Due”.",
-  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterDays: "Days",  fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the first cleanup",
+  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterDays: "Days",  fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the cleanup",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
