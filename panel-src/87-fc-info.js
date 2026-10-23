@@ -32,8 +32,20 @@ class FcInfoMixin {
     ];
   }
 
-  fcInfoBlock(f, key, obj) {
-    const rows = this.fcInfoRows(f, key, obj).map(r => {
+  fcInfoBlock(f, key, obj) { return this.fcInfoHtml(this.fcInfoRows(f, key, obj), key); }
+
+  // The rows of a suggestion of stage 2: the pattern, how often, how long, and what the mark would hide. "How often" opens the reliability of the object.
+  fcOftenInfo(item, r) {
+    const info = item.often?.info || {}, none = this.t("fcInfoNone"), obj = this.findObject(r.link);
+    const often = info.episodes ? this.t("fcInfoEpisodes", { n: this.formatNumber(info.episodes), days: item.often.days || "" }) : "";
+    const mean = info.mean_seconds ? this.t("fcInfoMean", { span: this.spanText(info.mean_seconds / 3600) }) : "";
+    const hides = item.hides ? this.t(item.hides === 1 ? "fcInfoHides1" : "fcInfoHides", { n: this.formatNumber(item.hides) }) : this.t("fcInfoHidesNone");
+    const row = (id, label, text, tabs) => ({ id, label: this.t(label), text: text || none, empty: !text, tab: obj && text && tabs ? this.fcTabFor(obj, r.link, tabs) : "" });
+    return this.fcInfoHtml([row("pattern", "fcInfoPattern", r.pattern), row("often", "fcInfoOften", often, ["reliability", "overview"]), row("mean", "fcInfoMean_", mean), row("hides", "fcInfoImpact", hides)], r.link);
+  }
+
+  fcInfoHtml(list, key) {
+    const rows = list.map(r => {
       const text = `<span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${this.esc(r.text)}</span>`;
       return r.tab ? `<button type="button" class="fcirow" data-fc-info="${this.esc(`${key}|${r.tab}`)}" title="${this.esc(r.text)}" aria-label="${this.esc(`${r.label}: ${r.text}`)}">${text}<ha-icon icon="mdi:chevron-right"></ha-icon></button>` : `<div class="fcirow static">${text}<i></i></div>`;
     }).join("");
@@ -49,9 +61,13 @@ class FcInfoMixin {
 }
 Object.assign(TEXT.de, {
   fcInfoTitle: "Warum steht das hier?", fcInfoDuration: "Dauer", fcInfoState: "Zustand", fcInfoLinks: "Daran hängt", fcInfoImpact: "Wirkung",
+  fcInfoPattern: "Muster", fcInfoOften: "Häufigkeit", fcInfoMean_: "Dauer", fcInfoEpisodes: "{n} Ausfälle in {days} Tagen", fcInfoMean: "Im Schnitt {span} pro Ausfall",
+  fcInfoHides: "Der Vermerk blendet {n} Befunde aus", fcInfoHides1: "Der Vermerk blendet 1 Befund aus", fcInfoHidesNone: "Der Vermerk blendet keinen Befund aus",
   fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
 });
 Object.assign(TEXT.en, {
   fcInfoTitle: "Why is this here?", fcInfoDuration: "Duration", fcInfoState: "State", fcInfoLinks: "Depends on it", fcInfoImpact: "Impact",
+  fcInfoPattern: "Pattern", fcInfoOften: "Frequency", fcInfoMean_: "Duration", fcInfoEpisodes: "{n} outages in {days} days", fcInfoMean: "{span} per outage on average",
+  fcInfoHides: "The mark hides {n} findings", fcInfoHides1: "The mark hides 1 finding", fcInfoHidesNone: "The mark hides no finding",
   fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
 });

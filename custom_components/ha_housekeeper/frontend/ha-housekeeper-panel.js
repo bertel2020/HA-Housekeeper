@@ -18795,8 +18795,16 @@ class FirstCleanupMixin {
   // Stage 5 asks one question; "Look first" shows the list of the stage in the same frame.
   fcLaterCard(count) {
     if (!count) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`;
-    const days = this.esc(this.fcDays ?? this.fc.later_days);
-    return `<section class="panel fcpanel"><div class="pad"><p>${this.t("fcLaterAsk", { n: this.formatNumber(count) })}</p><div class="mbtns"><button type="button" class="btn primary" data-fc-later>${this.t("fcLaterGo", { n: this.formatNumber(count) })}</button><label class="fcdays">${this.t("fcLaterDays")} <input type="number" min="1" max="3650" value="${days}" data-fc-days></label><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcLook")}</button></div></div></section>`;
+    const open = this.stageOpen(5), days = this.fcDays ?? this.fc.later_days, n = this.formatNumber(count);
+    const level = k => open.filter(f => f.impact === k).length, owners = new Set(open.map(f => this.ownerKey(f))).size, followers = open.reduce((sum, f) => sum + this.fcFollowers(f), 0);
+    const options = [...new Set([30, 90, 180, 365, days])].sort((a, b) => a - b).map(d => `<option value="${d}" ${d === days ? "selected" : ""}>${this.t("fcRestDays", { n: d })}</option>`).join("");
+    const info = [
+      [this.t("fcInfoImpact"), this.t("fcRestLevels", { low: this.formatNumber(level("low")), info: this.formatNumber(count - level("low")) })],
+      [this.t("fcRestObjects"), this.t(owners === 1 ? "fcRestObjects1" : "fcRestObjectsN", { n: this.formatNumber(owners) })],
+      [this.t("fcInfoLinks"), followers ? this.t("causeFollowers", { n: this.formatNumber(followers) }) : this.t("fcInfoNothing"), followers ? "" : "fciok"],
+    ].map(([label, text, cls = ""]) => `<div class="fcirow static"><span>${this.esc(label)}</span><span class="${cls}">${this.esc(text)}</span><i></i></div>`).join("");
+    const back = `<label class="fcirow static"><span>${this.t("fcRestBack")}</span><span><select data-fc-days aria-label="${this.esc(this.t("fcRestBack"))}">${options}</select></span><i></i></label>`;
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRestEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t(count === 1 ? "fcRestTitle1" : "fcRestTitle", { n })}</h3><small class="fcid">${this.t("fcRestId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRestWhat")}</strong></p><p class="fcchips"><span class="pill mute">${this.t("fcRestChip")}</span><small>${this.t("fcRestNote")}</small></p><div class="fcinfo">${info}${back}</div><div class="fcacts">${this.fcAct("data-fc-later", this.t("fcLaterGo", { n }), this.t("fcRestLaterHint"), false, "mdi:clock-outline", "amber")}</div><div class="fcmore"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></div></section>`;
   }
 
   fcEmpty() { return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`; }
@@ -18902,7 +18910,7 @@ class FirstCleanupMixin {
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const takeAll = all.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(all.length) })}</button>` : "";
     const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
-    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}${this.fcOftenInfo(first, r)}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
   }
 
   async fcTake(keys) {
@@ -19015,7 +19023,7 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-openlist]").forEach(el => el.onclick = () => this.fcOpenList(Number(el.dataset.fcOpenlist)));
     root.querySelector("[data-fc-resume]")?.addEventListener("click", () => this.fcResume());
     root.querySelector("[data-fc-takeall]")?.addEventListener("click", () => this.fcTakeAll());
-    root.querySelector("[data-fc-days]")?.addEventListener("change", e => { this.fcDays = Math.max(1, Math.min(3650, Number(e.target.value) || this.fc.later_days)); });
+    root.querySelector("[data-fc-days]")?.addEventListener("change", e => { this.fcDays = Math.max(1, Math.min(3650, Number(e.target.value) || this.fc.later_days)); this.render(); });
     root.querySelector("[data-fc-later]")?.addEventListener("click", () => this.fcLater());
   }
 
@@ -19054,8 +19062,7 @@ Object.assign(TEXT.de, {
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
   fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcNextFollow: "{n} Folgebefunde hängen noch an Ursachen und gehören zu keiner Etappe.", fcNextFollow1: "1 Folgebefund hängt noch an einer Ursache und gehört zu keiner Etappe.", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
-  fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
-  fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
+  fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLookOff: "Zurück zur Frage",
   fcRoundUndo: "Was die Runde ändert, steht danach im Journal und lässt sich dort zurücknehmen.", fcOpenJournal: "Journal öffnen", fcFinishTitle: "Fertig", fcKpiDecided: "Entschieden", fcKpiOpen: "Noch offen", fcKpiLater: "Auf „Später“", fcProgress: "Fortschritt", fcMinutes: "{c} Karten, etwa {n} Minuten.", fcFollowsChip: "{n} Folgen", fcFollowsChip1: "1 Folge", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
   firstcleanup: "Aufräumen", round: "Aufräum-Runde", firstTitle: "Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
   fcOffer: "{n} Befunde sind offen. Das Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Aufräumen",
@@ -19067,7 +19074,8 @@ Object.assign(TEXT.de, {
   fcStage3: "Hohe und mittlere Wirkung", fcStage3Hint: "Ausgefallen, kaputte Verweise und fehlerhafte Automationen mit Wirkung Hoch oder Mittel.",
   fcStage4: "Überflüssiges", fcStage4Hint: "Die Aufräum-Runde: sicher Entfernbares gesammelt, der Rest einzeln.",
   fcStage5: "Der ruhige Rest", fcStage5Hint: "Wirkung Niedrig oder Info: gesammelt auf „Später“; es kommt über „Fällig“ zurück.",
-  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage",  fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Beim Aufräumen gesammelt zurückgestellt",
+  fcRestEyebrow: "Der ruhige Rest", fcRestTitle: "{n} ruhige Befunde", fcRestTitle1: "1 ruhiger Befund", fcRestId: "Wirkung Niedrig oder Info", fcRestWhat: "Zum Zurücklegen", fcRestChip: "Ruhig", fcRestNote: "Sie kommen über „Fällig“ zurück, an Home Assistant ändert sich nichts.", fcRestLevels: "{low} Niedrig · {info} Info", fcRestObjects: "Objekte", fcRestObjects1: "1 Objekt", fcRestObjectsN: "{n} Objekte", fcRestBack: "Zurück in", fcRestDays: "{n} Tagen", fcRestLaterHint: "Für die gewählte Zeit.",
+  fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Beim Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
   fcAllActivity: "All activity", fcBandText: "You are in the middle of the cleanup, at stage {n}.", fcBandBack: "Back to the cleanup", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the cleanup, the newest first.",
@@ -19087,8 +19095,7 @@ Object.assign(TEXT.en, {
   fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "Pause, continue later",
   fcLeft: "{n} open", fcLeftObj: "{o} objects · {n} findings", fcToRound: "Back to the round", fcNextFollow: "{n} follow-up findings still hang on causes and belong to no stage.", fcNextFollow1: "1 follow-up finding still hangs on a cause and belongs to no stage.", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
-  fcCounter: "{start} at the start · {now} open now · {d} decided", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",
-  fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
+  fcCounter: "{start} at the start · {now} open now · {d} decided", fcLaterGo: "Put all {n} off to “Later”", fcLookOff: "Back to the question",
   fcRoundUndo: "What the round changes is listed in the journal afterwards, where it can be taken back.", fcOpenJournal: "Open the journal", fcFinishTitle: "Done", fcKpiDecided: "Decided", fcKpiOpen: "Still open", fcKpiLater: "On “Later”", fcProgress: "Progress", fcMinutes: "{c} cards, about {n} minutes.", fcFollowsChip: "{n} follow-ups", fcFollowsChip1: "1 follow-up", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
   firstcleanup: "Cleanup", round: "Cleanup round", firstTitle: "Cleanup", firstSubtitle: "Go through the open findings in five stages.",
   fcOffer: "{n} findings are open. The cleanup goes through them in five stages.", fcBegin: "Begin the cleanup", fcNotNow: "Not now", fcButton: "Cleanup",
@@ -19100,7 +19107,8 @@ Object.assign(TEXT.en, {
   fcStage3: "High and medium impact", fcStage3Hint: "Down, broken references and failing automations with impact High or Medium.",
   fcStage4: "Unneeded", fcStage4Hint: "The cleanup round: what is safe to remove together, the rest one by one.",
   fcStage5: "The quiet rest", fcStage5Hint: "Impact Low or Info: put off together to “Later”; it comes back through “Due”.",
-  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterDays: "Days",  fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the cleanup",
+  fcRestEyebrow: "The quiet rest", fcRestTitle: "{n} quiet findings", fcRestTitle1: "1 quiet finding", fcRestId: "Impact Low or Info", fcRestWhat: "To put aside", fcRestChip: "Quiet", fcRestNote: "They come back through “Due”; nothing in Home Assistant changes.", fcRestLevels: "{low} Low · {info} Info", fcRestObjects: "Objects", fcRestObjects1: "1 object", fcRestObjectsN: "{n} objects", fcRestBack: "Back in", fcRestDays: "{n} days", fcRestLaterHint: "For the chosen time.",
+  fcLaterTitle: "Put the rest off to “Later”?", fcLaterYes: "Put off", fcLaterConfirm: "Put {n} findings off for {days} days? They come back as due afterwards; nothing in Home Assistant changes.", fcLaterReason: "Put off together in the cleanup",
 });
 
 // ActivityMixin: the Journal tab "Activity", what was done in Housekeeper (decisions, marks, plans, logbook, what
@@ -19259,8 +19267,20 @@ class FcInfoMixin {
     ];
   }
 
-  fcInfoBlock(f, key, obj) {
-    const rows = this.fcInfoRows(f, key, obj).map(r => {
+  fcInfoBlock(f, key, obj) { return this.fcInfoHtml(this.fcInfoRows(f, key, obj), key); }
+
+  // The rows of a suggestion of stage 2: the pattern, how often, how long, and what the mark would hide. "How often" opens the reliability of the object.
+  fcOftenInfo(item, r) {
+    const info = item.often?.info || {}, none = this.t("fcInfoNone"), obj = this.findObject(r.link);
+    const often = info.episodes ? this.t("fcInfoEpisodes", { n: this.formatNumber(info.episodes), days: item.often.days || "" }) : "";
+    const mean = info.mean_seconds ? this.t("fcInfoMean", { span: this.spanText(info.mean_seconds / 3600) }) : "";
+    const hides = item.hides ? this.t(item.hides === 1 ? "fcInfoHides1" : "fcInfoHides", { n: this.formatNumber(item.hides) }) : this.t("fcInfoHidesNone");
+    const row = (id, label, text, tabs) => ({ id, label: this.t(label), text: text || none, empty: !text, tab: obj && text && tabs ? this.fcTabFor(obj, r.link, tabs) : "" });
+    return this.fcInfoHtml([row("pattern", "fcInfoPattern", r.pattern), row("often", "fcInfoOften", often, ["reliability", "overview"]), row("mean", "fcInfoMean_", mean), row("hides", "fcInfoImpact", hides)], r.link);
+  }
+
+  fcInfoHtml(list, key) {
+    const rows = list.map(r => {
       const text = `<span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${this.esc(r.text)}</span>`;
       return r.tab ? `<button type="button" class="fcirow" data-fc-info="${this.esc(`${key}|${r.tab}`)}" title="${this.esc(r.text)}" aria-label="${this.esc(`${r.label}: ${r.text}`)}">${text}<ha-icon icon="mdi:chevron-right"></ha-icon></button>` : `<div class="fcirow static">${text}<i></i></div>`;
     }).join("");
@@ -19276,10 +19296,14 @@ class FcInfoMixin {
 }
 Object.assign(TEXT.de, {
   fcInfoTitle: "Warum steht das hier?", fcInfoDuration: "Dauer", fcInfoState: "Zustand", fcInfoLinks: "Daran hängt", fcInfoImpact: "Wirkung",
+  fcInfoPattern: "Muster", fcInfoOften: "Häufigkeit", fcInfoMean_: "Dauer", fcInfoEpisodes: "{n} Ausfälle in {days} Tagen", fcInfoMean: "Im Schnitt {span} pro Ausfall",
+  fcInfoHides: "Der Vermerk blendet {n} Befunde aus", fcInfoHides1: "Der Vermerk blendet 1 Befund aus", fcInfoHidesNone: "Der Vermerk blendet keinen Befund aus",
   fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
 });
 Object.assign(TEXT.en, {
   fcInfoTitle: "Why is this here?", fcInfoDuration: "Duration", fcInfoState: "State", fcInfoLinks: "Depends on it", fcInfoImpact: "Impact",
+  fcInfoPattern: "Pattern", fcInfoOften: "Frequency", fcInfoMean_: "Duration", fcInfoEpisodes: "{n} outages in {days} days", fcInfoMean: "{span} per outage on average",
+  fcInfoHides: "The mark hides {n} findings", fcInfoHides1: "The mark hides 1 finding", fcInfoHidesNone: "The mark hides no finding",
   fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
 });
 

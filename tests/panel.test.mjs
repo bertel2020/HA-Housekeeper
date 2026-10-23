@@ -7136,3 +7136,17 @@ test("a card of the cleanup carries four fixed rows of facts, each with a tab of
   assert.ok(bare.every(r => r.text) && bare[1].empty && bare[3].empty && bare.filter(r => r.tab).length === 0, "nothing known: a note and no click");
   assert.ok(el.fcInfoBlock(f, "config_entry:e1", obj).includes('data-fc-info="config_entry:e1|relations"'));
 });
+
+test("stage 5 and stage 2 use the same frame: facts in fixed rows, the days of the rest from a list", () => {
+  const { el } = panel("en");
+  el.fc = { later_days: 90, state: { started_at: "2026-10-23T08:00:00+00:00", stage: 5, done: [], log: [] }, stages: { 1: [], 2: [], 3: [], 4: [], 5: ["a", "b"] } };
+  const f = (key, impact) => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact, ignored: false });
+  el.data = { ...DATA, findings: [f("a", "low"), f("b", "info")] };
+  const html = el.fcLaterCard(2);
+  assert.ok(html.includes("2 quiet findings") && html.includes("1 Low · 1 Info") && html.includes("2 objects") && html.includes("data-fc-days") && !html.includes('type="number"'));
+  assert.ok(html.includes('<option value="90" selected>90 days</option>') && html.includes("data-fc-later"));
+  const item = { key: "entity:sensor.x", hides: 3, often: { days: 30, info: { episodes: 12, mean_seconds: 7200, pattern_hour: 3 } } };
+  const block = el.fcOftenInfo(item, { link: "entity:sensor.x", pattern: "Usually fails between 03:00 and 05:00" });
+  assert.equal(block.split("fcirow").length - 1 >= 4, true);
+  assert.ok(block.includes("12 outages in 30 days") && block.includes("2 h per outage on average") && block.includes("The mark hides 3 findings"));
+});
