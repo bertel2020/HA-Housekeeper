@@ -333,10 +333,20 @@ class HAHousekeeperPanel extends HTMLElement {
     return from ? (from.selected ? from.selected.name : this.t(from.view)) : "";
   }
 
+  // Back from the cleanup wizard: the page it was opened from, else the findings; its own pages never count.
+  wizardBackTarget(take = false) {
+    const own = ["findingsNav", "round", "firstcleanup"];
+    while (this.viewTrail.length && own.includes(this.viewTrail[this.viewTrail.length - 1].view)) this.viewTrail.pop();
+    const from = take ? this.viewTrail.pop() : this.viewTrail[this.viewTrail.length - 1];
+    return from || { view: "findingsNav" };
+  }
+
   // Back after a jump from one page to another (overview card to a list and the like).
   viewBack() {
-    const from = this.viewTrail.pop();
+    const inWizard = this.fcWizOn() && !this.selected;
+    const from = inWizard ? this.wizardBackTarget(true) : this.viewTrail.pop();
     if (!from) return;
+    if (inWizard) this.fcWizLeave();
     this.view = from.view; this.pages = {};
     this.render();
     this.restoreScroll(from.scroll);
@@ -779,7 +789,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
-    const from = this.fcWizOn() && !this.selected ? null : this.viewTrail[this.viewTrail.length - 1];
+    const from = this.fcWizOn() && !this.selected ? this.wizardBackTarget() : this.viewTrail[this.viewTrail.length - 1];
     // Every back button sits in this row at the top of the page, like the one of the detail page.
     const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";

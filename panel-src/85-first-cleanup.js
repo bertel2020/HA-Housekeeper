@@ -145,6 +145,12 @@ class FirstCleanupMixin {
     }, { title: this.t("fcResetTitle"), yes: this.t("fcResetYes"), danger: true });
   }
 
+  // Leaving the wizard for another page (the way back to where it was opened from): the tour stays where it stands.
+  fcWizLeave() {
+    this.fcWiz = null; this.findingStage = 0;
+    this.clearFindingFilters(); this.findingStatus = this.defaultFindingStatus();
+  }
+
   // "Pause": the tour is put down where it stands; the chip leads back to it.
   fcWizExit() {
     this.fcWiz = null; this.findingStage = 0;
