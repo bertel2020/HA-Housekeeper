@@ -151,6 +151,7 @@ from .service_check import missing_service_findings
 from .signals import SignalStore, situations
 from .signals import fire as signal_fire
 from .stale import StaleStore
+from .start_times import StartStore
 from .system_usage import supervisor_get, supervisor_token
 from .view_counts import view_counts
 from .visits import VisitStore
@@ -903,6 +904,7 @@ STORE_NAMES = (
     "marks",
     "stale",
     "load",
+    "starts",
     "goals",
     "criteria",
     "coverage",
@@ -951,6 +953,7 @@ class InventoryScanner:
         self._window_seen: dict[str, bool] = {}  # which mark windows were open at the last apply
         self.stale = StaleStore(hass)
         self.load = LoadStore(hass)
+        self.starts = StartStore(hass)
         self._started = datetime.now(UTC)
         self._reauth_seen: set[str] | None = (
             None  # the entries that asked for a login at the last scan
@@ -981,6 +984,9 @@ class InventoryScanner:
         self.paused = False
         self.retry_runs = 0  # Rescans after a gap in a row; set by the scheduler in __init__.py
         self._booting = False
+        self.boot_anchor: float | None = (
+            None  # epoch seconds the start counts from; set in __init__.py
+        )
         self._warmup_until: float | None = None
         self._settled_at: float | None = None  # since when no integration has been loading
         self._pending_since: float | None = None  # since when an integration has been loading again
@@ -1118,6 +1124,18 @@ class InventoryScanner:
             self._pending_since = None
             if self._settled_at is None:
                 self._settled_at = now
+
+    @property
+    def settled_at(self) -> float | None:
+        """``time.monotonic()`` of the moment no integration was loading any more; None while some are."""
+        return self._settled_at
+
+    @property
+    def boot_seconds(self) -> int | None:
+        """How long Home Assistant has been loading, while it still is; None once it runs."""
+        if not self._booting or self.boot_anchor is None:
+            return None
+        return max(0, round(time.time() - self.boot_anchor))
 
     @property
     def warmup_settling(self) -> bool:
