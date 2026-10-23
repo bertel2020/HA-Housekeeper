@@ -7206,7 +7206,7 @@ test("the closing page names its state in the title and offers the fitting way o
   const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact: "medium", ignored: false });
   el.data = { ...DATA, findings: [f("a"), f("b")], causes: [] };
   let html = el.fcFinish();
-  assert.ok(html.includes("Nothing decided yet") && html.includes("Start with stage 1") && html.includes("All 2 findings are still open"), "nothing answered: no 'done'");
+  assert.ok(html.includes("Nothing decided yet") && html.includes("Start with stage 1") && html.includes("2 findings are waiting"), "nothing answered: no 'done'");
   el.fcLogAdd({ stage: 3, action: "keep", key: "x", keys: ["x"], n: 1 });
   html = el.fcFinish();
   assert.ok(html.includes("Pass finished") && html.includes("1 intended") && html.includes("data-fc-newround") && !html.includes("Start with stage 1"));

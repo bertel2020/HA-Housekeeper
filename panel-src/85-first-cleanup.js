@@ -295,18 +295,21 @@ class FirstCleanupMixin {
     const kpi = (label, value, tone, note = "") => `<div class="fckpi ${tone}"><b>${n(value)}</b><span>${label}</span>${note ? `<small>${this.esc(note)}</small>` : ""}</div>`;
     const sub = mode === "all" ? this.t("fcEndSubAll") : mode === "done" ? this.t("fcEndSubDone", { d: n(facts.findings + facts.marks), now: n(left) }) : this.t("fcEndSubNone", { now: n(left) });
     const rows = [1, 2, 3, 4, 5].map(stage => {
-      const c = this.stageCount(stage), result = this.fcStageParts(stage).join(" · ") || (c ? "" : this.t("fcSumNone"));
-      const pill = c ? `<span class="pill warn">${this.t(stage === 2 ? "fcSumSuggest" : "fcSumLeft", { n: n(c) })}</span>` : `<span class="pill ok">${this.t("fcEndDone")}</span>`;
-      return `<button type="button" class="fcrow" data-fc-openlist="${stage}"><span class="fcrname"><b>${stage} · ${this.t(`fcStage${stage}`)}</b></span><span class="fcrres">${this.esc(result)}</span>${pill}<ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
-    }).join("") + (following ? `<button type="button" class="fcrow" data-fc-openlist="0"><span class="fcrname"><b>${this.t("fcEndFollow")}</b><small>${this.t("fcEndFollowSub")}</small></span><span class="fcrres">${this.t(following === 1 ? "fcEndFollowN1" : "fcEndFollowN", { n: n(following) })}</span><span></span><ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "");
+      const c = this.stageCount(stage), result = mode === "none" ? "" : this.fcStageParts(stage).join(" · ") || (c ? "" : this.t("fcSumNone"));
+      const pill = c ? `<span class="pill ${stage === 1 && mode === "none" ? "warn" : "mute"}">${this.t(stage === 2 ? "fcSumSuggest" : mode === "none" ? "fcSumWaiting" : "fcSumLeft", { n: n(c) })}</span>` : `<span class="pill ok">${this.t("fcEndDone")}</span>`;
+      const num = c ? `<span class="fcnum">${stage}</span>` : `<span class="fcnum ok"><ha-icon icon="mdi:check"></ha-icon></span>`;
+      return `<button type="button" class="fcrow" data-fc-openlist="${stage}">${num}<span class="fcrname"><b>${this.t(`fcStage${stage}`)}</b></span>${mode === "none" ? "" : `<span class="fcrres">${this.esc(result)}</span>`}${pill}<ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
+    }).join("") + (following ? `<button type="button" class="fcrow" data-fc-openlist="0"><span class="fcnum"><ha-icon icon="mdi:link-variant"></ha-icon></span><span class="fcrname"><b>${this.t("fcEndFollow")}</b> <small>${this.t("fcEndFollowSub")}</small></span>${mode === "none" ? "" : `<span class="fcrres"></span>`}<span class="pill mute">${this.t(following === 1 ? "fcEndFollowN1" : "fcEndFollowN", { n: n(following) })}</span><ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "");
     const band = facts.pending ? `<div class="fcband"><ha-icon icon="mdi:clipboard-alert-outline"></ha-icon><span>${this.t("fcPendingPlan", { n: n(facts.pending) })}</span><button type="button" class="btn" data-fc-goto="4">${this.t("fcPendingGo")}</button></div>` : "";
     const bar = mode === "done" && facts.start ? `<div class="fcbar" role="img" aria-label="${this.esc(this.t("fcEndBar", { p: Math.min(100, Math.round(facts.findings / facts.start * 100)), start: n(facts.start) }))}"><i style="width:${Math.min(100, Math.round(facts.findings / facts.start * 100))}%"></i></div><small class="fcbarnote">${this.t("fcEndBar", { p: Math.min(100, Math.round(facts.findings / facts.start * 100)), start: n(facts.start) })}</small>` : "";
-    const main = mode === "none" ? `<button type="button" class="btn primary" data-fc-goto="1">${this.t("fcEndStart")}</button><button type="button" class="btn" data-fc-exit>${this.t("fcToFindings")}</button>` : `<button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button>`;
+    const btns = mode === "none"
+      ? `<button type="button" class="btn primary" data-fc-goto="1">${this.t("fcEndStart")}</button><button type="button" class="btn" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn quiet" data-fc-history="1">${this.t("fcHistory")}</button>`
+      : `<button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-history="1">${this.t("fcHistory")}</button><button type="button" class="btn quiet" data-fc-goto="5">${this.t("fcEndBack")}</button>`;
     return `<section class="panel fcpanel fcend${this.fcAnim("finish")}"><div class="pad"><div class="fchd"><span class="fcck ${mode === "none" ? "nu" : "ok"}"><ha-icon icon="${mode === "none" ? "mdi:pause" : "mdi:check-bold"}"></ha-icon></span><div><h2>${this.t(`fcEndTitle_${mode}`)}</h2><p>${sub}</p></div></div>
-      <div class="fckpis">${kpi(this.t("fcKpiDecided"), facts.done, "ok", parts)}${kpi(this.t("fcKpiLater"), facts.later, "mute", facts.later ? this.t("fcEndLaterBack", { date: until }) : "")}${kpi(this.t("fcKpiOpen"), left, left ? "warn" : "ok", facts.start ? this.t(facts.fresh ? "fcEndStartFresh" : "fcEndStartOnly", { start: n(facts.start), fresh: n(facts.fresh) }) : "")}</div>${bar}${band}
-      <h3 class="fcsec">${this.t("fcEndList")}</h3><div class="fcrows">${rows}</div>
-      <div class="mbtns">${main}<button type="button" class="btn" data-fc-history="1">${this.t("fcHistory")}</button><button type="button" class="btn quiet" data-fc-goto="5">${this.t("fcEndBack")}</button></div>
-      <p class="fctip">${this.t("fcNextTip")} <button type="button" class="link" data-fc-newround>${this.t("fcEndNewRound")}</button></p></div></section>`;
+      ${mode === "none" ? "" : `<div class="fckpis">${kpi(this.t("fcKpiDecided"), facts.done, "ok", parts)}${kpi(this.t("fcKpiLater"), facts.later, "mute", facts.later ? this.t("fcEndLaterBack", { date: until }) : "")}${kpi(this.t("fcKpiOpen"), left, left ? "warn" : "ok", facts.start ? this.t(facts.fresh ? "fcEndStartFresh" : "fcEndStartOnly", { start: n(facts.start), fresh: n(facts.fresh) }) : "")}</div>${bar}`}${band}
+      <div class="fcrows">${rows}</div>
+      <div class="mbtns">${btns}</div>
+      ${mode === "none" ? "" : `<p class="fctip">${this.t("fcNextTip")} <button type="button" class="link" data-fc-newround>${this.t("fcEndNewRound")}</button></p>`}</div></section>`;
   }
 
   // Every decision of the tour, the newest first, each with its way back.
@@ -585,9 +588,9 @@ Object.assign(TEXT.de, {
   fcFollowMore: "… und {n} weitere", 
   fcSumSuggest: "{n} Vorschläge", fcSumDeclined: "{n} abgelehnt", fcPendingPlan: "{n} Befunde sind vorgemerkt, es gibt noch keinen Plan. Bisher wurde nichts entfernt.", fcPendingGo: "Zu Etappe 4",
   
-  fcNextTip: "Neue Befunde erscheinen unter „Neu“. In etwa 30 Tagen lohnt ein neuer Durchgang.", fcEndNewRound: "Jetzt neu beginnen", fcEndBack: "Zurück zu Etappe 5", fcEndStart: "Mit Etappe 1 beginnen", fcEndList: "Ergebnis und was noch offen ist", fcEndDone: "erledigt",
+  fcNextTip: "Neue Befunde erscheinen unter „Neu“. In etwa 30 Tagen lohnt ein neuer Durchgang.", fcEndNewRound: "Jetzt neu beginnen", fcEndBack: "Zurück zu Etappe 5", fcEndStart: "Mit Etappe 1 beginnen", fcEndDone: "erledigt",
   fcEndTitle_all: "Alles durchgesehen", fcEndTitle_done: "Durchgang beendet", fcEndTitle_none: "Noch nichts entschieden",
-  fcEndSubAll: "Es ist nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcEndSubDone: "Du hast {d} bearbeitet. {now} Befunde sind noch offen.", fcEndSubNone: "Alle {now} Befunde sind noch offen. Du kannst jede Etappe einzeln öffnen.",
+  fcEndSubAll: "Es ist nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcEndSubDone: "Du hast {d} bearbeitet. {now} Befunde sind noch offen.", fcEndSubNone: "{now} Befunde warten. Etappe 1 ist der beste Einstieg.", fcSumWaiting: "{n}",
   fcEndLaterBack: "kommen ab {date} zurück", fcEndStartOnly: "{start} zu Beginn", fcEndStartFresh: "{start} zu Beginn, {fresh} neu dazugekommen", fcEndBar: "{p} % der {start} Befunde bearbeitet",
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
@@ -623,9 +626,9 @@ Object.assign(TEXT.en, {
   fcFollowMore: "… and {n} more", 
   fcSumSuggest: "{n} suggestions", fcSumDeclined: "{n} declined", fcPendingPlan: "{n} findings are marked and there is no plan yet. Nothing was removed so far.", fcPendingGo: "To stage 4",
   
-  fcNextTip: "New findings show up under “New”. A new pass is worth it in about 30 days.", fcEndNewRound: "Start one now", fcEndBack: "Back to stage 5", fcEndStart: "Start with stage 1", fcEndList: "Result and what is still open", fcEndDone: "done",
+  fcNextTip: "New findings show up under “New”. A new pass is worth it in about 30 days.", fcEndNewRound: "Start one now", fcEndBack: "Back to stage 5", fcEndStart: "Start with stage 1", fcEndDone: "done",
   fcEndTitle_all: "All looked at", fcEndTitle_done: "Pass finished", fcEndTitle_none: "Nothing decided yet",
-  fcEndSubAll: "Nothing is open any more. New findings show up under “New”.", fcEndSubDone: "You handled {d}. {now} findings are still open.", fcEndSubNone: "All {now} findings are still open. You can open each stage on its own.",
+  fcEndSubAll: "Nothing is open any more. New findings show up under “New”.", fcEndSubDone: "You handled {d}. {now} findings are still open.", fcEndSubNone: "{now} findings are waiting. Stage 1 is the best place to start.", fcSumWaiting: "{n}",
   fcEndLaterBack: "come back from {date}", fcEndStartOnly: "{start} at the start", fcEndStartFresh: "{start} at the start, {fresh} new since", fcEndBar: "{p} % of the {start} findings handled",
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
