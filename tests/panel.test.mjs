@@ -4696,6 +4696,24 @@ test("the export started from a detail page returns to that page", () => {
   el.selected = null; el.xpOpen(); assert.ok(!shadow.innerHTML.includes("data-xp-return"));
 });
 
+test("a rule that does not report gets a review in 180 days, shows when it is due and asks for a reason on a whole domain", () => {
+  const { el } = panel("en");
+  const past = new Date(Date.now() - 86400000).toISOString(), soon = new Date(Date.now() + 5 * 86400000).toISOString();
+  const rule = (over) => ({ id: "r1", kind: "domain", targets: ["media_player"], action: "hide", scope: "always", enabled: true, note: "", ...over });
+  assert.ok(el.excReviewLine(rule({ review_at: past, review_days: 180 })).includes("data-exc-renew"));
+  assert.ok(el.excReviewLine(rule({ review_at: soon, review_days: 180 })).includes("review on"));
+  assert.ok(el.excReviewLine(rule({})).includes("no review date"));
+  assert.equal(el.excReviewLine(rule({ scope: "vacation" })), "");
+  el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [], days_max: 365 };
+  el.openException("", "always");
+  assert.equal(el.excForm.review, 180);
+  Object.assign(el.excForm, { kind: "domain", targets: ["media_player"], note: "" });
+  el.render = () => {};
+  el.commitException();
+  assert.ok(el.excForm.error.includes("needs a reason"));
+  assert.equal(JSON.stringify(Object.keys(el.excDrafts({ ...el.excForm, note: "x" })[0]).includes("review_days")), "true");
+});
+
 test("the reasons to pick from depend on the kind: intended and false alarm have them, later has none", () => {
   const { el } = panel("en");
   assert.ok(el.reasonChips("keep").includes("On purpose") && el.reasonChips("ignore").includes("Rule does not fit"));

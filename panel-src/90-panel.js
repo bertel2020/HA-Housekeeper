@@ -955,6 +955,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;
       if (el.dataset.jumpCause) this.findingCause = el.dataset.jumpCause;
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
+      if (this.view === "settings" && el.dataset.jumpTab) this.settingsTab = el.dataset.jumpTab;
       // A list the jump counts starts without the search and filters kept from before; its own filter comes after.
       for (const id of [el.dataset.jumpClear, el.dataset.jumpLf?.split("|")[0]].filter(Boolean)) {
         if (this.lv?.[id]) { this.lv[id].q = ""; this.lv[id].f = {}; this.persistLv(id); } else (this._lfPending ||= {})[id] = {}; // not opened yet: the kept filters are not loaded

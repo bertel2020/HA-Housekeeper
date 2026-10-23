@@ -12,6 +12,7 @@ from custom_components.ha_housekeeper.exceptions import (
     ExceptionStore,
     Traits,
     Vacation,
+    _review_due,
     clean_rule,
     is_outage,
     matches,
@@ -41,6 +42,21 @@ def _outage(days: float) -> dict:
         "rule_id": "entity.unavailable",
         "first_detected_at": (NOW - timedelta(days=days)).isoformat(),
     }
+
+
+def test_a_rule_that_hides_gets_a_review_date_and_keeps_working_after_it() -> None:
+    base = {"kind": "domain", "targets": ["media_player"], "review_days": 180}
+    rule = clean_rule(base, NOW)
+    assert (
+        rule["review_days"] == 180 and rule["review_at"] == (NOW + timedelta(days=180)).isoformat()
+    )
+    kept = clean_rule({**base, "review_at": rule["review_at"]}, NOW + timedelta(days=30))
+    assert kept["review_at"] == rule["review_at"], "an existing date is not moved by saving"
+    assert _review_due(rule, NOW + timedelta(days=181)) and not _review_due(rule, NOW)
+    assert rule["enabled"] and clean_rule({**base, "review_days": 7}, NOW)["review_at"] is None
+    delay = clean_rule({**base, "action": "delay", "days": 7}, NOW)
+    vacation = clean_rule({**base, "scope": "vacation"}, NOW)
+    assert delay["review_at"] is None and vacation["review_at"] is None
 
 
 def test_clean_rule_rejects_what_names_nothing() -> None:

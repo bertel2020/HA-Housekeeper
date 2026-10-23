@@ -12,16 +12,16 @@ Object.assign(TEXT.de, {
   excTitle: "Ausnahmeregeln", excHint: "Housekeeper meldet Objekte nicht, auf die eine Regel passt: nach Bereich, Label, Integration, Typ (Domain), Gerät oder Entität. Die Regeln gelten nur in Housekeeper; Home Assistant bleibt unverändert. Das Label housekeeper_ignore wirkt zusätzlich fest.",
   excFormNew: "Regel anlegen", excFormEdit: "Regel bearbeiten", excAdd: "Regel hinzufügen", excEdit: "Ändern", excDelete: "Löschen", excLoading: "Regeln werden geladen …",
   excKind: "Art", excKind_area: "Bereich", excKind_label: "Label", excKind_integration: "Integration", excKind_domain: "Domain (Typ)", excTargets: "Auswahl", excNoTargets: "In Home Assistant gibt es dafür noch nichts zur Auswahl.",
-  excAction: "Aktion", excAction_hide: "Ausblenden", excAction_delay: "Erst melden nach", excDays: "Tage nicht verfügbar", excNote: "Notiz (optional)",
+  excAction: "Aktion", excAction_hide: "Nicht melden", excAction_delay: "Erst melden nach", excDays: "Tage nicht verfügbar", excNote: "Notiz (optional)",
   excInherit: "Trifft Geräte und Entitäten. Eine Entität ohne eigenen Bereich erbt den Bereich ihres Geräts, ein Label am Gerät gilt auch für seine Entitäten. „Integration“ und „Domain“ treffen alle Entitäten dieser Integration oder dieses Typs (etwa media_player); eine breite Domain wie sensor deckt auch echte Störungen zu, die Vorschau zeigt die Treffer vorher.",
-  excDelayHint: "Hält nur „nicht verfügbar“, „unbekannt“ und „veraltet“ zurück. Alle anderen Befunde dieser Objekte (leere Batterie, defekter Verweis) erscheinen weiter normal; wer alles unterdrücken will, wählt „Ausblenden“. Nach Ablauf der Frist erscheint der Befund mit der Stufe seiner Ausfalldauer. Gemessen ab dem Ausfallbeginn, soweit bekannt; nach einem Neustart kann die Meldung später kommen, nie früher.",
-  excWinner: "Passen mehrere Regeln, schlägt „Ausblenden“ die Fristen; bei mehreren Fristen gilt die längste.",
-  excRuleArea: "Bereich {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Erst melden nach {n} Tagen", excRuleHideLine: "Ausblenden",
+  excDelayHint: "Hält nur „nicht verfügbar“, „unbekannt“ und „veraltet“ zurück. Alle anderen Befunde dieser Objekte (leere Batterie, defekter Verweis) erscheinen weiter normal; wer alles unterdrücken will, wählt „Nicht melden“. Nach Ablauf der Frist erscheint der Befund mit der Stufe seiner Ausfalldauer. Gemessen ab dem Ausfallbeginn, soweit bekannt; nach einem Neustart kann die Meldung später kommen, nie früher.",
+  excWinner: "Passen mehrere Regeln, schlägt „Nicht melden“ die Fristen; bei mehreren Fristen gilt die längste.",
+  excRuleArea: "Bereich {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Erst melden nach {n} Tagen", excRuleHideLine: "Nicht melden",
   excEffectHide: "{objects} Objekte, {n} Befunde ausgeblendet", excEffectDelay: "{hold} Befunde zurückgehalten, {due} fällig", excEffectNone: "Trifft gerade nichts",
   excPreview: "Vorschau", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
-  excOn: "Regel aktiv", excDue: "Frist abgelaufen",
+  excOn: "Regel aktiv", excDue: "Frist abgelaufen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
@@ -31,7 +31,7 @@ Object.assign(TEXT.de, {
   excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist die Objekt-Notiz da. Label, Typ oder eine andere Auswahl:", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
   excScopeHint: "Im Urlaubsmodus bleiben diese Objekte still, auch wenn ein Gerät kaputtgeht. Nach dem Urlaub zählt der Ausfall neu: mit eigener Frist deren Tage, sonst die Nachfrist.",
-  excOverlap: "Diese Objekte trifft schon: {rules}. Im Urlaub gilt das Ausblenden, danach wieder die Frist der anderen Regel, gezählt ab dem Ende des Urlaubs.",
+  excOverlap: "Diese Objekte trifft schon: {rules}. Im Urlaub gilt „Nicht melden“, danach wieder die Frist der anderen Regel, gezählt ab dem Ende des Urlaubs.",
   vacTitle: "Urlaubsmodus", vacHint: "Solange die gewählte Entität „an“ ist, gelten die Regeln „nur im Urlaubsmodus“. Ist sie nicht verfügbar oder unbekannt, gilt der Modus als aus. Schalten kannst du sie in Home Assistant, zum Beispiel per Kalender oder Automation.",
   vacEntity: "Entität für den Urlaubsmodus", vacEntityHint: "Jede Entität, die „an“ sein kann: Helfer, Schalter, Binärsensor, Zeitplan, Kalender. Leer lassen schaltet den Urlaubsmodus aus.",
   vacAuto: "Vorschlag, weil es diese Entität gibt. Sie gilt erst, wenn du speicherst; ändere oder leere das Feld, wenn du sie nicht willst.", vacKeyword: "Stichwort im Termin", vacKeywordExample: "Urlaub", vacKeywordHint: "Nur Termine, deren Titel dieses Wort enthält, schalten den Urlaubsmodus ein, so lässt sich dein normaler Kalender nutzen. Leer: jeder laufende Termin zählt, für einen eigenen Urlaubskalender.",
@@ -55,16 +55,16 @@ Object.assign(TEXT.en, {
   excTitle: "Exception rules", excHint: "Housekeeper does not report objects that a rule matches: by area, label, integration, type (domain), device or entity. The rules apply only in Housekeeper; Home Assistant stays unchanged. The label housekeeper_ignore keeps working on top.",
   excFormNew: "Add rule", excFormEdit: "Edit rule", excAdd: "Add rule", excEdit: "Change", excDelete: "Delete", excLoading: "Loading rules …",
   excKind: "Kind", excKind_area: "Area", excKind_label: "Label", excKind_integration: "Integration", excKind_domain: "Domain (type)", excTargets: "Selection", excNoTargets: "Home Assistant has nothing to choose from yet.",
-  excAction: "Action", excAction_hide: "Hide", excAction_delay: "Report only after", excDays: "days not available", excNote: "Note (optional)",
+  excAction: "Action", excAction_hide: "Do not report", excAction_delay: "Report only after", excDays: "days not available", excNote: "Note (optional)",
   excInherit: "Covers devices and entities. An entity without an area of its own takes the area of its device, and a label on the device counts for its entities. “Integration” and “Domain” cover all entities of that integration or type (such as media_player); a broad domain like sensor also covers real faults, the preview shows the matches first.",
-  excDelayHint: "Holds back only “not available”, “unknown” and “stale”. All other findings of these objects (empty battery, broken reference) still show as usual; to suppress everything choose “Hide”. When the time has passed the finding shows with the level of its outage. Counted from the start of the outage as far as known; after a restart the report can come later, never earlier.",
-  excWinner: "Where several rules match, “Hide” beats the delays; of several delays the longest counts.",
-  excRuleArea: "Area {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Report only after {n} days", excRuleHideLine: "Hide",
+  excDelayHint: "Holds back only “not available”, “unknown” and “stale”. All other findings of these objects (empty battery, broken reference) still show as usual; to suppress everything choose “Do not report”. When the time has passed the finding shows with the level of its outage. Counted from the start of the outage as far as known; after a restart the report can come later, never earlier.",
+  excWinner: "Where several rules match, “Do not report” beats the delays; of several delays the longest counts.",
+  excRuleArea: "Area {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Report only after {n} days", excRuleHideLine: "Do not report",
   excEffectHide: "{objects} objects, {n} findings hidden", excEffectDelay: "{hold} findings held back, {due} due", excEffectNone: "Matches nothing right now",
   excPreview: "Preview", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
-  excOn: "Rule active", excDue: "Time has passed",
+  excOn: "Rule active", excDue: "Time has passed", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
@@ -74,7 +74,7 @@ Object.assign(TEXT.en, {
   excForMore: "A single object with a reason or a time window: that is what an object note is for. Label, type or another choice:", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
   excScopeHint: "In vacation mode these objects stay quiet, even if a device breaks. After the vacation the outage counts anew: with a delay of its own that delay, otherwise the grace period.",
-  excOverlap: "These objects are already hit by: {rules}. In the vacation hiding applies, afterwards the delay of the other rule, counted from the end of the vacation.",
+  excOverlap: "These objects are already hit by: {rules}. In the vacation “Do not report” applies, afterwards the delay of the other rule, counted from the end of the vacation.",
   vacTitle: "Vacation mode", vacHint: "While the chosen entity is “on” the rules “only in vacation mode” apply. If it is unavailable or unknown the mode counts as off. You can switch it in Home Assistant, for example by calendar or automation.",
   vacEntity: "Entity for vacation mode", vacEntityHint: "Any entity that can be “on”: helper, switch, binary sensor, schedule, calendar. Leave empty to turn vacation mode off.",
   vacAuto: "Suggestion, because this entity exists. It counts only once you save; change or clear the field if you do not want it.", vacKeyword: "Keyword in the event", vacKeywordExample: "Vacation", vacKeywordHint: "Only events whose title contains this word switch vacation mode on, so your normal calendar works. Empty: every running event counts, for a calendar of its own.",
@@ -105,6 +105,16 @@ class ExceptionsMixin {
     return f.ignored_by === "rule" ? this.t(info.action === "delay" ? "heldByRule" : "ignoredByRule", { rule, date: info.until ? this.formatDate(info.until) : "" }) : "";
   }
 
+  excReviewDue(rule) {
+    return Boolean(rule.review_at) && new Date(rule.review_at).getTime() <= Date.now();
+  }
+
+  excReviewLine(rule, due = this.excReviewDue(rule)) {
+    if (rule.action !== "hide" || (rule.scope || "always") !== "always") return "";
+    if (!rule.review_at) return `<small>${this.t("excReviewNone")}</small>`;
+    return `<small${due ? ' class="warntext"' : ""}>${due ? `${this.t("excReviewDue")} · <button class="link" data-exc-renew="${this.esc(rule.id)}">${this.t("excRenew")}</button>` : this.t("excReviewOn", { date: this.formatDate(rule.review_at) })}</small>`;
+  }
+
   excRuleLine(rule) {
     return rule.action === "delay" ? this.t("excRuleDelayLine", { n: rule.days }) : this.t("excRuleHideLine");
   }
@@ -126,9 +136,9 @@ class ExceptionsMixin {
   // One rule as the cells of a table row: what it names, what it does, what that does now, the switch and the two buttons.
   excRuleCells(rule) {
     const icons = { area: "mdi:floor-plan", label: "mdi:label-outline", integration: "mdi:puzzle-outline", domain: "mdi:shape-outline", device: "mdi:devices", entity: "mdi:shape-outline" };
-    const id = this.esc(rule.id), tone = rule.enabled ? (rule.effect?.due ? "warn" : "ok") : "mute";
+    const id = this.esc(rule.id), due = this.excReviewDue(rule), tone = rule.enabled ? (rule.effect?.due || due ? "warn" : "ok") : "mute";
     return [
-      { key: "target", label: "excColRule", cell: () => `<div class="statcell"><span class="tile ${tone}"><ha-icon icon="${icons[rule.kind]}"></ha-icon></span><div><strong>${this.esc(this.excRuleName(rule))}</strong>${rule.note ? `<small>${this.esc(rule.note)}</small>` : ""}</div></div>` },
+      { key: "target", label: "excColRule", cell: () => `<div class="statcell"><span class="tile ${tone}"><ha-icon icon="${icons[rule.kind]}"></ha-icon></span><div><strong>${this.esc(this.excRuleName(rule))}</strong>${rule.note ? `<small>${this.esc(rule.note)}</small>` : ""}${this.excReviewLine(rule, due)}</div></div>` },
       { key: "action", label: "excColAction", cell: () => this.esc(this.excRuleLine(rule)) },
       { key: "effect", label: "excColEffect", cell: () => this.esc(this.excEffect(rule)) },
       { key: "on", label: "excColOn", cell: () => `<input type="checkbox" class="policyswitch" data-exc-toggle="${id}" ${rule.enabled ? "checked" : ""} aria-label="${this.esc(this.t("excOn"))}">` },
@@ -282,6 +292,7 @@ class ExceptionsMixin {
       <strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>
       ${what}
       ${action}
+      ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
       ${preview}${more}${f.error ? this.notice("err", f.error) : ""}
       <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
@@ -296,7 +307,7 @@ class ExceptionsMixin {
   }
 
   excDraft(f, kind, targets, keepId) {
-    return { ...(keepId ? { id: f.id } : {}), kind, targets, action: f.scope === "vacation" ? "hide" : f.action, scope: f.scope || "always", ...(f.scope !== "vacation" && f.action === "delay" ? { days: Math.max(1, Number(f.days) || 7) } : {}), enabled: f.enabled !== false, note: f.note.trim() };
+    return { ...(keepId ? { id: f.id } : {}), kind, targets, action: f.scope === "vacation" ? "hide" : f.action, scope: f.scope || "always", ...(f.scope !== "vacation" && f.action === "delay" ? { days: Math.max(1, Number(f.days) || 7) } : {}), ...(f.scope !== "vacation" && f.action === "hide" ? { review_days: f.review || 0, ...(f.review && f.review === f.reviewWas && f.reviewAt ? { review_at: f.reviewAt } : {}) } : {}), enabled: f.enabled !== false, note: f.note.trim() };
   }
 
   // The stored rules as the server takes them back: no effect, and days only where a delay has them.
@@ -306,8 +317,8 @@ class ExceptionsMixin {
 
   openException(id, scope) {
     const rule = this.exc.rules.find(r => r.id === id);
-    this.excForm = rule ? { id, kind: rule.kind, targets: [...rule.targets], picks: [], action: rule.action, scope: rule.scope || "always", search: "", days: rule.days || 7, enabled: rule.enabled, note: rule.note || "", error: "", preview: null }
-      : { id: "", kind: "any", targets: [], picks: [], action: "hide", scope: scope || "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null };
+    this.excForm = rule ? { id, kind: rule.kind, targets: [...rule.targets], picks: [], action: rule.action, scope: rule.scope || "always", search: "", days: rule.days || 7, enabled: rule.enabled, note: rule.note || "", error: "", preview: null, review: rule.review_days || 0, reviewWas: rule.review_days || 0, reviewAt: rule.review_at || null }
+      : { id: "", kind: "any", targets: [], picks: [], action: "hide", scope: scope || "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, review: 180, reviewWas: 0, reviewAt: null };
     this.render();
     this.excPreview();
   }
@@ -375,6 +386,7 @@ class ExceptionsMixin {
     const max = this.exc.days_max || 365, days = Number(f.days);
     if (f.scope !== "vacation" && f.action === "delay" && !(Number.isInteger(days) && days >= 1 && days <= max)) { f.error = this.t("excDaysInvalid", { max }); this.render(); return; }
     const drafts = this.excDrafts(f), rules = this.excRules();
+    if (f.scope !== "vacation" && f.action === "hide" && drafts.some(d => d.kind === "domain") && !f.note.trim()) { f.error = this.t("excNoteNeeded"); this.render(); return; }
     const at = rules.findIndex(r => r.id === f.id);
     if (at >= 0 && f.kind !== "any") rules[at] = drafts[0];
     else { if (at >= 0) rules.splice(at, 1); rules.push(...drafts); }
@@ -401,6 +413,7 @@ class ExceptionsMixin {
     });
     root.querySelectorAll("[data-sec-go]").forEach(el => el.onclick = () => { const sec = root.querySelector(`#hk-sec-${el.dataset.secGo}`); sec?.scrollIntoView?.({ block: "start", behavior: "smooth" }); });
     root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-exc-renew]").forEach(el => el.onclick = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excRenew ? { ...r, review_at: null } : r)), null));
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
     root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excToggle ? { ...r, enabled: el.checked } : r)), null));
@@ -444,6 +457,8 @@ class ExceptionsMixin {
       form.querySelectorAll("[data-exc-kind]").forEach(el => el.onclick = () => { f.error = ""; f.kind = el.dataset.excKind; f.targets = []; f.picks = []; f.search = ""; f.preview = null; this._picker = null; this.render(); });
       const search = form.querySelector("[data-exc-search]");
       if (search) search.oninput = ev => { f.search = ev.target.value; this.render(); this.shadowRoot.querySelector("[data-exc-search]")?.focus(); };
+      const review = form.querySelector("[data-exc-review]");
+      if (review) review.onchange = ev => { f.review = Number(ev.target.value); };
       form.querySelector("[data-exc-note]").oninput = ev => { f.error = ""; f.note = ev.target.value; };
       form.querySelectorAll("[data-exc-action]").forEach(el => el.onclick = () => { f.error = ""; f.action = el.dataset.excAction; this.render(); this.excPreview(); });
       const days = form.querySelector("[data-exc-days]");

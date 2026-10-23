@@ -24,6 +24,7 @@ from .exceptions import GRACE_MAX as VACATION_GRACE_MAX
 from .exceptions import KEYWORD_MAX as VACATION_KEYWORD_MAX
 from .exceptions import KINDS as EXCEPTION_KINDS
 from .exceptions import NOTE_MAX as EXCEPTION_NOTE_MAX
+from .exceptions import REVIEW_CHOICES as EXCEPTION_REVIEW_CHOICES
 from .exceptions import SCOPES as EXCEPTION_SCOPES
 from .exceptions import clean_rule, preview
 from .exposure import exposure
@@ -844,6 +845,8 @@ _RULE_SCHEMA = {
     vol.Optional("scope", default="always"): vol.In(EXCEPTION_SCOPES),
     vol.Optional("enabled", default=True): bool,
     vol.Optional("note", default=""): vol.All(str, vol.Length(max=EXCEPTION_NOTE_MAX)),
+    vol.Optional("review_days", default=0): vol.In((0, *EXCEPTION_REVIEW_CHOICES)),
+    vol.Optional("review_at"): vol.Any(None, str),
 }
 
 

@@ -44,6 +44,7 @@ TARGET_LENGTH = 255
 NOTE_MAX = 200
 DAYS_MAX = 365
 DAYS_DEFAULT = 7
+REVIEW_CHOICES = (30, 90, 180, 365)  # days after which a "do not report" rule asks to be looked at
 GRACE_DEFAULT = (
     24  # hours a finding is held back after the vacation, without a delay rule of its own
 )
@@ -73,8 +74,12 @@ class Vacation(NamedTuple):
     grace_hours: int = GRACE_DEFAULT
 
 
-def clean_rule(raw: Any) -> dict[str, Any] | None:
-    """One rule in its known shape, or None when it cannot be one."""
+def clean_rule(raw: Any, now: datetime | None = None) -> dict[str, Any] | None:
+    """One rule in its known shape, or None when it cannot be one.
+
+    A rule that hides can carry a review date: ``review_days`` is its length, ``review_at`` the day
+    it falls due. With ``now`` a missing date is set from the length; the rule keeps working after it.
+    """
     if not isinstance(raw, dict) or raw.get("kind") not in KINDS:
         return None
     targets = raw.get("targets")
@@ -94,6 +99,17 @@ def clean_rule(raw: Any) -> dict[str, Any] | None:
         if isinstance(days, int) and not isinstance(days, bool)
         else DAYS_DEFAULT
     )
+    review_days = raw.get("review_days")
+    review_days = (
+        review_days
+        if review_days in REVIEW_CHOICES and action == "hide" and scope == "always"
+        else 0
+    )
+    review_at = raw.get("review_at") if review_days else None
+    try:
+        datetime.fromisoformat(review_at)
+    except (TypeError, ValueError):
+        review_at = (now + timedelta(days=review_days)).isoformat() if review_days and now else None
     rule_id = raw.get("id")
     return {
         "id": rule_id
@@ -106,7 +122,16 @@ def clean_rule(raw: Any) -> dict[str, Any] | None:
         "scope": scope,
         "enabled": raw.get("enabled") is not False,
         "note": str(raw.get("note") or "").strip()[:NOTE_MAX],
+        "review_days": review_days,
+        "review_at": review_at,
     }
+
+
+def _review_due(rule: dict[str, Any], now: datetime) -> bool:
+    try:
+        return bool(rule.get("review_at")) and datetime.fromisoformat(rule["review_at"]) <= now
+    except (TypeError, ValueError):
+        return False
 
 
 def traits(hass: HomeAssistant, object_type: str, object_id: str) -> Traits | None:
@@ -353,11 +378,15 @@ class ExceptionStore:
             },
         }
 
-    def set_rules(self, raw: list[Any]) -> str | None:
+    def due_rules(self, now: datetime) -> int:
+        """How many rules that are on have passed their review date; they keep working."""
+        return sum(1 for rule in self.rules if rule["enabled"] and _review_due(rule, now))
+
+    def set_rules(self, raw: list[Any], now: datetime | None = None) -> str | None:
         """Replace all rules; the reason it failed, or None."""
         if len(raw) > ITEM_LIMIT:
             return "too_many"
-        cleaned = [clean_rule(item) for item in raw]
+        cleaned = [clean_rule(item, now) for item in raw]
         if any(rule is None for rule in cleaned):
             return "invalid"
         self.rules = [rule for rule in cleaned if rule is not None]

@@ -1904,6 +1904,7 @@ class InventoryScanner:
                 ),
                 "vacation": self.vacation_meta(findings),
                 "exception_rules": len(self.exceptions.rules),
+                "exception_rules_due": self.exceptions.due_rules(datetime.now(UTC)),
             },
             "objects": objects,
             "edges": edges,
@@ -2090,7 +2091,7 @@ class InventoryScanner:
 
     def set_exceptions(self, rules: list[Any]) -> str | None:
         """Replace the exception rules and bring the cached snapshot up to date; the failure, or None."""
-        if (error := self.exceptions.set_rules(rules)) is not None:
+        if (error := self.exceptions.set_rules(rules, datetime.now(UTC))) is not None:
             return error
         self._refresh_marks()
         return None
