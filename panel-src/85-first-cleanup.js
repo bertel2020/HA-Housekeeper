@@ -125,6 +125,15 @@ class FirstCleanupMixin {
     else run();
   }
 
+  // A new pass after the end: the record begins again, and the history of the last one goes with it.
+  fcNewRound() {
+    this.confirmAsk(this.t("fcNewRoundAsk"), async () => {
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
+      await this.firstCleanupSet({ action: "begin" });
+      this.openFirstCleanup();
+    }, { title: this.t("fcNewRound"), yes: this.t("fcBegin"), danger: false });
+  }
+
   // "Cancel": the tour starts over from the welcome page; what was decided in it stays decided.
   fcReset() {
     this.confirmAsk(this.t("fcResetAsk"), async () => {
@@ -271,7 +280,7 @@ class FirstCleanupMixin {
     const kpi = (label, value, tone) => `<div class="fckpi ${tone}"><b>${this.formatNumber(value)}</b><span>${label}</span></div>`;
     return `<section class="panel fcpanel${this.fcAnim("finish")}"><div class="fcdone"><span class="fcbigcheck"><ha-icon icon="mdi:check-bold"></ha-icon></span><strong>${this.t("fcFinishTitle")}</strong><div class="fckpis">${kpi(this.t("fcKpiDecided"), this.fcDecided(), "ok")}${kpi(this.t("fcKpiOpen"), left, left ? "warn" : "ok")}${kpi(this.t("fcKpiLater"), later, "mute")}</div><small>${this.t("fcFinishText2", { d: this.formatNumber(this.fcDecided()), start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</small></div>
       <div class="pad"><h3>${this.t("fcNextTitle")}</h3>${open ? `<ul class="fcnext">${open}</ul>` : `<p>${this.t("fcNextNone")}</p>`}${following ? `<p>${this.t(following === 1 ? "fcNextFollow1" : "fcNextFollow", { n: this.formatNumber(following) })} <button type="button" class="btn" data-fc-openlist="0">${this.t("fcSee")}</button></p>` : ""}${later ? `<p>${this.t("fcNextLater", { n: this.formatNumber(later), date: until })}</p>` : ""}<p class="fctip">${this.t("fcNextTip")}</p>
-      <div class="mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-history="1">${this.t("fcHistory")}</button><button type="button" class="btn quiet" data-fc-goto="5">${this.t("fcBack")}</button></div>
+      <div class="mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-history="1">${this.t("fcHistory")}</button><button type="button" class="btn" data-fc-newround>${this.t("fcNewRound")}</button><button type="button" class="btn quiet" data-fc-goto="5">${this.t("fcBack")}</button></div>
       <details class="fcdetails"><summary>${this.t("fcSumTitle")}</summary><ul class="fcsum">${this.fcSummaryRows()}</ul></details></div></section>`;
   }
 
@@ -497,6 +506,7 @@ class FirstCleanupMixin {
       this.render();
     });
     root.querySelector("[data-fc-again]")?.addEventListener("click", () => { const stage = this.fcWiz.step, log = this.fcLogGet(); log.splice(0, log.length, ...log.filter(e => !(e.stage === stage && e.action === "skip"))); this.fcLogCall({ action: "log_unskip", stage }); this.render(); });
+    root.querySelector("[data-fc-newround]")?.addEventListener("click", () => this.fcNewRound());
     root.querySelector("[data-fc-prev]")?.addEventListener("click", () => this.fcPrev());
     root.querySelector("[data-fc-reset]")?.addEventListener("click", () => this.fcReset());
     root.querySelectorAll("[data-fc-take]").forEach(el => el.onclick = () => this.fcTake([el.dataset.fcTake]));
@@ -532,7 +542,7 @@ Object.assign(TEXT.de, {
   fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Rundgang", fcLogMark: "Vermerk angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde zurückgestellt", fcLogSeveral: "{n} Vorschläge",
   fcFollowMore: "… und {n} weitere", fcFinishText2: "Du hast {d} Entscheidungen getroffen. Zu Beginn waren {start} Befunde offen, jetzt sind es {now}.", fcNextTitle: "So geht es weiter",
   fcNextNone: "Nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcSee: "Ansehen", fcNextLater: "Zurückgestellte Befunde ({n}) kommen ab {date} unter „Fällig“ wieder.",
-  fcNextTip: "Neue Befunde erscheinen unter „Neu“. Schau in etwa 30 Tagen noch einmal in den Rundgang.", fcSumTitle: "Übersicht pro Etappe",
+  fcNextTip: "Neue Befunde erscheinen unter „Neu“. Beginne in etwa 30 Tagen einen neuen Durchgang.", fcSumTitle: "Übersicht pro Etappe",
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
@@ -540,7 +550,7 @@ Object.assign(TEXT.de, {
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
   fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Rundgang zurücksetzen?", fcResetYes: "Zurücksetzen",
-  fcResetAsk: "Der Rundgang wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden.",
+  fcResetAsk: "Der Rundgang wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
   fcSumKeep: "{n} bleiben bewusst", fcSumLater: "{n} zurückgestellt", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
   fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcNextFollow: "{n} Folgebefunde hängen noch an Ursachen und gehören zu keiner Etappe.", fcNextFollow1: "1 Folgebefund hängt noch an einer Ursache und gehört zu keiner Etappe.", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
@@ -565,7 +575,7 @@ Object.assign(TEXT.en, {
   fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the tour", fcLogMark: "Mark set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings put off", fcLogSeveral: "{n} suggestions",
   fcFollowMore: "… and {n} more", fcFinishText2: "You made {d} decisions. {start} findings were open at the start, {now} are now.", fcNextTitle: "What next",
   fcNextNone: "Nothing left open. New findings show up under “New”.", fcSee: "View", fcNextLater: "Findings put off ({n}) come back under “Due” from {date}.",
-  fcNextTip: "New findings show up under “New”. Go through the tour once more in about 30 days.", fcSumTitle: "Overview per stage",
+  fcNextTip: "New findings show up under “New”. Start a new pass in about 30 days.", fcSumTitle: "Overview per stage",
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
   fcKeepReason: "Confirmed as intended in the cleanup", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
@@ -573,7 +583,7 @@ Object.assign(TEXT.en, {
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
   fcPrev: "Undo last", fcPrevHint: "Takes the last decision or skip back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the tour?", fcResetYes: "Reset",
-  fcResetAsk: "The tour is reset and begins again at the welcome page. What you decided in it stays decided.",
+  fcResetAsk: "The tour is reset and begins again at the welcome page. What you decided in it stays decided; the history with “Undo” is emptied.", fcNewRound: "Start a new pass", fcNewRoundAsk: "The cleanup begins again. What you decided stays decided; the history with “Undo” is emptied.",
   fcSumKeep: "{n} kept on purpose", fcSumLater: "{n} put off", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
   fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "Pause, continue later",
   fcLeft: "{n} open", fcLeftObj: "{o} objects · {n} findings", fcToRound: "Back to the round", fcNextFollow: "{n} follow-up findings still hang on causes and belong to no stage.", fcNextFollow1: "1 follow-up finding still hangs on a cause and belongs to no stage.", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
