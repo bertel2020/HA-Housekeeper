@@ -151,6 +151,7 @@ const NAV = [
   ["policies", "mdi:clipboard-check-outline"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["monitor", "mdi:home-heart"],
+  ["exceptions", "mdi:eye-off-outline"],
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
   ["batteries", "mdi:battery-alert-variant-outline"],
@@ -163,7 +164,7 @@ const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav"]],
   ["navGroupClean", ["cleanup", "repair", "journal"]],
   ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies"]],
-  ["navGroupOperation", ["monitor", "reliability", "runs", "recorder", "storage"]],
+  ["navGroupOperation", ["monitor", "reliability", "runs", "recorder", "storage", "exceptions"]],
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],
   ["navGroupExplore", ["inventory", "components", "graph", "changes"]],
 ];

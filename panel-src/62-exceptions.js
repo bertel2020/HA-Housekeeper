@@ -21,7 +21,7 @@ Object.assign(TEXT.de, {
   excPreview: "Vorschau", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
-  excOn: "Regel aktiv", excDue: "Frist abgelaufen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
+  excOn: "Regel aktiv", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", excTabRules: "Ausnahmeregeln", excTabVacation: "Urlaubsmodus", excTabFindings: "Befunde", excTabObjects: "Objekte", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
@@ -64,7 +64,7 @@ Object.assign(TEXT.en, {
   excPreview: "Preview", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
-  excOn: "Rule active", excDue: "Time has passed", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
+  excOn: "Rule active", excDue: "Time has passed", exceptions: "Exceptions", excTabRules: "Exception rules", excTabVacation: "Vacation mode", excTabFindings: "Findings", excTabObjects: "Objects", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
@@ -161,17 +161,16 @@ class ExceptionsMixin {
   }
 
   // One card for all rules: a switch between the two groups, then the form, the table or the empty state.
-  excRulesCard() {
-    const form = this.excForm, scope = form ? form.scope || "always" : this.excScope || "always";
-    const count = s => this.exc.rules.filter(r => (r.scope || "always") === s).length;
+  excRulesCard(scope = "always") {
+    const form = this.excForm && (this.excForm.scope || "always") === scope ? this.excForm : null;
     const rules = this.exc.rules.filter(r => (r.scope || "always") === scope);
     const v = this.exc.vacation || {};
-    const seg = `<div class="pad"><div class="seg">${["always", "vacation"].map(s => `<button type="button" class="chip${scope === s ? " active" : ""}" data-exc-scope="${s}" aria-pressed="${scope === s}">${this.t(s === "vacation" ? "excGroupVacation" : "excGroupAlways")} (${count(s)})</button>`).join("")}</div></div>`;
     const add = form ? "" : `<button class="btn" data-exc-edit="" data-exc-new="${scope}"><ha-icon icon="mdi:plus"></ha-icon>${this.t("excAddShort")}</button>`;
     const warn = scope === "vacation" && !v.entity ? `<div class="pad">${this.notice("warn", this.t("excVacNoEntity"))}</div>` : "";
     const body = `${form ? this.excFormHtml(form) : ""}${rules.length ? this.excTable(scope, rules) : form ? "" : this.excEmpty(scope)}`;
     const foot = rules.length ? `<div class="pad"><p class="factnote">${this.t("excWinner")}</p></div>` : "";
-    return `<section class="panel excgroup"><div class="panelhead"><div><h2>${this.t("excTitle")}</h2><p>${this.t("excHint")}</p></div>${add}</div>${seg}${warn}${body}${foot}</section>`;
+    const head = scope === "vacation" ? this.t("excGroupVacation") : this.t("excTitle");
+    return `<section class="panel excgroup"><div class="panelhead"><div><h2>${head}</h2><p>${scope === "vacation" ? this.t("excScopeHint") : this.t("excHint")}</p></div>${add}</div>${warn}${body}${foot}</section>`;
   }
 
   // The three labels Housekeeper reads: what each does, whether it exists in Home Assistant and how many objects carry it.
@@ -194,13 +193,32 @@ class ExceptionsMixin {
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("lblTitle")}</h2><p>${this.t("lblHint")}</p></div><button class="btn" data-ha-path="/config/labels"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("lblOpenHa")}</button></div>${rows}<div class="pad labfoot">${missing ? `<p class="factnote">${this.esc(this.t("lblHow"))}</p>` : ""}<p class="factnote">${this.t("lblFoot")}</p></div></section>`;
   }
 
-  excCard() {
-    if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("excTitle")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
+  // How many things in the exceptions ask for a look: decisions that ran out, notes and rules past their review date.
+  exceptionsDue() {
+    const statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length;
+    const marksDue = (this.data?.objects || []).filter(o => o.mark_due).length;
+    const rulesDue = this.exc ? this.exc.rules.filter(rule => rule.enabled && this.excReviewDue(rule)).length : this.data?.meta?.exception_rules_due || 0;
+    return statusDue + marksDue + rulesDue;
+  }
+
+  // The page "Exceptions": the rules (with the labels), the vacation mode, the decisions about findings and the notes on objects.
+  exceptionsView() {
+    if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
-    const pill = state ? ` <span class="pill ${!v.entity ? "warn" : v.state === "on" ? "ok" : "mute"}">${this.t(state)}</span>` : "";
-    // In the order of the actions of a finding: status, mark, exception (with the vacation mode), label.
-    return `${this.decisionsBar()}${this.statusCard()}${this.marksCard()}<div id="hk-sec-rules" class="stack">${this.excRulesCard()}<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section></div><div id="hk-sec-labels">${this.labelsCard()}</div>`;
+    const pill = ` <span class="pill ${!v.entity ? "warn" : v.state === "on" ? "ok" : "mute"}">${this.t(state)}</span>`;
+    const statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length, marksDue = (this.data?.objects || []).filter(o => o.mark_due).length;
+    const rulesDue = this.exc.rules.filter(rule => rule.enabled && this.excReviewDue(rule)).length;
+    const tabs = [
+      { id: "rules", label: this.t("excTabRules"), count: this.exc.rules.filter(rule => (rule.scope || "always") === "always").length, tone: rulesDue ? "warn" : "" },
+      { id: "vacation", label: this.t("excTabVacation"), tone: v.entity ? "" : "warn" },
+      { id: "findings", label: this.t("excTabFindings"), tone: statusDue ? "warn" : "" },
+      { id: "objects", label: this.t("excTabObjects"), tone: marksDue ? "warn" : "" },
+    ];
+    const open = this.viewTabOf("exceptions", tabs, "rules");
+    const vacation = `<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section>`;
+    const body = { rules: () => `<div id="hk-sec-rules" class="stack">${this.excRulesCard("always")}</div><div id="hk-sec-labels">${this.labelsCard()}</div>`, vacation: () => `<div class="stack">${vacation}${this.excRulesCard("vacation")}</div>`, findings: () => this.statusCard(), objects: () => this.marksCard() }[open]();
+    return `<div class="stack">${this.viewTabBar("exceptions", tabs, open)}${body}</div>`;
   }
 
   vacationHtml() {
@@ -405,14 +423,13 @@ class ExceptionsMixin {
     // "Open rule" from a hidden finding: the rule in its form in the settings.
     root.querySelectorAll("[data-exc-goto]").forEach(el => el.onclick = async ev => {
       ev.stopPropagation();
-      this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {};
+      this.noteJump?.("exceptions"); this.view = "exceptions"; this.pages = {};
       if (!this.exc) await this.loadExceptions();
       const rule = this.exc?.rules?.find(r => r.id === el.dataset.excGoto);
-      if (rule) this.excScope = rule.scope || "always";
+      (this.viewTab ||= {}).exceptions = rule?.scope === "vacation" ? "vacation" : "rules";
       this.openException(el.dataset.excGoto);
     });
-    root.querySelectorAll("[data-sec-go]").forEach(el => el.onclick = () => { const sec = root.querySelector(`#hk-sec-${el.dataset.secGo}`); sec?.scrollIntoView?.({ block: "start", behavior: "smooth" }); });
-    root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("exceptions"); this.view = "exceptions"; (this.viewTab ||= {}).exceptions = el.dataset.gotoDecisions || "findings"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-exc-renew]").forEach(el => el.onclick = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excRenew ? { ...r, review_at: null } : r)), null));
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
@@ -441,7 +458,7 @@ class ExceptionsMixin {
       this.selected = null; this.pages = {};
       // The findings held back are on the findings page, hidden for an exception; the rules in the settings.
       // The held findings are hidden ones, and only those of the vacation mode: other rules hide findings as well.
-      if (el.dataset.vacGo === "hidden") { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.clearFindingFilters(); this.findingStatus = "hidden"; this.findingHeld = true; } else { this.view = "settings"; this.settingsTab = "exceptions"; this.excScope = "vacation"; }
+      if (el.dataset.vacGo === "hidden") { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.clearFindingFilters(); this.findingStatus = "hidden"; this.findingHeld = true; } else { this.view = "exceptions"; (this.viewTab ||= {}).exceptions = "vacation"; }
       if (el.dataset.vacGo === "new") { this.render(); if (!this.exc) await this.loadExceptions(); this.openException("", "vacation"); return; }
       this.render();
     });
@@ -451,9 +468,9 @@ class ExceptionsMixin {
       const f = this.excForm;
       form.onsubmit = ev => { ev.preventDefault(); this.commitException(); };
       form.querySelectorAll("[data-exc-for-pick]").forEach(el => el.onchange = () => { const s = f.scopes.find(x => x.id === el.value); f.scopeSel = s.id; f.picks = s.picks; f.error = ""; f.preview = null; this.render(); this.excPreview(); });
-      form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; f.error = ""; this.render(); this.excPreview(); });
+      form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; (this.viewTab ||= {}).exceptions = f.scope === "vacation" ? "vacation" : "rules"; f.error = ""; this.render(); this.excPreview(); });
       const settings = form.querySelector("[data-exc-settings]");
-      if (settings) settings.onclick = () => { f.here = false; f.scopes = null; this.excScope = f.scope; this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); };
+      if (settings) settings.onclick = () => { f.here = false; f.scopes = null; this.noteJump?.("exceptions"); this.view = "exceptions"; (this.viewTab ||= {}).exceptions = f.scope === "vacation" ? "vacation" : "rules"; this.pages = {}; this.render(); };
       form.querySelectorAll("[data-exc-kind]").forEach(el => el.onclick = () => { f.error = ""; f.kind = el.dataset.excKind; f.targets = []; f.picks = []; f.search = ""; f.preview = null; this._picker = null; this.render(); });
       const search = form.querySelector("[data-exc-search]");
       if (search) search.oninput = ev => { f.search = ev.target.value; this.render(); this.shadowRoot.querySelector("[data-exc-search]")?.focus(); };

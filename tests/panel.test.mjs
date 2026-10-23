@@ -4714,6 +4714,18 @@ test("a rule that does not report gets a review in 180 days, shows when it is du
   assert.equal(JSON.stringify(Object.keys(el.excDrafts({ ...el.excForm, note: "x" })[0]).includes("review_days")), "true");
 });
 
+test("the exceptions are a page of the group Operation and count what asks for a look", () => {
+  const { el } = panel("en");
+  const { NAV_GROUPS } = loadPanel();
+  assert.ok(NAV_GROUPS.find(([name]) => name === "navGroupOperation")[1].includes("exceptions"));
+  const past = new Date(Date.now() - 86400000).toISOString();
+  el.exc = { rules: [{ id: "r1", kind: "domain", targets: ["light"], action: "hide", scope: "always", enabled: true, note: "x", review_at: past, review_days: 180 }], vacation: {} };
+  el.data = { ...DATA, findings: [], objects: [{ object_type: "entity", object_id: "sensor.a", mark: { kind: "spare" }, mark_due: true }] };
+  assert.equal(el.exceptionsDue(), 2);
+  assert.equal(el.navCountHint("exceptions", 2), "2 to review");
+  assert.equal(el.t("exceptions"), "Exceptions");
+});
+
 test("the reasons to pick from depend on the kind: intended and false alarm have them, later has none", () => {
   const { el } = panel("en");
   assert.ok(el.reasonChips("keep").includes("On purpose") && el.reasonChips("ignore").includes("Rule does not fit"));
@@ -6244,24 +6256,27 @@ test("the AI access tab shows the two switches and the log with an undo for a ch
   assert.ok(shadow.innerHTML.includes('data-safe-key="ai"') && shadow.innerHTML.includes("AI access: with changes to the list") && !shadow.innerHTML.includes("aibar"), "no strip of its own any more");
 });
 
-test("the exceptions card builds the editor with chips for areas and the shared search for entities", () => {
+test("the exceptions page has four tabs and builds the editor with chips for areas and the shared search for entities", () => {
   const { el } = panel("de");
   el.exc = { rules: [{ id: "r1", kind: "area", targets: ["keller"], action: "delay", days: 7, scope: "always", enabled: true, note: "", effect: { hold: 2, due: 0 } }],
     areas: [{ id: "keller", name: "Keller" }, { id: "lager", name: "Lager" }], labels: [], integrations: [], domains: [], devices: [], entities: [], vacation: { entity: "input_boolean.urlaub", state: "on", grace_hours: 24 } };
   el.openException = () => {};
   el.excForm = { id: "", kind: "area", targets: ["keller"], action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null };
-  let html = el.excCard();
+  let html = el.exceptionsView();
+  assert.ok(["rules", "vacation", "findings", "objects"].every(id => html.includes(`data-view-tab="exceptions|${id}"`)));
   assert.match(html, /data-exc-target="lager"[^>]*aria-pressed="false"/);
   assert.match(html, /data-exc-target="keller"[^>]*aria-pressed="true"/);
   assert.match(html, /class="policyswitch" data-exc-toggle="r1"/);
   assert.ok(!html.includes("data-picker=\"exc\""));
   el.excForm = { ...el.excForm, kind: "entity", targets: [], scope: "vacation" };
-  html = el.excCard();
+  el.viewTab = { exceptions: "vacation" };
+  html = el.exceptionsView();
   assert.match(html, /data-picker="exc"/);
   assert.ok(!html.includes("data-exc-action"), "vacation rules always hide");
   el.excForm = { id: "", kind: "any", targets: [], picks: [{ kind: "area", id: "keller", name: "Keller" }, { kind: "entity", id: "sensor.a", name: "A" }, { kind: "entity", id: "sensor.b", name: "B" }], action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null };
   assert.equal(JSON.stringify(el.excDrafts(el.excForm).map(r => [r.kind, r.targets])), '[["area",["keller"]],["entity",["sensor.a","sensor.b"]]]');
-  assert.match(el.excCard(), /data-exc-kind="any"[^>]*aria-pressed="true"/);
+  el.viewTab = { exceptions: "rules" };
+  assert.match(el.exceptionsView(), /data-exc-kind="any"[^>]*aria-pressed="true"/);
 });
 
 test("the inventory filters by label and the labels block counts what carries each label", () => {

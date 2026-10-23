@@ -526,6 +526,7 @@ const NAV = [
   ["policies", "mdi:clipboard-check-outline"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["monitor", "mdi:home-heart"],
+  ["exceptions", "mdi:eye-off-outline"],
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
   ["batteries", "mdi:battery-alert-variant-outline"],
@@ -538,7 +539,7 @@ const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav"]],
   ["navGroupClean", ["cleanup", "repair", "journal"]],
   ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies"]],
-  ["navGroupOperation", ["monitor", "reliability", "runs", "recorder", "storage"]],
+  ["navGroupOperation", ["monitor", "reliability", "runs", "recorder", "storage", "exceptions"]],
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],
   ["navGroupExplore", ["inventory", "components", "graph", "changes"]],
 ];
@@ -1125,7 +1126,7 @@ Object.assign(TEXT.de, {
   decAllStates: "Alle", decColStatus: "Status", decColUntil: "Bis", decChange: "Status ändern", decColEffect: "Wirkt gerade",
   decMarksTitle: "Objekt-Notizen", decMarksHint: "Aussagen über ein Objekt: absichtlich offline, saisonal, Ersatz, nicht anfassen, ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jede Objekt-Notiz, auch wenn sie gerade nichts ausblendet.", decMarksNone: "Noch keine Objekt-Notiz. Du setzt sie an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
   markEffDue: "Prüfdatum erreicht, blendet nichts mehr aus", markEffKeep: "sperrt Bereinigen", markEffHides: "{n} Befunde ausgeblendet", markEffNone: "blendet gerade nichts aus", markEffQuiet: "seit {n} Tagen ohne Ausfall – noch nötig?", markQuietFilter: "Noch nötig?",
-  decAllLink: "Alle Ausnahmen und Objekt-Notizen",
+  decAllLink: "Alle Entscheidungen",
   hidColObject: "Objekt", hidColFinding: "Befund",
   storeHintBytes: "Nur Art und Größe, nie Inhalte. Löschen ist hier nicht vorgesehen.",
   store_observations: "Beobachtungen", storeText_observations: "Seit wann ein Objekt in seinem Zustand ist. Bleibt, solange das Objekt existiert.",
@@ -1174,7 +1175,7 @@ Object.assign(TEXT.en, {
   decAllStates: "All", decColStatus: "Status", decColUntil: "Until", decChange: "Change status", decColEffect: "Acting now",
   decMarksTitle: "Object notes", decMarksHint: "Statements about an object: offline on purpose, seasonal, spare, do not touch, replaced. They also apply to future outages, on a device to its entities. Every object note is listed here, also one that hides nothing right now.", decMarksNone: "No object note yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
   markEffDue: "review date reached, hides nothing any more", markEffKeep: "blocks cleanup", markEffHides: "{n} findings hidden", markEffNone: "hides nothing right now", markEffQuiet: "no outage for {n} days – still needed?", markQuietFilter: "Still needed?",
-  decAllLink: "All exceptions and object notes",
+  decAllLink: "All decisions",
   hidColObject: "Object", hidColFinding: "Finding",
   storeHintBytes: "Only kind and size, never contents. Deleting is not offered here.",
   store_observations: "Observations", storeText_observations: "Since when an object has been in its state. Kept as long as the object exists.",
@@ -2519,7 +2520,7 @@ class OverviewMixin {
       items.push({ key: `goal_${g.id}`, area: "care", tone: "warn", icon: "mdi:target", text: this.t(`goal_${g.id}`), hintText: `${this.goalNow(g)} · ${g.limit === 0 && g.unit === "count" ? this.t("goalAllowedNone") : this.t("goalAllowed", { limit: this.goalAmount(g, g.limit) })}`, pill: this.t("goalMissedPill"), view: GOAL_JUMPS[g.id].view, jump: this.goalJump(g.id) });
     }
     const rulesDue = this.data?.meta?.exception_rules_due || 0;
-    if (rulesDue) items.push({ key: "rules_due", area: "care", tone: "warn", icon: "mdi:calendar-alert-outline", label: "excTodoDue", hint: "excTodoHint", count: rulesDue, jump: 'data-jump="settings" data-jump-tab="exceptions"' });
+    if (rulesDue) items.push({ key: "rules_due", area: "care", tone: "warn", icon: "mdi:calendar-alert-outline", label: "excTodoDue", hint: "excTodoHint", count: rulesDue, jump: 'data-jump="exceptions" data-jump-tab="rules"' });
     this.ensureAutoPause();
     items.push(...this.apTodoItems());
     return items;
@@ -3743,16 +3744,6 @@ class SettingsMixin {
   }
 
   // The numbers of the tab, one per card: findings with a status, marks, rules and labelled objects; each jumps to its card.
-  decisionsBar() {
-    const findings = this.data?.findings || [], objects = this.data?.objects || [];
-    const status = [...findings.filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), ...this.restingDecisions()], statusDue = status.filter(f => !f.ignored).length;
-    const marks = objects.filter(o => o.mark), marksDue = marks.filter(o => o.mark_due).length;
-    const rules = this.exc?.rules?.length ?? this.data?.meta?.exception_rules ?? 0, byRule = findings.filter(f => f.ignored_by === "rule").length;
-    const labelled = this.invObjects().filter(o => (o.labels || []).some(l => HK_LABELS.includes(l))).length;
-    const kpi = (sec, label, n, extra, warn) => `<button type="button" class="kpi" data-sec-go="${sec}"><small>${this.t(label)}</small><strong>${this.formatNumber(n)}</strong>${extra ? `<small class="${warn ? "warntext" : ""}">${this.esc(extra)}</small>` : ""}</button>`;
-    return `<div class="kpis decbar">${kpi("status", "decStatusKpi", status.length, statusDue ? this.t("decDue", { n: this.formatNumber(statusDue) }) : "", true)}${kpi("marks", "decMarksKpi", marks.length, marksDue ? this.t("decReviewDue", { n: this.formatNumber(marksDue) }) : "", true)}${kpi("rules", "decRulesKpi", rules, byRule ? this.t("decRuleHides", { n: this.formatNumber(byRule) }) : "")}${kpi("labels", "decLabelsKpi", labelled, "housekeeper_*")}</div>`;
-  }
-
   // The decisions about findings that are away right now: they rest and hold again when the finding comes back. Each one
   // in the shape of a finding, from its key (rule|object|affected), with what was decided and when it was last seen.
   restingDecisions() {
@@ -3964,7 +3955,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => this.excCard(), scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
@@ -12460,7 +12451,7 @@ Object.assign(TEXT.de, {
   counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten. Starte die Prüfung mit „Sensoren prüfen“.",
   stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
-  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen & Objekt-Notizen", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_maintenance: "{n} verfehlte Wartungsziele", navCount_policies: "{n} Verstöße gegen Richtlinien", navCount_other: "{n} Punkte zum Ansehen", setHintExceptions: "Status, Objekt-Notizen, Regeln und Labels.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
+  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_maintenance: "{n} verfehlte Wartungsziele", navCount_policies: "{n} Verstöße gegen Richtlinien", navCount_other: "{n} Punkte zum Ansehen", setHintExceptions: "Liegt jetzt unter Betrieb / Ausnahmen.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setNoneHidden: "nichts ausgeblendet", setRuleOne: "1 Regel", setRulesCount: "{n} Regeln", setVacationOn: "Urlaubsmodus an", setVacationOff: "Urlaubsmodus aus", setVacationNone: "Urlaubsmodus nicht eingerichtet", setOn: "an", setOff: "aus",
   maintHintBackup: "Backups prüfen, schützen und aufräumen.", maintHintUpdates: "Offene Updates und was vorher zu prüfen ist.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
   actRepairValues: "Werte reparieren", actHintRepair: "Falsche Werte im Verlauf und in der Statistik ersetzen.", actMeter: "Zähler wechseln", actHintMeter: "Die Statistik bei einem neuen Zähler fortführen.", actExchange: "Gerät austauschen", actHintExchange: "Durch ein neues Gerät ersetzen und alles übernehmen.",
@@ -12509,7 +12500,7 @@ Object.assign(TEXT.en, {
   counterNoneSub: "{count} sensors look fine.", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements. Start the check with “Check sensors”.",
   stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
-  setTabProtection: "Protection mode", setTabExceptions: "Exceptions & object notes", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_maintenance: "{n} maintenance goals missed", navCount_policies: "{n} policy violations", navCount_other: "{n} items to look at", setHintExceptions: "Status, object notes, rules and labels.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
+  setTabProtection: "Protection mode", setTabExceptions: "Exceptions", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_maintenance: "{n} maintenance goals missed", navCount_policies: "{n} policy violations", navCount_other: "{n} items to look at", setHintExceptions: "Now under Operation / Exceptions.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setNoneHidden: "nothing hidden", setRuleOne: "1 rule", setRulesCount: "{n} rules", setVacationOn: "Vacation mode on", setVacationOff: "Vacation mode off", setVacationNone: "Vacation mode not set up", setOn: "on", setOff: "off",
   maintHintBackup: "Check, protect and tidy up backups.", maintHintUpdates: "Open updates and what to check first.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintGoals: "Your own limits for what in order means.",
   actRepairValues: "Repair values", actHintRepair: "Replace wrong values in the history and the statistics.", actMeter: "Replace the meter", actHintMeter: "Carry the statistics on with a new meter.", actExchange: "Exchange the device", actHintExchange: "Replace it with a new device and carry everything over.",
@@ -13678,7 +13669,7 @@ Object.assign(TEXT.de, {
   excPreview: "Vorschau", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
-  excOn: "Regel aktiv", excDue: "Frist abgelaufen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
+  excOn: "Regel aktiv", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", excTabRules: "Ausnahmeregeln", excTabVacation: "Urlaubsmodus", excTabFindings: "Befunde", excTabObjects: "Objekte", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
@@ -13721,7 +13712,7 @@ Object.assign(TEXT.en, {
   excPreview: "Preview", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
-  excOn: "Rule active", excDue: "Time has passed", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
+  excOn: "Rule active", excDue: "Time has passed", exceptions: "Exceptions", excTabRules: "Exception rules", excTabVacation: "Vacation mode", excTabFindings: "Findings", excTabObjects: "Objects", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
@@ -13818,17 +13809,16 @@ class ExceptionsMixin {
   }
 
   // One card for all rules: a switch between the two groups, then the form, the table or the empty state.
-  excRulesCard() {
-    const form = this.excForm, scope = form ? form.scope || "always" : this.excScope || "always";
-    const count = s => this.exc.rules.filter(r => (r.scope || "always") === s).length;
+  excRulesCard(scope = "always") {
+    const form = this.excForm && (this.excForm.scope || "always") === scope ? this.excForm : null;
     const rules = this.exc.rules.filter(r => (r.scope || "always") === scope);
     const v = this.exc.vacation || {};
-    const seg = `<div class="pad"><div class="seg">${["always", "vacation"].map(s => `<button type="button" class="chip${scope === s ? " active" : ""}" data-exc-scope="${s}" aria-pressed="${scope === s}">${this.t(s === "vacation" ? "excGroupVacation" : "excGroupAlways")} (${count(s)})</button>`).join("")}</div></div>`;
     const add = form ? "" : `<button class="btn" data-exc-edit="" data-exc-new="${scope}"><ha-icon icon="mdi:plus"></ha-icon>${this.t("excAddShort")}</button>`;
     const warn = scope === "vacation" && !v.entity ? `<div class="pad">${this.notice("warn", this.t("excVacNoEntity"))}</div>` : "";
     const body = `${form ? this.excFormHtml(form) : ""}${rules.length ? this.excTable(scope, rules) : form ? "" : this.excEmpty(scope)}`;
     const foot = rules.length ? `<div class="pad"><p class="factnote">${this.t("excWinner")}</p></div>` : "";
-    return `<section class="panel excgroup"><div class="panelhead"><div><h2>${this.t("excTitle")}</h2><p>${this.t("excHint")}</p></div>${add}</div>${seg}${warn}${body}${foot}</section>`;
+    const head = scope === "vacation" ? this.t("excGroupVacation") : this.t("excTitle");
+    return `<section class="panel excgroup"><div class="panelhead"><div><h2>${head}</h2><p>${scope === "vacation" ? this.t("excScopeHint") : this.t("excHint")}</p></div>${add}</div>${warn}${body}${foot}</section>`;
   }
 
   // The three labels Housekeeper reads: what each does, whether it exists in Home Assistant and how many objects carry it.
@@ -13851,13 +13841,32 @@ class ExceptionsMixin {
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("lblTitle")}</h2><p>${this.t("lblHint")}</p></div><button class="btn" data-ha-path="/config/labels"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("lblOpenHa")}</button></div>${rows}<div class="pad labfoot">${missing ? `<p class="factnote">${this.esc(this.t("lblHow"))}</p>` : ""}<p class="factnote">${this.t("lblFoot")}</p></div></section>`;
   }
 
-  excCard() {
-    if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("excTitle")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
+  // How many things in the exceptions ask for a look: decisions that ran out, notes and rules past their review date.
+  exceptionsDue() {
+    const statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length;
+    const marksDue = (this.data?.objects || []).filter(o => o.mark_due).length;
+    const rulesDue = this.exc ? this.exc.rules.filter(rule => rule.enabled && this.excReviewDue(rule)).length : this.data?.meta?.exception_rules_due || 0;
+    return statusDue + marksDue + rulesDue;
+  }
+
+  // The page "Exceptions": the rules (with the labels), the vacation mode, the decisions about findings and the notes on objects.
+  exceptionsView() {
+    if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
-    const pill = state ? ` <span class="pill ${!v.entity ? "warn" : v.state === "on" ? "ok" : "mute"}">${this.t(state)}</span>` : "";
-    // In the order of the actions of a finding: status, mark, exception (with the vacation mode), label.
-    return `${this.decisionsBar()}${this.statusCard()}${this.marksCard()}<div id="hk-sec-rules" class="stack">${this.excRulesCard()}<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section></div><div id="hk-sec-labels">${this.labelsCard()}</div>`;
+    const pill = ` <span class="pill ${!v.entity ? "warn" : v.state === "on" ? "ok" : "mute"}">${this.t(state)}</span>`;
+    const statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length, marksDue = (this.data?.objects || []).filter(o => o.mark_due).length;
+    const rulesDue = this.exc.rules.filter(rule => rule.enabled && this.excReviewDue(rule)).length;
+    const tabs = [
+      { id: "rules", label: this.t("excTabRules"), count: this.exc.rules.filter(rule => (rule.scope || "always") === "always").length, tone: rulesDue ? "warn" : "" },
+      { id: "vacation", label: this.t("excTabVacation"), tone: v.entity ? "" : "warn" },
+      { id: "findings", label: this.t("excTabFindings"), tone: statusDue ? "warn" : "" },
+      { id: "objects", label: this.t("excTabObjects"), tone: marksDue ? "warn" : "" },
+    ];
+    const open = this.viewTabOf("exceptions", tabs, "rules");
+    const vacation = `<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section>`;
+    const body = { rules: () => `<div id="hk-sec-rules" class="stack">${this.excRulesCard("always")}</div><div id="hk-sec-labels">${this.labelsCard()}</div>`, vacation: () => `<div class="stack">${vacation}${this.excRulesCard("vacation")}</div>`, findings: () => this.statusCard(), objects: () => this.marksCard() }[open]();
+    return `<div class="stack">${this.viewTabBar("exceptions", tabs, open)}${body}</div>`;
   }
 
   vacationHtml() {
@@ -14062,14 +14071,13 @@ class ExceptionsMixin {
     // "Open rule" from a hidden finding: the rule in its form in the settings.
     root.querySelectorAll("[data-exc-goto]").forEach(el => el.onclick = async ev => {
       ev.stopPropagation();
-      this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {};
+      this.noteJump?.("exceptions"); this.view = "exceptions"; this.pages = {};
       if (!this.exc) await this.loadExceptions();
       const rule = this.exc?.rules?.find(r => r.id === el.dataset.excGoto);
-      if (rule) this.excScope = rule.scope || "always";
+      (this.viewTab ||= {}).exceptions = rule?.scope === "vacation" ? "vacation" : "rules";
       this.openException(el.dataset.excGoto);
     });
-    root.querySelectorAll("[data-sec-go]").forEach(el => el.onclick = () => { const sec = root.querySelector(`#hk-sec-${el.dataset.secGo}`); sec?.scrollIntoView?.({ block: "start", behavior: "smooth" }); });
-    root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("exceptions"); this.view = "exceptions"; (this.viewTab ||= {}).exceptions = el.dataset.gotoDecisions || "findings"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-exc-renew]").forEach(el => el.onclick = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excRenew ? { ...r, review_at: null } : r)), null));
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
@@ -14098,7 +14106,7 @@ class ExceptionsMixin {
       this.selected = null; this.pages = {};
       // The findings held back are on the findings page, hidden for an exception; the rules in the settings.
       // The held findings are hidden ones, and only those of the vacation mode: other rules hide findings as well.
-      if (el.dataset.vacGo === "hidden") { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.clearFindingFilters(); this.findingStatus = "hidden"; this.findingHeld = true; } else { this.view = "settings"; this.settingsTab = "exceptions"; this.excScope = "vacation"; }
+      if (el.dataset.vacGo === "hidden") { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.clearFindingFilters(); this.findingStatus = "hidden"; this.findingHeld = true; } else { this.view = "exceptions"; (this.viewTab ||= {}).exceptions = "vacation"; }
       if (el.dataset.vacGo === "new") { this.render(); if (!this.exc) await this.loadExceptions(); this.openException("", "vacation"); return; }
       this.render();
     });
@@ -14108,9 +14116,9 @@ class ExceptionsMixin {
       const f = this.excForm;
       form.onsubmit = ev => { ev.preventDefault(); this.commitException(); };
       form.querySelectorAll("[data-exc-for-pick]").forEach(el => el.onchange = () => { const s = f.scopes.find(x => x.id === el.value); f.scopeSel = s.id; f.picks = s.picks; f.error = ""; f.preview = null; this.render(); this.excPreview(); });
-      form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; f.error = ""; this.render(); this.excPreview(); });
+      form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; (this.viewTab ||= {}).exceptions = f.scope === "vacation" ? "vacation" : "rules"; f.error = ""; this.render(); this.excPreview(); });
       const settings = form.querySelector("[data-exc-settings]");
-      if (settings) settings.onclick = () => { f.here = false; f.scopes = null; this.excScope = f.scope; this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); };
+      if (settings) settings.onclick = () => { f.here = false; f.scopes = null; this.noteJump?.("exceptions"); this.view = "exceptions"; (this.viewTab ||= {}).exceptions = f.scope === "vacation" ? "vacation" : "rules"; this.pages = {}; this.render(); };
       form.querySelectorAll("[data-exc-kind]").forEach(el => el.onclick = () => { f.error = ""; f.kind = el.dataset.excKind; f.targets = []; f.picks = []; f.search = ""; f.preview = null; this._picker = null; this.render(); });
       const search = form.querySelector("[data-exc-search]");
       if (search) search.oninput = ev => { f.search = ev.target.value; this.render(); this.shadowRoot.querySelector("[data-exc-search]")?.focus(); };
@@ -21022,6 +21030,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._pendingTab = params.get("tab");
     if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
     if (this.view === "settings" && params.get("tab")) this.settingsTab = params.get("tab"); // the settings keep their tab apart
+    if (this.view === "settings" && this.settingsTab === "exceptions") this.view = "exceptions"; // the exceptions moved out of the settings
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -21053,14 +21062,14 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // What the number beside a page in the menu counts: the page opens as it was left, the number names its part.
   navCountHint(view, n) {
-    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies"].includes(view) ? `navCount_${view}` : "navCount_other";
+    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies", "exceptions"].includes(view) ? `navCount_${view}` : "navCount_other";
     return this.t(key, { n: this.formatNumber(n) });
   }
 
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
-    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, ...this.viewCounts() } : {};
+    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, exceptions: this.exceptionsDue() || undefined, ...this.viewCounts() } : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
     const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
@@ -21173,6 +21182,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
     if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
     if (this.fcWizOn()) return this.wizardView();
+    if (this.view === "exceptions") return this.exceptionsView();
     if (this.view === "inventory") return this.inventory();
     if (this.view === "monitor") return this.monitorView();
     if (this.view === "findingsNav") return this.findingsView();
@@ -21638,7 +21648,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }
     });
     root.querySelectorAll("[data-set-tab]").forEach(el => {
-      el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; if (this.settingsTab === "exceptions" && this.exc) this.loadExceptions(); this.render(); };
+      el.onclick = () => { if (el.dataset.setTab === "exceptions") { this.noteJump?.("exceptions"); this.view = "exceptions"; this.pages = {}; this.render(); return; } this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
       el.onkeydown = ev => {
         const ids = [...root.querySelectorAll("[data-set-tab]")].map(b => b.dataset.setTab), at = ids.indexOf(el.dataset.setTab);
         const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];

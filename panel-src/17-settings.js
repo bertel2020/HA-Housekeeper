@@ -99,16 +99,6 @@ class SettingsMixin {
   }
 
   // The numbers of the tab, one per card: findings with a status, marks, rules and labelled objects; each jumps to its card.
-  decisionsBar() {
-    const findings = this.data?.findings || [], objects = this.data?.objects || [];
-    const status = [...findings.filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), ...this.restingDecisions()], statusDue = status.filter(f => !f.ignored).length;
-    const marks = objects.filter(o => o.mark), marksDue = marks.filter(o => o.mark_due).length;
-    const rules = this.exc?.rules?.length ?? this.data?.meta?.exception_rules ?? 0, byRule = findings.filter(f => f.ignored_by === "rule").length;
-    const labelled = this.invObjects().filter(o => (o.labels || []).some(l => HK_LABELS.includes(l))).length;
-    const kpi = (sec, label, n, extra, warn) => `<button type="button" class="kpi" data-sec-go="${sec}"><small>${this.t(label)}</small><strong>${this.formatNumber(n)}</strong>${extra ? `<small class="${warn ? "warntext" : ""}">${this.esc(extra)}</small>` : ""}</button>`;
-    return `<div class="kpis decbar">${kpi("status", "decStatusKpi", status.length, statusDue ? this.t("decDue", { n: this.formatNumber(statusDue) }) : "", true)}${kpi("marks", "decMarksKpi", marks.length, marksDue ? this.t("decReviewDue", { n: this.formatNumber(marksDue) }) : "", true)}${kpi("rules", "decRulesKpi", rules, byRule ? this.t("decRuleHides", { n: this.formatNumber(byRule) }) : "")}${kpi("labels", "decLabelsKpi", labelled, "housekeeper_*")}</div>`;
-  }
-
   // The decisions about findings that are away right now: they rest and hold again when the finding comes back. Each one
   // in the shape of a finding, from its key (rule|object|affected), with what was decided and when it was last seen.
   restingDecisions() {
@@ -320,7 +310,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => this.excCard(), scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
