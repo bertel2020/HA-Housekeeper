@@ -206,11 +206,18 @@ class CausesMixin {
 
   rowDecide(f) {
     if (!f) return "";
-    if (this.decide && this.decide.key === f.key) return `<div class="pad">${this.decideForm(f)}</div>`;
+    if (this.decide && this.decide.key === f.key) return `<div class="pad">${this.decideTabs(f, "status")}${this.decideForm(f)}</div>`;
     // The mark of the object opens under its first open finding, unless its own page shows the form.
     const m = this.markForm;
     if (!m || this.selected && this.objectKey(this.selected) === m.key || this.findingKey(f) !== m.key) return "";
-    return (this.data.findings.find(x => this.findingKey(x) === m.key) || f).key === f.key ? this.markFormHtml(m, m.key) : "";
+    return (this.data.findings.find(x => this.findingKey(x) === m.key) || f).key === f.key ? `<div class="pad">${this.decideTabs(f, "mark")}</div>${this.markFormHtml(m, m.key)}` : "";
+  }
+
+  // One block to decide about a finding: its status, or a mark on its object; the tab is the way from one to the other.
+  decideTabs(f, on) {
+    const object = this.findObject(this.findingKey(f));
+    if (f.ignored || !object || !MARK_TYPES.includes(object.object_type) || object.mark) return "";
+    return `<div class="dtabs" role="tablist"><button type="button" class="${on === "status" ? "on" : ""}" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "ignore"}">${this.t("decideTabStatus")}</button><button type="button" class="${on === "mark" ? "on" : ""}" data-watch-mark="${this.esc(this.findingKey(f))}">${this.t("decideTabMark")}</button></div>`;
   }
 
   causeEntry(c) {

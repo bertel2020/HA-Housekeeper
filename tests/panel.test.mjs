@@ -7271,3 +7271,18 @@ test("a mark opens under the first finding of its object, and the page of the ob
   el.selected = null;
   assert.ok(el.rowDecide(a).includes(`data-mark-form="${key}"`) && el.rowDecide(b) === "", "one form, under the first finding");
 });
+
+test("one block decides a finding: the tabs Status and Mark lead from one form to the other", () => {
+  const { el } = panel("en");
+  const f = { key: "k1", rule_id: "device.down", object_id: "d1", classification: "problem", topic: "down", confidence: 0.9 };
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d1", name: "Lamp" }], findings: [f] };
+  el.render = () => {};
+  el.openDecide("k1", "keep");
+  let html = el.rowDecide(f);
+  assert.ok(html.includes('class="on" data-decide-open="k1"') && html.includes('data-watch-mark="device:d1"') && html.includes("data-decide-form"));
+  el.markForm = null; el.decide = null; el.openMark("device:d1");
+  html = el.rowDecide(f);
+  assert.ok(html.includes('class="on" data-watch-mark') && html.includes("data-mark-form"));
+  el.openDecide("k1", "keep");
+  assert.equal(el.markForm, null, "the status form takes the place of the mark form");
+});

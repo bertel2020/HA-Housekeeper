@@ -1,5 +1,6 @@
 // Marks: what to expect of an entity or device (offline on purpose, seasonal, a spare, keep, replaced); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
+  decideTabStatus: "Status", decideTabMark: "Vermerk",
   markTitle: "Vermerk", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
   markNone: "Kein Vermerk.", markSet: "Vermerk setzen", markChange: "Ändern", markClear: "Vermerk entfernen", markKind: "Art des Vermerks", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Vermerk: {kind}", markFailed: "Der Vermerk konnte nicht gespeichert werden: {reason}",
   mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht entfernen", mark_replaced: "Wird ersetzt",
@@ -9,6 +10,7 @@ Object.assign(TEXT.de, {
   markHiddenHint: "Ausgeblendet durch einen Vermerk am Objekt.", reason_marked_keep: "Trägt den Vermerk „Nicht entfernen“ oder das Label housekeeper_keep.",
 });
 Object.assign(TEXT.en, {
+  decideTabStatus: "Status", decideTabMark: "Mark",
   markTitle: "Mark", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
   markNone: "No mark.", markSet: "Set a mark", markChange: "Change", markClear: "Remove mark", markKind: "Kind of mark", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Mark: {kind}", markFailed: "The mark could not be saved: {reason}",
   mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not remove", mark_replaced: "Being replaced",

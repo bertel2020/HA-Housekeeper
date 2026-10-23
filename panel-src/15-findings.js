@@ -486,7 +486,7 @@ class FindingsMixin {
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }
 
-  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: this.defaultDays(kind), critical: this.findingCritical(this.data.findings.find(f => f.key === key)), reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
+  openDecide(key, kind = "ignore") { if (this.markForm && this.findingKey(this.data.findings.find(f => f.key === key) || {}) === this.markForm.key && !(this.selected && this.objectKey(this.selected) === this.markForm.key)) this.markForm = null; this.decide = { key, kind, days: this.defaultDays(kind), critical: this.findingCritical(this.data.findings.find(f => f.key === key)), reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
 
   async commitDecide() {
     const d = this.decide;
