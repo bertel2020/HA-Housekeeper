@@ -6926,7 +6926,7 @@ test("the first cleanup is offered, opens each stage as a list filter and puts t
   let html = el.wizardView();
   assert.equal(el.fcWiz.step, 1, "a begun cleanup goes on at its stage");
   assert.ok(html.includes("Stage 1 of 5") && html.includes("Outages with many follow-ups") && html.includes("1 open in this stage"));
-  assert.ok(html.includes("data-fc-keep") && html.includes("data-fc-snooze") && html.includes("1 of 1"), "a stage shows one card with the answers");
+  assert.ok(html.includes('data-fc-opt="keep"') && html.includes('data-fc-opt="snooze"') && html.includes('data-fc-opt="ignore"') && !html.includes(" sel "), "a stage shows one card with the answers, none of them chosen");
   el.fcWizSet(3);
   el.fcLook(true);
   assert.equal(el.view, "findingsNav");
@@ -7301,6 +7301,10 @@ test("the cards of the cleanup open the answers with their reason and days, for 
   el.fcWiz = { step: 3, on: true };
   const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact: "low", ignored: false });
   el.data = { ...DATA, findings: [f("a"), f("b")] };
+  el.fcOpen(["a", "b"], "keep");
+  assert.ok(el.fcCards(3).includes("fcact sel green"), "the open tile is the marked one");
+  el.fcOpen(["a", "b"], "keep");
+  assert.equal(el.decide, null, "a tile that is open closes when clicked again");
   el.fcOpen(["a", "b"], "keep");
   assert.equal(el.decide.reason, "Confirmed as intended in the cleanup");
   assert.equal(el.decide.days, 90);

@@ -1780,7 +1780,7 @@ class StylesMixin {
 @keyframes fcin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fcin{animation:fcin .25s ease-out}@media(prefers-reduced-motion:reduce){.fcin{animation:none}.fcact,.fcbar i{transition:none}.fcact:hover{transform:none}}
 @media(max-width:600px){.fccard .pad{padding:18px 16px}.fctitle h3{font-size:calc(20px*var(--hk-fs,1))}}
       .fcirow.fcirec{height:auto;min-height:34px;padding:8px 6px;align-items:start;border-radius:8px;background:color-mix(in srgb,var(--hk-blue) 8%,transparent)}.fcirow.fcirec .fcii{margin-top:1px}.fcirow.fcirec span:nth-child(3){line-height:1.45;white-space:normal;overflow:visible;text-overflow:clip}
-      .fcact.rec{border:2px solid var(--hk-blue);padding:13px 15px}.fcrectag{display:inline-block;justify-self:start;margin-bottom:3px;padding:1px 8px;border-radius:10px;font-style:normal;font-size:calc(11px*var(--hk-fs,1));background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}
+      .fcact.rec{border-color:color-mix(in srgb,var(--hk-blue) 45%,var(--hk-border))}.fcact.sel{border:2px solid var(--hk-blue);padding:13px 15px;background:color-mix(in srgb,var(--hk-blue) 8%,var(--hk-surface))}.fcrectag{display:inline-block;justify-self:start;margin-bottom:3px;padding:1px 8px;border-radius:10px;font-style:normal;font-size:calc(11px*var(--hk-fs,1));background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}
       .actpanel .actrow{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center;padding:12px 16px}@media (min-width:760px){.actpanel .actrow{grid-template-columns:minmax(0,1fr) auto}}.actpanel .actrow .actctl{justify-content:flex-start}.actfold{display:flex;align-items:center;gap:6px;width:100%;border:0;border-top:1px solid var(--hk-border);text-align:left;cursor:pointer;font:inherit;font-size:calc(11.5px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}.actfold ha-icon{--mdc-icon-size:18px}.actpanel .actblock .finding{padding:8px 0;border-top:0}.fcopt{margin:12px 0;padding:12px 14px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-card)}.fcopt .markform{padding:0}.fcopt .statusform{padding:0}.dtabs{display:inline-flex;border:1px solid var(--hk-border);border-radius:10px;overflow:hidden;margin:0 0 12px}.dtabs button{border:0;background:var(--hk-card);padding:7px 18px;font:inherit;color:var(--hk-muted);cursor:pointer}.dtabs button+button{border-left:1px solid var(--hk-border)}.dtabs button.on{background:var(--hk-soft);color:var(--hk-text);font-weight:600}.fixsteps{display:flex;gap:6px;flex-wrap:wrap}.fixstep{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--hk-border);border-radius:999px;background:var(--hk-card);color:var(--hk-muted);font:inherit;cursor:pointer}.fixstep b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1))}.fixstep.past b{background:var(--hk-green-soft,var(--hk-soft));color:var(--hk-green,inherit)}.fixstep.on{border-color:var(--hk-blue);color:var(--hk-text);font-weight:600}.fixstep.on b{background:var(--hk-blue);color:#fff}.fixstep:disabled{opacity:.5;cursor:default}.fixrec{padding:4px 14px 2px;border-left:3px solid var(--hk-blue)}.fixmore{padding:0 14px}.fixmore summary{cursor:pointer;padding:10px 0;color:var(--hk-muted)}.fixexits{padding:8px 14px 12px}.fixexits .fceyebrow{display:block;margin:4px 0 8px}.fixexits .mbtns{display:flex;flex-wrap:wrap;gap:8px}.fixobjways{margin:8px 14px 12px}.fixrating{padding:0 14px 12px}.fcways{margin:12px 0 12px;padding:6px 14px 10px;border:1px solid var(--hk-blue);border-radius:12px}.fcways .fceyebrow{display:block;margin:4px 0 2px}.fcway{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--hk-border)}.fcways .fceyebrow+.fcway{border-top:0}.fcway .fctxt{display:grid;gap:2px}.fcway small{color:var(--hk-muted)}.fcii-mute{background:var(--hk-soft);color:var(--hk-muted)}.fcplan{border-color:var(--hk-blue)}.fcplanbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}.fcplan h3{margin:2px 0 8px}.fcplanrows{list-style:none;margin:0 0 8px;padding:0;display:grid}.fcplanrows li{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--hk-border)}.fcplanrows li:first-child{border-top:0}.fcplanrows small{color:var(--hk-muted)}
       .fccard.fixcard .pad{padding:18px 20px}.fixcard h3{margin:4px 0 12px}.fixbody>.fixrec,.fixbody>.fixmore,.fixbody>.fixexits,.fixbody>.fixrating{padding-left:0;padding-right:0}.fixbody>.fixobjways{margin-left:0;margin-right:0}.fixbody>:last-child{margin-bottom:0}.fixinfo{margin:0;height:auto}.fixinfo .fcirow{grid-template-columns:24px 110px minmax(0,1fr) 0;height:auto;min-height:40px;padding:9px 0;align-items:start}.fixinfo .fcirow>span:nth-child(3){white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.fixinfo .fcirow small{display:block;margin-top:2px;color:var(--hk-muted)}@media(max-width:600px){.fixinfo .fcirow{grid-template-columns:24px minmax(0,1fr)}.fixinfo .fcirow>span:nth-child(3){grid-column:2}}.fcstep:disabled{opacity:.5;cursor:default}
       .startint{display:grid;grid-template-columns:minmax(0,1fr) 110px 80px 90px;gap:6px 12px;align-items:center;font-size:13px;padding:5px 0;border-top:1px solid var(--hk-border)}.startname{display:flex;flex-direction:column;min-width:0}.startint b{font-weight:500;text-align:right}
@@ -19144,8 +19144,8 @@ class FirstCleanupMixin {
   }
 
   // One action of a card: what it is called and, in a line, what it does.
-  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false) {
-    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${tone ? ` ${tone}` : ""}" ${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small></span></button>`;
+  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false, sel = false) {
+    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${sel ? " sel" : ""}${tone ? ` ${tone}` : ""}" aria-pressed="${sel}" ${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small></span></button>`;
   }
 
   // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.
@@ -19166,14 +19166,21 @@ class FirstCleanupMixin {
     const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
     const rec = many ? null : this.fcRecCard(f, key);
+    // What is open on the card is what is marked: one tile at a time, none at first. A tile that is open closes again when clicked.
+    if (this.decide?.fc && !keys.includes(this.decide.key)) this.decide = null;
+    if (this.fcMarkCtx && (this.markForm?.key !== key || this.fcMarkCtx.keys.join() !== keys.join())) { this.fcMarkCtx = null; if (this.markForm?.key === key) this.markForm = null; }
+    const chosen = this.decide?.fc ? this.decide.kind : this.markForm && this.fcMarkCtx ? "mark" : this.fcFixOpen === key ? "fix" : "";
+    const opt = k => `data-fc-opt="${k}" ${kattr}`;
     const acts = [
-      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix") : "",
-      this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green"),
-      this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber", rec?.act === "later"),
+      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix", chosen === "fix") : "",
+      this.fcAct(opt("keep"), this.t("fcKeep"), this.t("fcKeepHint"), false, "mdi:check-circle-outline", "green", false, chosen === "keep"),
+      this.fcAct(opt("snooze"), this.t("fcLater"), this.t("fcLaterHint"), false, "mdi:clock-outline", "amber", rec?.act === "later", chosen === "snooze"),
+      this.fcAct(opt("ignore"), this.t("decideKind_ignore"), this.t("fcIgnoreHint"), false, "mdi:eye-off-outline", "", false, chosen === "ignore"),
+      this.fcCanMark(obj) ? this.fcAct(`data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), this.t("fcMarkHint"), false, FSEL_ICONS.mark, "blue", false, chosen === "mark") : "",
     ].join("");
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
-    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}<div class="fcacts">${acts}</div>${this.fcOptBlock(f, keys, key, obj)}${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}${this.fcCanMark(obj) ? `<button type="button" class="btn quiet" data-fc-markopen="${this.esc(key)}" ${kattr}><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>` : ""}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}<div class="fcacts">${acts}</div>${this.fcOptBlock(f, keys, key, obj)}${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
@@ -19255,7 +19262,9 @@ class FirstCleanupMixin {
   fcOpen(keys, kind) {
     const list = keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean);
     if (!list.length) return;
-    this.markForm = null; this.fcMarkCtx = null;
+    const same = this.decide?.fc && this.decide.key === list[0].key && this.decide.kind === kind;
+    this.markForm = null; this.fcMarkCtx = null; this.fcFixOpen = "";
+    if (same) { this.decide = null; this.render(); return; }
     this.decide = { key: list[0].key, keys: list.map(x => x.key), fc: true, kind, days: this.fcStatusDays(kind), critical: this.findingCritical(list[0]), reason: this.fcReason(kind), error: "" };
     this.render();
   }
@@ -19270,27 +19279,27 @@ class FirstCleanupMixin {
   fcMarkOpen(key, keys) {
     const obj = this.findObject(key);
     if (!obj) return;
-    this.decide = null;
+    if (this.fcMarkCtx && this.markForm?.key === key) { this.markForm = null; this.fcMarkCtx = null; this.render(); return; }
+    this.decide = null; this.fcFixOpen = "";
     this.fcMarkCtx = { keys, stage: this.fcWiz?.step, name: obj.name || obj.object_id };
     this.openMark(key);
   }
 
-  // The form of the card: the status (all three kinds with reason and days) or the mark, with tabs where both are possible.
+  // The options of the tile that is open: reason and days of a status, or the form of the mark. The ways of "Fix" have their own box.
   fcOptBlock(f, keys, key, obj) {
     const d = this.decide, m = this.markForm, t = k => this.t(k);
     const status = Boolean(d?.fc && keys.includes(d.key)), mark = Boolean(m && m.key === key && this.fcMarkCtx);
     if (!status && !mark) return "";
-    const kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`;
-    const tabs = this.fcCanMark(obj) ? `<div class="dtabs" role="tablist"><button type="button" class="${status ? "on" : ""}" data-fc-opt="${status ? d.kind : "keep"}" ${kattr}>${t("decideTabStatus")}</button><button type="button" class="${mark ? "on" : ""}" data-fc-markopen="${this.esc(key)}" ${kattr}>${t("decideTabMark")}</button></div>` : "";
-    const body = status
-      ? `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.statusFields(d, "decide")}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div>${d.error ? this.notice("err", t(d.error)) : ""}</form>`
-      : this.markFormHtml(m, m.key);
-    return `<div class="fcopt">${tabs}${body}</div>`;
+    if (mark) return `<div class="fcopt">${this.markFormHtml(m, m.key)}</div>`;
+    const set = [...new Set([...(d.kind === "snooze" || (d.kind === "keep" && d.critical) ? [] : [0]), 7, 30, 90, 365, Number(d.days)])].sort((x, y) => x - y);
+    const days = set.map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : t("decideForever")}</option>`).join("");
+    return `<div class="fcopt"><form class="polform statusform" data-decide-form="${this.esc(f.key)}"><div class="statusrow"><input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(t("decideReason"))}" placeholder="${this.esc(t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}"><select data-decide-days aria-label="${this.esc(t("decideHow"))}">${days}</select></div>${d.kind === "keep" && d.critical ? `<small class="factnote">${t("statusCriticalHint")}</small>` : ""}<small class="factnote">${t("statusScopeHint")}</small>${d.error ? this.notice("err", t(d.error)) : ""}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div></form></div>`;
   }
 
   // Open the ways of "Fix": what Housekeeper runs for the object, and the ways of this finding (replace, remove, catch the error).
   fcFixToggle(key, findingKey) {
     this.fcFixOpen = this.fcFixOpen === key ? "" : key;
+    if (this.fcFixOpen) { this.decide = null; this.markForm = null; this.fcMarkCtx = null; }
     if (this.fcFixOpen && findingKey) {
       this.fixKey = findingKey; this.fixAll = ""; this.fixWays = null; this.fixFailure = null;
       this.loadFixWays(findingKey);
@@ -19361,8 +19370,6 @@ class FirstCleanupMixin {
     root.querySelector("[data-fc-next]")?.addEventListener("click", () => this.fcWizNext());
     root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
-    root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), "keep"));
-    root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), "snooze"));
     root.querySelectorAll("[data-fc-opt]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), el.dataset.fcOpt));
     root.querySelectorAll("[data-fc-markopen]").forEach(el => el.onclick = () => this.fcMarkOpen(el.dataset.fcMarkopen, this.fcKeysOf(el)));
     this.bindFcInfo(root);
@@ -19373,6 +19380,7 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
       this.fcLogAdd({ stage: this.fcWiz.step, key: keys[0], keys, action: "skip" });
+      this.decide = null; this.markForm = null; this.fcMarkCtx = null; this.fcFixOpen = "";
       if (keys.includes(this.fcFocus)) this.fcFocus = "";
       this.render();
     });
@@ -19420,8 +19428,8 @@ Object.assign(TEXT.de, {
   fcEndLaterBack: "kommen ab {date} zurück", fcEndStartOnly: "{start} zu Beginn", fcEndStartFresh: "{start} zu Beginn, {fresh} neu dazugekommen", fcEndBar: "{p} % der {start} Befunde bearbeitet",
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Zeigt die Wege, die zu diesem Objekt passen.",
-  fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
-  fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen", fcLogHidden: "Ausgeblendet", fcSumHidden: "{n} ausgeblendet", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
+  fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist. Du sagst kurz, warum und für wie lange.", fcLater: "Später erinnern", fcLaterHint: "Kommt nach der Frist, die du wählst, wieder in die Liste.",
+  fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel irrt sich hier. Der Befund verschwindet aus der Liste.", fcMarkHint: "Hält fest, warum das Objekt so ist, auch mit Zeitfenster.", fcLogHidden: "Ausgeblendet", fcSumHidden: "{n} ausgeblendet", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
@@ -19458,8 +19466,8 @@ Object.assign(TEXT.en, {
   fcEndLaterBack: "come back from {date}", fcEndStartOnly: "{start} at the start", fcEndStartFresh: "{start} at the start, {fresh} new since", fcEndBar: "{p} % of the {start} findings handled",
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Shows the ways that fit this object.",
-  fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
-  fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply", fcLogHidden: "Hidden", fcSumHidden: "{n} hidden", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
+  fcKeep: "Intended", fcKeepHint: "Stays as it is. You say briefly why and for how long.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list after the time you choose.",
+  fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding leaves the list.", fcMarkHint: "Records why the object is as it is, also with a time window.", fcLogHidden: "Hidden", fcSumHidden: "{n} hidden", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
