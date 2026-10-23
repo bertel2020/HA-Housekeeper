@@ -30,14 +30,14 @@ class CorrelationMixin {
   corrFindingCount() { return Object.keys(this.corr?.by_key || {}).length; }
 
   // What the findings of one group have in common: how many, which classes, and over what time they began.
-  corrSummary(group, findings) {
+  corrSummary(group, findings, extra = "") {
     const reasons = {};
     findings.forEach(f => { const r = this.findingReason(f); reasons[r] = (reasons[r] || 0) + 1; });
     const parts = Object.entries(reasons).sort((a, b) => b[1] - a[1]).map(([r, n]) => `<span class="pill mute">${this.esc(this.t("corrReason", { n: this.formatNumber(n), what: this.reasonLabel(r) }))}</span>`).join(" ");
     const times = findings.map(f => Date.parse(f.first_detected_at)).filter(Number.isFinite).sort((a, b) => a - b);
     const span = times.length ? this.t("corrSpan", { first: this.formatDate(new Date(times[0]).toISOString()), last: this.formatDate(new Date(times[times.length - 1]).toISOString()) }) : "";
     const more = group.total > findings.length ? ` ${this.t("corrMore", { n: this.formatNumber(group.total - findings.length) })}` : "";
-    return `<p class="sub u-mb14">${this.esc(span)}${more}</p><div class="chips u-mb14">${parts}</div>`;
+    return `<p class="sub">${this.esc(span)}${more}</p><div class="chips incchips">${parts}${extra}</div>`;
   }
 
   // The other updates of an incident, as one line under the title.
@@ -50,7 +50,7 @@ class CorrelationMixin {
   corrGroupBody(group) {
     const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), n = this.corrKeys(group.id).size;
     const show = n ? `<button type="button" class="btn" data-corr-show="${this.esc(group.id)}"><ha-icon icon="mdi:filter-variant"></ha-icon>${this.t("corrShowN", { n: this.formatNumber(n) })}</button>` : "";
-    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${show}`;
+    return `${this.corrAlso(group)}${this.corrSummary(group, findings, show)}`;
   }
 
   // The open findings that began with one incident: the filter its button sets.

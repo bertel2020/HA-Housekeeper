@@ -1212,7 +1212,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.folds = { ...this.folds, [id]: !this.foldOpen(id, false) }; this.render();
     }));
     // The findings of one incident: the list below narrowed to them, from the plain open list.
-    root.querySelectorAll("[data-corr-show]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.findingStatus = ""; this.findingCorr = el.dataset.corrShow; this.pages = {}; this.render(); this.showList(); });
+    root.querySelectorAll("[data-corr-show]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.findingStatus = ""; this.findingCorr = el.dataset.corrShow; this.pages = {}; this.render(); this.showList(true); });
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));

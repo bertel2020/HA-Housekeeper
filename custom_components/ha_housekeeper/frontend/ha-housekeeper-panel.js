@@ -1575,7 +1575,7 @@ class StylesMixin {
       .viewcount{margin-left:auto;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));white-space:nowrap}.toolgap+.viewcount{margin-left:0}
       .kids{margin:4px 0 6px 40px;padding-left:16px;border-left:2px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 45%,transparent);border-radius:0 0 8px 0}.kids .tile{width:28px;height:28px}.foldarrow{--mdc-icon-size:18px;color:var(--hk-muted);flex:none;margin-right:2px}
       .alsopill{margin-left:6px;vertical-align:1px}.corralso{display:grid;gap:6px;padding:8px 12px;border-left:3px solid var(--hk-amber);background:var(--hk-soft);border-radius:0 8px 8px 0}.corralso strong{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.corralso ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}.corralso li{display:flex;align-items:center;gap:8px}.corralso ha-icon{--mdc-icon-size:18px;color:var(--hk-amber);flex:none}
-      .incicon{--mdc-icon-size:18px;color:var(--hk-muted);flex:none}.incdetail{display:grid;gap:4px;padding:4px 0 8px}.incdetail .btn{justify-self:start}.incsec{border-left:3px solid var(--hk-border);padding:2px 0 2px 12px;margin:8px 14px 12px}.incsec.obs{border-left-color:var(--hk-amber)}.incfilter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.incfilter b{font-weight:500}.incfilter .chip{margin-left:auto}.incfilter.on{background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));border-color:var(--hk-blue)}
+      .incicon{--mdc-icon-size:18px;color:var(--hk-muted);flex:none}.incdetail{display:grid;gap:2px;padding:0}.incdetail .btn{justify-self:start}.incsec{border-left:3px solid var(--hk-border);padding:2px 0 2px 12px;margin:8px 14px 12px}.inc .remhist td{padding:4px 16px 6px 44px}.incsec .sectionlabel{padding:0 0 4px;margin:0}.incsec .sub{margin:0 0 8px}.incchips{align-items:center}.incchips .btn{margin-left:auto}.incsec{margin:4px 14px 6px}.incsec.obs{border-left-color:var(--hk-amber)}.incfilter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.incfilter b{font-weight:500}.incfilter .chip{margin-left:auto}.incfilter.on{background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));border-color:var(--hk-blue)}
       .sumgroups{display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:14px;align-items:stretch}.sumgroup{min-width:0;display:flex;flex-direction:column}@media(min-width:1000px){.sumgroups{display:grid;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));gap:6px 10px;grid-auto-rows:1fr}.sumgroup{grid-column:span var(--n,1);flex:none}.sumgroup.row2{grid-column:1/span var(--n,1)}}.sumgroup .sumtiles{margin-bottom:0;flex:1}.sumgroup .sumtile .spark-row{margin-top:auto;padding-top:4px}.sumgrouphead{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));margin:0 0 6px 2px}.tilerows{display:grid;gap:10px}.tilerows .sumgrouphead{margin-bottom:-4px}.sumtiles.even{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;margin-bottom:0}.sumtiles.even .sumlabel,.sumtiles.even small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:640px){.sumtiles.even{grid-template-columns:repeat(2,minmax(0,1fr))}}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.sumtile{position:relative}button.sumtile .sumlabel{padding-right:20px}.sumcue{position:absolute;top:10px;right:10px;--mdc-icon-size:16px;color:var(--hk-muted)}div.sumtile,div.sumtile:hover{box-shadow:none;background:var(--hk-soft)}.sumtile.filter[aria-pressed=true]{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));box-shadow:0 0 0 1px var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumcue{color:var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumlabel{color:var(--hk-blue-text)}.sumtile.filter[aria-pressed=true] .sumlabel:before{content:"\\2713";margin-right:.4em}.filteron{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);background:color-mix(in srgb,var(--hk-blue) 7%,var(--hk-surface));border-bottom:1px solid var(--hk-border)}.filteron ha-icon{--mdc-icon-size:16px;color:var(--hk-blue)}.filteron b{color:var(--hk-text);font-weight:600}.filteron .btn{margin-left:auto}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}.todofoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px}.visitline{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.visitline ha-icon{--mdc-icon-size:16px}
@@ -1939,8 +1939,9 @@ class ListsMixin {
   }
 
   // After a tile set a filter: bring the list below into view when it is off screen (it never moves a list that already shows).
-  showList() {
-    requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: "nearest" }));
+  // `top` brings the whole list to the top of the view, for a button that asks to see it (not only its head at the edge).
+  showList(top = false) {
+    requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: top ? "start" : "nearest" }));
   }
 
   listBar(id, { sorts, filters = [], columns = [], dense = false, table = false, note = true, lead = "" }) {
@@ -8459,14 +8460,14 @@ class CorrelationMixin {
   corrFindingCount() { return Object.keys(this.corr?.by_key || {}).length; }
 
   // What the findings of one group have in common: how many, which classes, and over what time they began.
-  corrSummary(group, findings) {
+  corrSummary(group, findings, extra = "") {
     const reasons = {};
     findings.forEach(f => { const r = this.findingReason(f); reasons[r] = (reasons[r] || 0) + 1; });
     const parts = Object.entries(reasons).sort((a, b) => b[1] - a[1]).map(([r, n]) => `<span class="pill mute">${this.esc(this.t("corrReason", { n: this.formatNumber(n), what: this.reasonLabel(r) }))}</span>`).join(" ");
     const times = findings.map(f => Date.parse(f.first_detected_at)).filter(Number.isFinite).sort((a, b) => a - b);
     const span = times.length ? this.t("corrSpan", { first: this.formatDate(new Date(times[0]).toISOString()), last: this.formatDate(new Date(times[times.length - 1]).toISOString()) }) : "";
     const more = group.total > findings.length ? ` ${this.t("corrMore", { n: this.formatNumber(group.total - findings.length) })}` : "";
-    return `<p class="sub u-mb14">${this.esc(span)}${more}</p><div class="chips u-mb14">${parts}</div>`;
+    return `<p class="sub">${this.esc(span)}${more}</p><div class="chips incchips">${parts}${extra}</div>`;
   }
 
   // The other updates of an incident, as one line under the title.
@@ -8479,7 +8480,7 @@ class CorrelationMixin {
   corrGroupBody(group) {
     const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), n = this.corrKeys(group.id).size;
     const show = n ? `<button type="button" class="btn" data-corr-show="${this.esc(group.id)}"><ha-icon icon="mdi:filter-variant"></ha-icon>${this.t("corrShowN", { n: this.formatNumber(n) })}</button>` : "";
-    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${show}`;
+    return `${this.corrAlso(group)}${this.corrSummary(group, findings, show)}`;
   }
 
   // The open findings that began with one incident: the filter its button sets.
@@ -20130,7 +20131,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.folds = { ...this.folds, [id]: !this.foldOpen(id, false) }; this.render();
     }));
     // The findings of one incident: the list below narrowed to them, from the plain open list.
-    root.querySelectorAll("[data-corr-show]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.findingStatus = ""; this.findingCorr = el.dataset.corrShow; this.pages = {}; this.render(); this.showList(); });
+    root.querySelectorAll("[data-corr-show]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.findingStatus = ""; this.findingCorr = el.dataset.corrShow; this.pages = {}; this.render(); this.showList(true); });
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));

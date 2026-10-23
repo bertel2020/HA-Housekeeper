@@ -140,8 +140,9 @@ class ListsMixin {
   }
 
   // After a tile set a filter: bring the list below into view when it is off screen (it never moves a list that already shows).
-  showList() {
-    requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: "nearest" }));
+  // `top` brings the whole list to the top of the view, for a button that asks to see it (not only its head at the edge).
+  showList(top = false) {
+    requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: top ? "start" : "nearest" }));
   }
 
   listBar(id, { sorts, filters = [], columns = [], dense = false, table = false, note = true, lead = "" }) {
