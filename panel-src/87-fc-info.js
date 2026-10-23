@@ -61,7 +61,7 @@ class FcInfoMixin {
       const text = `<span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${pill ? `<span class="fcipill">${this.esc(r.text)}</span>` : this.esc(r.text)}</span>`;
       return r.tab ? `<button type="button" class="fcirow" data-fc-info="${this.esc(`${key}|${r.tab}`)}" title="${this.esc(r.text)}" aria-label="${this.esc(`${r.label}: ${r.text}`)}">${text}<ha-icon icon="mdi:chevron-right"></ha-icon></button>` : `<div class="fcirow static">${text}<i></i></div>`;
     }).join("");
-    return `<div class="fcinfo" role="group" aria-label="${this.esc(this.t("fcInfoTitle"))}">${rows}</div>`;
+    return `<div class="fcinfo${list.some(r => r.rec) ? " hasrec" : ""}" role="group" aria-label="${this.esc(this.t("fcInfoTitle"))}">${rows}</div>`;
   }
 
   bindFcInfo(root) {

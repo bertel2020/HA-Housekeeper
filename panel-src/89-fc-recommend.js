@@ -150,7 +150,7 @@ class FcRecommendMixin {
       body = `<ul class="fcplanrows">${rows}</ul>${checks}${stop ? `<p class="fcfacts">${this.esc(stop)}</p>` : ""}${this.undoMessage && undone ? `<p class="fcfacts">${this.esc(this.undoMessage)}</p>` : ""}`;
       btns = `${done ? `<button type="button" class="btn accent" data-fc-plan-undo><ha-icon icon="mdi:undo-variant"></ha-icon>${t("fcUndo")}</button>` : ""}<button type="button" class="btn primary" data-fc-plan-drop>${t("fcPlanOk")}</button>`;
     }
-    return `<section class="panel fcplan"><div class="pad"><small class="fceyebrow">${name}</small><h3>${head}</h3>${error}${body}<div class="fcmore">${btns}</div></div></section>`;
+    return `<section class="panel fcplan"><div class="pad"><small class="fceyebrow">${name}</small><h3>${head}</h3>${error}${body}<div class="fcplanbtns">${btns}</div></div></section>`;
   }
 
   bindFcPlan(root) {
