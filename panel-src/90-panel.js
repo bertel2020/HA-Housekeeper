@@ -784,9 +784,10 @@ class HAHousekeeperPanel extends HTMLElement {
       storage: [this.t("storage"), this.t("storageSubtitle")],
       dataflow: [this.t("dataflow"), this.t("dataflowSubtitle")],
       secrets: [this.t("secrets"), this.t("secretsSubtitle")],
+      exceptions: [this.t("exceptions"), this.t("exceptionsSubtitle")],
     };
     const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
-    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor"].includes(this.view);
+    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor", "exceptions"].includes(this.view);
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
