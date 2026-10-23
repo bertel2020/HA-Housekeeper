@@ -64,7 +64,7 @@ class ObjectGroupsMixin {
   // The same figures serve the findings page and the overview, so the two never differ.
   topicFigures(name, open) {
     const mine = open.filter(f => this.findingTopic(f) === name);
-    return { mine, follows: mine.filter(f => this.isOutageFollower(f)).length, objects: Math.max(this.topicSites(mine).size, mine.length ? 1 : 0), outages: name === "down" ? this.countedOutages().filter(c => !c.virtual).length : 0 };
+    return { mine, follows: mine.filter(f => this.isOutageFollower(f)).length, objects: Math.max(this.topicSites(mine).size, mine.length ? 1 : 0), outages: name === "down" ? this.countedOutages().length : 0 };
   }
 
   // The line beneath the main number of a topic tile: what it counts, the findings, and the follow-ups that hang on them.

@@ -131,6 +131,9 @@ class OverviewMixin {
     const urgent = this.countedOutages("high"), other = this.countedOutages("medium");
     if (urgent.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(urgent), count: urgent.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="high"' });
     if (other.length) items.push({ key: "outages_open", area: "findings", tone: "warn", icon: "mdi:source-branch", label: "actOutagesOpen", hintText: this.outagesHint(other), count: other.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="medium"' });
+    // A missing target is no outage: its callers are jobs of the topic Broken references, "Fix all n" is at the target.
+    const targets = this.countedTargets();
+    if (targets.length) items.push({ key: "missing_targets", area: "findings", tone: "warn", icon: "mdi:link-variant-off", label: "actMissingTargets", hintText: this.outagesHint(targets), count: targets.length, jump: 'data-jump="findingsNav" data-filter="topic:broken_references"' });
     // Each row lands on what it counts: one plan with a setback opens itself, several the journal filtered to them.
     const regressions = this.data.regressions || [];
     if (regressions.length) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions.length, jump: regressions.length === 1 ? `data-plan-open="${this.esc(regressions[0].plan_id)}"` : 'data-jump="journal" data-jump-tab="plans" data-jump-lf="journal|follow|regression"' });

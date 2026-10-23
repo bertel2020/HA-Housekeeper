@@ -117,7 +117,10 @@ class FindingStatusMixin {
   // The outages the overview counts: chains at their top, a device below an integration that is down is part of that
   // integration's chain, not an outage of its own; quiet ones (info, low) stay away.
   // level "high" keeps the urgent ones, "medium" the others; without a level all of them.
-  countedOutages(level = "") { return this.causeEntries().filter(c => !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
+  countedOutages(level = "") { return this.causeEntries().filter(c => !c.virtual && !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
+
+  // The missing targets (a virtual cause: the callers of one thing that is gone) are no outage; they have a row of their own.
+  countedTargets() { return this.causeEntries().filter(c => c.virtual); }
 
   // The findings of the counted outages (of one level): every open finding whose chain ends at the top in one of them.
   outageKeys(level = "") {

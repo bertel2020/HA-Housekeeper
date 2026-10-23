@@ -7073,3 +7073,15 @@ test("the history of the cleanup is kept on the server, and stage 2 can take its
   assert.equal(calls.find(c => c.action === "log_remove")?.entry_id, entry.id, "taking it back removes it there too");
   assert.equal(el.fcLogGet().length, 0);
 });
+
+test("the task list of the overview counts the outages without the missing targets, which have a row of their own", () => {
+  const { el, shadow } = panel("en");
+  const device = { id: "device_down:d", kind: "device_down", object_type: "device", object_id: "d", name: "Lamp", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high", parent_id: null, virtual: false, finding_key: "own" };
+  const missing = { id: "entity_missing:sensor.gone", kind: "entity_missing", object_type: "entity", object_id: "sensor.gone", name: "sensor.gone", follower_count: 3, total_followers: 3, child_ids: [], consumers: {}, impact: "medium", parent_id: null, virtual: true };
+  el.data = { ...DATA, objects: [], causes: [device, missing], findings: [{ key: "own", rule_id: "device.down", object_id: "d", classification: "unavailable", topic: "down", impact: "high", ignored: false, cause_id: device.id }] };
+  assert.equal(el.countedOutages().length, 1, "the missing target is no outage");
+  assert.equal(el.countedTargets().length, 1);
+  el.view = "overview"; el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Missing targets") && html.includes('data-filter="topic:broken_references"'), "its own row leads to the topic");
+});

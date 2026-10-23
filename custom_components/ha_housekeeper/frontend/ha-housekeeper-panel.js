@@ -2444,6 +2444,9 @@ class OverviewMixin {
     const urgent = this.countedOutages("high"), other = this.countedOutages("medium");
     if (urgent.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(urgent), count: urgent.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="high"' });
     if (other.length) items.push({ key: "outages_open", area: "findings", tone: "warn", icon: "mdi:source-branch", label: "actOutagesOpen", hintText: this.outagesHint(other), count: other.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="medium"' });
+    // A missing target is no outage: its callers are jobs of the topic Broken references, "Fix all n" is at the target.
+    const targets = this.countedTargets();
+    if (targets.length) items.push({ key: "missing_targets", area: "findings", tone: "warn", icon: "mdi:link-variant-off", label: "actMissingTargets", hintText: this.outagesHint(targets), count: targets.length, jump: 'data-jump="findingsNav" data-filter="topic:broken_references"' });
     // Each row lands on what it counts: one plan with a setback opens itself, several the journal filtered to them.
     const regressions = this.data.regressions || [];
     if (regressions.length) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions.length, jump: regressions.length === 1 ? `data-plan-open="${this.esc(regressions[0].plan_id)}"` : 'data-jump="journal" data-jump-tab="plans" data-jump-lf="journal|follow|regression"' });
@@ -9611,7 +9614,7 @@ Object.assign(TEXT.de, {
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
   cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
   causeFollowers: "{n} Folgen", causeFollowers1: "1 Folge", causeExplains: "erklärt {n} weitere Befunde", causeExplains1: "erklärt 1 weiteren Befund", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageApps1: "1 App", outageTargets: "{n} fehlende Ziele", outageTargets1: "1 fehlendes Ziel", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", cause_floor_missing: "Etage {name} existiert nicht", cause_label_missing: "Label {name} existiert nicht", cause_tag_missing: "Tag {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", outageServices1: "1 fehlender Dienst", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
-  findingsOfFollow: "davon {n} Folgen von Ausfällen", ogViewCountOf: "{n} von {total} Befunden an {m} Objekten", ogViewCountOf1: "{n} von {total} Befunden an 1 Objekt", viewCountOf: "{n} von {total} Befunden", actOutages: "Ausfälle", ovFoundAt: "erkannt {age}", actOutagesOpen: "Weitere Ausfälle",
+  findingsOfFollow: "davon {n} Folgen von Ausfällen", ogViewCountOf: "{n} von {total} Befunden an {m} Objekten", ogViewCountOf1: "{n} von {total} Befunden an 1 Objekt", viewCountOf: "{n} von {total} Befunden", actOutages: "Ausfälle", ovFoundAt: "erkannt {age}", actOutagesOpen: "Weitere Ausfälle", actMissingTargets: "Fehlende Ziele",
 });
 Object.assign(TEXT.en, {
   causesTitle: "Outages",
@@ -9619,7 +9622,7 @@ Object.assign(TEXT.en, {
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
   cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
   causeFollowers: "{n} follow-ups", causeFollowers1: "1 follow-up", causeExplains: "explains {n} more findings", causeExplains1: "explains 1 more finding", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageApps1: "1 app", outageTargets: "{n} missing targets", outageTargets1: "1 missing target", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", cause_floor_missing: "Floor {name} does not exist", cause_label_missing: "Label {name} does not exist", cause_tag_missing: "Tag {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", outageServices1: "1 missing service", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
-  findingsOfFollow: "{n} of them follow-ups of outages", ogViewCountOf: "{n} of {total} findings on {m} objects", ogViewCountOf1: "{n} of {total} findings on 1 object", viewCountOf: "{n} of {total} findings", actOutages: "Outages", ovFoundAt: "found {age}", actOutagesOpen: "Further outages",
+  findingsOfFollow: "{n} of them follow-ups of outages", ogViewCountOf: "{n} of {total} findings on {m} objects", ogViewCountOf1: "{n} of {total} findings on 1 object", viewCountOf: "{n} of {total} findings", actOutages: "Outages", ovFoundAt: "found {age}", actOutagesOpen: "Further outages", actMissingTargets: "Missing targets",
 });
 
 // Maintenance goals: what "in order" means for this house and whether it is so (see goals.py); mixed into the panel in 99-register.js.
@@ -11473,7 +11476,10 @@ class FindingStatusMixin {
   // The outages the overview counts: chains at their top, a device below an integration that is down is part of that
   // integration's chain, not an outage of its own; quiet ones (info, low) stay away.
   // level "high" keeps the urgent ones, "medium" the others; without a level all of them.
-  countedOutages(level = "") { return this.causeEntries().filter(c => !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
+  countedOutages(level = "") { return this.causeEntries().filter(c => !c.virtual && !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
+
+  // The missing targets (a virtual cause: the callers of one thing that is gone) are no outage; they have a row of their own.
+  countedTargets() { return this.causeEntries().filter(c => c.virtual); }
 
   // The findings of the counted outages (of one level): every open finding whose chain ends at the top in one of them.
   outageKeys(level = "") {
@@ -17905,7 +17911,7 @@ class ObjectGroupsMixin {
   // The same figures serve the findings page and the overview, so the two never differ.
   topicFigures(name, open) {
     const mine = open.filter(f => this.findingTopic(f) === name);
-    return { mine, follows: mine.filter(f => this.isOutageFollower(f)).length, objects: Math.max(this.topicSites(mine).size, mine.length ? 1 : 0), outages: name === "down" ? this.countedOutages().filter(c => !c.virtual).length : 0 };
+    return { mine, follows: mine.filter(f => this.isOutageFollower(f)).length, objects: Math.max(this.topicSites(mine).size, mine.length ? 1 : 0), outages: name === "down" ? this.countedOutages().length : 0 };
   }
 
   // The line beneath the main number of a topic tile: what it counts, the findings, and the follow-ups that hang on them.
