@@ -96,7 +96,7 @@ class FirstCleanupMixin {
     this.selected = null; this.pages = {};
     this.clearFindingFilters(); this.findingStatus = "";
     this.view = n === 4 ? "round" : n === 0 || n === 6 ? "firstcleanup" : "findingsNav";
-    if (n === 4) { this.round = { rows: null, picked: new Set(), error: "" }; this.loadRound(); }
+    if (n === 4) { this.round = { rows: null, picked: new Set(), error: "", single: false }; this.loadRound(); }
     else if (n === 2) (this.folds ||= {}).often = true;
   }
 
@@ -113,7 +113,7 @@ class FirstCleanupMixin {
   }
 
   // The cards of a stage are all gone through; what is left is what was skipped, and going on needs no question.
-  fcSeen(n) { return [1, 2, 3].includes(n) && !this.fcWiz?.look && this.stageCount(n) > 0 && !(n === 2 ? this.fcOftenQueue() : this.fcUnits(n)).length; }
+  fcSeen(n) { return [1, 2, 3, 4].includes(n) && !this.fcWiz?.look && this.stageCount(n) > 0 && !(n === 2 ? this.fcOftenQueue() : n === 4 ? (this.fcRoundQueue() || [null]) : this.fcUnits(n)).length; }
 
   // "Next" marks the stage done and goes on; with findings left that were not looked at it asks first.
   fcWizNext() {
@@ -205,7 +205,7 @@ class FirstCleanupMixin {
   fcEntryLabel(e) {
     if (e.action === "later_all") return this.t("fcLogLaterAll", { n: this.formatNumber(e.n || 0) });
     if (["keep", "later"].includes(e.action) && e.n > 1) return `${this.t(e.action === "keep" ? "fcKeep" : "fcLater")} · ${this.t("fcLogN", { n: this.formatNumber(e.n) })}`;
-    return this.t({ keep: "fcKeep", later: "fcLater", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip" }[e.action] || "fcLogSkip");
+    return this.t({ keep: "fcKeep", later: "fcLater", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip", pick: "fcLogPick" }[e.action] || "fcLogSkip");
   }
 
   // The note under the card after an answer for many findings at once: what was done, with the way back for a few
@@ -233,17 +233,21 @@ class FirstCleanupMixin {
     if (i < 0) return;
     const entry = log[i];
     try {
-      if (entry.action === "keep" || entry.action === "later") await this.fcLift(entry.keys || [entry.key]);
+      if (entry.action === "keep" || entry.action === "later") {
+        await this.fcLift(entry.keys || [entry.key]);
+        if (entry.stage === 4) for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
+      } else if (entry.action === "pick") (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") {
         for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
       } else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
     } catch (err) { this.failed(err); this.render(); return; }
     log.splice(i, 1); this.fcLogCall({ action: "log_remove", entry_id: id });
+    if (entry.stage === 4 && this.round && ["keep", "later"].includes(entry.action)) { this.round = { rows: null, picked: this.round.picked, error: "", single: this.round.single }; this.loadRound(); }
     if (entry.key) this.fcFocus = entry.key;
     if (this.fcToast?.id === id) this.fcToast = null;
     this.render();
-    if (!["skip", "nothanks"].includes(entry.action)) { try { await this.refreshData(); } catch (_) { /* stays on screen */ } this.render(); }
+    if (!["skip", "nothanks", "pick"].includes(entry.action)) { try { await this.refreshData(); } catch (_) { /* stays on screen */ } this.render(); }
   }
 
   // "No thanks" of stage 2 taken back: the suggestion is asked about again.
@@ -265,7 +269,7 @@ class FirstCleanupMixin {
     const log = this.fcLogGet();
     return [1, 2, 3, 4, 5].map(n => {
       const mine = log.filter(e => e.stage === n), sum = (...actions) => mine.filter(e => actions.includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
-      const parts = [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
+      const parts = [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"], [sum("pick"), "fcSumPick"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
       const left = this.stageCount(n);
       if (left) parts.push(this.t("fcSumLeft", { n: this.formatNumber(left) }));
       if (!parts.length) parts.push(this.t("fcSumNone"));
@@ -398,7 +402,7 @@ class FirstCleanupMixin {
 
   // One card back: the last skip or decision of the stage is taken back, and the card shows once more.
   // The actions of a stage that "Previous" can take back: the answers of the cards, or in stage 2 the marks and refusals.
-  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : ["keep", "later", "skip"]; }
+  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : n === 4 ? ["keep", "later", "skip", "pick"] : ["keep", "later", "skip"]; }
 
   fcPrevButton(n) {
     const some = this.fcLogGet().some(e => e.stage === n && this.fcPrevActions(n).includes(e.action));
@@ -493,7 +497,7 @@ class FirstCleanupMixin {
     const look = this.fcWiz.look;
     let body;
     if (n === 4 && look) body = this.findingsView();
-    else if (n === 4) body = `<p class="fctip fcroundnote"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button> ${this.t("fcRoundUndo")} <button type="button" class="link" data-jump="journal" data-jump-tab="plans">${this.t("fcOpenJournal")}</button></p>${this.roundView()}`;
+    else if (n === 4) body = this.fcRoundCards();
     else if (n === 2) body = look ? this.oftenCard() || this.fcEmpty() : this.fcOftenStep(count);
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
     else body = look ? this.findingsView() : this.fcCards(n);
@@ -519,6 +523,7 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "keep"));
     root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "snooze"));
     this.bindFcInfo(root);
+    this.bindFcRound(root);
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);

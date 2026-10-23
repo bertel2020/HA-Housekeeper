@@ -18396,7 +18396,11 @@ class RoundMixin {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/cleanup_round" });
       if (this.round !== round) return;
       round.rows = reply?.rows || [];
-      round.rows.filter(r => r.group === "safe").forEach(r => round.picked.add(r.finding_key));
+      if (this.fcWizOn()) {
+        // In the cleanup nothing is marked on its own: what was marked on a card stays marked (the history knows).
+        const marked = new Set(this.fcLogGet().filter(e => e.stage === 4 && e.action === "pick").flatMap(e => e.keys || [e.key]));
+        round.rows.filter(r => marked.has(r.finding_key)).forEach(r => round.picked.add(r.finding_key));
+      } else round.rows.filter(r => r.group === "safe").forEach(r => round.picked.add(r.finding_key));
     } catch (err) { if (this.round === round) { round.rows = []; round.error = this.errText(err); } }
     if (this.view === "round") this.render();
   }
@@ -18582,7 +18586,7 @@ class FirstCleanupMixin {
     this.selected = null; this.pages = {};
     this.clearFindingFilters(); this.findingStatus = "";
     this.view = n === 4 ? "round" : n === 0 || n === 6 ? "firstcleanup" : "findingsNav";
-    if (n === 4) { this.round = { rows: null, picked: new Set(), error: "" }; this.loadRound(); }
+    if (n === 4) { this.round = { rows: null, picked: new Set(), error: "", single: false }; this.loadRound(); }
     else if (n === 2) (this.folds ||= {}).often = true;
   }
 
@@ -18599,7 +18603,7 @@ class FirstCleanupMixin {
   }
 
   // The cards of a stage are all gone through; what is left is what was skipped, and going on needs no question.
-  fcSeen(n) { return [1, 2, 3].includes(n) && !this.fcWiz?.look && this.stageCount(n) > 0 && !(n === 2 ? this.fcOftenQueue() : this.fcUnits(n)).length; }
+  fcSeen(n) { return [1, 2, 3, 4].includes(n) && !this.fcWiz?.look && this.stageCount(n) > 0 && !(n === 2 ? this.fcOftenQueue() : n === 4 ? (this.fcRoundQueue() || [null]) : this.fcUnits(n)).length; }
 
   // "Next" marks the stage done and goes on; with findings left that were not looked at it asks first.
   fcWizNext() {
@@ -18691,7 +18695,7 @@ class FirstCleanupMixin {
   fcEntryLabel(e) {
     if (e.action === "later_all") return this.t("fcLogLaterAll", { n: this.formatNumber(e.n || 0) });
     if (["keep", "later"].includes(e.action) && e.n > 1) return `${this.t(e.action === "keep" ? "fcKeep" : "fcLater")} · ${this.t("fcLogN", { n: this.formatNumber(e.n) })}`;
-    return this.t({ keep: "fcKeep", later: "fcLater", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip" }[e.action] || "fcLogSkip");
+    return this.t({ keep: "fcKeep", later: "fcLater", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip", pick: "fcLogPick" }[e.action] || "fcLogSkip");
   }
 
   // The note under the card after an answer for many findings at once: what was done, with the way back for a few
@@ -18719,17 +18723,21 @@ class FirstCleanupMixin {
     if (i < 0) return;
     const entry = log[i];
     try {
-      if (entry.action === "keep" || entry.action === "later") await this.fcLift(entry.keys || [entry.key]);
+      if (entry.action === "keep" || entry.action === "later") {
+        await this.fcLift(entry.keys || [entry.key]);
+        if (entry.stage === 4) for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
+      } else if (entry.action === "pick") (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") {
         for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
       } else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
     } catch (err) { this.failed(err); this.render(); return; }
     log.splice(i, 1); this.fcLogCall({ action: "log_remove", entry_id: id });
+    if (entry.stage === 4 && this.round && ["keep", "later"].includes(entry.action)) { this.round = { rows: null, picked: this.round.picked, error: "", single: this.round.single }; this.loadRound(); }
     if (entry.key) this.fcFocus = entry.key;
     if (this.fcToast?.id === id) this.fcToast = null;
     this.render();
-    if (!["skip", "nothanks"].includes(entry.action)) { try { await this.refreshData(); } catch (_) { /* stays on screen */ } this.render(); }
+    if (!["skip", "nothanks", "pick"].includes(entry.action)) { try { await this.refreshData(); } catch (_) { /* stays on screen */ } this.render(); }
   }
 
   // "No thanks" of stage 2 taken back: the suggestion is asked about again.
@@ -18751,7 +18759,7 @@ class FirstCleanupMixin {
     const log = this.fcLogGet();
     return [1, 2, 3, 4, 5].map(n => {
       const mine = log.filter(e => e.stage === n), sum = (...actions) => mine.filter(e => actions.includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
-      const parts = [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
+      const parts = [[sum("keep"), "fcSumKeep"], [sum("later", "later_all"), "fcSumLater"], [sum("mark"), "fcSumMark"], [sum("pick"), "fcSumPick"]].filter(([c]) => c).map(([c, k]) => this.t(k, { n: this.formatNumber(c) }));
       const left = this.stageCount(n);
       if (left) parts.push(this.t("fcSumLeft", { n: this.formatNumber(left) }));
       if (!parts.length) parts.push(this.t("fcSumNone"));
@@ -18884,7 +18892,7 @@ class FirstCleanupMixin {
 
   // One card back: the last skip or decision of the stage is taken back, and the card shows once more.
   // The actions of a stage that "Previous" can take back: the answers of the cards, or in stage 2 the marks and refusals.
-  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : ["keep", "later", "skip"]; }
+  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : n === 4 ? ["keep", "later", "skip", "pick"] : ["keep", "later", "skip"]; }
 
   fcPrevButton(n) {
     const some = this.fcLogGet().some(e => e.stage === n && this.fcPrevActions(n).includes(e.action));
@@ -18979,7 +18987,7 @@ class FirstCleanupMixin {
     const look = this.fcWiz.look;
     let body;
     if (n === 4 && look) body = this.findingsView();
-    else if (n === 4) body = `<p class="fctip fcroundnote"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button> ${this.t("fcRoundUndo")} <button type="button" class="link" data-jump="journal" data-jump-tab="plans">${this.t("fcOpenJournal")}</button></p>${this.roundView()}`;
+    else if (n === 4) body = this.fcRoundCards();
     else if (n === 2) body = look ? this.oftenCard() || this.fcEmpty() : this.fcOftenStep(count);
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
     else body = look ? this.findingsView() : this.fcCards(n);
@@ -19005,6 +19013,7 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "keep"));
     root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "snooze"));
     this.bindFcInfo(root);
+    this.bindFcRound(root);
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
@@ -19305,6 +19314,153 @@ Object.assign(TEXT.en, {
   fcInfoPattern: "Pattern", fcInfoOften: "Frequency", fcInfoMean_: "Duration", fcInfoEpisodes: "{n} outages in {days} days", fcInfoMean: "{span} per outage on average",
   fcInfoHides: "The mark hides {n} findings", fcInfoHides1: "The mark hides 1 finding", fcInfoHidesNone: "The mark hides no finding",
   fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
+});
+
+// FcRoundMixin: stage 4 of the cleanup as cards. The cleanup round (84-round.js) judges every unneeded object; here each one
+// is a card with the same frame as the other stages: "Mark for removal", "Keep", "Later", "Skip". Nothing is removed on a
+// card: what is marked (kept in the history as "pick") goes into one plan at the end, with preview, backup and confirmation.
+// The objects nothing uses come first as one card.
+class FcRoundMixin {
+  // The cards still to answer: not marked, not skipped, not blocked, not decided; null while the round loads.
+  fcRoundQueue() {
+    const round = this.round;
+    if (!round?.rows) return null;
+    const skipped = this.fcSkipped(4);
+    return round.rows.filter(r => r.group !== "blocked" && !round.picked.has(r.finding_key) && !skipped.has(r.finding_key));
+  }
+
+  fcRoundSafe(queue) { return queue.filter(r => r.group === "safe" && r.kind !== "merge"); }
+
+  fcRoundKind(rows) {
+    const count = kind => rows.filter(r => r.kind === kind).length;
+    return [[count("remove_entity"), "fcRoundEntities"], [count("delete_automation"), "fcRoundAutomations"], [count("disable_entity"), "fcRoundDisable"]].filter(([n]) => n).map(([n, key]) => this.t(key, { n: this.formatNumber(n) })).join(" · ");
+  }
+
+  // The four rows of a card of one object.
+  fcRoundRows(r, finding) {
+    const link = `${r.object_type}:${r.object_id}`, obj = this.findObject(link), none = this.t("fcInfoNone");
+    const reasons = (r.reasons || []).filter(x => x !== "config_rewrite").map(x => this.t(`reason_${x}`));
+    const used = r.kind === "merge" ? this.t("roundDuplicateOf", { name: r.duplicate_of || "?" }) : r.group === "safe" ? this.t("fcRoundUnused") : reasons[0] || "";
+    const since = finding?.first_detected_at ? this.t("fcSince", { age: this.agoText(finding.first_detected_at) }) : "";
+    const row = (id, label, text, tabs, tone = "") => ({ id, label: this.t(label), text: text || none, empty: !text, tone: text ? tone : "", tab: obj && text && tabs ? this.fcTabFor(obj, link, tabs) : "" });
+    return [
+      row("action", "fcRoundAction", [r.first_step ? this.t("roundFirstStep") : "", this.t(`fcRoundHint_${r.kind}`)].filter(Boolean).join(", ")),
+      row("used", "fcRoundUsed", used, ["relations", "overview"], r.group === "safe" && r.kind !== "merge" ? "ok" : ""),
+      row("since", "fcRoundSince", since, ["history", "overview"]),
+      row("undo", "fcRoundUndoRow", this.t(r.kind === "merge" ? "fcRoundUndoMerge" : "fcRoundUndoText")),
+    ];
+  }
+
+  fcRoundCards() {
+    const queue = this.fcRoundQueue(), round = this.round, listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
+    if (queue === null) return `<section class="panel fcpanel"><div class="pad"><small>${this.t("loading")}</small></div></section>`;
+    if (round.error) return `<section class="panel fcpanel"><div class="pad">${this.notice("warn", this.esc(round.error))}</div></section>`;
+    const prevBtn = this.fcPrevButton(4);
+    const picked = round.rows.filter(r => round.picked.has(r.finding_key));
+    if (!queue.length) return this.fcRoundEnd(picked, prevBtn, listBtn);
+    const safe = this.fcRoundSafe(queue);
+    if (safe.length >= 2 && !round.single && queue[0].group === "safe") return this.fcRoundCollect(safe, queue, prevBtn, listBtn);
+    return this.fcRoundOne(queue[0], queue, prevBtn, listBtn);
+  }
+
+  fcRoundOne(r, queue, prevBtn, listBtn) {
+    const finding = this.data.findings.find(f => f.key === r.finding_key), link = `${r.object_type}:${r.object_id}`, obj = this.findObject(link), kattr = `data-keys="${this.esc(JSON.stringify([r.finding_key]))}"`;
+    const first = r.kind === "merge"
+      ? this.fcAct(`data-fc-rmerge="${this.esc(r.object_id)}" data-into="${this.esc(r.duplicate_of || "")}"`, this.t("roundMerge"), this.t("fcRoundHint_merge"), false, "mdi:call-merge", "blue")
+      : this.fcAct(`data-fc-rpick="${this.esc(r.finding_key)}" data-name="${this.esc(r.name)}"`, this.t("fcRoundPick"), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue");
+    const acts = first
+      + this.fcAct(`data-fc-rkeep="${this.esc(r.finding_key)}" data-link="${this.esc(link)}" data-name="${this.esc(r.name)}"`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green")
+      + this.fcAct(`data-fc-rlater="${this.esc(r.finding_key)}"`, this.t("fcLater"), this.t("fcLaterHint", { days: this.fc?.later_days || 90 }), false, "mdi:clock-outline", "amber");
+    const pill = `<span class="pill ${r.group === "safe" ? "ok" : "warn"}">${this.t(r.group === "safe" ? "fcRoundSafe" : "fcRoundLook")}</span>`;
+    return `<section class="panel fccard${this.fcAnim(`4:${r.finding_key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile(r.object_type, "mute")}<div><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(link)}">${this.esc(r.name)}</button>` : this.esc(r.name)}</h3><small class="fcid">${this.esc(r.object_id)}</small></div></div><p class="fcwhat"><strong>${this.esc(finding ? this.findingTitle(finding) : this.t("fcRoundTitle"))}</strong></p><p class="fcchips">${pill}</p>${this.fcInfoHtml(this.fcRoundRows(r, finding), link)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.finding_key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+  }
+
+  // The objects nothing uses, as one card: one click marks them all, "one by one" goes through them.
+  fcRoundCollect(safe, queue, prevBtn, listBtn) {
+    const keys = safe.map(r => r.finding_key), attr = `data-keys="${this.esc(JSON.stringify(keys))}"`, n = this.formatNumber(safe.length);
+    const oldest = safe.map(r => this.data.findings.find(f => f.key === r.finding_key)?.first_detected_at).filter(Boolean).sort()[0];
+    const info = [
+      { label: this.t("fcRoundWhat"), text: this.fcRoundKind(safe) },
+      { label: this.t("fcRoundUsed"), text: this.t("fcRoundUnused"), tone: "ok" },
+      { label: this.t("fcRoundSince"), text: oldest ? this.t("fcRoundOldest", { age: this.agoText(oldest) }) : "", empty: !oldest },
+      { label: this.t("fcRoundUndoRow"), text: this.t("fcRoundUndoText") },
+    ].map(x => ({ ...x, text: x.text || this.t("fcInfoNone"), empty: x.empty || !x.text, tone: x.tone || "", tab: "" }));
+    const acts = this.fcAct(`data-fc-rpick="${this.esc(keys[0])}" ${attr} data-name="${this.esc(this.t("fcLogSeveral", { n: safe.length }))}"`, this.t("fcRoundPickAll", { n }), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue")
+      + this.fcAct("data-fc-rsingle", this.t("fcRoundSingle"), this.t("fcRoundSingleHint"), false, "mdi:format-list-bulleted", "mute");
+    return `<section class="panel fccard${this.fcAnim("4:collect")}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile("entity", "ok")}<div><h3>${this.t("fcRoundCollectTitle", { n })}</h3><small class="fcid">${this.t("fcRoundCollectId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><span class="pill ok">${this.t("fcRoundSafe")}</span></p>${this.fcInfoHtml(info, "")}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(keys[0])}" ${attr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+  }
+
+  // Everything is answered: the marked ones go into one plan.
+  fcRoundEnd(picked, prevBtn, listBtn) {
+    const rest = this.stageCount(4) - picked.length, blocked = this.round.rows.filter(r => r.group === "blocked").length;
+    if (!picked.length) {
+      const left = this.round.rows.filter(r => r.group !== "blocked").length;
+      return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(left ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(left) })}</div><div class="pad fcmore">${prevBtn}${left ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>` : ""}${listBtn}</div></section>`;
+    }
+    const n = this.formatNumber(picked.length), planBusy = this.planBusy ? "disabled" : "";
+    const info = [
+      { label: this.t("fcRoundWhat"), text: this.fcRoundKind(picked) },
+      { label: this.t("fcRoundPlanRow"), text: this.t("fcRoundPlanText") },
+      { label: this.t("fcRoundNotRemovable"), text: blocked ? this.t("fcRoundBlocked", { n: this.formatNumber(blocked) }) : this.t("fcRoundNoBlocked"), tone: blocked ? "" : "ok" },
+      { label: this.t("fcRoundUndoRow"), text: this.t("fcRoundUndoText") },
+    ].map(x => ({ ...x, empty: !x.text, tone: x.tone || "", tab: "" }));
+    const act = `<button type="button" class="fcact primary blue" data-fc-rplan ${planBusy}><span class="fcicon"><ha-icon icon="mdi:clipboard-list-outline"></ha-icon></span><span class="fctxt"><strong>${this.t("roundPlan", { n })}</strong><small>${this.t("fcRoundPlanHint")}</small></span></button>`;
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRoundEndEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t("fcRoundEndTitle", { n })}</h3><small class="fcid">${this.t("fcRoundEndId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><small>${rest > 0 ? this.t("fcRoundRest", { n: this.formatNumber(rest) }) : ""}</small></p>${this.fcInfoHtml(info, "")}<div class="fcacts">${act}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}</div></div></section>`;
+  }
+
+  async fcRoundPick(keys, name) {
+    const round = this.round;
+    keys.forEach(k => round.picked.add(k));
+    this.fcNotify(this.fcLogAdd({ stage: 4, action: "pick", key: keys[0], keys, n: keys.length, name }));
+    if (keys.includes(this.fcFocus)) this.fcFocus = "";
+    this.render();
+  }
+
+  async fcRoundKeep(key, link, name) {
+    try {
+      await this.roundKeepOne(key);
+      this.round.rows = this.round.rows.filter(r => r.finding_key !== key);
+      this.fcNotify(this.fcLogAdd({ stage: 4, action: "keep", key, keys: [key], n: 1, name, targets: [link] }));
+      await this.refreshData();
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
+  async fcRoundLater(key) {
+    await this.fcDecide([key], "snooze");
+    if (this.round?.rows) this.round.rows = this.round.rows.filter(r => r.finding_key !== key);
+    this.render();
+  }
+
+  bindFcRound(root) {
+    const keysOf = el => { try { const k = JSON.parse(el.dataset.keys || "null"); if (Array.isArray(k) && k.length) return k; } catch (_) { /* one key */ } return [el.dataset.fcRpick]; };
+    root.querySelectorAll("[data-fc-rpick]").forEach(el => el.onclick = () => this.fcRoundPick(keysOf(el), el.dataset.name));
+    root.querySelectorAll("[data-fc-rkeep]").forEach(el => el.onclick = () => this.fcRoundKeep(el.dataset.fcRkeep, el.dataset.link, el.dataset.name));
+    root.querySelectorAll("[data-fc-rlater]").forEach(el => el.onclick = () => this.fcRoundLater(el.dataset.fcRlater));
+    root.querySelector("[data-fc-rsingle]")?.addEventListener("click", () => { this.round.single = true; this.render(); });
+    root.querySelectorAll("[data-fc-rmerge]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.fcRmerge; this.replNew = el.dataset.into; }));
+    root.querySelector("[data-fc-rplan]")?.addEventListener("click", () => this.roundPlan(this.round.rows.filter(r => this.round.picked.has(r.finding_key)).map(r => r.finding_key)));
+  }
+}
+Object.assign(TEXT.de, {
+  fcRoundTitle: "Überflüssig", fcRoundSafe: "Sicher entfernbar", fcRoundLook: "Erst ansehen", fcRoundPick: "Vormerken", fcRoundPickHint: "Zum Entfernen im Plan am Ende. Nichts läuft jetzt.", fcRoundPickAll: "Alle {n} vormerken",
+  fcRoundSingle: "Einzeln ansehen", fcRoundSingleHint: "Jedes mit einer eigenen Karte.", fcRoundCollectTitle: "{n} Objekte sind sicher entfernbar", fcRoundCollectId: "Nirgends verwendet, nicht kritisch, ohne Vermerk",
+  fcRoundAction: "Aktion", fcRoundUsed: "Verwendet", fcRoundSince: "Erkannt", fcRoundUndoRow: "Rückgängig", fcRoundWhat: "Was", fcRoundUnused: "Nirgends verwendet", fcRoundOldest: "der älteste {age}",
+  fcRoundUndoText: "Im Journal, solange nichts geändert wurde", fcRoundUndoMerge: "Im Journal",
+  fcRoundHint_remove_entity: "Entfernt den Registry-Eintrag, mit Backup und Vorschau", fcRoundHint_delete_automation: "Löscht die Automation aus der Datei", fcRoundHint_disable_entity: "Deaktiviert, entfernt wird später", fcRoundHint_merge: "Ersetzt sie überall durch die andere Entität",
+  fcRoundEntities: "{n} Entitäten", fcRoundAutomations: "{n} Automationen", fcRoundDisable: "{n} zum Deaktivieren",
+  fcRoundEndEyebrow: "Abschluss", fcRoundEndTitle: "{n} vorgemerkt", fcRoundEndId: "Sie laufen als ein Plan", fcRoundRest: "{n} weitere Befunde dieser Etappe bleiben offen.", fcRoundPlanRow: "Plan", fcRoundPlanText: "Vorschau, Backup und Bestätigung, erst dann läuft etwas", fcRoundNotRemovable: "Nicht entfernbar", fcRoundBlocked: "{n} Objekte sind jetzt gesperrt", fcRoundNoBlocked: "Nichts gesperrt",
+  fcRoundPlanHint: "Zeigt jede Änderung zur Vorschau.", fcLogPick: "Vorgemerkt", fcSumPick: "{n} vorgemerkt",
+});
+Object.assign(TEXT.en, {
+  fcRoundTitle: "Unneeded", fcRoundSafe: "Safe to remove", fcRoundLook: "Look first", fcRoundPick: "Mark", fcRoundPickHint: "For removal in the plan at the end. Nothing runs now.", fcRoundPickAll: "Mark all {n}",
+  fcRoundSingle: "One by one", fcRoundSingleHint: "Each with a card of its own.", fcRoundCollectTitle: "{n} objects are safe to remove", fcRoundCollectId: "Used nowhere, not critical, without a mark",
+  fcRoundAction: "Action", fcRoundUsed: "Used", fcRoundSince: "Found", fcRoundUndoRow: "Undo", fcRoundWhat: "What", fcRoundUnused: "Used nowhere", fcRoundOldest: "the oldest {age}",
+  fcRoundUndoText: "In the Journal, as long as nothing was changed", fcRoundUndoMerge: "In the Journal",
+  fcRoundHint_remove_entity: "Removes the registry entry, with backup and preview", fcRoundHint_delete_automation: "Deletes the automation from the file", fcRoundHint_disable_entity: "Disables it, removal comes later", fcRoundHint_merge: "Replaces it everywhere by the other entity",
+  fcRoundEntities: "{n} entities", fcRoundAutomations: "{n} automations", fcRoundDisable: "{n} to disable",
+  fcRoundEndEyebrow: "Wrap-up", fcRoundEndTitle: "{n} marked", fcRoundEndId: "They run as one plan", fcRoundRest: "{n} more findings of this stage stay open.", fcRoundPlanRow: "Plan", fcRoundPlanText: "Preview, backup and confirmation, only then something runs", fcRoundNotRemovable: "Not removable", fcRoundBlocked: "{n} objects are locked now", fcRoundNoBlocked: "Nothing locked",
+  fcRoundPlanHint: "Shows every change as a preview.", fcLogPick: "Marked", fcSumPick: "{n} marked",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -20627,7 +20783,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FirstCleanupMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FcRoundMixin, FirstCleanupMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

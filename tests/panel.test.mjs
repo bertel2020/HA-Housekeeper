@@ -7150,3 +7150,31 @@ test("stage 5 and stage 2 use the same frame: facts in fixed rows, the days of t
   assert.equal(block.split("fcirow").length - 1 >= 4, true);
   assert.ok(block.includes("12 outages in 30 days") && block.includes("2 h per outage on average") && block.includes("The mark hides 3 findings"));
 });
+
+test("stage 4 of the cleanup is a card per object: the safe ones first as one card, marking is kept in the history, the marked ones go into one plan", async () => {
+  const { el } = panel("en", { clearTimeout: () => {} });
+  const calls = [];
+  el.fc = { state: { started_at: "2026-10-23T08:00:00+00:00", start_count: 4, stage: 4, done: [], finished_at: null, log: [] }, later_days: 90, stages: { 1: [], 2: [], 3: [], 4: ["a", "b", "c"], 5: [] } };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return el.fc; } };
+  const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", topic: "unneeded", impact: "low", ignored: false, first_detected_at: new Date(Date.now() - 3 * 864e5).toISOString() });
+  el.data = { ...DATA, findings: [f("a"), f("b"), f("c")], objects: [] };
+  el.render = () => {}; el.refreshData = async () => {};
+  el.fcWiz = { step: 4, look: false, on: true }; el.view = "round";
+  const row = (key, group) => ({ finding_key: key, object_type: "entity", object_id: `sensor.${key}`, name: key.toUpperCase(), kind: "remove_entity", group, reasons: group === "look" ? ["used_certain"] : [] });
+  el.round = { rows: [row("a", "safe"), row("b", "safe"), row("c", "look")], picked: new Set(), error: "", single: false };
+  let html = el.fcRoundCards();
+  assert.ok(html.includes("2 objects are safe to remove") && html.includes("data-fc-rpick") && html.includes("Mark all 2") && html.includes("data-fc-rsingle"), "the safe ones come first as one card");
+  await el.fcRoundPick(["a", "b"], "2 findings");
+  assert.equal(calls.find(c => c.action === "log_add").entry.action, "pick", "marking is kept in the history on the server");
+  assert.ok(el.round.picked.has("a") && el.round.picked.has("b") && el.fcLogGet().length === 1);
+  html = el.fcRoundCards();
+  assert.ok(html.includes("data-fc-rkeep") && html.includes("data-fc-rlater") && html.includes("data-fc-skipcard") && html.includes("C"), "then one card per object");
+  assert.ok(!el.fcSeen(4), "an open card is left");
+  el.fcLogAdd({ stage: 4, action: "skip", key: "c", keys: ["c"] });
+  assert.ok(el.fcSeen(4), "only marked and skipped ones left: on to the next stage");
+  html = el.fcRoundCards();
+  assert.ok(html.includes("2 marked") && html.includes("data-fc-rplan") && html.includes("Create plan (2)"), "the marked ones end in one plan");
+  el.fcPrev();
+  await new Promise(r => setTimeout(r, 0));
+  assert.ok(!el.fcLogGet().some(e => e.action === "skip"), "undo takes the last answer back");
+});

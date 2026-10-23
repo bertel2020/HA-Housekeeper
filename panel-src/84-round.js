@@ -15,7 +15,11 @@ class RoundMixin {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/cleanup_round" });
       if (this.round !== round) return;
       round.rows = reply?.rows || [];
-      round.rows.filter(r => r.group === "safe").forEach(r => round.picked.add(r.finding_key));
+      if (this.fcWizOn()) {
+        // In the cleanup nothing is marked on its own: what was marked on a card stays marked (the history knows).
+        const marked = new Set(this.fcLogGet().filter(e => e.stage === 4 && e.action === "pick").flatMap(e => e.keys || [e.key]));
+        round.rows.filter(r => marked.has(r.finding_key)).forEach(r => round.picked.add(r.finding_key));
+      } else round.rows.filter(r => r.group === "safe").forEach(r => round.picked.add(r.finding_key));
     } catch (err) { if (this.round === round) { round.rows = []; round.error = this.errText(err); } }
     if (this.view === "round") this.render();
   }

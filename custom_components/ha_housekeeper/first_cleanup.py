@@ -25,7 +25,7 @@ CHAIN_MIN: Final = 3  # an outage with at least this many follow-ups is a "large
 OFFER_MIN: Final = 50  # open findings from which the cleanup is offered
 LATER_DAYS: Final = 90  # default time for the rest put off in stage 5
 BULK_LIMIT: Final = 1000  # findings put off in one step
-LOG_ACTIONS: Final = ("keep", "later", "skip", "mark", "nothanks", "later_all")
+LOG_ACTIONS: Final = ("keep", "later", "skip", "mark", "nothanks", "later_all", "pick")
 LOG_LIMIT: Final = 300  # entries of the history kept
 LOG_KEYS_LIMIT: Final = (
     5000  # keys the entries of the history name in all; the oldest entries go first
