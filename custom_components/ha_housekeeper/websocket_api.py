@@ -453,7 +453,7 @@ def websocket_visit_leave(
 def _first_cleanup_reply(scanner: InventoryScanner) -> dict[str, Any]:
     snapshot = scanner.snapshot or {}
     stages = stage_keys(snapshot)
-    open_count = sum(1 for f in snapshot.get("findings", []) if not f.get("ignored"))
+    open_count = sum(len(keys) for keys in stages.values())
     return {
         "state": scanner.first_cleanup.state(),
         "offered": scanner.first_cleanup.offered(open_count),

@@ -18482,6 +18482,11 @@ class FirstCleanupMixin {
   // Where the stages stand: open findings left in the lists (stage 2 counts the suggestions of the card).
   stageOpen(n) { const keys = this.stageKeys(n); return (this.data?.findings || []).filter(f => !f.ignored && keys.has(f.key)); }
 
+  // The findings the stages hold, and the follow-ups that hang on an outage and are in none of them.
+  fcStaged() { const all = new Set(Object.values(this.fc?.stages || {}).flat()); return (this.data?.findings || []).filter(f => !f.ignored && all.has(f.key)); }
+
+  fcFollowing() { return (this.data?.findings || []).filter(f => !f.ignored).length - this.fcStaged().length; }
+
   stageCount(n) { return n === 2 ? (this.oftenSuggestions?.() || []).length : this.stageOpen(n).length; }
 
   openFirstCleanup() {
@@ -18549,7 +18554,7 @@ class FirstCleanupMixin {
 
   // "As a list": the plain list (or card of suggestions) of the stage instead of the cards.
   fcLook(on) {
-    this.fcWiz.look = on; this.findingStage = on && [1, 3, 5].includes(this.fcWiz.step) ? this.fcWiz.step : 0;
+    this.fcWiz.look = on; this.findingStage = on && [1, 3, 4, 5].includes(this.fcWiz.step) ? this.fcWiz.step : 0;
     this.pages = {}; this.render();
   }
 
@@ -18710,14 +18715,14 @@ class FirstCleanupMixin {
 
   // The end: what was done, what is still open with a way to each part, what comes back, and the next visit.
   fcFinish() {
-    const state = this.fc.state, left = this.data.findings.filter(f => !f.ignored).length, log = this.fcLogGet();
+    const state = this.fc.state, left = this.fcStaged().length, following = this.fcFollowing(), log = this.fcLogGet();
     const later = log.filter(e => ["later", "later_all"].includes(e.action)).reduce((c, e) => c + (e.n || 1), 0);
     const open = [1, 2, 3, 4, 5].map(n => ({ n, c: this.stageCount(n) })).filter(x => x.c)
       .map(x => `<li><span><b>${this.t("fcStage", { n: x.n })} · ${this.t(`fcStage${x.n}`)}</b> · ${this.t("fcSumLeft", { n: this.formatNumber(x.c) })}</span><button type="button" class="btn" data-fc-openlist="${x.n}">${this.t("fcSee")}</button></li>`).join("");
     const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang === "en" ? "en" : "de");
     const kpi = (label, value, tone) => `<div class="fckpi ${tone}"><b>${this.formatNumber(value)}</b><span>${label}</span></div>`;
     return `<section class="panel fcpanel${this.fcAnim("finish")}"><div class="fcdone"><span class="fcbigcheck"><ha-icon icon="mdi:check-bold"></ha-icon></span><strong>${this.t("fcFinishTitle")}</strong><div class="fckpis">${kpi(this.t("fcKpiDecided"), this.fcDecided(), "ok")}${kpi(this.t("fcKpiOpen"), left, left ? "warn" : "ok")}${kpi(this.t("fcKpiLater"), later, "mute")}</div><small>${this.t("fcFinishText2", { d: this.formatNumber(this.fcDecided()), start: this.formatNumber(state.start_count), now: this.formatNumber(left) })}</small></div>
-      <div class="pad"><h3>${this.t("fcNextTitle")}</h3>${open ? `<ul class="fcnext">${open}</ul>` : `<p>${this.t("fcNextNone")}</p>`}${later ? `<p>${this.t("fcNextLater", { n: this.formatNumber(later), date: until })}</p>` : ""}<p class="fctip">${this.t("fcNextTip")}</p>
+      <div class="pad"><h3>${this.t("fcNextTitle")}</h3>${open ? `<ul class="fcnext">${open}</ul>` : `<p>${this.t("fcNextNone")}</p>`}${following ? `<p>${this.t(following === 1 ? "fcNextFollow1" : "fcNextFollow", { n: this.formatNumber(following) })} <button type="button" class="btn" data-fc-openlist="0">${this.t("fcSee")}</button></p>` : ""}${later ? `<p>${this.t("fcNextLater", { n: this.formatNumber(later), date: until })}</p>` : ""}<p class="fctip">${this.t("fcNextTip")}</p>
       <div class="mbtns"><button type="button" class="btn primary" data-fc-exit>${this.t("fcToFindings")}</button><button type="button" class="btn" data-fc-history="1">${this.t("fcHistory")}</button><button type="button" class="btn quiet" data-fc-goto="5">${this.t("fcBack")}</button></div>
       <details class="fcdetails"><summary>${this.t("fcSumTitle")}</summary><ul class="fcsum">${this.fcSummaryRows()}</ul></details></div></section>`;
   }
@@ -18899,21 +18904,22 @@ class FirstCleanupMixin {
     if (this.fcWiz.step === null) this.fcWizSet(this.fcResumeStep());
     const n = this.fcWiz.step, error = fc.error ? this.notice("warn", this.esc(fc.error)) : "";
     if (n === 0) return `<div class="stack">${error}${this.fcWelcome()}</div>`;
-    const state = fc.state || { done: [] }, left = this.data.findings.filter(f => !f.ignored).length;
+    const state = fc.state || { done: [] }, left = this.fcStaged().length;
     const counter = `<span class="fccounter">${this.t("fcCounter", { start: this.formatNumber(state.start_count), now: this.formatNumber(left), d: this.formatNumber(this.fcDecided()) })}</span>`;
     const startN = state.start_count || 0, pct = startN ? Math.max(0, Math.min(100, Math.round(((startN - left) / startN) * 100))) : 0;
     const top = `<div class="fctop">${this.fcStepper(n)}${counter}</div><div class="fcbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${this.esc(this.t("fcProgress"))}"><i style="width:${pct}%"></i></div>`;
     if (this.fcWiz.history) return `<div class="stack">${error}${top}${this.fcHistoryPanel()}</div>`;
     if (n === 6) return `<div class="stack">${error}${top}${this.fcFinish()}</div>`;
     const count = this.stageCount(n);
-    const head = `<section class="panel fchead"><div class="pad"><div class="fcheadrow"><div><small class="fceyebrow">${this.t("fcStageOf", { n })}</small><h2>${this.t(`fcStage${n}`)}</h2></div><span class="pill ${count ? "warn" : "ok"}">${count ? this.t("fcLeft", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span></div><p>${this.t(`fcStage${n}Hint`)}</p></div></section>`;
-    const look = this.fcWiz.look && n !== 4;
+    const head = `<section class="panel fchead"><div class="pad"><div class="fcheadrow"><div><small class="fceyebrow">${this.t("fcStageOf", { n })}</small><h2>${this.t(`fcStage${n}`)}</h2></div><span class="pill ${count ? "warn" : "ok"}">${count ? (n === 3 && this.fcUnits(3).length ? this.t("fcLeftObj", { o: this.formatNumber(new Set(this.stageOpen(3).map(f => this.ownerKey(f))).size), n: this.formatNumber(count) }) : this.t("fcLeft", { n: this.formatNumber(count) })) : this.t("fcStageClear")}</span></div><p>${this.t(`fcStage${n}Hint`)}</p></div></section>`;
+    const look = this.fcWiz.look;
     let body;
-    if (n === 4) body = `<p class="fctip fcroundnote">${this.t("fcRoundUndo")} <button type="button" class="link" data-jump="journal" data-jump-tab="plans">${this.t("fcOpenJournal")}</button></p>${this.roundView()}`;
+    if (n === 4 && look) body = this.findingsView();
+    else if (n === 4) body = `<p class="fctip fcroundnote"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button> ${this.t("fcRoundUndo")} <button type="button" class="link" data-jump="journal" data-jump-tab="plans">${this.t("fcOpenJournal")}</button></p>${this.roundView()}`;
     else if (n === 2) body = look ? this.oftenCard() || this.fcEmpty() : this.fcOftenStep(count);
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
     else body = look ? this.findingsView() : this.fcCards(n);
-    const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : "fcToCards")}</button>` : "";
+    const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : n === 4 ? "fcToRound" : "fcToCards")}</button>` : "";
     const seen = this.fcSeen(n);
     const next = count && !seen
       ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
@@ -18988,7 +18994,7 @@ Object.assign(TEXT.de, {
   fcResetAsk: "Der Rundgang wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden.",
   fcSumKeep: "{n} bleiben bewusst", fcSumLater: "{n} zurückgestellt", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
-  fcLeft: "{n} offen", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
+  fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcNextFollow: "{n} Folgebefunde hängen noch an Ursachen und gehören zu keiner Etappe.", fcNextFollow1: "1 Folgebefund hängt noch an einer Ursache und gehört zu keiner Etappe.", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
   fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
   fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
@@ -19021,7 +19027,7 @@ Object.assign(TEXT.en, {
   fcResetAsk: "The tour is reset and begins again at the welcome page. What you decided in it stays decided.",
   fcSumKeep: "{n} kept on purpose", fcSumLater: "{n} put off", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
   fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "Pause, continue later",
-  fcLeft: "{n} open", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
+  fcLeft: "{n} open", fcLeftObj: "{o} objects · {n} findings", fcToRound: "Back to the round", fcNextFollow: "{n} follow-up findings still hang on causes and belong to no stage.", fcNextFollow1: "1 follow-up finding still hangs on a cause and belongs to no stage.", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
   fcCounter: "{start} at the start · {now} open now · {d} decided", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",
   fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
