@@ -541,7 +541,7 @@ def websocket_first_cleanup_later(
     scanner: InventoryScanner,
 ) -> None:
     """Stage 5: put the rest off together ("Later"); it comes back as due. Housekeeper's own list only."""
-    if not scanner.first_cleanup.running:
+    if not scanner.first_cleanup.started:
         connection.send_error(msg["id"], "not_running", "The cleanup has not begun")
         return
     keys = stage_keys(scanner.snapshot or {})[5][:BULK_LIMIT]

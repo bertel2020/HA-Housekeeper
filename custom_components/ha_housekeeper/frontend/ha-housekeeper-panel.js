@@ -18655,7 +18655,8 @@ class FirstCleanupMixin {
 
   async fcLift(keys) {
     for (const key of keys) {
-      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false });
+      try { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false }); }
+      catch (err) { if (err?.code !== "not_found") throw err; }
       const f = this.data.findings.find(x => x.key === key);
       if (f) { f.ignored = false; f.ignore_info = null; this._rev++; }
     }
@@ -18670,8 +18671,8 @@ class FirstCleanupMixin {
       if (entry.action === "keep" || entry.action === "later") await this.fcLift(entry.keys || [entry.key]);
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") {
-        for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); }
-      } else if (entry.action === "nothanks") this.fcUnskipOften(entry.key);
+        for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); } catch (err) { if (err?.code !== "not_found") throw err; } }
+      } else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
     } catch (err) { this.failed(err); this.render(); return; }
     log.splice(i, 1); this.fcLogCall({ action: "log_remove", entry_id: id });
     if (entry.key) this.fcFocus = entry.key;
@@ -18681,8 +18682,8 @@ class FirstCleanupMixin {
   }
 
   // "No thanks" of stage 2 taken back: the suggestion is asked about again.
-  fcUnskipOften(key) {
-    const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
+  fcUnskipOften(key, named) {
+    const keys = named?.length ? named : key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
     for (const k of keys) delete (this._oftenSkip ||= {})[k];
     try {
       const stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.often") || "{}") || {};
@@ -18862,9 +18863,10 @@ class FirstCleanupMixin {
 
   fcNoThanks(key) {
     const row = (this.oftenSuggestions?.() || []).filter(x => x.key === key).map(x => this.oftenRowOf(x))[0];
+    const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
     this.skipOften(key);
     if (this.fcFocus === key) this.fcFocus = "";
-    this.fcNotify(this.fcLogAdd({ stage: 2, action: "nothanks", key, name: row?.title || "" }));
+    this.fcNotify(this.fcLogAdd({ stage: 2, action: "nothanks", key, keys, name: row?.title || "" }));
     this.render();
   }
 

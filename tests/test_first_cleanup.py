@@ -46,6 +46,13 @@ async def test_the_record_follows_the_cleanup_and_survives_a_reload(hass) -> Non
     for stage in (1, 2, 3, 4, 5):
         store.set_stage(stage, True, NOW)
     assert not store.running and store.state()["finished_at"]
+    store.set_stage(5, None, NOW)
+    assert store.started and store.state()["stage"] == 5, (
+        "a finished tour can still be gone back in"
+    )
+    store.set_stage(5, False, NOW)
+    assert store.running and not store.state()["finished_at"], "an open stage reopens it"
+    store.set_stage(5, True, NOW)
     store.begin(5, NOW)
     assert store.state()["done"] == [] and store.state()["start_count"] == 5, "starts over"
     store.set_stage(2, True, NOW)

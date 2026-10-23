@@ -140,6 +140,11 @@ class FirstCleanupStore:
     def running(self) -> bool:
         return bool(self._state["started_at"]) and not self._state["finished_at"]
 
+    @property
+    def started(self) -> bool:
+        """Whether the tour was begun, also when it is finished: its pages can still be gone back to."""
+        return bool(self._state["started_at"])
+
     def offered(self, open_count: int) -> bool:
         """Whether the offer shows: not begun, not declined and many findings are open."""
         s = self._state
@@ -189,7 +194,7 @@ class FirstCleanupStore:
 
     def set_stage(self, stage: int, done: bool | None, now: datetime) -> None:
         """Go to a stage, and mark it done or open again."""
-        if stage not in STAGES or not self.running:
+        if stage not in STAGES or not self.started:
             return
         self._state["stage"] = stage
         if done is not None:
@@ -200,5 +205,7 @@ class FirstCleanupStore:
                 marked.discard(stage)
             self._state["done"] = sorted(marked)
         if len(self._state["done"]) == len(STAGES):
-            self._state["finished_at"] = now.isoformat()
+            self._state["finished_at"] = self._state["finished_at"] or now.isoformat()
+        else:
+            self._state["finished_at"] = None
         self._save()
