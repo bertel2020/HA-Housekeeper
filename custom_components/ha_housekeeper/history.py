@@ -190,16 +190,23 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
         if not _is_follow_up(finding, causes):
             site.add(owner)
             continue
-        # A cause without a finding of its own is the site of work of its follow-ups.
+        # The top of the chain stands for it when that has no finding of its own: a device that is down below an
+        # integration is no job of its own.
         cause = causes.get(finding.get("cause_id") or "") or {}
-        if cause and not cause.get("finding_key"):
+        for _ in range(20):
+            above = causes.get(cause.get("parent_id") or "")
+            if not above:
+                break
+            cause = above
+        if cause and not cause.get("virtual") and not cause.get("finding_key"):
             site.add(f"{cause['object_type']}:{cause['object_id']}")
     # The panel lists every real cause as an object of its own, whether or not it has a finding (a virtual one, a missing
     # target, is no object), so the total counts them as well.
     affected.update(
         f"{c['object_type']}:{c['object_id']}" for c in causes.values() if not c.get("virtual")
     )
-    lead_object_topics = {name: len(site) for name, site in sites.items()}
+    # A topic with findings is never "none": the objects it names are at least one.
+    lead_object_topics = {name: max(len(site), 1) for name, site in sites.items()}
     health_base, health_load = _health(snapshot)
     return {
         "at": snapshot["meta"]["scanned_at"],

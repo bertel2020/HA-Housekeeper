@@ -1,32 +1,284 @@
 {
   "snapshot": {
-    "meta": {"scanned_at": "2026-10-23T08:00:00+00:00"},
+    "meta": {
+      "scanned_at": "2026-10-23T08:00:00+00:00"
+    },
     "objects": [
-      {"object_type": "device", "object_id": "d1", "name": "Lamp", "status": "active"},
-      {"object_type": "entity", "object_id": "sensor.a", "name": "A", "status": "unavailable", "device_id": "d1"},
-      {"object_type": "entity", "object_id": "sensor.b", "name": "B", "status": "unavailable", "device_id": "d1"},
-      {"object_type": "entity", "object_id": "sensor.c", "name": "C", "status": "unavailable"},
-      {"object_type": "entity", "object_id": "sensor.h1", "name": "H1", "status": "unavailable"},
-      {"object_type": "entity", "object_id": "sensor.h2", "name": "H2", "status": "unavailable"},
-      {"object_type": "config_entry", "object_id": "e1", "name": "Hub", "status": "problem"},
-      {"object_type": "automation", "object_id": "a1", "name": "Auto 1", "status": "active"},
-      {"object_type": "automation", "object_id": "a2", "name": "Auto 2", "status": "active"}
+      {
+        "object_type": "device",
+        "object_id": "d1",
+        "name": "Lamp",
+        "status": "active"
+      },
+      {
+        "object_type": "entity",
+        "object_id": "sensor.a",
+        "name": "A",
+        "status": "unavailable",
+        "device_id": "d1"
+      },
+      {
+        "object_type": "entity",
+        "object_id": "sensor.b",
+        "name": "B",
+        "status": "unavailable",
+        "device_id": "d1"
+      },
+      {
+        "object_type": "entity",
+        "object_id": "sensor.c",
+        "name": "C",
+        "status": "unavailable"
+      },
+      {
+        "object_type": "entity",
+        "object_id": "sensor.h1",
+        "name": "H1",
+        "status": "unavailable"
+      },
+      {
+        "object_type": "entity",
+        "object_id": "sensor.h2",
+        "name": "H2",
+        "status": "unavailable"
+      },
+      {
+        "object_type": "config_entry",
+        "object_id": "e1",
+        "name": "Hub",
+        "status": "problem"
+      },
+      {
+        "object_type": "automation",
+        "object_id": "a1",
+        "name": "Auto 1",
+        "status": "active"
+      },
+      {
+        "object_type": "automation",
+        "object_id": "a2",
+        "name": "Auto 2",
+        "status": "active"
+      },
+      {
+        "object_type": "device",
+        "object_id": "d2",
+        "name": "Lamp 2",
+        "status": "active"
+      },
+      {
+        "object_type": "entity",
+        "object_id": "sensor.s2",
+        "name": "S2",
+        "status": "unavailable",
+        "device_id": "d2"
+      },
+      {
+        "object_type": "config_entry",
+        "object_id": "e2",
+        "name": "Hub 2",
+        "status": "problem"
+      }
     ],
     "causes": [
-      {"id": "device_down:d1", "kind": "device_down", "object_type": "device", "object_id": "d1", "name": "Lamp", "virtual": false, "parent_id": null, "child_ids": [], "finding_key": "device.down|d1|", "follower_count": 2, "total_followers": 2, "follower_keys": ["entity.state_unavailable|sensor.a|", "entity.state_unavailable|sensor.b|"], "consumers": {}, "impact": "high"},
-      {"id": "integration_down:e1", "kind": "integration_down", "object_type": "config_entry", "object_id": "e1", "name": "Hub", "virtual": false, "parent_id": null, "child_ids": [], "follower_count": 2, "total_followers": 2, "follower_keys": ["entity.state_unavailable|sensor.h1|", "entity.state_unavailable|sensor.h2|"], "consumers": {}, "impact": "high"},
-      {"id": "entity_missing:sensor.gone", "kind": "entity_missing", "object_type": "entity", "object_id": "sensor.gone", "name": "sensor.gone", "virtual": true, "parent_id": null, "child_ids": [], "follower_count": 2, "total_followers": 2, "follower_keys": ["automation.missing_entity|a1|", "automation.missing_entity|a2|"], "consumers": {}, "impact": "medium"}
+      {
+        "id": "device_down:d1",
+        "kind": "device_down",
+        "object_type": "device",
+        "object_id": "d1",
+        "name": "Lamp",
+        "virtual": false,
+        "parent_id": null,
+        "child_ids": [],
+        "finding_key": "device.down|d1|",
+        "follower_count": 2,
+        "total_followers": 2,
+        "follower_keys": [
+          "entity.state_unavailable|sensor.a|",
+          "entity.state_unavailable|sensor.b|"
+        ],
+        "consumers": {},
+        "impact": "high"
+      },
+      {
+        "id": "integration_down:e1",
+        "kind": "integration_down",
+        "object_type": "config_entry",
+        "object_id": "e1",
+        "name": "Hub",
+        "virtual": false,
+        "parent_id": null,
+        "child_ids": [],
+        "follower_count": 2,
+        "total_followers": 2,
+        "follower_keys": [
+          "entity.state_unavailable|sensor.h1|",
+          "entity.state_unavailable|sensor.h2|"
+        ],
+        "consumers": {},
+        "impact": "high"
+      },
+      {
+        "id": "entity_missing:sensor.gone",
+        "kind": "entity_missing",
+        "object_type": "entity",
+        "object_id": "sensor.gone",
+        "name": "sensor.gone",
+        "virtual": true,
+        "parent_id": null,
+        "child_ids": [],
+        "follower_count": 2,
+        "total_followers": 2,
+        "follower_keys": [
+          "automation.missing_entity|a1|",
+          "automation.missing_entity|a2|"
+        ],
+        "consumers": {},
+        "impact": "medium"
+      },
+      {
+        "id": "integration_down:e2",
+        "kind": "integration_down",
+        "object_type": "config_entry",
+        "object_id": "e2",
+        "name": "Hub 2",
+        "virtual": false,
+        "parent_id": null,
+        "child_ids": [
+          "device_down:d2"
+        ],
+        "follower_count": 0,
+        "total_followers": 2,
+        "follower_keys": [],
+        "consumers": {},
+        "impact": "high"
+      },
+      {
+        "id": "device_down:d2",
+        "kind": "device_down",
+        "object_type": "device",
+        "object_id": "d2",
+        "name": "Lamp 2",
+        "virtual": false,
+        "parent_id": "integration_down:e2",
+        "child_ids": [],
+        "finding_key": "device.down|d2|",
+        "follower_count": 1,
+        "total_followers": 1,
+        "follower_keys": [
+          "entity.state_unavailable|sensor.s2|"
+        ],
+        "consumers": {},
+        "impact": "high"
+      }
     ],
     "findings": [
-      {"key": "device.down|d1|", "rule_id": "device.down", "object_id": "d1", "classification": "unavailable", "topic": "down", "impact": "high", "ignored": false, "cause_id": "device_down:d1"},
-      {"key": "entity.state_unavailable|sensor.a|", "rule_id": "entity.state_unavailable", "object_id": "sensor.a", "classification": "unavailable", "topic": "down", "impact": "medium", "ignored": false, "cause_id": "device_down:d1"},
-      {"key": "entity.state_unavailable|sensor.b|", "rule_id": "entity.state_unavailable", "object_id": "sensor.b", "classification": "unavailable", "topic": "down", "impact": "medium", "ignored": false, "cause_id": "device_down:d1"},
-      {"key": "entity.state_unavailable|sensor.c|", "rule_id": "entity.state_unavailable", "object_id": "sensor.c", "classification": "unavailable", "topic": "down", "impact": "medium", "ignored": false},
-      {"key": "entity.state_unavailable|sensor.h1|", "rule_id": "entity.state_unavailable", "object_id": "sensor.h1", "classification": "unavailable", "topic": "down", "impact": "medium", "ignored": false, "cause_id": "integration_down:e1"},
-      {"key": "entity.state_unavailable|sensor.h2|", "rule_id": "entity.state_unavailable", "object_id": "sensor.h2", "classification": "unavailable", "topic": "down", "impact": "medium", "ignored": false, "cause_id": "integration_down:e1"},
-      {"key": "automation.missing_entity|a1|", "rule_id": "automation.missing_entity", "object_id": "a1", "classification": "broken_reference", "topic": "broken_references", "impact": "medium", "ignored": false, "cause_id": "entity_missing:sensor.gone"},
-      {"key": "automation.missing_entity|a2|", "rule_id": "automation.missing_entity", "object_id": "a2", "classification": "broken_reference", "topic": "broken_references", "impact": "medium", "ignored": false, "cause_id": "entity_missing:sensor.gone"}
+      {
+        "key": "device.down|d1|",
+        "rule_id": "device.down",
+        "object_id": "d1",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "high",
+        "ignored": false,
+        "cause_id": "device_down:d1"
+      },
+      {
+        "key": "entity.state_unavailable|sensor.a|",
+        "rule_id": "entity.state_unavailable",
+        "object_id": "sensor.a",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "medium",
+        "ignored": false,
+        "cause_id": "device_down:d1"
+      },
+      {
+        "key": "entity.state_unavailable|sensor.b|",
+        "rule_id": "entity.state_unavailable",
+        "object_id": "sensor.b",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "medium",
+        "ignored": false,
+        "cause_id": "device_down:d1"
+      },
+      {
+        "key": "entity.state_unavailable|sensor.c|",
+        "rule_id": "entity.state_unavailable",
+        "object_id": "sensor.c",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "medium",
+        "ignored": false
+      },
+      {
+        "key": "entity.state_unavailable|sensor.h1|",
+        "rule_id": "entity.state_unavailable",
+        "object_id": "sensor.h1",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "medium",
+        "ignored": false,
+        "cause_id": "integration_down:e1"
+      },
+      {
+        "key": "entity.state_unavailable|sensor.h2|",
+        "rule_id": "entity.state_unavailable",
+        "object_id": "sensor.h2",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "medium",
+        "ignored": false,
+        "cause_id": "integration_down:e1"
+      },
+      {
+        "key": "automation.missing_entity|a1|",
+        "rule_id": "automation.missing_entity",
+        "object_id": "a1",
+        "classification": "broken_reference",
+        "topic": "broken_references",
+        "impact": "medium",
+        "ignored": false,
+        "cause_id": "entity_missing:sensor.gone"
+      },
+      {
+        "key": "automation.missing_entity|a2|",
+        "rule_id": "automation.missing_entity",
+        "object_id": "a2",
+        "classification": "broken_reference",
+        "topic": "broken_references",
+        "impact": "medium",
+        "ignored": false,
+        "cause_id": "entity_missing:sensor.gone"
+      },
+      {
+        "key": "device.down|d2|",
+        "rule_id": "device.down",
+        "object_id": "d2",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "high",
+        "ignored": false,
+        "cause_id": "device_down:d2"
+      },
+      {
+        "key": "entity.state_unavailable|sensor.s2|",
+        "rule_id": "entity.state_unavailable",
+        "object_id": "sensor.s2",
+        "classification": "unavailable",
+        "topic": "down",
+        "impact": "medium",
+        "ignored": false,
+        "cause_id": "device_down:d2"
+      }
     ]
   },
-  "expected": {"affected": 7, "lead_object_topics": {"down": 3, "broken_references": 2}}
+  "expected": {
+    "affected": 9,
+    "lead_object_topics": {
+      "down": 4,
+      "broken_references": 2
+    }
+  }
 }

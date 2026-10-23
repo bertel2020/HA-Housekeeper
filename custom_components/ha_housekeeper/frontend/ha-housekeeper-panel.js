@@ -17892,8 +17892,10 @@ class ObjectGroupsMixin {
     const sites = new Set();
     for (const f of list) {
       if (!this.isOutageFollower(f)) { sites.add(this.ownerKey(f)); continue; }
-      const c = this.causeById(f.cause_id);
-      if (c && !c.finding_key) sites.add(`${c.object_type}:${c.object_id}`);
+      // The top of the chain stands for it: a device that is down below an integration is no job of its own.
+      let c = this.causeById(f.cause_id);
+      for (let n = 0; c?.parent_id && n < 20; n++) { const up = this.causeById(c.parent_id); if (!up) break; c = up; }
+      if (c && !c.virtual && !c.finding_key) sites.add(`${c.object_type}:${c.object_id}`);
     }
     return sites;
   }
@@ -17903,7 +17905,7 @@ class ObjectGroupsMixin {
   // The same figures serve the findings page and the overview, so the two never differ.
   topicFigures(name, open) {
     const mine = open.filter(f => this.findingTopic(f) === name);
-    return { mine, follows: mine.filter(f => this.isOutageFollower(f)).length, objects: this.topicSites(mine).size, outages: name === "down" ? this.countedOutages().filter(c => !c.virtual).length : 0 };
+    return { mine, follows: mine.filter(f => this.isOutageFollower(f)).length, objects: Math.max(this.topicSites(mine).size, mine.length ? 1 : 0), outages: name === "down" ? this.countedOutages().filter(c => !c.virtual).length : 0 };
   }
 
   // The line beneath the main number of a topic tile: what it counts, the findings, and the follow-ups that hang on them.
