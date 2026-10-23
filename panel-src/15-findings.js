@@ -318,7 +318,7 @@ class FindingsMixin {
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
-    return `<div class="stack">${wiz ? "" : `${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}`}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}${wiz ? "" : `<button type="button" class="chip" data-fc-open><ha-icon icon="mdi:broom"></ha-icon> ${this.t("fcButton")}</button>`}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+    return `<div class="stack">${wiz ? "" : `${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}`}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
       ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -339,9 +339,8 @@ class FindingsMixin {
   findingHints(afterCount, afterFollows) {
     this.ensureStability?.(); this.ensureWatches?.();
     const often = this.oftenSuggestions?.() || [], incidents = this.incidents?.() || [];
-    if (!often.length && !incidents.length) return "";
     const btn = (fold, icon, text, tone) => `<button type="button" class="hintbtn ${tone}${this.foldOpen(fold, false) ? " on" : ""}" data-fold="${fold}" aria-expanded="${this.foldOpen(fold, false)}"><ha-icon icon="${icon}"></ha-icon>${this.esc(text)}<ha-icon icon="mdi:chevron-${this.foldOpen(fold, false) ? "down" : "right"}"></ha-icon></button>`;
-    const row = `<div class="panel hintrow"><span class="hintlabel">${this.t("hintsLabel")}</span>${often.length ? btn("often", "mdi:lightbulb-on-outline", this.t("hintOften", { n: this.formatNumber(often.length) }), "warn") : ""}${incidents.length ? btn("corr", "mdi:update", this.t("hintCorr", { n: this.formatNumber(incidents.length) }), "mute") : ""}</div>`;
+    const row = `<div class="panel hintrow"><span class="hintlabel">${this.t("hintsLabel")}</span><button type="button" class="hintbtn act" data-fc-open><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcButton")}</button>${often.length ? btn("often", "mdi:lightbulb-on-outline", this.t("hintOften", { n: this.formatNumber(often.length) }), "warn") : ""}${incidents.length ? btn("corr", "mdi:update", this.t("hintCorr", { n: this.formatNumber(incidents.length) }), "mute") : ""}</div>`;
     return `${row}${this.foldOpen("often", false) ? this.oftenCard() : ""}${this.foldOpen("corr", false) ? this.corrGroupsCard(afterCount, afterFollows) : ""}`;
   }
 
