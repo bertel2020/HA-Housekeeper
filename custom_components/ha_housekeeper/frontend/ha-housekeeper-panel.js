@@ -18559,9 +18559,12 @@ class FirstCleanupMixin {
     else this.render();
   }
 
-  // "Next" marks the stage done and goes on; with findings left it asks first.
+  // The cards of a stage are all gone through; what is left is what was skipped, and going on needs no question.
+  fcSeen(n) { return [1, 3].includes(n) && !this.fcWiz?.look && this.stageCount(n) > 0 && !this.fcUnits(n).length; }
+
+  // "Next" marks the stage done and goes on; with findings left that were not looked at it asks first.
   fcWizNext() {
-    const n = this.fcWiz.step, left = this.stageCount(n);
+    const n = this.fcWiz.step, left = this.fcSeen(n) ? 0 : this.stageCount(n);
     const run = async () => {
       await this.firstCleanupSet({ action: "stage", stage: n, done: true });
       if (n === 5) this.fcWizGo(6, false); else this.fcWizGo(n + 1);
@@ -18583,6 +18586,7 @@ class FirstCleanupMixin {
   // "Pause": the tour is put down where it stands; the chip leads back to it.
   fcWizExit() {
     this.fcWiz = null; this.findingStage = 0;
+    this.viewTrail = this.viewTrail.filter(e => e.view !== "findingsNav");
     this.view = "findingsNav"; this.selected = null; this.pages = {};
     this.clearFindingFilters(); this.findingStatus = this.defaultFindingStatus();
     this.render();
@@ -18591,7 +18595,7 @@ class FirstCleanupMixin {
   fcStepper(n) {
     const done = this.fc?.state?.done || [];
     const steps = [1, 2, 3, 4, 5].map(i => {
-      const isDone = done.includes(i), back = i < n && n <= 5;
+      const isDone = done.includes(i) && !this.stageCount(i), back = i < n && n <= 5;
       const cls = `fcstep${isDone ? " done" : ""}${i === n ? " cur" : ""}`;
       const label = this.t("fcStage", { n: i });
       return `<${back ? "button type=\"button\"" : "span"} class="${cls}" ${back ? `data-fc-goto="${i}"` : ""} ${i === n ? "aria-current=\"step\"" : ""} title="${this.esc(`${label} · ${this.t(`fcStage${i}`)}`)}"><b>${isDone ? "✓" : i}</b></${back ? "button" : "span"}>`;
@@ -18834,7 +18838,7 @@ class FirstCleanupMixin {
   // Stage 2: one suggestion at a time; the mark is set from the card.
   fcOftenStep(count) {
     const items = this.oftenSuggestions?.() || [];
-    if (!items.length) return this.fcEmpty();
+    if (!items.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div><div class="pad mbtns">${this.fcPrevButton(2)}</div></section>`;
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const all = items.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(items.length) })}</button>` : "";
     const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
@@ -18910,7 +18914,7 @@ class FirstCleanupMixin {
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
     else body = look ? this.findingsView() : this.fcCards(n);
     const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : "fcToCards")}</button>` : "";
-    const seen = count && !look && (n === 1 || n === 3) && !this.fcUnits(n).length;
+    const seen = this.fcSeen(n);
     const next = count && !seen
       ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
       : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
@@ -18980,7 +18984,7 @@ Object.assign(TEXT.de, {
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
-  fcPrev: "Vorheriger", fcPrevHint: "Nimmt die letzte Entscheidung zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Rundgang zurücksetzen?", fcResetYes: "Zurücksetzen",
+  fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Rundgang zurücksetzen?", fcResetYes: "Zurücksetzen",
   fcResetAsk: "Der Rundgang wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden.",
   fcSumKeep: "{n} bleiben bewusst", fcSumLater: "{n} zurückgestellt", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
@@ -19013,7 +19017,7 @@ Object.assign(TEXT.en, {
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
-  fcPrev: "Previous", fcPrevHint: "Takes the last decision back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the tour?", fcResetYes: "Reset",
+  fcPrev: "Undo last", fcPrevHint: "Takes the last decision or skip back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the tour?", fcResetYes: "Reset",
   fcResetAsk: "The tour is reset and begins again at the welcome page. What you decided in it stays decided.",
   fcSumKeep: "{n} kept on purpose", fcSumLater: "{n} put off", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
   fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "Pause, continue later",
@@ -19816,7 +19820,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
-    const from = this.viewTrail[this.viewTrail.length - 1];
+    const from = this.fcWizOn() && !this.selected ? null : this.viewTrail[this.viewTrail.length - 1];
     // Every back button sits in this row at the top of the page, like the one of the detail page.
     const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
