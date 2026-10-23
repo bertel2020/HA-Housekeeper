@@ -7004,6 +7004,24 @@ test("the first cleanup shows the findings of one object as one card and answers
   assert.ok(el.data.findings.every(x => !x.ignored), "one step back lifts both");
 });
 
+test("a card of the cleanup recommends one answer from its facts, never keeping, and Fix unfolds its ways in the card", () => {
+  const { el } = panel("en");
+  const ago = hours => new Date(Date.now() - hours * 3600000).toISOString();
+  const f = (key, rule, classification, hours) => ({ key, rule_id: rule, object_id: key, classification, impact: "low", ignored: false, first_detected_at: ago(hours) });
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d", name: "Echo" }], causes: [], findings: [] };
+  const short = el.fcRecCard(f("a", "device.down", "unavailable", 9), "device:d"), long = el.fcRecCard(f("b", "device.down", "unavailable", 30), "device:d");
+  const broken = el.fcRecCard(f("c", "automation.missing_entity", "broken_reference", 1), "automation:c");
+  assert.deepEqual([short.act, long.act, broken.act], ["later", "fix", "fix"]);
+  assert.ok(short.body.includes("9 hr") || short.body.includes("9 h"), "the reason names how long it is down");
+  const html = el.fcInfoHtml([el.fcRecRow(short)], "device:d");
+  assert.ok(html.includes("fcirec") && html.includes("Recommendation") && html.includes(short.head));
+  assert.ok(el.fcAct("data-x", "A", "b", false, "", "blue", true).includes("Recommended"));
+  el.fcFixOpen = "";
+  assert.equal(el.fcFixWays("device:d", el.findObject("device:d")), "");
+  el.fcFixOpen = "device:d";
+  assert.ok(el.fcFixWays("device:d", el.findObject("device:d")).includes('data-fc-object="device:d"'), "the page of the object is one way among the others");
+});
+
 test("the texts say Marketplace instead of HACS only when the store is the Marketplace", () => {
   const { el } = panel("de");
   assert.equal(el.t("hkUpdateLatest"), "Bei HACS verfügbar");

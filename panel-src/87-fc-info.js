@@ -3,7 +3,7 @@
 // detail page behind it opens that tab of the object (the band on top leads back to the cleanup).
 const FC_INFO_LOOK = {
   duration: ["clock-outline", "blue"], state: ["pulse", "amber"], links: ["link-variant", "blue"], impact: ["eye-off-outline", "green"],
-  pattern: ["chart-timeline-variant", "amber"], often: ["repeat", "red"], mean: ["clock-outline", "blue"], hides: ["eye-off-outline", "green"],
+  rec: ["lightbulb-on-outline", "blue"], pattern: ["chart-timeline-variant", "amber"], often: ["repeat", "red"], mean: ["clock-outline", "blue"], hides: ["eye-off-outline", "green"],
 };
 class FcInfoMixin {
   // The first of the wanted tabs the object has, else its overview.
@@ -36,20 +36,27 @@ class FcInfoMixin {
     ];
   }
 
-  fcInfoBlock(f, key, obj) { return this.fcInfoHtml(this.fcInfoRows(f, key, obj), key); }
+  fcInfoBlock(f, key, obj, rec) { return this.fcInfoHtml([...this.fcInfoRows(f, key, obj), ...(rec ? [this.fcRecRow(rec)] : [])], key); }
 
   // The rows of a suggestion of stage 2: the pattern, how often, how long, and what the mark would hide. "How often" opens the reliability of the object.
-  fcOftenInfo(item, r) {
+  fcOftenInfo(item, r, rec) {
     const info = item.often?.info || {}, none = this.t("fcInfoNone"), obj = this.findObject(r.link);
     const often = info.episodes ? this.t("fcInfoEpisodes", { n: this.formatNumber(info.episodes), days: item.often.days || "" }) : "";
     const mean = info.mean_seconds ? this.t("fcInfoMean", { span: this.spanText(info.mean_seconds / 3600) }) : "";
     const hides = item.hides ? this.t(item.hides === 1 ? "fcInfoHides1" : "fcInfoHides", { n: this.formatNumber(item.hides) }) : this.t("fcInfoHidesNone");
     const row = (id, label, text, tabs) => ({ id, label: this.t(label), text: text || none, empty: !text, tab: obj && text && tabs ? this.fcTabFor(obj, r.link, tabs) : "" });
-    return this.fcInfoHtml([row("pattern", "fcInfoPattern", r.pattern), row("often", "fcInfoOften", often, ["reliability", "overview"]), row("mean", "fcInfoMean_", mean), row("hides", "fcInfoImpact", hides)], r.link);
+    return this.fcInfoHtml([row("pattern", "fcInfoPattern", r.pattern), row("often", "fcInfoOften", often, ["reliability", "overview"]), row("mean", "fcInfoMean_", mean), row("hides", "fcInfoImpact", hides), ...(rec ? [this.fcRecRow(rec)] : [])], r.link);
+  }
+
+  // The row of the recommendation: the answer in bold, then the reason; it opens nothing.
+  fcInfoRowHtml(r) {
+    const look = FC_INFO_LOOK.rec;
+    return `<div class="fcirow static fcirec"><span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span><strong>${this.esc(r.head)}</strong> ${this.esc(r.text)}</span><i></i></div>`;
   }
 
   fcInfoHtml(list, key) {
     const rows = list.map(r => {
+      if (r.rec) return this.fcInfoRowHtml(r);
       const look = FC_INFO_LOOK[r.id] || FC_INFO_LOOK.duration, pill = !r.empty && (r.id === "impact" || r.id === "hides");
       const text = `<span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${pill ? `<span class="fcipill">${this.esc(r.text)}</span>` : this.esc(r.text)}</span>`;
       return r.tab ? `<button type="button" class="fcirow" data-fc-info="${this.esc(`${key}|${r.tab}`)}" title="${this.esc(r.text)}" aria-label="${this.esc(`${r.label}: ${r.text}`)}">${text}<ha-icon icon="mdi:chevron-right"></ha-icon></button>` : `<div class="fcirow static">${text}<i></i></div>`;

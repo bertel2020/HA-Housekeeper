@@ -1776,6 +1776,9 @@ class StylesMixin {
 .fckpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:100%;max-width:520px}.fckpi{display:grid;gap:2px;padding:12px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-surface)}.fckpi b{font-size:calc(26px*var(--hk-fs,1))}.fckpi span{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fckpi.ok b{color:var(--hk-green)}.fckpi.warn b{color:var(--hk-amber)}
 @keyframes fcin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fcin{animation:fcin .25s ease-out}@media(prefers-reduced-motion:reduce){.fcin{animation:none}.fcact,.fcbar i{transition:none}.fcact:hover{transform:none}}
 @media(max-width:600px){.fccard .pad{padding:18px 16px}.fctitle h3{font-size:calc(20px*var(--hk-fs,1))}}
+      .fcirow.fcirec{height:auto;min-height:34px;padding:8px 6px;align-items:start;border-radius:8px;background:color-mix(in srgb,var(--hk-blue) 8%,transparent)}.fcirow.fcirec .fcii{margin-top:1px}.fcirow.fcirec span:nth-child(3){line-height:1.45}
+      .fcact.rec{border:2px solid var(--hk-blue);padding:13px 15px}.fcrectag{display:inline-block;justify-self:start;margin-bottom:3px;padding:1px 8px;border-radius:10px;font-style:normal;font-size:calc(11px*var(--hk-fs,1));background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}
+      .fcways{margin:4px 0 12px;padding:6px 14px 10px;border:1px solid var(--hk-blue);border-radius:12px}.fcways .fceyebrow{display:block;margin:4px 0 2px}.fcway{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--hk-border)}.fcways .fceyebrow+.fcway{border-top:0}.fcway .fctxt{display:grid;gap:2px}.fcway small{color:var(--hk-muted)}.fcii-mute{background:var(--hk-soft);color:var(--hk-muted)}
       ${this.themeCss()}
 .acttools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.actsearch{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.actday{margin:14px 16px 4px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.actlist{list-style:none;margin:0;padding:0 16px}.actrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--hk-border)}.acttext{flex:1;min-width:0}.acttext small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.actrow time{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
 .fcinfo{margin:10px 0 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);height:140px;box-sizing:border-box;padding:0 12px;overflow:hidden}.fcirow{display:grid;grid-template-columns:24px 92px minmax(0,1fr) 16px;gap:10px;align-items:center;width:100%;height:34px;margin:0;padding:0;border:0;border-top:1px solid var(--hk-border);background:none;color:inherit;font:inherit;font-size:calc(13px*var(--hk-fs,1));text-align:left}.fcinfo>:first-child{border-top:0}.fcirow>span:nth-child(2){color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase}.fcirow>span:nth-child(3){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fcirow>ha-icon{--mdc-icon-size:16px;color:var(--hk-muted);opacity:.45}.fcii{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%}.fcii ha-icon{--mdc-icon-size:15px}.fcii-blue{background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}.fcii-amber{background:color-mix(in srgb,var(--hk-amber) 18%,transparent);color:var(--hk-amber)}.fcii-red{background:color-mix(in srgb,var(--hk-red) 14%,transparent);color:var(--hk-red)}.fcii-green{background:color-mix(in srgb,var(--hk-green) 16%,transparent);color:var(--hk-green-text,var(--hk-green))}.fcipill{display:inline-block;padding:1px 10px;border-radius:99px;background:color-mix(in srgb,var(--hk-green) 14%,transparent);color:var(--hk-green-text,var(--hk-green));font-size:calc(12px*var(--hk-fs,1))}button.fcirow{cursor:pointer}button.fcirow:hover,button.fcirow:focus-visible{background:var(--hk-soft)}button.fcirow:hover>ha-icon,button.fcirow:focus-visible>ha-icon{opacity:1}.fcino{color:var(--hk-muted)}.fciok{color:var(--hk-green-text,var(--hk-green))}.fcwhat{height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle{min-height:56px}.fctitle h3,.fctitle .fcid{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle>div:last-child{min-width:0}
@@ -18832,7 +18835,7 @@ class FirstCleanupMixin {
       [this.t("fcInfoLinks"), followers ? this.t("causeFollowers", { n: this.formatNumber(followers) }) : this.t("fcInfoNothing"), followers ? "" : "fciok"],
     ].map(([label, text, cls = ""]) => `<div class="fcirow static"><span>${this.esc(label)}</span><span class="${cls}">${this.esc(text)}</span><i></i></div>`).join("");
     const back = `<label class="fcirow static"><span>${this.t("fcRestBack")}</span><span><select data-fc-days aria-label="${this.esc(this.t("fcRestBack"))}">${options}</select></span><i></i></label>`;
-    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRestEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t(count === 1 ? "fcRestTitle1" : "fcRestTitle", { n })}</h3><small class="fcid">${this.t("fcRestId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRestWhat")}</strong></p><p class="fcchips"><span class="pill mute">${this.t("fcRestChip")}</span><small>${this.t("fcRestNote")}</small></p><div class="fcinfo">${info}${back}</div><div class="fcacts">${this.fcAct("data-fc-later", this.t("fcLaterGo", { n }), this.t("fcRestLaterHint"), false, "mdi:clock-outline", "amber")}</div><div class="fcmore"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></div></section>`;
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRestEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t(count === 1 ? "fcRestTitle1" : "fcRestTitle", { n })}</h3><small class="fcid">${this.t("fcRestId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRestWhat")}</strong></p><p class="fcchips"><span class="pill mute">${this.t("fcRestChip")}</span><small>${this.t("fcRestNote")}</small></p><div class="fcinfo">${info}${this.fcInfoRowHtml(this.fcRecRow(this.fcRecRest(count, days)))}${back}</div><div class="fcacts">${this.fcAct("data-fc-later", this.t("fcLaterGo", { n }), this.t("fcRestLaterHint"), false, "mdi:clock-outline", "amber", true)}</div><div class="fcmore"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></div></section>`;
   }
 
   fcEmpty() { return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`; }
@@ -18862,8 +18865,8 @@ class FirstCleanupMixin {
   }
 
   // One action of a card: what it is called and, in a line, what it does.
-  fcAct(attr, label, hint, primary = false, icon = "", tone = "") {
-    return `<button type="button" class="fcact${primary ? " primary" : ""}${tone ? ` ${tone}` : ""}" ${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt"><strong>${label}</strong><small>${hint}</small></span></button>`;
+  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false) {
+    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${tone ? ` ${tone}` : ""}" ${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small></span></button>`;
   }
 
   // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.
@@ -18883,14 +18886,15 @@ class FirstCleanupMixin {
     }
     const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
+    const rec = many ? null : this.fcRecCard(f, key);
     const acts = [
-      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue") : "",
+      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix") : "",
       this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green"),
-      this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber"),
+      this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber", rec?.act === "later"),
     ].join("");
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
-    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}<div class="fcacts">${acts}</div>${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
@@ -18937,8 +18941,8 @@ class FirstCleanupMixin {
     if (!items.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcCardsLeft", { n: this.formatNumber(all.length) })}</div><div class="pad fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></section>`;
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const takeAll = all.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(all.length) })}</button>` : "";
-    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
-    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}${this.fcOftenInfo(first, r)}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
+    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue", true) + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
+    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}${this.fcOftenInfo(first, r, this.fcRecOften(first))}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
   }
 
   async fcTake(keys) {
@@ -19034,7 +19038,8 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "snooze"));
     this.bindFcInfo(root);
     this.bindFcRound(root);
-    root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
+    root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { this.fcFixOpen = this.fcFixOpen === el.dataset.fcFix ? "" : el.dataset.fcFix; this.render(); });
+    root.querySelectorAll("[data-fc-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcObject); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
       this.fcLogAdd({ stage: this.fcWiz.step, key: keys[0], keys, action: "skip" });
@@ -19084,7 +19089,7 @@ Object.assign(TEXT.de, {
   fcEndSubAll: "Es ist nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcEndSubDone: "Du hast {d} bearbeitet. {now} Befunde sind noch offen.", fcEndSubNone: "{now} Befunde warten. Etappe 1 ist der beste Einstieg.", fcSumWaiting: "{n}",
   fcEndLaterBack: "kommen ab {date} zurück", fcEndStartOnly: "{start} zu Beginn", fcEndStartFresh: "{start} zu Beginn, {fresh} neu dazugekommen", fcEndBar: "{p} % der {start} Befunde bearbeitet",
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
-  fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
+  fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Zeigt die Wege, die zu diesem Objekt passen.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
@@ -19122,7 +19127,7 @@ Object.assign(TEXT.en, {
   fcEndSubAll: "Nothing is open any more. New findings show up under “New”.", fcEndSubDone: "You handled {d}. {now} findings are still open.", fcEndSubNone: "{now} findings are waiting. Stage 1 is the best place to start.", fcSumWaiting: "{n}",
   fcEndLaterBack: "come back from {date}", fcEndStartOnly: "{start} at the start", fcEndStartFresh: "{start} at the start, {fresh} new since", fcEndBar: "{p} % of the {start} findings handled",
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
-  fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
+  fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Shows the ways that fit this object.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
   fcKeepReason: "Confirmed as intended in the cleanup", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
@@ -19277,7 +19282,7 @@ Object.assign(TEXT.en, {
 // detail page behind it opens that tab of the object (the band on top leads back to the cleanup).
 const FC_INFO_LOOK = {
   duration: ["clock-outline", "blue"], state: ["pulse", "amber"], links: ["link-variant", "blue"], impact: ["eye-off-outline", "green"],
-  pattern: ["chart-timeline-variant", "amber"], often: ["repeat", "red"], mean: ["clock-outline", "blue"], hides: ["eye-off-outline", "green"],
+  rec: ["lightbulb-on-outline", "blue"], pattern: ["chart-timeline-variant", "amber"], often: ["repeat", "red"], mean: ["clock-outline", "blue"], hides: ["eye-off-outline", "green"],
 };
 class FcInfoMixin {
   // The first of the wanted tabs the object has, else its overview.
@@ -19310,20 +19315,27 @@ class FcInfoMixin {
     ];
   }
 
-  fcInfoBlock(f, key, obj) { return this.fcInfoHtml(this.fcInfoRows(f, key, obj), key); }
+  fcInfoBlock(f, key, obj, rec) { return this.fcInfoHtml([...this.fcInfoRows(f, key, obj), ...(rec ? [this.fcRecRow(rec)] : [])], key); }
 
   // The rows of a suggestion of stage 2: the pattern, how often, how long, and what the mark would hide. "How often" opens the reliability of the object.
-  fcOftenInfo(item, r) {
+  fcOftenInfo(item, r, rec) {
     const info = item.often?.info || {}, none = this.t("fcInfoNone"), obj = this.findObject(r.link);
     const often = info.episodes ? this.t("fcInfoEpisodes", { n: this.formatNumber(info.episodes), days: item.often.days || "" }) : "";
     const mean = info.mean_seconds ? this.t("fcInfoMean", { span: this.spanText(info.mean_seconds / 3600) }) : "";
     const hides = item.hides ? this.t(item.hides === 1 ? "fcInfoHides1" : "fcInfoHides", { n: this.formatNumber(item.hides) }) : this.t("fcInfoHidesNone");
     const row = (id, label, text, tabs) => ({ id, label: this.t(label), text: text || none, empty: !text, tab: obj && text && tabs ? this.fcTabFor(obj, r.link, tabs) : "" });
-    return this.fcInfoHtml([row("pattern", "fcInfoPattern", r.pattern), row("often", "fcInfoOften", often, ["reliability", "overview"]), row("mean", "fcInfoMean_", mean), row("hides", "fcInfoImpact", hides)], r.link);
+    return this.fcInfoHtml([row("pattern", "fcInfoPattern", r.pattern), row("often", "fcInfoOften", often, ["reliability", "overview"]), row("mean", "fcInfoMean_", mean), row("hides", "fcInfoImpact", hides), ...(rec ? [this.fcRecRow(rec)] : [])], r.link);
+  }
+
+  // The row of the recommendation: the answer in bold, then the reason; it opens nothing.
+  fcInfoRowHtml(r) {
+    const look = FC_INFO_LOOK.rec;
+    return `<div class="fcirow static fcirec"><span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span><strong>${this.esc(r.head)}</strong> ${this.esc(r.text)}</span><i></i></div>`;
   }
 
   fcInfoHtml(list, key) {
     const rows = list.map(r => {
+      if (r.rec) return this.fcInfoRowHtml(r);
       const look = FC_INFO_LOOK[r.id] || FC_INFO_LOOK.duration, pill = !r.empty && (r.id === "impact" || r.id === "hides");
       const text = `<span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${pill ? `<span class="fcipill">${this.esc(r.text)}</span>` : this.esc(r.text)}</span>`;
       return r.tab ? `<button type="button" class="fcirow" data-fc-info="${this.esc(`${key}|${r.tab}`)}" title="${this.esc(r.text)}" aria-label="${this.esc(`${r.label}: ${r.text}`)}">${text}<ha-icon icon="mdi:chevron-right"></ha-icon></button>` : `<div class="fcirow static">${text}<i></i></div>`;
@@ -19400,14 +19412,15 @@ class FcRoundMixin {
 
   fcRoundOne(r, queue, prevBtn, listBtn) {
     const finding = this.data.findings.find(f => f.key === r.finding_key), link = `${r.object_type}:${r.object_id}`, obj = this.findObject(link), kattr = `data-keys="${this.esc(JSON.stringify([r.finding_key]))}"`;
+    const rec = this.fcRecRound(r);
     const first = r.kind === "merge"
-      ? this.fcAct(`data-fc-rmerge="${this.esc(r.object_id)}" data-into="${this.esc(r.duplicate_of || "")}"`, this.t("roundMerge"), this.t("fcRoundHint_merge"), false, "mdi:call-merge", "blue")
-      : this.fcAct(`data-fc-rpick="${this.esc(r.finding_key)}" data-name="${this.esc(r.name)}"`, this.t("fcRoundPick"), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue");
+      ? this.fcAct(`data-fc-rmerge="${this.esc(r.object_id)}" data-into="${this.esc(r.duplicate_of || "")}"`, this.t("roundMerge"), this.t("fcRoundHint_merge"), false, "mdi:call-merge", "blue", rec.act === "merge")
+      : this.fcAct(`data-fc-rpick="${this.esc(r.finding_key)}" data-name="${this.esc(r.name)}"`, this.t("fcRoundPick"), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue", rec.act === "pick");
     const acts = first
       + this.fcAct(`data-fc-rkeep="${this.esc(r.finding_key)}" data-link="${this.esc(link)}" data-name="${this.esc(r.name)}"`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green")
-      + this.fcAct(`data-fc-rlater="${this.esc(r.finding_key)}"`, this.t("fcLater"), this.t("fcLaterHint", { days: this.fc?.later_days || 90 }), false, "mdi:clock-outline", "amber");
+      + this.fcAct(`data-fc-rlater="${this.esc(r.finding_key)}"`, this.t("fcLater"), this.t("fcLaterHint", { days: this.fc?.later_days || 90 }), false, "mdi:clock-outline", "amber", rec.act === "later");
     const pill = `<span class="pill ${r.group === "safe" ? "ok" : "warn"}">${this.t(r.group === "safe" ? "fcRoundSafe" : "fcRoundLook")}</span>`;
-    return `<section class="panel fccard${this.fcAnim(`4:${r.finding_key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile(r.object_type, "mute")}<div><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(link)}">${this.esc(r.name)}</button>` : this.esc(r.name)}</h3><small class="fcid">${this.esc(r.object_id)}</small></div></div><p class="fcwhat"><strong>${this.esc(finding ? this.findingTitle(finding) : this.t("fcRoundTitle"))}</strong></p><p class="fcchips">${pill}</p>${this.fcInfoHtml(this.fcRoundRows(r, finding), link)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.finding_key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`4:${r.finding_key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile(r.object_type, "mute")}<div><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(link)}">${this.esc(r.name)}</button>` : this.esc(r.name)}</h3><small class="fcid">${this.esc(r.object_id)}</small></div></div><p class="fcwhat"><strong>${this.esc(finding ? this.findingTitle(finding) : this.t("fcRoundTitle"))}</strong></p><p class="fcchips">${pill}</p>${this.fcInfoHtml([...this.fcRoundRows(r, finding), this.fcRecRow(rec)], link)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.finding_key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
   }
 
   // The objects nothing uses, as one card: one click marks them all, "one by one" goes through them.
@@ -19420,9 +19433,9 @@ class FcRoundMixin {
       { label: this.t("fcRoundSince"), text: oldest ? this.t("fcRoundOldest", { age: this.agoText(oldest) }) : "", empty: !oldest },
       { label: this.t("fcRoundUndoRow"), text: this.t("fcRoundUndoText") },
     ].map(x => ({ ...x, text: x.text || this.t("fcInfoNone"), empty: x.empty || !x.text, tone: x.tone || "", tab: "" }));
-    const acts = this.fcAct(`data-fc-rpick="${this.esc(keys[0])}" ${attr} data-name="${this.esc(this.t("fcLogSeveral", { n: safe.length }))}"`, this.t("fcRoundPickAll", { n }), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue")
+    const acts = this.fcAct(`data-fc-rpick="${this.esc(keys[0])}" ${attr} data-name="${this.esc(this.t("fcLogSeveral", { n: safe.length }))}"`, this.t("fcRoundPickAll", { n }), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue", true)
       + this.fcAct("data-fc-rsingle", this.t("fcRoundSingle"), this.t("fcRoundSingleHint"), false, "mdi:format-list-bulleted", "mute");
-    return `<section class="panel fccard${this.fcAnim("4:collect")}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile("entity", "ok")}<div><h3>${this.t("fcRoundCollectTitle", { n })}</h3><small class="fcid">${this.t("fcRoundCollectId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><span class="pill ok">${this.t("fcRoundSafe")}</span></p>${this.fcInfoHtml(info, "")}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(keys[0])}" ${attr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim("4:collect")}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile("entity", "ok")}<div><h3>${this.t("fcRoundCollectTitle", { n })}</h3><small class="fcid">${this.t("fcRoundCollectId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><span class="pill ok">${this.t("fcRoundSafe")}</span></p>${this.fcInfoHtml([...info, this.fcRecRow(this.fcRecSafe())], "")}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(keys[0])}" ${attr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
   }
 
   // Everything is answered: the marked ones go into one plan.
@@ -19497,6 +19510,100 @@ Object.assign(TEXT.en, {
   fcRoundEndEyebrow: "Wrap-up", fcRoundEndTitle: "{n} marked", fcRoundEndId: "They run as one plan", fcRoundRest: "{n} more findings of this stage stay open.", fcRoundPlanRow: "Plan", fcRoundPlanText: "Preview, backup and confirmation, only then something runs", fcRoundNotRemovable: "Not removable", fcRoundBlocked: "{n} objects are locked now", fcRoundNoBlocked: "Nothing locked",
   fcRoundPlanHint: "Shows every change as a preview.", fcLogPick: "Marked", fcSumPick: "{n} marked",
 });
+
+// FcRecommendMixin: the row "Recommendation" of a card of the cleanup, and the way "Fix" unfolds in the card. The
+// recommendation is worked out from the facts the card shows (how long, what hangs on it, how often, what uses it), is
+// always exactly one of the answers of that card with its reason, and decides nothing: the person clicks. "Keep"
+// ("Ist so gewollt") is never recommended by itself. Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  fcRecLabel: "Empfehlung", fcRecTag: "Empfohlen",
+  fcRecFix: "Beheben.", fcRecLater: "Später erinnern.", fcRecTake: "Vermerk setzen.", fcRecPick: "Zum Entfernen vormerken.", fcRecPickAll: "Alle vormerken.", fcRecMerge: "Zusammenführen.", fcRecRest: "Auf „Später“ legen.",
+  fcRecFixBroken: "Ein kaputter Verweis oder Fehler geht nicht von selbst weg.",
+  fcRecFixNoSince: "Seit wann es besteht, ist nicht bekannt; lieber jetzt ansehen.",
+  fcRecFixLong: "Seit {span} aus, die Wirkung ist schon Mittel oder höher.",
+  fcRecFixFollows: "{n} Folgen hängen daran; eine Ursache löst sie alle.",
+  fcRecLaterShort: "Wird es schlimmer, kommt es von selbst zurück: seit {span} aus, die nächste Stufe ({level}) beginnt in {next}",
+  fcRecLaterOften: "Es fällt immer wieder aus; ein einzelner Ausfall sagt wenig. Für ein wiederkehrendes Muster passt ein Vermerk (Etappe 2).",
+  fcRecTakeText: "Das Muster wiederholt sich ({n} Ausfälle in {days} Tagen); der Vermerk blendet es aus, bis es sich ändert.",
+  fcRecTakeGeneric: "Das Muster wiederholt sich; ein Vermerk blendet es aus, statt jedes Mal einen Befund zu melden.",
+  fcRecPickSafe: "Nichts verweist darauf. Es läuft erst am Ende als ein Plan mit Vorschau und Backup.",
+  fcRecLaterLook: "Hier spricht etwas dagegen ({reason}). Erst ansehen, später entscheiden.",
+  fcRecLaterLookNone: "Hier spricht etwas dagegen. Erst ansehen, später entscheiden.",
+  fcRecMergeText: "Es ist ein Duplikat von {name}; Zusammenführen räumt es sauber auf.",
+  fcRecPickAllText: "Nichts verweist darauf. Es läuft erst am Ende als ein Plan mit Vorschau und Backup.",
+  fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
+  fcFixWaysHead: "Wege zum Beheben", fcFixObject: "Zum Objekt", fcFixObjectHint: "Selbst ansehen und lösen. Von dort kommst du hierher zurück.",
+  fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
+});
+Object.assign(TEXT.en, {
+  fcRecLabel: "Recommendation", fcRecTag: "Recommended",
+  fcRecFix: "Fix.", fcRecLater: "Remind me later.", fcRecTake: "Set a mark.", fcRecPick: "Mark for removal.", fcRecPickAll: "Mark them all.", fcRecMerge: "Merge.", fcRecRest: "Put off to “Later”.",
+  fcRecFixBroken: "A broken reference or a fault does not go away by itself.",
+  fcRecFixNoSince: "It is not known since when this has been the case; better to look at it now.",
+  fcRecFixLong: "Down for {span}, the impact is already medium or higher.",
+  fcRecFixFollows: "{n} findings hang on it; one cause solves them all.",
+  fcRecLaterShort: "If it gets worse, it comes back by itself: down for {span}, the next level ({level}) starts in {next}",
+  fcRecLaterOften: "It keeps failing; a single outage says little. For a recurring pattern a mark fits (stage 2).",
+  fcRecTakeText: "The pattern repeats ({n} outages in {days} days); the mark hides it until it changes.",
+  fcRecTakeGeneric: "The pattern repeats; a mark hides it instead of reporting a finding every time.",
+  fcRecPickSafe: "Nothing refers to it. It only runs at the end as one plan with preview and backup.",
+  fcRecLaterLook: "Something speaks against it ({reason}). Look at it first, decide later.",
+  fcRecLaterLookNone: "Something speaks against it. Look at it first, decide later.",
+  fcRecMergeText: "It is a duplicate of {name}; merging tidies it up cleanly.",
+  fcRecPickAllText: "Nothing refers to them. It only runs at the end as one plan with preview and backup.",
+  fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
+  fcFixWaysHead: "Ways to fix it", fcFixObject: "Go to the object", fcFixObjectHint: "Look at it and solve it yourself. You come back here from there.",
+  fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
+});
+
+class FcRecommendMixin {
+  // A card of stage 1 or 3: a finding with its object. Returns { act, head, body }; `act` names the answer that is recommended.
+  fcRecCard(f, key) {
+    const t = (k, p) => this.t(k, p);
+    const cause = this.causeList().find(c => c.finding_key === f.key);
+    const outage = Boolean(cause) || OUTAGE_RULES.includes(f.rule_id);
+    if (!outage) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixBroken") };
+    const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
+    if (followers >= 5) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixFollows", { n: this.formatNumber(followers) }) };
+    if (!since) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixNoSince") };
+    const hours = Math.max(0, (Date.now() - since) / 3600000), steps = this.outageSteps();
+    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixLong", { span: this.spanText(hours) }) };
+    if (this.oftenFor?.(f)) return { act: "later", head: t("fcRecLater"), body: t("fcRecLaterOften") };
+    const next = steps.find(([, at]) => at > hours);
+    return { act: "later", head: t("fcRecLater"), body: next ? t("fcRecLaterShort", { span: this.spanText(hours), level: t(`chip_${next[0]}`), next: this.spanText(next[1] - hours) }) : t("fcRecLaterOften") };
+  }
+
+  // A suggestion of stage 2: always "set the mark"; the reason names the pattern.
+  fcRecOften(item) {
+    const info = item.often?.info || {}, t = (k, p) => this.t(k, p);
+    return { act: "take", head: t("fcRecTake"), body: info.episodes ? t("fcRecTakeText", { n: this.formatNumber(info.episodes), days: item.often?.days || "" }) : t("fcRecTakeGeneric") };
+  }
+
+  // One object of stage 4: a duplicate merges, what nothing uses is marked, the rest is looked at first.
+  fcRecRound(r) {
+    const t = (k, p) => this.t(k, p);
+    if (r.kind === "merge") return { act: "merge", head: t("fcRecMerge"), body: t("fcRecMergeText", { name: r.duplicate_of || "?" }) };
+    if (r.group === "safe") return { act: "pick", head: t("fcRecPick"), body: t("fcRecPickSafe") };
+    const reason = (r.reasons || []).filter(x => x !== "config_rewrite").map(x => t(`reason_${x}`))[0];
+    return { act: "later", head: t("fcRecLater"), body: reason ? t("fcRecLaterLook", { reason }) : t("fcRecLaterLookNone") };
+  }
+
+  fcRecSafe() { return { act: "pick", head: this.t("fcRecPickAll"), body: this.t("fcRecPickAllText") }; }
+
+  fcRecRest(count, days) { return { act: "rest", head: this.t("fcRecRest"), body: this.t("fcRecRestText", { n: this.formatNumber(count), days }) }; }
+
+  // The row for fcInfoHtml.
+  fcRecRow(rec) { return { id: "rec", rec: true, label: this.t("fcRecLabel"), head: rec.head, text: rec.body, empty: false, tab: "" }; }
+
+  // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it, and the page of the object.
+  fcFixWays(key, obj) {
+    if (!obj || this.fcFixOpen !== key) return "";
+    const items = this.fixItems(obj, key).items;
+    const rows = items.map(it => `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span><button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button></div>`).join("");
+    const object = `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:open-in-new"></ha-icon></span><span class="fctxt"><strong>${this.t("fcFixObject")}</strong><small>${this.t("fcFixObjectHint")}</small></span><button type="button" class="btn quiet" data-fc-object="${this.esc(key)}">${this.t("actOpen")}</button></div>`;
+    return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${object}${items.length ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
+  }
+}
 
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
@@ -20818,7 +20925,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FcRoundMixin, FirstCleanupMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FcRecommendMixin, FcRoundMixin, FirstCleanupMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }
