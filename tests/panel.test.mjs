@@ -7118,3 +7118,21 @@ test("stage 2 can skip a suggestion: it waits behind the others and the stage re
   assert.ok(html.includes("2 skipped ones stay open") && html.includes("data-fc-again"));
   assert.ok(!el.fcPrevButton(2).includes("disabled"), "the skip can be taken back");
 });
+
+test("a card of the cleanup carries four fixed rows of facts, each with a tab of the object behind it, and 'No information' when it knows nothing", () => {
+  const { el } = panel("en");
+  const now = Date.now();
+  const f = { key: "k1", rule_id: "config_entry.not_loaded", object_id: "e1", classification: "unavailable", impact: "medium", impact_facts: [], first_detected_at: new Date(now - 2 * 864e5).toISOString(), ignored: false };
+  const cause = { id: "c1", kind: "integration_down", finding_key: "k1", object_type: "config_entry", object_id: "e1", total_followers: 12, consumers: { automation: 2 }, state: "setup_error", error: "Connection refused", log: null, impact: "medium" };
+  el.data = { ...DATA, findings: [f], causes: [cause], objects: [{ object_type: "config_entry", object_id: "e1", name: "Hub", status: "problem" }] };
+  el.detailTabs = () => [["overview"], ["relations"], ["reliability"]];
+  const obj = el.findObject("config_entry:e1");
+  const rows = el.fcInfoRows(f, "config_entry:e1", obj);
+  assert.equal(JSON.stringify(rows.map(r => r.id)), '["duration","state","links","impact"]', "always the same four rows");
+  assert.ok(rows[0].text.includes("2 d") && rows[1].text.includes("Connection refused") && rows[2].text.includes("12 follow-ups") && rows[2].text.includes("2 automations"));
+  assert.equal(JSON.stringify(rows.map(r => r.tab)), '["reliability","reliability","relations","overview"]', "each row opens the tab that backs it");
+  const bare = el.fcInfoRows({ key: "k2", rule_id: "entity.unused", object_id: "sensor.x", classification: "unused", impact: "none", ignored: false }, "entity:sensor.x", null);
+  assert.equal(bare.length, 4);
+  assert.ok(bare.every(r => r.text) && bare[1].empty && bare[3].empty && bare.filter(r => r.tab).length === 0, "nothing known: a note and no click");
+  assert.ok(el.fcInfoBlock(f, "config_entry:e1", obj).includes('data-fc-info="config_entry:e1|relations"'));
+});

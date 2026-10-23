@@ -1778,6 +1778,7 @@ class StylesMixin {
 @media(max-width:600px){.fccard .pad{padding:18px 16px}.fctitle h3{font-size:calc(20px*var(--hk-fs,1))}}
       ${this.themeCss()}
 .acttools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.actsearch{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.actday{margin:14px 16px 4px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.actlist{list-style:none;margin:0;padding:0 16px}.actrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--hk-border)}.acttext{flex:1;min-width:0}.acttext small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.actrow time{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
+.fcinfo{margin:10px 0 14px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-soft);height:140px;box-sizing:border-box;padding:2px 10px;overflow:hidden}.fcirow{display:grid;grid-template-columns:96px minmax(0,1fr) 18px;gap:8px;align-items:center;width:100%;height:34px;margin:0;padding:0;border:0;border-top:1px solid var(--hk-border);background:none;color:inherit;font:inherit;font-size:calc(13px*var(--hk-fs,1));text-align:left}.fcinfo>:first-child{border-top:0}.fcirow>span:first-child{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fcirow>span:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fcirow ha-icon{--mdc-icon-size:16px;color:var(--hk-muted);opacity:0}button.fcirow{cursor:pointer}button.fcirow:hover,button.fcirow:focus-visible{background:var(--hk-surface)}button.fcirow:hover ha-icon,button.fcirow:focus-visible ha-icon{opacity:1}.fcino{color:var(--hk-muted)}.fciok{color:var(--hk-green-text,var(--hk-green))}.fcwhat{height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle{min-height:56px}.fctitle h3,.fctitle .fcid{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle>div:last-child{min-width:0}
     </style>`;
   }
 }
@@ -18851,15 +18852,15 @@ class FirstCleanupMixin {
       this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green"),
       this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber"),
     ].join("");
-    const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}${since ? `<small>${this.esc(since)}</small>` : ""}</p>`;
+    const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
-    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div>${many ? this.fcGroupList(unit) : `<p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong></p>`}${chips}${this.fcFollowList(f, follows)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
   fcGroupList(unit) {
     const rows = unit.map(x => `<li>${this.esc(this.findingTitle(x))}${this.findingKey(x) !== this.ownerKey(x) && this.findObject(this.findingKey(x)) ? ` <small>${this.esc(this.findObject(this.findingKey(x)).name)}</small>` : ""}</li>`).join("");
-    return `<p class="fcwhat"><strong>${this.t("fcGroupHead", { n: this.formatNumber(unit.length) })}</strong></p><ul class="fcgroup">${rows}</ul><p class="fcfacts">${this.t("fcGroupNote")}</p>`;
+    return `<ul class="fcgroup">${rows}</ul><p class="fcfacts">${this.t("fcGroupNote")}</p>`;
   }
 
   // The findings that hang on this one, each a link to its object.
@@ -18995,6 +18996,7 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
     root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "keep"));
     root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "snooze"));
+    this.bindFcInfo(root);
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
@@ -19221,6 +19223,64 @@ Object.assign(TEXT.en, {
   act_decision: "Decision", act_decision_ignore: "Hidden", act_decision_keep: "Kept as intended", act_decision_snooze: "Put on “Later”", act_decision_unignore: "Shown again", act_decision_nothanks: "Suggestion declined (“No thanks”)", act_decision_undo: "Decision undone",
   act_mark: "Mark", act_mark_expected_offline: "Marked: should be offline", act_mark_seasonal: "Marked: seasonal", act_mark_spare: "Marked: spare", act_mark_keep: "Marked: do not remove", act_mark_replaced: "Marked: replaced", act_mark_clear: "Mark removed", act_mark_undo: "Mark undone",
   act_plan: "Plan run", act_plan_undo: "Plan undone", act_note: "Logbook", act_note_save: "Logbook entry", act_note_delete: "Logbook entry deleted", act_auto: "By itself", act_auto_lifted: "Back by itself because it got worse:",
+});
+
+// FcInfoMixin: the block "Why is this here?" of a card of the cleanup. Four rows with fixed labels and a fixed height, so
+// the answers of every card stand in the same place; a row with nothing to say reads "No information". A row with a
+// detail page behind it opens that tab of the object (the band on top leads back to the cleanup).
+class FcInfoMixin {
+  // The first of the wanted tabs the object has, else its overview.
+  fcTabFor(item, key, wanted) {
+    const ids = this.detailTabs(item, key).map(tab => tab[0]);
+    return wanted.find(id => ids.includes(id)) || "overview";
+  }
+
+  fcInfoRows(f, key, obj) {
+    const cause = this.causeList().find(c => c.finding_key === f.key || (c.object_type === obj?.object_type && c.object_id === obj?.object_id));
+    const none = this.t("fcInfoNone");
+    // Duration: an outage counts its hours and says when it gets worse; anything else says since when it is known.
+    const outage = Boolean(cause) || OUTAGE_RULES.includes(f.rule_id);
+    const duration = (outage && this.outageLineOf(f)) || (f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "");
+    // State: what the integration says and its log; for an entity how often it fails, else its state.
+    let state = "";
+    if (cause?.kind === "integration_down") state = [cause.state ? this.t("causeState", { state: cause.state }) : "", cause.error || "", this.logLine(cause.log)].filter(Boolean).join(" · ");
+    else if (this.oftenFor(f)) { const w = this.oftenWindow(this.oftenFor(f).info); state = w ? this.t("oftenChipAt", w) : this.t("oftenChip"); }
+    else if (obj?.object_type === "entity" && typeof obj.state === "string") state = obj.state;
+    // What hangs on it: the follow-ups and what uses it; nothing is an answer as well.
+    const followers = cause ? this.causeTotal(cause) : 0, uses = ["automation", "script", "dashboard"].filter(k => cause?.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: cause.consumers[k] }));
+    const edges = obj ? this.edgesTo(key).length : 0;
+    const links = [followers ? this.t(followers === 1 ? "causeFollowers1" : "causeFollowers", { n: this.formatNumber(followers) }) : "", ...uses, !followers && !uses.length && edges ? this.t(edges === 1 ? "fcInfoUsedBy1" : "fcInfoUsedBy", { n: this.formatNumber(edges) }) : ""].filter(Boolean).join(" · ");
+    const row = (id, label, text, tabs, tone = "") => ({ id, label: this.t(label), text: text || none, empty: !text, tone: text ? tone : "", tab: obj && text ? this.fcTabFor(obj, key, tabs) : "" });
+    return [
+      row("duration", "fcInfoDuration", duration, ["history", "reliability", "overview"]),
+      row("state", "fcInfoState", state, ["diagnosis", "reliability", "overview"]),
+      links || !outage ? row("links", "fcInfoLinks", links || this.t("fcInfoNothing"), ["relations", "used", "members", "overview"], links ? "" : "ok") : row("links", "fcInfoLinks", this.t("fcInfoNothing"), ["relations", "used", "members", "overview"], "ok"),
+      row("impact", "fcInfoImpact", f.impact && f.impact !== "none" ? this.impactLine(f) : "", ["overview"]),
+    ];
+  }
+
+  fcInfoBlock(f, key, obj) {
+    const rows = this.fcInfoRows(f, key, obj).map(r => {
+      const text = `<span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${this.esc(r.text)}</span>`;
+      return r.tab ? `<button type="button" class="fcirow" data-fc-info="${this.esc(`${key}|${r.tab}`)}" title="${this.esc(r.text)}" aria-label="${this.esc(`${r.label}: ${r.text}`)}">${text}<ha-icon icon="mdi:chevron-right"></ha-icon></button>` : `<div class="fcirow static">${text}<i></i></div>`;
+    }).join("");
+    return `<div class="fcinfo" role="group" aria-label="${this.esc(this.t("fcInfoTitle"))}">${rows}</div>`;
+  }
+
+  bindFcInfo(root) {
+    root.querySelectorAll("[data-fc-info]").forEach(el => el.onclick = () => {
+      const [key, tab] = [el.dataset.fcInfo.slice(0, el.dataset.fcInfo.lastIndexOf("|")), el.dataset.fcInfo.slice(el.dataset.fcInfo.lastIndexOf("|") + 1)], obj = this.findObject(key);
+      if (obj) { this._pendingTab = tab; this.openObject(obj); }
+    });
+  }
+}
+Object.assign(TEXT.de, {
+  fcInfoTitle: "Warum steht das hier?", fcInfoDuration: "Dauer", fcInfoState: "Zustand", fcInfoLinks: "Daran hängt", fcInfoImpact: "Wirkung",
+  fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
+});
+Object.assign(TEXT.en, {
+  fcInfoTitle: "Why is this here?", fcInfoDuration: "Duration", fcInfoState: "State", fcInfoLinks: "Depends on it", fcInfoImpact: "Impact",
+  fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
 });
 
 class HAHousekeeperPanel extends HTMLElement {
@@ -20543,7 +20603,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FirstCleanupMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FirstCleanupMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

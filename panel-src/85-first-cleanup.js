@@ -366,15 +366,15 @@ class FirstCleanupMixin {
       this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green"),
       this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber"),
     ].join("");
-    const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}${since ? `<small>${this.esc(since)}</small>` : ""}</p>`;
+    const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
-    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div>${many ? this.fcGroupList(unit) : `<p class="fcwhat"><strong>${this.esc(this.findingTitle(f))}</strong></p>`}${chips}${this.fcFollowList(f, follows)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid">${this.esc(many ? key.slice(key.indexOf(":") + 1) : f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
   fcGroupList(unit) {
     const rows = unit.map(x => `<li>${this.esc(this.findingTitle(x))}${this.findingKey(x) !== this.ownerKey(x) && this.findObject(this.findingKey(x)) ? ` <small>${this.esc(this.findObject(this.findingKey(x)).name)}</small>` : ""}</li>`).join("");
-    return `<p class="fcwhat"><strong>${this.t("fcGroupHead", { n: this.formatNumber(unit.length) })}</strong></p><ul class="fcgroup">${rows}</ul><p class="fcfacts">${this.t("fcGroupNote")}</p>`;
+    return `<ul class="fcgroup">${rows}</ul><p class="fcfacts">${this.t("fcGroupNote")}</p>`;
   }
 
   // The findings that hang on this one, each a link to its object.
@@ -510,6 +510,7 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
     root.querySelectorAll("[data-fc-keep]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "keep"));
     root.querySelectorAll("[data-fc-snooze]").forEach(el => el.onclick = () => this.fcDecide(this.fcKeysOf(el), "snooze"));
+    this.bindFcInfo(root);
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcFix); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
