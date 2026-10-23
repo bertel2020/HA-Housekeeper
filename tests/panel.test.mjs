@@ -7046,3 +7046,12 @@ test("the head of a list narrowed by a topic tile names the objects of the tile 
   el.findingFilter = "";
   assert.ok(!el.findingsView().includes("1 object · 3 findings"), "without a tile filter the head is as before");
 });
+
+test("the panel counts the tile figures of the shared fixture to the numbers the server stores for the curves", () => {
+  const { el } = panel("en");
+  const fixture = JSON.parse(fs.readFileSync(new URL("./fixtures/tile_counts.json", import.meta.url), "utf8"));
+  el.data = { ...DATA, objects: fixture.snapshot.objects, causes: fixture.snapshot.causes, findings: fixture.snapshot.findings };
+  const open = el.data.findings.filter(f => !f.ignored);
+  assert.equal(el.countObjects(el.objectTree(open, open, true)), fixture.expected.affected, "objects with findings: the tile and the curve");
+  for (const [topic, n] of Object.entries(fixture.expected.lead_object_topics)) assert.equal(el.topicFigures(topic, open).objects, n, topic);
+});

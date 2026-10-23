@@ -355,3 +355,16 @@ def test_the_callers_of_a_missing_target_and_a_cause_without_a_finding_are_count
     # Four owners of findings and the integration that stands behind two of them; the missing target is no object.
     assert point["affected"] == 5
     assert make_checkpoint({**snapshot, "findings": []})["lead_object_topics"] == {}
+
+
+def test_the_server_counts_the_tile_figures_of_the_shared_fixture() -> None:
+    """The panel counts the same data to the same numbers (tests/panel.test.mjs reads this file too)."""
+    import json
+    from pathlib import Path
+
+    from custom_components.ha_housekeeper.history import make_checkpoint
+
+    fixture = json.loads((Path(__file__).parent / "fixtures" / "tile_counts.json").read_text())
+    point = make_checkpoint(fixture["snapshot"])
+    assert point["affected"] == fixture["expected"]["affected"]
+    assert point["lead_object_topics"] == fixture["expected"]["lead_object_topics"]
