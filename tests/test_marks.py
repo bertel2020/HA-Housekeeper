@@ -76,6 +76,22 @@ def test_keep_hides_nothing_but_blocks_cleanup_of_the_object_and_its_entities() 
     assert "marked_keep" not in entities["sensor.a"]
 
 
+@pytest.mark.xfail(strict=True, reason="only the keep mark blocks cleanup so far")
+@pytest.mark.parametrize("kind", ["expected_offline", "seasonal", "spare"])
+def test_a_mark_that_expects_the_object_also_blocks_cleanup(kind) -> None:
+    objects, findings = _world()
+    apply_marks(objects, findings, {"entity:sensor.b": _mark(kind)}, NOW)
+    entities = {o["object_id"]: o for o in objects if o["object_type"] == "entity"}
+    verdict = judge_action("disable_entity", "sensor.b", entities, [])
+    assert verdict["verdict"] == "blocked" and "marked_keep" in verdict["reasons"]
+
+
+def test_a_mark_that_will_be_replaced_does_not_block_cleanup() -> None:
+    objects, findings = _world()
+    apply_marks(objects, findings, {"entity:sensor.b": _mark("replaced")}, NOW)
+    assert "marked_keep" not in objects[2]
+
+
 def test_the_keep_label_blocks_cleanup_like_the_keep_mark() -> None:
     objects, findings = _world()
     objects[0]["labels"] = ["housekeeper_keep"]
