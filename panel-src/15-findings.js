@@ -420,7 +420,7 @@ class FindingsMixin {
   findingCritical(f) { return Boolean(f) && (f.impact_facts || []).some(x => x.fact === "critical"); }
 
   // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after 90, hidden for good.
-  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 90 : 0; }
+  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 365 : 0; }
 
   // What a failing automation rests on: the counts of the window.
   runLine(f) {
@@ -464,14 +464,16 @@ class FindingsMixin {
     return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideKind"))}">${["keep", "snooze", "ignore"].map(opt).join("")}</div>
       <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
       <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
-      ${kind === "keep" ? this.reasonChips() : ""}
+      ${this.reasonChips(kind)}
       ${kind === "keep" && d.critical ? `<small class="factnote">${this.t("statusCriticalHint")}</small>` : ""}
       <small class="factnote">${this.t("statusScopeHint")}</small>`;
   }
 
   // Ready-made reasons for "intended": a click fills the reason field, which stays editable.
-  reasonChips() {
-    return `<div class="reasonchips" role="group" aria-label="${this.esc(this.t("reasonChipsLabel"))}">${[1, 2, 3, 4].map(n => `<button type="button" class="btn quiet" data-reason-chip="${this.esc(this.t(`reasonChip${n}`))}">${this.t(`reasonChip${n}`)}</button>`).join("")}</div>`;
+  reasonChips(kind = "keep") {
+    const chips = kind === "ignore" ? ["f1", "f2", "f3"] : kind === "keep" ? ["1", "2", "3", "4"] : [];
+    if (!chips.length) return "";
+    return `<div class="reasonchips" role="group" aria-label="${this.esc(this.t("reasonChipsLabel"))}">${chips.map(n => `<button type="button" class="btn quiet" data-reason-chip="${this.esc(this.t(`reasonChip${n}`))}">${this.t(`reasonChip${n}`)}</button>`).join("")}</div>`;
   }
 
   // A status on the finding of an outage ends the outage: its follow-ups then count one by one. When the object can carry

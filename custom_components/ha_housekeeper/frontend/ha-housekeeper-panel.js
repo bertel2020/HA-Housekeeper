@@ -3259,7 +3259,7 @@ class FindingsMixin {
   findingCritical(f) { return Boolean(f) && (f.impact_facts || []).some(x => x.fact === "critical"); }
 
   // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after 90, hidden for good.
-  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 90 : 0; }
+  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 365 : 0; }
 
   // What a failing automation rests on: the counts of the window.
   runLine(f) {
@@ -3303,14 +3303,16 @@ class FindingsMixin {
     return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideKind"))}">${["keep", "snooze", "ignore"].map(opt).join("")}</div>
       <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
       <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
-      ${kind === "keep" ? this.reasonChips() : ""}
+      ${this.reasonChips(kind)}
       ${kind === "keep" && d.critical ? `<small class="factnote">${this.t("statusCriticalHint")}</small>` : ""}
       <small class="factnote">${this.t("statusScopeHint")}</small>`;
   }
 
   // Ready-made reasons for "intended": a click fills the reason field, which stays editable.
-  reasonChips() {
-    return `<div class="reasonchips" role="group" aria-label="${this.esc(this.t("reasonChipsLabel"))}">${[1, 2, 3, 4].map(n => `<button type="button" class="btn quiet" data-reason-chip="${this.esc(this.t(`reasonChip${n}`))}">${this.t(`reasonChip${n}`)}</button>`).join("")}</div>`;
+  reasonChips(kind = "keep") {
+    const chips = kind === "ignore" ? ["f1", "f2", "f3"] : kind === "keep" ? ["1", "2", "3", "4"] : [];
+    if (!chips.length) return "";
+    return `<div class="reasonchips" role="group" aria-label="${this.esc(this.t("reasonChipsLabel"))}">${chips.map(n => `<button type="button" class="btn quiet" data-reason-chip="${this.esc(this.t(`reasonChip${n}`))}">${this.t(`reasonChip${n}`)}</button>`).join("")}</div>`;
   }
 
   // A status on the finding of an outage ends the outage: its follow-ups then count one by one. When the object can carry
@@ -12154,7 +12156,7 @@ Object.assign(TEXT.de, {
   overviewDue: "{n} fällig", overviewNew: "{n} neu", dueSince: "seit {date}", dueExpired: "Frist abgelaufen am {date}", dueWorse: "schlechter geworden", dueWorseImpact: "Wirkung von {from} auf {to}", dueWorseFollowers: "mehr Folgen", dueKeepOn: "Weiter so gewollt", dueLater: "Noch später", dueKeepReason: "Weiter so gewollt",
   statusCriticalHint: "Kritisches Objekt: „Ist so gewollt“ gilt höchstens befristet und wird danach wieder vorgelegt.",
   decNoticeText: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. {n} Befunde mit „Ist so gewollt“ hatten keine Frist; sie werden nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich je Befund ändern.", decNoticeText1: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. Ein Befund mit „Ist so gewollt“ hatte keine Frist; er wird nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich ändern.", decNoticeOk: "Verstanden",
-  statusScopeHint: "Gilt nur für diese Befunde; ein neuer Befund am selben Objekt ist wieder offen. Für das ganze Objekt (etwa dauernd offline): Objekt-Notiz. Für viele Objekte: Ausnahme.", reasonChipsLabel: "Gründe zur Auswahl", reasonChip1: "Absichtlich so", reasonChip2: "Wird ersetzt", reasonChip3: "Nicht relevant", reasonChip4: "Saisonal",
+  statusScopeHint: "Gilt nur für diese Befunde; ein neuer Befund am selben Objekt ist wieder offen. Für das ganze Objekt (etwa dauernd offline): Objekt-Notiz. Für viele Objekte: Ausnahme.", reasonChipsLabel: "Gründe zur Auswahl", reasonChip1: "Absichtlich so", reasonChip2: "Wird ersetzt", reasonChip3: "Nicht relevant", reasonChip4: "Saisonal", reasonChipf1: "Messwert falsch", reasonChipf2: "Gerät wird anders genutzt", reasonChipf3: "Regel passt nicht",
   markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Deine Entscheidung", hiddenBy_mark: "Objekt-Notiz", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
   hiddenMarkOpen: "Objekt-Notiz ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
@@ -12166,7 +12168,7 @@ Object.assign(TEXT.en, {
   overviewDue: "{n} due", overviewNew: "{n} new", dueSince: "since {date}", dueExpired: "time ran out on {date}", dueWorse: "got worse", dueWorseImpact: "impact from {from} to {to}", dueWorseFollowers: "more follow-ups", dueKeepOn: "Still intended", dueLater: "Later still", dueKeepReason: "Still intended",
   statusCriticalHint: "Critical object: “Intended” holds only for a time and is shown again afterwards.",
   decNoticeText: "“Known” is now “Intended”, “Snoozed” is now “Later”. {n} findings marked Intended had no time; they are shown again under “Due” after {days} days. The time can be changed for each finding.", decNoticeText1: "“Known” is now “Intended”, “Snoozed” is now “Later”. One finding marked Intended had no time; it is shown again under “Due” after {days} days. The time can be changed.", decNoticeOk: "Understood",
-  statusScopeHint: "Applies to these findings only; a new finding on the same object is open again. For the whole object (offline all the time, say): an object note. For many objects: an exception.", reasonChipsLabel: "Ready-made reasons", reasonChip1: "On purpose", reasonChip2: "Being replaced", reasonChip3: "Not relevant", reasonChip4: "Seasonal",
+  statusScopeHint: "Applies to these findings only; a new finding on the same object is open again. For the whole object (offline all the time, say): an object note. For many objects: an exception.", reasonChipsLabel: "Ready-made reasons", reasonChip1: "On purpose", reasonChip2: "Being replaced", reasonChip3: "Not relevant", reasonChip4: "Seasonal", reasonChipf1: "Value is wrong", reasonChipf2: "Device is used differently", reasonChipf3: "Rule does not fit",
   markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Your decision", hiddenBy_mark: "Object note", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
   hiddenMarkOpen: "View object note", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
@@ -19577,7 +19579,7 @@ class FirstCleanupMixin {
     if (mark) return `<div class="fcopt">${this.markFormHtml(m, m.key)}</div>`;
     const set = [...new Set([...(d.kind === "snooze" || (d.kind === "keep" && d.critical) ? [] : [0]), 7, 30, 90, 365, Number(d.days)])].sort((x, y) => x - y);
     const days = set.map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : t("decideForever")}</option>`).join("");
-    return `<div class="fcopt"><form class="polform statusform" data-decide-form="${this.esc(f.key)}"><div class="statusrow"><input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(t("decideReason"))}" placeholder="${this.esc(t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}"><select data-decide-days aria-label="${this.esc(t("decideHow"))}">${days}</select></div>${d.kind === "keep" ? this.reasonChips() : ""}${d.kind === "keep" && d.critical ? `<small class="factnote">${t("statusCriticalHint")}</small>` : ""}<small class="factnote">${t("statusScopeHint")}</small>${d.error ? this.notice("err", t(d.error)) : ""}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div></form></div>`;
+    return `<div class="fcopt"><form class="polform statusform" data-decide-form="${this.esc(f.key)}"><div class="statusrow"><input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(t("decideReason"))}" placeholder="${this.esc(t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}"><select data-decide-days aria-label="${this.esc(t("decideHow"))}">${days}</select></div>${this.reasonChips(d.kind)}${d.kind === "keep" && d.critical ? `<small class="factnote">${t("statusCriticalHint")}</small>` : ""}<small class="factnote">${t("statusScopeHint")}</small>${d.error ? this.notice("err", t(d.error)) : ""}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div></form></div>`;
   }
 
   // Open the ways of "Fix": what Housekeeper runs for the object, and the ways of this finding (replace, remove, catch the error).

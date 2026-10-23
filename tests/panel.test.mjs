@@ -3581,7 +3581,7 @@ test("a finding can be kept on purpose with a reason, put off for days, and come
   assert.ok(el.decisionLabel(f).includes("Intended") && el.decisionLabel(f).includes("Reserve"));
   const due = { resurfaced: true, impact: "high", due_info: { kind: "snooze", at: "2026-07-01T00:00:00+00:00", until: "2026-10-01T00:00:00+00:00", worse: "2026-10-20T00:00:00+00:00", impact_at: "low" } };
   assert.ok(el.dueLine(due).includes("Later") && el.dueLine(due).includes("got worse") && el.dueLine(due).includes("impact from"), "a later that got worse says so");
-  assert.equal(el.defaultDays("keep"), 90); assert.equal(el.findingCritical({ impact_facts: [{ fact: "critical" }] }), true);
+  assert.equal(el.defaultDays("keep"), 365); assert.equal(el.findingCritical({ impact_facts: [{ fact: "critical" }] }), true);
   el.openDecide("k2"); el.decide.kind = "snooze"; el.decide.days = 0; await el.commitDecide();
   assert.equal(sent[1].kind, "snooze"); assert.equal(sent[1].days, 30, "put off needs a time: 30 days by default");
   assert.equal(el.data.findings[1].resurfaced, false);
@@ -4694,6 +4694,12 @@ test("the export started from a detail page returns to that page", () => {
   assert.equal(el.selected, item); assert.equal(el.detailTab, "technical"); assert.equal(el.xp, null);
   // started from a list, there is no way back to offer
   el.selected = null; el.xpOpen(); assert.ok(!shadow.innerHTML.includes("data-xp-return"));
+});
+
+test("the reasons to pick from depend on the kind: intended and false alarm have them, later has none", () => {
+  const { el } = panel("en");
+  assert.ok(el.reasonChips("keep").includes("On purpose") && el.reasonChips("ignore").includes("Rule does not fit"));
+  assert.equal(el.reasonChips("snooze"), "");
 });
 
 test("a new object note proposes a review in 365 days and says what its kind does", () => {
@@ -7353,7 +7359,7 @@ test("the cards of the cleanup open the answers with their reason and days, for 
   assert.equal(el.decide, null, "a tile that is open closes when clicked again");
   el.fcOpen(["a", "b"], "keep");
   assert.equal(el.decide.reason, "Confirmed as intended in the cleanup");
-  assert.equal(el.decide.days, 90);
+  assert.equal(el.decide.days, 365);
   el.decideKindSet("snooze");
   assert.equal(el.decide.days, 60, "Later takes the days of the cleanup");
   assert.equal(el.decide.reason, "Put off in the cleanup", "the standard reason follows the kind");
