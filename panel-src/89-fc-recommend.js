@@ -109,7 +109,7 @@ class FcRecommendMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: Array.isArray(req) ? req : [req] });
       this.openNewPlan(plan, "card"); this.planChanges = null; this.cleanupError = "";
       this.fcPlanKey = key; this.fcPlanReq = req;
-      if (this.view === "fix") this.fixGo(3);
+      if (this.view === "fix") this.fixGo(2);
     } catch (err) { this.fcPlanError = this.errText(err); }
     this.planBusy = false; this.render();
   }
@@ -124,7 +124,7 @@ class FcRecommendMixin {
   async fcPlanDrop() {
     const open = this.plan && this.isOpenPreview(this.plan);
     this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
-    if (this.view === "fix") { if (open) this.fixGo(2); else { this.fixGo(4); this.startFixWatch(); } }
+    if (this.view === "fix") { if (open) this.fixGo(1); else { this.fixGo(3); this.startFixWatch(); } }
     if (open) await this.discardPlan(); else { this.plan = null; this.render(); }
   }
 

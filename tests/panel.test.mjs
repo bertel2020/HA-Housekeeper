@@ -4940,15 +4940,13 @@ test("the Fix page names the ways, keeps the exits, collects what hangs on a cau
   assert.equal(el.view, "fix"); assert.equal(calls[0].type, "ha_housekeeper/fix_ways");
   await new Promise(resolve => setTimeout(resolve, 0));
   let html = el.fixView();
-  assert.ok(["Understand", "Decide", "Carry out", "Check"].every(x => html.includes(x)), "four steps");
-  assert.ok(html.includes("Next") && !html.includes("data-decide-preset"), "one step at a time: Understand first");
-  el.fixGo(2);
+  assert.ok(["Understand and decide", "Carry out", "Check"].every(x => html.includes(x)), "three steps");
   html = el.fixView();
   assert.ok(html.includes('data-ha-path="/config/integrations/integration/hue"') && html.indexOf("Look at the integration") < html.indexOf("Wait"), "the recommended way comes first");
   assert.ok(html.includes('data-decide-preset="keep"') && html.includes('data-decide-preset="snooze"') && html.includes('data-decide-preset="ignore"'), "the three exits are always there");
   assert.ok(html.includes('data-fix-pick="entity.state_unavailable|s1|"') && html.includes("Fix together"), "what hangs on the cause can be picked");
   assert.ok(!html.includes("Fixed:") && !html.includes("Still open"), "no verdict before a check");
-  el.fixGo(4);
+  el.fixGo(3);
   el.fixCheckedFrom = "old"; el.data.meta = { ...el.data.meta, scanned_at: "new" };
   assert.ok(el.fixView().includes("Still open"));
   el.data.findings = [a, b];
@@ -6968,7 +6966,7 @@ test("a missing target has Fix all n in its menu, and its page replaces or remov
   el.openFixAll(cause.id);
   assert.equal(el.fixKey, "k1", "an automation stands for the page");
   await new Promise(r => setTimeout(r, 0));
-  const html = el.fixView() + (el.fixGo(2), el.fixView());
+  const html = el.fixView();
   assert.ok(html.includes("3 places refer to it") && html.includes("2 automations, 1 script") && html.includes("Remove from 2 automations") && html.includes("data-fix-replace") && !html.includes("Open in Home Assistant"));
   let plan = null;
   el.fcPlanStart = async (key, requests) => { plan = { requests }; };

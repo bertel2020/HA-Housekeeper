@@ -1782,7 +1782,7 @@ class StylesMixin {
       .fcirow.fcirec{height:auto;min-height:34px;padding:8px 6px;align-items:start;border-radius:8px;background:color-mix(in srgb,var(--hk-blue) 8%,transparent)}.fcirow.fcirec .fcii{margin-top:1px}.fcirow.fcirec span:nth-child(3){line-height:1.45;white-space:normal;overflow:visible;text-overflow:clip}
       .fcact.rec{border-color:color-mix(in srgb,var(--hk-blue) 45%,var(--hk-border))}.fcact.sel{border:2px solid var(--hk-blue);padding:13px 15px;background:color-mix(in srgb,var(--hk-blue) 8%,var(--hk-surface))}.fcrectag{display:inline-block;justify-self:start;margin-bottom:3px;padding:1px 8px;border-radius:10px;font-style:normal;font-size:calc(11px*var(--hk-fs,1));background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}
       .actpanel .actrow{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center;padding:12px 16px}@media (min-width:760px){.actpanel .actrow{grid-template-columns:minmax(0,1fr) auto}}.actpanel .actrow .actctl{justify-content:flex-start}.actfold{display:flex;align-items:center;gap:6px;width:100%;border:0;border-top:1px solid var(--hk-border);text-align:left;cursor:pointer;font:inherit;font-size:calc(11.5px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}.actfold ha-icon{--mdc-icon-size:18px}.actpanel .actblock .finding{padding:8px 0;border-top:0}.fcopt{margin:12px 0;padding:12px 14px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-card)}.fcopt .markform{padding:0}.fcopt .statusform{padding:0}.dtabs{display:inline-flex;border:1px solid var(--hk-border);border-radius:10px;overflow:hidden;margin:0 0 12px}.dtabs button{border:0;background:var(--hk-card);padding:7px 18px;font:inherit;color:var(--hk-muted);cursor:pointer}.dtabs button+button{border-left:1px solid var(--hk-border)}.dtabs button.on{background:var(--hk-soft);color:var(--hk-text);font-weight:600}.fixsteps{display:flex;gap:6px;flex-wrap:wrap}.fixstep{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--hk-border);border-radius:999px;background:var(--hk-card);color:var(--hk-muted);font:inherit;cursor:pointer}.fixstep b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1))}.fixstep.past b{background:var(--hk-green-soft,var(--hk-soft));color:var(--hk-green,inherit)}.fixstep.on{border-color:var(--hk-blue);color:var(--hk-text);font-weight:600}.fixstep.on b{background:var(--hk-blue);color:#fff}.fixstep:disabled{opacity:.5;cursor:default}.fixrec{padding:4px 14px 2px;border-left:3px solid var(--hk-blue)}.fixmore{padding:0 14px}.fixmore summary{cursor:pointer;padding:10px 0;color:var(--hk-muted)}.fixexits{padding:8px 14px 12px}.fixexits .fceyebrow{display:block;margin:4px 0 8px}.fixexits .mbtns{display:flex;flex-wrap:wrap;gap:8px}.fixobjways{margin:8px 14px 12px}.fixrating{padding:0 14px 12px}.fcways{margin:12px 0 12px;padding:6px 14px 10px;border:1px solid var(--hk-blue);border-radius:12px}.fcways .fceyebrow{display:block;margin:4px 0 2px}.fcway{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--hk-border)}.fcways .fceyebrow+.fcway{border-top:0}.fcway .fctxt{display:grid;gap:2px}.fcway small{color:var(--hk-muted)}.fcii-mute{background:var(--hk-soft);color:var(--hk-muted)}.fcplan{border-color:var(--hk-blue)}.fcplanbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}.fcplan h3{margin:2px 0 8px}.fcplanrows{list-style:none;margin:0 0 8px;padding:0;display:grid}.fcplanrows li{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--hk-border)}.fcplanrows li:first-child{border-top:0}.fcplanrows small{color:var(--hk-muted)}
-      .fccard.fixcard .pad{padding:18px 20px}.fixcard h3{margin:4px 0 12px}.fixbody>.fixrec,.fixbody>.fixmore,.fixbody>.fixexits,.fixbody>.fixrating{padding-left:0;padding-right:0}.fixbody>.fixobjways{margin-left:0;margin-right:0}.fixbody>:last-child{margin-bottom:0}.fixinfo{margin:0;height:auto}.fixinfo .fcirow{grid-template-columns:24px 110px minmax(0,1fr) 0;height:auto;min-height:40px;padding:9px 0;align-items:start}.fixinfo .fcirow>span:nth-child(3){white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.fixinfo .fcirow small{display:block;margin-top:2px;color:var(--hk-muted)}@media(max-width:600px){.fixinfo .fcirow{grid-template-columns:24px minmax(0,1fr)}.fixinfo .fcirow>span:nth-child(3){grid-column:2}}.fcstep:disabled{opacity:.5;cursor:default}
+      .fccard.fixcard .pad{padding:18px 20px}.fixcard h3{margin:4px 0 12px}.fixbody>.fixrec,.fixbody>.fixmore,.fixbody>.fixexits,.fixbody>.fixrating{padding-left:0;padding-right:0}.fixbody>.fixobjways{margin-left:0;margin-right:0}.fixbody>:last-child{margin-bottom:0}.fixsub{margin:20px 0 8px;font-size:calc(14px*var(--hk-fs,1));font-weight:600}.fixinfo{margin:0;height:auto}.fixinfo .fcirow{grid-template-columns:24px 110px minmax(0,1fr) 0;height:auto;min-height:40px;padding:9px 0;align-items:start}.fixinfo .fcirow>span:nth-child(3){white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.fixinfo .fcirow small{display:block;margin-top:2px;color:var(--hk-muted)}@media(max-width:600px){.fixinfo .fcirow{grid-template-columns:24px minmax(0,1fr)}.fixinfo .fcirow>span:nth-child(3){grid-column:2}}.fcstep:disabled{opacity:.5;cursor:default}
       .startint{display:grid;grid-template-columns:minmax(0,1fr) 110px 80px 90px;gap:6px 12px;align-items:center;font-size:13px;padding:5px 0;border-top:1px solid var(--hk-border)}.startname{display:flex;flex-direction:column;min-width:0}.startint b{font-weight:500;text-align:right}
       ${this.themeCss()}
 .acttools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.actsearch{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.actday{margin:14px 16px 4px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.actlist{list-style:none;margin:0;padding:0 16px}.actrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--hk-border)}.acttext{flex:1;min-width:0}.acttext small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.actrow time{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
@@ -18378,7 +18378,7 @@ class FixMixin {
     this.noteJump("fix");
     this.fixAll = all;
     this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
-    this.fixStep = 1; this.fixMax = 2; this.fixPreselect = Boolean(all);
+    this.fixStep = 1; this.fixMax = 1; this.fixPreselect = Boolean(all);
     this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
     this.render();
     this.loadFixWays(key);
@@ -18560,23 +18560,22 @@ class FixMixin {
   fixView() {
     const f = this.data?.findings?.find(x => x.key === this.fixKey);
     const step = (n, title, body) => `<section class="panel fccard fixcard"><div class="pad"><small class="fceyebrow">${this.t("fixStepOf", { n })}</small><h3>${this.t(title)}</h3><div class="fixbody">${body}</div></div></section>`;
-    if (!f) return `<div class="stack">${step(4, "fixStepCheck", `${this.fixCheckedFrom ? this.notice("info", this.t("fixDone")) : this.notice("info", this.t("fixGone"))}`)}<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div></div>`;
+    if (!f) return `<div class="stack">${step(3, "fixStepCheck", `${this.fixCheckedFrom ? this.notice("info", this.t("fixDone")) : this.notice("info", this.t("fixGone"))}`)}<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div></div>`;
     const cur = Math.min(this.fixStep || 1, this.fixMax || 1), max = this.fixMax || 1, planOpen = Boolean(this.fcPlanKey && this.plan);
-    const names = ["fixStepUnderstand", "fixStepDecide", "fixStepRun", "fixStepCheck"];
+    const names = ["fixStepUnderstand", "fixStepRun", "fixStepCheck"];
     const bar = `<div class="fctop"><nav class="fcsteps" aria-label="${this.esc(this.t("fixTitle"))}">${names.map((n, i) => `<button type="button" class="fcstep${i + 1 < cur ? " done" : ""}${i + 1 === cur ? " cur" : ""}" data-fix-step="${i + 1}" title="${this.esc(this.t(n))}" ${i + 1 === cur ? 'aria-current="step"' : ""} ${i + 1 > max ? "disabled" : ""}><b>${i + 1 < cur ? "✓" : i + 1}</b></button>`).join('<i class="fcline"></i>')}</nav></div>`;
-    const nav = (back, next) => `<div class="panel fcfoot"><button type="button" class="btn" ${back ? `data-fix-step="${back}"` : "disabled"}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fixBack")}</button><span class="fcprogress"></span>${next ? `<button type="button" class="btn primary" data-fix-step="${next}">${this.t("fixNext")}</button>` : ""}</div>`;
+    const nav = (back, next) => !back && !next ? "" : `<div class="panel fcfoot"><button type="button" class="btn" ${back ? `data-fix-step="${back}"` : "disabled"}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fixBack")}</button><span class="fcprogress"></span>${next ? `<button type="button" class="btn primary" data-fix-step="${next}">${this.t("fixNext")}</button>` : ""}</div>`;
     let body;
-    if (cur === 1) body = `${step(1, "fixStepUnderstand", this.fixUnderstand(f))}${nav(0, 2)}`;
-    else if (cur === 2) body = `${step(2, "fixStepDecide", this.fixDecide(f))}${this.fixCollect(f)}${nav(1, 0)}`;
-    else if (cur === 3) body = planOpen ? this.fcPlanBlock() : `${step(3, "fixStepRun", `<p class="factnote">${this.t("fixRunNone")}</p>`)}${nav(2, 0)}`;
-    else body = `${step(4, "fixStepCheck", this.fixCheck(f))}${nav(2, 0)}`;
+    if (cur === 1) body = `${step(1, "fixStepUnderstand", `${this.fixUnderstand(f)}<h4 class="fixsub">${this.t("fixStepDecide")}</h4>${this.fixDecide(f)}`)}${this.fixCollect(f)}${nav(0, 0)}`;
+    else if (cur === 2) body = planOpen ? this.fcPlanBlock() : `${step(2, "fixStepRun", `<p class="factnote">${this.t("fixRunNone")}</p>`)}${nav(1, 0)}`;
+    else body = `${step(3, "fixStepCheck", this.fixCheck(f))}${nav(1, 0)}`;
     return `<div class="stack">${bar}${body}</div>`;
   }
 
   bindFix(root) {
     this.bindFcPlan(root);
     root.querySelectorAll("[data-fix-step]").forEach(el => el.onclick = () => this.fixGo(Number(el.dataset.fixStep)));
-    root.querySelectorAll("[data-fix-self-done]").forEach(el => el.onclick = () => { this.fixGo(4); this.startFixWatch(); });
+    root.querySelectorAll("[data-fix-self-done]").forEach(el => el.onclick = () => { this.fixGo(3); this.startFixWatch(); });
     root.querySelectorAll("[data-fix-open]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openFix(el.dataset.fixOpen); });
     root.querySelectorAll("[data-fix-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fixObject); if (obj) { this._pendingTab = "actions"; this.openObject(obj); } });
     root.querySelectorAll("[data-fix-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.fixReplace; this.replNew = el.dataset.fixNew || ""; }));
@@ -18608,10 +18607,10 @@ class FixMixin {
   }
 }
 Object.assign(TEXT.de, {
-  fixNext: "Weiter", fixStepOf: "Schritt {n} von 4", fixObjectWays: "Am Objekt", fixMoreActionsHint: "Weitere Aktionen dieses Objekts, etwa austauschen oder Werte reparieren.", fixOtherWays: "Andere Wege ({n})", fixSelfDone: "Selbst erledigt: nachprüfen", fixRunNone: "Hier läuft noch nichts. Wähle bei „Entscheiden“ einen Weg: was Housekeeper selbst ausführen kann, zeigt sich zuerst als Vorschau, und erst dein Klick ändert etwas.", fixPickCount: "{picked} von {total} gewählt, dann ein Weg für alle.", fixPickNone: "Wähle mindestens eine Stelle, dann ein Weg für alle.",
+  fixNext: "Weiter", fixStepOf: "Schritt {n} von 3", fixObjectWays: "Am Objekt", fixMoreActionsHint: "Weitere Aktionen dieses Objekts, etwa austauschen oder Werte reparieren.", fixOtherWays: "Andere Wege ({n})", fixSelfDone: "Selbst erledigt: nachprüfen", fixRunNone: "Hier läuft noch nichts. Wähle bei „Entscheiden“ einen Weg: was Housekeeper selbst ausführen kann, zeigt sich zuerst als Vorschau, und erst dein Klick ändert etwas.", fixPickCount: "{picked} von {total} gewählt, dann ein Weg für alle.", fixPickNone: "Wähle mindestens eine Stelle, dann ein Weg für alle.",
   fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
-  fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen, entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben",
-  fixStepUnderstand: "Verstehen", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
+  fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen und entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben",
+  fixStepUnderstand: "Verstehen und entscheiden", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
   fixWhat: "Was los ist", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder entscheiden, nicht zu beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
   fixOpenHA: "In Home Assistant öffnen", fixOpenActions: "Aktionen des Objekts", fixCollectTitle: "Gesammelt beheben", fixCollectHint: "Wähle aus, was einbezogen wird, dann ein Weg für alle.", fixPickAll: "Alle wählen",
   fixRunHint: "Was etwas ändert, läuft über einen Plan mit Vorschau, Bestätigung, Backup und Zurücknehmen. Wege in Home Assistant öffnen sich dort. Nichts geschieht ohne deinen Klick.",
@@ -18634,10 +18633,10 @@ Object.assign(TEXT.de, {
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
-  fixNext: "Next", fixStepOf: "Step {n} of 4", fixObjectWays: "On the object", fixMoreActionsHint: "More actions of this object, such as exchanging it or repairing values.", fixOtherWays: "Other ways ({n})", fixSelfDone: "Did it myself: check", fixRunNone: "Nothing runs here yet. Choose a way under “Decide”: what Housekeeper can run itself shows as a preview first, and only your click changes anything.", fixPickCount: "{picked} of {total} chosen, then one way for all.", fixPickNone: "Choose at least one place, then one way for all.",
+  fixNext: "Next", fixStepOf: "Step {n} of 3", fixObjectWays: "On the object", fixMoreActionsHint: "More actions of this object, such as exchanging it or repairing values.", fixOtherWays: "Other ways ({n})", fixSelfDone: "Did it myself: check", fixRunNone: "Nothing runs here yet. Choose a way under “Decide”: what Housekeeper can run itself shows as a preview first, and only your click changes anything.", fixPickCount: "{picked} of {total} chosen, then one way for all.", fixPickNone: "Choose at least one place, then one way for all.",
   fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
-  fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand, decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix",
-  fixStepUnderstand: "Understand", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
+  fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand and decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix",
+  fixStepUnderstand: "Understand and decide", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
   fixWhat: "What is wrong", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or decide not to fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",
   fixOpenHA: "Open in Home Assistant", fixOpenActions: "Actions of the object", fixCollectTitle: "Fix together", fixCollectHint: "Choose what is included, then one way for all.", fixPickAll: "Pick all",
   fixRunHint: "Whatever changes something goes through a plan with preview, confirmation, backup and undo. Ways in Home Assistant open there. Nothing happens without your click.",
@@ -19960,7 +19959,7 @@ class FcRecommendMixin {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: Array.isArray(req) ? req : [req] });
       this.openNewPlan(plan, "card"); this.planChanges = null; this.cleanupError = "";
       this.fcPlanKey = key; this.fcPlanReq = req;
-      if (this.view === "fix") this.fixGo(3);
+      if (this.view === "fix") this.fixGo(2);
     } catch (err) { this.fcPlanError = this.errText(err); }
     this.planBusy = false; this.render();
   }
@@ -19975,7 +19974,7 @@ class FcRecommendMixin {
   async fcPlanDrop() {
     const open = this.plan && this.isOpenPreview(this.plan);
     this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
-    if (this.view === "fix") { if (open) this.fixGo(2); else { this.fixGo(4); this.startFixWatch(); } }
+    if (this.view === "fix") { if (open) this.fixGo(1); else { this.fixGo(3); this.startFixWatch(); } }
     if (open) await this.discardPlan(); else { this.plan = null; this.render(); }
   }
 
