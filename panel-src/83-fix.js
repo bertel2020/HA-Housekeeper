@@ -16,8 +16,22 @@ class FixMixin {
     this.noteJump("fix");
     this.fixAll = all;
     this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
+    this.fixStep = 1; this.fixMax = 2; this.fixPreselect = Boolean(all);
+    this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
     this.render();
     this.loadFixWays(key);
+  }
+
+  // The page shows one step at a time; a step can be reached once it has been before or the one before it is done.
+  fixGo(step) {
+    this.fixStep = step; this.fixMax = Math.max(this.fixMax || 1, step);
+    if (this.view === "fix") this.render();
+  }
+
+  // A way Housekeeper runs itself: its plan is judged in the page, in step 3.
+  fixPlan(requests) {
+    const f = this.data?.findings?.find(x => x.key === this.fixKey);
+    return f ? this.fcPlanStart(this.findingKey(f), requests) : null;
   }
 
   async loadFixWays(key) {
@@ -103,16 +117,35 @@ class FixMixin {
     return `<div class="row fixway"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
   }
 
-  // Step 2: the ways of the topic, and always the three exits.
+  // The plans of the object itself (disable, remove, replace the twin), each with its preview here; the rest is one button to the object.
+  fixObjectWays(object, key) {
+    const items = this.fixItems(object, key).items, own = items.filter(it => it.plan);
+    const more = items.length > own.length || !items.length;
+    return `<div class="fcways fixobjways"><small class="fceyebrow">${this.t("fixObjectWays")}</small>${own.map(it => this.fcWayRow(it, key)).join("")}${more ? `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:tools"></ha-icon></span><span class="fctxt"><strong>${this.t("fixOpenActions")}</strong><small>${this.t("fixMoreActionsHint")}</small></span><button type="button" class="btn quiet" data-fix-object="${this.esc(key)}">${this.t("actOpen")}</button></div>` : ""}</div>`;
+  }
+
+  // Step 2: the recommended way first and large, the others folded, and the three exits as one line.
   fixDecide(f) {
-    const ways = this.fixWays;
+    const ways = this.fixWays, key = this.findingKey(f), object = this.findObject(key);
     const shown = ways && this.fixAll ? ways.filter(w => ["replace_target", "remove_reference"].includes(w.way)) : ways;
-    const list = shown === null ? `<p class="factnote">${this.t("loading")}</p>` : shown.length ? [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended)).map(w => this.fixWayCard(w, f)).join("") : `<p class="factnote">${this.t("fixNoWays")}</p>`;
-    const key = this.esc(f.key);
-    const exit = (kind, icon) => `<button type="button" class="btn" data-decide-open="${key}" data-decide-preset="${kind}"><ha-icon icon="${icon}"></ha-icon>${this.t(`decideKind_${kind}`)}<small>${this.t(`decideKindHint_${kind}`)}</small></button>`;
+    const error = this.fcPlanError && !this.fcPlanKey ? `<div class="error">${this.esc(this.fcPlanError)}</div>` : "";
+    let list;
+    if (shown === null) list = `<p class="factnote">${this.t("loading")}</p>`;
+    else {
+      const sorted = [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended));
+      const entries = [];
+      for (const w of sorted) {
+        if (w.kind === "panel" && object) { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
+        else entries.push({ html: this.fixWayCard(w, f) });
+      }
+      if (!entries.length) list = `<p class="factnote">${this.t("fixNoWays")}</p>`;
+      else list = `<div class="fixrec">${entries[0].html}</div>${entries.length > 1 ? `<details class="fixmore"><summary>${this.t("fixOtherWays", { n: entries.length - 1 })}</summary>${entries.slice(1).map(e => e.html).join("")}</details>` : ""}`;
+    }
+    const exit = (kind, icon) => `<button type="button" class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="${kind}" title="${this.esc(this.t(`decideKindHint_${kind}`))}"><ha-icon icon="${icon}"></ha-icon>${this.t(`decideKind_${kind}`)}</button>`;
     // The exits decide one finding; for a missing target the selection below decides several.
-    if (this.fixAll) return list;
-    return `${list}<h3 class="ratinghead">${this.t("fixExits")}</h3><div class="mbtns">${exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:eye-off-outline")}</div>${this.rowDecide(f)}`;
+    if (this.fixAll) return `${error}${list}`;
+    const self = f.in_work ? `<button type="button" class="btn" data-fix-self-done><ha-icon icon="mdi:check"></ha-icon>${this.t("fixSelfDone")}</button>` : "";
+    return `${error}${list}<div class="fixexits"><small class="fceyebrow">${this.t("fixExits")}</small><div class="mbtns">${exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:eye-off-outline")}${self}</div></div>${this.rowDecide(f)}`;
   }
 
   // For a cause with several findings below it: pick which to include, then one way for all.
@@ -122,8 +155,9 @@ class FixMixin {
     const below = this.data.findings.filter(x => !x.ignored && (this.fixAll || x.key !== f.key) && this.causeKeys(cause.id).has(x.key));
     if (below.length < 2) return "";
     const rows = below.map(x => `<label class="row"><input type="checkbox" data-fix-pick="${this.esc(x.key)}" ${this.findSel.has(x.key) ? "checked" : ""}><span class="row-text"><strong>${this.esc(this.findObject(this.findingKey(x))?.name || x.object_id)}</strong><small>${this.esc(this.findingTitle(x))}</small></span></label>`).join("");
+    if (this.fixPreselect) { this.fixPreselect = false; below.forEach(x => this.findSel.add(x.key)); }
     const picked = below.filter(x => this.findSel.has(x.key)).length, off = picked ? "" : "disabled";
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("fixCollectTitle")}</h2><p>${this.t("fixCollectHint")}</p></div></div>${rows}
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("fixCollectTitle")}</h2><p>${picked ? this.t("fixPickCount", { picked, total: below.length }) : this.t("fixPickNone")}</p></div></div>${rows}
       <div class="mbtns"><button type="button" class="btn" data-fix-pick-all="${this.esc(below.map(x => x.key).join("|"))}">${this.t("fixPickAll")}</button><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("fselStatus")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></div>${this.bulkForm()}</section>`;
   }
 
@@ -163,30 +197,42 @@ class FixMixin {
     const f = this.data?.findings?.find(x => x.key === this.fixKey);
     const step = (n, title, body) => `<section class="panel"><div class="panelhead"><div><h2>${n} · ${this.t(title)}</h2></div></div>${body}</section>`;
     if (!f) return `<div class="stack">${step(4, "fixStepCheck", `${this.fixCheckedFrom ? this.notice("info", this.t("fixDone")) : this.notice("info", this.t("fixGone"))}`)}<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div></div>`;
-    return `<div class="stack">${step(1, "fixStepUnderstand", this.fixUnderstand(f))}${step(2, "fixStepDecide", this.fixDecide(f))}${this.fixCollect(f)}${step(3, "fixStepRun", `<p class="factnote">${this.t("fixRunHint")}</p>`)}${step(4, "fixStepCheck", this.fixCheck(f))}</div>`;
+    const cur = Math.min(this.fixStep || 1, this.fixMax || 1), max = this.fixMax || 1, planOpen = Boolean(this.fcPlanKey && this.plan);
+    const names = ["fixStepUnderstand", "fixStepDecide", "fixStepRun", "fixStepCheck"];
+    const bar = `<div class="fixsteps" role="tablist">${names.map((n, i) => `<button type="button" class="fixstep${i + 1 === cur ? " on" : ""}${i + 1 < cur ? " past" : ""}" data-fix-step="${i + 1}" ${i + 1 > max ? "disabled" : ""}><b>${i + 1}</b>${this.t(n)}</button>`).join("")}</div>`;
+    const nav = (back, next) => `<div class="fcplanbtns">${back ? `<button type="button" class="btn" data-fix-step="${back}">${this.t("fixBack")}</button>` : ""}${next ? `<button type="button" class="btn primary" data-fix-step="${next}">${this.t("fixNext")}</button>` : ""}</div>`;
+    let body;
+    if (cur === 1) body = `${step(1, "fixStepUnderstand", this.fixUnderstand(f))}${nav(0, 2)}`;
+    else if (cur === 2) body = `${step(2, "fixStepDecide", this.fixDecide(f))}${this.fixCollect(f)}${nav(1, 0)}`;
+    else if (cur === 3) body = planOpen ? this.fcPlanBlock() : `${step(3, "fixStepRun", `<p class="factnote">${this.t("fixRunNone")}</p>`)}${nav(2, 0)}`;
+    else body = `${step(4, "fixStepCheck", this.fixCheck(f))}${nav(2, 0)}`;
+    return `<div class="stack">${bar}${body}</div>`;
   }
 
   bindFix(root) {
+    this.bindFcPlan(root);
+    root.querySelectorAll("[data-fix-step]").forEach(el => el.onclick = () => this.fixGo(Number(el.dataset.fixStep)));
+    root.querySelectorAll("[data-fix-self-done]").forEach(el => el.onclick = () => { this.fixGo(4); this.startFixWatch(); });
     root.querySelectorAll("[data-fix-open]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openFix(el.dataset.fixOpen); });
     root.querySelectorAll("[data-fix-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fixObject); if (obj) { this._pendingTab = "actions"; this.openObject(obj); } });
     root.querySelectorAll("[data-fix-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.fixReplace; this.replNew = el.dataset.fixNew || ""; }));
     root.querySelectorAll("[data-fix-id-replace]").forEach(el => el.onclick = async () => {
       const target = el.closest(".row")?.querySelector("[data-fix-id-new]")?.value;
-      if (target) await this.newPlan([{ kind: "replace_references", object_id: el.dataset.fixIdReplace, target, target_kind: el.dataset.fixIdKind }], "repair");
+      if (target) await this.fixPlan([{ kind: "replace_references", object_id: el.dataset.fixIdReplace, target, target_kind: el.dataset.fixIdKind }]);
     });
     root.querySelectorAll("[data-fix-catch]").forEach(el => el.onclick = async () => {
       const f = this.data?.findings?.find(x => x.key === this.fixKey);
-      if (f) await this.newPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "continue_on_error", values: { path: el.dataset.fixCatch } }], "repair");
+      if (f) await this.fixPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "continue_on_error", values: { path: el.dataset.fixCatch } }]);
     });
     root.querySelectorAll("[data-fix-round]").forEach(el => el.onclick = () => this.openRound());
     root.querySelectorAll("[data-fix-remove]").forEach(el => el.onclick = async () => {
       const f = this.data?.findings?.find(x => x.key === this.fixKey);
-      if (f) await this.newPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemove } }], "repair");
+      if (f) await this.fixPlan([{ kind: "refactor_automation", object_id: f.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemove } }]);
     });
     root.querySelectorAll("[data-fix-all]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openFixAll(el.dataset.fixAll); });
     root.querySelectorAll("[data-fix-remove-all]").forEach(el => el.onclick = async () => {
       const requests = this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).map(x => ({ kind: "refactor_automation", object_id: x.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemoveAll } }));
-      if (requests.length) await this.newPlan(requests, "repair");
+      if (requests.length) await this.fixPlan(requests);
     });
     root.querySelectorAll("[data-fix-refactor-on]").forEach(el => el.onclick = async () => { await this._hass.callWS({ type: "ha_housekeeper/refactor_set", enabled: true }); this.loadFixWays(this.fixKey); });
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
@@ -198,6 +244,7 @@ class FixMixin {
   }
 }
 Object.assign(TEXT.de, {
+  fixNext: "Weiter", fixObjectWays: "Am Objekt", fixMoreActionsHint: "Weitere Aktionen dieses Objekts, etwa austauschen oder Werte reparieren.", fixOtherWays: "Andere Wege ({n})", fixSelfDone: "Selbst erledigt: nachprüfen", fixRunNone: "Hier läuft noch nichts. Wähle bei „Entscheiden“ einen Weg: was Housekeeper selbst ausführen kann, zeigt sich zuerst als Vorschau, und erst dein Klick ändert etwas.", fixPickCount: "{picked} von {total} gewählt, dann ein Weg für alle.", fixPickNone: "Wähle mindestens eine Stelle, dann ein Weg für alle.",
   fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen, entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben",
   fixStepUnderstand: "Verstehen", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
@@ -223,6 +270,7 @@ Object.assign(TEXT.de, {
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
+  fixNext: "Next", fixObjectWays: "On the object", fixMoreActionsHint: "More actions of this object, such as exchanging it or repairing values.", fixOtherWays: "Other ways ({n})", fixSelfDone: "Did it myself: check", fixRunNone: "Nothing runs here yet. Choose a way under “Decide”: what Housekeeper can run itself shows as a preview first, and only your click changes anything.", fixPickCount: "{picked} of {total} chosen, then one way for all.", fixPickNone: "Choose at least one place, then one way for all.",
   fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand, decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix",
   fixStepUnderstand: "Understand", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",

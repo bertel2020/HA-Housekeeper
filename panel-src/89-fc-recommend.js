@@ -84,11 +84,16 @@ class FcRecommendMixin {
   // The row for fcInfoHtml.
   fcRecRow(rec) { return { id: "rec", rec: true, label: this.t("fcRecLabel"), head: rec.head, text: rec.body, empty: false, tab: "" }; }
 
+  // One way of an object as a row: its name, what it does, and the preview of its plan (or the old "Open").
+  fcWayRow(it, key) {
+    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button>`}</div>`;
+  }
+
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it, and the page of the object.
   fcFixWays(key, obj) {
     if (!obj || this.fcFixOpen !== key || this.fcPlanKey) return "";
     const items = this.fixItems(obj, key).items;
-    const rows = items.map(it => `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button>`}</div>`).join("");
+    const rows = items.map(it => this.fcWayRow(it, key)).join("");
     const object = `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:open-in-new"></ha-icon></span><span class="fctxt"><strong>${this.t("fcFixObject")}</strong><small>${this.t("fcFixObjectHint")}</small></span><button type="button" class="btn quiet" data-fc-object="${this.esc(key)}">${this.t("actOpen")}</button></div>`;
     return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${object}${items.length ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
   }
@@ -98,9 +103,10 @@ class FcRecommendMixin {
     if (this.planBusy) return;
     this.planBusy = true; this.fcPlanError = ""; this.render();
     try {
-      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [req] });
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: Array.isArray(req) ? req : [req] });
       this.openNewPlan(plan, "card"); this.planChanges = null; this.cleanupError = "";
       this.fcPlanKey = key; this.fcPlanReq = req;
+      if (this.view === "fix") this.fixGo(3);
     } catch (err) { this.fcPlanError = this.errText(err); }
     this.planBusy = false; this.render();
   }
@@ -115,6 +121,7 @@ class FcRecommendMixin {
   async fcPlanDrop() {
     const open = this.plan && this.isOpenPreview(this.plan);
     this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
+    if (this.view === "fix") { if (open) this.fixGo(2); else { this.fixGo(4); this.startFixWatch(); } }
     if (open) await this.discardPlan(); else { this.plan = null; this.render(); }
   }
 
