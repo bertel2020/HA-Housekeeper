@@ -654,7 +654,7 @@ def mark(scanner: InventoryScanner, data: dict[str, Any], user: str | None) -> d
         )
         if error:
             raise McpError(error)
-    elif not scanner.clear_mark(kind, ident):
+    elif not scanner.clear_mark(kind, ident, by=user, via=VIA):
         raise McpError("not_found")
     return {
         "schema": API_SCHEMA,
@@ -678,10 +678,20 @@ def note_set(scanner: InventoryScanner, data: dict[str, Any], user: str | None) 
                 datetime.now(UTC),
                 "agent",
             )
+            scanner.activity.record(
+                "note",
+                "save",
+                datetime.now(UTC),
+                key=data["target"] or None,
+                name=data["title"],
+                by=user,
+                source=VIA,
+            )
         elif previous is None:
             raise McpError("not_found")
         else:
             scanner.notes.delete(note_id or "")
+            scanner.activity.record("note", "delete", datetime.now(UTC), by=user, source=VIA)
     except NoteError as err:
         raise McpError(
             "not_found" if str(err) == "not_found" else "invalid_format",

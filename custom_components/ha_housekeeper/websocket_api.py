@@ -546,7 +546,11 @@ def websocket_first_cleanup_later(
         return
     keys = stage_keys(scanner.snapshot or {})[5][:BULK_LIMIT]
     done = scanner.snooze_many(
-        keys, msg["days"], msg["reason"], connection.user.id if connection.user else None
+        keys,
+        msg["days"],
+        msg["reason"],
+        connection.user.id if connection.user else None,
+        "cleanup",
     )
     connection.send_result(msg["id"], {"put_off": done, **_first_cleanup_reply(scanner)})
 
@@ -575,6 +579,7 @@ def websocket_decision_notice_dismiss(
         vol.Optional("kind", default="ignore"): vol.In(IGNORE_KINDS),
         vol.Optional("reason", default=""): vol.All(str, vol.Length(max=IGNORE_REASON_LIMIT)),
         vol.Optional("days"): vol.All(int, vol.Range(min=1, max=3650)),
+        vol.Optional("source"): vol.In(("cleanup", "list")),
     }
 )
 @callback
@@ -609,6 +614,7 @@ def websocket_ignore(
         reason=msg["reason"],
         days=msg.get("days"),
         by=connection.user.id if connection.user else None,
+        source=msg.get("source"),
     ):
         connection.send_error(msg["id"], "not_found", "Finding not found in the latest scan")
         return

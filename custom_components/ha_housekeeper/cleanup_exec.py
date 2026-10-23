@@ -520,6 +520,15 @@ class CleanupRunner:
         try:
             await self._run_plan(plan, object_ids, user_id)
             await self._verify(plan)
+            self.scanner.activity.record(
+                "plan",
+                str(plan.get("status") or "executed"),
+                _now(),
+                key=plan.get("plan_id"),
+                by=user_id,
+                source="plan",
+                undo={"type": "plan", "key": str(plan.get("plan_id"))},
+            )
             if self._deleted_from_recorder(plan):
                 # In the background, like the check on the Recorder page: a damage the run caused
                 # or ran into shows up as a finding and a repair hint, not at the next plan.
@@ -2088,7 +2097,9 @@ class CleanupRunner:
         except WriteBusy as busy:
             raise CleanupError("busy") from busy
         try:
-            return await self._undo(plan_id, object_ids)
+            result = await self._undo(plan_id, object_ids)
+            self.scanner.activity.record("plan", "undo", _now(), key=plan_id, source="plan")
+            return result
         finally:
             release_write(self.hass, "undo")
 

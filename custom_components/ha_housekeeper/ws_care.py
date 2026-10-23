@@ -436,6 +436,14 @@ def websocket_battery_replaced(
                 msg["note"],
                 now,
             )
+            scanner.activity.record(
+                "note",
+                "save",
+                now,
+                key=f"entity:{msg['entity_id']}",
+                name=f"Battery replaced: {name}"[:80],
+                by=connection.user.id if connection.user else None,
+            )
             updated = scanner.reminders.done_matching(
                 [name, msg["entity_id"].split(".", 1)[1].replace("_", " ")],
                 msg["day"],
@@ -484,6 +492,7 @@ def websocket_note_set(
 ) -> None:
     """Save or delete an entry of the logbook. Only Housekeeper's own list changes."""
     try:
+        user = connection.user.id if connection.user else None
         if msg["action"] == "save":
             scanner.notes.upsert(
                 msg.get("note_id"),
@@ -495,8 +504,17 @@ def websocket_note_set(
                 msg.get("source"),
                 msg["ref"],
             )
+            scanner.activity.record(
+                "note",
+                "save",
+                datetime.now(UTC),
+                key=msg["target"] or None,
+                name=msg.get("title"),
+                by=user,
+            )
         else:
             scanner.notes.delete(msg.get("note_id", ""))
+            scanner.activity.record("note", "delete", datetime.now(UTC), by=user)
     except NoteError as err:
         connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
         return
@@ -609,6 +627,7 @@ async def websocket_lifecycle(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/mark_set",
+        vol.Optional("source"): vol.In(("cleanup", "list")),
         vol.Required("object_type"): vol.In(MARK_TYPES),
         vol.Required("object_id"): str,
         vol.Required("kind"): vol.In(MARK_KINDS),
@@ -650,6 +669,7 @@ def websocket_mark_set(
         by=connection.user.id if connection.user else None,
         window=msg.get("window"),
         grace=msg["grace_minutes"],
+        source=msg.get("source"),
     )
     if error:
         connection.send_error(msg["id"], error, f"Mark not set: {error}")
@@ -903,6 +923,7 @@ def websocket_exceptions_set(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/mark_clear",
+        vol.Optional("source"): vol.In(("cleanup", "list")),
         vol.Required("object_type"): vol.In(MARK_TYPES),
         vol.Required("object_id"): str,
     }
@@ -916,7 +937,12 @@ def websocket_mark_clear(
     scanner: InventoryScanner,
 ) -> None:
     """Take a mark away again."""
-    scanner.clear_mark(msg["object_type"], msg["object_id"])
+    scanner.clear_mark(
+        msg["object_type"],
+        msg["object_id"],
+        by=connection.user.id if connection.user else None,
+        source=msg.get("source"),
+    )
     connection.send_result(msg["id"], {"marked": False})
 
 

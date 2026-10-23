@@ -44,6 +44,7 @@ def scanner_with(hass: HomeAssistant, count: int = 600) -> SimpleNamespace:
     return SimpleNamespace(
         snapshot=snapshot,
         mcp=McpStore(hass),
+        activity=SimpleNamespace(record=lambda *args, **kwargs: None),
         version="1",
         warming_up=False,
         status={"running": False},

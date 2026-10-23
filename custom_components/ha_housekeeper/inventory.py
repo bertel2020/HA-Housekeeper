@@ -1955,8 +1955,17 @@ class InventoryScanner:
         if not lifted:
             return causes
         registry = er.async_get(self.hass)
+        now = datetime.now(UTC)
         for key in lifted:
             self._mark_ignored(held[key], registry)
+            self.activity.record(
+                "auto",
+                "lifted",
+                now,
+                key=key,
+                name=held[key].get("title") or held[key].get("object_id"),
+                source="system",
+            )
         return apply_causes(objects, edges, findings)
 
     def _apply_exception(self, finding: dict[str, Any]) -> None:
@@ -2059,6 +2068,7 @@ class InventoryScanner:
         days: int | None = None,
         by: str | None = None,
         via: str | None = None,
+        source: str | None = None,
     ) -> bool:
         """Hide or show one finding in the stored state and the cached snapshot.
 
@@ -2092,13 +2102,43 @@ class InventoryScanner:
             self.ignored.entry(key) is not None
             and not any(f["key"] == key for f in (self._snapshot or {}).get("findings", []))
         ):
-            return store()
+            if not store():
+                return False
+            self._record_decision(key, ignored, kind, reason, days, now, by, via or source, finding)
+            return True
         if finding is None:
             return False
         if not store():
             return False
+        self._record_decision(key, ignored, kind, reason, days, now, by, via or source, finding)
         self._refresh_finding(finding)
         return True
+
+    def _record_decision(
+        self,
+        key: str,
+        ignored: bool,
+        kind: str,
+        reason: str,
+        days: int | None,
+        now: datetime,
+        by: str | None,
+        source: str | None,
+        finding: dict[str, Any] | None,
+    ) -> None:
+        """Write a decision on a finding (or taking it back) into the activity."""
+        self.activity.record(
+            "decision",
+            kind if ignored else "unignore",
+            now,
+            key=key,
+            name=(finding or {}).get("title") or (finding or {}).get("object_id"),
+            reason=reason or None,
+            until=(now + timedelta(days=days)).isoformat() if ignored and days else None,
+            by=by,
+            source=source,
+            undo={"type": "ignore", "key": key} if ignored else None,
+        )
 
     def _followers_of(self, key: str) -> int:
         """How many follow-ups hang on the finding right now; 0 for something that is no cause."""
@@ -2117,6 +2157,7 @@ class InventoryScanner:
     def restore_decision(self, key: str, entry: dict[str, Any] | None) -> None:
         """Put the decision about a finding back as it was (``None``: there was none)."""
         self.ignored.restore(key, entry)
+        self.activity.record("decision", "undo", datetime.now(UTC), key=key)
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
         )
@@ -2137,7 +2178,9 @@ class InventoryScanner:
         self._sync_issues(self._snapshot)
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
 
-    def snooze_many(self, keys: list[str], days: int, reason: str, by: str | None) -> int:
+    def snooze_many(
+        self, keys: list[str], days: int, reason: str, by: str | None, source: str | None = None
+    ) -> int:
         """Put several findings off together, with one recount at the end; how many were put off."""
         now = datetime.now(UTC)
         found = {f["key"]: f for f in (self._snapshot or {}).get("findings", [])}
@@ -2157,6 +2200,7 @@ class InventoryScanner:
             ):
                 continue
             self._mark_ignored(finding, registry)
+            self._record_decision(key, True, "snooze", reason, days, now, by, source, finding)
             done += 1
         if done:
             self._after_decisions()
@@ -2175,6 +2219,7 @@ class InventoryScanner:
         window: dict[str, str] | None = None,
         grace: int = GRACE_DEFAULT,
         via: str | None = None,
+        source: str | None = None,
     ) -> str | None:
         """Mark an entity, device, integration or app; the reason it failed, or None."""
         if kind not in KINDS_OF.get(object_type, KINDS):
@@ -2202,12 +2247,27 @@ class InventoryScanner:
             via=via,
         ):
             return "too_many"
+        self.activity.record(
+            "mark",
+            kind,
+            now,
+            key=mark_key(object_type, object_id),
+            name=target,
+            reason=reason or None,
+            until=until.isoformat() if until else None,
+            by=by,
+            source=via or source,
+            undo={"type": "mark", "key": mark_key(object_type, object_id)},
+        )
         self._refresh_marks()
         return None
 
     def restore_mark(self, object_type: str, object_id: str, entry: dict[str, Any] | None) -> None:
         """Put the mark of an object back as it was (``None``: there was none)."""
         self.marks.restore(mark_key(object_type, object_id), entry)
+        self.activity.record(
+            "mark", "undo", datetime.now(UTC), key=mark_key(object_type, object_id)
+        )
         self._refresh_marks()
 
     async def set_stale_limit(self, entity_id: str, hours: int | None) -> str | None:
@@ -2224,10 +2284,25 @@ class InventoryScanner:
         await self.async_scan()
         return None
 
-    def clear_mark(self, object_type: str, object_id: str) -> bool:
+    def clear_mark(
+        self,
+        object_type: str,
+        object_id: str,
+        by: str | None = None,
+        via: str | None = None,
+        source: str | None = None,
+    ) -> bool:
         """Take a mark away again."""
         if not self.marks.clear(mark_key(object_type, object_id)):
             return False
+        self.activity.record(
+            "mark",
+            "clear",
+            datetime.now(UTC),
+            key=mark_key(object_type, object_id),
+            by=by,
+            source=via or source,
+        )
         self._refresh_marks()
         return True
 
