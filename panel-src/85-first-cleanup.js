@@ -357,7 +357,7 @@ class FirstCleanupMixin {
     const prevBtn = this.fcPrevButton(n);
     if (!queue.length) {
       const rest = this.stageCount(n);
-      return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div><div class="pad mbtns">${prevBtn}${rest ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}` : ""}</div></section>`;
+      return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div><div class="pad fcmore">${prevBtn}${rest ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}` : ""}</div></section>`;
     }
     const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
@@ -411,8 +411,8 @@ class FirstCleanupMixin {
   // Stage 2: one suggestion at a time; the mark is set from the card.
   fcOftenStep(count) {
     const all = this.oftenSuggestions?.() || [], items = this.fcOftenQueue();
-    if (!all.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div><div class="pad mbtns">${this.fcPrevButton(2)}</div></section>`;
-    if (!items.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcCardsLeft", { n: this.formatNumber(all.length) })}</div><div class="pad mbtns">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></section>`;
+    if (!all.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div><div class="pad fcmore">${this.fcPrevButton(2)}</div></section>`;
+    if (!items.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcCardsLeft", { n: this.formatNumber(all.length) })}</div><div class="pad fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></section>`;
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const takeAll = all.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(all.length) })}</button>` : "";
     const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
