@@ -1,7 +1,6 @@
 // FirstCleanupMixin: the cleanup ("Aufräumen") as five stages through the open findings. The backend cuts
 // the stages and keeps the record for the whole house; every stage opens the normal list with a filter (or the cleanup
 // round, or the card of suggestions for marks). Only the last stage writes: it puts the quiet rest off together.
-const FC_LOG_KEY = "ha_housekeeper.firstcleanup";
 
 class FirstCleanupMixin {
   ensureFirstCleanup() {
@@ -122,7 +121,7 @@ class FirstCleanupMixin {
   fcReset() {
     this.confirmAsk(this.t("fcResetAsk"), async () => {
       await this.firstCleanupSet({ action: "reset" });
-      this.fcLog = []; this.fcLogSave(); this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
       this.fcWizSet(0);
       this.render();
     }, { title: this.t("fcResetTitle"), yes: this.t("fcResetYes"), danger: true });
@@ -155,18 +154,26 @@ class FirstCleanupMixin {
     return `<section class="panel fcpanel${this.fcAnim("welcome")}"><div class="pad"><p>${this.t("fcIntro")}</p><ol class="fcstagegrid">${stages}</ol>${time}<div class="mbtns"><button type="button" class="btn primary fcbig" data-fc-begin><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcBegin")}</button></div></div></section>`;
   }
 
-  // What was done in the tour, one line per stage; kept in the browser, as the backend holds only the stages.
+  // What was done in the tour, one line per decision. The history is kept on the server with the rest of the tour, so it
+  // is the same in every browser and every decision can be undone from there; the copy here is the one just shown.
   fcLogGet() {
-    if (!this.fcLog) { try { this.fcLog = JSON.parse(globalThis.localStorage?.getItem(FC_LOG_KEY) || "[]"); } catch (_) { this.fcLog = []; } }
-    this.fcLog.forEach((e, i) => { e.id ||= `old${i}`; });
-    return this.fcLog;
+    const state = this.fc?.state;
+    if (!state) return (this._fcLogNone ||= []);
+    return (state.log ||= []);
   }
 
-  fcLogSave() { try { globalThis.localStorage?.setItem(FC_LOG_KEY, JSON.stringify(this.fcLog || [])); } catch (_) { /* no storage */ } }
+  // Tells the server about a change of the history; its answer is the whole record, which replaces the copy here.
+  async fcLogCall(msg) {
+    try {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup_set", ...msg });
+      if (Array.isArray(reply?.state?.log)) this.fc = { ...reply, error: "" };
+    } catch (err) { this.failed(err); }
+  }
 
   fcLogAdd(entry) {
     const full = { id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, at: new Date().toISOString(), ...entry };
-    this.fcLogGet().push(full); this.fcLogSave();
+    this.fcLogGet().push(full);
+    this.fcLogCall({ action: "log_add", entry: full });
     return full;
   }
 
@@ -204,7 +211,7 @@ class FirstCleanupMixin {
         for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); }
       } else if (entry.action === "nothanks") this.fcUnskipOften(entry.key);
     } catch (err) { this.failed(err); this.render(); return; }
-    log.splice(i, 1); this.fcLogSave();
+    log.splice(i, 1); this.fcLogCall({ action: "log_remove", entry_id: id });
     if (entry.key) this.fcFocus = entry.key;
     if (this.fcToast?.id === id) this.fcToast = null;
     this.render();
@@ -331,7 +338,7 @@ class FirstCleanupMixin {
     const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
     const acts = [
-      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), true, "mdi:wrench-outline", "blue") : "",
+      obj ? this.fcAct(`data-fc-fix="${this.esc(key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue") : "",
       this.fcAct(`data-fc-keep="${this.esc(f.key)}" ${kattr}`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green"),
       this.fcAct(`data-fc-snooze="${this.esc(f.key)}" ${kattr}`, this.t("fcLater"), this.t("fcLaterHint", { days }), false, "mdi:clock-outline", "amber"),
     ].join("");
@@ -369,7 +376,7 @@ class FirstCleanupMixin {
     if (!items.length) return this.fcEmpty();
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const all = items.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(items.length) })}</button>` : "";
-    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), true, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
+    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue") + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
     return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}<div class="fcacts">${acts}</div><div class="fcmore">${all}${listBtn}</div></div></section>`;
   }
 
@@ -452,7 +459,7 @@ class FirstCleanupMixin {
   }
 
   bindFirstCleanup(root) {
-    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcLog = []; this.fcLogSave(); this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
+    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
     root.querySelectorAll("[data-fc-goto]").forEach(el => el.onclick = () => this.fcWizGo(Number(el.dataset.fcGoto), Number(el.dataset.fcGoto) >= 1 && Number(el.dataset.fcGoto) <= 5));
@@ -468,7 +475,7 @@ class FirstCleanupMixin {
       if (keys.includes(this.fcFocus)) this.fcFocus = "";
       this.render();
     });
-    root.querySelector("[data-fc-again]")?.addEventListener("click", () => { this.fcLog = this.fcLogGet().filter(e => !(e.stage === this.fcWiz.step && e.action === "skip")); this.fcLogSave(); this.render(); });
+    root.querySelector("[data-fc-again]")?.addEventListener("click", () => { const stage = this.fcWiz.step, log = this.fcLogGet(); log.splice(0, log.length, ...log.filter(e => !(e.stage === stage && e.action === "skip"))); this.fcLogCall({ action: "log_unskip", stage }); this.render(); });
     root.querySelector("[data-fc-prev]")?.addEventListener("click", () => this.fcPrev());
     root.querySelector("[data-fc-reset]")?.addEventListener("click", () => this.fcReset());
     root.querySelectorAll("[data-fc-take]").forEach(el => el.onclick = () => this.fcTake([el.dataset.fcTake]));
