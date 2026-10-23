@@ -7033,3 +7033,16 @@ test("a topic tile counts the callers of a missing target one by one, and a caus
   assert.equal(refs.follows, 0);
   assert.equal(el.topicFigures("down", el.data.findings).objects, 1, "two entities of an integration without a finding of its own: the integration is the object");
 });
+
+test("the head of a list narrowed by a topic tile names the objects of the tile first, then the findings and follow-ups", () => {
+  const { el } = panel("en");
+  const device = { id: "device_down:d", kind: "device_down", object_type: "device", object_id: "d", name: "Lamp", follower_count: 2, total_followers: 2, child_ids: [], consumers: {}, impact: "high", parent_id: null, virtual: false, finding_key: "own" };
+  const f = (key, extra = {}) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", topic: "down", impact: "medium", ignored: false, ...extra });
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d", name: "Lamp" }], causes: [device], findings: [f("own", { rule_id: "device.down", object_id: "d", cause_id: device.id }), f("x", { cause_id: device.id }), f("y", { cause_id: device.id })] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  el.findingFilter = "topic:down";
+  const html = el.findingsView();
+  assert.ok(html.includes("1 object · 3 findings, 2 of them follow-ups of outages"), "the object of the tile, then the findings");
+  el.findingFilter = "";
+  assert.ok(!el.findingsView().includes("1 object · 3 findings"), "without a tile filter the head is as before");
+});

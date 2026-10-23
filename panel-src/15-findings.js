@@ -308,7 +308,11 @@ class FindingsMixin {
     const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
     // Filtered to outages, the head counts them as the overview does (chains at their top) instead of every object below.
     const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
-    const count = outageN ? this.t(outageN === 1 ? (sorted.length === 1 ? "ogViewOutageOne" : "ogViewOutage1") : "ogViewOutages", { o: this.formatNumber(outageN), n: this.formatNumber(sorted.length) })
+    // A topic tile narrows the grouped list to the tile: the head leads with the objects the tile names (those with a
+    // finding of their own), the findings and their follow-ups next to it. Any other narrowing keeps "n of m".
+    const siteHead = grouped && /^topic:/.test(this.findingFilter) && !of && !outageN && sorted.length;
+    const sites = siteHead ? this.topicSites(sorted).size : 0, siteFollows = siteHead ? sorted.filter(f => this.isOutageFollower(f)).length : 0;
+    const count = siteHead ? `${this.t(sites === 1 ? "ogSites1" : "ogSites", { n: this.formatNumber(sites) })} · ${this.t(sorted.length === 1 ? "tileFindings1" : "tileFindings", { n: this.formatNumber(sorted.length) })}${siteFollows ? `, ${this.t("findingsOfFollow", { n: this.formatNumber(siteFollows) })}` : ""}` : outageN ? this.t(outageN === 1 ? (sorted.length === 1 ? "ogViewOutageOne" : "ogViewOutage1") : "ogViewOutages", { o: this.formatNumber(outageN), n: this.formatNumber(sorted.length) })
       : this.t(of ? (objects === 1 ? "ogViewCountOf1" : "ogViewCountOf") : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
     // Grouped, the pages count the heads at the top; an open head shows everything below it on the same page.
     const units = grouped ? nodes.map(item => { const [head, ...rows] = this.nodeRows(item).split(/(?=<tr class="finding-data)/); return { item, head, rows }; }) : null;
