@@ -30,12 +30,14 @@ class SparklineMixin {
     // classes without it had none, and a day from before the follow-ups were told apart has no such series at all.
     // "reason:<name>" reads the open findings of one tile of the findings page (all of them, the outage rules as one).
     // "group:red" and "group:tidy" add up the reasons of one group of the findings page. "topic:<name>" reads the open
-    // findings of one topic, "leadtopic:<name>" the same without follow-ups (points from before the topics lack that).
+    // findings of one topic, "leadtopic:<name>" the same without follow-ups (points from before the topics lack that). "objtopic:<name>" reads
+    // the objects with a finding of their own in one topic, "affected" every object with an open finding (older points lack both).
     const group = p => Object.entries(p.reasons).reduce((sum, [r, n]) => sum + ((this.reasonTone(r) === "red") === (key === "group:red") ? n : 0), 0);
     const read = p => key.startsWith("group:") ? (p.reasons ? group(p) : undefined)
       : key.startsWith("reason:") ? (p.reasons ? p.reasons[key.slice(7)] || 0 : undefined)
       : key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
       : key.startsWith("topic:") ? (p.topics ? p.topics[key.slice(6)] || 0 : undefined)
+      : key.startsWith("objtopic:") ? (p.lead_object_topics ? p.lead_object_topics[key.slice(9)] || 0 : undefined)
       : key.startsWith("leadtopic:") ? (p.lead_topics ? p.lead_topics[key.slice(10)] || 0 : undefined)
       : key.startsWith("lead:") ? (p.lead_classes ? p.lead_classes[key.slice(5)] || 0 : undefined) : p[key];
     const stored = (this.series?.points || []).filter(p => Number.isFinite(read(p)));

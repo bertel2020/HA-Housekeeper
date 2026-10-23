@@ -97,6 +97,52 @@ def test_a_checkpoint_counts_the_topics_and_an_old_one_is_recounted_from_its_key
     }
 
 
+def test_a_checkpoint_counts_the_objects_with_findings_and_the_sites_of_work_per_topic() -> None:
+    from custom_components.ha_housekeeper.history import make_checkpoint
+
+    snapshot = {
+        "meta": {"scanned_at": "2026-10-22T10:00:00+00:00"},
+        "objects": [
+            {"object_type": "device", "object_id": "d1", "status": "active"},
+            {
+                "object_type": "entity",
+                "object_id": "sensor.a",
+                "status": "unavailable",
+                "device_id": "d1",
+            },
+            {
+                "object_type": "entity",
+                "object_id": "sensor.b",
+                "status": "unavailable",
+                "device_id": "d1",
+            },
+        ],
+        "causes": [
+            {"id": "device_down:d1", "parent_id": None, "object_type": "device", "object_id": "d1"}
+        ],
+        "findings": [
+            {"rule_id": "device.down", "object_id": "d1", "classification": "unavailable"},
+            {
+                "rule_id": "entity.state_unavailable",
+                "object_id": "sensor.a",
+                "classification": "u",
+                "cause_id": "device_down:d1",
+            },
+            {
+                "rule_id": "entity.state_unavailable",
+                "object_id": "sensor.b",
+                "classification": "u",
+                "cause_id": "device_down:d1",
+            },
+            {"rule_id": "automation.missing_entity", "object_id": "a", "classification": "x"},
+        ],
+    }
+    point = make_checkpoint(snapshot)
+    # The entities belong to their device and a follow-up is no site of work of its own: one device, one automation.
+    assert point["affected"] == 2
+    assert point["lead_object_topics"] == {"down": 1, "broken_references": 1}
+
+
 def test_the_sensor_counts_new_findings_of_high_or_medium_impact_in_the_last_day() -> None:
     from custom_components.ha_housekeeper.sensor import compute_values
 

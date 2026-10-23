@@ -40,6 +40,24 @@ class ObjectGroupsMixin {
     return !CAUSE_OWN_RULES.includes(f.rule_id) || Boolean(this.causeById(f.cause_id)?.parent_id);
   }
 
+  // What a tile of a topic counts. The main number is the objects that are a site of work: those with a finding of their
+  // own (a follow-up is a consequence of its cause, not a second job); the findings and follow-ups stand beneath it.
+  // The same figures serve the findings page and the overview, so the two never differ.
+  topicFigures(name, open) {
+    const mine = open.filter(f => this.findingTopic(f) === name), lead = mine.filter(f => !this.isFollowUp(f));
+    const owners = list => new Set(list.map(f => this.ownerKey(f))).size;
+    const follows = mine.length - lead.length;
+    return { mine, follows, objects: lead.length ? owners(lead) : owners(mine), outages: name === "down" ? this.countedOutages().length : 0 };
+  }
+
+  // The line beneath the main number of a topic tile: what it counts, the findings, and the follow-ups that hang on them.
+  topicSub({ mine, follows, outages }, name) {
+    const n = this.formatNumber(mine.length), f = this.formatNumber(follows);
+    const found = this.t(mine.length === 1 ? "tileFindings1" : "tileFindings", { n });
+    const tail = !follows ? "" : outages && name === "down" ? this.t(outages === 1 ? "tileOutages1" : "tileOutages", { o: this.formatNumber(outages), n: f }) : this.t("findingsOfFollow", { n: f });
+    return [this.t("tileObjects"), found, tail].filter(Boolean).join(" · ");
+  }
+
   // In the flat list a finding of an entity names the device it belongs to.
   ownerNote(f) {
     const owner = this.ownerKey(f);

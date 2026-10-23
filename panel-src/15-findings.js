@@ -280,19 +280,19 @@ class FindingsMixin {
     // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
     const openAll = this.data.findings.filter(f => !f.ignored);
     const topicTile = name => {
-      const mine = openAll.filter(f => this.findingTopic(f) === name), follows = mine.filter(isFollower).length, label = this.t(`topic_${name}`);
-      if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`topic:${name}`, "bad") };
+      const figures = this.topicFigures(name, openAll), mine = figures.mine, label = this.t(`topic_${name}`);
+      if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`objtopic:${name}`, "bad") };
       const worst = mine.reduce((m, f) => Math.max(m, IMPACT_RANK[f.impact] ?? 0), 0);
-      return { label, value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "mute", bar: this.impactBar(mine), hint: this.t(`topicHint_${name}`), filter: `topic:${name}`, active: this.findingFilter === `topic:${name}`, spark: spark(`topic:${name}`, "bad") };
+      return { label, value: this.formatNumber(figures.objects), sub: this.esc(this.topicSub(figures, name)), tone: worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "mute", bar: this.impactBar(mine), hint: this.t(`topicHint_${name}`), filter: `topic:${name}`, active: this.findingFilter === `topic:${name}`, spark: spark(`objtopic:${name}`, "bad") };
     };
     const followers = openAll.filter(isFollower).length;
     const allObjects = this.countObjects(this.objectTree(openAll, openAll, true));
     // "All findings" clears the filters; it is not marked itself, only a filter that is on is.
-    const total = { label: this.t("allFindings"), value: this.formatNumber(openAll.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("open", "bad") };
+    const total = { label: this.t("allObjectsTile"), value: this.formatNumber(allObjects), sub: this.esc(this.t(openAll.length === 1 ? "tileFindings1" : "tileFindings", { n: this.formatNumber(openAll.length) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("affected", "bad") };
     const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
     // "All findings" stands left of the topics; the follow-ups are named inside it. The whole tile clears the filters,
     // the link to the follow-ups lies above that.
-    const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(this.t("allFindings"))}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
+    const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(total.label)}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
     // One grid: "All" on the left, the four topics beside it, every tile of the same width and height.
     const tiles = `<div class="findsum topics" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${TOPIC_ORDER.length}">${totalTile}<div class="sumrow" style="--r:1">${this.sumTileCells(TOPIC_ORDER.map(topicTile))}</div></div>`;
     const fixedView = this.findingStatus === "fixed";

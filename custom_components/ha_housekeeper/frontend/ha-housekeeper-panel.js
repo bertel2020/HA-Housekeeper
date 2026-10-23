@@ -2651,10 +2651,11 @@ class OverviewMixin {
     // The four topics of the findings page, with the follow-ups of a cause counted in; a click opens the list of that topic.
     const open = (this.data.findings || []).filter(f => !f.ignored);
     const topicKpi = name => {
-      const mine = open.filter(f => this.findingTopic(f) === name), follows = mine.filter(f => this.isFollowUp(f)).length;
+      const figures = this.topicFigures(name, open), mine = figures.mine;
       const worst = mine.reduce((m, f) => Math.max(m, IMPACT_RANK[f.impact] ?? 0), 0);
-      return [`topic_${name}`, mine.length, worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "", "findingsNav", "", `topic:${name}`, "bad", follows ? this.t("findingsOfFollow", { n: this.formatNumber(follows) }) : "", `topic:${name}`, mine.length ? this.impactBar(mine) : ""];
+      return [`topic_${name}`, figures.objects, worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "", "findingsNav", "", `objtopic:${name}`, "bad", mine.length ? this.topicSub(figures, name) : "", `topic:${name}`, mine.length ? this.impactBar(mine) : ""];
     };
+    const openObjects = this.countObjects(this.objectTree(open, open, true));
     const due = open.filter(f => f.resurfaced).length;
     const fresh = this.visitSets().all.size;
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter, bar]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small class="kpilabel">${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small class="kpisub">${this.esc(extra)}</small>` : ""}${bar || ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
@@ -2662,7 +2663,7 @@ class OverviewMixin {
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ...TOPIC_ORDER.map(topicKpi)].map(kpi).join("")}</div>${fresh || due ? `<p class="kpiline">${[fresh ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="new">${this.esc(this.t("overviewNew", { n: this.formatNumber(fresh) }))}</button>` : "", due ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="due">${this.esc(this.t("overviewDue", { n: this.formatNumber(due) }))}</button>` : ""].filter(Boolean).join(" · ")}</p>` : ""}</section>${why}${this.watchBand()}
+      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openObjects", openObjects, "", "findingsNav", "", "affected", "bad", [this.t(open.length === 1 ? "tileFindings1" : "tileFindings", { n: this.formatNumber(open.length) }), quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""].filter(Boolean).join(" · ")], ...TOPIC_ORDER.map(topicKpi)].map(kpi).join("")}</div>${fresh || due ? `<p class="kpiline">${[fresh ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="new">${this.esc(this.t("overviewNew", { n: this.formatNumber(fresh) }))}</button>` : "", due ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="due">${this.esc(this.t("overviewDue", { n: this.formatNumber(due) }))}</button>` : ""].filter(Boolean).join(" · ")}</p>` : ""}</section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }
@@ -3075,19 +3076,19 @@ class FindingsMixin {
     // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
     const openAll = this.data.findings.filter(f => !f.ignored);
     const topicTile = name => {
-      const mine = openAll.filter(f => this.findingTopic(f) === name), follows = mine.filter(isFollower).length, label = this.t(`topic_${name}`);
-      if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`topic:${name}`, "bad") };
+      const figures = this.topicFigures(name, openAll), mine = figures.mine, label = this.t(`topic_${name}`);
+      if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`objtopic:${name}`, "bad") };
       const worst = mine.reduce((m, f) => Math.max(m, IMPACT_RANK[f.impact] ?? 0), 0);
-      return { label, value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "mute", bar: this.impactBar(mine), hint: this.t(`topicHint_${name}`), filter: `topic:${name}`, active: this.findingFilter === `topic:${name}`, spark: spark(`topic:${name}`, "bad") };
+      return { label, value: this.formatNumber(figures.objects), sub: this.esc(this.topicSub(figures, name)), tone: worst >= IMPACT_RANK.high ? "red" : worst >= IMPACT_RANK.medium ? "warn" : "mute", bar: this.impactBar(mine), hint: this.t(`topicHint_${name}`), filter: `topic:${name}`, active: this.findingFilter === `topic:${name}`, spark: spark(`objtopic:${name}`, "bad") };
     };
     const followers = openAll.filter(isFollower).length;
     const allObjects = this.countObjects(this.objectTree(openAll, openAll, true));
     // "All findings" clears the filters; it is not marked itself, only a filter that is on is.
-    const total = { label: this.t("allFindings"), value: this.formatNumber(openAll.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("open", "bad") };
+    const total = { label: this.t("allObjectsTile"), value: this.formatNumber(allObjects), sub: this.esc(this.t(openAll.length === 1 ? "tileFindings1" : "tileFindings", { n: this.formatNumber(openAll.length) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("affected", "bad") };
     const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
     // "All findings" stands left of the topics; the follow-ups are named inside it. The whole tile clears the filters,
     // the link to the follow-ups lies above that.
-    const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(this.t("allFindings"))}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
+    const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(total.label)}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
     // One grid: "All" on the left, the four topics beside it, every tile of the same width and height.
     const tiles = `<div class="findsum topics" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${TOPIC_ORDER.length}">${totalTile}<div class="sumrow" style="--r:1">${this.sumTileCells(TOPIC_ORDER.map(topicTile))}</div></div>`;
     const fixedView = this.findingStatus === "fixed";
@@ -3348,7 +3349,7 @@ Object.assign(TEXT.de, {
   viewCount: "{n} in dieser Ansicht", foldAll: "Alle aufklappen", foldNone: "Alle zuklappen", foldGroupOpen: "Unterobjekte von {name} aufklappen", foldGroupClose: "Unterobjekte von {name} zuklappen",
   openEntity: "Entität öffnen", helpOpen: "Was die Zahlen auf dieser Seite bedeuten", helpClose: "Schließen", helpTitle: "Was du hier siehst",
   helpFindingT: "Befund", helpFinding: "Etwas ist jetzt auffällig, zum Beispiel ein ausgefallenes Gerät, ein Duplikat oder eine fehlende Referenz. Jedes Objekt zählt je Regel einmal.",
-  helpFollowupsT: "Folgen", helpFollowups: "Fällt ein Gerät aus, ziehen seine Entitäten nach. Sie hängen als Folgen an der Ursache und zählen nicht als eigene Befunde.",
+  helpFollowupsT: "Folgen", helpFollowups: "Fällt ein Gerät aus, ziehen seine Entitäten nach. Sie hängen als Folgen an der Ursache und zählen nicht als eigene Befunde. Die Kacheln zählen deshalb Objekte, nicht Befunde; ein Objekt kann in mehreren Themen vorkommen.",
   helpWatchT: "Beobachtung nach System-Update", helpWatch: "Nach einem Update von Home Assistant, Betriebssystem oder Supervisor scannt Housekeeper einige Stunden zusätzlich und vergleicht mit dem Stand davor. So siehst du, was seitdem nicht mehr läuft.",
   helpTogetherT: "Zeitlich zusammen", helpTogether: "Befunde, die zur selben Zeit begannen wie ein Update oder ein Neustart. Das ist ein Zusammenhang in der Zeit, keine Ursache.",
   helpNAllT: "Alle Befunde", helpNAll: "Befunde ohne ihre Folgen; eine Ursache mit Folgen zählt einmal. Die Kacheln darunter zählen dasselbe, nach Grund aufgeteilt, mit den Folgen klein dabei.",
@@ -3368,7 +3369,7 @@ Object.assign(TEXT.en, {
   viewCount: "{n} in this view", foldAll: "Open all", foldNone: "Close all", foldGroupOpen: "Expand items under {name}", foldGroupClose: "Collapse items under {name}",
   openEntity: "Open entity", helpOpen: "What the numbers on this page mean", helpClose: "Close", helpTitle: "What you see here",
   helpFindingT: "Finding", helpFinding: "Something is conspicuous right now, for example a failed device, a duplicate or a missing reference. Each object counts once per rule.",
-  helpFollowupsT: "Follow-ups", helpFollowups: "When a device fails, its entities follow. They hang on the cause as follow-ups and do not count as findings of their own.",
+  helpFollowupsT: "Follow-ups", helpFollowups: "When a device fails, its entities follow. They hang on the cause as follow-ups and do not count as findings of their own. The tiles therefore count objects, not findings; an object can be in several topics.",
   helpWatchT: "Watch after a system update", helpWatch: "After an update of Home Assistant, the operating system or the Supervisor, Housekeeper scans a few extra hours and compares with the state before. It shows what has stopped working since.",
   helpTogetherT: "At the same time", helpTogether: "Findings that began at the same time as an update or a restart. This is a link in time, not a cause.",
   helpNAllT: "All findings", helpNAll: "Findings without their follow-ups; a cause with follow-ups counts once. The tiles below count the same, split by reason, with the follow-ups small beside them.",
@@ -9290,6 +9291,7 @@ class OftenMixin {
 // Texts for the impact of a finding (see impact.py); merged into TEXT.
 Object.assign(TEXT.de, {
   levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel, dringend ist ein Ausfall ab hoch; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
+  tileFindings: "{n} Befunde", tileFindings1: "1 Befund", tileObjects: "Objekte", tileOutages: "{o} Ausfälle mit {n} Folgen", tileOutages1: "1 Ausfall mit {n} Folgen", allObjectsTile: "Objekte mit Befunden", openObjects: "Objekte mit Befunden",
   openFindingsQuiet: "davon {n} Info/niedrig", whyOpenLevel: "Befunde dieser Stufe anzeigen",
   sortImpact: "Schweregrad", allSeverities: "Alle Schweregrade", chip_none: "Keine", viewsClear: "Keine Ansicht", impact_high: "Hohe Auswirkung", impact_medium: "Mittlere Auswirkung", impact_low: "Geringe Auswirkung", impact_info: "Info", outageFor: "seit {span}", outageNext: "{level} in {span}", unitMin: "Min.", unitHour: "Std.", unitDay: "Tagen", chip_outage: "Ausfall", reasonProblem: "Automation gestört", allObjectTypes: "Alle Objektarten", followersFilter: "Folgen von Ausfällen", filterRemove: "Filter {name} entfernen", filterResetAll: "Alle Filter zurücksetzen", findingsOnObjects: "an {m} Objekten", findingsOnObjects1: "an 1 Objekt", hintsLabel: "Nächste Schritte", hintOften: "{n} Vorschläge für Vermerke", hintCorr: "{n} Vorfälle nach Updates", allReasons: "Alle Gründe", chip_high: "Hoch", chip_medium: "Mittel", chip_low: "Niedrig", chip_info: "Info", rowMenu: "Aktionen für diese Zeile", impact_none: "Keine Auswirkung",
   impactFact_outage_age: "Dauer des Ausfalls", impactFact_critical: "kritisch: {why}", impactFact_target_critical: "fehlendes Ziel {id} ist kritisch", impactFact_controls_critical: "steuert {n} kritische Objekte", impactFact_used_by_active: "von {n} aktiven Automationen oder Skripten genutzt", impactFact_on_dashboards: "auf {n} Dashboards", impactFact_many_dependents: "{n} Abhängige", impactFact_runs_active: "läuft aktiv", impactFact_runs_inactive: "ist deaktiviert",
@@ -9298,6 +9300,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on and calls an outage urgent from high on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
+  tileFindings: "{n} findings", tileFindings1: "1 finding", tileObjects: "objects", tileOutages: "{o} outages with {n} follow-ups", tileOutages1: "1 outage with {n} follow-ups", allObjectsTile: "Objects with findings", openObjects: "Objects with findings",
   openFindingsQuiet: "{n} of them info/low", whyOpenLevel: "Show the findings of this level",
   sortImpact: "Severity", allSeverities: "All severities", chip_none: "None", viewsClear: "No view", impact_high: "High impact", impact_medium: "Medium impact", impact_low: "Low impact", impact_info: "Info", outageFor: "for {span}", outageNext: "{level} in {span}", unitMin: "min", unitHour: "h", unitDay: "days", chip_outage: "Outage", reasonProblem: "Automation impaired", allObjectTypes: "All object types", followersFilter: "Follow-ups of outages", filterRemove: "Remove filter {name}", filterResetAll: "Reset all filters", findingsOnObjects: "on {m} objects", findingsOnObjects1: "on 1 object", hintsLabel: "Next steps", hintOften: "{n} suggestions for marks", hintCorr: "{n} incidents after updates", allReasons: "All reasons", chip_high: "High", chip_medium: "Medium", chip_low: "Low", chip_info: "Info", rowMenu: "Actions for this row", impact_none: "No impact",
   impactFact_outage_age: "length of the outage", impactFact_critical: "critical: {why}", impactFact_target_critical: "the missing target {id} is critical", impactFact_controls_critical: "controls {n} critical objects", impactFact_used_by_active: "used by {n} active automations or scripts", impactFact_on_dashboards: "on {n} dashboards", impactFact_many_dependents: "{n} dependents", impactFact_runs_active: "runs actively", impactFact_runs_inactive: "is disabled",
@@ -14804,12 +14807,14 @@ class SparklineMixin {
     // classes without it had none, and a day from before the follow-ups were told apart has no such series at all.
     // "reason:<name>" reads the open findings of one tile of the findings page (all of them, the outage rules as one).
     // "group:red" and "group:tidy" add up the reasons of one group of the findings page. "topic:<name>" reads the open
-    // findings of one topic, "leadtopic:<name>" the same without follow-ups (points from before the topics lack that).
+    // findings of one topic, "leadtopic:<name>" the same without follow-ups (points from before the topics lack that). "objtopic:<name>" reads
+    // the objects with a finding of their own in one topic, "affected" every object with an open finding (older points lack both).
     const group = p => Object.entries(p.reasons).reduce((sum, [r, n]) => sum + ((this.reasonTone(r) === "red") === (key === "group:red") ? n : 0), 0);
     const read = p => key.startsWith("group:") ? (p.reasons ? group(p) : undefined)
       : key.startsWith("reason:") ? (p.reasons ? p.reasons[key.slice(7)] || 0 : undefined)
       : key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
       : key.startsWith("topic:") ? (p.topics ? p.topics[key.slice(6)] || 0 : undefined)
+      : key.startsWith("objtopic:") ? (p.lead_object_topics ? p.lead_object_topics[key.slice(9)] || 0 : undefined)
       : key.startsWith("leadtopic:") ? (p.lead_topics ? p.lead_topics[key.slice(10)] || 0 : undefined)
       : key.startsWith("lead:") ? (p.lead_classes ? p.lead_classes[key.slice(5)] || 0 : undefined) : p[key];
     const stored = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
@@ -17870,6 +17875,24 @@ class ObjectGroupsMixin {
   isFollowUp(f) {
     if (!f.cause_id) return false;
     return !CAUSE_OWN_RULES.includes(f.rule_id) || Boolean(this.causeById(f.cause_id)?.parent_id);
+  }
+
+  // What a tile of a topic counts. The main number is the objects that are a site of work: those with a finding of their
+  // own (a follow-up is a consequence of its cause, not a second job); the findings and follow-ups stand beneath it.
+  // The same figures serve the findings page and the overview, so the two never differ.
+  topicFigures(name, open) {
+    const mine = open.filter(f => this.findingTopic(f) === name), lead = mine.filter(f => !this.isFollowUp(f));
+    const owners = list => new Set(list.map(f => this.ownerKey(f))).size;
+    const follows = mine.length - lead.length;
+    return { mine, follows, objects: lead.length ? owners(lead) : owners(mine), outages: name === "down" ? this.countedOutages().length : 0 };
+  }
+
+  // The line beneath the main number of a topic tile: what it counts, the findings, and the follow-ups that hang on them.
+  topicSub({ mine, follows, outages }, name) {
+    const n = this.formatNumber(mine.length), f = this.formatNumber(follows);
+    const found = this.t(mine.length === 1 ? "tileFindings1" : "tileFindings", { n });
+    const tail = !follows ? "" : outages && name === "down" ? this.t(outages === 1 ? "tileOutages1" : "tileOutages", { o: this.formatNumber(outages), n: f }) : this.t("findingsOfFollow", { n: f });
+    return [this.t("tileObjects"), found, tail].filter(Boolean).join(" · ");
   }
 
   // In the flat list a finding of an entity names the device it belongs to.

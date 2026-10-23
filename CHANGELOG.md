@@ -6,6 +6,7 @@
 
 - **Themen statt Klassen:** Jeder Befund gehört zu einem von vier Themen: Ausgefallen, Kaputte Verweise, Fehlerhafte Automationen, Überflüssig. Die Wirkung (Hoch bis Info) sagt, wie dringend es ist.
   - Themenkacheln mit Wirkungsbalken, eine Spalte und ein Filter „Thema“.
+  - Die Kacheln auf Befunde-Seite und Übersicht zählen Objekte statt Befunde: „Objekte mit Befunden“, je Thema die Objekte mit eigenem Befund (Folgen sind keine zweite Aufgabe); die Befunde und Ausfälle stehen darunter, die Kurven zählen mit.
   - Ein fehlendes Ziel ist ab dem ersten Verweis eine Ursache, die verweisenden Automationen sind die Folgen.
   - Automationen und Skripte mit wiederholten Fehlern sind jetzt eigene Befunde.
   - Die Spalte „Sicherheit“ heißt „Gewissheit“, mit vier Stufen und einer Begründung im Tooltip.
@@ -42,6 +43,7 @@
 
 - **Topics instead of classes:** Every finding belongs to one of four topics: Down, Broken references, Failing automations, Unneeded. The impact (High to Info) says how urgent it is.
   - Topic tiles with an impact bar, a column and a filter “Topic”.
+  - The tiles on the findings page and the overview count objects instead of findings: “Objects with findings”, per topic the objects with a finding of their own (a follow-up is no second job); the findings and outages stand beneath, and the curves count along.
   - A missing target is a cause from the first reference on; the automations that refer to it are the follow-ups.
   - Automations and scripts with repeated failures are now findings of their own.
   - The column “Certainty” (German “Sicherheit”, now “Gewissheit”) shows four levels and a reason in the tooltip.

@@ -118,6 +118,22 @@ def _is_follower(finding: dict[str, Any]) -> bool:
     return bool(finding.get("cause_id")) and finding.get("rule_id") not in CAUSE_OWN_RULES
 
 
+def _is_follow_up(finding: dict[str, Any], parents: dict[str, Any]) -> bool:
+    """A follow-up as the panel counts it: below a cause, or the own finding of a cause that hangs below another."""
+    cause_id = finding.get("cause_id")
+    if not cause_id:
+        return False
+    return finding.get("rule_id") not in CAUSE_OWN_RULES or bool(parents.get(cause_id))
+
+
+def _owner(finding: dict[str, Any], devices: set[str], entity_device: dict[str, str]) -> str:
+    """The object a finding belongs to in the grouped list: an entity with a device belongs to the device."""
+    kind = str(finding.get("rule_id") or "").split(".")[0]
+    object_id = str(finding.get("object_id") or "")
+    device = entity_device.get(object_id) if kind == "entity" else None
+    return f"device:{device}" if device and device in devices else f"{kind}:{object_id}"
+
+
 def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
     """Reduce a snapshot to what a later comparison needs."""
     objects: dict[str, dict[str, str]] = {}
@@ -152,6 +168,26 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
         topics[name] = topics.get(name, 0) + 1
         if not _is_follower(finding):
             lead_topics[name] = lead_topics.get(name, 0) + 1
+    # The tiles count objects: every object with an open finding, and per topic the objects with a finding of their own
+    # (a follow-up is a consequence, not a site of work), so a curve changes only when a house really gets better or worse.
+    devices = {i["object_id"] for i in snapshot["objects"] if i["object_type"] == "device"}
+    entity_device = {
+        i["object_id"]: i["device_id"]
+        for i in snapshot["objects"]
+        if i["object_type"] == "entity" and i.get("device_id")
+    }
+    parents = {c.get("id"): c.get("parent_id") for c in snapshot.get("causes", [])}
+    affected: set[str] = set()
+    lead_sites: dict[str, set[str]] = {}
+    all_sites: dict[str, set[str]] = {}
+    for finding in open_findings:
+        owner = _owner(finding, devices, entity_device)
+        name = str(finding.get("topic") or topic_of(finding["rule_id"]))
+        affected.add(owner)
+        all_sites.setdefault(name, set()).add(owner)
+        if not _is_follow_up(finding, parents):
+            lead_sites.setdefault(name, set()).add(owner)
+    lead_object_topics = {name: len(lead_sites.get(name) or all_sites[name]) for name in all_sites}
     health_base, health_load = _health(snapshot)
     return {
         "at": snapshot["meta"]["scanned_at"],
@@ -166,6 +202,8 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
         "reasons": reasons,
         "topics": topics,
         "lead_topics": lead_topics,
+        "affected": len(affected),
+        "lead_object_topics": lead_object_topics,
         "health_base": health_base,
         "health_load": health_load,
         # The settings that decide whether some findings exist at all.
@@ -451,6 +489,8 @@ class ScanHistory:
                     "reasons": cp.get("reasons"),
                     "topics": cp.get("topics") or _topics_from_keys(cp),
                     "lead_topics": cp.get("lead_topics"),
+                    "affected": cp.get("affected"),
+                    "lead_object_topics": cp.get("lead_object_topics"),
                     "health": health_percent(cp.get("health_base"), cp.get("health_load")),
                     "rated": cp.get("health_base"),
                     "unavailable": sum(

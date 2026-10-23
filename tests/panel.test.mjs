@@ -3404,7 +3404,7 @@ test("a reason tile counts every finding of its reason and names the follow-ups 
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x"), f("d", "device:x")] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
   const html = el.findingsView();
-  assert.ok(html.includes("Unavailable") && /sumvalue">4<\/b><small>2 of them follow-ups/.test(html));
+  assert.ok(html.includes("Unavailable") && /sumvalue">2<\/b><small>objects · 4 findings · 2 of them follow-ups/.test(html));
 });
 
 test("the button for findings after an update counts every finding and names the follow-ups among them", () => {
@@ -4958,7 +4958,7 @@ test("the certainty tooltip names the level, the adjustments and that it is an e
 
 test("the topic tiles carry a sparkline for the total and each topic, the status line of the overview the one for the score", () => {
   const { el } = panel("en");
-  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused }, reasons: { unused }, topics: { unneeded: unused }, lead_topics: { unneeded: unused } });
+  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused }, reasons: { unused }, topics: { unneeded: unused }, lead_topics: { unneeded: unused }, affected: open, lead_object_topics: { unneeded: unused } });
   el.series = { points: [day(1, 90, 4, 2), day(2, 80, 6, 3), day(3, 70, 8, 5)] };
   const html = el.findingsView();
   assert.ok((html.match(/class="spark"/g) || []).length >= 2);
@@ -4967,6 +4967,8 @@ test("the topic tiles carry a sparkline for the total and each topic, the status
   assert.ok(el.sparkline("reason:unused", "bad").includes("+3"));
   assert.ok(el.sparkline("topic:unneeded", "bad").includes("+3"), "the tiles read the open findings by topic");
   assert.ok(el.sparkline("leadtopic:unneeded", "bad").includes("+3"));
+  assert.ok(el.sparkline("objtopic:unneeded", "bad").includes("+3"), "the tiles read the objects with a finding of their own");
+  assert.ok(el.sparkline("affected", "bad").includes("+4"));
   assert.ok(el.sparkline("topic:down", "bad").includes("±0"));
   assert.ok(!html.includes(`${el.health().percent} %`), "the score is not a tile of this page any more");
   el.view = "overview"; el.render();
@@ -5738,7 +5740,7 @@ test("an integration outage is a reason of its own, with a tile and a filter of 
   assert.equal(el.findingReason(el.data.findings[0]), "outage");
   assert.equal(el.findingReason(el.data.findings[1]), "orphaned");
   const html = el.findingsView();
-  assert.ok(html.includes("Outage") && html.includes("All findings") && !html.includes("All reasons"), "the reason is set by the tiles only");
+  assert.ok(html.includes("Outage") && html.includes("Objects with findings") && !html.includes("All reasons"), "the reason is set by the tiles only");
   assert.ok(!html.includes('data-lf="findings|fresh"'), "new and in work are chips of the status row, not a filter of the list bar");
   el.findingFilter = "outage";
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
@@ -6287,7 +6289,7 @@ test("the findings page shows four topic tiles in a fixed order, each with its c
   const html = el.findingsView(), at = name => html.indexOf(`>${name}<`);
   assert.ok(at("Down") > 0 && at("Down") < at("Broken references") && at("Broken references") < at("Failing automations") && at("Failing automations") < at("Unneeded"), "from the cause to the leftovers");
   const down = html.slice(html.indexOf('data-finding-filter="topic:down"'), html.indexOf("</button>", html.indexOf('data-finding-filter="topic:down"')));
-  assert.ok(down.includes("<b class=\"sumvalue\">2</b>") && down.includes("1 of them follow-ups") && down.includes('class="ibar"') && down.includes('class="high"'), "two findings, the bar knows the levels");
+  assert.ok(down.includes("<b class=\"sumvalue\">1</b>") && down.includes("1 of them follow-ups") && down.includes('class="ibar"') && down.includes('class="high"'), "one object of its own with two findings, the bar knows the levels");
   assert.ok(html.includes('class="sumtile zero"'), "a topic without open findings is a quiet 0");
 });
 
@@ -6508,10 +6510,10 @@ test("the overview tiles count every finding and the four topics, jump to their 
   const { el, shadow } = panel("en");
   const f = (key, topic, impact, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification: "unavailable", topic, confidence: 0.9, ignored: false, impact, ...extra });
   el.data = { ...DATA, findings: [f("a", "down", "high"), f("b", "down", "low"), f("c", "unneeded", "info"), f("d", "unneeded", "info", { resurfaced: true })] };
-  el.series = { points: [{ at: "2026-10-18T00:00:00+00:00", topics: { down: 1, unneeded: 3 } }, { at: "2026-10-19T00:00:00+00:00", topics: { down: 2, unneeded: 2 } }, { at: "2026-10-20T00:00:00+00:00", topics: { down: 2, unneeded: 2 } }] };
+  el.series = { points: [{ at: "2026-10-18T00:00:00+00:00", lead_object_topics: { down: 1, unneeded: 3 } }, { at: "2026-10-19T00:00:00+00:00", lead_object_topics: { down: 2, unneeded: 2 } }, { at: "2026-10-20T00:00:00+00:00", lead_object_topics: { down: 2, unneeded: 2 } }] };
   el._seriesFor = el.data; el.view = "overview"; el.render();
   const html = shadow.innerHTML, tile = name => html.slice(html.indexOf(`data-filter="topic:${name}"`), html.indexOf("</button>", html.indexOf(`data-filter="topic:${name}"`)));
-  assert.ok(html.includes(">Findings</small><strong>4</strong>"), "Findings counts all four");
+  assert.ok(html.includes(">Objects with findings</small><strong>4</strong>"), "the objects with findings, four here");
   assert.ok(tile("down").includes("Down") && tile("down").includes("<strong>2</strong>") && tile("down").includes("+1 in 2 days") && tile("down").includes('class="ibar"'));
   assert.ok(tile("unneeded").includes("Unneeded") && tile("unneeded").includes("<strong>2</strong>") && tile("unneeded").includes("−1 in 2 days"));
   assert.ok(html.includes('data-jump-status="due"') && html.includes("1 due"), "a line leads to the findings that are due");
