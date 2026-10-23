@@ -7340,3 +7340,17 @@ test("an offline device has a tile Check with what to look at and a look now, an
   assert.ok(calls.some(c => c.type === "ha_housekeeper/fix_check" && c.finding_key === "k1"));
   assert.ok(el.fcCards(3).includes("Not fixed yet"), "the answer of the look is shown");
 });
+
+test("a device that is down and belongs to one integration offers reloading it as a plan, and the card then offers Fix", () => {
+  const { el } = panel("en");
+  el._hass = { language: "en", callWS: async () => ({}) };
+  el.render = () => {};
+  const f = { key: "k1", rule_id: "device.down", object_id: "d", classification: "unavailable", topic: "down", impact: "low", ignored: false, first_detected_at: new Date(Date.now() - 9 * 3600000).toISOString(), confidence: 0.9 };
+  const device = (ids) => ({ object_type: "device", object_id: "d", name: "Echo", config_entry_ids: ids });
+  el.data = { ...DATA, objects: [device(["e1"])], causes: [], findings: [f] };
+  const plans = el.fixItems(el.data.objects[0], "device:d").items.filter(it => it.plan).map(it => it.plan);
+  assert.equal(JSON.stringify(plans), JSON.stringify([{ kind: "reload_integration", object_id: "e1" }]));
+  assert.ok(el.fcFixable(f, "device:d"));
+  el.data = { ...DATA, objects: [device(["e1", "e2"])], causes: [], findings: [f] };
+  assert.ok(!el.fcFixable(f, "device:d"), "two integrations: no single one to reload");
+});

@@ -397,7 +397,7 @@ const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 const DONE_RESULTS = Object.fromEntries([
   ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
   ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
-  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["rename_entity", "renamed"],
+  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
 ]);
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
@@ -4128,6 +4128,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "add_label") ? "confirmedSummaryLabel"
       : executable.some(a => a.kind === "set_area") ? "confirmedSummaryArea"
       : executable.some(a => a.kind === "set_entity_state") ? "confirmedSummaryState"
+      : executable.some(a => a.kind === "reload_integration") ? "confirmedSummaryReload"
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
@@ -4489,6 +4490,7 @@ class CleanupMixin {
 
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
   undoBadge(action) {
+    if (action.kind === "reload_integration") return `<span class="pill mute"><ha-icon icon="mdi:reload" class="u-ic14"></ha-icon>${this.t("undoReload")}</span>`;
     if (action.kind === "delete_backup") return `<span class="pill mute"><ha-icon icon="mdi:delete-forever-outline" class="u-ic14"></ha-icon>${this.t("undoFinal")}</span>`;
     const backupOnly = action.kind === "migrate_meter" || PURGE_KINDS.includes(action.kind);
     return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" class="u-ic14"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
@@ -4539,7 +4541,7 @@ class CleanupMixin {
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
-      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) ? "" : this.undoAsk === a.object_id
+      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
@@ -11987,6 +11989,10 @@ class DetailActionsMixin {
       out.push({ attr: `data-act-repair="${this.esc(item.object_id)}"`, icon: "mdi:chart-line", label: this.t("actRepairValues"), hint: "actHintRepair" });
       out.push({ attr: `data-act-meter="${this.esc(item.object_id)}"`, icon: "mdi:gauge", label: this.t("actMeter"), hint: "actHintMeter" });
     }
+    // An integration that did not load, or a device that is down and belongs to one integration: loading it anew is a plan of its own.
+    const reload = item.object_type === "config_entry" ? (open.find(f => f.rule_id === "config_entry.not_loaded" && !["setup_retry", "setup_in_progress", "migration_error", "failed_unload"].includes(f.evidence?.[0]?.kind)) ? item.object_id : "")
+      : item.object_type === "device" && open.some(f => f.rule_id === "device.down") && item.config_entry_ids?.length === 1 ? item.config_entry_ids[0] : "";
+    if (reload) out.push({ attr: `data-act-reload="${this.esc(reload)}"`, icon: "mdi:reload", label: this.t("actReload"), hint: "actHintReload", finding: open.find(f => f.rule_id === "config_entry.not_loaded" || f.rule_id === "device.down")?.key, plan: { kind: "reload_integration", object_id: reload } });
     if (item.object_type === "device") out.push({ attr: `data-act-exchange="${this.esc(item.object_id)}"`, icon: "mdi:devices", label: this.t("actExchange"), hint: "actHintExchange" });
     return { items: out, broken };
   }
@@ -12120,6 +12126,7 @@ class DetailActionsMixin {
     root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
     root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = el.dataset.replNew || this.findObject(`entity:${el.dataset.actReplace}`)?.duplicate_of || ""; }));
+    root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan([{ kind: "reload_integration", object_id: el.dataset.actReload }]); } catch (err) { this.failed(err); } this.render(); });
     root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
@@ -17604,6 +17611,22 @@ class EntityStateMixin {
     this.render();
   }
 }
+
+// Loading one integration anew: from the card of an outage; a plan like any other, without a way back.
+Object.assign(TEXT.de, {
+  actReload: "Integration neu laden", actHintReload: "Lädt die Integration neu. Sie ist dabei einige Sekunden nicht erreichbar, nichts wird gelöscht.",
+  fixWay_reload: "Integration neu laden", fixWayHint_reload: "Oft kommt die Integration danach wieder von selbst auf die Beine. Housekeeper prüft nach, ob sie geladen ist und das Gerät meldet.",
+  reason_entry_missing: "Diese Integration gibt es nicht mehr.", reason_entry_disabled: "Die Integration ist deaktiviert.", reason_entry_own: "Housekeeper lädt sich nicht selbst neu.", reason_entry_no_reload: "Diese Integration lässt sich nicht neu laden. Ein Neustart von Home Assistant hilft.",
+  check_entry_loaded: "Integration ist geladen", check_entities_report: "Entitäten melden wieder Werte", result_reloaded: "Neu geladen", actKind_reload_integration: "Integration neu geladen",
+  undoReload: "nicht rückgängig, aber harmlos", confirmedSummaryReload: "Die Integration wird neu geladen und ist dabei einige Sekunden nicht erreichbar. Nichts wird gelöscht.",
+});
+Object.assign(TEXT.en, {
+  actReload: "Reload the integration", actHintReload: "Loads the integration anew. It is out of reach for a few seconds, nothing is deleted.",
+  fixWay_reload: "Reload the integration", fixWayHint_reload: "Often the integration gets back on its feet by itself. Housekeeper checks that it is loaded and the device reports.",
+  reason_entry_missing: "This integration is gone.", reason_entry_disabled: "The integration is disabled.", reason_entry_own: "Housekeeper does not reload itself.", reason_entry_no_reload: "This integration cannot be reloaded. Restarting Home Assistant helps.",
+  check_entry_loaded: "Integration is loaded", check_entities_report: "Entities report values again", result_reloaded: "Reloaded", actKind_reload_integration: "Integration reloaded",
+  undoReload: "cannot be undone, but harmless", confirmedSummaryReload: "The integration is reloaded and out of reach for a few seconds. Nothing is deleted.",
+});
 
 // Texts for the home functions page (Hausfunktionen); merged into TEXT before the panel is registered.
 Object.assign(TEXT.de, {

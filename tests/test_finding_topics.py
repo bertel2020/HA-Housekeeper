@@ -186,7 +186,8 @@ def test_the_ways_to_fix_an_outage_follow_the_state_of_the_integration() -> None
     wait = ways_for(entry("setup_retry"), snapshot)
     assert wait[0]["way"] == "wait" and wait[0]["recommended"]
     error = ways_for(entry("setup_error"), snapshot)
-    assert error[0]["way"] == "open_integration" and error[0]["path"].endswith("/hue")
+    assert error[0]["way"] == "reload" and error[0]["recommended"]
+    assert error[1]["way"] == "open_integration" and error[1]["path"].endswith("/hue")
     assert ways_for(entry("migration_error"), snapshot)[0]["way"] == "restart_or_update"
     reauth = {"rule_id": "config_entry.reauth", "object_id": "e1", "topic": "down"}
     assert ways_for(reauth, snapshot)[0]["way"] == "reauth"

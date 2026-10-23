@@ -78,3 +78,19 @@ class EntityStateMixin {
     this.render();
   }
 }
+
+// Loading one integration anew: from the card of an outage; a plan like any other, without a way back.
+Object.assign(TEXT.de, {
+  actReload: "Integration neu laden", actHintReload: "Lädt die Integration neu. Sie ist dabei einige Sekunden nicht erreichbar, nichts wird gelöscht.",
+  fixWay_reload: "Integration neu laden", fixWayHint_reload: "Oft kommt die Integration danach wieder von selbst auf die Beine. Housekeeper prüft nach, ob sie geladen ist und das Gerät meldet.",
+  reason_entry_missing: "Diese Integration gibt es nicht mehr.", reason_entry_disabled: "Die Integration ist deaktiviert.", reason_entry_own: "Housekeeper lädt sich nicht selbst neu.", reason_entry_no_reload: "Diese Integration lässt sich nicht neu laden. Ein Neustart von Home Assistant hilft.",
+  check_entry_loaded: "Integration ist geladen", check_entities_report: "Entitäten melden wieder Werte", result_reloaded: "Neu geladen", actKind_reload_integration: "Integration neu geladen",
+  undoReload: "nicht rückgängig, aber harmlos", confirmedSummaryReload: "Die Integration wird neu geladen und ist dabei einige Sekunden nicht erreichbar. Nichts wird gelöscht.",
+});
+Object.assign(TEXT.en, {
+  actReload: "Reload the integration", actHintReload: "Loads the integration anew. It is out of reach for a few seconds, nothing is deleted.",
+  fixWay_reload: "Reload the integration", fixWayHint_reload: "Often the integration gets back on its feet by itself. Housekeeper checks that it is loaded and the device reports.",
+  reason_entry_missing: "This integration is gone.", reason_entry_disabled: "The integration is disabled.", reason_entry_own: "Housekeeper does not reload itself.", reason_entry_no_reload: "This integration cannot be reloaded. Restarting Home Assistant helps.",
+  check_entry_loaded: "Integration is loaded", check_entities_report: "Entities report values again", result_reloaded: "Reloaded", actKind_reload_integration: "Integration reloaded",
+  undoReload: "cannot be undone, but harmless", confirmedSummaryReload: "The integration is reloaded and out of reach for a few seconds. Nothing is deleted.",
+});

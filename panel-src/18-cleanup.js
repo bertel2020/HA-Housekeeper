@@ -143,6 +143,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "add_label") ? "confirmedSummaryLabel"
       : executable.some(a => a.kind === "set_area") ? "confirmedSummaryArea"
       : executable.some(a => a.kind === "set_entity_state") ? "confirmedSummaryState"
+      : executable.some(a => a.kind === "reload_integration") ? "confirmedSummaryReload"
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
@@ -504,6 +505,7 @@ class CleanupMixin {
 
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
   undoBadge(action) {
+    if (action.kind === "reload_integration") return `<span class="pill mute"><ha-icon icon="mdi:reload" class="u-ic14"></ha-icon>${this.t("undoReload")}</span>`;
     if (action.kind === "delete_backup") return `<span class="pill mute"><ha-icon icon="mdi:delete-forever-outline" class="u-ic14"></ha-icon>${this.t("undoFinal")}</span>`;
     const backupOnly = action.kind === "migrate_meter" || PURGE_KINDS.includes(action.kind);
     return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" class="u-ic14"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
@@ -554,7 +556,7 @@ class CleanupMixin {
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
-      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) ? "" : this.undoAsk === a.object_id
+      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>

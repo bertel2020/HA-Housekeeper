@@ -30,6 +30,10 @@ class DetailActionsMixin {
       out.push({ attr: `data-act-repair="${this.esc(item.object_id)}"`, icon: "mdi:chart-line", label: this.t("actRepairValues"), hint: "actHintRepair" });
       out.push({ attr: `data-act-meter="${this.esc(item.object_id)}"`, icon: "mdi:gauge", label: this.t("actMeter"), hint: "actHintMeter" });
     }
+    // An integration that did not load, or a device that is down and belongs to one integration: loading it anew is a plan of its own.
+    const reload = item.object_type === "config_entry" ? (open.find(f => f.rule_id === "config_entry.not_loaded" && !["setup_retry", "setup_in_progress", "migration_error", "failed_unload"].includes(f.evidence?.[0]?.kind)) ? item.object_id : "")
+      : item.object_type === "device" && open.some(f => f.rule_id === "device.down") && item.config_entry_ids?.length === 1 ? item.config_entry_ids[0] : "";
+    if (reload) out.push({ attr: `data-act-reload="${this.esc(reload)}"`, icon: "mdi:reload", label: this.t("actReload"), hint: "actHintReload", finding: open.find(f => f.rule_id === "config_entry.not_loaded" || f.rule_id === "device.down")?.key, plan: { kind: "reload_integration", object_id: reload } });
     if (item.object_type === "device") out.push({ attr: `data-act-exchange="${this.esc(item.object_id)}"`, icon: "mdi:devices", label: this.t("actExchange"), hint: "actHintExchange" });
     return { items: out, broken };
   }
@@ -163,6 +167,7 @@ class DetailActionsMixin {
     root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
     root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = el.dataset.replNew || this.findObject(`entity:${el.dataset.actReplace}`)?.duplicate_of || ""; }));
+    root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan([{ kind: "reload_integration", object_id: el.dataset.actReload }]); } catch (err) { this.failed(err); } this.render(); });
     root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));

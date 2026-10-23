@@ -110,11 +110,10 @@ def ways_for(
             ways.append(_way("wait", "info", True))
         elif state in RESTART_STATES:
             ways.append(_way("restart_or_update", "info", True))
-        ways.append(
-            _way(
-                "open_integration", "link", state not in (*WAIT_STATES, *RESTART_STATES), path=page
-            )
-        )
+        reloadable = state not in (*WAIT_STATES, *RESTART_STATES)
+        if reloadable:
+            ways.append(_way("reload", "panel", True))
+        ways.append(_way("open_integration", "link", False, path=page))
         ways.append(_way("mark", "panel"))
     elif rule == "config_entry.reauth":
         domain = _domain(snapshot, finding["object_id"])
@@ -122,9 +121,20 @@ def ways_for(
         ways.append(_way("reauth", "link", True, path=page))
         ways.append(_way("mark", "panel"))
     elif rule == "device.down":
+        device = next(
+            (
+                i
+                for i in snapshot.get("objects", [])
+                if i["object_type"] == "device" and i["object_id"] == finding["object_id"]
+            ),
+            {},
+        )
+        single = len(device.get("config_entry_ids") or []) == 1
+        if single:
+            ways.append(_way("reload", "panel", True))
         ways.extend(
             [
-                _way("mark", "panel", True),
+                _way("mark", "panel", not single),
                 _way("exchange", "panel"),
                 _way("object_actions", "panel"),
             ]
