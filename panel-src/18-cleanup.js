@@ -934,12 +934,13 @@ class CleanupMixin {
       { id: "plans", icon: "mdi:clipboard-text-clock-outline", label: this.t("journalPlans"), hint: this.t("journalTabPlansHint"), count: plans.length, tone: "mute" },
       { id: "devices", icon: "mdi:delete-outline", label: this.t("lifeRemovedTab"), hint: this.t("journalTabDevicesHint"), count: removed.length, tone: "mute" },
       // Only older installations have these: deletions of recorder leftovers from before there were plans.
+      { id: "activity", icon: "mdi:history", label: this.t("actTab"), hint: this.t("actTabHint"), count: this.activityState?.total, tone: "mute" },
       ...(purges.length ? [{ id: "purges", icon: "mdi:database-remove-outline", label: this.t("cleanupTabPurges"), hint: this.t("journalTabPurgesHint"), count: purges.length, tone: "mute" }] : []),
     ];
     const open = this.viewTabOf("journal", tabs, "plans");
     const head = this.pageBar({ at: this.loadedAt("journal"), loading: this.journal === null, attr: "data-journal-refresh" });
     const failed = this.journalError ? `<div class="panel">${this.notice("err", this.journalError)}</div>` : "";
-    const body = this.journalError ? "" : open === "devices" ? this.removedCard() : open === "purges" ? this.purgeJournalCard() : journalCard;
+    const body = this.journalError ? "" : open === "devices" ? this.removedCard() : open === "activity" ? this.activityCard() : open === "purges" ? this.purgeJournalCard() : journalCard;
     return `<div class="stack">${this.planHeader()}${head}${this.navTiles("journal", tabs, open, this.t("journal"), true)}${failed}${body}</div>`;
   }
 

@@ -7085,3 +7085,18 @@ test("the task list of the overview counts the outages without the missing targe
   const html = shadow.innerHTML;
   assert.ok(html.includes("Missing targets") && html.includes('data-filter="topic:broken_references"'), "its own row leads to the topic");
 });
+
+test("the activity tab groups the entries by day, offers undo only where an entry carries it and asks for older ones", () => {
+  const { el, shadow } = panel("en");
+  const at = new Date().toISOString();
+  el.journal = []; el.removed = []; el.purges = [];
+  el.activityState = { items: [
+    { id: "a", at, kind: "decision", action: "snooze", key: "f1", name: "Audi", by_name: "Anna", source: "cleanup", undo: { type: "ignore", key: "f1" } },
+    { id: "b", at, kind: "auto", action: "lifted", key: "f2", name: "Lamp", backfilled: true, undo: null },
+  ], next: at, total: 2, loading: false, filter: "all", query: "" };
+  el.view = "journal"; el.viewTab = { journal: "activity" }; el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Today") && html.includes("Put on “Later”"));
+  assert.equal(html.split("data-act-undo=").length - 1, 1, "only the entry with an undo reference");
+  assert.ok(html.includes("data-act-more") && html.includes("Cleanup") && html.includes("Anna"));
+});

@@ -165,7 +165,7 @@ class OftenMixin {
       // A group is marked entity by entity: the entities of the device that keep working stay watched.
       for (const target of key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]) {
         const [object_type, ...rest] = target.split(":");
-        const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: "expected_offline", reason: this.t("oftenReason"), days: OFTEN_MARK_DAYS };
+        const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: "expected_offline", reason: this.t("oftenReason"), days: OFTEN_MARK_DAYS, source: "cleanup" };
         if (w) msg.window = { mode: "time", from: w.from, to: w.to };
         try { await this._hass.callWS(msg); } catch (err) { failed += 1; last = err; }
       }

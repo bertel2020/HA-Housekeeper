@@ -314,6 +314,7 @@ class StylesMixin {
 @keyframes fcin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fcin{animation:fcin .25s ease-out}@media(prefers-reduced-motion:reduce){.fcin{animation:none}.fcact,.fcbar i{transition:none}.fcact:hover{transform:none}}
 @media(max-width:600px){.fccard .pad{padding:18px 16px}.fctitle h3{font-size:calc(20px*var(--hk-fs,1))}}
       ${this.themeCss()}
+.acttools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.actsearch{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.actday{margin:14px 16px 4px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.actlist{list-style:none;margin:0;padding:0 16px}.actrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--hk-border)}.acttext{flex:1;min-width:0}.acttext small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.actrow time{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
     </style>`;
   }
 }

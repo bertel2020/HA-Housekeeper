@@ -218,7 +218,7 @@ class FirstCleanupMixin {
 
   async fcLift(keys) {
     for (const key of keys) {
-      try { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false }); }
+      try { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false, source: "cleanup" }); }
       catch (err) { if (err?.code !== "not_found") throw err; }
       const f = this.data.findings.find(x => x.key === key);
       if (f) { f.ignored = false; f.ignore_info = null; this._rev++; }
@@ -234,7 +234,7 @@ class FirstCleanupMixin {
       if (entry.action === "keep" || entry.action === "later") await this.fcLift(entry.keys || [entry.key]);
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") {
-        for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); } catch (err) { if (err?.code !== "not_found") throw err; } }
+        for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
       } else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
     } catch (err) { this.failed(err); this.render(); return; }
     log.splice(i, 1); this.fcLogCall({ action: "log_remove", entry_id: id });
@@ -447,7 +447,7 @@ class FirstCleanupMixin {
     const days = kind === "snooze" ? (this.fc?.later_days || 90) : this.defaultDays("keep"), reason = this.t(kind === "snooze" ? "fcLaterOneReason" : "fcKeepReason");
     try {
       for (const x of list) {
-        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: x.key, ignored: true, kind, reason, days });
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: x.key, ignored: true, kind, reason, days, source: "cleanup" });
         x.ignored = true; x.ignored_by = "user"; x.resurfaced = false;
         x.ignore_info = { kind, reason, until: new Date(Date.now() + days * 864e5).toISOString(), at: new Date().toISOString() };
         this._rev++;

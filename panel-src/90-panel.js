@@ -997,6 +997,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindFindingStatus(root);
     this.bindFix(root);
     this.bindRound(root);
+    this.bindActivity(root);
     this.bindFirstCleanup(root);
     this.bindDetailActions(root);
     // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
