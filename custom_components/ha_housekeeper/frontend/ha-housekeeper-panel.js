@@ -1103,7 +1103,7 @@ Object.assign(TEXT.en, {
 // Texts for the list of Housekeeper's own files (Settings, Info); merged into TEXT.
 const STORE_GROUPS = [
   ["history", ["observations", "history", "events", "runs", "replies", "load", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
-  ["proof", ["journal", "attest"]],
+  ["proof", ["journal", "activity", "attest"]],
   ["yours", ["ignored", "exceptions", "marks", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
 
@@ -1142,6 +1142,7 @@ Object.assign(TEXT.de, {
   store_ignored: "Entscheidungen zu Befunden", storeText_ignored: "Ausgeblendet, ist so gewollt oder später, mit Grund. Bleibt, bis du es änderst.",
   store_exceptions: "Ausnahmeregeln", storeText_exceptions: "Regeln für Bereiche und Labels, deren Objekte nicht gemeldet werden.",
   store_marks: "Markierungen", storeText_marks: "Hinweise an Objekten: absichtlich offline, saisonal, Reserve, behalten.",
+  store_activity: "Aktivität", storeText_activity: "Was getan wurde: Entscheidungen, Vermerke, Pläne, Logbuch, mit Zeit und Benutzer. Höchstens 2000 Einträge und ein Jahr.",
   store_notes: "Logbuch", storeText_notes: "Einträge, die du selbst schreibst.",
   store_reminders: "Erinnerungen", storeText_reminders: "Wartungen mit Intervall, Fälligkeit und den Tagen, an denen sie erledigt wurden.",
   store_goals: "Ziele", storeText_goals: "Was für dein Haus „in Ordnung“ heißt.",
@@ -1188,6 +1189,7 @@ Object.assign(TEXT.en, {
   store_ignored: "Decisions about findings", storeText_ignored: "Hidden, intended or later, with the reason. Stays until you change it.",
   store_exceptions: "Exception rules", storeText_exceptions: "Rules for areas and labels whose objects are not reported.",
   store_marks: "Marks", storeText_marks: "Notes on objects: offline on purpose, seasonal, spare, keep.",
+  store_activity: "Activity", storeText_activity: "What was done: decisions, marks, plans, logbook, with time and user. At most 2000 entries and one year.",
   store_notes: "Logbook", storeText_notes: "Entries you write yourself.",
   store_reminders: "Reminders", storeText_reminders: "Maintenance with its interval, due day and the days it was done.",
   store_goals: "Goals", storeText_goals: "What \"in order\" means for your house.",
@@ -18944,7 +18946,7 @@ class FirstCleanupMixin {
     const next = count && !seen
       ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
       : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
-    const menu = `<details class="rowmenu fcmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-fc-history="1"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcHistory")}</button><button type="button" class="menuitem" data-fc-exit><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("fcExit")}</button><button type="button" class="menuitem" data-fc-reset><ha-icon icon="mdi:restart"></ha-icon>${this.t("fcReset")}</button></div></details>`;
+    const menu = `<details class="rowmenu fcmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-fc-history="1"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcHistory")}</button><button type="button" class="menuitem" data-jump="journal" data-jump-tab="activity"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcAllActivity")}</button><button type="button" class="menuitem" data-fc-exit><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("fcExit")}</button><button type="button" class="menuitem" data-fc-reset><ha-icon icon="mdi:restart"></ha-icon>${this.t("fcReset")}</button></div></details>`;
     const foot = `<div class="panel fcfoot"><button type="button" class="btn" data-fc-goto="${n - 1}" ${n === 1 ? "disabled" : ""}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcBack")}</button><span class="fcprogress">${count ? this.t("fcLeftNow", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span>${lookOff}${next}${menu}</div>`;
     const toast = this.fcToast ? `<div class="fctoast" role="status"><span>✓ ${this.esc(this.fcToast.text)}</span><button type="button" class="btn" data-fc-undo="${this.esc(this.fcToast.id)}">${this.t("fcUndo")}</button></div>` : "";
     return `<div class="stack">${error}${top}${head}${body}${toast}${foot}</div>`;
@@ -19000,7 +19002,7 @@ class FirstCleanupMixin {
   }
 }
 Object.assign(TEXT.de, {
-  fcBandText: "Du bist mitten im Aufräumen, bei Etappe {n}.", fcBandBack: "Zurück zum Aufräumen", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du beim Aufräumen entschieden hast, das Neueste zuerst.",
+  fcAllActivity: "Gesamte Aktivität", fcBandText: "Du bist mitten im Aufräumen, bei Etappe {n}.", fcBandBack: "Zurück zum Aufräumen", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du beim Aufräumen entschieden hast, das Neueste zuerst.",
   fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Vermerk angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
   fcFollowMore: "… und {n} weitere", fcFinishText2: "Du hast {d} Entscheidungen getroffen. Zu Beginn waren {start} Befunde offen, jetzt sind es {now}.", fcNextTitle: "So geht es weiter",
   fcNextNone: "Nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcSee: "Ansehen", fcNextLater: "Befunde auf „Später“ ({n}) kommen ab {date} unter „Fällig“ wieder.",
@@ -19033,7 +19035,7 @@ Object.assign(TEXT.de, {
   fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage",  fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Beim Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
-  fcBandText: "You are in the middle of the cleanup, at stage {n}.", fcBandBack: "Back to the cleanup", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the cleanup, the newest first.",
+  fcAllActivity: "All activity", fcBandText: "You are in the middle of the cleanup, at stage {n}.", fcBandBack: "Back to the cleanup", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the cleanup, the newest first.",
   fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the cleanup", fcLogMark: "Mark set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings on “Later”", fcLogSeveral: "{n} suggestions",
   fcFollowMore: "… and {n} more", fcFinishText2: "You made {d} decisions. {start} findings were open at the start, {now} are now.", fcNextTitle: "What next",
   fcNextNone: "Nothing left open. New findings show up under “New”.", fcSee: "View", fcNextLater: "Findings on “Later” ({n}) come back under “Due” from {date}.",

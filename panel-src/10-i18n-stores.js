@@ -1,7 +1,7 @@
 // Texts for the list of Housekeeper's own files (Settings, Info); merged into TEXT.
 const STORE_GROUPS = [
   ["history", ["observations", "history", "events", "runs", "replies", "load", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
-  ["proof", ["journal", "attest"]],
+  ["proof", ["journal", "activity", "attest"]],
   ["yours", ["ignored", "exceptions", "marks", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
 
@@ -40,6 +40,7 @@ Object.assign(TEXT.de, {
   store_ignored: "Entscheidungen zu Befunden", storeText_ignored: "Ausgeblendet, ist so gewollt oder später, mit Grund. Bleibt, bis du es änderst.",
   store_exceptions: "Ausnahmeregeln", storeText_exceptions: "Regeln für Bereiche und Labels, deren Objekte nicht gemeldet werden.",
   store_marks: "Markierungen", storeText_marks: "Hinweise an Objekten: absichtlich offline, saisonal, Reserve, behalten.",
+  store_activity: "Aktivität", storeText_activity: "Was getan wurde: Entscheidungen, Vermerke, Pläne, Logbuch, mit Zeit und Benutzer. Höchstens 2000 Einträge und ein Jahr.",
   store_notes: "Logbuch", storeText_notes: "Einträge, die du selbst schreibst.",
   store_reminders: "Erinnerungen", storeText_reminders: "Wartungen mit Intervall, Fälligkeit und den Tagen, an denen sie erledigt wurden.",
   store_goals: "Ziele", storeText_goals: "Was für dein Haus „in Ordnung“ heißt.",
@@ -86,6 +87,7 @@ Object.assign(TEXT.en, {
   store_ignored: "Decisions about findings", storeText_ignored: "Hidden, intended or later, with the reason. Stays until you change it.",
   store_exceptions: "Exception rules", storeText_exceptions: "Rules for areas and labels whose objects are not reported.",
   store_marks: "Marks", storeText_marks: "Notes on objects: offline on purpose, seasonal, spare, keep.",
+  store_activity: "Activity", storeText_activity: "What was done: decisions, marks, plans, logbook, with time and user. At most 2000 entries and one year.",
   store_notes: "Logbook", storeText_notes: "Entries you write yourself.",
   store_reminders: "Reminders", storeText_reminders: "Maintenance with its interval, due day and the days it was done.",
   store_goals: "Goals", storeText_goals: "What \"in order\" means for your house.",
