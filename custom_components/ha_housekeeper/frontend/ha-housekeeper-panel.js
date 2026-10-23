@@ -18693,8 +18693,10 @@ class FirstCleanupMixin {
     return this.t({ keep: "fcKeep", later: "fcLater", mark: "fcLogMark", nothanks: "fcNoThanks", skip: "fcLogSkip" }[e.action] || "fcLogSkip");
   }
 
-  // The note under the card after a decision: what was done, with the way back for a few seconds.
+  // The note under the card after an answer for many findings at once: what was done, with the way back for a few
+  // seconds. A single answer shows none; it is undone with "Undo last".
   fcNotify(entry) {
+    if ((entry.n || 1) < 2) return;
     this.fcToast = { id: entry.id, text: `${entry.name ? `${entry.name}: ` : ""}${this.fcEntryLabel(entry)}` };
     clearTimeout(this._fcToastTimer);
     this._fcToastTimer = setTimeout(() => { if (this.fcToast?.id === entry.id) { this.fcToast = null; this.render(); } }, 8000);

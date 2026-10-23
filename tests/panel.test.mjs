@@ -6925,8 +6925,9 @@ test("the first cleanup is offered, opens each stage as a list filter and puts t
   assert.deepEqual(el.visibleFindings().map(x => x.key), ["b"], "the list shows only the stage");
   assert.ok(!el.findingsView().includes("data-fc-open"), "inside the tour the list carries no entry to it");
   await el.fcDecide("a", "keep");
-  assert.ok(el.data.findings.find(x => x.key === "a").ignored && el.fcToast, "a decision is made and offered for undo");
-  await el.fcUndo(el.fcToast.id);
+  assert.ok(el.data.findings.find(x => x.key === "a").ignored && !el.fcToast, "a single answer is made without a note; Undo last takes it back");
+  el.fcPrev();
+  await new Promise(r => setTimeout(r, 0));
   assert.ok(!el.data.findings.find(x => x.key === "a").ignored && el.fcLogGet().length === 0, "undone: open again, gone from the log");
   el.fcWizSet(5);
   html = el.wizardView();
