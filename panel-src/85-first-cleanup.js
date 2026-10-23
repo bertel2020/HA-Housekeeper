@@ -524,7 +524,7 @@ class FirstCleanupMixin {
     if (mark) return `<div class="fcopt">${this.markFormHtml(m, m.key)}</div>`;
     const set = [...new Set([...(d.kind === "snooze" || (d.kind === "keep" && d.critical) ? [] : [0]), 7, 30, 90, 365, Number(d.days)])].sort((x, y) => x - y);
     const days = set.map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : t("decideForever")}</option>`).join("");
-    return `<div class="fcopt"><form class="polform statusform" data-decide-form="${this.esc(f.key)}"><div class="statusrow"><input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(t("decideReason"))}" placeholder="${this.esc(t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}"><select data-decide-days aria-label="${this.esc(t("decideHow"))}">${days}</select></div>${d.kind === "keep" && d.critical ? `<small class="factnote">${t("statusCriticalHint")}</small>` : ""}<small class="factnote">${t("statusScopeHint")}</small>${d.error ? this.notice("err", t(d.error)) : ""}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div></form></div>`;
+    return `<div class="fcopt"><form class="polform statusform" data-decide-form="${this.esc(f.key)}"><div class="statusrow"><input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(t("decideReason"))}" placeholder="${this.esc(t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}"><select data-decide-days aria-label="${this.esc(t("decideHow"))}">${days}</select></div>${d.kind === "keep" ? this.reasonChips() : ""}${d.kind === "keep" && d.critical ? `<small class="factnote">${t("statusCriticalHint")}</small>` : ""}<small class="factnote">${t("statusScopeHint")}</small>${d.error ? this.notice("err", t(d.error)) : ""}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div></form></div>`;
   }
 
   // Open the ways of "Fix": what Housekeeper runs for the object, and the ways of this finding (replace, remove, catch the error).
@@ -650,7 +650,7 @@ class FirstCleanupMixin {
 }
 Object.assign(TEXT.de, {
   fcAllActivity: "Gesamte Aktivität", fcBandText: "Du bist mitten im Aufräumen, bei Etappe {n}.", fcBandBack: "Zurück zum Aufräumen", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du beim Aufräumen entschieden hast, das Neueste zuerst.",
-  fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Vermerk angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
+  fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Objekt-Notiz angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
   fcFollowMore: "… und {n} weitere", 
   fcSumSuggest: "{n} Vorschläge", fcSumDeclined: "{n} abgelehnt", fcPendingPlan: "{n} Befunde sind vorgemerkt, es gibt noch keinen Plan. Bisher wurde nichts entfernt.", fcPendingGo: "Zu Etappe 4",
   
@@ -661,13 +661,13 @@ Object.assign(TEXT.de, {
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Zeigt die Wege, die zu diesem Objekt passen.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist. Du sagst kurz, warum und für wie lange.", fcLater: "Später erinnern", fcLaterHint: "Kommt nach der Frist, die du wählst, wieder in die Liste.",
-  fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel irrt sich hier. Der Befund verschwindet aus der Liste.", fcMarkHint: "Hält fest, warum das Objekt so ist, auch mit Zeitfenster.", fcLogHidden: "Ausgeblendet", fcSumHidden: "{n} ausgeblendet", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
+  fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel irrt sich hier. Der Befund verschwindet aus der Liste.", fcMarkHint: "Hält fest, warum das Objekt so ist, auch mit Zeitfenster.", fcLogHidden: "Fehlalarm", fcSumHidden: "{n} als Fehlalarm", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
-  fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Später erinnern", fcNoThanksHint: "Der Vorschlag kommt nach 180 Tagen wieder.", fcTakeAll: "Alle {n} als Vermerk anlegen",
+  fcTake: "Objekt-Notiz anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Später erinnern", fcNoThanksHint: "Der Vorschlag kommt nach 180 Tagen wieder.", fcTakeAll: "Alle {n} als Objekt-Notiz anlegen",
   fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Aufräumen zurücksetzen?", fcResetYes: "Zurücksetzen",
   fcResetAsk: "Das Aufräumen wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
-  fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
+  fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Objekt-Notizen angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
   fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
@@ -679,7 +679,7 @@ Object.assign(TEXT.de, {
  
   fcStageFilter: "Etappe {n}: {name}", fcStage: "Etappe {n}",
   fcStage1: "Ausfälle mit vielen Folgen", fcStage1Hint: "Eine Ursache beseitigt viele Folgen auf einmal.",
-  fcStage2: "Vorschläge für Vermerke", fcStage2Hint: "Was oft ausfällt, bekommt besser einen Vermerk als einen Befund.",
+  fcStage2: "Vorschläge für Objekt-Notizen", fcStage2Hint: "Was oft ausfällt, bekommt besser eine Objekt-Notiz als einen Befund.",
   fcStage3: "Hohe und mittlere Wirkung", fcStage3Hint: "Ausgefallen, kaputte Verweise und fehlerhafte Automationen mit Wirkung Hoch oder Mittel.",
   fcStage4: "Überflüssiges", fcStage4Hint: "Die Aufräum-Runde: sicher Entfernbares gesammelt, der Rest einzeln.",
   fcStage5: "Der ruhige Rest", fcStage5Hint: "Wirkung Niedrig oder Info: gesammelt auf „Später“; es kommt über „Fällig“ zurück.",
@@ -688,7 +688,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   fcAllActivity: "All activity", fcBandText: "You are in the middle of the cleanup, at stage {n}.", fcBandBack: "Back to the cleanup", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the cleanup, the newest first.",
-  fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the cleanup", fcLogMark: "Mark set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings on “Later”", fcLogSeveral: "{n} suggestions",
+  fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the cleanup", fcLogMark: "Object note set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings on “Later”", fcLogSeveral: "{n} suggestions",
   fcFollowMore: "… and {n} more", 
   fcSumSuggest: "{n} suggestions", fcSumDeclined: "{n} declined", fcPendingPlan: "{n} findings are marked and there is no plan yet. Nothing was removed so far.", fcPendingGo: "To stage 4",
   
@@ -699,13 +699,13 @@ Object.assign(TEXT.en, {
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Shows the ways that fit this object.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is. You say briefly why and for how long.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list after the time you choose.",
-  fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding leaves the list.", fcMarkHint: "Records why the object is as it is, also with a time window.", fcLogHidden: "Hidden", fcSumHidden: "{n} hidden", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
+  fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding leaves the list.", fcMarkHint: "Records why the object is as it is, also with a time window.", fcLogHidden: "False alarm", fcSumHidden: "{n} as false alarm", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
-  fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "Remind me later", fcNoThanksHint: "The suggestion comes back after 180 days.", fcTakeAll: "Set all {n} as marks",
+  fcTake: "Set object note", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "Remind me later", fcNoThanksHint: "The suggestion comes back after 180 days.", fcTakeAll: "Set all {n} as object notes",
   fcPrev: "Undo last", fcPrevHint: "Takes the last decision or skip back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the cleanup?", fcResetYes: "Reset",
   fcResetAsk: "The cleanup is reset and begins again at the welcome page. What you decided in it stays decided; the history with “Undo” is emptied.", fcNewRound: "Start a new pass", fcNewRoundAsk: "The cleanup begins again. What you decided stays decided; the history with “Undo” is emptied.",
-  fcSumKeep: "{n} intended", fcSumLater: "{n} on “Later”", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
+  fcSumKeep: "{n} intended", fcSumLater: "{n} on “Later”", fcSumMark: "{n} object notes set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
   fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "Pause, continue later",
   fcLeft: "{n} open", fcLeftObj: "{o} objects · {n} findings", fcToRound: "Back to the round", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
@@ -717,7 +717,7 @@ Object.assign(TEXT.en, {
  
   fcStageFilter: "Stage {n}: {name}", fcStage: "Stage {n}",
   fcStage1: "Outages with many follow-ups", fcStage1Hint: "One cause clears many follow-ups at once.",
-  fcStage2: "Suggestions for marks", fcStage2Hint: "What often goes down is better held by a mark than reported as a finding.",
+  fcStage2: "Suggestions for object notes", fcStage2Hint: "What often goes down is better held by an object note than reported as a finding.",
   fcStage3: "High and medium impact", fcStage3Hint: "Down, broken references and failing automations with impact High or Medium.",
   fcStage4: "Unneeded", fcStage4Hint: "The cleanup round: what is safe to remove together, the rest one by one.",
   fcStage5: "The quiet rest", fcStage5Hint: "Impact Low or Info: put off together to “Later”; it comes back through “Due”.",

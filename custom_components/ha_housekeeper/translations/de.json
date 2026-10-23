@@ -317,11 +317,11 @@
         },
         "action": {
           "name": "Aktion",
-          "description": "decide zum Ausblenden, für „Ist so gewollt“ oder „Später“, restore zum Wiedereinblenden."
+          "description": "decide für „Fehlalarm“, „Ist so gewollt“ oder „Später“, restore zum Wiedereinblenden."
         },
         "kind": {
           "name": "Entscheidung",
-          "description": "ignore blendet aus, keep sagt „Ist so gewollt“ (braucht einen Grund), snooze sagt „Später“ (braucht Tage)."
+          "description": "ignore sagt „Fehlalarm“, keep sagt „Ist so gewollt“ (braucht einen Grund), snooze sagt „Später“ (braucht Tage)."
         },
         "reason": {
           "name": "Grund",
@@ -334,8 +334,8 @@
       }
     },
     "mark": {
-      "name": "KI-Zugriff: Objekt markieren",
-      "description": "Sagt Housekeeper, was bei einem Objekt zu erwarten ist (absichtlich offline, saisonal, Reserve, behalten, ersetzt), oder nimmt die Marke weg. Nur Housekeepers eigene Liste ändert sich; die Änderung lässt sich zurücknehmen. Braucht „KI-Zugriff aktivieren“ und „Merkliste ändern“.",
+      "name": "KI-Zugriff: Objekt-Notiz setzen",
+      "description": "Sagt Housekeeper, was bei einem Objekt zu erwarten ist (absichtlich offline, saisonal, Reserve, geschützt, ersetzt), oder nimmt die Objekt-Notiz weg. Nur Housekeepers eigene Liste ändert sich; die Änderung lässt sich zurücknehmen. Braucht „KI-Zugriff aktivieren“ und „Merkliste ändern“.",
       "fields": {
         "action": {
           "name": "Aktion",
@@ -350,7 +350,7 @@
           "description": "Die ID des Objekts."
         },
         "kind": {
-          "name": "Marke",
+          "name": "Art der Objekt-Notiz",
           "description": "expected_offline, seasonal, spare, keep oder replaced. Integrationen und Apps kennen nur die ersten drei."
         },
         "reason": {
@@ -359,7 +359,7 @@
         },
         "days": {
           "name": "Tage",
-          "description": "Bis wann die Marke gilt, 1 bis 3650. Ohne Angabe hat sie kein Ende."
+          "description": "Bis wann die Objekt-Notiz gilt, 1 bis 3650. Ohne Angabe hat sie kein Ende."
         },
         "target": {
           "name": "Ersatz",
@@ -472,7 +472,7 @@
       "message": "Der Befund ist nicht im letzten Scan. Den Schlüssel aus „findings“ nehmen."
     },
     "kind_not_allowed": {
-      "message": "Diese Art von Marke ist für dieses Objekt nicht erlaubt."
+      "message": "Diese Art von Objekt-Notiz ist für dieses Objekt nicht erlaubt."
     },
     "target_unknown": {
       "message": "Der Ersatz ist nicht im letzten Scan."

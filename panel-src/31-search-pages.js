@@ -28,7 +28,7 @@ const SEARCH_WORDS = {
   settings: "einstellungen optionen konfiguration settings options preferences",
   look: "darstellung theme dunkel hell schrift farbe appearance dark light font",
   protection: "schutz schutzmodus sicherheit protection mode",
-  exceptions: "ausgeblendet ignoriert ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
+  exceptions: "ausgeblendet ignoriert fehlalarm objekt-notiz notiz vermerk geschützt ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
@@ -41,7 +41,7 @@ const SEARCH_WORDS = {
 // What a person may type for a finding status, besides its label.
 const SEARCH_STATE_WORDS = {
   "": "offen open", new: "neu new", inwork: "in arbeit work", known: "ist so gewollt bekannt behalten intended known keep",
-  snoozed: "später zurückgestellt snoozed later", hidden: "ausgeblendet ignoriert hidden ignored", fixed: "behoben repariert fixed repaired",
+  snoozed: "später zurückgestellt snoozed later", hidden: "ausgeblendet ignoriert fehlalarm nicht gezeigt hidden ignored false alarm not shown", fixed: "behoben repariert fixed repaired",
 };
 const SEARCH_PAGE_LIMIT = 5, SEARCH_FILTER_LIMIT = 5;
 

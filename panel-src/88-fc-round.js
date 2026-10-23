@@ -127,7 +127,7 @@ class FcRoundMixin {
 }
 Object.assign(TEXT.de, {
   fcRoundTitle: "Überflüssig", fcRoundSafe: "Sicher entfernbar", fcRoundLook: "Erst ansehen", fcRoundPick: "Vormerken", fcRoundPickHint: "Zum Entfernen im Plan am Ende. Nichts läuft jetzt.", fcRoundPickAll: "Alle {n} vormerken",
-  fcRoundSingle: "Einzeln ansehen", fcRoundSingleHint: "Jedes mit einer eigenen Karte.", fcRoundCollectTitle: "{n} Objekte sind sicher entfernbar", fcRoundCollectId: "Nirgends verwendet, nicht kritisch, ohne Vermerk",
+  fcRoundSingle: "Einzeln ansehen", fcRoundSingleHint: "Jedes mit einer eigenen Karte.", fcRoundCollectTitle: "{n} Objekte sind sicher entfernbar", fcRoundCollectId: "Nirgends verwendet, nicht kritisch, ohne Objekt-Notiz",
   fcRoundAction: "Aktion", fcRoundUsed: "Verwendet", fcRoundSince: "Erkannt", fcRoundUndoRow: "Rückgängig", fcRoundWhat: "Was", fcRoundUnused: "Nirgends verwendet", fcRoundOldest: "der älteste {age}",
   fcRoundUndoText: "Im Journal, solange nichts geändert wurde", fcRoundUndoMerge: "Im Journal",
   fcRoundHint_remove_entity: "Entfernt den Registry-Eintrag, mit Backup und Vorschau", fcRoundHint_delete_automation: "Löscht die Automation aus der Datei", fcRoundHint_disable_entity: "Deaktiviert, entfernt wird später", fcRoundHint_merge: "Ersetzt sie überall durch die andere Entität",
@@ -137,7 +137,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   fcRoundTitle: "Unneeded", fcRoundSafe: "Safe to remove", fcRoundLook: "Look first", fcRoundPick: "Mark", fcRoundPickHint: "For removal in the plan at the end. Nothing runs now.", fcRoundPickAll: "Mark all {n}",
-  fcRoundSingle: "One by one", fcRoundSingleHint: "Each with a card of its own.", fcRoundCollectTitle: "{n} objects are safe to remove", fcRoundCollectId: "Used nowhere, not critical, without a mark",
+  fcRoundSingle: "One by one", fcRoundSingleHint: "Each with a card of its own.", fcRoundCollectTitle: "{n} objects are safe to remove", fcRoundCollectId: "Used nowhere, not critical, without an object note",
   fcRoundAction: "Action", fcRoundUsed: "Used", fcRoundSince: "Found", fcRoundUndoRow: "Undo", fcRoundWhat: "What", fcRoundUnused: "Used nowhere", fcRoundOldest: "the oldest {age}",
   fcRoundUndoText: "In the Journal, as long as nothing was changed", fcRoundUndoMerge: "In the Journal",
   fcRoundHint_remove_entity: "Removes the registry entry, with backup and preview", fcRoundHint_delete_automation: "Deletes the automation from the file", fcRoundHint_disable_entity: "Disables it, removal comes later", fcRoundHint_merge: "Replaces it everywhere by the other entity",

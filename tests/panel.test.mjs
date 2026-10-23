@@ -644,7 +644,7 @@ test("hidden findings are excluded from counts, lists and export unless shown", 
   assert.equal(JSON.parse(downloads[1].text).findings.length, 2);
   el.view = "findingsNav";
   el.render();
-  assert.ok(el.shadowRoot.innerHTML.includes("Hidden (1)"));
+  assert.ok(el.shadowRoot.innerHTML.includes("Not shown (1)"));
 });
 
 test("detail page offers to hide and show findings, but not label-hidden ones", () => {
@@ -4703,8 +4703,8 @@ test("the mark is a row of the Actions tab and a line of what is known, no longe
   el._rev = (el._rev || 0) + 1;
   const key = "entity:sensor.m";
   const actions = el.detailPanel("actions", item, key);
-  assert.ok(actions.includes("Mark: Seasonal") && actions.includes('data-mark-open="entity:sensor.m"') && actions.includes('data-mark-clear="entity:sensor.m"'));
-  assert.ok(el.knownCard(item, key).includes("Seasonal") && el.knownCard(item, key).includes("Mark"));
+  assert.ok(actions.includes("Object note: Seasonal") && actions.includes('data-mark-open="entity:sensor.m"') && actions.includes('data-mark-clear="entity:sensor.m"'));
+  assert.ok(el.knownCard(item, key).includes("Seasonal") && el.knownCard(item, key).includes("Object note"));
   assert.ok(!el.detailPanel("relations", item, key).includes("data-mark-open"), "the dependencies show only relations");
   el.markForm = { key, kind: "seasonal", reason: "", days: 0, target: "", error: "" };
   assert.ok(el.detailPanel("actions", item, key).includes("data-mark-form"), "the form opens below the row");
@@ -5614,7 +5614,7 @@ test("the page of an object tells what was decided about it: a decided finding w
   el.data = { ...DATA, findings: [f({ ignore_info: { kind: "keep", until: "2026-12-01T00:00:00+00:00", reason: "Spare <b>sensor</b>" } })] };
   let html = el.statusBand(item, key);
   assert.ok(html.includes("data-status-band=\"finding\"") && html.includes("Spare &lt;b&gt;sensor&lt;/b&gt;") && !html.includes("<b>sensor</b>"), "kind and reason of the decision, escaped");
-  assert.ok(html.includes('data-ignore="k1"') && html.includes('data-ignore-value="0"') && html.includes("data-status-band=\"mark\"") && html.includes("Marked:") && html.includes('data-mark-clear="entity:sensor.spare"'));
+  assert.ok(html.includes('data-ignore="k1"') && html.includes('data-ignore-value="0"') && html.includes("data-status-band=\"mark\"") && html.includes("Object note:") && html.includes('data-mark-clear="entity:sensor.spare"'));
   el.data = { ...DATA, findings: [f({ ignored_by: "label", ignore_info: null })] };
   html = el.statusBand({ ...item, mark: null }, key);
   assert.ok(html.includes("Hidden by a label") && !html.includes("data-ignore="), "a label cannot be taken back here");
@@ -6305,7 +6305,7 @@ test("the status of the selection is set in one form; an exception from a findin
   assert.ok(el.bulkForm().includes("data-bulk-kind"));
   await el.commitBulk();
   assert.equal(`${sent[0].kind}|${sent[0].days}`, "ignore|90");
-  assert.ok(el.findingRowContent(el.data.findings[0]).subtitle.includes("Own status"), "the row says why it is hidden");
+  assert.ok(el.findingRowContent(el.data.findings[0]).subtitle.includes("Your decision"), "the row says why it is hidden");
   el.exc = { rules: [], areas: [{ id: "hall", name: "Hall" }], labels: [], integrations: [{ id: "hue", name: "Philips Hue" }], domains: [], devices: [], entities: [] };
   await el.openExceptionFor(["entity:light.a"]);
   assert.equal(el.excForm.scopes.map(s => `${s.id}:${s.picks.map(p => p.id).join()}`).join(" "), "objects:light.a devices:d1 areas:hall integrations:hue");
@@ -6599,7 +6599,7 @@ test("another status than open puts a note above the list: the tiles count the o
   assert.ok(!el.findingsView().includes("statusnote"));
   el.findingStatus = "hidden";
   const html = el.findingsView();
-  assert.ok(html.includes("statusnote") && html.includes("“Hidden”") && html.includes('data-fstatus="open"'));
+  assert.ok(html.includes("statusnote") && html.includes("“Not shown”") && html.includes('data-fstatus="open"'));
 });
 
 test("a missing reference reads as what the finding refers to", () => {
@@ -7232,7 +7232,7 @@ test("stage 5 and stage 2 use the same frame: facts in fixed rows, the days of t
   const item = { key: "entity:sensor.x", hides: 3, often: { days: 30, info: { episodes: 12, mean_seconds: 7200, pattern_hour: 3 } } };
   const block = el.fcOftenInfo(item, { link: "entity:sensor.x", pattern: "Usually fails between 03:00 and 05:00" });
   assert.equal(block.split("fcirow").length - 1 >= 4, true);
-  assert.ok(block.includes("12 outages in 30 days") && block.includes("2 h per outage on average") && block.includes("The mark hides 3 findings"));
+  assert.ok(block.includes("12 outages in 30 days") && block.includes("2 h per outage on average") && block.includes("The object note hides 3 findings"));
 });
 
 test("stage 4 of the cleanup is a card per object: the safe ones first as one card, marking is kept in the history, the marked ones go into one plan", async () => {

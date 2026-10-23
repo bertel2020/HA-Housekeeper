@@ -6,7 +6,7 @@ Object.assign(TEXT.de, {
   watchBefore: "Stand davor: Scan vom {when}", watchNoBefore: "Vor dem Neustart gab es keinen Scan, ein Vergleich ist nicht möglich.",
   watchUnread: "Eine Quelle konnte nicht gelesen werden. Was dort fehlt, gilt als unbekannt, nicht als in Ordnung.",
   repairSeverity_critical: "kritisch", repairSeverity_error: "Fehler", repairSeverity_warning: "Warnung", repairFixable: "lässt sich in Home Assistant beheben", repairMore: "Mehr erfahren", watchAgain: "Aktuell wieder gestört",
-  watchNew: "Seitdem ausgefallen ({n})", watchRepairs: "Seitdem neue Reparaturen ({n})", watchSilent: "Seitdem ohne Wert ({n})", watchMarked: "Mit Vermerk, nicht gezählt ({n})", watchFixed: "Wieder in Ordnung ({n})", watchTransient: "Kurz gestört, jetzt wieder in Ordnung ({n})", watchNewFindings: "Neue Befunde seit dem Update: {n}",
+  watchNew: "Seitdem ausgefallen ({n})", watchRepairs: "Seitdem neue Reparaturen ({n})", watchSilent: "Seitdem ohne Wert ({n})", watchMarked: "Mit Objekt-Notiz, nicht gezählt ({n})", watchFixed: "Wieder in Ordnung ({n})", watchTransient: "Kurz gestört, jetzt wieder in Ordnung ({n})", watchNewFindings: "Neue Befunde seit dem Update: {n}",
   watchNone: "Keine Auffälligkeiten.", watchSamples: "{n} Messungen", watchEnded: "beendet {when}", watchMore: "{n} weitere sind hier nicht aufgeführt.",
   optWatchTitle: "Beobachtung nach System-Update", optWatchHint: "Wie viele Stunden nach einem Update von Home Assistant, Betriebssystem oder Supervisor zusätzlich gescannt und mit dem Stand davor verglichen wird. 0 schaltet die Beobachtung aus.",
 });

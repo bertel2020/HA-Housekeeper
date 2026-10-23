@@ -29,6 +29,8 @@
 - **Neue Namen für die Ausgänge:** „Bekannt“ heißt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“ (englisch Intended und Later). Gespeicherte Entscheidungen und der Dienst `finding_decide` bleiben unverändert.
   - „Ist so gewollt“ ohne Frist bekommt einmalig 90 Tage; ein Hinweis erklärt das. Bei kritischen Objekten ist eine Frist Pflicht.
   - Die Daten bleiben lesbar: Wer auf 1.x zurückgeht, verliert nur die neuen Felder.
+  - „Ausgeblendet“ heißt „Fehlalarm“ (die Regel irrt sich); der Reiter „Ausgeblendet“ heißt „Nicht gezeigt“ und sammelt alles, was gerade nicht erscheint.
+  - „Vermerk“ heißt „Objekt-Notiz“, „Nicht entfernen“ heißt „Geschützt“. Bei „Ist so gewollt“ füllt eine Auswahl den Grund vor.
 - **Befunde-Seite und Übersicht:** Die Themenkacheln ersetzen die Kacheln je Klasse. Die Übersichtszeile „Neu kritisch seit dem letzten Scan“ ist durch „n neu · n fällig“ ersetzt und führt auf die Befunde-Seite.
 - **Oberfläche, Korrekturen:**
   - Der Zurück-Knopf nennt seine Seite statt der internen Bezeichnung.
@@ -66,6 +68,8 @@
 - **New names for the exits:** “Bekannt” is now “Ist so gewollt” and “Zurückgestellt” is now “Später” (in English Intended and Later). Stored decisions and the service `finding_decide` stay as they are.
   - “Intended” without a time gets 90 days once; a note explains it. A critical object needs a time.
   - The data stay readable: going back to 1.x loses only the new fields.
+  - “Hidden” is now “False alarm” (the rule is wrong); the tab “Hidden” is now “Not shown” and collects everything that is not shown right now.
+  - “Vermerk” (mark) is now “Object note” and “Do not remove” is now “Protected”. For “Intended” a choice fills in the reason.
 - **Findings page and overview:** The topic tiles replace the tiles per class. The overview line “New critical since the last scan” is replaced by “n new · n due” and leads to the findings page.
 - **Interface, corrections:**
   - The back button names its page instead of the internal name.

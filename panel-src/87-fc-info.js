@@ -74,12 +74,12 @@ class FcInfoMixin {
 Object.assign(TEXT.de, {
   fcInfoTitle: "Warum steht das hier?", fcInfoDuration: "Dauer", fcInfoState: "Zustand", fcInfoLinks: "Daran hängt", fcInfoImpact: "Wirkung",
   fcInfoPattern: "Muster", fcInfoOften: "Häufigkeit", fcInfoMean_: "Dauer", fcInfoEpisodes: "{n} Ausfälle in {days} Tagen", fcInfoMean: "Im Schnitt {span} pro Ausfall",
-  fcInfoHides: "Der Vermerk blendet {n} Befunde aus", fcInfoHides1: "Der Vermerk blendet 1 Befund aus", fcInfoHidesNone: "Der Vermerk blendet keinen Befund aus",
+  fcInfoHides: "Die Objekt-Notiz blendet {n} Befunde aus", fcInfoHides1: "Die Objekt-Notiz blendet 1 Befund aus", fcInfoHidesNone: "Die Objekt-Notiz blendet keinen Befund aus",
   fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
 });
 Object.assign(TEXT.en, {
   fcInfoTitle: "Why is this here?", fcInfoDuration: "Duration", fcInfoState: "State", fcInfoLinks: "Depends on it", fcInfoImpact: "Impact",
   fcInfoPattern: "Pattern", fcInfoOften: "Frequency", fcInfoMean_: "Duration", fcInfoEpisodes: "{n} outages in {days} days", fcInfoMean: "{span} per outage on average",
-  fcInfoHides: "The mark hides {n} findings", fcInfoHides1: "The mark hides 1 finding", fcInfoHidesNone: "The mark hides no finding",
+  fcInfoHides: "The object note hides {n} findings", fcInfoHides1: "The object note hides 1 finding", fcInfoHidesNone: "The object note hides no finding",
   fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
 });

@@ -24,14 +24,14 @@ Object.assign(TEXT.de, {
   helpTogetherT: "Zeitlich zusammen", helpTogether: "Befunde, die zur selben Zeit begannen wie ein Update oder ein Neustart. Das ist ein Zusammenhang in der Zeit, keine Ursache.",
   helpNAllT: "Objekte mit Befunden", helpNAll: "Alle Objekte, an denen offene Befunde hängen; ein Gerät mit seinen Entitäten zählt einmal. Darunter stehen die Befunde. Die Themenkacheln zählen die Objekte mit eigenem Befund; Folgen eines Ausfalls zählen dort nicht mit, ein Objekt kann in mehreren Themen stehen.",
   helpNTrendT: "+n in 5 Tagen", helpNTrend: "Veränderung über die letzten Tage, rot bei Anstieg. Die Kurve zählt wie die Kachel, also Objekte; sie beginnt neu, weil frühere Tage nur Befunde führten.",
-  helpNTabsT: "Offen, Ist so gewollt, Später, Ausgeblendet, Erledigt", helpNTabs: "Befunde nach Status: noch zu tun, so gewollt, auf später gelegt, nicht mehr gezeigt, inzwischen behoben. „Alle einzeln“ zählt jeden Befund für sich, auch die Folgen; „Ursachen mit Folgen“ zählt nur die Ursachen, an denen Folgen hängen.",
+  helpNTabsT: "Offen, Ist so gewollt, Später, Nicht gezeigt, Erledigt", helpNTabs: "Befunde nach Status: noch zu tun, so gewollt, auf später gelegt, nicht mehr gezeigt, inzwischen behoben. „Alle einzeln“ zählt jeden Befund für sich, auch die Folgen; „Ursachen mit Folgen“ zählt nur die Ursachen, an denen Folgen hängen.",
   helpNFollowT: "n Folgen", helpNFollow: "Befunde, die nur entstehen, weil eine Ursache ausfiel. „erklärt n Befunde“ nennt dieselben, „n Entitäten betroffen“ die Entitäten dahinter.",
   helpNLevelT: "Schweregrad", helpNLevel: "Wie sehr es zählt: nach Dauer, Abhängigkeiten und kritischen Objekten. Im Detail steht der Grund.",
   helpNCertT: "Sicherheit", helpNCert: "Wie sicher die Diagnose ist, nicht wie schlimm der Befund ist.",
   helpNSinceT: "Erkannt seit", helpNSince: "Wann der Befund zuerst auffiel; bei Ausfällen der Beginn der Störung.",
   helpNWatchedT: "n Objekte betroffen", helpNWatched: "Objekte, die seit dem Update nicht mehr laufen (Vergleich mit dem Scan davor). Das ist eine andere Zählung als die Befunde.",
   helpNIncidentsT: "n Vorfälle", helpNIncidents: "Updates kurz nacheinander und der Neustart dabei als eine Zeile. Ein Befund kann zu mehreren Vorfällen gehören; „n Befunde“ je Zeile zählt je Vorfall.",
-  helpNOftenT: "Regelmäßig ausfallen", helpNOften: "Befunde auf Objekten, die oft ausfallen (instabil oder flatternd). Im Detail steht der Vorschlag für einen Vermerk.",
+  helpNOftenT: "Regelmäßig ausfallen", helpNOften: "Befunde auf Objekten, die oft ausfallen (instabil oder flatternd). Im Detail steht der Vorschlag für eine Objekt-Notiz.",
 });
 
 Object.assign(TEXT.en, {
@@ -44,12 +44,12 @@ Object.assign(TEXT.en, {
   helpTogetherT: "At the same time", helpTogether: "Findings that began at the same time as an update or a restart. This is a link in time, not a cause.",
   helpNAllT: "Objects with findings", helpNAll: "Every object with open findings; a device with its entities counts once. The findings stand beneath. The topic tiles count the objects with a finding of their own; follow-ups of an outage do not count there, and an object can be in several topics.",
   helpNTrendT: "+n in 5 days", helpNTrend: "Change over the last days, red when it rises. The line counts like the tile, that is objects; it starts afresh because earlier days only kept findings.",
-  helpNTabsT: "Open, Intended, Later, Hidden, Done", helpNTabs: "Findings by status: still to do, meant to be so, put off, no longer shown, mended since. “All one by one” counts every finding on its own, follow-ups included; “Causes with follow-ups” counts only the causes that have follow-ups.",
+  helpNTabsT: "Open, Intended, Later, Not shown, Done", helpNTabs: "Findings by status: still to do, meant to be so, put off, no longer shown, mended since. “All one by one” counts every finding on its own, follow-ups included; “Causes with follow-ups” counts only the causes that have follow-ups.",
   helpNFollowT: "n follow-ups", helpNFollow: "Findings that only exist because a cause failed. “explains n findings” names the same ones, “n entities affected” the entities behind them.",
   helpNLevelT: "Severity", helpNLevel: "How much it matters: by duration, dependencies and critical objects. The detail page names the reason.",
   helpNCertT: "Certainty", helpNCert: "How sure the diagnosis is, not how bad the finding is.",
   helpNSinceT: "Detected since", helpNSince: "When the finding first showed up; for outages, the start of the fault.",
   helpNWatchedT: "n objects affected", helpNWatched: "Objects that have stopped working since the update (compared with the scan before). This counts differently from findings.",
   helpNIncidentsT: "n incidents", helpNIncidents: "Updates shortly after one another and the restart beside them as one row. A finding can belong to several incidents; “n findings” per row counts per incident.",
-  helpNOftenT: "Fail regularly", helpNOften: "Findings on objects that fail often (unstable or flapping). The detail page offers a mark.",
+  helpNOftenT: "Fail regularly", helpNOften: "Findings on objects that fail often (unstable or flapping). The detail page offers an object note.",
 });
