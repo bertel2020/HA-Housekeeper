@@ -6,10 +6,10 @@ const DONE_PERIODS = [7, 30, 90], ACTIVE_PLAN = ["dry_run", "backup", "running"]
 const FINDING_STATES = ["known", "snoozed", "hidden"];
 
 Object.assign(TEXT.de, {
-  bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ausgeblendet", bandMark: "Objekt-Notiz: {kind}", bandRemoveMark: "Entfernen",
+  bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ganz ausgenommen", bandMark: "Objekt-Notiz: {kind}", bandRemoveMark: "Entfernen",
 });
 Object.assign(TEXT.en, {
-  bandChange: "Change", bandUndo: "Take back", bandByLabel: "Hidden by a label", bandMark: "Object note: {kind}", bandRemoveMark: "Remove",
+  bandChange: "Change", bandUndo: "Take back", bandByLabel: "Left out by a label", bandMark: "Object note: {kind}", bandRemoveMark: "Remove",
 });
 
 class FindingStatusMixin {

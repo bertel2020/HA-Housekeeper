@@ -1180,7 +1180,7 @@ test("policies: rules switch, violations list with hide buttons, hidden ones are
   assert.equal((html.match(/data-policy-toggle=/g) || []).length, 2);
   assert.ok(/data-policy-toggle="entity_area"[^>]*checked/.test(html) && !/data-policy-toggle="device_area"[^>]*checked/.test(html));
   el.viewTab = {}; el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
-  assert.ok(html.includes("light.c") && html.includes("hidden by label") && html.includes(">Show<"));
+  assert.ok(html.includes("light.c") && html.includes("left out by label") && html.includes(">Show<"));
   assert.equal((html.match(/data-policy-ignore=/g) || []).length, 1, "only the user's own decision can be undone");
   assert.equal((html.match(/data-decide-open=/g) || []).length, 0, "a row with a fix offers it; hiding sits in the folded-open part");
   assert.ok(html.includes(">Assign area<"));
@@ -5650,7 +5650,7 @@ test("the page of an object tells what was decided about it: a decided finding w
   assert.ok(html.includes('data-ignore="k1"') && html.includes('data-ignore-value="0"') && html.includes("data-status-band=\"mark\"") && html.includes("Object note:") && html.includes('data-mark-clear="entity:sensor.spare"'));
   el.data = { ...DATA, findings: [f({ ignored_by: "label", ignore_info: null })] };
   html = el.statusBand({ ...item, mark: null }, key);
-  assert.ok(html.includes("Hidden by a label") && !html.includes("data-ignore="), "a label cannot be taken back here");
+  assert.ok(html.includes("Left out by a label") && !html.includes("data-ignore="), "a label cannot be taken back here");
   el.data = { ...DATA, findings: [f({ ignored: false, ignored_by: null })] };
   assert.equal(el.statusBand({ ...item, mark: null }, key), "");
 });

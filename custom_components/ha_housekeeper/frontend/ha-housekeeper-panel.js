@@ -84,7 +84,7 @@ const TEXT = {
     cause_group_broken: "Die Gruppe enthält {count} Mitglied(er), die nicht mehr existieren.", hint_group_broken: "Die Gruppe bearbeiten und die fehlenden Mitglieder entfernen.",
     cause_helper_broken: "Dieser Helfer baut auf {count} Entität/Entitäten auf, die nicht mehr existieren.", hint_helper_broken: "Den Helfer bearbeiten und die fehlenden Quellen ersetzen.",
     showFinding: "Wieder einblenden", ignoredLabel: "Nicht gezeigt", showIgnored: "Ausgeblendete anzeigen",
-    ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
+    ignoredByLabel: "Nicht gezeigt: Label housekeeper_ignore („Ganz ausnehmen“)", findingsOfObject: "Befunde zu diesem Objekt",
     batteries: "Batterien", batteriesSubtitle: "Stand, Bedarf und Prognose deiner Batterien.", batteryLow: "Niedrig", batteryUnavailable: "Nicht verfügbar", batteryUnavailableShort: "nicht verfügbar", batteryUnavailableSub: "meldet nichts, oft ist die Batterie leer", batteryAll: "Alle",
     settings: "Einstellungen", settingsSubtitle: "Infos zu Housekeeper und Anpassung der Darstellung.", about: "Über Housekeeper", version: "Version", haVersion: "Home Assistant",
     aboutIntro: "Housekeeper zeigt, was in deiner Home-Assistant-Installation nicht mehr passt: ausgefallene Geräte, defekte Verweise, Ungenutztes, leere Batterien und vieles mehr.", aboutIntroSafe: "Es ändert oder löscht nichts von selbst.", aboutIntroPlan: "Jede Änderung läuft über einen Plan mit Vorschau, Backup und deiner Bestätigung.", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
@@ -269,7 +269,7 @@ const TEXT = {
     cause_group_broken: "The group contains {count} member(s) that no longer exist.", hint_group_broken: "Edit the group and remove the missing members.",
     cause_helper_broken: "This helper builds on {count} entity/entities that no longer exist.", hint_helper_broken: "Edit the helper and replace the missing sources.",
     showFinding: "Show again", ignoredLabel: "Not shown", showIgnored: "Show hidden",
-    ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
+    ignoredByLabel: "Not shown: label housekeeper_ignore (“Leave out completely”)", findingsOfObject: "Findings for this object",
     batteries: "Batteries", batteriesSubtitle: "Level, need and forecast of your batteries.", batteryLow: "Low", batteryUnavailable: "Unavailable", batteryUnavailableShort: "unavailable", batteryUnavailableSub: "reports nothing, often the battery is empty", batteryAll: "All",
     settings: "Settings", settingsSubtitle: "About Housekeeper and appearance options.", about: "About Housekeeper", version: "Version", haVersion: "Home Assistant",
     aboutIntro: "Housekeeper shows what no longer fits in your Home Assistant installation: failed devices, broken references, unused items, empty batteries and much more.", aboutIntroSafe: "It never changes or deletes anything by itself.", aboutIntroPlan: "Every change goes through a plan with a preview, a backup and your confirmation.", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
@@ -1817,7 +1817,7 @@ Object.assign(TEXT.de, {
   polRule_automation_label: "Automation ohne Label", polDesc_automation_label: "Automationen sollen mindestens ein Label tragen. Geprüft werden nur Automationen mit Eintrag in der Entitäts-Registry; nur sie können ein Label haben.",
   polRule_naming_scheme: "Namensschema", polDesc_naming_scheme: "Die Entitäts-ID einer Domain beginnt mit einem Präfix, das du unten festlegst, zum Beispiel wz_ für sensor. Ohne Präfix wird nichts geprüft.",
   polAlso: "Gleicher Name wie: {ids}", polExpected: "Erwartet das Präfix {prefix}", polPrefixIs: "Präfix: {prefix}", polPrefixRemove: "Entfernen", polPrefixAdd: "Hinzufügen", polPrefixDomain: "Domain (z. B. sensor)", polPrefixValue: "Präfix (z. B. wz_)", polPrefixNone: "Noch kein Präfix festgelegt. Erlaubt sind Kleinbuchstaben, Ziffern und Unterstrich; höchstens 10 Domains.",
-  polHide: "Ausblenden", polShow: "Einblenden", polHiddenLabel: "ausgeblendet", polByLabel: "per Label ausgeblendet",
+  polHide: "Ausblenden", polShow: "Einblenden", polHiddenLabel: "ausgeblendet", polByLabel: "per Label ausgenommen",
   polHiddenN: "{n} ausgeblendet", polShowHidden: "Ausgeblendete zeigen", polHideHidden: "Ausgeblendete verbergen", polMore: "und {n} weitere",
   polFootnote: "Richtlinien sind Hinweise zur Ordnung und keine Defekte: Sie zählen nicht in Gesundheit, Befunde, Reparaturhinweise oder Sensoren. Housekeeper vergleicht nur die vorhandenen Daten des letzten Scans. Mit dem Label housekeeper_ignore an einer Entität, einem Gerät oder einer Automation oder über Ausblenden nimmst du ein Objekt aus. Die Schalter liegen nur in Housekeeper.",
   polRule_state_rate: "Zustandsänderungen pro Tag", polDesc_state_rate: "Entitäten, die in den zuletzt berechneten Last-Zahlen mindestens so oft am Tag ihren Zustand geändert haben, wie die Grenze sagt. Die Regel startet keine Recorder-Abfrage.", polLimit: "Grenze (Änderungen pro Entität und Tag)", polLimitSave: "Speichern", polPending: "Noch nicht berechnet: Öffne Recorder → Last einmal, dann prüft die Regel diese Zahlen.", polRate: "{n} Änderungen pro Tag",
@@ -1836,7 +1836,7 @@ Object.assign(TEXT.en, {
   polRule_automation_label: "Automation without a label", polDesc_automation_label: "Automations should carry at least one label. Only automations with an entity registry entry are checked; only they can have a label.",
   polRule_naming_scheme: "Naming scheme", polDesc_naming_scheme: "The entity id of a domain starts with a prefix you set below, for example wz_ for sensor. Without a prefix nothing is checked.",
   polAlso: "Same name as: {ids}", polExpected: "Expects the prefix {prefix}", polPrefixIs: "Prefix: {prefix}", polPrefixRemove: "Remove", polPrefixAdd: "Add", polPrefixDomain: "Domain (e.g. sensor)", polPrefixValue: "Prefix (e.g. wz_)", polPrefixNone: "No prefix set yet. Lowercase letters, digits and underscore are allowed; at most 10 domains.",
-  polHide: "Hide", polShow: "Show", polHiddenLabel: "hidden", polByLabel: "hidden by label",
+  polHide: "Hide", polShow: "Show", polHiddenLabel: "hidden", polByLabel: "left out by label",
   polHiddenN: "{n} hidden", polShowHidden: "Show hidden", polHideHidden: "Hide hidden", polMore: "and {n} more",
   polFootnote: "Policies are hints about tidiness and not defects: they do not count in health, findings, repair hints or sensors. Housekeeper only compares the data of the last scan. The label housekeeper_ignore on an entity, device or automation, or Hide, takes an object out. The switches live only in Housekeeper.",
   polRule_state_rate: "State changes per day", polDesc_state_rate: "Entities that changed state at least as often per day as the limit says, in the last calculated load numbers. The rule never starts a recorder query.", polLimit: "Limit (changes per entity and day)", polLimitSave: "Save", polPending: "Not calculated yet: open Recorder → Load once, then the rule checks those numbers.", polRate: "{n} changes per day",
@@ -11698,10 +11698,10 @@ const DONE_PERIODS = [7, 30, 90], ACTIVE_PLAN = ["dry_run", "backup", "running"]
 const FINDING_STATES = ["known", "snoozed", "hidden"];
 
 Object.assign(TEXT.de, {
-  bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ausgeblendet", bandMark: "Objekt-Notiz: {kind}", bandRemoveMark: "Entfernen",
+  bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ganz ausgenommen", bandMark: "Objekt-Notiz: {kind}", bandRemoveMark: "Entfernen",
 });
 Object.assign(TEXT.en, {
-  bandChange: "Change", bandUndo: "Take back", bandByLabel: "Hidden by a label", bandMark: "Object note: {kind}", bandRemoveMark: "Remove",
+  bandChange: "Change", bandUndo: "Take back", bandByLabel: "Left out by a label", bandMark: "Object note: {kind}", bandRemoveMark: "Remove",
 });
 
 class FindingStatusMixin {
@@ -13659,13 +13659,13 @@ class PlanWizardMixin {
 Object.assign(TEXT.de, {
   allLabels: "Alle Labels", lblTitle: "Labels", lblHint: "Housekeeper kennt drei feste Labels. Du legst sie in Home Assistant mit genau diesem Namen an und weist sie Objekten zu; Housekeeper erstellt sie nicht selbst.",
   lblOpenHa: "Labels in Home Assistant öffnen", lblCreated: "angelegt", lblMissing: "nicht angelegt", lblNoUse: "an keinem Objekt", lblUse: "an", lblShow: "Objekte anzeigen", lblCopy: "Name kopieren", lblCopied: "Kopiert",
-  lblKind_keep: "Nicht anfassen", lblKind_ignore: "Ignorieren", lblKind_critical: "Kritisch",
+  lblKind_keep: "Nicht anfassen", lblKind_ignore: "Ganz ausnehmen", lblKind_critical: "Kritisch",
   lblFx_keep_1: "Sperrt alle Bereinigungsschritte (deaktivieren, entfernen); das Gerät fehlt in „Bereinigen → Geräte deaktivieren“", lblFx_keep_0: "Blendet keine Befunde aus: Ein Ausfall wird weiter gemeldet",
   lblFx_ignore_1: "Blendet die Befunde der Entität, Automation oder des Geräts (samt seiner Entitäten) aus", lblFx_ignore_2: "Nimmt das Objekt aus Richtlinien, Zuverlässigkeit, Ausfallstürmen und Exposition und sperrt Bereinigungsschritte", lblFx_ignore_0: "Auch Ausfälle werden nicht mehr gemeldet",
   lblFx_critical_1: "Das Objekt zählt als wichtig; Ausfälle werden höher eingestuft", lblFx_critical_2: "Bereinigungsschritte müssen einzeln bestätigt werden; wirkt an Entität, Gerät oder Bereich", lblFx_critical_0: "Schlösser, Alarme, Rauch- und Wassermelder sind auch ohne Label kritisch",
   lblN_entity: "{n} Entitäten", lblN_entity1: "1 Entität", lblN_device: "{n} Geräten", lblN_device1: "1 Gerät", lblN_automation: "{n} Automationen", lblN_automation1: "1 Automation", lblN_script: "{n} Skripten", lblN_script1: "1 Skript", lblN_scene: "{n} Szenen", lblN_scene1: "1 Szene", lblN_area: "{n} Bereichen", lblN_area1: "1 Bereich",
   lblHow: "So legst du ein fehlendes Label an: In Home Assistant unter Einstellungen → Bereiche, Labels & Zonen → Labels ein Label mit genau diesem Namen erstellen, dann Geräte oder Entitäten (auch mehrere auf einmal) auswählen und das Label zuweisen. Danach neu scannen.",
-  lblFoot: "Soll nur nichts aufgeräumt werden, nimm housekeeper_keep. Soll Housekeeper ein Objekt ganz in Ruhe lassen, nimm housekeeper_ignore oder eine Objekt-Notiz. Für Geräte, die oft aus sind, passen die Objekt-Notiz „Absichtlich offline“ und Ausnahmeregeln mit Frist besser. Die Zahlen stammen aus dem letzten Scan.",
+  lblFoot: "„Nicht anfassen“ (housekeeper_keep): nur nichts aufräumen, Ausfälle werden weiter gemeldet. „Ganz ausnehmen“ (housekeeper_ignore): Housekeeper lässt das Objekt ganz in Ruhe, auch Ausfälle werden nicht mehr gemeldet. Ein Label hat weder Grund noch Prüfdatum; dafür passen die Objekt-Notiz (etwa „Absichtlich offline“) und Ausnahmeregeln besser. Die Zahlen stammen aus dem letzten Scan.",
   excTitle: "Ausnahmeregeln", excHint: "Housekeeper meldet Objekte nicht, auf die eine Regel passt: nach Bereich, Label, Integration, Typ (Domain), Gerät oder Entität. Die Regeln gelten nur in Housekeeper; Home Assistant bleibt unverändert. Das Label housekeeper_ignore wirkt zusätzlich fest.",
   excFormNew: "Regel anlegen", excFormEdit: "Regel bearbeiten", excAdd: "Regel hinzufügen", excEdit: "Ändern", excDelete: "Löschen", excLoading: "Regeln werden geladen …",
   excKind: "Art", excKind_area: "Bereich", excKind_label: "Label", excKind_integration: "Integration", excKind_domain: "Domain (Typ)", excTargets: "Auswahl", excNoTargets: "In Home Assistant gibt es dafür noch nichts zur Auswahl.",
@@ -13702,13 +13702,13 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   allLabels: "All labels", lblTitle: "Labels", lblHint: "Housekeeper knows three fixed labels. You create them in Home Assistant with exactly this name and assign them to objects; Housekeeper does not create them itself.",
   lblOpenHa: "Open labels in Home Assistant", lblCreated: "created", lblMissing: "not created", lblNoUse: "on no object", lblUse: "on", lblShow: "Show objects", lblCopy: "Copy name", lblCopied: "Copied",
-  lblKind_keep: "Do not touch", lblKind_ignore: "Ignore", lblKind_critical: "Critical",
+  lblKind_keep: "Do not touch", lblKind_ignore: "Leave out completely", lblKind_critical: "Critical",
   lblFx_keep_1: "Blocks every cleanup step (disable, remove); the device is missing from “Cleanup → Disable devices”", lblFx_keep_0: "Hides no findings: an outage is still reported",
   lblFx_ignore_1: "Hides the findings of the entity, automation or device (and its entities)", lblFx_ignore_2: "Takes the object out of policies, reliability, outage storms and exposure and blocks cleanup steps", lblFx_ignore_0: "Outages are no longer reported either",
   lblFx_critical_1: "The object counts as important; outages are rated higher", lblFx_critical_2: "Cleanup steps must be confirmed one by one; works on an entity, device or area", lblFx_critical_0: "Locks, alarms, smoke and water sensors are critical without the label too",
   lblN_entity: "{n} entities", lblN_entity1: "1 entity", lblN_device: "{n} devices", lblN_device1: "1 device", lblN_automation: "{n} automations", lblN_automation1: "1 automation", lblN_script: "{n} scripts", lblN_script1: "1 script", lblN_scene: "{n} scenes", lblN_scene1: "1 scene", lblN_area: "{n} areas", lblN_area1: "1 area",
   lblHow: "How to create a missing label: in Home Assistant under Settings → Areas, labels & zones → Labels, create a label with exactly this name, then select devices or entities (several at once) and assign the label. Then scan again.",
-  lblFoot: "If you only want nothing cleaned up, use housekeeper_keep. If Housekeeper should leave an object completely alone, use housekeeper_ignore or an object note. For devices that are often off, the object note “Offline on purpose” and exception rules with a delay fit better. The numbers come from the last scan.",
+  lblFoot: "“Do not touch” (housekeeper_keep): only nothing is cleaned up, outages are still reported. “Leave out completely” (housekeeper_ignore): Housekeeper leaves the object completely alone, outages are not reported either. A label has neither a reason nor a review date; for those the object note (such as “Offline on purpose”) and exception rules fit better. The numbers come from the last scan.",
   excTitle: "Exception rules", excHint: "Housekeeper does not report objects that a rule matches: by area, label, integration, type (domain), device or entity. The rules apply only in Housekeeper; Home Assistant stays unchanged. The label housekeeper_ignore keeps working on top.",
   excFormNew: "Add rule", excFormEdit: "Edit rule", excAdd: "Add rule", excEdit: "Change", excDelete: "Delete", excLoading: "Loading rules …",
   excKind: "Kind", excKind_area: "Area", excKind_label: "Label", excKind_integration: "Integration", excKind_domain: "Domain (type)", excTargets: "Selection", excNoTargets: "Home Assistant has nothing to choose from yet.",
