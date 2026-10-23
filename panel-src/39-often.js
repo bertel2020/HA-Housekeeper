@@ -120,6 +120,11 @@ class OftenMixin {
 
   // The card above the findings list: a fold with the count in its head, inside a list like every other one. Picked
   // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
+  // The picked suggestions: what to do with them, in the bar of the list beside the search.
+  oftenTools(n) {
+    return `${this.selTools("often", n, "data-often-clear")}<button type="button" class="btn quiet" data-often-skip-picked ${n ? "" : "disabled"}>${this.t("oftenSkip")}</button><button type="button" class="btn primary" data-often-picked ${n ? "" : "disabled"}>${this.t("oftenTakeN", { n: this.formatNumber(n) })}</button>`;
+  }
+
   oftenCard() {
     this.ensureStability?.();
     const items = this.oftenSuggestions();
@@ -130,7 +135,7 @@ class OftenMixin {
     const menu = r => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-often-take="${this.esc(r.key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("oftenTake")}</button><button type="button" class="menuitem" data-often-skip="${this.esc(r.key)}"><ha-icon icon="mdi:close"></ha-icon>${this.t("oftenSkip")}</button></div></details>`;
     const shown = this.selOnly?.often ? rows.filter(r => sel.has(r.key)) : rows;
     const list = this.sysList("often", shown, {
-      sort: "hides", dir: "desc", tie: r => r.key, empty: "oftenNone", text: r => `${r.title} ${r.id} ${r.pattern}`,
+      lead: this.oftenTools(sel.size), sort: "hides", dir: "desc", tie: r => r.key, empty: "oftenNone", text: r => `${r.title} ${r.id} ${r.pattern}`,
       sorts: [{ key: "name", label: "sortName", dir: "asc", get: r => r.title }, { key: "pattern", label: "oftenColPattern", dir: "asc", get: r => r.pattern }, { key: "hides", label: "oftenColFindings", dir: "desc", get: r => r.hides }],
       rowAttrs: r => `data-object="${this.esc(r.link)}" tabindex="0" role="button" aria-label="${this.esc(r.title)}"`,
       columns: [
@@ -143,10 +148,8 @@ class OftenMixin {
         { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
       ],
     });
-    const n = [...sel].length;
-    const bar = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("often", n, "data-often-clear")}<span class="toolgap"></span><button type="button" class="btn quiet" data-often-skip-picked ${n ? "" : "disabled"}>${this.t("oftenSkip")}</button><button type="button" class="btn primary" data-often-picked ${n ? "" : "disabled"}>${this.t("oftenTakeN", { n: this.formatNumber(n) })}</button></div>`;
     const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.t("oftenCount", { n: this.formatNumber(items.length) }))}</span></button>`;
-    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${bar}${list}</div>` : ""}</div></div>`;
+    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${list}</div>` : ""}</div></div>`;
   }
 
   oftenFindings(n) { return n === 1 ? this.t("oftenFindings1") : this.t("oftenFindings", { n: this.formatNumber(n) }); }
