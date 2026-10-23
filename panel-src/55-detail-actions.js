@@ -16,15 +16,15 @@ class DetailActionsMixin {
     const dup = item.object_type === "entity" ? open.find(f => f.rule_id === "entity.possible_duplicate" && f.affected_object) : null;
     const down = item.object_type === "entity" ? open.find(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification)) : null;
     // With a working twin, replacing it is the answer to the duplicate, filled in; offered once, there.
-    if (dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceTwin"), hint: "actHintReplaceTwin", finding: dup.key });
+    if (dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceTwin"), hint: "actHintReplaceTwin", finding: dup.key, ...(item.duplicate_of ? { plan: { kind: "replace_references", object_id: item.object_id, target: item.duplicate_of } } : {}) });
     if (down) {
       if (!dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceThis"), hint: "actHintReplace", finding: down.key });
       // Disabling an entity its integration no longer provides changes nothing; it is removed straight away (within its first day the plan asks to confirm).
-      if (item.reason === "not_provided") out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key });
-      else if (item.status !== "disabled") out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key });
+      if (item.reason === "not_provided") out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key, plan: { kind: "remove_entity", object_id: item.object_id } });
+      else if (item.status !== "disabled") out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     }
     const blocked = item.object_type === "automation" ? open.find(f => f.rule_id === "automation.blocked") : null;
-    if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key });
+    if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     // A sensor with long-term statistics can have wrong values repaired or be swapped for a new meter.
     if (item.object_type === "entity" && item.has_statistics && item.object_id.startsWith("sensor.")) {
       out.push({ attr: `data-act-repair="${this.esc(item.object_id)}"`, icon: "mdi:chart-line", label: this.t("actRepairValues"), hint: "actHintRepair" });

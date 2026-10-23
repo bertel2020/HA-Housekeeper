@@ -1778,7 +1778,7 @@ class StylesMixin {
 @media(max-width:600px){.fccard .pad{padding:18px 16px}.fctitle h3{font-size:calc(20px*var(--hk-fs,1))}}
       .fcirow.fcirec{height:auto;min-height:34px;padding:8px 6px;align-items:start;border-radius:8px;background:color-mix(in srgb,var(--hk-blue) 8%,transparent)}.fcirow.fcirec .fcii{margin-top:1px}.fcirow.fcirec span:nth-child(3){line-height:1.45}
       .fcact.rec{border:2px solid var(--hk-blue);padding:13px 15px}.fcrectag{display:inline-block;justify-self:start;margin-bottom:3px;padding:1px 8px;border-radius:10px;font-style:normal;font-size:calc(11px*var(--hk-fs,1));background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}
-      .fcways{margin:4px 0 12px;padding:6px 14px 10px;border:1px solid var(--hk-blue);border-radius:12px}.fcways .fceyebrow{display:block;margin:4px 0 2px}.fcway{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--hk-border)}.fcways .fceyebrow+.fcway{border-top:0}.fcway .fctxt{display:grid;gap:2px}.fcway small{color:var(--hk-muted)}.fcii-mute{background:var(--hk-soft);color:var(--hk-muted)}
+      .fcways{margin:4px 0 12px;padding:6px 14px 10px;border:1px solid var(--hk-blue);border-radius:12px}.fcways .fceyebrow{display:block;margin:4px 0 2px}.fcway{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--hk-border)}.fcways .fceyebrow+.fcway{border-top:0}.fcway .fctxt{display:grid;gap:2px}.fcway small{color:var(--hk-muted)}.fcii-mute{background:var(--hk-soft);color:var(--hk-muted)}.fcplan{border-color:var(--hk-blue)}.fcplan h3{margin:2px 0 8px}.fcplanrows{list-style:none;margin:0 0 8px;padding:0;display:grid}.fcplanrows li{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--hk-border)}.fcplanrows li:first-child{border-top:0}.fcplanrows small{color:var(--hk-muted)}
       ${this.themeCss()}
 .acttools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.actsearch{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.actday{margin:14px 16px 4px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.actlist{list-style:none;margin:0;padding:0 16px}.actrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--hk-border)}.acttext{flex:1;min-width:0}.acttext small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.actrow time{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
 .fcinfo{margin:10px 0 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);height:140px;box-sizing:border-box;padding:0 12px;overflow:hidden}.fcirow{display:grid;grid-template-columns:24px 92px minmax(0,1fr) 16px;gap:10px;align-items:center;width:100%;height:34px;margin:0;padding:0;border:0;border-top:1px solid var(--hk-border);background:none;color:inherit;font:inherit;font-size:calc(13px*var(--hk-fs,1));text-align:left}.fcinfo>:first-child{border-top:0}.fcirow>span:nth-child(2){color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase}.fcirow>span:nth-child(3){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fcirow>ha-icon{--mdc-icon-size:16px;color:var(--hk-muted);opacity:.45}.fcii{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%}.fcii ha-icon{--mdc-icon-size:15px}.fcii-blue{background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}.fcii-amber{background:color-mix(in srgb,var(--hk-amber) 18%,transparent);color:var(--hk-amber)}.fcii-red{background:color-mix(in srgb,var(--hk-red) 14%,transparent);color:var(--hk-red)}.fcii-green{background:color-mix(in srgb,var(--hk-green) 16%,transparent);color:var(--hk-green-text,var(--hk-green))}.fcipill{display:inline-block;padding:1px 10px;border-radius:99px;background:color-mix(in srgb,var(--hk-green) 14%,transparent);color:var(--hk-green-text,var(--hk-green));font-size:calc(12px*var(--hk-fs,1))}button.fcirow{cursor:pointer}button.fcirow:hover,button.fcirow:focus-visible{background:var(--hk-soft)}button.fcirow:hover>ha-icon,button.fcirow:focus-visible>ha-icon{opacity:1}.fcino{color:var(--hk-muted)}.fciok{color:var(--hk-green-text,var(--hk-green))}.fcwhat{height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle{min-height:56px}.fctitle h3,.fctitle .fcid{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle>div:last-child{min-width:0}
@@ -4750,11 +4750,12 @@ class CleanupMixin {
   }
 
   // Every new plan opens the same way: it becomes the open plan, goes on top of the journal and the
-  // plan page shows it. The page it came from stays one step back. (`view` is kept for the callers' sake.)
-  openNewPlan(plan, _view) {
+  // plan page shows it. The page it came from stays one step back. A card of the cleanup shows its plan itself
+  // (`view` "card"); otherwise `view` is kept for the callers' sake.
+  openNewPlan(plan, view) {
     this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
     this.journal = [plan, ...(this.journal || [])];
-    this.showPlanView();
+    if (view !== "card") this.showPlanView();
   }
 
   // The plan page is a page of its own without a menu entry; "back" returns to where the plan was started.
@@ -11898,15 +11899,15 @@ class DetailActionsMixin {
     const dup = item.object_type === "entity" ? open.find(f => f.rule_id === "entity.possible_duplicate" && f.affected_object) : null;
     const down = item.object_type === "entity" ? open.find(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification)) : null;
     // With a working twin, replacing it is the answer to the duplicate, filled in; offered once, there.
-    if (dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceTwin"), hint: "actHintReplaceTwin", finding: dup.key });
+    if (dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceTwin"), hint: "actHintReplaceTwin", finding: dup.key, ...(item.duplicate_of ? { plan: { kind: "replace_references", object_id: item.object_id, target: item.duplicate_of } } : {}) });
     if (down) {
       if (!dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceThis"), hint: "actHintReplace", finding: down.key });
       // Disabling an entity its integration no longer provides changes nothing; it is removed straight away (within its first day the plan asks to confirm).
-      if (item.reason === "not_provided") out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key });
-      else if (item.status !== "disabled") out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key });
+      if (item.reason === "not_provided") out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key, plan: { kind: "remove_entity", object_id: item.object_id } });
+      else if (item.status !== "disabled") out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     }
     const blocked = item.object_type === "automation" ? open.find(f => f.rule_id === "automation.blocked") : null;
-    if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key });
+    if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     // A sensor with long-term statistics can have wrong values repaired or be swapped for a new meter.
     if (item.object_type === "entity" && item.has_statistics && item.object_id.startsWith("sensor.")) {
       out.push({ attr: `data-act-repair="${this.esc(item.object_id)}"`, icon: "mdi:chart-line", label: this.t("actRepairValues"), hint: "actHintRepair" });
@@ -19014,7 +19015,7 @@ class FirstCleanupMixin {
     else if (n === 4) body = this.fcRoundCards();
     else if (n === 2) body = look ? this.oftenCard() || this.fcEmpty() : this.fcOftenStep(count);
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
-    else body = look ? this.findingsView() : this.fcCards(n);
+    else body = look ? this.findingsView() : this.fcPlanBlock() + this.fcCards(n);
     const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : n === 4 ? "fcToRound" : "fcToCards")}</button>` : "";
     const seen = this.fcSeen(n);
     const next = count && !seen
@@ -19039,6 +19040,7 @@ class FirstCleanupMixin {
     this.bindFcInfo(root);
     this.bindFcRound(root);
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { this.fcFixOpen = this.fcFixOpen === el.dataset.fcFix ? "" : el.dataset.fcFix; this.render(); });
+    this.bindFcPlan(root);
     root.querySelectorAll("[data-fc-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcObject); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
@@ -19533,6 +19535,7 @@ Object.assign(TEXT.de, {
   fcRecPickAllText: "Nichts verweist darauf. Es läuft erst am Ende als ein Plan mit Vorschau und Backup.",
   fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
   fcFixWaysHead: "Wege zum Beheben", fcFixObject: "Zum Objekt", fcFixObjectHint: "Selbst ansehen und lösen. Von dort kommst du hierher zurück.",
+  fcPlanPreview: "Vorschau", fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
   fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
 });
 Object.assign(TEXT.en, {
@@ -19553,6 +19556,7 @@ Object.assign(TEXT.en, {
   fcRecPickAllText: "Nothing refers to them. It only runs at the end as one plan with preview and backup.",
   fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
   fcFixWaysHead: "Ways to fix it", fcFixObject: "Go to the object", fcFixObjectHint: "Look at it and solve it yourself. You come back here from there.",
+  fcPlanPreview: "Preview", fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
 
@@ -19597,11 +19601,78 @@ class FcRecommendMixin {
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it, and the page of the object.
   fcFixWays(key, obj) {
-    if (!obj || this.fcFixOpen !== key) return "";
+    if (!obj || this.fcFixOpen !== key || this.fcPlanKey) return "";
     const items = this.fixItems(obj, key).items;
-    const rows = items.map(it => `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span><button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button></div>`).join("");
+    const rows = items.map(it => `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button>`}</div>`).join("");
     const object = `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:open-in-new"></ha-icon></span><span class="fctxt"><strong>${this.t("fcFixObject")}</strong><small>${this.t("fcFixObjectHint")}</small></span><button type="button" class="btn quiet" data-fc-object="${this.esc(key)}">${this.t("actOpen")}</button></div>`;
     return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${object}${items.length ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
+  }
+
+  // A way that Housekeeper can run on its own is judged in the card: the preview, one click to run it, the check afterwards.
+  async fcPlanStart(key, req) {
+    if (this.planBusy) return;
+    this.planBusy = true; this.fcPlanError = ""; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [req] });
+      this.openNewPlan(plan, "card"); this.planChanges = null; this.cleanupError = "";
+      this.fcPlanKey = key; this.fcPlanReq = req;
+    } catch (err) { this.fcPlanError = this.errText(err); }
+    this.planBusy = false; this.render();
+  }
+
+  async fcPlanRun() {
+    if (!this.plan || this.cleanupBusy) return;
+    await this.confirmAndRun();
+    if (this.cleanupError) this.fcPlanError = this.cleanupError;
+    this.render();
+  }
+
+  async fcPlanDrop() {
+    const open = this.plan && this.isOpenPreview(this.plan);
+    this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
+    if (open) await this.discardPlan(); else { this.plan = null; this.render(); }
+  }
+
+  // The plan of the card: the preview with its one button, then the progress, then the result with the way back.
+  fcPlanBlock() {
+    const plan = this.plan, key = this.fcPlanKey;
+    if (!key) return this.fcPlanError ? `<section class="panel fcplan"><div class="pad"><div class="error">${this.esc(this.fcPlanError)}</div></div></section>` : "";
+    if (!plan) return "";
+    const obj = this.findObject(key), name = this.esc(obj?.name || plan.actions[0]?.name || key);
+    const status = plan.status || "dry_run", acts = plan.actions;
+    const run = acts.filter(a => a.executable), t = (k, p) => this.t(k, p);
+    const reasons = a => (a.reasons || []).map(r => t(`reason_${r}`)).join(" ");
+    const rows = acts.map(a => `<li><strong>${this.esc(a.name || a.object_id)}</strong><small>${this.esc([a.kind === "replace_references" ? `${a.object_id} → ${a.target || "?"}` : "", reasons(a)].filter(Boolean).join(" · "))}</small></li>`).join("");
+    const used = acts.reduce((n, a) => n + (a.used_by || []).length, 0);
+    const error = this.fcPlanError ? `<div class="error">${this.esc(this.fcPlanError)}</div>` : "";
+    const changed = this.planChanges?.length ? `<p class="fcfacts">${t("planChangedTitle")}</p>` : "";
+    let head, body, btns;
+    const drop = (label = "confirmCancel") => `<button type="button" class="btn" data-fc-plan-drop>${t(label)}</button>`;
+    if (status === "dry_run") {
+      head = t("fcPlanPreviewHead");
+      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}`;
+      btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
+    } else if (status === "backup" || status === "running" || (status === "executed" && !plan.verification)) {
+      head = t("fcPlanRunning");
+      body = `${this.planProgressBar()}<p class="fcfacts">${t(status === "backup" ? "backupRunning" : "fcPlanRunningText")}</p>`;
+      btns = "";
+    } else {
+      const done = acts.some(a => a.result?.state === "done"), undone = !done && acts.some(a => a.result?.state === "undone");
+      const ok = done && (!plan.verification || plan.verification.ok);
+      head = t(undone ? "fcPlanUndone" : ok ? "fcPlanDone" : done ? "fcPlanCheckFailed" : "fcPlanAborted");
+      const stop = acts.map(a => a.result?.state === "not_run" ? t(`abort_${a.result.reason}`) : a.result?.stopped ? t(`abort_${a.result.stopped}`) : "").filter(Boolean)[0];
+      const checks = plan.verification ? `<div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${t(`check_${c.check}`)}</span>`).join("")}</div>` : "";
+      body = `<ul class="fcplanrows">${rows}</ul>${checks}${stop ? `<p class="fcfacts">${this.esc(stop)}</p>` : ""}${this.undoMessage && undone ? `<p class="fcfacts">${this.esc(this.undoMessage)}</p>` : ""}`;
+      btns = `${done ? `<button type="button" class="btn accent" data-fc-plan-undo><ha-icon icon="mdi:undo-variant"></ha-icon>${t("fcUndo")}</button>` : ""}<button type="button" class="btn primary" data-fc-plan-drop>${t("fcPlanOk")}</button>`;
+    }
+    return `<section class="panel fcplan"><div class="pad"><small class="fceyebrow">${name}</small><h3>${head}</h3>${error}${body}<div class="fcmore">${btns}</div></div></section>`;
+  }
+
+  bindFcPlan(root) {
+    root.querySelectorAll("[data-fc-plan]").forEach(el => el.onclick = () => this.fcPlanStart(el.dataset.key, JSON.parse(el.dataset.fcPlan)));
+    root.querySelector("[data-fc-plan-run]")?.addEventListener("click", () => this.fcPlanRun());
+    root.querySelectorAll("[data-fc-plan-drop]").forEach(el => el.onclick = () => this.fcPlanDrop());
+    root.querySelector("[data-fc-plan-undo]")?.addEventListener("click", () => this.undoPlan());
   }
 }
 

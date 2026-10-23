@@ -809,11 +809,12 @@ class CleanupMixin {
   }
 
   // Every new plan opens the same way: it becomes the open plan, goes on top of the journal and the
-  // plan page shows it. The page it came from stays one step back. (`view` is kept for the callers' sake.)
-  openNewPlan(plan, _view) {
+  // plan page shows it. The page it came from stays one step back. A card of the cleanup shows its plan itself
+  // (`view` "card"); otherwise `view` is kept for the callers' sake.
+  openNewPlan(plan, view) {
     this.plan = plan; this.confirmation = null; this.ack = new Set(); this.confirmWord = "";
     this.journal = [plan, ...(this.journal || [])];
-    this.showPlanView();
+    if (view !== "card") this.showPlanView();
   }
 
   // The plan page is a page of its own without a menu entry; "back" returns to where the plan was started.

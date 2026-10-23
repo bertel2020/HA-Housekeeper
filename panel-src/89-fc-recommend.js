@@ -20,6 +20,7 @@ Object.assign(TEXT.de, {
   fcRecPickAllText: "Nichts verweist darauf. Es läuft erst am Ende als ein Plan mit Vorschau und Backup.",
   fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
   fcFixWaysHead: "Wege zum Beheben", fcFixObject: "Zum Objekt", fcFixObjectHint: "Selbst ansehen und lösen. Von dort kommst du hierher zurück.",
+  fcPlanPreview: "Vorschau", fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
   fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
 });
 Object.assign(TEXT.en, {
@@ -40,6 +41,7 @@ Object.assign(TEXT.en, {
   fcRecPickAllText: "Nothing refers to them. It only runs at the end as one plan with preview and backup.",
   fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
   fcFixWaysHead: "Ways to fix it", fcFixObject: "Go to the object", fcFixObjectHint: "Look at it and solve it yourself. You come back here from there.",
+  fcPlanPreview: "Preview", fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
 
@@ -84,10 +86,77 @@ class FcRecommendMixin {
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it, and the page of the object.
   fcFixWays(key, obj) {
-    if (!obj || this.fcFixOpen !== key) return "";
+    if (!obj || this.fcFixOpen !== key || this.fcPlanKey) return "";
     const items = this.fixItems(obj, key).items;
-    const rows = items.map(it => `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span><button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button></div>`).join("");
+    const rows = items.map(it => `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button>`}</div>`).join("");
     const object = `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:open-in-new"></ha-icon></span><span class="fctxt"><strong>${this.t("fcFixObject")}</strong><small>${this.t("fcFixObjectHint")}</small></span><button type="button" class="btn quiet" data-fc-object="${this.esc(key)}">${this.t("actOpen")}</button></div>`;
     return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${object}${items.length ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
+  }
+
+  // A way that Housekeeper can run on its own is judged in the card: the preview, one click to run it, the check afterwards.
+  async fcPlanStart(key, req) {
+    if (this.planBusy) return;
+    this.planBusy = true; this.fcPlanError = ""; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: [req] });
+      this.openNewPlan(plan, "card"); this.planChanges = null; this.cleanupError = "";
+      this.fcPlanKey = key; this.fcPlanReq = req;
+    } catch (err) { this.fcPlanError = this.errText(err); }
+    this.planBusy = false; this.render();
+  }
+
+  async fcPlanRun() {
+    if (!this.plan || this.cleanupBusy) return;
+    await this.confirmAndRun();
+    if (this.cleanupError) this.fcPlanError = this.cleanupError;
+    this.render();
+  }
+
+  async fcPlanDrop() {
+    const open = this.plan && this.isOpenPreview(this.plan);
+    this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
+    if (open) await this.discardPlan(); else { this.plan = null; this.render(); }
+  }
+
+  // The plan of the card: the preview with its one button, then the progress, then the result with the way back.
+  fcPlanBlock() {
+    const plan = this.plan, key = this.fcPlanKey;
+    if (!key) return this.fcPlanError ? `<section class="panel fcplan"><div class="pad"><div class="error">${this.esc(this.fcPlanError)}</div></div></section>` : "";
+    if (!plan) return "";
+    const obj = this.findObject(key), name = this.esc(obj?.name || plan.actions[0]?.name || key);
+    const status = plan.status || "dry_run", acts = plan.actions;
+    const run = acts.filter(a => a.executable), t = (k, p) => this.t(k, p);
+    const reasons = a => (a.reasons || []).map(r => t(`reason_${r}`)).join(" ");
+    const rows = acts.map(a => `<li><strong>${this.esc(a.name || a.object_id)}</strong><small>${this.esc([a.kind === "replace_references" ? `${a.object_id} → ${a.target || "?"}` : "", reasons(a)].filter(Boolean).join(" · "))}</small></li>`).join("");
+    const used = acts.reduce((n, a) => n + (a.used_by || []).length, 0);
+    const error = this.fcPlanError ? `<div class="error">${this.esc(this.fcPlanError)}</div>` : "";
+    const changed = this.planChanges?.length ? `<p class="fcfacts">${t("planChangedTitle")}</p>` : "";
+    let head, body, btns;
+    const drop = (label = "confirmCancel") => `<button type="button" class="btn" data-fc-plan-drop>${t(label)}</button>`;
+    if (status === "dry_run") {
+      head = t("fcPlanPreviewHead");
+      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}`;
+      btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
+    } else if (status === "backup" || status === "running" || (status === "executed" && !plan.verification)) {
+      head = t("fcPlanRunning");
+      body = `${this.planProgressBar()}<p class="fcfacts">${t(status === "backup" ? "backupRunning" : "fcPlanRunningText")}</p>`;
+      btns = "";
+    } else {
+      const done = acts.some(a => a.result?.state === "done"), undone = !done && acts.some(a => a.result?.state === "undone");
+      const ok = done && (!plan.verification || plan.verification.ok);
+      head = t(undone ? "fcPlanUndone" : ok ? "fcPlanDone" : done ? "fcPlanCheckFailed" : "fcPlanAborted");
+      const stop = acts.map(a => a.result?.state === "not_run" ? t(`abort_${a.result.reason}`) : a.result?.stopped ? t(`abort_${a.result.stopped}`) : "").filter(Boolean)[0];
+      const checks = plan.verification ? `<div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${t(`check_${c.check}`)}</span>`).join("")}</div>` : "";
+      body = `<ul class="fcplanrows">${rows}</ul>${checks}${stop ? `<p class="fcfacts">${this.esc(stop)}</p>` : ""}${this.undoMessage && undone ? `<p class="fcfacts">${this.esc(this.undoMessage)}</p>` : ""}`;
+      btns = `${done ? `<button type="button" class="btn accent" data-fc-plan-undo><ha-icon icon="mdi:undo-variant"></ha-icon>${t("fcUndo")}</button>` : ""}<button type="button" class="btn primary" data-fc-plan-drop>${t("fcPlanOk")}</button>`;
+    }
+    return `<section class="panel fcplan"><div class="pad"><small class="fceyebrow">${name}</small><h3>${head}</h3>${error}${body}<div class="fcmore">${btns}</div></div></section>`;
+  }
+
+  bindFcPlan(root) {
+    root.querySelectorAll("[data-fc-plan]").forEach(el => el.onclick = () => this.fcPlanStart(el.dataset.key, JSON.parse(el.dataset.fcPlan)));
+    root.querySelector("[data-fc-plan-run]")?.addEventListener("click", () => this.fcPlanRun());
+    root.querySelectorAll("[data-fc-plan-drop]").forEach(el => el.onclick = () => this.fcPlanDrop());
+    root.querySelector("[data-fc-plan-undo]")?.addEventListener("click", () => this.undoPlan());
   }
 }

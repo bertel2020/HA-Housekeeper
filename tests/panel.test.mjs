@@ -7022,6 +7022,27 @@ test("a card of the cleanup recommends one answer from its facts, never keeping,
   assert.ok(el.fcFixWays("device:d", el.findObject("device:d")).includes('data-fc-object="device:d"'), "the page of the object is one way among the others");
 });
 
+test("a way of Fix that Housekeeper runs itself is judged in the card: preview, one click, result with undo", async () => {
+  const { el } = panel("en");
+  const obj = { object_type: "entity", object_id: "sensor.gone", name: "Gone", reason: "not_provided", status: "active" };
+  const finding = { key: "k", rule_id: "entity.state_unavailable", object_id: "sensor.gone", classification: "orphaned", impact: "low", ignored: false };
+  el.data = { ...DATA, objects: [obj], causes: [], findings: [finding] };
+  const ways = el.fixItems(obj, "entity:sensor.gone").items;
+  assert.equal(JSON.stringify(ways.find(w => w.plan)?.plan), JSON.stringify({ kind: "remove_entity", object_id: "sensor.gone" }));
+  el.fcFixOpen = "entity:sensor.gone";
+  assert.ok(el.fcFixWays("entity:sensor.gone", obj).includes("data-fc-plan="), "the way offers a preview in the card");
+  const plan = { plan_id: "p", status: "dry_run", created_at: new Date().toISOString(), actions: [{ kind: "remove_entity", object_id: "sensor.gone", name: "Gone", executable: true, verdict: "ok", reasons: [] }] };
+  el._hass = { language: "en", callWS: async () => plan };
+  el.render = () => {};
+  await el.fcPlanStart("entity:sensor.gone", ways.find(w => w.plan).plan);
+  let html = el.fcPlanBlock();
+  assert.ok(html.includes("data-fc-plan-run") && html.includes("Gone") && html.includes("data-fc-plan-drop"));
+  assert.equal(el.fcFixWays("entity:sensor.gone", obj), "", "the ways make room for the plan");
+  el.plan = { ...plan, status: "verified", verification: { ok: true, checks: [] }, actions: [{ ...plan.actions[0], result: { state: "done" } }] };
+  html = el.fcPlanBlock();
+  assert.ok(html.includes("Done and checked") && html.includes("data-fc-plan-undo"), "a finished plan can be undone from the card");
+});
+
 test("the texts say Marketplace instead of HACS only when the store is the Marketplace", () => {
   const { el } = panel("de");
   assert.equal(el.t("hkUpdateLatest"), "Bei HACS verfügbar");

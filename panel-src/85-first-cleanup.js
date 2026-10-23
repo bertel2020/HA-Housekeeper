@@ -520,7 +520,7 @@ class FirstCleanupMixin {
     else if (n === 4) body = this.fcRoundCards();
     else if (n === 2) body = look ? this.oftenCard() || this.fcEmpty() : this.fcOftenStep(count);
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
-    else body = look ? this.findingsView() : this.fcCards(n);
+    else body = look ? this.findingsView() : this.fcPlanBlock() + this.fcCards(n);
     const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : n === 4 ? "fcToRound" : "fcToCards")}</button>` : "";
     const seen = this.fcSeen(n);
     const next = count && !seen
@@ -545,6 +545,7 @@ class FirstCleanupMixin {
     this.bindFcInfo(root);
     this.bindFcRound(root);
     root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => { this.fcFixOpen = this.fcFixOpen === el.dataset.fcFix ? "" : el.dataset.fcFix; this.render(); });
+    this.bindFcPlan(root);
     root.querySelectorAll("[data-fc-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcObject); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
