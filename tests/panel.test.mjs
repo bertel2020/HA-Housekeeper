@@ -7026,7 +7026,8 @@ test("a card of the cleanup recommends one answer from its facts, never keeping,
   el.fcFixOpen = "";
   assert.equal(el.fcFixWays("device:d", el.findObject("device:d")), "");
   el.fcFixOpen = "device:d";
-  assert.ok(el.fcFixWays("device:d", el.findObject("device:d")).includes('data-fc-object="device:d"'), "the page of the object is one way among the others");
+  assert.ok(!el.fcFixWays("device:d", el.findObject("device:d")).includes("data-fc-object"), "the page of the object is no way of fixing");
+  assert.ok(!el.fcCards(3).includes("data-fc-fix"), "no tile Fix where Housekeeper has no way");
 });
 
 test("a way of Fix that Housekeeper runs itself is judged in the card: preview, one click, result with undo", async () => {
