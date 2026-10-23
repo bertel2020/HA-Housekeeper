@@ -592,6 +592,36 @@ async def websocket_activity(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/activity_undo", vol.Required("entry_id"): str}
+)
+@callback
+@with_scanner
+def websocket_activity_undo(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Put a decision or a mark back as it was before the entry; the entry offers no undo after."""
+    entry = scanner.activity.get(msg["entry_id"])
+    undo = entry["undo"] if entry else None
+    if not undo:
+        connection.send_error(msg["id"], "not_found", "Nothing to undo for this entry")
+        return
+    if undo["type"] == "ignore":
+        scanner.restore_decision(undo["key"], undo["previous"])
+    elif undo["type"] == "mark":
+        object_type, _, object_id = undo["key"].partition(":")
+        scanner.restore_mark(object_type, object_id, undo["previous"])
+    else:
+        connection.send_error(msg["id"], "not_found", "Nothing to undo for this entry")
+        return
+    scanner.activity.drop_undo(msg["entry_id"])
+    connection.send_result(msg["id"], {"undone": True})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/decision_notice_dismiss"})
 @callback
 @with_scanner
@@ -1574,6 +1604,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_first_cleanup_set)
     websocket_api.async_register_command(hass, websocket_first_cleanup_later)
     websocket_api.async_register_command(hass, websocket_activity)
+    websocket_api.async_register_command(hass, websocket_activity_undo)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
     websocket_api.async_register_command(hass, websocket_fix_check)

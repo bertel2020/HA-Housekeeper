@@ -1979,3 +1979,24 @@ async def test_first_cleanup_puts_the_rest_off_together_and_hides_nothing_else(
     assert [(e["key"], e["action"], e["source"]) for e in activity["items"]] == [
         ("k_quiet", "snooze", "cleanup")
     ]
+    await call(
+        {
+            "type": "ha_housekeeper/ignore",
+            "finding_key": "k_quiet",
+            "ignored": True,
+            "kind": "keep",
+            "reason": "so",
+            "days": 30,
+        }
+    )
+    kept = (await call({"type": "ha_housekeeper/activity", "kinds": ["decision"]}))["result"][
+        "items"
+    ][0]
+    assert kept["action"] == "keep" and kept["undo"] and "previous" not in kept["undo"]
+    assert (await call({"type": "ha_housekeeper/activity_undo", "entry_id": kept["id"]}))["success"]
+    assert (
+        scanner.ignored.entry("k_quiet")["kind"] == "snooze"
+    )  # back to what it was, not just lifted
+    assert not (await call({"type": "ha_housekeeper/activity_undo", "entry_id": kept["id"]}))[
+        "success"
+    ]

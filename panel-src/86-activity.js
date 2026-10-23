@@ -53,7 +53,7 @@ class ActivityMixin {
     ].filter(Boolean).join(" · ");
     const undo = !e.undo || e.action === "undo" ? ""
       : e.undo.type === "plan" ? `<button type="button" class="btn quiet" data-jump="journal" data-jump-tab="plans">${this.t("actOpenJournal")}</button>`
-      : `<button type="button" class="btn quiet" data-act-undo="${this.esc(`${e.undo.type}|${e.undo.key}`)}">${this.t("actUndo")}</button>`;
+      : `<button type="button" class="btn quiet" data-act-undo="${this.esc(e.id)}">${this.t("actUndo")}</button>`;
     return `<li class="actrow"><span class="tile mute"><ha-icon icon="${this.activityIcon(e)}"></ha-icon></span><span class="acttext"><strong>${this.esc(this.activityVerb(e))}</strong>${what ? ` ${this.esc(what)}` : ""}${details ? `<small>${this.esc(details)}</small>` : ""}</span><time datetime="${this.esc(e.at)}" title="${this.esc(this.formatDate(e.at))}">${this.esc(new Intl.DateTimeFormat(this.lang, { timeStyle: "short" }).format(new Date(e.at)))}</time>${undo}</li>`;
   }
 
@@ -88,11 +88,8 @@ class ActivityMixin {
     root.querySelector("[data-act-retry]")?.addEventListener("click", () => this.loadActivity(true));
     root.querySelector("[data-act-csv]")?.addEventListener("click", () => this.activityCsv());
     root.querySelectorAll("[data-act-undo]").forEach(el => el.onclick = async () => {
-      const [type, ...rest] = el.dataset.actUndo.split("|"), key = rest.join("|");
-      try {
-        if (type === "ignore") await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false, source: "list" });
-        else { const [object_type, ...id] = key.split(":"); await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: id.join(":"), source: "list" }); }
-      } catch (err) { if (err?.code !== "not_found") { this.failed(err); this.render(); return; } }
+      try { await this._hass.callWS({ type: "ha_housekeeper/activity_undo", entry_id: el.dataset.actUndo }); }
+      catch (err) { if (err?.code !== "not_found") { this.failed(err); this.render(); return; } }
       await this.refreshData?.();
       this.loadActivity(true);
     });

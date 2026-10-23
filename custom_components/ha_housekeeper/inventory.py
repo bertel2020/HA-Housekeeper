@@ -7,6 +7,7 @@ import logging
 import time
 from collections import Counter
 from collections.abc import Callable
+from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -2079,6 +2080,7 @@ class InventoryScanner:
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
         )
+        previous = self.ignored.entry(key)
 
         def store() -> bool:
             if not ignored:
@@ -2104,13 +2106,17 @@ class InventoryScanner:
         ):
             if not store():
                 return False
-            self._record_decision(key, ignored, kind, reason, days, now, by, via or source, finding)
+            self._record_decision(
+                key, ignored, kind, reason, days, now, by, via or source, finding, previous
+            )
             return True
         if finding is None:
             return False
         if not store():
             return False
-        self._record_decision(key, ignored, kind, reason, days, now, by, via or source, finding)
+        self._record_decision(
+            key, ignored, kind, reason, days, now, by, via or source, finding, previous
+        )
         self._refresh_finding(finding)
         return True
 
@@ -2125,6 +2131,7 @@ class InventoryScanner:
         by: str | None,
         source: str | None,
         finding: dict[str, Any] | None,
+        previous: dict[str, Any] | None,
     ) -> None:
         """Write a decision on a finding (or taking it back) into the activity."""
         self.activity.record(
@@ -2137,7 +2144,7 @@ class InventoryScanner:
             until=(now + timedelta(days=days)).isoformat() if ignored and days else None,
             by=by,
             source=source,
-            undo={"type": "ignore", "key": key} if ignored else None,
+            undo={"type": "ignore", "key": key, "previous": previous} if ignored else None,
         )
 
     def _followers_of(self, key: str) -> int:
@@ -2188,6 +2195,7 @@ class InventoryScanner:
         done = 0
         for key in keys:
             finding = found.get(key)
+            previous = self.ignored.entry(key)
             if finding is None or not self.ignored.decide(
                 key,
                 "snooze",
@@ -2200,7 +2208,9 @@ class InventoryScanner:
             ):
                 continue
             self._mark_ignored(finding, registry)
-            self._record_decision(key, True, "snooze", reason, days, now, by, source, finding)
+            self._record_decision(
+                key, True, "snooze", reason, days, now, by, source, finding, previous
+            )
             done += 1
         if done:
             self._after_decisions()
@@ -2234,6 +2244,7 @@ class InventoryScanner:
             return "target_unknown"
         now = datetime.now(UTC)
         until = now + timedelta(days=days) if days else None
+        previous = deepcopy(self.marks.items.get(mark_key(object_type, object_id)))
         if not self.marks.set(
             mark_key(object_type, object_id),
             kind,
@@ -2257,7 +2268,7 @@ class InventoryScanner:
             until=until.isoformat() if until else None,
             by=by,
             source=via or source,
-            undo={"type": "mark", "key": mark_key(object_type, object_id)},
+            undo={"type": "mark", "key": mark_key(object_type, object_id), "previous": previous},
         )
         self._refresh_marks()
         return None

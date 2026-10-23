@@ -54,7 +54,11 @@ def _clean(value: Any) -> dict[str, Any] | None:
         "until": _text(value.get("until"), 40),
         "by": _text(value.get("by"), 80),
         "source": value["source"] if value.get("source") in SOURCES else None,
-        "undo": {"type": undo["type"], "key": _text(undo.get("key")) or ""}
+        "undo": {
+            "type": undo["type"],
+            "key": _text(undo.get("key")) or "",
+            "previous": undo["previous"] if isinstance(undo.get("previous"), dict) else None,
+        }
         if isinstance(undo, dict) and undo.get("type") in UNDO_KINDS
         else None,
         "backfilled": value.get("backfilled") is True,
@@ -96,7 +100,7 @@ class ActivityStore:
         until: str | None = None,
         by: str | None = None,
         source: str | None = None,
-        undo: dict[str, str] | None = None,
+        undo: dict[str, Any] | None = None,
     ) -> None:
         """Append one entry; an unknown kind is dropped."""
         entry = _clean(
@@ -119,6 +123,18 @@ class ActivityStore:
         self._items.insert(0, entry)
         self._trim(now)
         self._save()
+
+    def get(self, entry_id: str) -> dict[str, Any] | None:
+        """A copy of one entry, or None."""
+        entry = next((e for e in self._items if e["id"] == entry_id), None)
+        return dict(entry) if entry else None
+
+    def drop_undo(self, entry_id: str) -> None:
+        """The entry was undone: it offers no undo any more."""
+        for entry in self._items:
+            if entry["id"] == entry_id and entry["undo"]:
+                entry["undo"] = None
+                self._save()
 
     def _trim(self, now: datetime) -> None:
         cutoff = (now - timedelta(days=KEEP_DAYS)).isoformat()
@@ -219,7 +235,10 @@ class ActivityStore:
         limit = max(1, min(limit, PAGE_LIMIT))
         page = rows[:limit]
         return {
-            "items": [dict(e) for e in page],
+            "items": [
+                {**e, "undo": e["undo"] and {k: v for k, v in e["undo"].items() if k != "previous"}}
+                for e in page
+            ],
             "next": page[-1]["at"] if len(rows) > limit else None,
             "total": len(rows),
         }
