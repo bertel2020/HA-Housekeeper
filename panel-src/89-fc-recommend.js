@@ -26,6 +26,7 @@ Object.assign(TEXT.de, {
   fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt ein Vermerk den Ausfall samt Folgen still.",
   fcRecNoFixLong: "Seit {span} aus, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk; sonst sieh nach dem Gerät.",
   fcRecNoFixNoSince: "Seit wann es besteht, ist nicht bekannt, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk.",
+  fcRecPause: "Auto-Pause.", fcRecPauseText: "Die Integration lässt sich immer wieder nicht einrichten. Auto-Pause schaltet sie ab und versucht es nach 1, 3 und 6 Stunden und dann täglich wieder, höchstens 7 Tage lang.",
   fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
 });
 Object.assign(TEXT.en, {
@@ -52,6 +53,7 @@ Object.assign(TEXT.en, {
   fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, a mark silences the outage with everything that follows.",
   fcRecNoFixLong: "Down for {span}, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits; otherwise look at the device.",
   fcRecNoFixNoSince: "It is not known since when this has been the case, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits.",
+  fcRecPause: "Auto-pause.", fcRecPauseText: "The integration keeps failing to set up. Auto-pause switches it off and tries again after 1, 3 and 6 hours and then daily, for up to 7 days.",
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
 
@@ -64,12 +66,15 @@ class FcRecommendMixin {
     if (!outage) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixBroken") };
     // "Fix" is only recommended where Housekeeper has a way to fix it; an outage it cannot repair gets the mark instead.
     const fixable = this.fcFixable(f, key), obj = this.findObject(key);
+    // Where the only way is the auto-pause, the answer names it instead of a plain "Fix".
+    const pauseOnly = fixable && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
+    const fix = body => (pauseOnly ? { act: "fix", head: t("fcRecPause"), body: t("fcRecPauseText") } : { act: "fix", head: t("fcRecFix"), body });
     const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
-    if (followers >= 5) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixFollows", { n: this.formatNumber(followers) }) } : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
-    if (!since) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixNoSince") } : instead(t("fcRecNoFixNoSince"));
+    if (followers >= 5) return fixable ? fix(t("fcRecFixFollows", { n: this.formatNumber(followers) })) : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
+    if (!since) return fixable ? fix(t("fcRecFixNoSince")) : instead(t("fcRecNoFixNoSince"));
     const hours = Math.max(0, (Date.now() - since) / 3600000), steps = this.outageSteps();
-    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixLong", { span: this.spanText(hours) }) } : instead(t("fcRecNoFixLong", { span: this.spanText(hours) }));
+    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return fixable ? fix(t("fcRecFixLong", { span: this.spanText(hours) })) : instead(t("fcRecNoFixLong", { span: this.spanText(hours) }));
     if (this.oftenFor?.(f)) return { act: "later", head: t("fcRecLater"), body: t("fcRecLaterOften") };
     const next = steps.find(([, at]) => at > hours);
     return { act: "later", head: t("fcRecLater"), body: next ? t("fcRecLaterShort", { span: this.spanText(hours), level: t(`chip_${next[0]}`), next: this.spanText(next[1] - hours) }) : t("fcRecLaterOften") };
@@ -81,8 +86,8 @@ class FcRecommendMixin {
     const obj = this.findObject(key);
     if (!obj) return false;
     if (f.classification === "broken_reference" || f.topic === "failing_automations") return true;
-    if (["config_entry.not_loaded", "config_entry.reauth", "app.stopped_in_use"].includes(f.rule_id)) return true;
-    return this.fixItems(obj, key).items.some(it => it.plan);
+    if (["config_entry.reauth", "app.stopped_in_use"].includes(f.rule_id)) return true;
+    return this.fixItems(obj, key).items.some(it => it.plan || it.ap);
   }
 
   // A suggestion of stage 2: always "set the mark"; the reason names the pattern.
@@ -109,7 +114,7 @@ class FcRecommendMixin {
 
   // One way of an object as a row: its name, what it does, and the preview of its plan (or the old "Open").
   fcWayRow(it, key) {
-    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button>`}</div>`;
+    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${this.t(it.btn || "actOpen")}</button>`}</div>`;
   }
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it.

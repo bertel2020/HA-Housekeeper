@@ -1147,7 +1147,7 @@ Object.assign(TEXT.de, {
   store_exceptions: "Ausnahmeregeln", storeText_exceptions: "Regeln für Bereiche und Labels, deren Objekte nicht gemeldet werden.",
   store_marks: "Markierungen", storeText_marks: "Hinweise an Objekten: absichtlich offline, saisonal, Reserve, behalten.",
   store_activity: "Aktivität", storeText_activity: "Was getan wurde: Entscheidungen, Vermerke, Pläne, Logbuch, mit Zeit und Benutzer. Höchstens 2000 Einträge und ein Jahr.",
-  store_often: "Abgelehnte Vorschläge", storeText_often: "Vorschläge für Vermerke, bei denen du „Nein danke“ gesagt hast; sie kommen nach 180 Tagen wieder.",
+  store_often: "Abgelehnte Vorschläge", storeText_often: "Vorschläge für Vermerke, bei denen du „Später erinnern“ gewählt hast; sie kommen nach 180 Tagen wieder.",
   store_notes: "Logbuch", storeText_notes: "Einträge, die du selbst schreibst.",
   store_reminders: "Erinnerungen", storeText_reminders: "Wartungen mit Intervall, Fälligkeit und den Tagen, an denen sie erledigt wurden.",
   store_goals: "Ziele", storeText_goals: "Was für dein Haus „in Ordnung“ heißt.",
@@ -1196,7 +1196,7 @@ Object.assign(TEXT.en, {
   store_exceptions: "Exception rules", storeText_exceptions: "Rules for areas and labels whose objects are not reported.",
   store_marks: "Marks", storeText_marks: "Notes on objects: offline on purpose, seasonal, spare, keep.",
   store_activity: "Activity", storeText_activity: "What was done: decisions, marks, plans, logbook, with time and user. At most 2000 entries and one year.",
-  store_often: "Declined suggestions", storeText_often: "Suggestions for marks you answered “No thanks”; they come back after 180 days.",
+  store_often: "Declined suggestions", storeText_often: "Suggestions for marks you answered “Remind me later”; they come back after 180 days.",
   store_notes: "Logbook", storeText_notes: "Entries you write yourself.",
   store_reminders: "Reminders", storeText_reminders: "Maintenance with its interval, due day and the days it was done.",
   store_goals: "Goals", storeText_goals: "What \"in order\" means for your house.",
@@ -6797,7 +6797,7 @@ Object.assign(TEXT.de, {
   apSettings: "Einstellungen", apSettingsSub: "Pausiert nach {a} Fehlversuchen in {h} Std.", apAttempts: "Fehlversuche", apAttemptsHint: "So viele gescheiterte Einrichtungsversuche lösen die Pause aus.", apHours: "Stunden", apHoursHint: "Die Fehlversuche müssen in diesem Zeitraum liegen.",
   apHouse: "Auch Integrationen pausieren, die eine Hausfunktion tragen", apHouseHint: "Aus: Eine Integration, auf die sich eine Hausfunktion verlässt, wird nie von selbst pausiert.",
   apPlan: "Wiederholungen: 3 × 1 Std., 3 × 3 Std., 12 × 6 Std., dann täglich, höchstens {days} Tage ab Beginn der Pause. Danach bleibt die Pause bestehen und Housekeeper meldet es.",
-  apPaused: "Pausiert", apManual: "Integration von Hand pausieren", apManualHint: "Wenn du schon weißt, dass es gerade ein Problem gibt.", apPick: "Integration wählen", apPause: "Pausieren", apSince: "Seit {span}", apNext: "nächster Versuch in {span}", apTry: "Versuch {n} von {total}",
+  apDo: "Pausieren", apPaused: "Pausiert", apManual: "Integration von Hand pausieren", apManualHint: "Wenn du schon weißt, dass es gerade ein Problem gibt.", apPick: "Integration wählen", apPause: "Pausieren", apSince: "Seit {span}", apNext: "nächster Versuch in {span}", apTry: "Versuch {n} von {total}",
   apExhausted: "Keine Versuche mehr, bitte prüfen", apReasonAuto: "{n} Fehlversuche", apReasonManual: "von dir pausiert",
   apTodoOne: "{name} ist pausiert", apTodoMany: "{n} Integrationen pausiert", apTodoHint: "Versuch {n} von {total}, nächster in {span} · seit {since}", apTodoExhaustedOne: "{name}: {days} Tage ohne Erfolg, bitte prüfen", apTodoExhaustedMany: "{n} Pausen ohne Erfolg, bitte prüfen", apTodoExhaustedHint: "Pause bleibt bestehen · Protokoll, Update und Quelle prüfen", apTodoCheck: "Bitte prüfen", apWouldPause: "Auto-Pause würde das pausieren",
   apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
@@ -6816,7 +6816,7 @@ Object.assign(TEXT.en, {
   apSettings: "Settings", apSettingsSub: "Pauses after {a} failed attempts within {h} h", apAttempts: "failed attempts", apAttemptsHint: "This many failed setup attempts start the pause.", apHours: "hours", apHoursHint: "The failed attempts must fall within this time.",
   apHouse: "Also pause integrations that carry a house function", apHouseHint: "Off: an integration that a house function relies on is never paused by itself.",
   apPlan: "Retries: 3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, for up to {days} days from the start of the pause. After that the pause stays and Housekeeper tells you.",
-  apPaused: "Paused", apManual: "Pause an integration by hand", apManualHint: "When you already know there is a problem right now.", apPick: "Choose an integration", apPause: "Pause", apSince: "For {span}", apNext: "next try in {span}", apTry: "Try {n} of {total}",
+  apDo: "Pause", apPaused: "Paused", apManual: "Pause an integration by hand", apManualHint: "When you already know there is a problem right now.", apPick: "Choose an integration", apPause: "Pause", apSince: "For {span}", apNext: "next try in {span}", apTry: "Try {n} of {total}",
   apExhausted: "No more tries, please look", apReasonAuto: "{n} failed attempts", apReasonManual: "paused by you",
   apTodoOne: "{name} is paused", apTodoMany: "{n} integrations paused", apTodoHint: "Try {n} of {total}, next in {span} · for {since}", apTodoExhaustedOne: "{name}: {days} days without success, please look", apTodoExhaustedMany: "{n} pauses without success, please look", apTodoExhaustedHint: "The pause stays · check the log, the update and the source", apTodoCheck: "Please look", apWouldPause: "Auto-pause would pause this",
   apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
@@ -12193,6 +12193,9 @@ class DetailActionsMixin {
     const reload = item.object_type === "config_entry" ? (open.find(f => f.rule_id === "config_entry.not_loaded" && !["setup_retry", "setup_in_progress", "migration_error", "failed_unload"].includes(f.evidence?.[0]?.kind)) ? item.object_id : "")
       : item.object_type === "device" && open.some(f => f.rule_id === "device.down") && item.config_entry_ids?.length === 1 ? item.config_entry_ids[0] : "";
     if (reload) out.push({ attr: `data-act-reload="${this.esc(reload)}"`, icon: "mdi:reload", label: this.t("actReload"), hint: "actHintReload", finding: open.find(f => f.rule_id === "config_entry.not_loaded" || f.rule_id === "device.down")?.key, plan: { kind: "reload_integration", object_id: reload } });
+    // An integration that keeps failing to set up can be sent into the auto-pause, which tries it again later on its own.
+    const failing = item.object_type === "config_entry" ? open.find(f => f.rule_id === "config_entry.not_loaded") : null;
+    if (failing && (this.autoPause?.pausable || []).some(p => p.entry_id === item.object_id)) out.push({ attr: `data-ap-send="${this.esc(item.object_id)}"`, icon: "mdi:pause-circle-outline", label: this.t("apSend"), hint: "apSendHint", btn: "apDo", finding: failing.key, ap: true });
     if (item.object_type === "device") out.push({ attr: `data-act-exchange="${this.esc(item.object_id)}"`, icon: "mdi:devices", label: this.t("actExchange"), hint: "actHintExchange" });
     return { items: out, broken };
   }
@@ -19429,6 +19432,7 @@ class FirstCleanupMixin {
     }
     const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
+    this.ensureAutoPause();
     const rec = many ? null : this.fcRecCard(f, key);
     // What is open on the card is what is marked: one tile at a time, none at first. A tile that is open closes again when clicked.
     if (this.decide?.fc && !keys.includes(this.decide.key)) this.decide = null;
@@ -19698,7 +19702,7 @@ Object.assign(TEXT.de, {
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel irrt sich hier. Der Befund verschwindet aus der Liste.", fcMarkHint: "Hält fest, warum das Objekt so ist, auch mit Zeitfenster.", fcLogHidden: "Ausgeblendet", fcSumHidden: "{n} ausgeblendet", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
-  fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
+  fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Später erinnern", fcNoThanksHint: "Der Vorschlag kommt nach 180 Tagen wieder.", fcTakeAll: "Alle {n} als Vermerk anlegen",
   fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Aufräumen zurücksetzen?", fcResetYes: "Zurücksetzen",
   fcResetAsk: "Das Aufräumen wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
   fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
@@ -19736,7 +19740,7 @@ Object.assign(TEXT.en, {
   fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding leaves the list.", fcMarkHint: "Records why the object is as it is, also with a time window.", fcLogHidden: "Hidden", fcSumHidden: "{n} hidden", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
-  fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
+  fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "Remind me later", fcNoThanksHint: "The suggestion comes back after 180 days.", fcTakeAll: "Set all {n} as marks",
   fcPrev: "Undo last", fcPrevHint: "Takes the last decision or skip back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the cleanup?", fcResetYes: "Reset",
   fcResetAsk: "The cleanup is reset and begins again at the welcome page. What you decided in it stays decided; the history with “Undo” is emptied.", fcNewRound: "Start a new pass", fcNewRoundAsk: "The cleanup begins again. What you decided stays decided; the history with “Undo” is emptied.",
   fcSumKeep: "{n} intended", fcSumLater: "{n} on “Later”", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
@@ -20143,6 +20147,7 @@ Object.assign(TEXT.de, {
   fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt ein Vermerk den Ausfall samt Folgen still.",
   fcRecNoFixLong: "Seit {span} aus, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk; sonst sieh nach dem Gerät.",
   fcRecNoFixNoSince: "Seit wann es besteht, ist nicht bekannt, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt ein Vermerk.",
+  fcRecPause: "Auto-Pause.", fcRecPauseText: "Die Integration lässt sich immer wieder nicht einrichten. Auto-Pause schaltet sie ab und versucht es nach 1, 3 und 6 Stunden und dann täglich wieder, höchstens 7 Tage lang.",
   fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
 });
 Object.assign(TEXT.en, {
@@ -20169,6 +20174,7 @@ Object.assign(TEXT.en, {
   fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, a mark silences the outage with everything that follows.",
   fcRecNoFixLong: "Down for {span}, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits; otherwise look at the device.",
   fcRecNoFixNoSince: "It is not known since when this has been the case, and Housekeeper cannot repair anything here. If it is off on purpose, a mark fits.",
+  fcRecPause: "Auto-pause.", fcRecPauseText: "The integration keeps failing to set up. Auto-pause switches it off and tries again after 1, 3 and 6 hours and then daily, for up to 7 days.",
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
 
@@ -20181,12 +20187,15 @@ class FcRecommendMixin {
     if (!outage) return { act: "fix", head: t("fcRecFix"), body: t("fcRecFixBroken") };
     // "Fix" is only recommended where Housekeeper has a way to fix it; an outage it cannot repair gets the mark instead.
     const fixable = this.fcFixable(f, key), obj = this.findObject(key);
+    // Where the only way is the auto-pause, the answer names it instead of a plain "Fix".
+    const pauseOnly = fixable && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
+    const fix = body => (pauseOnly ? { act: "fix", head: t("fcRecPause"), body: t("fcRecPauseText") } : { act: "fix", head: t("fcRecFix"), body });
     const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
-    if (followers >= 5) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixFollows", { n: this.formatNumber(followers) }) } : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
-    if (!since) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixNoSince") } : instead(t("fcRecNoFixNoSince"));
+    if (followers >= 5) return fixable ? fix(t("fcRecFixFollows", { n: this.formatNumber(followers) })) : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
+    if (!since) return fixable ? fix(t("fcRecFixNoSince")) : instead(t("fcRecNoFixNoSince"));
     const hours = Math.max(0, (Date.now() - since) / 3600000), steps = this.outageSteps();
-    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return fixable ? { act: "fix", head: t("fcRecFix"), body: t("fcRecFixLong", { span: this.spanText(hours) }) } : instead(t("fcRecNoFixLong", { span: this.spanText(hours) }));
+    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return fixable ? fix(t("fcRecFixLong", { span: this.spanText(hours) })) : instead(t("fcRecNoFixLong", { span: this.spanText(hours) }));
     if (this.oftenFor?.(f)) return { act: "later", head: t("fcRecLater"), body: t("fcRecLaterOften") };
     const next = steps.find(([, at]) => at > hours);
     return { act: "later", head: t("fcRecLater"), body: next ? t("fcRecLaterShort", { span: this.spanText(hours), level: t(`chip_${next[0]}`), next: this.spanText(next[1] - hours) }) : t("fcRecLaterOften") };
@@ -20198,8 +20207,8 @@ class FcRecommendMixin {
     const obj = this.findObject(key);
     if (!obj) return false;
     if (f.classification === "broken_reference" || f.topic === "failing_automations") return true;
-    if (["config_entry.not_loaded", "config_entry.reauth", "app.stopped_in_use"].includes(f.rule_id)) return true;
-    return this.fixItems(obj, key).items.some(it => it.plan);
+    if (["config_entry.reauth", "app.stopped_in_use"].includes(f.rule_id)) return true;
+    return this.fixItems(obj, key).items.some(it => it.plan || it.ap);
   }
 
   // A suggestion of stage 2: always "set the mark"; the reason names the pattern.
@@ -20226,7 +20235,7 @@ class FcRecommendMixin {
 
   // One way of an object as a row: its name, what it does, and the preview of its plan (or the old "Open").
   fcWayRow(it, key) {
-    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn" ${it.attr}>${this.t("actOpen")}</button>`}</div>`;
+    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${this.t(it.btn || "actOpen")}</button>`}</div>`;
   }
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it.

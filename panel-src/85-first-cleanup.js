@@ -394,6 +394,7 @@ class FirstCleanupMixin {
     }
     const unit = (this.fcFocus && queue.find(u => u.some(x => x.key === this.fcFocus))) || queue[0], f = unit[0], keys = unit.map(x => x.key), many = unit.length > 1, kattr = `data-keys="${this.esc(JSON.stringify(keys))}"`, key = many ? this.ownerKey(f) : this.findingKey(f), obj = this.findObject(key), days = this.fc?.later_days || 90;
     const follows = this.fcFollowers(f), since = f.first_detected_at ? this.t("fcSince", { age: this.agoText(f.first_detected_at) }) : "", ownerType = this.findObject(key)?.object_type || this.findingType(f);
+    this.ensureAutoPause();
     const rec = many ? null : this.fcRecCard(f, key);
     // What is open on the card is what is marked: one tile at a time, none at first. A tile that is open closes again when clicked.
     if (this.decide?.fc && !keys.includes(this.decide.key)) this.decide = null;
@@ -663,7 +664,7 @@ Object.assign(TEXT.de, {
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel irrt sich hier. Der Befund verschwindet aus der Liste.", fcMarkHint: "Hält fest, warum das Objekt so ist, auch mit Zeitfenster.", fcLogHidden: "Ausgeblendet", fcSumHidden: "{n} ausgeblendet", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
-  fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
+  fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Später erinnern", fcNoThanksHint: "Der Vorschlag kommt nach 180 Tagen wieder.", fcTakeAll: "Alle {n} als Vermerk anlegen",
   fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Aufräumen zurücksetzen?", fcResetYes: "Zurücksetzen",
   fcResetAsk: "Das Aufräumen wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
   fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
@@ -701,7 +702,7 @@ Object.assign(TEXT.en, {
   fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding leaves the list.", fcMarkHint: "Records why the object is as it is, also with a time window.", fcLogHidden: "Hidden", fcSumHidden: "{n} hidden", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
-  fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
+  fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "Remind me later", fcNoThanksHint: "The suggestion comes back after 180 days.", fcTakeAll: "Set all {n} as marks",
   fcPrev: "Undo last", fcPrevHint: "Takes the last decision or skip back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the cleanup?", fcResetYes: "Reset",
   fcResetAsk: "The cleanup is reset and begins again at the welcome page. What you decided in it stays decided; the history with “Undo” is emptied.", fcNewRound: "Start a new pass", fcNewRoundAsk: "The cleanup begins again. What you decided stays decided; the history with “Undo” is emptied.",
   fcSumKeep: "{n} intended", fcSumLater: "{n} on “Later”", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",

@@ -34,6 +34,9 @@ class DetailActionsMixin {
     const reload = item.object_type === "config_entry" ? (open.find(f => f.rule_id === "config_entry.not_loaded" && !["setup_retry", "setup_in_progress", "migration_error", "failed_unload"].includes(f.evidence?.[0]?.kind)) ? item.object_id : "")
       : item.object_type === "device" && open.some(f => f.rule_id === "device.down") && item.config_entry_ids?.length === 1 ? item.config_entry_ids[0] : "";
     if (reload) out.push({ attr: `data-act-reload="${this.esc(reload)}"`, icon: "mdi:reload", label: this.t("actReload"), hint: "actHintReload", finding: open.find(f => f.rule_id === "config_entry.not_loaded" || f.rule_id === "device.down")?.key, plan: { kind: "reload_integration", object_id: reload } });
+    // An integration that keeps failing to set up can be sent into the auto-pause, which tries it again later on its own.
+    const failing = item.object_type === "config_entry" ? open.find(f => f.rule_id === "config_entry.not_loaded") : null;
+    if (failing && (this.autoPause?.pausable || []).some(p => p.entry_id === item.object_id)) out.push({ attr: `data-ap-send="${this.esc(item.object_id)}"`, icon: "mdi:pause-circle-outline", label: this.t("apSend"), hint: "apSendHint", btn: "apDo", finding: failing.key, ap: true });
     if (item.object_type === "device") out.push({ attr: `data-act-exchange="${this.esc(item.object_id)}"`, icon: "mdi:devices", label: this.t("actExchange"), hint: "actHintExchange" });
     return { items: out, broken };
   }

@@ -7385,6 +7385,20 @@ test("a device that is down and belongs to one integration offers reloading it a
   assert.ok(!el.fcFixable(f, "device:d"), "two integrations: no single one to reload");
 });
 
+test("an integration that keeps failing to set up offers the auto-pause, and the card recommends it by name", () => {
+  const { el } = panel("en");
+  el._hass = { language: "en", callWS: async () => ({}) };
+  el.render = () => {};
+  const f = { key: "k1", rule_id: "config_entry.not_loaded", object_id: "e1", classification: "unavailable", topic: "down", impact: "medium", ignored: false, evidence: [{ kind: "setup_in_progress" }], first_detected_at: new Date(Date.now() - 47 * 3600000).toISOString(), confidence: 0.9 };
+  el.data = { ...DATA, objects: [{ object_type: "config_entry", object_id: "e1", name: "Landkreis" }], causes: [], findings: [f] };
+  assert.ok(!el.fcFixable(f, "config_entry:e1"), "no way yet: no tile Fix");
+  el.autoPause = { pausable: [{ entry_id: "e1" }], paused: [] };
+  assert.ok(el.fcFixable(f, "config_entry:e1"));
+  const rec = el.fcRecCard(f, "config_entry:e1");
+  assert.equal(rec.act, "fix");
+  assert.equal(rec.head, "Auto-pause.");
+});
+
 test("a start compares each integration with its usual time and links to the ones the scan knows", () => {
   const { el } = panel("en");
   const item = (seconds, extra = {}) => ({ domain: "alexa_devices", title: "rrm", seconds, state: "loaded", entries: 1, ...extra });
