@@ -7000,3 +7000,13 @@ test("the first cleanup shows the findings of one object as one card and answers
   await el.fcUndo(el.fcToast.id);
   assert.ok(el.data.findings.every(x => !x.ignored), "one step back lifts both");
 });
+
+test("the texts say Marketplace instead of HACS only when the store is the Marketplace", () => {
+  const { el } = panel("de");
+  assert.equal(el.t("hkUpdateLatest"), "Bei HACS verfügbar");
+  el.data = { ...DATA, meta: { ...DATA.meta, hacs_store: "marketplace" } };
+  assert.equal(el.t("hkUpdateLatest"), "Im Marketplace verfügbar");
+  assert.equal(el.t("compTabHacs"), "Marketplace");
+  el._hass = { language: "en" };
+  assert.equal(el.t("hkUpdateHacsInstalled"), "Installed by the Marketplace");
+});
