@@ -76,7 +76,6 @@ def test_keep_hides_nothing_but_blocks_cleanup_of_the_object_and_its_entities() 
     assert "marked_keep" not in entities["sensor.a"]
 
 
-@pytest.mark.xfail(strict=True, reason="only the keep mark blocks cleanup so far")
 @pytest.mark.parametrize("kind", ["expected_offline", "seasonal", "spare"])
 def test_a_mark_that_expects_the_object_also_blocks_cleanup(kind) -> None:
     objects, findings = _world()
