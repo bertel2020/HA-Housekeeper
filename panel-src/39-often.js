@@ -27,10 +27,36 @@ const OFTEN_MARK_DAYS = 90;
 const OFTEN_DEVICE_MIN = 3;
 
 class OftenMixin {
+  // The "no thanks" answers (key -> time in ms) are kept on the server; the browser's own list of earlier versions is brought over once.
   oftenDismissed() {
-    let stored = {};
-    try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.often") || "{}") || {}; } catch (_) { stored = {}; }
-    return { ...stored, ...(this._oftenSkip || {}) };
+    this.ensureOften();
+    return { ...(this._oftenServer || {}), ...(this._oftenSkip || {}) };
+  }
+
+  ensureOften() {
+    if (this._oftenRequested || !this._hass?.callWS) return;
+    this._oftenRequested = true;
+    (async () => {
+      try {
+        const reply = await this._hass.callWS({ type: "ha_housekeeper/often" });
+        this._oftenServer = Object.fromEntries(Object.entries(reply?.skipped || {}).map(([k, at]) => [k, Date.parse(at)]));
+        let stored = {};
+        try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.often") || "{}") || {}; } catch (_) { stored = {}; }
+        const old = Object.entries(stored).filter(([k, ms]) => Number.isFinite(ms) && !(k in this._oftenServer));
+        if (old.length) {
+          const answers = {};
+          old.forEach(([k, ms]) => { (answers[new Date(Math.min(ms, Date.now())).toISOString()] ||= []).push(k); });
+          for (const [at, keys] of Object.entries(answers)) await this._hass.callWS({ type: "ha_housekeeper/often_skip", skip: true, keys, at });
+          old.forEach(([k, ms]) => { this._oftenServer[k] = ms; });
+        }
+        try { globalThis.localStorage?.removeItem("ha_housekeeper.often"); } catch (_) { /* no storage */ }
+        this.render();
+      } catch (_) { this._oftenRequested = false; }
+    })();
+  }
+
+  async oftenSend(skip, keys, source) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/often_skip", skip, keys, source }); } catch (err) { this.failed?.(err); }
   }
 
   // { info, days, device, members } for an entity or a device that falls out regularly, else null; a dismissed one stays quiet
@@ -197,10 +223,10 @@ class OftenMixin {
   }
 
   // "Do not ask again" holds for the entities of a group, not for the device: another entity that fails later is asked about.
-  skipOften(key) {
-    for (const k of key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]) (this._oftenSkip ||= {})[k] = Date.now();
-    const kept = this.oftenDismissed();
-    try { globalThis.localStorage?.setItem("ha_housekeeper.often", JSON.stringify(kept)); } catch (_) { /* no storage */ }
+  skipOften(key, source = "list") {
+    const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
+    for (const k of keys) (this._oftenSkip ||= {})[k] = Date.now();
+    this.oftenSend(true, keys, source);
     this.render();
   }
 

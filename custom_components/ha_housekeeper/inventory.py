@@ -130,6 +130,7 @@ from .monitor import MonitorStore
 from .notes import NoteStore
 from .notify import NotifyStore, async_announce
 from .observations import ObservationStore
+from .often import OftenStore
 from .outage_levels import DIRECT_ENTRY_STATES, Levels, outage_level
 from .outage_scan import OutageScans, outage_start
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
@@ -920,6 +921,7 @@ STORE_NAMES = (
     "runs",
     "config_changes",
     "activity",
+    "often",
 )
 
 
@@ -965,6 +967,7 @@ class InventoryScanner:
         self.reminders = ReminderStore(hass)
         self.notes = NoteStore(hass)
         self.activity = ActivityStore(hass)
+        self.often = OftenStore(hass)
         self.batteries = BatteryStore(hass)
         self.notify = NotifyStore(hass)
         self.hints = HintStore(hass)

@@ -247,12 +247,8 @@ class FirstCleanupMixin {
   // "No thanks" of stage 2 taken back: the suggestion is asked about again.
   fcUnskipOften(key, named) {
     const keys = named?.length ? named : key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
-    for (const k of keys) delete (this._oftenSkip ||= {})[k];
-    try {
-      const stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.often") || "{}") || {};
-      keys.forEach(k => delete stored[k]);
-      globalThis.localStorage?.setItem("ha_housekeeper.often", JSON.stringify(stored));
-    } catch (_) { /* no storage */ }
+    for (const k of keys) { delete (this._oftenSkip ||= {})[k]; delete (this._oftenServer ||= {})[k]; }
+    this.oftenSend(false, keys, "cleanup");
   }
 
   // The keys a card button stands for: all findings of the card, or the one named by the button.
@@ -434,7 +430,7 @@ class FirstCleanupMixin {
   fcNoThanks(key) {
     const row = (this.oftenSuggestions?.() || []).filter(x => x.key === key).map(x => this.oftenRowOf(x))[0];
     const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
-    this.skipOften(key);
+    this.skipOften(key, "cleanup");
     if (this.fcFocus === key) this.fcFocus = "";
     this.fcNotify(this.fcLogAdd({ stage: 2, action: "nothanks", key, keys, name: row?.title || "" }));
     this.render();

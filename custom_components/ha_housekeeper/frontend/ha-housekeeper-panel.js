@@ -1104,7 +1104,7 @@ Object.assign(TEXT.en, {
 const STORE_GROUPS = [
   ["history", ["observations", "history", "events", "runs", "replies", "load", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
   ["proof", ["journal", "activity", "attest"]],
-  ["yours", ["ignored", "exceptions", "marks", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
+  ["yours", ["ignored", "exceptions", "marks", "often", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
 
 Object.assign(TEXT.de, {
@@ -1143,6 +1143,7 @@ Object.assign(TEXT.de, {
   store_exceptions: "Ausnahmeregeln", storeText_exceptions: "Regeln für Bereiche und Labels, deren Objekte nicht gemeldet werden.",
   store_marks: "Markierungen", storeText_marks: "Hinweise an Objekten: absichtlich offline, saisonal, Reserve, behalten.",
   store_activity: "Aktivität", storeText_activity: "Was getan wurde: Entscheidungen, Vermerke, Pläne, Logbuch, mit Zeit und Benutzer. Höchstens 2000 Einträge und ein Jahr.",
+  store_often: "Abgelehnte Vorschläge", storeText_often: "Vorschläge für Vermerke, bei denen du „Nein danke“ gesagt hast; sie kommen nach 180 Tagen wieder.",
   store_notes: "Logbuch", storeText_notes: "Einträge, die du selbst schreibst.",
   store_reminders: "Erinnerungen", storeText_reminders: "Wartungen mit Intervall, Fälligkeit und den Tagen, an denen sie erledigt wurden.",
   store_goals: "Ziele", storeText_goals: "Was für dein Haus „in Ordnung“ heißt.",
@@ -1190,6 +1191,7 @@ Object.assign(TEXT.en, {
   store_exceptions: "Exception rules", storeText_exceptions: "Rules for areas and labels whose objects are not reported.",
   store_marks: "Marks", storeText_marks: "Notes on objects: offline on purpose, seasonal, spare, keep.",
   store_activity: "Activity", storeText_activity: "What was done: decisions, marks, plans, logbook, with time and user. At most 2000 entries and one year.",
+  store_often: "Declined suggestions", storeText_often: "Suggestions for marks you answered “No thanks”; they come back after 180 days.",
   store_notes: "Logbook", storeText_notes: "Entries you write yourself.",
   store_reminders: "Reminders", storeText_reminders: "Maintenance with its interval, due day and the days it was done.",
   store_goals: "Goals", storeText_goals: "What \"in order\" means for your house.",
@@ -9100,10 +9102,36 @@ const OFTEN_MARK_DAYS = 90;
 const OFTEN_DEVICE_MIN = 3;
 
 class OftenMixin {
+  // The "no thanks" answers (key -> time in ms) are kept on the server; the browser's own list of earlier versions is brought over once.
   oftenDismissed() {
-    let stored = {};
-    try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.often") || "{}") || {}; } catch (_) { stored = {}; }
-    return { ...stored, ...(this._oftenSkip || {}) };
+    this.ensureOften();
+    return { ...(this._oftenServer || {}), ...(this._oftenSkip || {}) };
+  }
+
+  ensureOften() {
+    if (this._oftenRequested || !this._hass?.callWS) return;
+    this._oftenRequested = true;
+    (async () => {
+      try {
+        const reply = await this._hass.callWS({ type: "ha_housekeeper/often" });
+        this._oftenServer = Object.fromEntries(Object.entries(reply?.skipped || {}).map(([k, at]) => [k, Date.parse(at)]));
+        let stored = {};
+        try { stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.often") || "{}") || {}; } catch (_) { stored = {}; }
+        const old = Object.entries(stored).filter(([k, ms]) => Number.isFinite(ms) && !(k in this._oftenServer));
+        if (old.length) {
+          const answers = {};
+          old.forEach(([k, ms]) => { (answers[new Date(Math.min(ms, Date.now())).toISOString()] ||= []).push(k); });
+          for (const [at, keys] of Object.entries(answers)) await this._hass.callWS({ type: "ha_housekeeper/often_skip", skip: true, keys, at });
+          old.forEach(([k, ms]) => { this._oftenServer[k] = ms; });
+        }
+        try { globalThis.localStorage?.removeItem("ha_housekeeper.often"); } catch (_) { /* no storage */ }
+        this.render();
+      } catch (_) { this._oftenRequested = false; }
+    })();
+  }
+
+  async oftenSend(skip, keys, source) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/often_skip", skip, keys, source }); } catch (err) { this.failed?.(err); }
   }
 
   // { info, days, device, members } for an entity or a device that falls out regularly, else null; a dismissed one stays quiet
@@ -9270,10 +9298,10 @@ class OftenMixin {
   }
 
   // "Do not ask again" holds for the entities of a group, not for the device: another entity that fails later is asked about.
-  skipOften(key) {
-    for (const k of key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]) (this._oftenSkip ||= {})[k] = Date.now();
-    const kept = this.oftenDismissed();
-    try { globalThis.localStorage?.setItem("ha_housekeeper.often", JSON.stringify(kept)); } catch (_) { /* no storage */ }
+  skipOften(key, source = "list") {
+    const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
+    for (const k of keys) (this._oftenSkip ||= {})[k] = Date.now();
+    this.oftenSend(true, keys, source);
     this.render();
   }
 
@@ -18704,12 +18732,8 @@ class FirstCleanupMixin {
   // "No thanks" of stage 2 taken back: the suggestion is asked about again.
   fcUnskipOften(key, named) {
     const keys = named?.length ? named : key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
-    for (const k of keys) delete (this._oftenSkip ||= {})[k];
-    try {
-      const stored = JSON.parse(globalThis.localStorage?.getItem("ha_housekeeper.often") || "{}") || {};
-      keys.forEach(k => delete stored[k]);
-      globalThis.localStorage?.setItem("ha_housekeeper.often", JSON.stringify(stored));
-    } catch (_) { /* no storage */ }
+    for (const k of keys) { delete (this._oftenSkip ||= {})[k]; delete (this._oftenServer ||= {})[k]; }
+    this.oftenSend(false, keys, "cleanup");
   }
 
   // The keys a card button stands for: all findings of the card, or the one named by the button.
@@ -18891,7 +18915,7 @@ class FirstCleanupMixin {
   fcNoThanks(key) {
     const row = (this.oftenSuggestions?.() || []).filter(x => x.key === key).map(x => this.oftenRowOf(x))[0];
     const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
-    this.skipOften(key);
+    this.skipOften(key, "cleanup");
     if (this.fcFocus === key) this.fcFocus = "";
     this.fcNotify(this.fcLogAdd({ stage: 2, action: "nothanks", key, keys, name: row?.title || "" }));
     this.render();
@@ -19180,7 +19204,7 @@ Object.assign(TEXT.de, {
   actEmpty: "Noch nichts zu zeigen.", actEmptyNext: "Hier erscheint, was entschieden, vermerkt oder ausgeführt wird.",
   actFilter_all: "Alle", actFilter_decision: "Entscheidungen", actFilter_mark: "Vermerke", actFilter_plan: "Pläne", actFilter_note: "Logbuch", actFilter_auto: "Automatisch",
   actSource_cleanup: "Aufräumen", actSource_list: "Befundliste", actSource_plan: "Plan", actSource_mcp: "Dienst", actSource_system: "Housekeeper",
-  act_decision: "Entscheidung", act_decision_ignore: "Ausgeblendet", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_undo: "Entscheidung zurückgenommen",
+  act_decision: "Entscheidung", act_decision_ignore: "Ausgeblendet", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_nothanks: "Vorschlag abgelehnt („Nein danke“)", act_decision_undo: "Entscheidung zurückgenommen",
   act_mark: "Vermerk", act_mark_expected_offline: "Vermerkt: soll offline sein", act_mark_seasonal: "Vermerkt: saisonal", act_mark_spare: "Vermerkt: Reserve", act_mark_keep: "Vermerkt: nicht entfernen", act_mark_replaced: "Vermerkt: ersetzt", act_mark_clear: "Vermerk entfernt", act_mark_undo: "Vermerk zurückgenommen",
   act_plan: "Plan ausgeführt", act_plan_undo: "Plan zurückgenommen", act_note: "Logbuch", act_note_save: "Logbuch-Eintrag", act_note_delete: "Logbuch-Eintrag gelöscht", act_auto: "Von selbst", act_auto_lifted: "Von selbst zurück, weil es schlimmer wurde:",
 });
@@ -19192,7 +19216,7 @@ Object.assign(TEXT.en, {
   actEmpty: "Nothing to show yet.", actEmptyNext: "What is decided, marked or run shows up here.",
   actFilter_all: "All", actFilter_decision: "Decisions", actFilter_mark: "Marks", actFilter_plan: "Plans", actFilter_note: "Logbook", actFilter_auto: "Automatic",
   actSource_cleanup: "Cleanup", actSource_list: "Findings list", actSource_plan: "Plan", actSource_mcp: "Service", actSource_system: "Housekeeper",
-  act_decision: "Decision", act_decision_ignore: "Hidden", act_decision_keep: "Kept as intended", act_decision_snooze: "Put on “Later”", act_decision_unignore: "Shown again", act_decision_undo: "Decision undone",
+  act_decision: "Decision", act_decision_ignore: "Hidden", act_decision_keep: "Kept as intended", act_decision_snooze: "Put on “Later”", act_decision_unignore: "Shown again", act_decision_nothanks: "Suggestion declined (“No thanks”)", act_decision_undo: "Decision undone",
   act_mark: "Mark", act_mark_expected_offline: "Marked: should be offline", act_mark_seasonal: "Marked: seasonal", act_mark_spare: "Marked: spare", act_mark_keep: "Marked: do not remove", act_mark_replaced: "Marked: replaced", act_mark_clear: "Mark removed", act_mark_undo: "Mark undone",
   act_plan: "Plan run", act_plan_undo: "Plan undone", act_note: "Logbook", act_note_save: "Logbook entry", act_note_delete: "Logbook entry deleted", act_auto: "By itself", act_auto_lifted: "Back by itself because it got worse:",
 });

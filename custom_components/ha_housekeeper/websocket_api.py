@@ -622,6 +622,60 @@ def websocket_activity_undo(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/often"})
+@callback
+@with_scanner
+def websocket_often(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The suggestions for marks that were answered "no thanks" and still hold."""
+    connection.send_result(msg["id"], {"skipped": scanner.often.view(datetime.now(UTC))})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/often_skip",
+        vol.Required("skip"): bool,
+        vol.Required("keys"): vol.All([str], vol.Length(max=500)),
+        vol.Optional("at"): str,
+        vol.Optional("source"): vol.In(("cleanup", "list")),
+    }
+)
+@callback
+@with_scanner
+def websocket_often_skip(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Answer a suggestion for a mark "no thanks", or ask about it again."""
+    now = datetime.now(UTC)
+    user = connection.user.id if connection.user else None
+    if msg["skip"]:
+        at = msg.get("at") or now.isoformat()
+        scanner.often.skip(dict.fromkeys(msg["keys"], at), now)
+    else:
+        scanner.often.unskip(msg["keys"])
+    for key in (
+        [] if msg.get("at") else msg["keys"]
+    ):  # a time is given for answers brought over from a browser
+        scanner.activity.record(
+            "decision",
+            "nothanks" if msg["skip"] else "undo",
+            now,
+            key=key,
+            by=user,
+            source=msg.get("source"),
+        )
+    connection.send_result(msg["id"], {"skipped": scanner.often.view(now)})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/decision_notice_dismiss"})
 @callback
 @with_scanner
@@ -1605,6 +1659,8 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_first_cleanup_later)
     websocket_api.async_register_command(hass, websocket_activity)
     websocket_api.async_register_command(hass, websocket_activity_undo)
+    websocket_api.async_register_command(hass, websocket_often)
+    websocket_api.async_register_command(hass, websocket_often_skip)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
     websocket_api.async_register_command(hass, websocket_fix_check)

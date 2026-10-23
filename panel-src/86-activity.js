@@ -103,7 +103,7 @@ Object.assign(TEXT.de, {
   actEmpty: "Noch nichts zu zeigen.", actEmptyNext: "Hier erscheint, was entschieden, vermerkt oder ausgeführt wird.",
   actFilter_all: "Alle", actFilter_decision: "Entscheidungen", actFilter_mark: "Vermerke", actFilter_plan: "Pläne", actFilter_note: "Logbuch", actFilter_auto: "Automatisch",
   actSource_cleanup: "Aufräumen", actSource_list: "Befundliste", actSource_plan: "Plan", actSource_mcp: "Dienst", actSource_system: "Housekeeper",
-  act_decision: "Entscheidung", act_decision_ignore: "Ausgeblendet", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_undo: "Entscheidung zurückgenommen",
+  act_decision: "Entscheidung", act_decision_ignore: "Ausgeblendet", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_nothanks: "Vorschlag abgelehnt („Nein danke“)", act_decision_undo: "Entscheidung zurückgenommen",
   act_mark: "Vermerk", act_mark_expected_offline: "Vermerkt: soll offline sein", act_mark_seasonal: "Vermerkt: saisonal", act_mark_spare: "Vermerkt: Reserve", act_mark_keep: "Vermerkt: nicht entfernen", act_mark_replaced: "Vermerkt: ersetzt", act_mark_clear: "Vermerk entfernt", act_mark_undo: "Vermerk zurückgenommen",
   act_plan: "Plan ausgeführt", act_plan_undo: "Plan zurückgenommen", act_note: "Logbuch", act_note_save: "Logbuch-Eintrag", act_note_delete: "Logbuch-Eintrag gelöscht", act_auto: "Von selbst", act_auto_lifted: "Von selbst zurück, weil es schlimmer wurde:",
 });
@@ -115,7 +115,7 @@ Object.assign(TEXT.en, {
   actEmpty: "Nothing to show yet.", actEmptyNext: "What is decided, marked or run shows up here.",
   actFilter_all: "All", actFilter_decision: "Decisions", actFilter_mark: "Marks", actFilter_plan: "Plans", actFilter_note: "Logbook", actFilter_auto: "Automatic",
   actSource_cleanup: "Cleanup", actSource_list: "Findings list", actSource_plan: "Plan", actSource_mcp: "Service", actSource_system: "Housekeeper",
-  act_decision: "Decision", act_decision_ignore: "Hidden", act_decision_keep: "Kept as intended", act_decision_snooze: "Put on “Later”", act_decision_unignore: "Shown again", act_decision_undo: "Decision undone",
+  act_decision: "Decision", act_decision_ignore: "Hidden", act_decision_keep: "Kept as intended", act_decision_snooze: "Put on “Later”", act_decision_unignore: "Shown again", act_decision_nothanks: "Suggestion declined (“No thanks”)", act_decision_undo: "Decision undone",
   act_mark: "Mark", act_mark_expected_offline: "Marked: should be offline", act_mark_seasonal: "Marked: seasonal", act_mark_spare: "Marked: spare", act_mark_keep: "Marked: do not remove", act_mark_replaced: "Marked: replaced", act_mark_clear: "Mark removed", act_mark_undo: "Mark undone",
   act_plan: "Plan run", act_plan_undo: "Plan undone", act_note: "Logbook", act_note_save: "Logbook entry", act_note_delete: "Logbook entry deleted", act_auto: "By itself", act_auto_lifted: "Back by itself because it got worse:",
 });

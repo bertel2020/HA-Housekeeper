@@ -2000,3 +2000,17 @@ async def test_first_cleanup_puts_the_rest_off_together_and_hides_nothing_else(
     assert not (await call({"type": "ha_housekeeper/activity_undo", "entry_id": kept["id"]}))[
         "success"
     ]
+    reply = await call(
+        {
+            "type": "ha_housekeeper/often_skip",
+            "skip": True,
+            "keys": ["entity:light.x"],
+            "source": "cleanup",
+        }
+    )
+    assert "entity:light.x" in reply["result"]["skipped"]
+    assert "entity:light.x" in (await call({"type": "ha_housekeeper/often"}))["result"]["skipped"]
+    nothanks = (await call({"type": "ha_housekeeper/activity", "query": "light.x"}))["result"][
+        "items"
+    ]
+    assert [(e["action"], e["source"]) for e in nothanks] == [("nothanks", "cleanup")]
