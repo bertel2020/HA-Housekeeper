@@ -18452,8 +18452,9 @@ Object.assign(TEXT.en, {
 });
 
 // FirstCleanupMixin: the cleanup ("Aufräumen") as five stages through the open findings. The backend cuts
-// the stages and keeps the record for the whole house; every stage opens the normal list with a filter (or the cleanup
-// round, or the card of suggestions for marks). Only the last stage writes: it puts the quiet rest off together.
+// the stages and keeps the record for the whole house; each stage goes through its findings card by card (stage 2 the
+// suggestions for marks, stage 4 the cleanup round), or as the plain list with a filter. Every answer is kept in a
+// history that can be taken back; the last stage puts the quiet rest off together.
 
 class FirstCleanupMixin {
   ensureFirstCleanup() {
@@ -18991,10 +18992,10 @@ class FirstCleanupMixin {
   }
 }
 Object.assign(TEXT.de, {
-  fcBandText: "Der Rundgang steht bei Etappe {n}.", fcBandBack: "Zurück zum Rundgang", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du im Rundgang entschieden hast, das Neueste zuerst.",
-  fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Rundgang", fcLogMark: "Vermerk angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde zurückgestellt", fcLogSeveral: "{n} Vorschläge",
+  fcBandText: "Du bist mitten im Aufräumen, bei Etappe {n}.", fcBandBack: "Zurück zum Aufräumen", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du beim Aufräumen entschieden hast, das Neueste zuerst.",
+  fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Vermerk angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
   fcFollowMore: "… und {n} weitere", fcFinishText2: "Du hast {d} Entscheidungen getroffen. Zu Beginn waren {start} Befunde offen, jetzt sind es {now}.", fcNextTitle: "So geht es weiter",
-  fcNextNone: "Nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcSee: "Ansehen", fcNextLater: "Zurückgestellte Befunde ({n}) kommen ab {date} unter „Fällig“ wieder.",
+  fcNextNone: "Nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcSee: "Ansehen", fcNextLater: "Befunde auf „Später“ ({n}) kommen ab {date} unter „Fällig“ wieder.",
   fcNextTip: "Neue Befunde erscheinen unter „Neu“. Beginne in etwa 30 Tagen einen neuen Durchgang.", fcSumTitle: "Übersicht pro Etappe",
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Öffnet die Seite des Objekts. Von dort kommst du hierher zurück.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Bleibt, wie es ist, und zählt {days} Tage nicht mehr als Befund.", fcLater: "Später erinnern", fcLaterHint: "Kommt in {days} Tagen wieder in die Liste.",
@@ -19002,18 +19003,18 @@ Object.assign(TEXT.de, {
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
   fcTake: "Vermerk anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Nein danke", fcNoThanksHint: "Hier nicht mehr fragen.", fcTakeAll: "Alle {n} übernehmen",
-  fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Rundgang zurücksetzen?", fcResetYes: "Zurücksetzen",
-  fcResetAsk: "Der Rundgang wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
-  fcSumKeep: "{n} bleiben bewusst", fcSumLater: "{n} zurückgestellt", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
+  fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Aufräumen zurücksetzen?", fcResetYes: "Zurücksetzen",
+  fcResetAsk: "Das Aufräumen wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
+  fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Vermerke angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
   fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcNextFollow: "{n} Folgebefunde hängen noch an Ursachen und gehören zu keiner Etappe.", fcNextFollow1: "1 Folgebefund hängt noch an einer Ursache und gehört zu keiner Etappe.", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
   fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLook: "Erst ansehen", fcLookOff: "Zurück zur Frage",
   fcLaterAsk: "{n} ruhige Befunde mit Wirkung Niedrig oder Info zurückstellen? Sie kommen nach den gewählten Tagen als fällig zurück; nichts an Home Assistant ändert sich.",
-  fcRoundUndo: "Was die Runde ändert, steht danach im Journal und lässt sich dort zurücknehmen.", fcOpenJournal: "Journal öffnen", fcFinishTitle: "Fertig", fcKpiDecided: "Entschieden", fcKpiOpen: "Noch offen", fcKpiLater: "Zurückgestellt", fcProgress: "Fortschritt", fcMinutes: "{c} Karten, etwa {n} Minuten.", fcFollowsChip: "{n} Folgen", fcFollowsChip1: "1 Folge", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
+  fcRoundUndo: "Was die Runde ändert, steht danach im Journal und lässt sich dort zurücknehmen.", fcOpenJournal: "Journal öffnen", fcFinishTitle: "Fertig", fcKpiDecided: "Entschieden", fcKpiOpen: "Noch offen", fcKpiLater: "Auf „Später“", fcProgress: "Fortschritt", fcMinutes: "{c} Karten, etwa {n} Minuten.", fcFollowsChip: "{n} Folgen", fcFollowsChip1: "1 Folge", fcFinishText: "Von {start} offenen Befunden sind noch {now} offen.", fcToFindings: "Offene Befunde ansehen",
   firstcleanup: "Aufräumen", round: "Aufräum-Runde", firstTitle: "Aufräumen", firstSubtitle: "Die offenen Befunde in fünf Etappen durchgehen.",
   fcOffer: "{n} Befunde sind offen. Das Aufräumen geht sie in fünf Etappen durch.", fcBegin: "Aufräumen beginnen", fcNotNow: "Nicht jetzt", fcButton: "Aufräumen",
-  fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Jede Etappe öffnet die normale Liste; du kannst jederzeit aufhören, der Stand bleibt.",
+  fcIntro: "Fünf Etappen aus Themen und Wirkung: zuerst, was viele Folgen hat, zuletzt der ruhige Rest. Du gehst die Befunde Karte für Karte durch und kannst jederzeit aufhören, der Stand bleibt.",
  
   fcStageFilter: "Etappe {n}: {name}", fcStage: "Etappe {n}",
   fcStage1: "Ausfälle mit vielen Folgen", fcStage1Hint: "Eine Ursache beseitigt viele Folgen auf einmal.",
@@ -19024,10 +19025,10 @@ Object.assign(TEXT.de, {
   fcLaterTitle: "Rest auf „Später“ legen?", fcLaterYes: "Auf „Später“ legen", fcLaterDays: "Tage",  fcLaterConfirm: "{n} Befunde für {days} Tage auf „Später“ legen? Sie kommen danach als fällig zurück; nichts an Home Assistant ändert sich.", fcLaterReason: "Beim Aufräumen gesammelt zurückgestellt",
 });
 Object.assign(TEXT.en, {
-  fcBandText: "The tour stands at stage {n}.", fcBandBack: "Back to the tour", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the tour, the newest first.",
-  fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the tour", fcLogMark: "Mark set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings put off", fcLogSeveral: "{n} suggestions",
+  fcBandText: "You are in the middle of the cleanup, at stage {n}.", fcBandBack: "Back to the cleanup", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the cleanup, the newest first.",
+  fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the cleanup", fcLogMark: "Mark set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings on “Later”", fcLogSeveral: "{n} suggestions",
   fcFollowMore: "… and {n} more", fcFinishText2: "You made {d} decisions. {start} findings were open at the start, {now} are now.", fcNextTitle: "What next",
-  fcNextNone: "Nothing left open. New findings show up under “New”.", fcSee: "View", fcNextLater: "Findings put off ({n}) come back under “Due” from {date}.",
+  fcNextNone: "Nothing left open. New findings show up under “New”.", fcSee: "View", fcNextLater: "Findings on “Later” ({n}) come back under “Due” from {date}.",
   fcNextTip: "New findings show up under “New”. Start a new pass in about 30 days.", fcSumTitle: "Overview per stage",
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Opens the page of the object. You come back here from there.",
   fcKeep: "Intended", fcKeepHint: "Stays as it is and does not count as a finding for {days} days.", fcLater: "Remind me later", fcLaterHint: "Comes back into the list in {days} days.",
@@ -19035,18 +19036,18 @@ Object.assign(TEXT.en, {
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",
   fcCardsDone: "All cards of this stage are looked at.", fcCardsLeft: "All cards are looked at, {n} skipped ones stay open.", fcCardsAgain: "Show the skipped ones again",
   fcTake: "Set mark", fcTakeHint: "Counts as offline on purpose for a while; asked again after 90 days.", fcNoThanks: "No thanks", fcNoThanksHint: "Do not ask here again.", fcTakeAll: "Take all {n}",
-  fcPrev: "Undo last", fcPrevHint: "Takes the last decision or skip back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the tour?", fcResetYes: "Reset",
-  fcResetAsk: "The tour is reset and begins again at the welcome page. What you decided in it stays decided; the history with “Undo” is emptied.", fcNewRound: "Start a new pass", fcNewRoundAsk: "The cleanup begins again. What you decided stays decided; the history with “Undo” is emptied.",
-  fcSumKeep: "{n} kept on purpose", fcSumLater: "{n} put off", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
+  fcPrev: "Undo last", fcPrevHint: "Takes the last decision or skip back and shows the card once more.", fcReset: "Reset", fcResetTitle: "Reset the cleanup?", fcResetYes: "Reset",
+  fcResetAsk: "The cleanup is reset and begins again at the welcome page. What you decided in it stays decided; the history with “Undo” is emptied.", fcNewRound: "Start a new pass", fcNewRoundAsk: "The cleanup begins again. What you decided stays decided; the history with “Undo” is emptied.",
+  fcSumKeep: "{n} intended", fcSumLater: "{n} on “Later”", fcSumMark: "{n} marks set", fcSumLeft: "{n} still open", fcSumNone: "nothing to do",
   fcStageOf: "Stage {n} of 5", fcSkip: "Skip stage", fcNextStage: "On to stage {n}", fcFinish: "Finish", fcBack: "Back", fcExit: "Pause, continue later",
   fcLeft: "{n} open", fcLeftObj: "{o} objects · {n} findings", fcToRound: "Back to the round", fcNextFollow: "{n} follow-up findings still hang on causes and belong to no stage.", fcNextFollow1: "1 follow-up finding still hangs on a cause and belongs to no stage.", fcLeftNow: "{n} open in this stage", fcStageClear: "Stage done", fcNothing: "Nothing to do here.", fcStepsLabel: "Stages",
   fcSkipTitle: "Leave the stage?", fcSkipAsk: "{n} are still open in this stage. Go on anyway?", fcSkipYes: "Go on",
   fcCounter: "{start} at the start · {now} open now · {d} decided", fcLaterGo: "Put all {n} off to “Later”", fcLook: "Look first", fcLookOff: "Back to the question",
   fcLaterAsk: "Put off {n} quiet findings with impact Low or Info? They come back as due after the days chosen; nothing in Home Assistant changes.",
-  fcRoundUndo: "What the round changes is listed in the journal afterwards, where it can be taken back.", fcOpenJournal: "Open the journal", fcFinishTitle: "Done", fcKpiDecided: "Decided", fcKpiOpen: "Still open", fcKpiLater: "Put off", fcProgress: "Progress", fcMinutes: "{c} cards, about {n} minutes.", fcFollowsChip: "{n} follow-ups", fcFollowsChip1: "1 follow-up", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
+  fcRoundUndo: "What the round changes is listed in the journal afterwards, where it can be taken back.", fcOpenJournal: "Open the journal", fcFinishTitle: "Done", fcKpiDecided: "Decided", fcKpiOpen: "Still open", fcKpiLater: "On “Later”", fcProgress: "Progress", fcMinutes: "{c} cards, about {n} minutes.", fcFollowsChip: "{n} follow-ups", fcFollowsChip1: "1 follow-up", fcFinishText: "Of {start} open findings, {now} are still open.", fcToFindings: "View open findings",
   firstcleanup: "Cleanup", round: "Cleanup round", firstTitle: "Cleanup", firstSubtitle: "Go through the open findings in five stages.",
   fcOffer: "{n} findings are open. The cleanup goes through them in five stages.", fcBegin: "Begin the cleanup", fcNotNow: "Not now", fcButton: "Cleanup",
-  fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. Every stage opens the normal list; you can stop at any time and the stage is kept.",
+  fcIntro: "Five stages cut from topics and impact: first what has many follow-ups, last the quiet rest. You go through the findings card by card and can stop at any time; where you stood is kept.",
  
   fcStageFilter: "Stage {n}: {name}", fcStage: "Stage {n}",
   fcStage1: "Outages with many follow-ups", fcStage1Hint: "One cause clears many follow-ups at once.",
