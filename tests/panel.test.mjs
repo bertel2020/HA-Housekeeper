@@ -740,16 +740,16 @@ test("long lists are paged with a default of 20 and a page-size choice", () => {
   el.view = "unreferenced";
   assert.equal(el.pageSize, 20);
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 20);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 20);
   assert.ok(shadow.innerHTML.includes("1–20 of 45") && shadow.innerHTML.includes("Page 1 of 3"));
   el.pages.unreferenced = 3;
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 5);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 5);
   assert.ok(shadow.innerHTML.includes("41–45 of 45"));
   el.pageSize = 50;
   el.pages = {};
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 45);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 45);
   assert.ok(!shadow.innerHTML.includes("Page 1 of"));
 });
 

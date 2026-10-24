@@ -243,6 +243,7 @@ class UnusedMixin {
       { key: "reported", label: "utReported", dir: "desc", cell: o => this.ageCell(o.last_reported || o.last_updated) },
       { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: o => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(o) })) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     const n = sel.size, form = this.unrefBulk;

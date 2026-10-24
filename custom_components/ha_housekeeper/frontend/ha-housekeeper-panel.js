@@ -5207,8 +5207,9 @@ class InventoryMixin {
       { key: "reason", label: "reason", dir: "asc", cell: item => this.esc(reasonText(item) || "—") },
       { key: "since", label: "since", dir: "desc", cell: item => this.formatDate(item.status_since) },
       ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
-    const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
+    const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
     return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
   }
 
@@ -5745,6 +5746,7 @@ class UnusedMixin {
       { key: "reported", label: "utReported", dir: "desc", cell: o => this.ageCell(o.last_reported || o.last_updated) },
       { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: o => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(o) })) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     const n = sel.size, form = this.unrefBulk;
@@ -8633,7 +8635,7 @@ class PoliciesMixin {
       // Each column only stands while a row of the list has something for it.
       ...(shown.some(item => this.polItemNote(item) || this.polItemParts(item).decision) ? [{ key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" }] : []),
       ...(shown.some(item => item.ignored || item.resurfaced) ? [{ key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } }] : []),
-      { key: "act", label: "btColAct", narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
+      { key: "act", label: "btColAct", menu: true, narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
       const { open, form } = this.polItemParts(item);

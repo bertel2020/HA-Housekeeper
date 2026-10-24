@@ -142,7 +142,7 @@ class PoliciesMixin {
       // Each column only stands while a row of the list has something for it.
       ...(shown.some(item => this.polItemNote(item) || this.polItemParts(item).decision) ? [{ key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" }] : []),
       ...(shown.some(item => item.ignored || item.resurfaced) ? [{ key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } }] : []),
-      { key: "act", label: "btColAct", narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
+      { key: "act", label: "btColAct", menu: true, narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
       const { open, form } = this.polItemParts(item);
