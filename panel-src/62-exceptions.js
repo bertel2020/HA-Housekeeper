@@ -21,7 +21,7 @@ Object.assign(TEXT.de, {
   excPreview: "Vorschau", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
-  excOn: "Regel aktiv", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", exceptionsSubtitle: "Was Housekeeper still hält und wann es wieder nachfragt.", excTabRules: "Ausnahmeregeln", excTileRulesHint: "Was still bleibt oder später gemeldet wird.", excTileVacationHint: "Regeln nur für den Urlaub.", excTileFindingsHint: "Ist so gewollt, Später, Fehlalarm.", excTileObjectsHint: "Objekt-Notizen mit Prüfdatum.", excTabVacation: "Urlaubsmodus", excTabFindings: "Entscheidungen", excTabObjects: "Objekt-Notizen", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
+  excOn: "Regel aktiv", excOnN: "Einschalten ({n})", excOffN: "Ausschalten ({n})", excRenewN: "Frist verlängern ({n})", excDeleteN: "Löschen ({n})", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", exceptionsSubtitle: "Was Housekeeper still hält und wann es wieder nachfragt.", excTabRules: "Ausnahmeregeln", excTileRulesHint: "Was still bleibt oder später gemeldet wird.", excTileVacationHint: "Regeln nur für den Urlaub.", excTileFindingsHint: "Ist so gewollt, Später, Fehlalarm.", excTileObjectsHint: "Objekt-Notizen mit Prüfdatum.", excTabVacation: "Urlaubsmodus", excTabFindings: "Entscheidungen", excTabObjects: "Objekt-Notizen", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
@@ -64,7 +64,7 @@ Object.assign(TEXT.en, {
   excPreview: "Preview", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
-  excOn: "Rule active", excDue: "Time has passed", exceptions: "Exceptions", exceptionsSubtitle: "What Housekeeper keeps quiet about, and when it asks again.", excTabRules: "Exception rules", excTileRulesHint: "What stays quiet or is reported later.", excTileVacationHint: "Rules for the vacation only.", excTileFindingsHint: "Intended, Later, False alarm.", excTileObjectsHint: "Object notes with a review date.", excTabVacation: "Vacation mode", excTabFindings: "Decisions", excTabObjects: "Object notes", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
+  excOn: "Rule active", excOnN: "Switch on ({n})", excOffN: "Switch off ({n})", excRenewN: "Renew time ({n})", excDeleteN: "Delete ({n})", excDue: "Time has passed", exceptions: "Exceptions", exceptionsSubtitle: "What Housekeeper keeps quiet about, and when it asks again.", excTabRules: "Exception rules", excTileRulesHint: "What stays quiet or is reported later.", excTileVacationHint: "Rules for the vacation only.", excTileFindingsHint: "Intended, Later, False alarm.", excTileObjectsHint: "Object notes with a review date.", excTabVacation: "Vacation mode", excTabFindings: "Decisions", excTabObjects: "Object notes", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
@@ -112,7 +112,7 @@ class ExceptionsMixin {
   excReviewLine(rule, due = this.excReviewDue(rule)) {
     if (rule.action !== "hide" || (rule.scope || "always") !== "always") return "";
     if (!rule.review_at) return `<small>${this.t("excReviewNone")}</small>`;
-    return `<small${due ? ' class="warntext"' : ""}>${due ? `${this.t("excReviewDue")} · <button class="link" data-exc-renew="${this.esc(rule.id)}">${this.t("excRenew")}</button>` : this.t("excReviewOn", { date: this.formatDate(rule.review_at) })}</small>`;
+    return `<small${due ? ' class="warntext"' : ""}>${due ? this.t("excReviewDue") : this.t("excReviewOn", { date: this.formatDate(rule.review_at) })}</small>`;
   }
 
   excRuleLine(rule) {
@@ -142,7 +142,11 @@ class ExceptionsMixin {
       { key: "action", label: "excColAction", cell: () => this.esc(this.excRuleLine(rule)) },
       { key: "effect", label: "excColEffect", cell: () => this.esc(this.excEffect(rule)) },
       { key: "on", label: "excColOn", cell: () => `<input type="checkbox" class="policyswitch" data-exc-toggle="${id}" ${rule.enabled ? "checked" : ""} aria-label="${this.esc(this.t("excOn"))}">` },
-      { key: "acts", label: "excColActions", cell: () => `<span class="excacts"><button class="iconbtn" data-exc-edit="${id}" aria-label="${this.esc(this.t("excEdit"))}" title="${this.esc(this.t("excEdit"))}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button><button class="iconbtn" data-exc-delete="${id}" aria-label="${this.esc(this.t("excDelete"))}" title="${this.esc(this.t("excDelete"))}"><ha-icon icon="mdi:delete-outline"></ha-icon></button></span>` },
+      { key: "acts", label: "excColActions", narrow: true, cell: () => {
+        const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+        const renew = rule.action === "hide" && (rule.scope || "always") === "always" && rule.review_at ? item("mdi:calendar-refresh-outline", "excRenew", `data-exc-renew="${id}"`) : "";
+        return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${item("mdi:pencil-outline", "excEdit", `data-exc-edit="${id}"`)}${renew}<hr class="menusep">${item("mdi:delete-outline", "excDelete", `data-exc-delete="${id}"`)}</div></details>`;
+      } },
     ];
   }
 
@@ -150,8 +154,16 @@ class ExceptionsMixin {
   excTable(scope, rules) {
     const id = `exc-${scope}`;
     this.lvState(id, "target", "asc");
-    const columns = this.excRuleCells(rules[0]).map((c, i) => ({ key: c.key, label: c.label, sortable: false, cell: rule => this.excRuleCells(rule)[i].cell() }));
-    return this.listTable(id, columns, rules, { cls: "excrules", rowAttrs: () => 'class="static"' });
+    const sel = (this.excSel ||= new Set());
+    for (const key of [...sel]) if (!(this.exc?.rules || []).some(r => r.id === key)) sel.delete(key);
+    const ids = rules.map(r => r.id);
+    const pick = { key: "sel", label: "selectPage", narrow: true, sortable: false,
+      allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-exc-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+      cell: rule => `<input type="checkbox" class="selbox" data-exc-sel="${this.esc(rule.id)}" ${sel.has(rule.id) ? "checked" : ""} aria-label="${this.esc(this.excRuleName(rule))}">` };
+    const columns = [pick, ...this.excRuleCells(rules[0]).map((c, i) => ({ key: c.key, label: c.label, sortable: false, narrow: c.narrow, cell: rule => this.excRuleCells(rule)[i].cell() }))];
+    const n = ids.filter(k => sel.has(k)).length, count = this.formatNumber(n), btn = (attr, icon, label) => `<button type="button" class="btn" ${attr} ${n ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: count })}</button>`;
+    const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools(id, n, "data-exc-selclear")}<span class="toolgap"></span>${btn('data-exc-bulk="on"', "mdi:toggle-switch-outline", "excOnN")}${btn('data-exc-bulk="off"', "mdi:toggle-switch-off-outline", "excOffN")}${scope === "always" ? btn('data-exc-bulk="renew"', "mdi:calendar-refresh-outline", "excRenewN") : ""}${btn('data-exc-bulk="delete"', "mdi:delete-outline", "excDeleteN")}</div>`;
+    return `${rules.length > 1 ? tools : ""}${this.listTable(id, columns, rules, { cls: "excrules", rowAttrs: () => 'class="static"' })}`;
   }
 
   // Nothing yet in this group: the same empty state as the reminders, with the way to the first rule.
@@ -439,6 +451,16 @@ class ExceptionsMixin {
       this.openException(el.dataset.excGoto);
     });
     root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("exceptions"); this.view = "exceptions"; (this.viewTab ||= {}).exceptions = el.dataset.gotoDecisions || "findings"; this.pages = {}; this.render(); });
+    const excSel = () => (this.excSel ||= new Set());
+    root.querySelectorAll("[data-exc-sel]").forEach(el => el.onchange = () => { this.pickRows("exc", el.dataset.excSel, el.checked, excSel(), [...root.querySelectorAll("[data-exc-sel]")].map(x => x.dataset.excSel)); this.render(); });
+    root.querySelectorAll("[data-exc-page]").forEach(box => { box.indeterminate = box.hasAttribute("data-partial"); box.onchange = ev => { box.closest("table").querySelectorAll("[data-exc-sel]").forEach(x => (ev.target.checked ? excSel().add(x.dataset.excSel) : excSel().delete(x.dataset.excSel))); this.render(); }; });
+    root.querySelectorAll("[data-exc-selclear]").forEach(el => el.onclick = () => { excSel().clear(); this.render(); });
+    root.querySelectorAll("[data-exc-bulk]").forEach(el => el.onclick = async () => {
+      const mode = el.dataset.excBulk, sel = excSel(), all = rules();
+      const next = mode === "delete" ? all.filter(r => !sel.has(r.id)) : all.map(r => (!sel.has(r.id) ? r : mode === "renew" ? (r.action === "hide" && (r.scope || "always") === "always" ? { ...r, review_at: null } : r) : { ...r, enabled: mode === "on" }));
+      if (mode === "delete") sel.clear();
+      await this.saveExceptions(next, null);
+    });
     root.querySelectorAll("[data-exc-renew]").forEach(el => el.onclick = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excRenew ? { ...r, review_at: null } : r)), null));
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
