@@ -16675,7 +16675,7 @@ class SystemMixin {
     const label = c => { const key = `sysCat_${c.id}`, text = this.t(key); return text === key ? c.label : text; };
     const share = c => (used ? Math.round((c.bytes || 0) / used * 100) : 0);
     return this.sysList("syscat", cats, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: label }],
+      sort: "status", dir: "asc", sorts: [{ key: "status", label: "sysColState", dir: "asc", get: c => ({ missing: 0, unused: 1, used: 2 }[c.status] ?? 3) * 1e12 - (c.bytes || 0) }, ...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: label }],
       text: c => `${label(c)} ${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
       columns: [
         { key: "name", label: "sysColCategory", cell: c => this.nameCell(label(c), label(c) !== c.label ? c.label : "") },
@@ -16691,7 +16691,7 @@ class SystemMixin {
     const max = Math.max(0, ...items.map(x => x.bytes));
     const name = x => this.t(`sysTarget_${x.id}`);
     return this.sysList("syscons", items, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColPlace", dir: "asc", get: name }],
+      sort: "status", dir: "asc", sorts: [{ key: "status", label: "sysColState", dir: "asc", get: c => ({ missing: 0, unused: 1, used: 2 }[c.status] ?? 3) * 1e12 - (c.bytes || 0) }, ...this.sysBySize(), { key: "name", label: "sysColPlace", dir: "asc", get: name }],
       text: x => `${name(x)} ${x.path}`, tie: x => x.id, empty: "sysNoConsumers",
       columns: [{ key: "name", label: "sysColPlace", cell: x => this.nameCell(name(x), `/config/${x.path}`) }, ...this.sysSizeColumns(max)],
       exportName: "storage-consumers", header: [this.t("sysColPlace"), "Path", "Bytes"], rows: x => [name(x), `/config/${x.path}`, x.bytes],
@@ -16715,7 +16715,7 @@ class SystemMixin {
     const cols = this.sysSizeColumns(max);
     cols[0] = { ...cols[0], cell: c => (c.bytes === null || c.bytes === undefined ? `<span class="muted">${this.t("sysExternal")}</span>` : `${this.esc(this.formatBytes(c.bytes))}${c.scope === "folder" ? ` <span class="pill mute" title="${this.esc(this.t("sysFolderHint"))}">${this.t("sysFolder")}</span>` : ""}`) };
     return this.sysList("syscards", cards, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColUrl", dir: "asc", get: file }],
+      sort: "status", dir: "asc", sorts: [{ key: "status", label: "sysColState", dir: "asc", get: c => ({ missing: 0, unused: 1, used: 2 }[c.status] ?? 3) * 1e12 - (c.bytes || 0) }, ...this.sysBySize(), { key: "name", label: "sysColUrl", dir: "asc", get: file }],
       text: c => `${c.url} ${c.type}`, tie: c => c.url, empty: "sysNoCards",
       columns: [{ key: "name", label: "sysColUrl", cell: c => this.nameCell(file(c), c.url) }, { key: "type", label: "sysColType", sortable: false, cell: c => `<span class="pill mute">${this.esc(c.type || "–")}</span>` }, { key: "status", label: "sysColState", sortable: false, cell: c => this.cardStatus(c) }, ...cols],
       exportName: "storage-custom-cards", header: [this.t("sysColUrl"), this.t("sysColType"), this.t("sysColState"), "Bytes"], rows: c => [c.url, c.type, c.status, c.bytes ?? ""],
@@ -16727,8 +16727,8 @@ class SystemMixin {
     const other = r.other || [];
     const sum = items => items.reduce((total, x) => total + (x.bytes || 0), 0);
     const bytes = [sum(r.cards), sum(r.blueprints), sum(other) + (r.other_rest?.bytes || 0)], max = Math.max(...bytes);
-    // Always folded; the row itself shows what the part takes, as a bar against the largest part.
-    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count), meter: `<span class="dbshare">${this.sysShare(bytes[index], max)}<b>${this.esc(this.formatBytes(bytes[index]))}</b></span>` }, body, false);
+    // Folded, except the cards while one is missing; the row itself shows what the part takes, as a bar against the largest part.
+    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count), meter: `<span class="dbshare">${this.sysShare(bytes[index], max)}<b>${this.esc(this.formatBytes(bytes[index]))}</b></span>` }, body, index === 0 && r.cards.some(c => c.status === "missing"));
     return `${part("sysTabCards", this.sysCards(r.cards), r.cards.length, 0)}${part("sysTabBlueprints", this.sysBlueprints(r.blueprints), r.blueprints.length, 1)}${part("sysSecOther", this.sysOther(other, r.other_rest), other.length + (r.other_rest?.count || 0), 2)}`;
   }
 
@@ -16736,7 +16736,7 @@ class SystemMixin {
     const max = Math.max(0, ...items.map(x => x.bytes));
     const more = rest?.count ? `<p class="factnote">${this.esc(this.t("sysOtherMore", { n: this.formatNumber(rest.count), size: this.formatBytes(rest.bytes) }))}</p>` : "";
     return `${this.sysList("sysother", items, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColName", dir: "asc", get: x => x.name }],
+      sort: "status", dir: "asc", sorts: [{ key: "status", label: "sysColState", dir: "asc", get: c => ({ missing: 0, unused: 1, used: 2 }[c.status] ?? 3) * 1e12 - (c.bytes || 0) }, ...this.sysBySize(), { key: "name", label: "sysColName", dir: "asc", get: x => x.name }],
       text: x => x.name, tie: x => x.name, empty: "sysNoOther",
       columns: [{ key: "name", label: "sysColName", cell: x => this.nameCell(x.name, this.t(x.dir ? "sysKindFolder" : "sysKindFile")) }, ...this.sysSizeColumns(max)],
       exportName: "storage-other", header: [this.t("sysColName"), this.t("sysColType"), "Bytes"], rows: x => [x.name, x.dir ? "folder" : "file", x.bytes],
