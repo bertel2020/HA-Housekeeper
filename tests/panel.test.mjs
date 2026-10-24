@@ -2615,7 +2615,7 @@ test("the Auto-Pause page shows without the recorder numbers and offers pause, t
   const watching = el.autoPauseView();
   assert.ok(watching.includes("Under observation") && watching.includes("5 of 20 failed attempts in 6 h") && watching.includes("would be paused at 20") && watching.includes("width:25%"));
   el.autoPause = AUTO_PAUSE;
-  assert.ok(el.autoPausePage().includes("data-ap-refresh") && el.apPageActions("e2", "loaded").includes("data-ap-send"));
+  assert.ok(el.autoPausePage().includes("data-ap-refresh") && el.apPageParts("e2", "loaded").menu.some(e => e[2].includes("data-ap-send")) && el.apPageParts("e2", "setup_retry").primary.includes("data-ap-send"));
   assert.ok(el.apReliabilityNote().includes('data-jump="autopause"'), "the reliability page leads to a running pause");
 });
 
