@@ -653,6 +653,9 @@ class HAHousekeeperPanel extends HTMLElement {
     if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
     if (this.view === "settings" && params.get("tab")) this.settingsTab = params.get("tab"); // the settings keep their tab apart
     if (this.view === "settings" && this.settingsTab === "exceptions") this.view = "exceptions"; // the exceptions moved out of the settings
+    // Auto-pause became a page of its own, the goals moved from Maintenance to Rules & goals.
+    if (this.view === "reliability" && this.viewTab?.reliability === "autopause") { delete this.viewTab.reliability; this.view = "autopause"; }
+    if (this.view === "maintenance" && this.viewTab?.maintenance === "goals") { delete this.viewTab.maintenance; this.view = "policies"; this.viewTab.policies = "goals"; }
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -684,16 +687,25 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // What the number beside a page in the menu counts: the page opens as it was left, the number names its part.
   navCountHint(view, n) {
-    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies", "exceptions"].includes(view) ? `navCount_${view}` : "navCount_other";
+    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "policies", "exceptions"].includes(view) ? `navCount_${view}` : "navCount_other";
     return this.t(key, { n: this.formatNumber(n) });
   }
 
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
-    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, exceptions: this.exceptionsDue() || undefined, ...this.viewCounts() } : {};
+    const impaired = (this.monitorFunctions?.() || []).filter(f => f.enabled !== false && (f.state === "problem" || f.incident_open)).length;
+    const paused = this.autoPause?.paused?.length || 0;
+    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, monitor: impaired || undefined, autopause: paused || undefined, policies: violations + missedGoals || undefined, exceptions: this.exceptionsDue() || undefined, ...this.viewCounts() } : {};
+    const status = this.data ? this.navStatus(counts, violations, missedGoals) : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
-    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : ""}</button>`;
+    // A view of Monitoring says its state in words ("2 due", "off"); the others show their number.
+    const mark = view => {
+      const st = status[view];
+      if (st) return `<span class="pill ${st.tone} navst" title="${this.esc(st.hint)}" aria-label="${this.esc(st.hint)}">${this.esc(st.text)}</span>`;
+      return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : "";
+    };
+    const item = view => `${NAV_BREAKS.includes(view) ? '<span class="navsep" aria-hidden="true"></span>' : ""}<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
@@ -703,6 +715,21 @@ class HAHousekeeperPanel extends HTMLElement {
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
       <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${item("settings")}</div></nav></header>`;
+  }
+
+  // The words beside the views of Monitoring: what is due or impaired, or that a function is switched off.
+  // Only what is loaded counts; the number of the group adds up what asks for a look, never "off" or "vacation on".
+  navStatus(counts, violations, missedGoals) {
+    const st = {}, n = v => this.formatNumber(counts[v]);
+    if (counts.monitor) st.monitor = { tone: "red", text: this.t("navSt_monitor", { n: n("monitor") }), hint: this.t("navStHint_monitor", { n: n("monitor") }) };
+    if (counts.autopause) st.autopause = { tone: "warn", text: this.t("navSt_autopause", { n: n("autopause") }), hint: this.t("navStHint_autopause", { n: n("autopause") }) };
+    else if (this.autoPause?.settings && !this.autoPause.settings.enabled) st.autopause = { tone: "mute", text: this.t("navStOff"), hint: this.t("navStHintOff_autopause") };
+    if (counts.reminders) st.reminders = { tone: "warn", text: this.t("navSt_reminders", { n: n("reminders") }), hint: this.navCountHint("reminders", counts.reminders) };
+    if (violations) st.policies = { tone: "warn", text: this.t(violations === 1 ? "navSt_policies_1" : "navSt_policies_n", { n: this.formatNumber(violations) }), hint: this.navCountHint("policies", counts.policies) };
+    else if (missedGoals) st.policies = { tone: "red", text: this.t(missedGoals === 1 ? "navSt_goals_1" : "navSt_goals_n", { n: this.formatNumber(missedGoals) }), hint: this.navCountHint("policies", counts.policies) };
+    if (counts.exceptions) st.exceptions = { tone: "warn", text: this.t("navSt_exceptions", { n: n("exceptions") }), hint: this.navCountHint("exceptions", counts.exceptions) };
+    else if (this.data?.meta?.vacation?.active) st.exceptions = { tone: "blue", text: this.t("navStVacation"), hint: this.t("navStHintVacation") };
+    return st;
   }
 
   // A top bar that does not fit its width changes into the menu button with a list, as on a phone, instead of being cut off.
@@ -777,6 +804,7 @@ class HAHousekeeperPanel extends HTMLElement {
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       monitor: [this.t("monitor"), this.t("monitorSubtitle")],
+      autopause: [this.t("autopause"), this.t("autopauseSubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
       recorder: [this.t("recorder"), this.t("recorderSubtitle")],
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
@@ -787,7 +815,7 @@ class HAHousekeeperPanel extends HTMLElement {
       exceptions: [this.t("exceptions"), this.t("exceptionsSubtitle")],
     };
     const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
-    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor", "exceptions"].includes(this.view);
+    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor", "exceptions", "autopause"].includes(this.view);
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
@@ -808,6 +836,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "exceptions") return this.exceptionsView();
     if (this.view === "inventory") return this.inventory();
     if (this.view === "monitor") return this.monitorView();
+    if (this.view === "autopause") return this.autoPausePage();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
     if (this.view === "components") return this.componentsView();
@@ -1271,7 +1300,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }
     });
     root.querySelectorAll("[data-set-tab]").forEach(el => {
-      el.onclick = () => { if (el.dataset.setTab === "exceptions") { this.noteJump?.("exceptions"); this.view = "exceptions"; this.pages = {}; this.render(); return; } this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
+      el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
       el.onkeydown = ev => {
         const ids = [...root.querySelectorAll("[data-set-tab]")].map(b => b.dataset.setTab), at = ids.indexOf(el.dataset.setTab);
         const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];

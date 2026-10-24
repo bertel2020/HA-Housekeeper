@@ -79,16 +79,20 @@ class GoalsMixin {
       ${f.error ? `${this.notice("err", f.error)}` : ""}</form>`;
   }
 
-  // The overview shows only what is missed (or that all is met) and leads to Maintenance, where the limits are set.
+  // The bar above the tab Goals of Rules & goals: when the goals were read, and the refresh.
+  goalsBar() {
+    return this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
+  }
+
+  // The overview shows only what is missed (or that all is met) and leads to Rules & goals, where the limits are set.
   goalsCard(compact = false) {
     this.ensureGoals();
     const r = this.goals;
     if (!compact) {
-      // The tab in Maintenance says what is going on instead of staying empty.
-      const head = this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
-      if (this.goalsError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.goalsError)}</div></div>`;
-      if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("loading")}</div></div>`;
-      if (!r.goals?.length) return `<div class="stack">${head}<div class="panel"><div class="emptymsg">${this.t("goalsNone")}</div></div></div>`;
+      // The tab says what is going on instead of staying empty.
+      if (this.goalsError) return `<div class="panel">${this.notice("err", this.goalsError)}</div>`;
+      if (!r) return `<div class="panel">${this.skeleton("loading")}</div>`;
+      if (!r.goals?.length) return `<div class="panel"><div class="emptymsg">${this.t("goalsNone")}</div></div>`;
     }
     if (!r?.goals?.length) return "";
     if (compact) {
@@ -96,8 +100,7 @@ class GoalsMixin {
       const body = missed.length ? missed.map(g => this.goalRow(g, false)).join("") : `<div class="pad"><small>${this.t("goalsAllMet", { n: r.met })}</small></div>`;
       return `<section class="panel u-mb14" aria-labelledby="hk-goals"><div class="panelhead"><div><h2 id="hk-goals">${this.t("goalsTitle")}</h2></div><span class="date">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</span><button class="btn quiet" data-goals-settings>${this.t("goalsAdjust")}</button></div>${body}</section>`;
     }
-    const head = this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
-    return `<div class="stack">${head}<section class="panel u-mb14" aria-label="${this.esc(this.t("goalsTitle"))}"><p class="factnote pad">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</p>${r.goals.map(g => this.goalRow(g)).join("")}</section></div>`;
+    return `<section class="panel u-mb14" aria-label="${this.esc(this.t("goalsTitle"))}"><p class="factnote pad">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</p>${r.goals.map(g => this.goalRow(g)).join("")}</section>`;
   }
 
   openGoal(id) {
@@ -121,7 +124,7 @@ class GoalsMixin {
   }
 
   bindGoals(root) {
-    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { (this.viewTab ||= {}).maintenance = "goals"; this.noteJump?.("maintenance"); this.view = "maintenance"; this.selected = null; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { (this.viewTab ||= {}).policies = "goals"; this.noteJump?.("policies"); this.view = "policies"; this.selected = null; this.pages = {}; this.render(); });
     root.querySelector("[data-goals-refresh]")?.addEventListener("click", () => this.loadGoals());
     root.querySelectorAll("[data-goal-open]").forEach(el => el.onclick = () => this.openGoal(el.dataset.goalOpen));
     root.querySelectorAll("[data-goal-cancel]").forEach(el => el.onclick = () => { this.goalForm = null; this.render(); });

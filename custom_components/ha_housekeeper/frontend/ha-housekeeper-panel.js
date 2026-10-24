@@ -4,7 +4,7 @@ const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
-    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", cleanupSumSelected: "Ausgewählt", colsLabel: "Spalten ein- und ausblenden", batterySumLimit: "unter {n} %", batterySumLowest: "Niedrigster Stand", recSumCosts: "Größter Platzbedarf", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Bestand", navGroupClean: "Bereinigen", navGroupMaintain: "Pflegen",
+    sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", cleanupSumSelected: "Ausgewählt", colsLabel: "Spalten ein- und ausblenden", batterySumLimit: "unter {n} %", batterySumLowest: "Niedrigster Stand", recSumCosts: "Größter Platzbedarf", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Bestand", navGroupMaintain: "Pflegen",
     scan: "Neu scannen", scanHint: "Liest das ganze Inventar neu: Entitäten, Automationen, Dashboards und Befunde.", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
@@ -189,7 +189,7 @@ const TEXT = {
   en: {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
-    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", cleanupSumSelected: "Selected", colsLabel: "Show or hide columns", batterySumLimit: "below {n} %", batterySumLowest: "Lowest level", recSumCosts: "Largest footprint", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Catalog", navGroupClean: "Clean up", navGroupMaintain: "Maintain",
+    sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", cleanupSumSelected: "Selected", colsLabel: "Show or hide columns", batterySumLimit: "below {n} %", batterySumLowest: "Lowest level", recSumCosts: "Largest footprint", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Catalog", navGroupMaintain: "Maintain",
     scan: "Scan now", scanHint: "Reads the whole inventory again: entities, automations, dashboards and findings.", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
@@ -526,6 +526,7 @@ const NAV = [
   ["policies", "mdi:clipboard-check-outline"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["monitor", "mdi:home-heart"],
+  ["autopause", "mdi:pause-circle-outline"],
   ["exceptions", "mdi:eye-off-outline"],
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
@@ -534,15 +535,18 @@ const NAV = [
   ["settings", "mdi:cog-outline"],
 ];
 
-// The sidebar groups every view but "settings", which stands alone at the foot.
+// The sidebar groups every view but "settings", which stands alone at the foot. The groups follow what the person
+// wants: see what is wrong, set up what runs by itself, do the work, understand how the house runs, then the rest.
 const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav"]],
-  ["navGroupClean", ["cleanup", "repair", "journal"]],
-  ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies"]],
-  ["navGroupOperation", ["monitor", "reliability", "runs", "recorder", "storage", "exceptions"]],
+  ["navGroupWatch", ["monitor", "autopause", "reminders", "policies", "exceptions"]],
+  ["navGroupMaintain", ["maintenance", "batteries", "cleanup", "repair", "journal"]],
+  ["navGroupOperation", ["reliability", "runs", "recorder", "storage"]],
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],
   ["navGroupExplore", ["inventory", "components", "graph", "changes"]],
 ];
+// A line in a menu before these views: in Maintain the care of the house comes first, then cleaning up and repairing.
+const NAV_BREAKS = ["cleanup"];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
 
@@ -748,8 +752,8 @@ Object.assign(TEXT.de, {
   abort_meter_changed: "Entitäten oder Statistik wurden nach der Vorschau geändert.", abort_statistics_changed: "Die Statistik wurde nach der Vorschau geändert.", abort_statistics_failed: "Die Statistik konnte nicht bestätigt werden; der Lauf wurde angehalten.",
   abort_no_recorder: "Der Recorder läuft nicht.", abort_alt_id_taken: "Die Ausweich-ID ist inzwischen belegt.", abort_id_not_freed: "Home Assistant hat die alte ID nicht rechtzeitig freigegeben; alles wurde zurückgesetzt.", abort_id_takeover_failed: "Das Umbenennen ist fehlgeschlagen; alles wurde zurückgesetzt.",
   // maintenance
-  maintHint: "Backups, Updates, Blueprints und Ziele",
-  maintenance: "Wartung", maintenanceSubtitle: "Backups prüfen, offene Updates mit der Prüfung davor, Blueprints und Ziele. Housekeeper liest nur; gelöscht werden allein seine eigenen Backups, und erst nach deiner Bestätigung.",
+  maintHint: "Backups, Updates und Blueprints",
+  maintenance: "Wartung", maintenanceSubtitle: "Backups prüfen, offene Updates mit der Prüfung davor und Blueprints. Housekeeper liest nur; gelöscht werden allein seine eigenen Backups, und erst nach deiner Bestätigung.",
   recorderTitle: "Speicherbedarf", 
   recorderLoad: "Analyse starten", recorderReload: "Neu berechnen", recorderLoading: "Datenbank wird ausgewertet …", recorderUnavailable: "Der Recorder läuft nicht, daher gibt es nichts auszuwerten.",
   recorderSummary: "{states} gespeicherte Zustände · {size} · Aufbewahrung {days} Tage · {stats} Statistikwerte", recorderSizeUnknown: "Größe unbekannt", recorderPerDay: "{count} pro Tag", recorderTook: "berechnet in {ms} ms", recorderCached: "Ergebnis von vor wenigen Minuten ({ms} ms)", recorderShare: "{share} % aller Zustände",
@@ -793,8 +797,8 @@ Object.assign(TEXT.en, {
   result_migrated: "Migrated", check_meter_statistics: "Statistics continued", check_meter_id_taken: "New entity carries the stable ID", undo_conflict_statistics: "not undone: statistics can only be reset with the backup",
   abort_meter_changed: "Entities or statistics were changed after the preview.", abort_statistics_changed: "The statistics were changed after the preview.", abort_statistics_failed: "The statistics could not be confirmed; the run stopped.",
   abort_no_recorder: "The recorder is not running.", abort_alt_id_taken: "The fallback ID is taken now.", abort_id_not_freed: "Home Assistant did not free the old ID in time; everything was put back.", abort_id_takeover_failed: "Renaming failed; everything was put back.",
-  maintHint: "Backups, updates, blueprints and goals",
-  maintenance: "Maintenance", maintenanceSubtitle: "Check backups, open updates with the checks before them, blueprints and goals. Housekeeper only reads; the only things it deletes are its own backups, and only after you confirm.",
+  maintHint: "Backups, updates and blueprints",
+  maintenance: "Maintenance", maintenanceSubtitle: "Check backups, open updates with the checks before them and blueprints. Housekeeper only reads; the only things it deletes are its own backups, and only after you confirm.",
   recorderTitle: "Storage use", 
   recorderLoad: "Start analysis", recorderReload: "Recalculate", recorderLoading: "Evaluating the database …", recorderUnavailable: "The recorder is not running, so there is nothing to evaluate.",
   recorderSummary: "{states} stored states · {size} · kept {days} days · {stats} statistics values", recorderSizeUnknown: "size unknown", recorderPerDay: "{count} per day", recorderTook: "calculated in {ms} ms", recorderCached: "result from a few minutes ago ({ms} ms)", recorderShare: "{share} % of all states",
@@ -1121,7 +1125,7 @@ Object.assign(TEXT.de, {
   storeChanged: "geändert",
   storeNone: "Noch keine Daten gespeichert.",
   stoColFile: "Datei", stoColGroup: "Gruppe", stoColSize: "Größe", stoColChanged: "Geändert", stoAllGroups: "Alle Gruppen",
-  decStatusKpi: "Befunde mit Status", decMarksKpi: "Objekt-Notizen", decRulesKpi: "Ausnahmeregeln", decLabelsKpi: "Objekte mit Label", decDue: "{n} fällig", decReviewDue: "{n} Prüfdatum erreicht", decReviewDueShort: "Prüfdatum erreicht", decRuleHides: "{n} Befunde ausgeblendet",
+  decStatusKpi: "Befunde mit Status", decMarksKpi: "Objekt-Notizen", decRulesKpi: "Ausnahmeregeln", decLabelsKpi: "Objekte mit Label", decReviewDueShort: "Prüfdatum erreicht", decRuleHides: "{n} Befunde ausgeblendet",
   decStatusTitle: "Befunde mit eigenem Status", decStatusHint: "Was du an einzelnen Befunden entschieden hast: ist so gewollt, später, Fehlalarm. Gilt nur für diesen Befund; ein neuer Befund am selben Objekt ist wieder offen. Abgelaufene stehen oben. Ist der Befund gerade nicht da, ruht die Entscheidung und greift wieder, sobald er zurückkommt.", decColNow: "Gerade", decNowAll: "Gerade: alle", decNowHides: "blendet aus", decNowDue: "wieder offen", decNowRests: "ruht", decNowQuiet: "seit {n} Tagen nicht aufgetreten – noch nötig?", decNowGone: "Objekt gibt es nicht mehr", decNowFilter_hides: "Blendet aus", decNowFilter_due: "Wieder offen", decNowFilter_rests: "Ruht", decNowFilter_quiet: "Noch nötig?", decNowFilter_gone: "Objekt fehlt", decLastSeen: "zuletzt am {when}", decOpenObject: "Objekt öffnen", decRemove: "Entscheidung entfernen", decRemoveN: "Entscheidung entfernen ({n})", decRestHead: "Ruhend · Befund gerade nicht da ({n})", decStatusNone: "Kein Befund hat einen eigenen Status.",
   decAllStates: "Alle", decColStatus: "Status", decColUntil: "Bis", decChange: "Status ändern", decColEffect: "Wirkt gerade",
   decMarksTitle: "Objekt-Notizen", decMarksHint: "Aussagen über ein Objekt: absichtlich offline, saisonal, Ersatz, nicht anfassen, ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jede Objekt-Notiz, auch wenn sie gerade nichts ausblendet.", decMarksNone: "Noch keine Objekt-Notiz. Du setzt sie an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
@@ -1170,7 +1174,7 @@ Object.assign(TEXT.en, {
   storeChanged: "changed",
   storeNone: "No data stored yet.",
   stoColFile: "File", stoColGroup: "Group", stoColSize: "Size", stoColChanged: "Changed", stoAllGroups: "All groups",
-  decStatusKpi: "Findings with a status", decMarksKpi: "Object notes", decRulesKpi: "Exception rules", decLabelsKpi: "Objects with a label", decDue: "{n} due", decReviewDue: "{n} review date reached", decReviewDueShort: "Review date reached", decRuleHides: "{n} findings hidden",
+  decStatusKpi: "Findings with a status", decMarksKpi: "Object notes", decRulesKpi: "Exception rules", decLabelsKpi: "Objects with a label", decReviewDueShort: "Review date reached", decRuleHides: "{n} findings hidden",
   decStatusTitle: "Findings with a status of their own", decStatusHint: "What you decided about single findings: intended, later, false alarm. It applies to that finding only; a new finding on the same object is open again. Run-out ones come first. While the finding is away the decision rests and holds again as soon as it comes back.", decColNow: "Right now", decNowAll: "Right now: all", decNowHides: "hides", decNowDue: "open again", decNowRests: "rests", decNowQuiet: "not seen for {n} days – still needed?", decNowGone: "object is gone", decNowFilter_hides: "Hides", decNowFilter_due: "Open again", decNowFilter_rests: "Rests", decNowFilter_quiet: "Still needed?", decNowFilter_gone: "Object gone", decLastSeen: "last seen {when}", decOpenObject: "Open object", decRemove: "Remove decision", decRemoveN: "Remove decision ({n})", decRestHead: "Resting · finding away right now ({n})", decStatusNone: "No finding has a status of its own.",
   decAllStates: "All", decColStatus: "Status", decColUntil: "Until", decChange: "Change status", decColEffect: "Acting now",
   decMarksTitle: "Object notes", decMarksHint: "Statements about an object: offline on purpose, seasonal, spare, do not touch, replaced. They also apply to future outages, on a device to its entities. Every object note is listed here, also one that hides nothing right now.", decMarksNone: "No object note yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
@@ -1514,7 +1518,7 @@ class StylesMixin {
       .topnav{flex:1;min-width:0;display:flex;align-items:stretch;align-self:stretch;gap:2px}.navmenu{position:relative;display:flex;align-items:stretch}.navend{margin-left:auto;display:flex;align-items:stretch;gap:8px}.quick{position:relative;display:flex;align-items:center;align-self:center}.quick>ha-icon{position:absolute;left:8px;--mdc-icon-size:18px;color:var(--hk-muted);pointer-events:none}.quick input{width:190px;max-width:100%;min-height:36px;padding:0 10px 0 32px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.quick input:focus{outline:2px solid var(--hk-blue);outline-offset:0}.quicklist{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:min(380px,90vw);max-height:60vh;overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.quicklist li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}.quicklist li.on,.quicklist li:hover{background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.quicklist li.grp{display:block;padding:8px 8px 2px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;color:var(--hk-muted);cursor:default}.quicklist li.grp:hover{background:none}.quicklist li.none{display:block;color:var(--hk-muted);cursor:default}.jbtns{display:flex;gap:8px;margin-left:auto}.quicklist .row-text{min-width:0}.quicklist small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.quick{display:flex;margin:6px 0}.quick input{width:100%}.navend{flex-direction:column;align-items:stretch}}.navhead{display:none;padding:10px 12px 2px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}
       .delbtn{display:inline-flex;align-items:center;justify-content:center;width:36px;min-width:36px;height:36px;min-height:36px;padding:0}.delbtn.small{width:32px;min-width:32px;height:32px;min-height:32px}.delbtn ha-icon{--mdc-icon-size:18px}.delbtn[disabled]{opacity:.5;cursor:not-allowed}
       .nav{min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--hk-muted);background:transparent;font-weight:500;white-space:nowrap}.nav:hover{color:var(--hk-text);background:var(--hk-soft)}.nav ha-icon{--mdc-icon-size:20px}.nav .caret{--mdc-icon-size:16px;margin-left:-2px}
-      .navpop{display:none;position:absolute;top:100%;left:0;min-width:210px;padding:6px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.navmenu.open .navpop{display:grid;gap:2px}.navpop .nav{min-height:40px;border-bottom:0;border-radius:8px}.navpop .nav.active{box-shadow:none;background-image:linear-gradient(var(--hk-blue),var(--hk-blue));background-size:3px 100%;background-repeat:no-repeat;background-position:left top}
+      .navpop{display:none;position:absolute;top:100%;left:0;min-width:210px;padding:6px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.navmenu.open .navpop{display:grid;gap:2px}.navpop .nav{min-height:40px;border-bottom:0;border-radius:8px}.navpop .navst{margin-left:auto;font-weight:500}.navsep{display:block;height:1px;margin:4px 8px;background:var(--hk-border)}.navpop .nav.active{box-shadow:none;background-image:linear-gradient(var(--hk-blue),var(--hk-blue));background-size:3px 100%;background-repeat:no-repeat;background-position:left top}
       .nav.active{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}.nav em{min-width:22px;padding:2px 6px;border-radius:10px;color:var(--hk-muted);background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-align:center}.nav.group-active{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}.navtoggle{display:none;margin-left:auto;min-height:40px;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit}
       .lock{display:flex;align-items:center;gap:7px;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-green)}.lock ha-icon{--mdc-icon-size:16px}
       .main{min-width:0;max-width:1480px;margin:0 auto;padding:26px clamp(16px,2.4vw,32px) 60px}
@@ -1806,9 +1810,9 @@ Object.assign(TEXT.en, {
 // Texts for the policies view; merged into TEXT.
 Object.assign(TEXT.de, {
   polAllRules: "Alle Regeln", polColRule: "Regel", polColNote: "Hinweis", polSelHidden: "Ausgeblendet; erst wieder einblenden", polSelOnlyArea: "Gemeinsam bearbeiten lassen sich nur Entitäten und Geräte (Bereich zuweisen)", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
-  policies: "Richtlinien", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant. Hinweise, keine Defekte; liest nur.", polOverviewViolations: "Richtlinienverstöße", polOverviewRules: "{n} Regeln aktiv", polOverviewRuleOne: "1 Regel aktiv",
+  policies: "Regeln & Ziele", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant und eigene Grenzen für „in Ordnung“. Hinweise, keine Defekte; liest nur.", polOverviewViolations: "Richtlinienverstöße", polOverviewRules: "{n} Regeln aktiv", polOverviewRuleOne: "1 Regel aktiv",
   polObjTitle: "Richtlinien · {n} Verstöße", polObjTitleOne: "Richtlinien · 1 Verstoß", polObjHint: "Regeln, gegen die dieses Objekt verstößt. Ausgeblendete Verstöße stehen nicht hier.", polObjAll: "Alle Richtlinien",
-  polHint: "Schalte ein, was in deiner Installation gelten soll. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
+  polHint: "Schalte ein, was in deiner Installation gelten soll, und setze eigene Grenzen. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
   polOff: "aus", polCount: "{n} Verstöße", polCountOne: "1 Verstoß", polNone: "Keine Verstöße", polNoneOn: "Schalte oben eine Regel ein, um Verstöße zu sehen.",
   polRule_entity_area: "Entität ohne Bereich", polDesc_entity_area: "Entitäten von physischen Geräten brauchen einen Bereich, eigenen oder den des Geräts. Diagnose-, Konfigurations- und deaktivierte Entitäten und Dienst-Geräte zählen nicht.",
   polRule_device_area: "Gerät ohne Bereich", polDesc_device_area: "Aktive Geräte brauchen einen Bereich. Dienst-Geräte, Untergeräte, deaktivierte und leere Geräte zählen nicht.",
@@ -1825,9 +1829,9 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   polAllRules: "All rules", polColRule: "Rule", polColNote: "Note", polSelHidden: "Hidden; show it again first", polSelOnlyArea: "Only entities and devices can be handled together (assign an area)", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
-  policies: "Policies", policiesSubtitle: "Your own rules for tidiness in Home Assistant. Hints, not defects; only reads.", polOverviewViolations: "Policy violations", polOverviewRules: "{n} active rules", polOverviewRuleOne: "1 active rule",
+  policies: "Rules & goals", policiesSubtitle: "Your own rules for tidiness in Home Assistant and your own limits for what in order means. Hints, not defects; only reads.", polOverviewViolations: "Policy violations", polOverviewRules: "{n} active rules", polOverviewRuleOne: "1 active rule",
   polObjTitle: "Policies · {n} violations", polObjTitleOne: "Policies · 1 violation", polObjHint: "Rules this object breaks. Hidden violations are not shown here.", polObjAll: "All policies",
-  polHint: "Switch on what should apply to your installation. All rules start off.", polLoading: "Checking policies",
+  polHint: "Switch on what should apply to your installation and set your own limits. All rules start off.", polLoading: "Checking policies",
   polOff: "off", polCount: "{n} violations", polCountOne: "1 violation", polNone: "No violations", polNoneOn: "Switch on a rule above to see violations.",
   polRule_entity_area: "Entity without an area", polDesc_entity_area: "Entities of physical devices need an area, their own or the device's. Diagnostic, configuration and disabled entities and service devices do not count.",
   polRule_device_area: "Device without an area", polDesc_device_area: "Active devices need an area. Service devices, sub-devices, disabled and empty devices do not count.",
@@ -3658,28 +3662,15 @@ class SettingsMixin {
   // The tab ids of the settings page, in display order.
   // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
-    const m = this.data?.meta || {}, hidden = (this.data?.findings || []).filter(f => f.ignored).length;
+    const m = this.data?.meta || {};
     const mcp = m.mcp || {};
     return [
       ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`modeBadge_${m.protection || "full"}`), (m.protection || "full") === "full" ? "ok" : "warn"],
-      ["exceptions", "mdi:eye-off-outline", "setTabExceptions", "setHintExceptions", this.exceptionPills(m, hidden), "mute"],
       ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
       ["mcp", "mdi:robot-outline", "setTabMcp", "setHintMcp", !mcp.enabled ? this.t("setOff") : this.t(mcp.write ? "mcpFilterWrite" : "mcpFilterRead"), !mcp.enabled ? "mute" : mcp.write ? "warn" : "ok"],
       ["look", "mdi:palette-outline", "setTabLook", "setHintLook", this.t(`scheme${(this.prefs.scheme || "standard").replace(/^./, c => c.toUpperCase())}`), "mute"],
       ["info", "mdi:information-outline", "setTabInfo", "setHintInfo", m.version ? `v${m.version}` : "–", "mute"],
     ];
-  }
-
-  // The exceptions tile: rules and hidden findings, and whether the vacation mode is on.
-  exceptionPills(m, hidden) {
-    const v = m.vacation, rules = this.exc?.rules ? this.exc.rules.length : m.exception_rules || 0;
-    const pills = [{ text: this.t(rules === 1 ? "setRuleOne" : "setRulesCount", { n: rules }) }, { text: hidden ? this.t("setHiddenCount", { n: hidden }) : this.t("setNoneHidden") }];
-    pills.push(v ? { text: this.t(v.active ? "setVacationOn" : "setVacationOff"), tone: v.active ? "warn" : "mute" } : { text: this.t("setVacationNone"), tone: "warn" });
-    // What wants a look again: marks whose review date passed, findings whose status ran out.
-    const marksDue = (this.data?.objects || []).filter(o => o.mark_due).length, statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length;
-    if (marksDue) pills.unshift({ text: this.t("decReviewDue", { n: marksDue }), tone: "warn" });
-    if (statusDue) pills.unshift({ text: this.t("decDue", { n: statusDue }), tone: "warn" });
-    return pills.slice(0, 3); // more do not fit the tile; what is due comes first
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.
@@ -6506,22 +6497,23 @@ class MaintenanceMixin {
     const external = checks.some(c => c.id === "external");
     const backupTone = !this.backup?.available || (external && !problems && !notes) ? "mute" : problems ? "red" : notes ? "warn" : "ok";
     const pfTone = !pf ? "mute" : !updates ? "ok" : { stop: "red", look: "warn" }[pf.verdict] || "ok";
-    const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
-    this.ensureGoals();
+    this.ensureGoals(); // the line about the goals below the tiles
     this.ensureBlueprints(); // the pill of the tab needs the numbers before the tab is opened
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
       { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : external ? this.t("bhExternalPill") : "", tone: backupTone },
       { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.t(updates === 1 ? "mtUpdates_1" : "mtUpdates_n", { n: this.formatNumber(updates) }) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
-      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
     // One status pill per tile: what is open, or "Nothing to do" once the numbers are there; while they load the place stays empty.
-    const loaded = { backup: Boolean(this.backup?.available), updates: Boolean(pf), blueprints: Boolean(bp), goals: Boolean(this.goals) };
+    const loaded = { backup: Boolean(this.backup?.available), updates: Boolean(pf), blueprints: Boolean(bp) };
     const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), status: true, tone: tab.pill ? tab.tone : "ok", pill: tab.pill || (loaded[tab.id] ? this.t("cleanupNothing") : "") })), open, this.t("maintenance"), true);
-    return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "updates" ? this.updatesCard() : open === "blueprints" ? this.blueprintsCard() : this.backupCard()}</div>`;
+    // The goals are set under Rules & goals; here one line says how they stand and leads there.
+    const gl = this.goals?.goals || [], missed = gl.filter(g => g.state === "missed").length;
+    const goals = gl.length ? `<p class="factnote">${this.t("goalsLine", { met: this.formatNumber(gl.length - missed), total: this.formatNumber(gl.length) })} <button type="button" class="link" data-goals-settings>${this.t("goalsAdjust")}</button></p>` : "";
+    return `<div class="stack">${grid}${goals}${open === "updates" ? this.updatesCard() : open === "blueprints" ? this.blueprintsCard() : this.backupCard()}</div>`;
   }
 }
 
@@ -6791,7 +6783,8 @@ class BackupMixin {
 // to set up is paused (disabled) and tried again later; data is `ha_housekeeper/auto_pause`, changes go through `auto_pause_set`.
 // Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  apTab: "Auto-Pause", apTileHint: "{n} Kandidaten · pausiert Dauerfehler und versucht es später wieder",
+  autopause: "Auto-Pause", autopauseSubtitle: "Was gerade pausiert ist, was Fehlversuche sammelt und wie pausiert wird.",
+  relApPaused_1: "1 Integration ist pausiert.", relApPaused_n: "{n} Integrationen sind pausiert.", relApOpen: "Zur Auto-Pause",
   apHead: "Dauerfehler automatisch pausieren", apHeadSub: "Pausiert Datenlieferanten, die dauernd an der Einrichtung scheitern, und versucht es später wieder. Eine Pause von Hand braucht diesen Schalter nicht.",
   apSwitch: "Automatisch pausieren", apStatusOn: "Aktiv · Dienste im Blick: {n}", apStatusOff: "Aus · Dienste, die überwacht würden: {n}",
   apSettings: "Einstellungen", apSettingsSub: "Pausiert nach {a} Fehlversuchen in {h} Std.", apAttempts: "Fehlversuche", apAttemptsHint: "So viele gescheiterte Einrichtungsversuche lösen die Pause aus.", apHours: "Stunden", apHoursHint: "Die Fehlversuche müssen in diesem Zeitraum liegen.",
@@ -6813,7 +6806,8 @@ Object.assign(TEXT.de, {
   err_auto_pause_confirm_needed: "Die Integration steuert etwas oder trägt eine Hausfunktion: bitte bestätigen.", err_auto_pause_core: "Diese Integration wird nie pausiert.", err_auto_pause_reauth: "Die Integration braucht eine neue Anmeldung; eine Pause hilft nicht.", err_auto_pause_paused: "Bereits pausiert.", err_auto_pause_disabled: "Die Integration ist schon deaktiviert.", err_auto_pause_not_found: "Integration nicht gefunden.", err_auto_pause_not_paused: "Nicht pausiert.", err_auto_pause_busy: "Es läuft gerade ein Versuch.", err_auto_pause_invalid: "Wert nicht zulässig.",
 });
 Object.assign(TEXT.en, {
-  apTab: "Auto-pause", apTileHint: "{n} candidates · pauses constant failures and tries again later",
+  autopause: "Auto-pause", autopauseSubtitle: "What is paused right now, what is collecting failed attempts and how pausing works.",
+  relApPaused_1: "1 integration is paused.", relApPaused_n: "{n} integrations are paused.", relApOpen: "Open auto-pause",
   apHead: "Pause constant failures automatically", apHeadSub: "Pauses data providers that keep failing to set up and tries them again later. A pause you start by hand does not need this switch.",
   apSwitch: "Pause automatically", apStatusOn: "On · services watched: {n}", apStatusOff: "Off · services that would be watched: {n}",
   apSettings: "Settings", apSettingsSub: "Pauses after {a} failed attempts within {h} h", apAttempts: "failed attempts", apAttemptsHint: "This many failed setup attempts start the pause.", apHours: "hours", apHoursHint: "The failed attempts must fall within this time.",
@@ -6872,7 +6866,7 @@ class AutoPauseMixin {
     const now = Date.now(), total = a.schedule.offsets.length, items = [];
     const running = a.paused.filter(p => !p.exhausted), spent = a.paused.filter(p => p.exhausted);
     const names = list => list.slice(0, 3).map(p => p.title || p.domain).join(", ") + (list.length > 3 ? ", …" : "");
-    const jump = 'data-jump="reliability" data-jump-tab="autopause"';
+    const jump = 'data-jump="autopause"';
     if (spent.length) items.push({ key: "autopause_exhausted", area: "state", tone: "warn", icon: "mdi:pause-circle-outline", text: spent.length === 1 ? this.t("apTodoExhaustedOne", { name: spent[0].title || spent[0].domain, days: Math.round(a.schedule.end_hours / 24) }) : this.t("apTodoExhaustedMany", { n: this.formatNumber(spent.length) }), hintText: this.t("apTodoExhaustedHint"), pill: this.t("apTodoCheck"), jump });
     if (running.length) {
       const one = running[0], due = one.next ? Math.max(new Date(one.next).getTime() - now, 0) : null;
@@ -6886,7 +6880,7 @@ class AutoPauseMixin {
   apRowAction(entryId, state) {
     const a = this.autoPause;
     if (!a || !entryId) return "";
-    if (this.apPausedItem(entryId)) return `<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`;
+    if (this.apPausedItem(entryId)) return `<span class="pill warn" role="link" tabindex="0" data-jump="autopause">${this.t("apPaused")}</span>`;
     if (!state || state === "loaded" || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
     return `<button type="button" class="btn" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apPause")}</button>`;
   }
@@ -6915,9 +6909,15 @@ class AutoPauseMixin {
     return hours >= 48 ? this.t("relDays", { n: Math.round(hours / 24) }) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
   }
 
-  autoPauseTile() {
-    const a = this.autoPause, paused = a?.paused?.length || 0;
-    return { id: "autopause", icon: "mdi:pause-circle-outline", label: this.t("apTab"), hint: this.t("apTileHint", { n: this.formatNumber(a?.candidates?.length || 0) }), count: a ? paused : undefined, tone: paused ? "warn" : "mute", status: !a };
+  // On the reliability page, a line that leads to the auto-pause while it holds an integration.
+  apReliabilityNote() {
+    const n = this.autoPause?.paused?.length || 0;
+    return n ? `<p class="factnote">${this.t(n === 1 ? "relApPaused_1" : "relApPaused_n", { n: this.formatNumber(n) })} <button type="button" class="link" data-jump="autopause">${this.t("relApOpen")}</button></p>` : "";
+  }
+
+  // The page of its own in the group Monitoring: the bar with the refresh, then the switch, what is paused and the rest.
+  autoPausePage() {
+    return `<div class="stack">${this.pageBar({ left: "", loading: this.apLoading, attr: "data-ap-refresh" })}${this.autoPauseView()}</div>`;
   }
 
   // Asks first where pausing has a consequence, then sends the entry into the pause.
@@ -7175,23 +7175,19 @@ class ReliabilityMixin {
 
   reliabilityView() {
     this.ensureReliability();
-    this.ensureAutoPause();
+    this.ensureAutoPause(); // for the line that leads to a running pause
     const r = this.reliability;
-    const apOpen = (this.viewTab ||= {}).reliability === "autopause";
     const windows = [[1, "relWindow1"], [7, "relWindow7"], [30, "relWindow30"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
     const aged = Boolean(r?.computed_at && (r.stale || r.age_seconds >= 60)), took = aged ? "" : this.tookNote(r).replace(/^ · /, "");
-    const head = apOpen
-      ? this.pageBar({ left: "", loading: this.apLoading, attr: "data-ap-refresh" })
-      : this.pageBar({ left: `${windows}${took ? `<span>${this.esc(took)}</span>` : ""}`, at: r?.computed_at ? new Date(r.computed_at * 1000).toISOString() : null, loading: this.relLoading, attr: "data-rel-refresh" });
-    // Without numbers (no recorder, still loading) the tiles stay, so Auto-Pause is always reachable: it does not need them.
+    const head = this.pageBar({ left: `${windows}${took ? `<span>${this.esc(took)}</span>` : ""}`, at: r?.computed_at ? new Date(r.computed_at * 1000).toISOString() : null, loading: this.relLoading, attr: "data-rel-refresh" });
+    // Without numbers (no recorder, still loading) the tiles stay, so the page keeps its shape.
     const alone = inner => {
       const tabs = [
         { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: "", status: true },
         { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: "", status: true },
-        this.autoPauseTile(),
       ];
       const open = this.viewTabOf("reliability", tabs, "integrations");
-      return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${open === "autopause" ? this.autoPauseView() : `<div class="panel">${inner}</div>`}</div>`;
+      return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${this.apReliabilityNote()}<div class="panel">${inner}</div></div>`;
     };
     if (this.relError) return alone(`${this.notice("err", this.relError)}`);
     if (!r) return alone(this.skeleton("relLoading"));
@@ -7223,11 +7219,10 @@ class ReliabilityMixin {
     const tabs = [
       { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: this.t("relTileIntHint", { avail: availText, window: this.t(`relWindow${r.window_days}`) }), count: r.entries.length, tone: outages || attention ? "warn" : "ok", pill: odd ? this.t("relTilePill", { n: this.formatNumber(odd) }) : "", pillTone: attention ? "red" : "warn" },
       { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: this.t("relTileUnstableHint"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok", pill: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "" },
-      this.autoPauseTile(),
     ];
     const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
-    const body = open === "autopause" ? this.autoPauseView() : open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60), green: this.formatNumber(REL_GREEN), yellow: this.formatNumber(REL_YELLOW) })}</div>`;
-    return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${open === "integrations" ? tiles : ""}${body}</div>`;
+    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60), green: this.formatNumber(REL_GREEN), yellow: this.formatNumber(REL_YELLOW) })}</div>`;
+    return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${this.apReliabilityNote()}${open === "integrations" ? tiles : ""}${body}</div>`;
   }
 
   // The numbers behind "unstable" or "flapping" as lines of text; also used on the entity's detail page.
@@ -8158,10 +8153,11 @@ const SEARCH_WORDS = {
   repair: "reparieren zähler umziehen ersetzen austauschen repair counter meter replace exchange",
   journal: "journal pläne rückgängig verlauf plans undo history",
   removedDevices: "entfernt gelöscht vergessen entfernte geräte removed deleted forgotten devices",
-  maintenance: "wartung backup sicherung wiederherstellung update ziele maintenance restore goals",
+  maintenance: "wartung backup sicherung wiederherstellung update blueprints maintenance restore",
   batteries: "batterien batterie akku schwach batteries battery low",
   reminders: "erinnerungen wartung filter reminders due",
-  policies: "richtlinien regeln policies rules",
+  policies: "regeln ziele richtlinien grenzen verstöße rules goals policies limits violations",
+  autopause: "auto-pause pausieren pause dauerfehler einrichtung fehlversuche wieder versuchen setup retry failing",
   reliability: "zuverlässigkeit ausfälle instabil reliability outages unstable",
   runs: "läufe automationen ausführungen runs automations traces",
   recorder: "recorder datenbank statistik größe database statistics size",
@@ -8202,7 +8198,8 @@ class SearchPagesMixin {
     }
     pages.push({ view: "settings", label: this.t("settings"), path: "", words: SEARCH_WORDS.settings });
     for (const [id, , labelKey] of this.settingsTabs()) pages.push({ view: "settings", settingsTab: id, label: this.t(labelKey), path: this.t("settings"), words: SEARCH_WORDS[id] || "" });
-    for (const [id, label] of [["backup", "backupsTab"], ["updates", "updatesTab"], ["blueprints", "bpTab"], ["goals", "goalsTitle"]]) pages.push({ view: "maintenance", viewTab: id, label: this.t(label), path: this.t("maintenance"), words: SEARCH_WORDS[id] });
+    for (const [id, label] of [["backup", "backupsTab"], ["updates", "updatesTab"], ["blueprints", "bpTab"]]) pages.push({ view: "maintenance", viewTab: id, label: this.t(label), path: this.t("maintenance"), words: SEARCH_WORDS[id] });
+    pages.push({ view: "policies", viewTab: "goals", label: this.t("goalsTitle"), path: this.t("policies"), words: SEARCH_WORDS.goals });
     pages.push({ view: "journal", viewTab: "devices", label: this.t("lifeRemovedTab"), path: this.t("journal"), words: SEARCH_WORDS.removedDevices });
     pages.push({ view: "changes", viewTab: "compare", label: this.t("tabScans"), path: this.t("changes"), words: SEARCH_WORDS.compare });
     pages.push({ view: "changes", viewTab: "logbook", label: this.t("logbook"), path: this.t("changes"), words: SEARCH_WORDS.logbook });
@@ -8517,24 +8514,31 @@ class PoliciesMixin {
     return `<div class="panel">${bar}${this.polSelBar(shown.length)}${table}${pg.footer}${note}</div>`;
   }
 
+  // Rules & goals: the rules with their violations, and the own limits for what counts as in order (the goals).
+  // The tiles stay while the rules load, so the goals are reachable without them.
   policiesView() {
     this.ensurePolicies();
-    const r = this.policies;
+    this.ensureGoals();
+    const r = this.policies, g = this.goals;
     const head = this.pageBar({ at: this.policiesAt, loading: this.policiesLoading, attr: "data-policy-refresh" });
-    if (this.policiesError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.policiesError)}</div></div>`;
-    if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("polLoading")}</div></div>`;
-    const on = r.rules.filter(rule => rule.enabled);
+    const on = r ? r.rules.filter(rule => rule.enabled) : [];
     const violations = on.reduce((n, rule) => n + rule.count, 0);
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
+    const missed = (g?.goals || []).filter(goal => goal.state === "missed").length;
     const tabs = [
-      { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: this.t("polTileRulesHint", { on: this.formatNumber(on.length) }), count: r.rules.length, tone: on.length ? "ok" : "mute" },
-      { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: violations, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute" },
+      { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: r ? this.t("polTileRulesHint", { on: this.formatNumber(on.length) }) : "", count: r ? r.rules.length : undefined, tone: on.length ? "ok" : "mute", status: !r },
+      { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: r ? violations : undefined, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute", status: !r },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: this.t("maintHintGoals"), count: g ? (g.goals || []).length : undefined, tone: missed ? "red" : g?.goals?.length ? "ok" : "mute", pill: missed ? this.t("tilesMissed", { count: missed }) : "", status: !g },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
+    const tiles = this.navTiles("policies", tabs, open, this.t("policies"), true);
+    if (open === "goals") return `<div class="stack">${this.goalsBar()}${tiles}${this.goalsCard()}</div>`;
+    if (this.policiesError) return `<div class="stack">${head}${tiles}<div class="panel">${this.notice("err", this.policiesError)}</div></div>`;
+    if (!r) return `<div class="stack">${head}${tiles}<div class="panel">${this.skeleton("polLoading")}</div></div>`;
     const body = open === "rules"
       ? `<div class="panel">${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${on.length ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`}${this.howCounted("polFootnote")}</div>`
       : this.polViolations(r);
-    return `<div class="stack">${head}${this.navTiles("policies", tabs, open, this.t("policies"), true)}${body}</div>`;
+    return `<div class="stack">${head}${tiles}${body}</div>`;
   }
 }
 
@@ -10047,16 +10051,20 @@ class GoalsMixin {
       ${f.error ? `${this.notice("err", f.error)}` : ""}</form>`;
   }
 
-  // The overview shows only what is missed (or that all is met) and leads to Maintenance, where the limits are set.
+  // The bar above the tab Goals of Rules & goals: when the goals were read, and the refresh.
+  goalsBar() {
+    return this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
+  }
+
+  // The overview shows only what is missed (or that all is met) and leads to Rules & goals, where the limits are set.
   goalsCard(compact = false) {
     this.ensureGoals();
     const r = this.goals;
     if (!compact) {
-      // The tab in Maintenance says what is going on instead of staying empty.
-      const head = this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
-      if (this.goalsError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.goalsError)}</div></div>`;
-      if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("loading")}</div></div>`;
-      if (!r.goals?.length) return `<div class="stack">${head}<div class="panel"><div class="emptymsg">${this.t("goalsNone")}</div></div></div>`;
+      // The tab says what is going on instead of staying empty.
+      if (this.goalsError) return `<div class="panel">${this.notice("err", this.goalsError)}</div>`;
+      if (!r) return `<div class="panel">${this.skeleton("loading")}</div>`;
+      if (!r.goals?.length) return `<div class="panel"><div class="emptymsg">${this.t("goalsNone")}</div></div>`;
     }
     if (!r?.goals?.length) return "";
     if (compact) {
@@ -10064,8 +10072,7 @@ class GoalsMixin {
       const body = missed.length ? missed.map(g => this.goalRow(g, false)).join("") : `<div class="pad"><small>${this.t("goalsAllMet", { n: r.met })}</small></div>`;
       return `<section class="panel u-mb14" aria-labelledby="hk-goals"><div class="panelhead"><div><h2 id="hk-goals">${this.t("goalsTitle")}</h2></div><span class="date">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</span><button class="btn quiet" data-goals-settings>${this.t("goalsAdjust")}</button></div>${body}</section>`;
     }
-    const head = this.pageBar({ at: this.loadedAt("goals"), loading: this.goalsLoading, attr: "data-goals-refresh" });
-    return `<div class="stack">${head}<section class="panel u-mb14" aria-label="${this.esc(this.t("goalsTitle"))}"><p class="factnote pad">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</p>${r.goals.map(g => this.goalRow(g)).join("")}</section></div>`;
+    return `<section class="panel u-mb14" aria-label="${this.esc(this.t("goalsTitle"))}"><p class="factnote pad">${this.t("goalsSummary", { met: r.met, missed: r.missed })}</p>${r.goals.map(g => this.goalRow(g)).join("")}</section>`;
   }
 
   openGoal(id) {
@@ -10089,7 +10096,7 @@ class GoalsMixin {
   }
 
   bindGoals(root) {
-    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { (this.viewTab ||= {}).maintenance = "goals"; this.noteJump?.("maintenance"); this.view = "maintenance"; this.selected = null; this.pages = {}; this.render(); });
+    root.querySelectorAll("[data-goals-settings]").forEach(el => el.onclick = () => { (this.viewTab ||= {}).policies = "goals"; this.noteJump?.("policies"); this.view = "policies"; this.selected = null; this.pages = {}; this.render(); });
     root.querySelector("[data-goals-refresh]")?.addEventListener("click", () => this.loadGoals());
     root.querySelectorAll("[data-goal-open]").forEach(el => el.onclick = () => this.openGoal(el.dataset.goalOpen));
     root.querySelectorAll("[data-goal-cancel]").forEach(el => el.onclick = () => { this.goalForm = null; this.render(); });
@@ -12470,12 +12477,15 @@ Object.assign(TEXT.de, {
   counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten. Starte die Prüfung mit „Sensoren prüfen“.",
   stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
-  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_maintenance: "{n} verfehlte Wartungsziele", navCount_policies: "{n} Verstöße gegen Richtlinien", navCount_other: "{n} Punkte zum Ansehen", setHintExceptions: "Liegt jetzt unter Betrieb / Ausnahmen.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
-  setEveryHours: "alle {n} h", setManual: "von Hand", setNoneHidden: "nichts ausgeblendet", setRuleOne: "1 Regel", setRulesCount: "{n} Regeln", setVacationOn: "Urlaubsmodus an", setVacationOff: "Urlaubsmodus aus", setVacationNone: "Urlaubsmodus nicht eingerichtet", setOn: "an", setOff: "aus",
+  setTabProtection: "Schutzmodus", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_policies: "{n} Verstöße gegen Regeln oder verfehlte Ziele", navCount_other: "{n} Punkte zum Ansehen", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
+  setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
   maintHintBackup: "Backups prüfen, schützen und aufräumen.", maintHintUpdates: "Offene Updates und was vorher zu prüfen ist.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
   actRepairValues: "Werte reparieren", actHintRepair: "Falsche Werte im Verlauf und in der Statistik ersetzen.", actMeter: "Zähler wechseln", actHintMeter: "Die Statistik bei einem neuen Zähler fortführen.", actExchange: "Gerät austauschen", actHintExchange: "Durch ein neues Gerät ersetzen und alles übernehmen.",
   actHintReplace: "Überall durch eine andere Entität ersetzen.", actHintDisable: "Erst deaktivieren; nach der Wartezeit entfernen.",
-  navGroupActions: "Aktionen", navGroupSecurity: "Sicherheit",
+  navGroupActions: "Aktionen", navGroupSecurity: "Sicherheit", navGroupWatch: "Überwachen",
+  navSt_monitor: "{n} beeinträchtigt", navSt_autopause: "{n} pausiert", navSt_reminders: "{n} fällig", navSt_policies_1: "1 Verstoß", navSt_policies_n: "{n} Verstöße",
+  navSt_goals_1: "1 Ziel verfehlt", navSt_goals_n: "{n} Ziele verfehlt", navSt_exceptions: "{n} zu prüfen", navStOff: "aus", navStVacation: "Urlaub an",
+  navStHint_monitor: "{n} Hausfunktionen beeinträchtigt", navStHint_autopause: "{n} Integrationen pausiert", navStHintOff_autopause: "Auto-Pause ist ausgeschaltet", navStHintVacation: "Der Urlaubsmodus ist an",
   err_cleanup_busy: "Ein Plan läuft gerade. Housekeeper lädt die Ansicht neu, sobald er fertig ist.", 
   
   goalsLine: "Wartungsziele: {met} von {total} erfüllt", hintsTitle: "Hinweise",
@@ -12519,12 +12529,15 @@ Object.assign(TEXT.en, {
   counterNoneSub: "{count} sensors look fine.", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements. Start the check with “Check sensors”.",
   stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
-  setTabProtection: "Protection mode", setTabExceptions: "Exceptions", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_maintenance: "{n} maintenance goals missed", navCount_policies: "{n} policy violations", navCount_other: "{n} items to look at", setHintExceptions: "Now under Operation / Exceptions.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
-  setEveryHours: "every {n} h", setManual: "manual", setNoneHidden: "nothing hidden", setRuleOne: "1 rule", setRulesCount: "{n} rules", setVacationOn: "Vacation mode on", setVacationOff: "Vacation mode off", setVacationNone: "Vacation mode not set up", setOn: "on", setOff: "off",
+  setTabProtection: "Protection mode", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_policies: "{n} rule violations or goals missed", navCount_other: "{n} items to look at", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
+  setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",
   maintHintBackup: "Check, protect and tidy up backups.", maintHintUpdates: "Open updates and what to check first.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintGoals: "Your own limits for what in order means.",
   actRepairValues: "Repair values", actHintRepair: "Replace wrong values in the history and the statistics.", actMeter: "Replace the meter", actHintMeter: "Carry the statistics on with a new meter.", actExchange: "Exchange the device", actHintExchange: "Replace it with a new device and carry everything over.",
   actHintReplace: "Replace it with another entity everywhere.", actHintDisable: "Disable first; remove after the waiting time.",
-  navGroupActions: "Actions", navGroupSecurity: "Security",
+  navGroupActions: "Actions", navGroupSecurity: "Security", navGroupWatch: "Monitoring",
+  navSt_monitor: "{n} impaired", navSt_autopause: "{n} paused", navSt_reminders: "{n} due", navSt_policies_1: "1 violation", navSt_policies_n: "{n} violations",
+  navSt_goals_1: "1 goal missed", navSt_goals_n: "{n} goals missed", navSt_exceptions: "{n} to review", navStOff: "off", navStVacation: "Vacation on",
+  navStHint_monitor: "{n} house functions impaired", navStHint_autopause: "{n} integrations paused", navStHintOff_autopause: "Auto-pause is switched off", navStHintVacation: "Vacation mode is on",
   err_cleanup_busy: "A plan is running. Housekeeper reloads the view as soon as it has finished.", 
   
   goalsLine: "Maintenance goals: {met} of {total} met", hintsTitle: "Hints",
@@ -15955,7 +15968,7 @@ Object.assign(TEXT.de, {
   accApp_full_access: "Voller Hardwarezugriff", accApp_protection_off: "Schutzmodus aus", accApp_ports: "Offene Ports", accColOrigin: "Herkunft", accOrigin_core: "Offiziell", accOrigin_local: "Lokal", accOrigin_community: "Community", accStage_experimental: "experimentell", accStage_deprecated: "veraltet", accApp_privileged: "Privilegiert", accApp_host_pid: "Host-Prozesse (PID)", accApp_docker_api: "Docker-API (wie Root)", accApp_host_ipc: "Host-IPC", accApp_host_dbus: "Host-D-Bus", accApp_host_network: "Host-Netzwerk", accApp_supervisor_api: "Supervisor-API", accApp_ha_api: "Home-Assistant-API", accApp_auth_api: "Login-Prüfung (Auth-API)", accApp_gpio: "GPIO", accApp_usb: "USB", accApp_devices: "Geräte", accApp_apparmor_off: "AppArmor aus",
   accExternal: "extern", accGps: "Standort (Tracker)", accPresence: "Anwesenheit im Netz", accInTitle: "Von außen erreichbar", accInHint: "Wege herein", accInColWay: "Weg herein", accInColWhat: "Was", accInColState: "Stand", accInNone: "Housekeeper sieht keinen Weg von außen herein.",
   accInLegend: "Was Home Assistant von außen erreichbar macht, soweit Housekeeper es sieht. Gelb heißt: aus dem Internet erreichbar, das kann gewollt sein. Ein VPN ist grün, weil nur Mitglieder des Netzes hineinkommen.",
-  accInNote: "Proxy, SSL und vertrauenswürdige Proxys prüft die Richtlinie „HTTP-Konfiguration“ unter Richtlinien. Portweiterleitungen am Router und Tunnel ohne App sieht Housekeeper nicht; Apps werden am Namen erkannt.",
+  accInNote: "Proxy, SSL und vertrauenswürdige Proxys prüft die Regel „HTTP-Konfiguration“ unter Regeln & Ziele. Portweiterleitungen am Router und Tunnel ohne App sieht Housekeeper nicht; Apps werden am Namen erkannt.",
   accInKind_nabu_casa: "Cloud", accInKind_tunnel: "Tunnel-App", accInKind_proxy: "Proxy-App", accInKind_dyndns: "DynDNS-App", accInKind_vpn: "VPN-App", accInKind_mcp_server: "Integration", accInKind_webhooks: "Automationen",
   accIn_nabu_casa: "Fernzugriff auf die Oberfläche über Nabu Casa", accIn_tunnel: "Tunnel ins Internet, Oberfläche öffentlich erreichbar", accIn_proxy: "Reverse Proxy, meist mit offenem Port am Router", accIn_dyndns: "Fester Name im Internet, meist mit Portweiterleitung", accIn_vpn: "Privates Netz, nur Mitglieder kommen hinein", accIn_mcp_server: "Externe Programme steuern über Assist", accIn_webhooks: "{n} Automationen per Webhook aus dem Internet auslösbar",
   accInState_on: "an", accInState_off: "aus", accInState_logged_out: "nicht angemeldet", accInState_unknown: "nicht prüfbar", accInState_running: "läuft", accInState_stopped: "gestoppt", accInState_set_up: "eingerichtet", accInState_open: "{n} offen", accInState_local: "nur lokal", accKind_custom_code: "Fremdcode, volle Rechte", accCamera: "Kamera-Entitäten", accDisabled: "deaktiviert",
@@ -16033,7 +16046,7 @@ Object.assign(TEXT.en, {
   accApp_full_access: "Full hardware access", accApp_protection_off: "Protection mode off", accApp_ports: "Open ports", accColOrigin: "Origin", accOrigin_core: "Official", accOrigin_local: "Local", accOrigin_community: "Community", accStage_experimental: "experimental", accStage_deprecated: "deprecated", accApp_privileged: "Privileged", accApp_host_pid: "Host processes (PID)", accApp_docker_api: "Docker API (like root)", accApp_host_ipc: "Host IPC", accApp_host_dbus: "Host D-Bus", accApp_host_network: "Host network", accApp_supervisor_api: "Supervisor API", accApp_ha_api: "Home Assistant API", accApp_auth_api: "Login check (Auth API)", accApp_gpio: "GPIO", accApp_usb: "USB", accApp_devices: "Devices", accApp_apparmor_off: "AppArmor off",
   accExternal: "external", accGps: "Location (trackers)", accPresence: "Presence on the network", accInTitle: "Reachable from outside", accInHint: "Ways in", accInColWay: "Way in", accInColWhat: "What", accInColState: "State", accInNone: "Housekeeper sees no way in from outside.",
   accInLegend: "What makes Home Assistant reachable from outside, as far as Housekeeper can see. Yellow means reachable from the internet, which can be intended. A VPN is green because only members of the network get in.",
-  accInNote: "Proxy, SSL and trusted proxies are checked by the \"HTTP configuration\" policy under Policies. Port forwarding on the router and tunnels without an app are not visible to Housekeeper; apps are recognised by name.",
+  accInNote: "Proxy, SSL and trusted proxies are checked by the \"HTTP configuration\" rule under Rules & goals. Port forwarding on the router and tunnels without an app are not visible to Housekeeper; apps are recognised by name.",
   accInKind_nabu_casa: "Cloud", accInKind_tunnel: "Tunnel app", accInKind_proxy: "Proxy app", accInKind_dyndns: "DynDNS app", accInKind_vpn: "VPN app", accInKind_mcp_server: "Integration", accInKind_webhooks: "Automations",
   accIn_nabu_casa: "Remote access to the interface through Nabu Casa", accIn_tunnel: "Tunnel to the internet, interface publicly reachable", accIn_proxy: "Reverse proxy, usually with an open port on the router", accIn_dyndns: "Fixed name on the internet, usually with port forwarding", accIn_vpn: "Private network, only members get in", accIn_mcp_server: "External programs control through Assist", accIn_webhooks: "{n} automations can be started by webhook from the internet",
   accInState_on: "on", accInState_off: "off", accInState_logged_out: "not logged in", accInState_unknown: "cannot be checked", accInState_running: "running", accInState_stopped: "stopped", accInState_set_up: "set up", accInState_open: "{n} open", accInState_local: "local only", accKind_custom_code: "Custom code, full rights", accCamera: "Camera entities", accDisabled: "disabled",
@@ -21055,6 +21068,9 @@ class HAHousekeeperPanel extends HTMLElement {
     if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
     if (this.view === "settings" && params.get("tab")) this.settingsTab = params.get("tab"); // the settings keep their tab apart
     if (this.view === "settings" && this.settingsTab === "exceptions") this.view = "exceptions"; // the exceptions moved out of the settings
+    // Auto-pause became a page of its own, the goals moved from Maintenance to Rules & goals.
+    if (this.view === "reliability" && this.viewTab?.reliability === "autopause") { delete this.viewTab.reliability; this.view = "autopause"; }
+    if (this.view === "maintenance" && this.viewTab?.maintenance === "goals") { delete this.viewTab.maintenance; this.view = "policies"; this.viewTab.policies = "goals"; }
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -21086,16 +21102,25 @@ class HAHousekeeperPanel extends HTMLElement {
 
   // What the number beside a page in the menu counts: the page opens as it was left, the number names its part.
   navCountHint(view, n) {
-    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies", "exceptions"].includes(view) ? `navCount_${view}` : "navCount_other";
+    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "policies", "exceptions"].includes(view) ? `navCount_${view}` : "navCount_other";
     return this.t(key, { n: this.formatNumber(n) });
   }
 
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
-    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, exceptions: this.exceptionsDue() || undefined, ...this.viewCounts() } : {};
+    const impaired = (this.monitorFunctions?.() || []).filter(f => f.enabled !== false && (f.state === "problem" || f.incident_open)).length;
+    const paused = this.autoPause?.paused?.length || 0;
+    const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, monitor: impaired || undefined, autopause: paused || undefined, policies: violations + missedGoals || undefined, exceptions: this.exceptionsDue() || undefined, ...this.viewCounts() } : {};
+    const status = this.data ? this.navStatus(counts, violations, missedGoals) : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
-    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : ""}</button>`;
+    // A view of Monitoring says its state in words ("2 due", "off"); the others show their number.
+    const mark = view => {
+      const st = status[view];
+      if (st) return `<span class="pill ${st.tone} navst" title="${this.esc(st.hint)}" aria-label="${this.esc(st.hint)}">${this.esc(st.text)}</span>`;
+      return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : "";
+    };
+    const item = view => `${NAV_BREAKS.includes(view) ? '<span class="navsep" aria-hidden="true"></span>' : ""}<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
@@ -21105,6 +21130,21 @@ class HAHousekeeperPanel extends HTMLElement {
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
       <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${item("settings")}</div></nav></header>`;
+  }
+
+  // The words beside the views of Monitoring: what is due or impaired, or that a function is switched off.
+  // Only what is loaded counts; the number of the group adds up what asks for a look, never "off" or "vacation on".
+  navStatus(counts, violations, missedGoals) {
+    const st = {}, n = v => this.formatNumber(counts[v]);
+    if (counts.monitor) st.monitor = { tone: "red", text: this.t("navSt_monitor", { n: n("monitor") }), hint: this.t("navStHint_monitor", { n: n("monitor") }) };
+    if (counts.autopause) st.autopause = { tone: "warn", text: this.t("navSt_autopause", { n: n("autopause") }), hint: this.t("navStHint_autopause", { n: n("autopause") }) };
+    else if (this.autoPause?.settings && !this.autoPause.settings.enabled) st.autopause = { tone: "mute", text: this.t("navStOff"), hint: this.t("navStHintOff_autopause") };
+    if (counts.reminders) st.reminders = { tone: "warn", text: this.t("navSt_reminders", { n: n("reminders") }), hint: this.navCountHint("reminders", counts.reminders) };
+    if (violations) st.policies = { tone: "warn", text: this.t(violations === 1 ? "navSt_policies_1" : "navSt_policies_n", { n: this.formatNumber(violations) }), hint: this.navCountHint("policies", counts.policies) };
+    else if (missedGoals) st.policies = { tone: "red", text: this.t(missedGoals === 1 ? "navSt_goals_1" : "navSt_goals_n", { n: this.formatNumber(missedGoals) }), hint: this.navCountHint("policies", counts.policies) };
+    if (counts.exceptions) st.exceptions = { tone: "warn", text: this.t("navSt_exceptions", { n: n("exceptions") }), hint: this.navCountHint("exceptions", counts.exceptions) };
+    else if (this.data?.meta?.vacation?.active) st.exceptions = { tone: "blue", text: this.t("navStVacation"), hint: this.t("navStHintVacation") };
+    return st;
   }
 
   // A top bar that does not fit its width changes into the menu button with a list, as on a phone, instead of being cut off.
@@ -21179,6 +21219,7 @@ class HAHousekeeperPanel extends HTMLElement {
       maintenance: [this.t("maintenance"), this.t("maintenanceSubtitle")],
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       monitor: [this.t("monitor"), this.t("monitorSubtitle")],
+      autopause: [this.t("autopause"), this.t("autopauseSubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
       recorder: [this.t("recorder"), this.t("recorderSubtitle")],
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
@@ -21189,7 +21230,7 @@ class HAHousekeeperPanel extends HTMLElement {
       exceptions: [this.t("exceptions"), this.t("exceptionsSubtitle")],
     };
     const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
-    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor", "exceptions"].includes(this.view);
+    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor", "exceptions", "autopause"].includes(this.view);
     const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
@@ -21210,6 +21251,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "exceptions") return this.exceptionsView();
     if (this.view === "inventory") return this.inventory();
     if (this.view === "monitor") return this.monitorView();
+    if (this.view === "autopause") return this.autoPausePage();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
     if (this.view === "components") return this.componentsView();
@@ -21673,7 +21715,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }
     });
     root.querySelectorAll("[data-set-tab]").forEach(el => {
-      el.onclick = () => { if (el.dataset.setTab === "exceptions") { this.noteJump?.("exceptions"); this.view = "exceptions"; this.pages = {}; this.render(); return; } this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
+      el.onclick = () => { this.settingsTab = el.dataset.setTab; this.optionsMessage = ""; this.render(); };
       el.onkeydown = ev => {
         const ids = [...root.querySelectorAll("[data-set-tab]")].map(b => b.dataset.setTab), at = ids.indexOf(el.dataset.setTab);
         const next = { ArrowRight: ids[(at + 1) % ids.length], ArrowLeft: ids[(at - 1 + ids.length) % ids.length], Home: ids[0], End: ids[ids.length - 1] }[ev.key];

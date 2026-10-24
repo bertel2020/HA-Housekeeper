@@ -2,7 +2,8 @@
 // to set up is paused (disabled) and tried again later; data is `ha_housekeeper/auto_pause`, changes go through `auto_pause_set`.
 // Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  apTab: "Auto-Pause", apTileHint: "{n} Kandidaten · pausiert Dauerfehler und versucht es später wieder",
+  autopause: "Auto-Pause", autopauseSubtitle: "Was gerade pausiert ist, was Fehlversuche sammelt und wie pausiert wird.",
+  relApPaused_1: "1 Integration ist pausiert.", relApPaused_n: "{n} Integrationen sind pausiert.", relApOpen: "Zur Auto-Pause",
   apHead: "Dauerfehler automatisch pausieren", apHeadSub: "Pausiert Datenlieferanten, die dauernd an der Einrichtung scheitern, und versucht es später wieder. Eine Pause von Hand braucht diesen Schalter nicht.",
   apSwitch: "Automatisch pausieren", apStatusOn: "Aktiv · Dienste im Blick: {n}", apStatusOff: "Aus · Dienste, die überwacht würden: {n}",
   apSettings: "Einstellungen", apSettingsSub: "Pausiert nach {a} Fehlversuchen in {h} Std.", apAttempts: "Fehlversuche", apAttemptsHint: "So viele gescheiterte Einrichtungsversuche lösen die Pause aus.", apHours: "Stunden", apHoursHint: "Die Fehlversuche müssen in diesem Zeitraum liegen.",
@@ -24,7 +25,8 @@ Object.assign(TEXT.de, {
   err_auto_pause_confirm_needed: "Die Integration steuert etwas oder trägt eine Hausfunktion: bitte bestätigen.", err_auto_pause_core: "Diese Integration wird nie pausiert.", err_auto_pause_reauth: "Die Integration braucht eine neue Anmeldung; eine Pause hilft nicht.", err_auto_pause_paused: "Bereits pausiert.", err_auto_pause_disabled: "Die Integration ist schon deaktiviert.", err_auto_pause_not_found: "Integration nicht gefunden.", err_auto_pause_not_paused: "Nicht pausiert.", err_auto_pause_busy: "Es läuft gerade ein Versuch.", err_auto_pause_invalid: "Wert nicht zulässig.",
 });
 Object.assign(TEXT.en, {
-  apTab: "Auto-pause", apTileHint: "{n} candidates · pauses constant failures and tries again later",
+  autopause: "Auto-pause", autopauseSubtitle: "What is paused right now, what is collecting failed attempts and how pausing works.",
+  relApPaused_1: "1 integration is paused.", relApPaused_n: "{n} integrations are paused.", relApOpen: "Open auto-pause",
   apHead: "Pause constant failures automatically", apHeadSub: "Pauses data providers that keep failing to set up and tries them again later. A pause you start by hand does not need this switch.",
   apSwitch: "Pause automatically", apStatusOn: "On · services watched: {n}", apStatusOff: "Off · services that would be watched: {n}",
   apSettings: "Settings", apSettingsSub: "Pauses after {a} failed attempts within {h} h", apAttempts: "failed attempts", apAttemptsHint: "This many failed setup attempts start the pause.", apHours: "hours", apHoursHint: "The failed attempts must fall within this time.",
@@ -83,7 +85,7 @@ class AutoPauseMixin {
     const now = Date.now(), total = a.schedule.offsets.length, items = [];
     const running = a.paused.filter(p => !p.exhausted), spent = a.paused.filter(p => p.exhausted);
     const names = list => list.slice(0, 3).map(p => p.title || p.domain).join(", ") + (list.length > 3 ? ", …" : "");
-    const jump = 'data-jump="reliability" data-jump-tab="autopause"';
+    const jump = 'data-jump="autopause"';
     if (spent.length) items.push({ key: "autopause_exhausted", area: "state", tone: "warn", icon: "mdi:pause-circle-outline", text: spent.length === 1 ? this.t("apTodoExhaustedOne", { name: spent[0].title || spent[0].domain, days: Math.round(a.schedule.end_hours / 24) }) : this.t("apTodoExhaustedMany", { n: this.formatNumber(spent.length) }), hintText: this.t("apTodoExhaustedHint"), pill: this.t("apTodoCheck"), jump });
     if (running.length) {
       const one = running[0], due = one.next ? Math.max(new Date(one.next).getTime() - now, 0) : null;
@@ -97,7 +99,7 @@ class AutoPauseMixin {
   apRowAction(entryId, state) {
     const a = this.autoPause;
     if (!a || !entryId) return "";
-    if (this.apPausedItem(entryId)) return `<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>`;
+    if (this.apPausedItem(entryId)) return `<span class="pill warn" role="link" tabindex="0" data-jump="autopause">${this.t("apPaused")}</span>`;
     if (!state || state === "loaded" || !(a.pausable || []).some(p => p.entry_id === entryId)) return "";
     return `<button type="button" class="btn" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apPause")}</button>`;
   }
@@ -126,9 +128,15 @@ class AutoPauseMixin {
     return hours >= 48 ? this.t("relDays", { n: Math.round(hours / 24) }) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
   }
 
-  autoPauseTile() {
-    const a = this.autoPause, paused = a?.paused?.length || 0;
-    return { id: "autopause", icon: "mdi:pause-circle-outline", label: this.t("apTab"), hint: this.t("apTileHint", { n: this.formatNumber(a?.candidates?.length || 0) }), count: a ? paused : undefined, tone: paused ? "warn" : "mute", status: !a };
+  // On the reliability page, a line that leads to the auto-pause while it holds an integration.
+  apReliabilityNote() {
+    const n = this.autoPause?.paused?.length || 0;
+    return n ? `<p class="factnote">${this.t(n === 1 ? "relApPaused_1" : "relApPaused_n", { n: this.formatNumber(n) })} <button type="button" class="link" data-jump="autopause">${this.t("relApOpen")}</button></p>` : "";
+  }
+
+  // The page of its own in the group Monitoring: the bar with the refresh, then the switch, what is paused and the rest.
+  autoPausePage() {
+    return `<div class="stack">${this.pageBar({ left: "", loading: this.apLoading, attr: "data-ap-refresh" })}${this.autoPauseView()}</div>`;
   }
 
   // Asks first where pausing has a consequence, then sends the entry into the pause.

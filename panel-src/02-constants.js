@@ -151,6 +151,7 @@ const NAV = [
   ["policies", "mdi:clipboard-check-outline"],
   ["reliability", "mdi:chart-timeline-variant"],
   ["monitor", "mdi:home-heart"],
+  ["autopause", "mdi:pause-circle-outline"],
   ["exceptions", "mdi:eye-off-outline"],
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
@@ -159,15 +160,18 @@ const NAV = [
   ["settings", "mdi:cog-outline"],
 ];
 
-// The sidebar groups every view but "settings", which stands alone at the foot.
+// The sidebar groups every view but "settings", which stands alone at the foot. The groups follow what the person
+// wants: see what is wrong, set up what runs by itself, do the work, understand how the house runs, then the rest.
 const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav"]],
-  ["navGroupClean", ["cleanup", "repair", "journal"]],
-  ["navGroupMaintain", ["maintenance", "batteries", "reminders", "policies"]],
-  ["navGroupOperation", ["monitor", "reliability", "runs", "recorder", "storage", "exceptions"]],
+  ["navGroupWatch", ["monitor", "autopause", "reminders", "policies", "exceptions"]],
+  ["navGroupMaintain", ["maintenance", "batteries", "cleanup", "repair", "journal"]],
+  ["navGroupOperation", ["reliability", "runs", "recorder", "storage"]],
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],
   ["navGroupExplore", ["inventory", "components", "graph", "changes"]],
 ];
+// A line in a menu before these views: in Maintain the care of the house comes first, then cleaning up and repairing.
+const NAV_BREAKS = ["cleanup"];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
 

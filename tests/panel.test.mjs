@@ -80,7 +80,7 @@ test("German and English texts define the same keys", () => {
 
 test("home functions show a confirmed fault, a scan gap, and escapes function names", () => {
   const { el, NAV_GROUPS } = panel("de");
-  assert.ok(NAV_GROUPS.find(([group]) => group === "navGroupOperation")[1].includes("monitor"));
+  assert.ok(NAV_GROUPS.find(([group]) => group === "navGroupWatch")[1].includes("monitor"));
   el.data = { ...DATA, monitor: [
     { id: "one", name: "<img src=x>", description: "", state: "problem", reason: "unavailable", reason_key: "entity:sensor.a", scanned_at: DATA.meta.scanned_at, members: [], incident_open: true },
     { id: "two", name: "Türklingel", description: "", state: "unverified", reason: "source_unread", scanned_at: DATA.meta.scanned_at, members: [], incident_open: false },
@@ -1933,9 +1933,10 @@ test("the navigation groups every view once, with settings at the foot", () => {
   el.render();
   const html = shadow.innerHTML;
   const menus = [...html.matchAll(/<div class="navmenu[^"]*"><button[^>]*data-menu="([^"]+)"/g)].map(m => m[1]);
-  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupClean", "navGroupMaintain", "navGroupOperation", "navGroupSecurity", "navGroupExplore"]), "five menus after the direct entries");
+  assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupWatch", "navGroupMaintain", "navGroupOperation", "navGroupSecurity", "navGroupExplore"]), "five menus after the direct entries");
   assert.ok(html.includes('<nav class="topnav" id="topnav" aria-label="Main navigation">'));
-  const order = ["overview", "findingsNav", "cleanup", "repair", "journal", "maintenance", "batteries", "reliability", "inventory", "changes", "settings"].map(v => html.indexOf(`data-view="${v}"`));
+  const order = ["overview", "findingsNav", "monitor", "autopause", "exceptions", "maintenance", "batteries", "cleanup", "repair", "journal", "reliability", "inventory", "changes", "settings"].map(v => html.indexOf(`data-view="${v}"`));
+  assert.ok(/<span class="navsep" aria-hidden="true"><\/span><button class="nav[^"]*" data-view="cleanup"/.test(html), "a line parts the care of the house from cleaning up");
   assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), "views keep their order and settings comes last");
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1, "one current entry");
   assert.ok(/data-view="cleanup"\s+aria-current="page"/.test(html));
@@ -2603,10 +2604,10 @@ const AUTO_PAUSE = {
   pausable: [{ entry_id: "e2", title: "Strompreise", domain: "tibber", state: "loaded", warn: [] }],
 };
 
-test("the Auto-Pause tab shows without the recorder numbers and offers pause, try and exclusion", () => {
+test("the Auto-Pause page shows without the recorder numbers and offers pause, try and exclusion", () => {
   const { el } = panel("en");
   el._hass.callWS = async () => AUTO_PAUSE;
-  el.data = DATA; el.view = "reliability"; el.autoPause = AUTO_PAUSE; el._apRequested = true; el._apKey = ""; (el.viewTab ||= {}).reliability = "autopause";
+  el.data = DATA; el.view = "autopause"; el.autoPause = AUTO_PAUSE; el._apRequested = true; el._apKey = "";
   const html = el.autoPauseView();
   assert.ok(html.includes("Ravensburg") && html.includes("data-ap-try") && html.includes("data-ap-never") && html.includes("Try 2 of 3"));
   assert.ok(!html.includes("Under observation"));
@@ -2614,7 +2615,23 @@ test("the Auto-Pause tab shows without the recorder numbers and offers pause, tr
   const watching = el.autoPauseView();
   assert.ok(watching.includes("Under observation") && watching.includes("5 of 20 failed attempts in 6 h") && watching.includes("would be paused at 20") && watching.includes("width:25%"));
   el.autoPause = AUTO_PAUSE;
-  assert.ok(el.autoPauseTile().count === 1 && el.apPageActions("e2", "loaded").includes("data-ap-send"));
+  assert.ok(el.autoPausePage().includes("data-ap-refresh") && el.apPageActions("e2", "loaded").includes("data-ap-send"));
+  assert.ok(el.apReliabilityNote().includes('data-jump="autopause"'), "the reliability page leads to a running pause");
+});
+
+test("the menu Monitoring says the state of each view in words, and old links land on the new pages", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, vacation: { active: true } }, reminders: [{ state: "due" }, { state: "due" }] };
+  el.autoPause = { ...AUTO_PAUSE, paused: [] }; el.policies = { rules: [{ enabled: true, count: 3 }] };
+  el.render();
+  const html = shadow.innerHTML;
+  for (const word of ["2 due", "off", "3 violations", "Vacation on"]) assert.ok(html.includes(`navst" title=`) && html.includes(`>${word}</span>`), word);
+  for (const [search, view, tab] of [["?view=reliability&tab=autopause", "autopause", undefined], ["?view=maintenance&tab=goals", "policies", "goals"]]) {
+    const window = { location: { search, pathname: "/ha-housekeeper" }, history: { replaceState() {} } };
+    const other = panel("en", { window }).el;
+    other.data = DATA; other.applyUrl();
+    assert.equal(`${other.view}|${other.viewTab?.[other.view]}`, `${view}|${tab}`, search);
+  }
 });
 
 test("a running pause is a maintenance row of the overview, a used-up one an open row, and a failing integration offers the pause", () => {
@@ -4339,9 +4356,10 @@ test("detail, maintenance and settings offer their options as tiles that open on
   assert.equal(el.view, "repair"); assert.equal(el.repairTask, "repair_counter"); assert.equal(el.counterId, "sensor.water");
   assert.equal(sent.at(-1).type, "ha_housekeeper/range_series");
   el.view = "maintenance"; el.render();
-  for (const id of ["backup", "updates", "blueprints", "goals"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
+  for (const id of ["backup", "updates", "blueprints"]) assert.ok(shadow.innerHTML.includes(`data-view-tab="maintenance|${id}"`), id);
   el.view = "settings"; el.settingsTab = "protection"; el.render();
-  for (const id of ["look", "protection", "exceptions", "scan", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
+  for (const id of ["look", "protection", "scan", "info"]) assert.ok(shadow.innerHTML.includes(`data-set-tab="${id}"`), id);
+  assert.ok(!shadow.innerHTML.includes('data-set-tab="exceptions"'), "the exceptions have their page under Monitoring only");
   assert.ok(shadow.innerHTML.includes("data-protection") && !shadow.innerHTML.includes("data-notify"));
 });
 
@@ -4739,10 +4757,10 @@ test("a rule that does not report gets a review in 180 days, shows when it is du
   assert.equal(JSON.stringify(Object.keys(el.excDrafts({ ...el.excForm, note: "x" })[0]).includes("review_days")), "true");
 });
 
-test("the exceptions are a page of the group Operation and count what asks for a look", () => {
+test("the exceptions are a page of the group Monitoring and count what asks for a look", () => {
   const { el } = panel("en");
   const { NAV_GROUPS } = loadPanel();
-  assert.ok(NAV_GROUPS.find(([name]) => name === "navGroupOperation")[1].includes("exceptions"));
+  assert.ok(NAV_GROUPS.find(([name]) => name === "navGroupWatch")[1].includes("exceptions"));
   const past = new Date(Date.now() - 86400000).toISOString();
   el.exc = { rules: [{ id: "r1", kind: "domain", targets: ["light"], action: "hide", scope: "always", enabled: true, note: "x", review_at: past, review_days: 180 }], vacation: {} };
   el.data = { ...DATA, findings: [], objects: [{ object_type: "entity", object_id: "sensor.a", mark: { kind: "spare" }, mark_due: true }] };
@@ -6178,12 +6196,13 @@ test("a database finding of a kind the panel does not know shows its name and le
   assert.ok(facts.includes("Size: 11 GB (WAL 3 GB)") && facts.includes("2 gaps from restarts (normal)"));
 });
 
-test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {
+test("every tab of Maintenance and the goals under Rules & goals can be found by search, and the goals tab says why it is empty", () => {
   const { el, shadow } = panel("en");
   const tabs = el.searchPages().filter(page => page.view === "maintenance" && page.viewTab).map(page => page.viewTab);
-  assert.equal(tabs.join(","), "backup,updates,blueprints,goals");
+  assert.equal(tabs.join(","), "backup,updates,blueprints");
+  assert.ok(el.searchPages().some(page => page.view === "policies" && page.viewTab === "goals"));
   assert.equal(el.t("mtNotes_1"), "1 note");
-  el.goals = { goals: [], met: 0, missed: 0 }; el._goalsRequested = true; el.view = "maintenance"; el.viewTab = { maintenance: "goals" }; el.render();
+  el.goals = { goals: [], met: 0, missed: 0 }; el._goalsRequested = true; el.view = "policies"; el.viewTab = { policies: "goals" }; el.render();
   assert.ok(shadow.innerHTML.includes("There are no maintenance goals yet."));
   el.goals = null; el.goalsError = "boom"; el.render();
   assert.ok(shadow.innerHTML.includes("boom"));

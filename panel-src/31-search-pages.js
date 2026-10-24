@@ -10,10 +10,11 @@ const SEARCH_WORDS = {
   repair: "reparieren zähler umziehen ersetzen austauschen repair counter meter replace exchange",
   journal: "journal pläne rückgängig verlauf plans undo history",
   removedDevices: "entfernt gelöscht vergessen entfernte geräte removed deleted forgotten devices",
-  maintenance: "wartung backup sicherung wiederherstellung update ziele maintenance restore goals",
+  maintenance: "wartung backup sicherung wiederherstellung update blueprints maintenance restore",
   batteries: "batterien batterie akku schwach batteries battery low",
   reminders: "erinnerungen wartung filter reminders due",
-  policies: "richtlinien regeln policies rules",
+  policies: "regeln ziele richtlinien grenzen verstöße rules goals policies limits violations",
+  autopause: "auto-pause pausieren pause dauerfehler einrichtung fehlversuche wieder versuchen setup retry failing",
   reliability: "zuverlässigkeit ausfälle instabil reliability outages unstable",
   runs: "läufe automationen ausführungen runs automations traces",
   recorder: "recorder datenbank statistik größe database statistics size",
@@ -54,7 +55,8 @@ class SearchPagesMixin {
     }
     pages.push({ view: "settings", label: this.t("settings"), path: "", words: SEARCH_WORDS.settings });
     for (const [id, , labelKey] of this.settingsTabs()) pages.push({ view: "settings", settingsTab: id, label: this.t(labelKey), path: this.t("settings"), words: SEARCH_WORDS[id] || "" });
-    for (const [id, label] of [["backup", "backupsTab"], ["updates", "updatesTab"], ["blueprints", "bpTab"], ["goals", "goalsTitle"]]) pages.push({ view: "maintenance", viewTab: id, label: this.t(label), path: this.t("maintenance"), words: SEARCH_WORDS[id] });
+    for (const [id, label] of [["backup", "backupsTab"], ["updates", "updatesTab"], ["blueprints", "bpTab"]]) pages.push({ view: "maintenance", viewTab: id, label: this.t(label), path: this.t("maintenance"), words: SEARCH_WORDS[id] });
+    pages.push({ view: "policies", viewTab: "goals", label: this.t("goalsTitle"), path: this.t("policies"), words: SEARCH_WORDS.goals });
     pages.push({ view: "journal", viewTab: "devices", label: this.t("lifeRemovedTab"), path: this.t("journal"), words: SEARCH_WORDS.removedDevices });
     pages.push({ view: "changes", viewTab: "compare", label: this.t("tabScans"), path: this.t("changes"), words: SEARCH_WORDS.compare });
     pages.push({ view: "changes", viewTab: "logbook", label: this.t("logbook"), path: this.t("changes"), words: SEARCH_WORDS.logbook });

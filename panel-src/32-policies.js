@@ -157,23 +157,30 @@ class PoliciesMixin {
     return `<div class="panel">${bar}${this.polSelBar(shown.length)}${table}${pg.footer}${note}</div>`;
   }
 
+  // Rules & goals: the rules with their violations, and the own limits for what counts as in order (the goals).
+  // The tiles stay while the rules load, so the goals are reachable without them.
   policiesView() {
     this.ensurePolicies();
-    const r = this.policies;
+    this.ensureGoals();
+    const r = this.policies, g = this.goals;
     const head = this.pageBar({ at: this.policiesAt, loading: this.policiesLoading, attr: "data-policy-refresh" });
-    if (this.policiesError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.policiesError)}</div></div>`;
-    if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("polLoading")}</div></div>`;
-    const on = r.rules.filter(rule => rule.enabled);
+    const on = r ? r.rules.filter(rule => rule.enabled) : [];
     const violations = on.reduce((n, rule) => n + rule.count, 0);
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
+    const missed = (g?.goals || []).filter(goal => goal.state === "missed").length;
     const tabs = [
-      { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: this.t("polTileRulesHint", { on: this.formatNumber(on.length) }), count: r.rules.length, tone: on.length ? "ok" : "mute" },
-      { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: violations, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute" },
+      { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: r ? this.t("polTileRulesHint", { on: this.formatNumber(on.length) }) : "", count: r ? r.rules.length : undefined, tone: on.length ? "ok" : "mute", status: !r },
+      { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: r ? violations : undefined, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute", status: !r },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: this.t("maintHintGoals"), count: g ? (g.goals || []).length : undefined, tone: missed ? "red" : g?.goals?.length ? "ok" : "mute", pill: missed ? this.t("tilesMissed", { count: missed }) : "", status: !g },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
+    const tiles = this.navTiles("policies", tabs, open, this.t("policies"), true);
+    if (open === "goals") return `<div class="stack">${this.goalsBar()}${tiles}${this.goalsCard()}</div>`;
+    if (this.policiesError) return `<div class="stack">${head}${tiles}<div class="panel">${this.notice("err", this.policiesError)}</div></div>`;
+    if (!r) return `<div class="stack">${head}${tiles}<div class="panel">${this.skeleton("polLoading")}</div></div>`;
     const body = open === "rules"
       ? `<div class="panel">${r.rules.map(rule => this.polRuleBlock(rule)).join("")}${on.length ? "" : `<p class="factnote">${this.t("polNoneOn")}</p>`}${this.howCounted("polFootnote")}</div>`
       : this.polViolations(r);
-    return `<div class="stack">${head}${this.navTiles("policies", tabs, open, this.t("policies"), true)}${body}</div>`;
+    return `<div class="stack">${head}${tiles}${body}</div>`;
   }
 }

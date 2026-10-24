@@ -13,28 +13,15 @@ class SettingsMixin {
   // The tab ids of the settings page, in display order.
   // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
-    const m = this.data?.meta || {}, hidden = (this.data?.findings || []).filter(f => f.ignored).length;
+    const m = this.data?.meta || {};
     const mcp = m.mcp || {};
     return [
       ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`modeBadge_${m.protection || "full"}`), (m.protection || "full") === "full" ? "ok" : "warn"],
-      ["exceptions", "mdi:eye-off-outline", "setTabExceptions", "setHintExceptions", this.exceptionPills(m, hidden), "mute"],
       ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
       ["mcp", "mdi:robot-outline", "setTabMcp", "setHintMcp", !mcp.enabled ? this.t("setOff") : this.t(mcp.write ? "mcpFilterWrite" : "mcpFilterRead"), !mcp.enabled ? "mute" : mcp.write ? "warn" : "ok"],
       ["look", "mdi:palette-outline", "setTabLook", "setHintLook", this.t(`scheme${(this.prefs.scheme || "standard").replace(/^./, c => c.toUpperCase())}`), "mute"],
       ["info", "mdi:information-outline", "setTabInfo", "setHintInfo", m.version ? `v${m.version}` : "–", "mute"],
     ];
-  }
-
-  // The exceptions tile: rules and hidden findings, and whether the vacation mode is on.
-  exceptionPills(m, hidden) {
-    const v = m.vacation, rules = this.exc?.rules ? this.exc.rules.length : m.exception_rules || 0;
-    const pills = [{ text: this.t(rules === 1 ? "setRuleOne" : "setRulesCount", { n: rules }) }, { text: hidden ? this.t("setHiddenCount", { n: hidden }) : this.t("setNoneHidden") }];
-    pills.push(v ? { text: this.t(v.active ? "setVacationOn" : "setVacationOff"), tone: v.active ? "warn" : "mute" } : { text: this.t("setVacationNone"), tone: "warn" });
-    // What wants a look again: marks whose review date passed, findings whose status ran out.
-    const marksDue = (this.data?.objects || []).filter(o => o.mark_due).length, statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length;
-    if (marksDue) pills.unshift({ text: this.t("decReviewDue", { n: marksDue }), tone: "warn" });
-    if (statusDue) pills.unshift({ text: this.t("decDue", { n: statusDue }), tone: "warn" });
-    return pills.slice(0, 3); // more do not fit the tile; what is due comes first
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.

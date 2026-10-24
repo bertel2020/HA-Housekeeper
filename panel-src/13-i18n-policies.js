@@ -1,9 +1,9 @@
 // Texts for the policies view; merged into TEXT.
 Object.assign(TEXT.de, {
   polAllRules: "Alle Regeln", polColRule: "Regel", polColNote: "Hinweis", polSelHidden: "Ausgeblendet; erst wieder einblenden", polSelOnlyArea: "Gemeinsam bearbeiten lassen sich nur Entitäten und Geräte (Bereich zuweisen)", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
-  policies: "Richtlinien", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant. Hinweise, keine Defekte; liest nur.", polOverviewViolations: "Richtlinienverstöße", polOverviewRules: "{n} Regeln aktiv", polOverviewRuleOne: "1 Regel aktiv",
+  policies: "Regeln & Ziele", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant und eigene Grenzen für „in Ordnung“. Hinweise, keine Defekte; liest nur.", polOverviewViolations: "Richtlinienverstöße", polOverviewRules: "{n} Regeln aktiv", polOverviewRuleOne: "1 Regel aktiv",
   polObjTitle: "Richtlinien · {n} Verstöße", polObjTitleOne: "Richtlinien · 1 Verstoß", polObjHint: "Regeln, gegen die dieses Objekt verstößt. Ausgeblendete Verstöße stehen nicht hier.", polObjAll: "Alle Richtlinien",
-  polHint: "Schalte ein, was in deiner Installation gelten soll. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
+  polHint: "Schalte ein, was in deiner Installation gelten soll, und setze eigene Grenzen. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
   polOff: "aus", polCount: "{n} Verstöße", polCountOne: "1 Verstoß", polNone: "Keine Verstöße", polNoneOn: "Schalte oben eine Regel ein, um Verstöße zu sehen.",
   polRule_entity_area: "Entität ohne Bereich", polDesc_entity_area: "Entitäten von physischen Geräten brauchen einen Bereich, eigenen oder den des Geräts. Diagnose-, Konfigurations- und deaktivierte Entitäten und Dienst-Geräte zählen nicht.",
   polRule_device_area: "Gerät ohne Bereich", polDesc_device_area: "Aktive Geräte brauchen einen Bereich. Dienst-Geräte, Untergeräte, deaktivierte und leere Geräte zählen nicht.",
@@ -20,9 +20,9 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   polAllRules: "All rules", polColRule: "Rule", polColNote: "Note", polSelHidden: "Hidden; show it again first", polSelOnlyArea: "Only entities and devices can be handled together (assign an area)", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
-  policies: "Policies", policiesSubtitle: "Your own rules for tidiness in Home Assistant. Hints, not defects; only reads.", polOverviewViolations: "Policy violations", polOverviewRules: "{n} active rules", polOverviewRuleOne: "1 active rule",
+  policies: "Rules & goals", policiesSubtitle: "Your own rules for tidiness in Home Assistant and your own limits for what in order means. Hints, not defects; only reads.", polOverviewViolations: "Policy violations", polOverviewRules: "{n} active rules", polOverviewRuleOne: "1 active rule",
   polObjTitle: "Policies · {n} violations", polObjTitleOne: "Policies · 1 violation", polObjHint: "Rules this object breaks. Hidden violations are not shown here.", polObjAll: "All policies",
-  polHint: "Switch on what should apply to your installation. All rules start off.", polLoading: "Checking policies",
+  polHint: "Switch on what should apply to your installation and set your own limits. All rules start off.", polLoading: "Checking policies",
   polOff: "off", polCount: "{n} violations", polCountOne: "1 violation", polNone: "No violations", polNoneOn: "Switch on a rule above to see violations.",
   polRule_entity_area: "Entity without an area", polDesc_entity_area: "Entities of physical devices need an area, their own or the device's. Diagnostic, configuration and disabled entities and service devices do not count.",
   polRule_device_area: "Device without an area", polDesc_device_area: "Active devices need an area. Service devices, sub-devices, disabled and empty devices do not count.",
