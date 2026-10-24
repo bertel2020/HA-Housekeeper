@@ -14,7 +14,7 @@ Object.assign(TEXT.de, {
   apTodoOne: "{name} ist pausiert", apTodoMany: "{n} Integrationen pausiert", apTodoHint: "Versuch {n} von {total}, nächster in {span} · seit {since}", apTodoExhaustedOne: "{name}: {days} Tage ohne Erfolg, bitte prüfen", apTodoExhaustedMany: "{n} Pausen ohne Erfolg, bitte prüfen", apTodoExhaustedHint: "Pause bleibt bestehen · Protokoll, Update und Quelle prüfen", apTodoCheck: "Bitte prüfen", apWouldPause: "Auto-Pause würde das pausieren",
   apWatching: "Unter Beobachtung", apWatchingHint: "Datenlieferanten, die gerade Fehlversuche sammeln", apWindow: "{n} von {limit} Fehlversuchen in {hours} Std.", apWindowOff: "würde bei {limit} pausieren",
   apReasonPaused: "pausiert von Auto-Pause",
-  apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
+  apTryNow: "Jetzt versuchen", apTryNowN: "Jetzt versuchen ({n})", apEndN: "Pause beenden ({n})", apNeverN: "Nie pausieren ({n})", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
   apWatched: "Dienste im Blick", apWatchedHint: "Datenlieferanten ohne Steuerfunktion, die Auto-Pause pausieren würde", apNoWatched: "Keine Integration erfüllt die Regel: Cloud-Abruf und nur Daten-Entitäten.", apHouseFn: "trägt eine Hausfunktion", apFailures: "{n} Fehlversuche",
   apMore: "Dienste", apAttemptsTitle: "Fehlversuche bis zur Pause", apHoursTitle: "Zeitraum", apLogWhen: "Zeitpunkt", apLogWho: "Integration", apLogWhat: "Ereignis",
   apLog: "Verlauf", apLog_paused: "pausiert", apLog_tried: "Versuch ohne Erfolg", apLog_back: "läuft wieder", apLog_ended: "Pause beendet", apLog_exhausted: "Pause bleibt, bitte prüfen",
@@ -37,7 +37,7 @@ Object.assign(TEXT.en, {
   apTodoOne: "{name} is paused", apTodoMany: "{n} integrations paused", apTodoHint: "Try {n} of {total}, next in {span} · for {since}", apTodoExhaustedOne: "{name}: {days} days without success, please look", apTodoExhaustedMany: "{n} pauses without success, please look", apTodoExhaustedHint: "The pause stays · check the log, the update and the source", apTodoCheck: "Please look", apWouldPause: "Auto-pause would pause this",
   apWatching: "Under observation", apWatchingHint: "Data providers that are collecting failed attempts right now", apWindow: "{n} of {limit} failed attempts in {hours} h", apWindowOff: "would be paused at {limit}",
   apReasonPaused: "paused by auto-pause",
-  apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
+  apTryNow: "Try now", apTryNowN: "Try now ({n})", apEndN: "End pause ({n})", apNeverN: "Never pause ({n})", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
   apWatched: "Services watched", apWatchedHint: "Data providers without a control function that auto-pause would pause", apNoWatched: "No integration meets the rule: cloud polling and data entities only.", apHouseFn: "carries a house function", apFailures: "{n} failed attempts",
   apMore: "Services", apAttemptsTitle: "Failed attempts before a pause", apHoursTitle: "Time window", apLogWhen: "When", apLogWho: "Integration", apLogWhat: "Event",
   apLog: "History", apLog_paused: "paused", apLog_tried: "try without success", apLog_back: "is back", apLog_ended: "pause ended", apLog_exhausted: "pause stays, please look",
@@ -172,19 +172,23 @@ class AutoPauseMixin {
     const menu = (id, ...items) => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${items.map(([key, attr, icon]) => `<button type="button" class="menuitem" ${attr}="${this.esc(id)}"><ha-icon icon="${icon}"></ha-icon>${this.t(key)}</button>`).join("")}</div></details>`;
     const mainTop = `<div class="panelhead"><div><h2>${this.t("apHead")}</h2><p>${this.t("apHeadSub")}</p></div></div>
       <div class="row"><span class="tile ${s.enabled ? "ok" : "mute"}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t("apSwitch")}</strong><small>${this.t(s.enabled ? "apStatusOn" : "apStatusOff", { n: this.formatNumber(watched.length) })}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("apSwitch"))}" data-ap-setting="enabled" ${s.enabled ? "checked" : ""}></div>`;
+    const apSel = (this.apSel ||= new Set());
+    for (const id of [...apSel]) if (!a.paused.some(p => p.entry_id === id)) apSel.delete(id);
     const pausedRows = a.paused.map(p => {
       const due = p.next ? new Date(p.next).getTime() - now : null;
       const sub = [p.exhausted ? this.t("apExhausted") : due !== null ? `${this.t("apTry", { n: Math.min(p.done + 1, a.schedule.offsets.length), total: a.schedule.offsets.length })}, ${this.t("apNext", { span: this.apSpan(Math.max(due, 0)) })}` : "",
         p.reason === "manual" ? this.t("apReasonManual") : this.t("apReasonAuto", { n: this.formatNumber(p.failures || 0) })].filter(Boolean).join(" · ");
-      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(p.entry_id, p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
-        <span class="apbtns"><button class="btn" data-ap-try="${this.esc(p.entry_id)}">${this.t("apTryNow")}</button>${menu(p.entry_id, ["apEnd", "data-ap-end", "mdi:play-circle-outline"], ["apNever", "data-ap-never", "mdi:cancel"])}</span></div>`;
+      return `<div class="row"><input type="checkbox" class="selbox" data-ap-sel="${this.esc(p.entry_id)}" ${apSel.has(p.entry_id) ? "checked" : ""} aria-label="${this.esc(p.title || p.domain)}"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(p.entry_id, p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
+        <span class="apbtns">${menu(p.entry_id, ["apTryNow", "data-ap-try", "mdi:refresh"], ["apEnd", "data-ap-end", "mdi:play-circle-outline"], ["apNever", "data-ap-never", "mdi:cancel"])}</span></div>`;
     }).join("");
     const failing = watched.filter(c => c.window > 0 || c.state !== "loaded").sort((x, y) => y.window - x.window || x.title.localeCompare(y.title));
     const watching = failing.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apWatching")} <span class="pill warn">${this.formatNumber(failing.length)}</span></h2><p>${this.t("apWatchingHint")}</p></div></div>${failing.map(c => {
       const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), s.enabled ? "" : this.t("apWindowOff", { limit: this.formatNumber(s.attempts) })].filter(Boolean).join(" · ");
       return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:cloud-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(c.entry_id, c.title || c.domain)}</strong><small>${this.esc(sub)}</small><small>${this.esc(this.t("apWindow", { n: this.formatNumber(c.window), limit: this.formatNumber(s.attempts), hours: s.hours }))}</small><span class="bar evbar apbar"><i style="width:${Math.min(100, Math.round((c.window / s.attempts) * 100))}%"></i></span></span></div>`;
     }).join("")}</section>` : "";
-    const paused = a.paused.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} <span class="pill warn">${this.formatNumber(a.paused.length)}</span></h2></div></div>${pausedRows}</section>` : "";
+    const apN = apSel.size, apCount = this.formatNumber(apN), apBtn = (mode, icon, label) => `<button type="button" class="btn" data-ap-bulk="${mode}" ${apN ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: apCount })}</button>`;
+    const apTools = a.paused.length > 1 ? `<div class="toolbar${apN ? "" : " nosel"}"><label class="nw"><input type="checkbox" class="selbox" data-ap-selall ${apN === a.paused.length ? "checked" : ""} ${apN && apN < a.paused.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}"> ${this.t("selectPage")}</label>${apN ? `<button class="btn quiet" data-ap-selclear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: apN })}</span>` : ""}<span class="toolgap"></span>${apBtn("try", "mdi:refresh", "apTryNowN")}${apBtn("resume", "mdi:play-circle-outline", "apEndN")}${apBtn("never", "mdi:cancel", "apNeverN")}</div>` : "";
+    const paused = a.paused.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} <span class="pill warn">${this.formatNumber(a.paused.length)}</span></h2></div></div>${apTools}${pausedRows}</section>` : "";
     const rows = [...a.candidates].sort((x, y) => Number(x.excluded) - Number(y.excluded)).map(c => {
       const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), c.attempts ? this.t("apFailures", { n: this.formatNumber(c.attempts) }) : "", c.house_function ? this.t("apHouseFn") : ""].filter(Boolean).join(" · ");
       return `<div class="row"><span class="tile ${c.excluded ? "mute" : c.state === "loaded" ? "ok" : "warn"}"><ha-icon icon="mdi:cloud-${c.state === "loaded" ? "check" : "alert"}-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(c.entry_id, c.title || c.domain)}</strong><small>${this.esc(sub)}</small></span>${c.excluded ? `<span class="pill mute">${this.t("apNeverPill")}</span>${menu(c.entry_id, ["apAllow", "data-ap-allow", "mdi:undo"])}` : menu(c.entry_id, ["apNever", "data-ap-never", "mdi:cancel"])}</div>`;
@@ -206,6 +210,16 @@ class AutoPauseMixin {
     root.querySelectorAll("[data-ap-allow]").forEach(el => el.onclick = () => this.apCall({ action: "never", entry_id: el.dataset.apAllow, on: false }));
     root.querySelectorAll("[data-ap-try]").forEach(el => el.onclick = () => this.apCall({ action: "try", entry_id: el.dataset.apTry }));
     root.querySelectorAll("[data-ap-end]").forEach(el => el.onclick = () => this.apCall({ action: "resume", entry_id: el.dataset.apEnd }));
+    const apSel = () => (this.apSel ||= new Set());
+    root.querySelectorAll("[data-ap-sel]").forEach(el => el.onchange = () => { (el.checked ? apSel().add(el.dataset.apSel) : apSel().delete(el.dataset.apSel)); this.render(); });
+    root.querySelectorAll("[data-ap-selall]").forEach(box => { box.indeterminate = box.hasAttribute("data-partial"); box.onchange = ev => { (this.autoPause?.paused || []).forEach(p => (ev.target.checked ? apSel().add(p.entry_id) : apSel().delete(p.entry_id))); this.render(); }; });
+    root.querySelectorAll("[data-ap-selclear]").forEach(el => el.onclick = () => { apSel().clear(); this.render(); });
+    root.querySelectorAll("[data-ap-bulk]").forEach(el => el.onclick = async () => {
+      const mode = el.dataset.apBulk, ids = [...apSel()];
+      const payload = id => (mode === "never" ? { action: "never", entry_id: id, on: true } : { action: mode, entry_id: id });
+      await this.runBulk(ids, async id => { this.autoPause = await this._hass.callWS({ type: "ha_housekeeper/auto_pause_set", ...payload(id) }); apSel().delete(id); });
+      this.render();
+    });
     root.querySelectorAll("[data-ap-send]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.apStart(el.dataset.apSend); });
   }
 }
