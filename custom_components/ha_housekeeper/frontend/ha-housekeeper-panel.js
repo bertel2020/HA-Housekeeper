@@ -15469,7 +15469,7 @@ class BatteryTypeMixin {
     const rows = found.map(r => {
       const name = this.batteryLabel(r.entity_id);
       const date = this.formatDate(`${r.day}T12:00:00Z`).split(",")[0];
-      return `<div class="btrepl"><ha-icon icon="mdi:battery-sync-outline"></ha-icon><span class="row-text"><strong>${this.esc(this.t("btReplLine", { name, date }))}</strong><small>${this.t("btReplLevels", { from: r.from, to: r.to })}</small></span><button class="btn accent" data-bt-enter="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplEnter")}</button><button class="btn" data-bt-dismiss="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplDismiss")}</button></div>`;
+      return `<div class="btrepl"><ha-icon icon="mdi:battery-sync-outline"></ha-icon><span class="row-text"><strong>${this.esc(this.t("btReplLine", { name, date }))}</strong><small>${this.t("btReplLevels", { from: r.from, to: r.to })}</small></span><button class="btn accent" data-bt-enter="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplEnter")}</button>${this.rowMenuHtml([["mdi:close", "btReplDismiss", `data-bt-dismiss="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}"`]])}</div>`;
     }).join("");
     return `<div class="btsuggest"><h3>${this.t("btReplTitle")}</h3><p class="factnote">${this.t("btReplHint")}</p>${rows}<p class="factnote">${this.t("btReplNote")}</p>${this.btMessage ? `<p class="factnote" role="status">${this.esc(this.btMessage)}</p>` : ""}</div>`;
   }
