@@ -104,7 +104,7 @@ Object.assign(TEXT.de, {
   actFilter_all: "Alle", actFilter_decision: "Entscheidungen", actFilter_mark: "Objekt-Notizen", actFilter_plan: "Pläne", actFilter_note: "Logbuch", actFilter_auto: "Automatisch",
   actSource_cleanup: "Aufräumen", actSource_list: "Befundliste", actSource_plan: "Plan", actSource_mcp: "Dienst", actSource_system: "Housekeeper",
   act_decision: "Entscheidung", act_decision_ignore: "Als Fehlalarm festgehalten", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_nothanks: "Vorschlag abgelehnt („Nein danke“)", act_decision_undo: "Entscheidung zurückgenommen",
-  act_mark: "Objekt-Notiz", act_mark_expected_offline: "Notiert: soll offline sein", act_mark_seasonal: "Notiert: saisonal", act_mark_spare: "Notiert: Reserve", act_mark_keep: "Notiert: nicht anfassen", act_mark_replaced: "Notiert: ersetzt", act_mark_clear: "Objekt-Notiz entfernt", act_mark_undo: "Objekt-Notiz zurückgenommen",
+  act_mark: "Objekt-Notiz", act_mark_expected_offline: "Notiert: soll offline sein", act_mark_seasonal: "Notiert: saisonal", act_mark_spare: "Notiert: Reserve", act_mark_keep: "Notiert: nicht entfernen", act_mark_replaced: "Notiert: ersetzt", act_mark_clear: "Objekt-Notiz entfernt", act_mark_undo: "Objekt-Notiz zurückgenommen",
   act_plan: "Plan ausgeführt", act_plan_undo: "Plan zurückgenommen", act_note: "Logbuch", act_note_save: "Logbuch-Eintrag", act_note_delete: "Logbuch-Eintrag gelöscht", act_auto: "Von selbst", act_auto_lifted: "Von selbst zurück, weil es schlimmer wurde:",
 });
 Object.assign(TEXT.en, {
@@ -116,6 +116,6 @@ Object.assign(TEXT.en, {
   actFilter_all: "All", actFilter_decision: "Decisions", actFilter_mark: "Object notes", actFilter_plan: "Plans", actFilter_note: "Logbook", actFilter_auto: "Automatic",
   actSource_cleanup: "Cleanup", actSource_list: "Findings list", actSource_plan: "Plan", actSource_mcp: "Service", actSource_system: "Housekeeper",
   act_decision: "Decision", act_decision_ignore: "Marked as false alarm", act_decision_keep: "Kept as intended", act_decision_snooze: "Put on “Later”", act_decision_unignore: "Shown again", act_decision_nothanks: "Suggestion declined (“No thanks”)", act_decision_undo: "Decision undone",
-  act_mark: "Object note", act_mark_expected_offline: "Noted: should be offline", act_mark_seasonal: "Noted: seasonal", act_mark_spare: "Noted: spare", act_mark_keep: "Noted: do not touch", act_mark_replaced: "Noted: replaced", act_mark_clear: "Object note removed", act_mark_undo: "Object note undone",
+  act_mark: "Object note", act_mark_expected_offline: "Noted: should be offline", act_mark_seasonal: "Noted: seasonal", act_mark_spare: "Noted: spare", act_mark_keep: "Noted: do not remove", act_mark_replaced: "Noted: replaced", act_mark_clear: "Object note removed", act_mark_undo: "Object note undone",
   act_plan: "Plan run", act_plan_undo: "Plan undone", act_note: "Logbook", act_note_save: "Logbook entry", act_note_delete: "Logbook entry deleted", act_auto: "By itself", act_auto_lifted: "Back by itself because it got worse:",
 });

@@ -4780,7 +4780,7 @@ test("a new object note proposes a review in 365 days and says what its kind doe
   el.openMark("entity:sensor.new");
   assert.equal(el.markForm.days, 365);
   const html = el.markFormHtml({ ...el.markForm, kind: "keep" }, "entity:sensor.new");
-  assert.ok(html.includes("Do not touch") && html.includes("still reported") && html.includes("single finding"));
+  assert.ok(html.includes("Do not remove") && html.includes("still reported") && html.includes("single finding"));
   assert.ok(el.markFormHtml({ ...el.markForm, kind: "spare" }, "entity:sensor.new").includes("keeps cleanup away"));
 });
 
@@ -6960,9 +6960,9 @@ test("a decision whose finding is away rests in the list of statuses, says how l
     findings: [{ key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true, ignored_by: "user", ignore_info: { kind: "keep", reason: "", until: null } }],
     resting_decisions: [{ key: "device.down|cloud|", kind: "keep", reason: "cancelled", until: null, seen: long }, { key: "device.down|hue|", kind: "keep", reason: "", until: null, seen: short }, { key: "entity.state_unavailable|sensor.gone|", kind: "ignore", reason: "", until: null, seen: long }] };
   const html = el.statusCard();
-  assert.ok(html.includes("(4)") && html.includes("Resting · finding away right now (3)"), "the resting ones count and stand under a head");
-  assert.ok(html.indexOf('data-dec-sel="h2"') < html.indexOf("Resting ·"), "the ones that hide come first");
-  assert.ok(html.includes("not seen for 41 days – still needed?") && html.includes(">rests<") && html.includes("object is gone"));
+  assert.ok(html.includes("(4)") && html.includes("Waiting · finding away right now (3)"), "the resting ones count and stand under a head");
+  assert.ok(html.indexOf('data-dec-sel="h2"') < html.indexOf("Waiting ·"), "the ones that hide come first");
+  assert.ok(html.includes("not seen for 41 days – still needed?") && html.includes(">waits<") && html.includes("object is gone"));
   assert.ok(html.includes('data-ignore="device.down|cloud|" data-ignore-value="0"') && html.includes("Remove decision"), "a resting one is removed from its menu");
 });
 

@@ -335,7 +335,7 @@
     },
     "mark": {
       "name": "AI access: set an object note",
-      "description": "Tells Housekeeper what to expect of an object (offline on purpose, seasonal, a spare, do not touch, replaced), or takes the object note away. Only Housekeeper's own list changes; the change can be taken back. Needs \"AI access\" and \"Change the list\" to be switched on.",
+      "description": "Tells Housekeeper what to expect of an object (offline on purpose, seasonal, a spare, do not remove, replaced), or takes the object note away. Only Housekeeper's own list changes; the change can be taken back. Needs \"AI access\" and \"Change the list\" to be switched on.",
       "fields": {
         "action": {
           "name": "Action",

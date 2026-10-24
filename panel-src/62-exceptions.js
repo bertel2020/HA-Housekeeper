@@ -1,14 +1,14 @@
 // Exception rules: objects in an area or with a label are left out of the findings; mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   allLabels: "Alle Labels", lblTitle: "Labels", lblHint: "Housekeeper kennt drei feste Labels. Du legst sie in Home Assistant mit genau diesem Namen an und weist sie Objekten zu; Housekeeper erstellt sie nicht selbst.",
-  lblOpenHa: "Labels in Home Assistant öffnen", lblCreated: "angelegt", lblMissing: "nicht angelegt", lblNoUse: "an keinem Objekt", lblUse: "an", lblShow: "Objekte anzeigen", lblCopy: "Name kopieren", lblCopied: "Kopiert",
+  lblOpenHa: "Labels in Home Assistant öffnen", lblCreated: "angelegt", lblMissing: "nicht angelegt", lblNoUse: "an keinem Objekt", lblUse: "an", lblShow: "Objekte anzeigen", lblShow1: "Objekt anzeigen", lblCopy: "Name kopieren", lblCopied: "Kopiert",
   lblKind_keep: "Nicht anfassen", lblKind_ignore: "Ganz ausnehmen", lblKind_critical: "Kritisch",
-  lblFx_keep_1: "Sperrt alle Bereinigungsschritte (deaktivieren, entfernen); das Gerät fehlt in „Bereinigen → Geräte deaktivieren“", lblFx_keep_0: "Blendet keine Befunde aus: Ein Ausfall wird weiter gemeldet",
-  lblFx_ignore_1: "Blendet die Befunde der Entität, Automation oder des Geräts (samt seiner Entitäten) aus", lblFx_ignore_2: "Nimmt das Objekt aus Richtlinien, Zuverlässigkeit, Ausfallstürmen und Exposition und sperrt Bereinigungsschritte", lblFx_ignore_0: "Auch Ausfälle werden nicht mehr gemeldet",
-  lblFx_critical_1: "Das Objekt zählt als wichtig; Ausfälle werden höher eingestuft", lblFx_critical_2: "Bereinigungsschritte müssen einzeln bestätigt werden; wirkt an Entität, Gerät oder Bereich", lblFx_critical_0: "Schlösser, Alarme, Rauch- und Wassermelder sind auch ohne Label kritisch",
+  lblFx_keep_1: "Sperrt alle Bereinigungsschritte; das Gerät wird unter „Bereinigen → Geräte deaktivieren“ nicht angeboten", lblFx_keep_0: "Blendet keine Befunde aus: Ein Ausfall wird weiter gemeldet", lblScope_keep: "Gilt für jedes Objekt, an dem das Label hängt", lblScope_ignore: "Gilt für Entität, Automation oder Gerät (samt seiner Entitäten)", lblScope_critical: "Gilt für Entität, Gerät oder Bereich",
+  lblFx_ignore_1: "Blendet die Befunde des Objekts aus", lblFx_ignore_2: "Nimmt das Objekt aus Richtlinien, Zuverlässigkeit, Ausfallstürmen und Exposition und sperrt Bereinigungsschritte", lblFx_ignore_0: "Auch Ausfälle werden nicht mehr gemeldet",
+  lblFx_critical_1: "Das Objekt zählt als wichtig; Ausfälle werden höher eingestuft", lblFx_critical_2: "Bereinigungsschritte müssen einzeln bestätigt werden", lblFx_critical_0: "Schlösser, Alarme, Rauch- und Wassermelder sind auch ohne Label kritisch",
   lblN_entity: "{n} Entitäten", lblN_entity1: "1 Entität", lblN_device: "{n} Geräten", lblN_device1: "1 Gerät", lblN_automation: "{n} Automationen", lblN_automation1: "1 Automation", lblN_script: "{n} Skripten", lblN_script1: "1 Skript", lblN_scene: "{n} Szenen", lblN_scene1: "1 Szene", lblN_area: "{n} Bereichen", lblN_area1: "1 Bereich",
   lblHow: "So legst du ein fehlendes Label an: In Home Assistant unter Einstellungen → Bereiche, Labels & Zonen → Labels ein Label mit genau diesem Namen erstellen, dann Geräte oder Entitäten (auch mehrere auf einmal) auswählen und das Label zuweisen. Danach neu scannen.",
-  lblFoot: "„Nicht anfassen“ (housekeeper_keep): nur nichts aufräumen, Ausfälle werden weiter gemeldet. „Ganz ausnehmen“ (housekeeper_ignore): Housekeeper lässt das Objekt ganz in Ruhe, auch Ausfälle werden nicht mehr gemeldet. Ein Label hat weder Grund noch Prüfdatum; dafür passen die Objekt-Notiz (etwa „Absichtlich offline“) und Ausnahmeregeln besser. Die Zahlen stammen aus dem letzten Scan.",
+  lblFoot: "Ein Label hat weder Grund noch Prüfdatum; dafür passen die Objekt-Notiz (etwa „Absichtlich offline“) und Ausnahmeregeln besser. Die Zahlen stammen aus dem letzten Scan.",
   excTitle: "Ausnahmeregeln", excHint: "Housekeeper meldet Objekte nicht, auf die eine Regel passt: nach Bereich, Label, Integration, Typ (Domain), Gerät oder Entität. Die Regeln gelten nur in Housekeeper; Home Assistant bleibt unverändert. Das Label housekeeper_ignore wirkt zusätzlich fest.",
   excFormNew: "Regel anlegen", excFormEdit: "Regel bearbeiten", excAdd: "Regel hinzufügen", excEdit: "Ändern", excDelete: "Löschen", excLoading: "Regeln werden geladen …",
   excKind: "Art", excKind_area: "Bereich", excKind_label: "Label", excKind_integration: "Integration", excKind_domain: "Domain (Typ)", excTargets: "Auswahl", excNoTargets: "In Home Assistant gibt es dafür noch nichts zur Auswahl.",
@@ -44,14 +44,14 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   allLabels: "All labels", lblTitle: "Labels", lblHint: "Housekeeper knows three fixed labels. You create them in Home Assistant with exactly this name and assign them to objects; Housekeeper does not create them itself.",
-  lblOpenHa: "Open labels in Home Assistant", lblCreated: "created", lblMissing: "not created", lblNoUse: "on no object", lblUse: "on", lblShow: "Show objects", lblCopy: "Copy name", lblCopied: "Copied",
+  lblOpenHa: "Open labels in Home Assistant", lblCreated: "created", lblMissing: "not created", lblNoUse: "on no object", lblUse: "on", lblShow: "Show objects", lblShow1: "Show object", lblCopy: "Copy name", lblCopied: "Copied",
   lblKind_keep: "Do not touch", lblKind_ignore: "Leave out completely", lblKind_critical: "Critical",
-  lblFx_keep_1: "Blocks every cleanup step (disable, remove); the device is missing from “Cleanup → Disable devices”", lblFx_keep_0: "Hides no findings: an outage is still reported",
-  lblFx_ignore_1: "Hides the findings of the entity, automation or device (and its entities)", lblFx_ignore_2: "Takes the object out of policies, reliability, outage storms and exposure and blocks cleanup steps", lblFx_ignore_0: "Outages are no longer reported either",
-  lblFx_critical_1: "The object counts as important; outages are rated higher", lblFx_critical_2: "Cleanup steps must be confirmed one by one; works on an entity, device or area", lblFx_critical_0: "Locks, alarms, smoke and water sensors are critical without the label too",
+  lblFx_keep_1: "Blocks every cleanup step; the device is not offered under “Cleanup → Disable devices”", lblFx_keep_0: "Hides no findings: an outage is still reported", lblScope_keep: "Applies to every object that carries the label", lblScope_ignore: "Applies to an entity, automation or device (and its entities)", lblScope_critical: "Applies to an entity, device or area",
+  lblFx_ignore_1: "Hides the findings of the object", lblFx_ignore_2: "Takes the object out of policies, reliability, outage storms and exposure and blocks cleanup steps", lblFx_ignore_0: "Outages are no longer reported either",
+  lblFx_critical_1: "The object counts as important; outages are rated higher", lblFx_critical_2: "Cleanup steps must be confirmed one by one", lblFx_critical_0: "Locks, alarms, smoke and water sensors are critical without the label too",
   lblN_entity: "{n} entities", lblN_entity1: "1 entity", lblN_device: "{n} devices", lblN_device1: "1 device", lblN_automation: "{n} automations", lblN_automation1: "1 automation", lblN_script: "{n} scripts", lblN_script1: "1 script", lblN_scene: "{n} scenes", lblN_scene1: "1 scene", lblN_area: "{n} areas", lblN_area1: "1 area",
   lblHow: "How to create a missing label: in Home Assistant under Settings → Areas, labels & zones → Labels, create a label with exactly this name, then select devices or entities (several at once) and assign the label. Then scan again.",
-  lblFoot: "“Do not touch” (housekeeper_keep): only nothing is cleaned up, outages are still reported. “Leave out completely” (housekeeper_ignore): Housekeeper leaves the object completely alone, outages are not reported either. A label has neither a reason nor a review date; for those the object note (such as “Offline on purpose”) and exception rules fit better. The numbers come from the last scan.",
+  lblFoot: "A label has neither a reason nor a review date; the object note (such as “Offline on purpose”) and exception rules fit better for that. The numbers come from the last scan.",
   excTitle: "Exception rules", excHint: "Housekeeper does not report objects that a rule matches: by area, label, integration, type (domain), device or entity. The rules apply only in Housekeeper; Home Assistant stays unchanged. The label housekeeper_ignore keeps working on top.",
   excFormNew: "Add rule", excFormEdit: "Edit rule", excAdd: "Add rule", excEdit: "Change", excDelete: "Delete", excLoading: "Loading rules …",
   excKind: "Kind", excKind_area: "Area", excKind_label: "Label", excKind_integration: "Integration", excKind_domain: "Domain (type)", excTargets: "Selection", excNoTargets: "Home Assistant has nothing to choose from yet.",
@@ -181,11 +181,12 @@ class ExceptionsMixin {
       const total = [...counts.values()].reduce((a, b) => a + b, 0), made = !!this.findObject(`label:${id}`);
       // "on 2 devices, 5 entities"; a type without its own words keeps "Type: n".
       const parts = [...counts].map(([type, n]) => { const key = `lblN_${type}`; return this.t(key) === key ? `${this.esc(this.t(type))}: ${n}` : this.esc(this.tCount(key, n)); }).join(", ");
-      const fx = (kind === "keep" ? [1, 0] : [1, 2, 0]).map(n => `<li${n ? "" : ' class="no"'}>${this.esc(this.t(`lblFx_${kind}_${n}`))}</li>`).join("");
-      const show = total ? `<button class="btn" data-jump="inventory" data-jump-lf="inventory|label|${id}">${this.t("lblShow")}</button>` : "";
+      // Green dots are what the label does; a hollow dot is a remark.
+      const fx = { keep: [1, "0"], ignore: [1, 0, 2], critical: [1, 2, "0"] }[kind].map(n => { const note = n === "0"; return `<li${note ? ' class="note"' : ""}>${this.esc(this.t(`lblFx_${kind}_${n}`))}</li>`; }).join("");
+      const show = total ? `<button class="btn" data-jump="inventory" data-jump-lf="inventory|label|${id}">${this.t(total === 1 ? "lblShow1" : "lblShow")}</button>` : "";
       const copy = `<button type="button" class="iconbtn" data-copy="${id}" title="${this.esc(this.t("lblCopy"))}" aria-label="${this.esc(this.t("lblCopy"))}"><ha-icon icon="mdi:content-copy"></ha-icon></button>`;
-      return `<div class="labrow"><div><div class="statcell"><code>${id}</code>${copy}<span class="pill ${made ? "ok" : "warn"}">${this.t(made ? "lblCreated" : "lblMissing")}</span></div><p class="factnote">${this.esc(this.t(`lblKind_${kind}`))} · ${total ? `${this.t("lblUse")} ${parts}` : this.t("lblNoUse")}</p></div>
-        <ul class="labfx">${fx}</ul>
+      return `<div class="labrow"><div><div class="statcell"><code>${id}</code>${copy}<span class="pill ${made ? "ok" : "mute"}">${this.t(made ? "lblCreated" : "lblMissing")}</span></div><p class="factnote">${this.esc(this.t(`lblKind_${kind}`))} · ${total ? `${this.t("lblUse")} ${parts}` : this.t("lblNoUse")}</p></div>
+        <div><p class="factnote labscope">${this.esc(this.t(`lblScope_${kind}`))}</p><ul class="labfx">${fx}</ul></div>
         <div class="actions">${show}</div></div>`;
     }).join("");
     // How to create a label is said once, below the rows, while one of them is missing.
