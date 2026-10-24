@@ -5695,6 +5695,18 @@ test("the notes on objects are a table with picking: the picked ones get a new r
   assert.ok(el.findingStatus === "hidden" && el.lv.findings.q === "Tree lights" && el.view === "findingsNav", "the hidden findings of the object open in the list of findings");
 });
 
+test("the unreferenced entities can be picked to get one object note", async () => {
+  const { el } = panel("en");
+  el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg); return { marked: true }; };
+  el.refreshData = async () => {}; el.render = () => {};
+  await el.commitUnrefBulk();
+  assert.equal(calls.length, 2);
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[0])), { type: "ha_housekeeper/mark_set", object_type: "entity", object_id: "light.a", kind: "keep", reason: "needed", days: 90 });
+  assert.equal(el.unrefBulk, null);
+});
+
 test("a long history of scans shows only the newest rows until asked, keeps the chosen base visible and has the choice in its head", () => {
   const { el, shadow } = panel("en");
   const days = Array.from({ length: 12 }, (_, i) => ({ id: `2026-09-${String(20 - i).padStart(2, "0")}T08:00:00+00:00`, at: `2026-09-${String(20 - i).padStart(2, "0")}T08:00:00+00:00`, objects: 5, findings: 1 }));

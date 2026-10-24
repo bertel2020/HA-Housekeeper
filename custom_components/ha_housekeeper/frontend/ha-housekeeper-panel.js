@@ -5711,13 +5711,19 @@ class UnusedMixin {
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
       { name: "platform", all: this.t("allIntegrations"), options: platforms.map(p => [p, p]) },
     ] });
-    const rows = this.refine("unreferenced", all, {
+    const sel = (this.unrefSel ||= new Set());
+    for (const id of [...sel]) if (!all.some(o => o.object_id === id)) sel.delete(id);
+    const rows = this.refine("unreferenced", this.selOnly?.unreferenced ? all.filter(o => sel.has(o.object_id)) : all, {
       text: o => [o.name, o.object_id, this.areaName(o), deviceName(o), o.platform].join(" "),
       filters: { domain: (o, v) => domainOf(o) === v, area: (o, v) => this.areaName(o) === v, platform: (o, v) => o.platform === v }, sorts, tie: o => o.object_id,
     });
     const pg = this.paginate("unreferenced", rows);
     const dash = `<span class="muted">–</span>`;
+    const ids = pg.rows.map(o => o.object_id);
     const columns = [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-unref-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: o => `<input type="checkbox" class="selbox" data-unref-sel="${this.esc(o.object_id)}" ${sel.has(o.object_id) ? "checked" : ""} aria-label="${this.esc(o.name || o.object_id)}">` },
       { key: "name", label: "utName", dir: "asc", sortKeys: ["id"], headSuffix: () => `<button type="button" class="thbtn th-alt" data-lsort="unreferenced|id|asc">ID${this.lv.unreferenced.sort === "id" ? ` <span aria-hidden="true">${this.lv.unreferenced.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`, cell: o => this.nameCell(o.name, o.object_id) },
       { key: "domain", label: "utDomain", cell: o => this.esc(domainOf(o)) },
       { key: "device", label: "utDevice", cell: o => this.esc(deviceName(o)) || dash },
@@ -5729,7 +5735,35 @@ class UnusedMixin {
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
-    return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
+    const n = sel.size, form = this.unrefBulk;
+    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear")}<span class="toolgap"></span><button type="button" class="btn" data-unref-bulk ${n ? "" : "disabled"}><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button></div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
+    return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${tools}${table}${pg.footer}</div></div>`;
+  }
+
+  // The form under the toolbar of the unreferenced entities: one object note for all picked ones.
+  unrefBulkForm(b, n) {
+    const kinds = this.markKindsFor(new Map([["entity:x", "entity:x"]]));
+    const days = [0, 30, 90, 180, 365].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
+    return `<form class="polform bulkform" data-unref-form><strong>${this.t("marksSetTitle", { n: this.formatNumber(n) })}</strong>
+      <select data-unref-kind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
+      <input data-unref-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
+      <select data-unref-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
+      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-unref-cancel>${this.t("cancelRun")}</button></form>`;
+  }
+
+  async commitUnrefBulk() {
+    const b = this.unrefBulk, sel = this.unrefSel;
+    if (!b || !sel?.size) return;
+    const kind = b.markKind || this.markKindsFor(new Map([["entity:x", "entity:x"]]))[0];
+    const failed = await this.runBulk([...sel], async id => {
+      const msg = { type: "ha_housekeeper/mark_set", object_type: "entity", object_id: id, kind, reason: b.reason.trim() };
+      if (Number(b.days)) msg.days = Number(b.days);
+      await this._hass.callWS(msg);
+      sel.delete(id);
+    });
+    await this.refreshData();
+    if (!failed) this.unrefBulk = null;
+    this.render();
   }
 
   // A battery entity is mostly called "Battery"; the device is the name one recognises.
@@ -9268,7 +9302,7 @@ class BlueprintsMixin {
 Object.assign(TEXT.de, {
   decideTabStatus: "Status", decideTabMark: "Objekt-Notiz",
   markTitle: "Objekt-Notiz", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
-  markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", markShowHidden: "Die ausgeblendeten Befunde zeigen", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
+  markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", marksSetN: "Objekt-Notiz setzen ({n})", marksSetTitle: "Objekt-Notiz für {n} Entitäten", markShowHidden: "Die ausgeblendeten Befunde zeigen", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
   mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht entfernen", mark_replaced: "Wird ersetzt",
   markWindowKind: "Wann gilt die Objekt-Notiz", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
@@ -9278,7 +9312,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
   markTitle: "Object note", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
-  markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", markShowHidden: "Show the hidden findings", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
+  markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", marksSetN: "Set object note ({n})", marksSetTitle: "Object note for {n} entities", markShowHidden: "Show the hidden findings", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
   mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not remove", mark_replaced: "Being replaced",
   markWindowKind: "When the object note applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
@@ -21836,6 +21870,18 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindOften(root);
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); await this.openMarkHere(el.dataset.watchMark); });
+    // The unreferenced entities: pick rows, then one object note for all of them.
+    const unrefSel = () => (this.unrefSel ||= new Set());
+    root.querySelectorAll("[data-unref-sel]").forEach(el => el.onchange = () => { this.pickRows("unreferenced", el.dataset.unrefSel, el.checked, unrefSel(), [...root.querySelectorAll("[data-unref-sel]")].map(x => x.dataset.unrefSel)); this.render(); });
+    const unrefPage = root.querySelector("[data-unref-page]");
+    if (unrefPage) { unrefPage.indeterminate = unrefPage.hasAttribute("data-partial"); unrefPage.onchange = ev => { root.querySelectorAll("[data-unref-sel]").forEach(x => (ev.target.checked ? unrefSel().add(x.dataset.unrefSel) : unrefSel().delete(x.dataset.unrefSel))); this.render(); }; }
+    root.querySelector("[data-unref-clear]")?.addEventListener("click", () => { unrefSel().clear(); this.unrefBulk = null; this.render(); });
+    root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: 365 }; this.render(); });
+    root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });
+    root.querySelector("[data-unref-reason]")?.addEventListener("input", ev => { this.unrefBulk.reason = ev.target.value; });
+    root.querySelector("[data-unref-days]")?.addEventListener("change", ev => { this.unrefBulk.days = Number(ev.target.value); });
+    root.querySelector("[data-unref-cancel]")?.addEventListener("click", () => { this.unrefBulk = null; this.render(); });
+    root.querySelector("[data-unref-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitUnrefBulk(); });
     // The list of object notes: pick rows, then change the review date or the kind of the picked notes, or take them away.
     const markSel = () => (this.markSel ||= new Set());
     root.querySelectorAll("[data-mark-sel]").forEach(el => el.onchange = () => { this.pickRows("marks", el.dataset.markSel, el.checked, markSel(), [...root.querySelectorAll("[data-mark-sel]")].map(x => x.dataset.markSel)); this.render(); });

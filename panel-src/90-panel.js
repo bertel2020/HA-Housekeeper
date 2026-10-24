@@ -1255,6 +1255,18 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindOften(root);
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); await this.openMarkHere(el.dataset.watchMark); });
+    // The unreferenced entities: pick rows, then one object note for all of them.
+    const unrefSel = () => (this.unrefSel ||= new Set());
+    root.querySelectorAll("[data-unref-sel]").forEach(el => el.onchange = () => { this.pickRows("unreferenced", el.dataset.unrefSel, el.checked, unrefSel(), [...root.querySelectorAll("[data-unref-sel]")].map(x => x.dataset.unrefSel)); this.render(); });
+    const unrefPage = root.querySelector("[data-unref-page]");
+    if (unrefPage) { unrefPage.indeterminate = unrefPage.hasAttribute("data-partial"); unrefPage.onchange = ev => { root.querySelectorAll("[data-unref-sel]").forEach(x => (ev.target.checked ? unrefSel().add(x.dataset.unrefSel) : unrefSel().delete(x.dataset.unrefSel))); this.render(); }; }
+    root.querySelector("[data-unref-clear]")?.addEventListener("click", () => { unrefSel().clear(); this.unrefBulk = null; this.render(); });
+    root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: 365 }; this.render(); });
+    root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });
+    root.querySelector("[data-unref-reason]")?.addEventListener("input", ev => { this.unrefBulk.reason = ev.target.value; });
+    root.querySelector("[data-unref-days]")?.addEventListener("change", ev => { this.unrefBulk.days = Number(ev.target.value); });
+    root.querySelector("[data-unref-cancel]")?.addEventListener("click", () => { this.unrefBulk = null; this.render(); });
+    root.querySelector("[data-unref-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitUnrefBulk(); });
     // The list of object notes: pick rows, then change the review date or the kind of the picked notes, or take them away.
     const markSel = () => (this.markSel ||= new Set());
     root.querySelectorAll("[data-mark-sel]").forEach(el => el.onchange = () => { this.pickRows("marks", el.dataset.markSel, el.checked, markSel(), [...root.querySelectorAll("[data-mark-sel]")].map(x => x.dataset.markSel)); this.render(); });
