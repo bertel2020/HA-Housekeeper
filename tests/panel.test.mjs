@@ -1182,8 +1182,8 @@ test("policies: rules switch, violations list with hide buttons, hidden ones are
   el.viewTab = {}; el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
   assert.ok(html.includes("light.c") && html.includes("left out by label") && html.includes(">Show<"));
   assert.equal((html.match(/data-policy-ignore=/g) || []).length, 1, "only the user's own decision can be undone");
-  assert.equal((html.match(/data-decide-open=/g) || []).length, 0, "a row with a fix offers it; hiding sits in the folded-open part");
-  assert.ok(html.includes(">Assign area<"));
+  assert.equal((html.match(/data-decide-open=/g) || []).length, 2, "a row offers its fix and hiding in its menu");
+  assert.ok(html.includes("</ha-icon>Assign area<"));
   el.polOpen = ["policy.entity_area|light.a|", "policy.entity_area|light.b|"]; el.render(); html = shadow.innerHTML;
   assert.equal((html.match(/data-decide-open=/g) || []).length, 2, "folded open: the others ask what to do; the label hides one");
   await el.changePolicy({ type: "ha_housekeeper/set_policy", rule: "device_area", enabled: true });

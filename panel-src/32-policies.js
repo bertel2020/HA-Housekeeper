@@ -43,7 +43,7 @@ class PoliciesMixin {
   // The prefix of each domain for the naming scheme: a row per prefix with a remove button, and a small form to add one.
   polPrefixEditor() {
     const entries = Object.entries(this.policies?.prefixes || {});
-    const rows = entries.map(([domain, prefix]) => `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:format-letter-starts-with"></ha-icon></span><span class="row-text"><strong>${this.esc(domain)}</strong><small>${this.esc(this.t("polPrefixIs", { prefix }))}</small></span><button class="btn" data-policy-prefix-remove="${this.esc(domain)}">${this.t("polPrefixRemove")}</button></div>`).join("");
+    const rows = entries.map(([domain, prefix]) => `<div class="row politem"><span class="tile mute"><ha-icon icon="mdi:format-letter-starts-with"></ha-icon></span><span class="row-text"><strong>${this.esc(domain)}</strong><small>${this.esc(this.t("polPrefixIs", { prefix }))}</small></span>${this.rowMenuHtml([["mdi:delete-outline", "polPrefixRemove", `data-policy-prefix-remove="${this.esc(domain)}"`]])}</div>`).join("");
     const form = `<div class="row politem polform"><label class="sr-only" for="polDomain">${this.t("polPrefixDomain")}</label><input id="polDomain" type="text" placeholder="${this.esc(this.t("polPrefixDomain"))}" autocomplete="off" maxlength="40"><label class="sr-only" for="polPrefix">${this.t("polPrefixValue")}</label><input id="polPrefix" type="text" placeholder="${this.esc(this.t("polPrefixValue"))}" autocomplete="off" maxlength="30"><button class="btn" data-policy-prefix-add>${this.t("polPrefixAdd")}</button></div>`;
     return `${rows}${form}${entries.length ? "" : `<p class="factnote">${this.t("polPrefixNone")}</p>`}`;
   }
@@ -71,7 +71,8 @@ class PoliciesMixin {
     const form = this.decide?.key === item.key ? this.decideForm(item) : "";
     const open = this.polIsOpen(item), main = this.polMainAction(item);
     // A row with a fix offers it as its button (it folds the row open); the other rows keep their hide button; an opened row has it next to "open object".
-    const act = open ? "" : main ? `<button class="btn" data-pol-open="${this.esc(item.key)}">${this.t(main)}</button>` : button;
+    const hide = item.by === "label" || item.by === "rule" ? null : item.ignored ? ["mdi:eye-outline", "polShow", `data-policy-ignore="${this.esc(item.key)}" data-policy-value="0"`] : ["mdi:eye-off-outline", "polHide", `data-decide-open="${this.esc(item.key)}"`];
+    const act = open ? "" : this.rowMenuHtml([main ? ["mdi:wrench-outline", main, `data-pol-open="${this.esc(item.key)}"`] : null, hide, ["recorder", "system", "user"].includes(item.object_type) ? null : ["mdi:open-in-new", "decOpenObject", `data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"`]]);
     return { pill, due, button, decision, form, open, act };
   }
 
@@ -144,7 +145,7 @@ class PoliciesMixin {
       // Each column only stands while a row of the list has something for it.
       ...(shown.some(item => this.polItemNote(item) || this.polItemParts(item).decision) ? [{ key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" }] : []),
       ...(shown.some(item => item.ignored || item.resurfaced) ? [{ key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } }] : []),
-      { key: "act", label: "btColAct", sortable: false, cell: item => this.polItemParts(item).act },
+      { key: "act", label: "btColAct", narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
       const { open, button, form } = this.polItemParts(item);

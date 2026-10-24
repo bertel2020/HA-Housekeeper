@@ -107,6 +107,13 @@ class ListsMixin {
   // Shows only what is ticked in a list (the box is the proof before something is deleted).
   // What a selection offers (clear it, show only it, how many) appears with the first tick, as on the findings page;
   // "only the selected" stays while it is on, so the way back is there.
+  // The menu behind the three dots of a row: [icon, label key, attributes] per entry; a null entry draws a line. Nothing without entries.
+  rowMenuHtml(entries) {
+    const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
+    if (!list.some(Boolean)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (e ? `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>` : '<hr class="menusep">')).join("")}</div></details>`;
+  }
+
   selTools(id, count, clearAttr) {
     if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
     return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
