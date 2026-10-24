@@ -229,9 +229,10 @@ class DiagnosticsMixin {
     if (!row) return `<div class="panel">${this.skeleton("qualityLoading")}</div>`;
     d.sel = id;
     if (item.object_type === "automation" && d.loadedFor !== id) { d.loadedFor = id; d.draft = null; d.message = ""; this.loadDiag(id); }
-    const dims = DIM_ORDER.filter(dimId => row.dimensions[dimId]).map(dimId => {
+    const worst = { red: 0, warn: 1, info: 2, unknown: 3, ok: 4 };
+    const dims = DIM_ORDER.filter(dimId => row.dimensions[dimId]).sort((x, y) => (worst[row.dimensions[x].level] ?? 3) - (worst[row.dimensions[y].level] ?? 3)).map(dimId => {
       const dim = row.dimensions[dimId];
-      return `<div class="row"><span class="tile ${QL_TONE[dim.level]}">${QL_MARK[dim.level]}</span><span class="row-text"><strong>${this.t(`dim_${dimId}`)}</strong><small>${this.esc(dim.reasons.length ? dim.reasons.map(r => this.dimReason(r)).join(" · ") : this.t(`ql_${dim.level}`))}</small></span><span class="pill ${QL_TONE[dim.level]}">${this.t(`ql_${dim.level}`)}</span></div>`;
+      return `<div class="row"><span class="tile ${QL_TONE[dim.level]}">${QL_MARK[dim.level]}</span><span class="row-text"><strong>${this.t(`dim_${dimId}`)}</strong>${dim.reasons.length ? `<small>${this.esc(dim.reasons.map(r => this.dimReason(r)).join(" · "))}</small>` : ""}</span><span class="pill ${QL_TONE[dim.level]}">${this.t(`ql_${dim.level}`)}</span></div>`;
     }).join("");
     const folds = this.fold("diag_dims", { title: this.t("diagSecDims") }, dims, true);
     if (item.object_type === "script") return `<section class="panel">${folds}</section>`;
