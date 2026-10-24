@@ -559,9 +559,9 @@ class CleanupMixin {
       const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
-      return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
+      return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"${!settled && !idle && a.verdict !== "ok" ? ` data-rowtone="${a.verdict === "blocked" ? "red" : "warn"}"` : ""}><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
         <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc([sub, reasons, abort.replace(/^ · /, "")].filter(Boolean).join(" · "))}</small>${ack}${keepOpen ? sources : ""}${(keepOpen ? "" : sources) || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${keepOpen ? "" : sources}${uses ? `<span class="chips planchips">${uses}${more}</span>` : ""}</details>` : ""}</span>
-        <span class="planresult">${resultPill}${undo}${a.executable && (result || !(a.reasons || []).includes("irreversible")) ? this.undoBadge(a) : ""}${result ? "" : `<span class="pill ${tone}">${this.t(idle ? "verdictNothing" : a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
+        <span class="planresult">${resultPill}${undo}${a.executable && (result || !(a.reasons || []).includes("irreversible")) ? this.undoBadge(a) : ""}${result || (a.verdict === "ok" && !idle) ? "" : `<span class="pill ${tone}">${this.t(idle ? "verdictNothing" : a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
     });
     const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
@@ -595,9 +595,19 @@ class CleanupMixin {
       return `<section class="panel" data-plan-card data-plan-idle><div class="panelhead"><div><h2>${this.t("plan_status_dry_run")}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div></div>
         <div class="outcome ${nothing ? "ok" : "warn"}" role="status"><ha-icon icon="${nothing ? "mdi:check-circle-outline" : "mdi:information-outline"}"></ha-icon><span><strong>${this.t(nothing ? "wzIdleNothingTitle" : "wzIdleTitle")}</strong><small>${this.esc(why)}</small></span></div>${rowList.join("")}${this.reportBlock(plan, `<button class="btn primary" data-plan-close>${this.t("planClose")}</button>`)}</section>`;
     }
+    // The preview lists what needs a look first; the chips cut the list by verdict and say how many there are of each.
+    const rank = a => (a.verdict === "blocked" && !(a.reasons || []).every(r => NOTHING_REASONS.includes(r)) ? 0 : a.verdict === "review" ? 1 : a.verdict === "blocked" ? 3 : 2);
+    const counts = { all: plan.actions.length, review: 0, blocked: 0, ok: 0 };
+    plan.actions.forEach(a => { if (counts[a.verdict] !== undefined) counts[a.verdict] += 1; });
+    const pick = open && counts[this.planFilter] ? this.planFilter : "all";
+    let order = plan.actions.map((a, i) => i);
+    if (open) order.sort((x, y) => rank(plan.actions[x]) - rank(plan.actions[y]));
+    if (pick !== "all") order = order.filter(i => plan.actions[i].verdict === pick);
+    const chipLabel = { all: "all", review: "verdict_review", blocked: "verdict_blocked", ok: "verdict_ok" };
+    const chips = open && plan.actions.length > 1 ? `<div class="chips planfilter">${Object.keys(chipLabel).map(key => `<button type="button" class="chip${key === pick ? " active" : ""}" data-plan-filter="${key}" aria-pressed="${key === pick}" ${counts[key] ? "" : "disabled"}>${this.t(chipLabel[key])}<em>${this.formatNumber(counts[key])}</em></button>`).join("")}</div>` : "";
     const rowTexts = plan.actions.map(a => [a.name, a.object_id, a.target, a.label_name, a.area_name, ...(a.reasons || []).map(r => this.t(`reason_${r}`))].filter(Boolean).join(" "));
-    const rows = this.fold("planrows", { title: this.t("planObjects", { n: this.formatNumber(plan.actions.length) }) }, this.planRowsShown(plan, rowList, rowTexts), true);
-    const summary = this.exchangeSummary(plan) + `<p class="factnote">${this.t("planSummary", { total: sm.total ?? 0, ok: sm.ok ?? 0, review: sm.review ?? 0, blocked: sm.blocked ?? 0 })}${extra ? ` ${this.esc(extra)}` : ""}</p>${this.recorderSummary(plan)}`;
+    const rows = this.fold("planrows", { title: this.t("planObjects", { n: this.formatNumber(plan.actions.length) }) }, this.planRowsShown(plan, order.map(i => rowList[i]), order.map(i => rowTexts[i])), true);
+    const summary = this.exchangeSummary(plan) + (extra ? `<p class="factnote">${this.esc(extra)}</p>` : "") + `${chips}${this.recorderSummary(plan)}`;
     const body = stage === 0 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
       : stage === 1 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
       : stage === 2 ? `${this.planOutcome(plan)}${control}`

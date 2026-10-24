@@ -67,6 +67,7 @@ class PlanWizardMixin {
   }
 
   bindPlanWizard(root) {
+    root.querySelectorAll("[data-plan-filter]").forEach(el => el.onclick = () => { this.planFilter = el.dataset.planFilter; this.render(); });
     root.querySelector("[data-plan-back]")?.addEventListener("click", () => { this.confirmation = null; this.confirmWord = ""; this.render(); });
   }
 }
