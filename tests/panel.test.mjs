@@ -2613,7 +2613,7 @@ test("the Auto-Pause page shows without the recorder numbers and offers pause, t
   assert.ok(!html.includes("Under observation"));
   el.autoPause = { ...AUTO_PAUSE, candidates: [{ ...AUTO_PAUSE.candidates[0], window: 5, state: "setup_retry" }] };
   const watching = el.autoPauseView();
-  assert.ok(watching.includes("Under observation") && watching.includes("5 of 20 failed attempts in 6 h") && watching.includes("would be paused at 20") && watching.includes("width:25%"));
+  assert.ok(watching.includes("With failed attempts") && watching.includes("5 of 20 failed attempts in 6 h") && watching.includes("would be paused at 20") && watching.includes("width:25%"));
   el.autoPause = AUTO_PAUSE;
   assert.ok(el.autoPausePage().includes("data-ap-refresh") && el.apPageParts("e2", "loaded").menu.some(e => e[2].includes("data-ap-send")) && el.apPageParts("e2", "setup_retry").primary.includes("data-ap-send"));
   assert.ok(el.apReliabilityNote().includes('data-jump="autopause"'), "the reliability page leads to a running pause");
@@ -2660,8 +2660,7 @@ test("the manual pause is picked from the search field of the panel and asks bef
   assert.equal(el.pickerResults("autopause").map(o => o.object_id).join(), "e2");
   el.data.objects.push({ object_type: "config_entry", object_id: "e1", name: "Ravensburg" });
   el.autoPause = { ...AUTO_PAUSE, candidates: [{ ...AUTO_PAUSE.candidates[0], entry_id: "e1" }] };
-  el.folds = { ap_watched: true };
-  assert.ok(el.autoPauseView().split('data-object="config_entry:e1"').length >= 3);
+    assert.ok(el.autoPauseView().split('data-object="config_entry:e1"').length >= 3);
   el.autoPause = AUTO_PAUSE;
   el.folds = { ap_manual: true };
   assert.ok(el.autoPauseView().includes('data-picker="autopause"'));
@@ -2669,7 +2668,7 @@ test("the manual pause is picked from the search field of the panel and asks bef
   el._picker = { name: "autopause", open: true, index: 0 };
   assert.ok(el.autoPauseView().includes("ovvis"));
   const page = el.autoPauseView();
-  assert.ok(page.indexOf('data-fold="ap_settings"') < page.indexOf('data-fold="ap_watched"') && page.indexOf("Pause automatically") < page.indexOf('data-fold="ap_settings"'));
+  assert.ok(page.indexOf('data-fold="ap_settings"') < page.indexOf('data-fold="ap_manual"') && page.indexOf("Pause automatically") < page.indexOf('data-fold="ap_settings"'));
 });
 
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
