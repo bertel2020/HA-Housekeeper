@@ -11,7 +11,7 @@ from typing import Any
 
 from .finding_topics import BROKEN_REFERENCES, DOWN, FAILING_AUTOMATIONS, UNNEEDED
 
-WAIT_STATES = ("setup_retry", "setup_in_progress")
+WAIT_STATES = ("setup_retry", "setup_in_progress", "paused")
 RESTART_STATES = ("migration_error", "failed_unload")
 
 
