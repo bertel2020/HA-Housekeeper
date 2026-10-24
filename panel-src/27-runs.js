@@ -44,9 +44,9 @@ class RunsMixin {
     return p ? p() : "";
   }
 
-  // Pill, figure and hint of each finding; the space keeps the sentences apart where a table sets the line inline.
-  runsFindingLines(row) {
-    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span class="fnum">${this.runFindingText(f)}</span> <span class="fnote">${this.t(`rfHint_${f.kind}`)}</span></small>`).join("");
+  // Pill, figure and (in the detail card) hint of each finding; the table keeps the hint as the title of the pill; the space keeps the sentences apart where a table sets the line inline.
+  runsFindingLines(row, hint = true) {
+    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}"${hint ? "" : ` title="${this.esc(this.t(`rfHint_${f.kind}`))}"`}>${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span class="fnum">${this.runFindingText(f)}</span>${hint ? ` <span class="fnote">${this.t(`rfHint_${f.kind}`)}</span>` : ""}</small>`).join("");
   }
 
   runsTrend(row, days = row.per_day) {
@@ -87,16 +87,19 @@ class RunsMixin {
       columns: [
         { key: "stage", label: "cfColStage", dir: "asc", cell: item => `<span class="pill ${tone(item)}">${this.t(`cfStage_${item.stage}`)}</span>` },
         { key: "kind", label: "cfColKind", dir: "asc", cell: item => this.t(`cfKind_${item.kind}`) },
-        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small><small class="fnote">${this.t(`cfHint_${item.kind}`)}</small>${item.ignored ? `<small>${this.t("cfKnownNote")}</small>` : ""}` },
+        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small>${item.ignored ? `<small>${this.t("cfKnownNote")}</small>` : ""}` },
         { key: "autos", label: "cfColAutomations", sortable: false, cell: item => item.automations.map(a => `<button class="link" data-object="${this.esc(`automation:${a.entity_id}`)}">${this.esc(a.name)}</button>`).join(" · ") },
-        { key: "act", label: "cfColAction", sortable: false, cell: item => `<button class="btn" data-conflict-key="${this.esc(item.key)}" data-conflict-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "cfReport" : "cfKnown")}</button>` },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml([[item.ignored ? "mdi:bell-ring-outline" : "mdi:check", item.ignored ? "cfReport" : "cfKnown", `data-conflict-key="${this.esc(item.key)}" data-conflict-value="${item.ignored ? 0 : 1}"`]]) },
       ],
     });
-    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.total) }, list, false)}</div>`;
+    const kinds = [...new Set(c.items.map(item => item.kind))], open = c.items.some(item => item.stage === "confirmed" && !item.ignored);
+    const hints = kinds.map(kind => `<p class="factnote"><b>${this.t(`cfKind_${kind}`)}:</b> ${this.t(`cfHint_${kind}`)}</p>`).join("");
+    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.total) }, hints + list, open)}</div>`;
   }
 
   runsSorts() {
     return [
+      { key: "attention", label: "runsColAttention", dir: "desc", get: r => (r.findings.some(f => f.level === "red") ? 2e12 : r.findings.some(f => f.level === "warn") ? 1e12 : 0) + r.runs },
       { key: "name", label: "runsColName", dir: "asc", get: r => r.name },
       { key: "runs", label: "runsColRuns", dir: "desc", get: r => r.runs },
       { key: "errors", label: "runsColErrors", dir: "desc", get: r => r.errors },
@@ -125,17 +128,17 @@ class RunsMixin {
   }
 
   runsTable(rows) {
-    this.lvState("runs", "runs", "desc");
+    this.lvState("runs", "attention", "desc");
     const pg = this.paginate("runsall", rows);
     const columns = [
-      { key: "name", label: "runsColName", dir: "asc", cell: row => this.nameCell(row.name, row.entity_id) + this.runsFindingLines(row) },
+      { key: "name", label: "runsColName", dir: "asc", cell: row => this.nameCell(row.name, row.entity_id) + this.runsFindingLines(row, false) },
       { key: "runs", label: "runsColRuns", dir: "desc", cell: row => `${this.formatNumber(row.runs)}${row.lower_bound ? "+" : ""}` },
-      { key: "errors", label: "runsColErrors", dir: "desc", cell: row => this.formatNumber(row.errors) },
-      { key: "conditions", label: "runsColConditions", dir: "desc", cell: row => this.formatNumber(row.conditions) },
+      { key: "errors", label: "runsColErrors", dir: "desc", cell: row => (row.errors ? this.formatNumber(row.errors) : '<span class="fnote">–</span>') },
+      { key: "conditions", label: "runsColConditions", dir: "desc", cell: row => (row.conditions ? this.formatNumber(row.conditions) : '<span class="fnote">–</span>') },
       { key: "duration", label: "runsColDuration", dir: "desc", cell: row => `${this.runsDuration(row.mean_ms)} / ${this.runsDuration(row.max_ms)}` },
       { key: "trend", label: "runsColTrend", sortable: false, cell: row => this.runsTrend(row) },
     ];
-    const table = this.listTable("runs", columns, pg.rows, { cls: "runs", rowAttrs: row => `data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"` });
+    const table = this.listTable("runs", columns, pg.rows, { cls: "runs", rowAttrs: row => `${row.findings.some(f => f.level === "red") ? 'data-rowtone="red" ' : row.findings.some(f => f.level === "warn") ? 'data-rowtone="warn" ' : ""}data-object="${this.esc(`${row.object_type}:${row.entity_id}`)}" tabindex="0" role="button" aria-label="${this.esc(row.name)}"` });
     return `${table}${pg.footer}`;
   }
 
@@ -181,7 +184,7 @@ class RunsMixin {
     const head = this.pageBar({ left: since ? `<span>${this.esc(since.replace(/^ · /, ""))}</span>` : "", at: this.loadedAt("runs"), loading: this.runsLoading, attr: "data-runs-refresh" });
     if (this.runsError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.runsError)}</div></div>`;
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("runsLoading")}</div></div>`;
-    this.lvState("runs", "runs", "desc");
+    this.lvState("runs", "attention", "desc");
     const lower = r.items.filter(row => row.lower_bound).length;
     const coverage = this.coverageNote(this.t(lower ? (lower === 1 ? "runsCoverageLower1" : "runsCoverageLower") : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }) + ` ${this.excludedText(r.excluded)}`.trimEnd());
     const everyCounted = r.items.filter(row => row.runs);
