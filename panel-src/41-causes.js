@@ -156,7 +156,7 @@ class CausesMixin {
     // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
     const due = f.resurfaced && f.due_info ? `${f.due_info.kind === "keep" ? item("mdi:check", "dueKeepOn", `data-due-keep="${key}"`) : ""}${item("mdi:clock-outline", "dueLater", `data-decide-open="${key}" data-decide-preset="snooze"`)}<hr class="menusep">` : "";
     const status = !f.ignored ? item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`)
-      : f.ignored_by === "mark" && owner ? item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)
+      : f.ignored_by === "mark" && owner ? `${item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)}${MARK_TYPES.includes(owner.split(":")[0]) ? item("mdi:bookmark-remove-outline", "fselMarkClear", `data-mark-clear="${this.esc(owner)}"`) : ""}`
       : f.ignored_by === "rule" && f.ignore_rule?.id ? item(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)
       : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
       : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
@@ -196,12 +196,13 @@ class CausesMixin {
   }
 
   // The menu of an object that is not a finding (the watch lists such objects): the same shape as the menu of a finding row, with what applies to an object.
-  objectMenu(key, canMark = true) {
+  objectMenu(key, canMark = true, open = false) {
     const k = this.esc(key);
     const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
     const object = this.findObject(key), exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`) : "";
     const about = (canMark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${k}"`) : "") + exc;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${about ? `${about}<hr class="menusep">` : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
+    const show = open && object ? `${item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${k}"`)}<hr class="menusep">` : "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${show}${about ? `${about}<hr class="menusep">` : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
   }
 
   rowDecide(f) {

@@ -333,7 +333,7 @@ class FindingsMixin {
     const name = s === "new" ? this.t("freshNew") : s === "inwork" ? this.t("freshInwork") : s === "due" ? this.t("stateDue") : this.t(`state_${s}`);
     const sets = s === "new" && this.visit?.at ? this.visitSets() : null;
     const extra = sets ? ` ${this.t("visitSummary", { fresh: this.formatNumber(sets.fresh.size), worse: this.formatNumber(sets.worse.size), date: this.formatDate(this.visit.at) })}` : "";
-    return `<div class="filteron statusnote" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><span>${this.esc(this.t("statusNoteText", { status: name }) + extra)}</span><span class="spacer"></span><button class="btn quiet" data-fstatus="open">${this.t("statusNoteBack")}</button></div>`;
+    return `<div class="filteron statusnote" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><span>${this.esc(this.t("statusNoteText", { status: name }) + extra + (s === "hidden" ? ` ${this.t("statusNoteHidden")}` : ""))}</span><span class="spacer"></span><button class="btn quiet" data-fstatus="open">${this.t("statusNoteBack")}</button></div>`;
   }
 
   // The objects of a grouped list: every head that is an object, the ones below a cause too, not the causes themselves.
@@ -349,29 +349,45 @@ class FindingsMixin {
   }
 
 
-  // The selection of findings: hide several at once, or export just those. Kept across pages until cleared.
-  // A label does not mend a missing reference: the button stays away while only such findings are picked.
-  selectionOnlyBroken() {
-    const picked = [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean);
-    return picked.length > 0 && picked.every(f => f.classification === "broken_reference");
+  // The selection of findings: decide several at once, or export just those. Kept across pages until cleared.
+  pickedFindings() { return [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean); }
+
+  // Where the picked findings stand: open, decided by the person, or hidden by a mark, a rule or a label. Every action of
+  // the bar takes only the findings it fits; the button says how many when that is fewer than all.
+  selectionFacts() {
+    const picked = this.pickedFindings(), by = k => picked.filter(f => f.ignored && f.ignored_by === k);
+    const mark = by("mark").filter(f => this.markOwner(f)), rule = by("rule").filter(f => f.ignore_rule?.id), label = by("label");
+    return { picked, open: picked.filter(f => !f.ignored), user: by("user"), mark, rule, label,
+      owners: new Set(mark.map(f => this.markOwner(f))), rules: new Set(rule.map(f => f.ignore_rule.id)), objects: new Set(label.map(f => this.findingKey(f))) };
   }
 
   findSelBar(pageRows, count = "") {
     const n = this.findSel.size;
     this._findPage = pageRows.flatMap(f => (f.findings ? this.nodeFindings(f) : [f])).map(f => f.key).filter(Boolean);
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
-    // A mixed pick: the buttons that fit only some of the findings say how many.
-    const picked = [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean);
-    const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type)).length, marks = this.markTargets().size;
+    const facts = this.selectionFacts(), picked = facts.picked;
+    const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
     const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     // The same actions in the same order as the menu of a row: first about the findings, then about their objects.
-    const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon]}"></ha-icon>${this.t(label)}${extra}</button>`;
+    const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon>${this.t(label)}${extra}</button>`;
     const exc = this.excForm?.here && this.exc ? `<div class="pad">${this.excFormHtml(this.excForm)}</div>` : "";
     if (!pageRows.length && !n) return exc;
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
     if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>${exc}`;
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns">${btn("status", "fselStatus", 'data-fsel-state="status"')}${marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : ""}${excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : ""}${this.selectionOnlyBroken() ? "" : btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels))}</div>`}${total}</div>${this.bulkForm()}${exc}`;
+    const decidable = facts.open.length + facts.user.length, one = set => [...set][0];
+    const buttons = [
+      facts.user.length ? btn("mdi:eye-outline", "findUnhide", `class="btn${facts.open.length ? "" : " accent"}" data-fsel-unhide`, part(facts.user.length)) : "",
+      decidable ? btn("status", facts.open.length ? "fselStatus" : "fselStatusChange", 'data-fsel-state="status"', part(decidable)) : "",
+      facts.mark.length ? btn("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", part(facts.mark.length)) : "",
+      facts.owners.size === 1 ? btn("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
+      facts.rules.size === 1 ? btn("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
+      facts.objects.size === 1 ? btn("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
+      marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : "",
+      excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : "",
+      labels ? btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels)) : "",
+    ].join("");
+    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${buttons || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
@@ -555,9 +571,9 @@ class FindingsMixin {
 }
 Object.assign(TEXT.de, {
   refersTo: "Verweist auf {kind} {target}",
-  statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen",
+  statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen", statusNoteHidden: "Ausgeblendet wird durch deinen Status, eine Objekt-Notiz, eine Ausnahme oder ein Label; der Filter „Gründe“ trennt sie.", statusNoteHidden: "Ausgeblendet wird durch deinen Status, einen Vermerk, eine Ausnahme oder ein Label; der Filter „Gründe“ trennt sie.",
 });
 Object.assign(TEXT.en, {
   refersTo: "Refers to {kind} {target}",
-  statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones",
+  statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones", statusNoteHidden: "Findings are hidden by your status, an object note, an exception or a label; the “Reasons” filter tells them apart.", statusNoteHidden: "Findings are hidden by your status, a mark, an exception or a label; the “Reasons” filter tells them apart.",
 });

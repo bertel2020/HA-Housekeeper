@@ -7510,3 +7510,21 @@ test("a start compares each integration with its usual time and links to the one
   assert.match(row, /data-object="integration:alexa_devices"/);
   assert.match(row, />custom</);
 });
+
+test("the selection bar offers each action only where it fits and says how many it takes", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const mark = { kind: "expected_offline", at: "t1" };
+  const f = (id, extra) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.9, key: `k|${id}`, ignored: false, evidence: [], ...extra });
+  const ent = (id, extra) => ({ object_type: "entity", object_id: id, name: id, status: "unavailable", ...extra });
+  el.data = { ...DATA, objects: [ent("sensor.a", { mark }), ent("sensor.b")], findings: [f("sensor.a", { ignored: true, ignored_by: "mark", mark }), f("sensor.b")], causes: [] };
+  el.findSel = new Set(["k|sensor.a"]);
+  let html = el.findSelBar([]);
+  assert.ok(html.includes("data-fsel-markclear") && !html.includes("data-fsel-unhide") && !html.includes('data-fsel-state="status"'), "a mark hides it: only the mark can go");
+  el.findSel.add("k|sensor.b");
+  html = el.findSelBar([]);
+  assert.ok(html.includes("data-fsel-markclear") && html.includes('data-fsel-state="status"') && html.includes("(1 of 2)"), "a mixed pick says how many each button takes");
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
+  await el.clearSelectedMarks();
+  assert.deepEqual(calls.filter(c => c.type === "ha_housekeeper/mark_clear").map(c => c.object_id), ["sensor.a"]);
+});
