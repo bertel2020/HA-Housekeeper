@@ -64,23 +64,20 @@ class PoliciesMixin {
   polItemParts(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : item.by === "rule" ? "hidByRule" : "polHiddenLabel")}</span>` : "";
     const due = item.resurfaced ? `<span class="pill warn">${this.t("dueLabel")}</span>` : "";
-    const button = item.by === "label" || item.by === "rule" ? ""
-      : item.ignored ? `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="0">${this.t("polShow")}</button>`
-      : `<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
     const decision = item.ignored && item.by === "user" ? `<small>${this.esc(this.decisionLabel(item))}</small>` : "";
     const form = this.decide?.key === item.key ? this.decideForm(item) : "";
     const open = this.polIsOpen(item), main = this.polMainAction(item);
-    // A row with a fix offers it as its button (it folds the row open); the other rows keep their hide button; an opened row has it next to "open object".
+    // The menu of a row: the fix that folds it open (not once it is open), hide or show, and open the object.
     const hide = item.by === "label" || item.by === "rule" ? null : item.ignored ? ["mdi:eye-outline", "polShow", `data-policy-ignore="${this.esc(item.key)}" data-policy-value="0"`] : ["mdi:eye-off-outline", "polHide", `data-decide-open="${this.esc(item.key)}"`];
-    const act = open ? "" : this.rowMenuHtml([main ? ["mdi:wrench-outline", main, `data-pol-open="${this.esc(item.key)}"`] : null, hide, ["recorder", "system", "user"].includes(item.object_type) ? null : ["mdi:open-in-new", "decOpenObject", `data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"`]]);
-    return { pill, due, button, decision, form, open, act };
+    const act = this.rowMenuHtml([!open && main ? ["mdi:wrench-outline", main, `data-pol-open="${this.esc(item.key)}"`] : null, hide, ["recorder", "system", "user"].includes(item.object_type) ? null : ["mdi:open-in-new", "decOpenObject", `data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"`]]);
+    return { pill, due, decision, form, open, act };
   }
 
   // The compact row of the object's own page: the violation with its note and fix, no table around it.
   polItemRow(item) {
-    const { pill, due, button, decision, form, open, act } = this.polItemParts(item);
+    const { pill, due, decision, form, open, act } = this.polItemParts(item);
     const chev = this.expandBtn("data-pol-open", item.key, open, this.t(open ? "polCloseRow" : "polOpenRow"));
-    const detail = open ? this.polDetail(item, button) : "";
+    const detail = open ? this.polDetail(item) : "";
     return `<div class="row politem${open ? " open" : ""}" data-pol-row="${this.esc(item.key)}">${chev}<span class="row-text"><strong>${this.esc(item.name)}</strong>${this.rowId(item.object_id, item.rule ? this.t(`polRule_${item.rule}`) : "")}${this.polItemNote(item)}${decision}${detail}</span>${due}${pill}${act}</div>${form}`;
   }
 
@@ -148,8 +145,8 @@ class PoliciesMixin {
       { key: "act", label: "btColAct", narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
-      const { open, button, form } = this.polItemParts(item);
-      return `${open ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${this.polDetail(item, button)}</td></tr>` : ""}${form ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${form}</td></tr>` : ""}`;
+      const { open, form } = this.polItemParts(item);
+      return `${open ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${this.polDetail(item)}</td></tr>` : ""}${form ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${form}</td></tr>` : ""}`;
     };
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
     // Showing the hidden rows belongs to the list: the line below it counts them and switches them on and off.
