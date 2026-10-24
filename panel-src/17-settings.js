@@ -191,7 +191,7 @@ class SettingsMixin {
       { key: "kind", label: "markColKind", cell: o => `<strong>${this.esc(this.t(`mark_${o.mark.kind}`))}</strong>${o.mark.window || o.mark.target ? `<small class="muted u-block">${this.esc([o.mark.window ? this.windowLine(o.mark) : "", o.mark.target ? `→ ${o.mark.target}` : ""].filter(Boolean).join(" · "))}</small>` : ""}` },
       { key: "reason", label: "markColReason", sortable: false, cell: o => (o.mark.reason ? this.esc(o.mark.reason) : "–") },
       { key: "review", label: "markColReview", cell: o => (o.mark.until ? this.esc(this.formatDay(o.mark.until)) : this.t("markNever")) },
-      { key: "effect", label: "decColEffect", sortable: false, cell: o => `<span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span>` },
+      { key: "effect", label: "decColEffect", sortable: false, cell: o => (!o.mark_due && hides.get(keyOf(o)) ? `<button type="button" class="pill mute linkpill" data-mark-hidden="${this.esc(keyOf(o))}" title="${this.esc(this.t("markShowHidden"))}">${this.esc(effect(o))}</button>` : `<span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span>`) },
       { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
     ];
     const table = refined.length ? this.listTable("marks", columns, pg.rows, { cls: "objs", rowAttrs: o => `class="static${o.mark_due ? " duerow" : ""}"` }) : "";

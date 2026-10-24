@@ -5691,6 +5691,8 @@ test("the notes on objects are a table with picking: the picked ones get a new r
   el.refreshData = async () => {}; el.render = () => {};
   await el.commitMarkBulkEdit();
   assert.deepEqual(JSON.parse(JSON.stringify(calls[0])), { type: "ha_housekeeper/mark_set", object_type: "device", object_id: "d1", kind: "seasonal", reason: "winter", days: 90, window: { mode: "time", from: "21:00", to: "06:00" }, grace_minutes: 15 });
+  el.showHiddenOf("device:d1");
+  assert.ok(el.findingStatus === "hidden" && el.lv.findings.q === "Tree lights" && el.view === "findingsNav", "the hidden findings of the object open in the list of findings");
 });
 
 test("a long history of scans shows only the newest rows until asked, keeps the chosen base visible and has the choice in its head", () => {

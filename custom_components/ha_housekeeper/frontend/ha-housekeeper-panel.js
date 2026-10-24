@@ -1543,7 +1543,7 @@ class StylesMixin {
       .card-text{min-width:0;display:grid;gap:2px}.card-text small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.card-text strong{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2}.card-text em{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-overflow:ellipsis;white-space:nowrap}
       .tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 13%,transparent);flex:none}
       .tile.ok{color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.tile.warn{color:var(--hk-amber);background:color-mix(in srgb,var(--hk-amber) 15%,transparent)}.tile.red{color:var(--hk-red);background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.tile.mute{color:var(--hk-gray);background:color-mix(in srgb,var(--hk-gray) 15%,transparent)}.tile.violet{color:var(--hk-violet);background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
-      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apbar i{background:var(--hk-amber)}.apact{flex:none;padding-right:8px}.rowslot{width:34px;height:34px}.rowwrap>.row{flex:1;min-width:0;border-bottom:0}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding:12px 16px}.panelhead .apmanual{padding:0}.apmore .fold+.fold{border-top:1px solid var(--hk-border)}.apmore .foldbody{margin:0;border-left:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.apmore .foldbody .row:last-of-type{border-bottom:0}.apmore .foldbody .factnote{margin:0;padding:10px 16px 12px;border-top:1px solid var(--hk-border)}.apmore .row .unitrow{margin:0}.foldhead:focus-visible{outline-offset:-2px}.evtable th{padding:9px 16px;text-align:left;font-weight:600;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.apbtns{margin-left:auto}
+      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apbar i{background:var(--hk-amber)}.apact{flex:none;padding-right:8px}.rowslot{width:34px;height:34px}.rowwrap>.row{flex:1;min-width:0;border-bottom:0}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.linkpill{border:0;cursor:pointer;font:inherit}.linkpill:hover{filter:brightness(.94)}.apmanual{padding:12px 16px}.panelhead .apmanual{padding:0}.apmore .fold+.fold{border-top:1px solid var(--hk-border)}.apmore .foldbody{margin:0;border-left:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.apmore .foldbody .row:last-of-type{border-bottom:0}.apmore .foldbody .factnote{margin:0;padding:10px 16px 12px;border-top:1px solid var(--hk-border)}.apmore .row .unitrow{margin:0}.foldhead:focus-visible{outline-offset:-2px}.evtable th{padding:9px 16px;text-align:left;font-weight:600;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.apbtns{margin-left:auto}
       .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.aboutintro{padding:12px 16px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted)}.aboutintro p{margin:0}.aboutintro p+p{margin-top:6px}.aboutintro strong{color:var(--hk-text)}
       .panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
@@ -3863,7 +3863,7 @@ class SettingsMixin {
       { key: "kind", label: "markColKind", cell: o => `<strong>${this.esc(this.t(`mark_${o.mark.kind}`))}</strong>${o.mark.window || o.mark.target ? `<small class="muted u-block">${this.esc([o.mark.window ? this.windowLine(o.mark) : "", o.mark.target ? `→ ${o.mark.target}` : ""].filter(Boolean).join(" · "))}</small>` : ""}` },
       { key: "reason", label: "markColReason", sortable: false, cell: o => (o.mark.reason ? this.esc(o.mark.reason) : "–") },
       { key: "review", label: "markColReview", cell: o => (o.mark.until ? this.esc(this.formatDay(o.mark.until)) : this.t("markNever")) },
-      { key: "effect", label: "decColEffect", sortable: false, cell: o => `<span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span>` },
+      { key: "effect", label: "decColEffect", sortable: false, cell: o => (!o.mark_due && hides.get(keyOf(o)) ? `<button type="button" class="pill mute linkpill" data-mark-hidden="${this.esc(keyOf(o))}" title="${this.esc(this.t("markShowHidden"))}">${this.esc(effect(o))}</button>` : `<span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span>`) },
       { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
     ];
     const table = refined.length ? this.listTable("marks", columns, pg.rows, { cls: "objs", rowAttrs: o => `class="static${o.mark_due ? " duerow" : ""}"` }) : "";
@@ -9268,7 +9268,7 @@ class BlueprintsMixin {
 Object.assign(TEXT.de, {
   decideTabStatus: "Status", decideTabMark: "Objekt-Notiz",
   markTitle: "Objekt-Notiz", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
-  markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
+  markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", markShowHidden: "Die ausgeblendeten Befunde zeigen", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
   mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht entfernen", mark_replaced: "Wird ersetzt",
   markWindowKind: "Wann gilt die Objekt-Notiz", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
@@ -9278,7 +9278,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
   markTitle: "Object note", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
-  markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
+  markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", markShowHidden: "Show the hidden findings", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
   mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not remove", mark_replaced: "Being replaced",
   markWindowKind: "When the object note applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
@@ -9435,6 +9435,18 @@ class MarksMixin {
     this.render();
   }
 
+  // The findings a note hides: the list of findings, on its hidden ones, searched for the name of the object.
+  showHiddenOf(key) {
+    const object = this.findObject(key);
+    this.noteJump?.("findingsNav");
+    this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = [];
+    this.clearFindingFilters();
+    this.findingStatus = "hidden";
+    const st = this.lvState("findings", "impact", "desc");
+    st.q = object?.name || object?.object_id || ""; this.persistLv("findings");
+    this.render();
+  }
+
   async clearMark(key) {
     const [object_type, ...rest] = key.split(":");
     try {
@@ -9446,6 +9458,7 @@ class MarksMixin {
 
   bindMarks(root) {
     root.querySelectorAll("[data-mark-open]").forEach(el => el.onclick = () => this.openMark(el.dataset.markOpen));
+    root.querySelectorAll("[data-mark-hidden]").forEach(el => el.onclick = () => this.showHiddenOf(el.dataset.markHidden));
     root.querySelectorAll("[data-mark-clear]").forEach(el => el.onclick = () => this.clearMark(el.dataset.markClear));
     root.querySelectorAll("[data-mark-cancel]").forEach(el => el.onclick = () => { this.markForm = null; this.fcMarkCtx = null; this.render(); });
     root.querySelectorAll("[data-mark-form]").forEach(form => {
