@@ -1255,6 +1255,16 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindOften(root);
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); await this.openMarkHere(el.dataset.watchMark); });
+    // The batteries: pick rows, then one battery type for all of them.
+    const batSel = () => (this.batSel ||= new Set());
+    root.querySelectorAll("[data-bat-sel]").forEach(el => el.onchange = () => { this.pickRows("batteries", el.dataset.batSel, el.checked, batSel(), [...root.querySelectorAll("[data-bat-sel]")].map(x => x.dataset.batSel)); this.render(); });
+    const batPage = root.querySelector("[data-bat-page]");
+    if (batPage) { batPage.indeterminate = batPage.hasAttribute("data-partial"); batPage.onchange = ev => { root.querySelectorAll("[data-bat-sel]").forEach(x => (ev.target.checked ? batSel().add(x.dataset.batSel) : batSel().delete(x.dataset.batSel))); this.render(); }; }
+    root.querySelector("[data-bat-clear]")?.addEventListener("click", () => { batSel().clear(); this.batBulk = null; this.render(); });
+    root.querySelector("[data-bat-bulk]")?.addEventListener("click", () => { this.batBulk = { type: "" }; this.render(); });
+    root.querySelector("[data-bat-type]")?.addEventListener("change", ev => { this.batBulk.type = ev.target.value; this.render(); });
+    root.querySelector("[data-bat-cancel]")?.addEventListener("click", () => { this.batBulk = null; this.render(); });
+    root.querySelector("[data-bat-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitBatteryBulk(); });
     // The unreferenced entities: pick rows, then one object note for all of them.
     const unrefSel = () => (this.unrefSel ||= new Set());
     root.querySelectorAll("[data-unref-sel]").forEach(el => el.onchange = () => { this.pickRows("unreferenced", el.dataset.unrefSel, el.checked, unrefSel(), [...root.querySelectorAll("[data-unref-sel]")].map(x => x.dataset.unrefSel)); this.render(); });

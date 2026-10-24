@@ -5707,6 +5707,18 @@ test("the unreferenced entities can be picked to get one object note", async () 
   assert.equal(el.unrefBulk, null);
 });
 
+test("the batteries can be picked to get one battery type at once", async () => {
+  const { el } = panel("en");
+  el.batteryTrend = { available: true, types: {}, custom_types: [] };
+  el.batSel = new Set(["sensor.a", "sensor.b"]); el.batBulk = { type: "CR2032" };
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg); return { types: { [msg.entity_id]: msg.battery_type }, custom_types: [] }; };
+  el.render = () => {};
+  await el.commitBatteryBulk();
+  assert.deepEqual(calls.map(c => c.entity_id), ["sensor.a", "sensor.b"]);
+  assert.ok(calls.every(c => c.battery_type === "CR2032") && el.batBulk === null);
+});
+
 test("a long history of scans shows only the newest rows until asked, keeps the chosen base visible and has the choice in its head", () => {
   const { el, shadow } = panel("en");
   const days = Array.from({ length: 12 }, (_, i) => ({ id: `2026-09-${String(20 - i).padStart(2, "0")}T08:00:00+00:00`, at: `2026-09-${String(20 - i).padStart(2, "0")}T08:00:00+00:00`, objects: 5, findings: 1 }));

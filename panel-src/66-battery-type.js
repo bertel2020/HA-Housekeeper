@@ -1,7 +1,7 @@
 // Battery type per sensor, the shopping list and detected replacements in the Batteries view.
 // Mixed into the panel in 99-register.js. Only Housekeeper's own list changes.
 Object.assign(TEXT.de, {
-  btTypeSet: "Typ", btTypeNone: "Typ fehlt", btTypeSave: "Speichern", btTypeCustom: "Eigener Text …", btTypeLabel: "Batterietyp für {name}", btTypeHint: "Gespeichert nur in Housekeeper.",
+  btTypeSet: "Typ", btTypeSetN: "Batterietyp setzen ({n})", btTypeSetTitle: "Batterietyp für {n} Batterien", btTypeNone: "Typ fehlt", btTypeSave: "Speichern", btTypeCustom: "Eigener Text …", btTypeLabel: "Batterietyp für {name}", btTypeHint: "Gespeichert nur in Housekeeper.",
   btCtTitle: "Eigene Batterietypen", btCtHint: "Eigene Typen stehen bei jedem Sensor in der Auswahl. Eingebaute und genutzte Typen lassen sich nicht löschen.", btCtNone: "Noch keine eigenen Typen. Ein Typ, den du bei einem Sensor eintippst, landet hier.",
   btCtUsed: "von {n} Sensoren genutzt", btCtUsed1: "von 1 Sensor genutzt", btCtUnused: "nicht genutzt", btCtAdd: "Hinzufügen", btCtNew: "Neuer Typ", btCtRename: "Umbenennen", btCtDelete: "Löschen", btCtInUse: "Wird genutzt: erst bei den Sensoren ändern", btCtSave: "Speichern",
   btReplTitle: "Wechsel erkannt", btReplHint: "Der Ladestand sprang um mindestens 15 Punkte nach oben. Das ist ein Hinweis, kein Beweis: Ein Sensor kann auch neu kalibrieren.",
@@ -10,7 +10,7 @@ Object.assign(TEXT.de, {
   btReplTitleEntry: "Batterie gewechselt: {name}", btReplDone: "Eingetragen.", btReplDoneRem: "Eingetragen, {count} Erinnerung aktualisiert.", btReplFailed: "Das hat nicht geklappt: {detail}",
 });
 Object.assign(TEXT.en, {
-  btTypeSet: "Type", btTypeNone: "Type missing", btTypeSave: "Save", btTypeCustom: "Own text …", btTypeLabel: "Battery type for {name}", btTypeHint: "Stored only in Housekeeper.",
+  btTypeSet: "Type", btTypeSetN: "Set battery type ({n})", btTypeSetTitle: "Battery type for {n} batteries", btTypeNone: "Type missing", btTypeSave: "Save", btTypeCustom: "Own text …", btTypeLabel: "Battery type for {name}", btTypeHint: "Stored only in Housekeeper.",
   btCtTitle: "Own battery types", btCtHint: "Own types appear in the choice of every sensor. Built-in and used types cannot be deleted.", btCtNone: "No own types yet. A type you enter for a sensor ends up here.",
   btCtUsed: "used by {n} sensors", btCtUsed1: "used by 1 sensor", btCtUnused: "not used", btCtAdd: "Add", btCtNew: "New type", btCtRename: "Rename", btCtDelete: "Delete", btCtInUse: "In use: change the sensors first", btCtSave: "Save",
   btReplTitle: "Replacement detected", btReplHint: "The level jumped up by at least 15 points. That is a hint, not proof: a sensor can also recalibrate.",

@@ -103,7 +103,13 @@ class BatteryTableMixin {
     const limit = this.data.meta.low_battery_percent ?? 20;
     this.lvState("batteries", "left", "asc");
     const pg = this.paginate(`batteries-${this.batteryFilter}`, rows);
+    const sel = (this.batSel ||= new Set());
+    for (const id of [...sel]) if (!rows.some(r => r.item.object_id === id)) sel.delete(id);
+    const ids = pg.rows.map(r => r.item.object_id);
     const columns = [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-bat-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: r => `<input type="checkbox" class="selbox" data-bat-sel="${this.esc(r.item.object_id)}" ${sel.has(r.item.object_id) ? "checked" : ""} aria-label="${this.esc(this.batteryName(r.item).title)}">` },
       { key: "name", label: "btColName", dir: "asc", cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
       { key: "area", label: "btColArea", dir: "asc", cell: r => this.esc(this.areaName(r.item) || "—") },
       { key: "type", label: "btColType", dir: "asc", cell: r => this.batteryTypeCell(r) },
@@ -113,7 +119,29 @@ class BatteryTableMixin {
       { key: "act", label: "btColAct", sortable: false, cell: r => `${this.batteryKindControl(r.item)}${this.batteryKindForm(r.item)}` },
     ];
     const table = this.listTable("batteries", columns, pg.rows, { cls: "batt", rowAttrs: r => `data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"` });
-    return `${table}${pg.footer}`;
+    const n = sel.size, form = this.batBulk;
+    const tools = this.batteryTrend?.available ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("batteries", n, "data-bat-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bat-bulk ${n ? "" : "disabled"}><ha-icon icon="mdi:battery-heart-variant"></ha-icon>${this.t("btTypeSetN", { n: this.formatNumber(n) })}</button></div>${n && form ? this.batteryBulkForm(form, n) : ""}` : "";
+    return `${tools}${table}${pg.footer}`;
+  }
+
+  // The form under the toolbar of the batteries: one type for all picked ones.
+  batteryBulkForm(b, n) {
+    const options = this.batteryTypeChoices().map(o => `<option value="${this.esc(o)}" ${b.type === o ? "selected" : ""}>${this.esc(o)}</option>`).join("");
+    return `<form class="polform bulkform" data-bat-form><strong>${this.t("btTypeSetTitle", { n: this.formatNumber(n) })}</strong>
+      <select data-bat-type aria-label="${this.esc(this.t("btTypeSet"))}"><option value="">–</option>${options}</select>
+      <button type="submit" class="btn primary" ${b.type ? "" : "disabled"}>${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bat-cancel>${this.t("cancelRun")}</button></form>`;
+  }
+
+  async commitBatteryBulk() {
+    const b = this.batBulk, sel = this.batSel;
+    if (!b?.type || !sel?.size) return;
+    const failed = await this.runBulk([...sel], async id => {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/battery_type_set", entity_id: id, battery_type: b.type });
+      this.batteryTrend = { ...this.batteryTrend, types: reply.types, custom_types: reply.custom_types };
+      sel.delete(id);
+    });
+    if (!failed) this.batBulk = null;
+    this.render();
   }
 
   // Include the current low state even when there is not enough recorder history for a forecast.

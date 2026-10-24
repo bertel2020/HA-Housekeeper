@@ -15467,7 +15467,7 @@ Object.assign(TEXT.en, {
 // Battery type per sensor, the shopping list and detected replacements in the Batteries view.
 // Mixed into the panel in 99-register.js. Only Housekeeper's own list changes.
 Object.assign(TEXT.de, {
-  btTypeSet: "Typ", btTypeNone: "Typ fehlt", btTypeSave: "Speichern", btTypeCustom: "Eigener Text …", btTypeLabel: "Batterietyp für {name}", btTypeHint: "Gespeichert nur in Housekeeper.",
+  btTypeSet: "Typ", btTypeSetN: "Batterietyp setzen ({n})", btTypeSetTitle: "Batterietyp für {n} Batterien", btTypeNone: "Typ fehlt", btTypeSave: "Speichern", btTypeCustom: "Eigener Text …", btTypeLabel: "Batterietyp für {name}", btTypeHint: "Gespeichert nur in Housekeeper.",
   btCtTitle: "Eigene Batterietypen", btCtHint: "Eigene Typen stehen bei jedem Sensor in der Auswahl. Eingebaute und genutzte Typen lassen sich nicht löschen.", btCtNone: "Noch keine eigenen Typen. Ein Typ, den du bei einem Sensor eintippst, landet hier.",
   btCtUsed: "von {n} Sensoren genutzt", btCtUsed1: "von 1 Sensor genutzt", btCtUnused: "nicht genutzt", btCtAdd: "Hinzufügen", btCtNew: "Neuer Typ", btCtRename: "Umbenennen", btCtDelete: "Löschen", btCtInUse: "Wird genutzt: erst bei den Sensoren ändern", btCtSave: "Speichern",
   btReplTitle: "Wechsel erkannt", btReplHint: "Der Ladestand sprang um mindestens 15 Punkte nach oben. Das ist ein Hinweis, kein Beweis: Ein Sensor kann auch neu kalibrieren.",
@@ -15476,7 +15476,7 @@ Object.assign(TEXT.de, {
   btReplTitleEntry: "Batterie gewechselt: {name}", btReplDone: "Eingetragen.", btReplDoneRem: "Eingetragen, {count} Erinnerung aktualisiert.", btReplFailed: "Das hat nicht geklappt: {detail}",
 });
 Object.assign(TEXT.en, {
-  btTypeSet: "Type", btTypeNone: "Type missing", btTypeSave: "Save", btTypeCustom: "Own text …", btTypeLabel: "Battery type for {name}", btTypeHint: "Stored only in Housekeeper.",
+  btTypeSet: "Type", btTypeSetN: "Set battery type ({n})", btTypeSetTitle: "Battery type for {n} batteries", btTypeNone: "Type missing", btTypeSave: "Save", btTypeCustom: "Own text …", btTypeLabel: "Battery type for {name}", btTypeHint: "Stored only in Housekeeper.",
   btCtTitle: "Own battery types", btCtHint: "Own types appear in the choice of every sensor. Built-in and used types cannot be deleted.", btCtNone: "No own types yet. A type you enter for a sensor ends up here.",
   btCtUsed: "used by {n} sensors", btCtUsed1: "used by 1 sensor", btCtUnused: "not used", btCtAdd: "Add", btCtNew: "New type", btCtRename: "Rename", btCtDelete: "Delete", btCtInUse: "In use: change the sensors first", btCtSave: "Save",
   btReplTitle: "Replacement detected", btReplHint: "The level jumped up by at least 15 points. That is a hint, not proof: a sensor can also recalibrate.",
@@ -16382,7 +16382,13 @@ class BatteryTableMixin {
     const limit = this.data.meta.low_battery_percent ?? 20;
     this.lvState("batteries", "left", "asc");
     const pg = this.paginate(`batteries-${this.batteryFilter}`, rows);
+    const sel = (this.batSel ||= new Set());
+    for (const id of [...sel]) if (!rows.some(r => r.item.object_id === id)) sel.delete(id);
+    const ids = pg.rows.map(r => r.item.object_id);
     const columns = [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-bat-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: r => `<input type="checkbox" class="selbox" data-bat-sel="${this.esc(r.item.object_id)}" ${sel.has(r.item.object_id) ? "checked" : ""} aria-label="${this.esc(this.batteryName(r.item).title)}">` },
       { key: "name", label: "btColName", dir: "asc", cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
       { key: "area", label: "btColArea", dir: "asc", cell: r => this.esc(this.areaName(r.item) || "—") },
       { key: "type", label: "btColType", dir: "asc", cell: r => this.batteryTypeCell(r) },
@@ -16392,7 +16398,29 @@ class BatteryTableMixin {
       { key: "act", label: "btColAct", sortable: false, cell: r => `${this.batteryKindControl(r.item)}${this.batteryKindForm(r.item)}` },
     ];
     const table = this.listTable("batteries", columns, pg.rows, { cls: "batt", rowAttrs: r => `data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"` });
-    return `${table}${pg.footer}`;
+    const n = sel.size, form = this.batBulk;
+    const tools = this.batteryTrend?.available ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("batteries", n, "data-bat-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bat-bulk ${n ? "" : "disabled"}><ha-icon icon="mdi:battery-heart-variant"></ha-icon>${this.t("btTypeSetN", { n: this.formatNumber(n) })}</button></div>${n && form ? this.batteryBulkForm(form, n) : ""}` : "";
+    return `${tools}${table}${pg.footer}`;
+  }
+
+  // The form under the toolbar of the batteries: one type for all picked ones.
+  batteryBulkForm(b, n) {
+    const options = this.batteryTypeChoices().map(o => `<option value="${this.esc(o)}" ${b.type === o ? "selected" : ""}>${this.esc(o)}</option>`).join("");
+    return `<form class="polform bulkform" data-bat-form><strong>${this.t("btTypeSetTitle", { n: this.formatNumber(n) })}</strong>
+      <select data-bat-type aria-label="${this.esc(this.t("btTypeSet"))}"><option value="">–</option>${options}</select>
+      <button type="submit" class="btn primary" ${b.type ? "" : "disabled"}>${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bat-cancel>${this.t("cancelRun")}</button></form>`;
+  }
+
+  async commitBatteryBulk() {
+    const b = this.batBulk, sel = this.batSel;
+    if (!b?.type || !sel?.size) return;
+    const failed = await this.runBulk([...sel], async id => {
+      const reply = await this._hass.callWS({ type: "ha_housekeeper/battery_type_set", entity_id: id, battery_type: b.type });
+      this.batteryTrend = { ...this.batteryTrend, types: reply.types, custom_types: reply.custom_types };
+      sel.delete(id);
+    });
+    if (!failed) this.batBulk = null;
+    this.render();
   }
 
   // Include the current low state even when there is not enough recorder history for a forecast.
@@ -21870,6 +21898,16 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindOften(root);
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); await this.openMarkHere(el.dataset.watchMark); });
+    // The batteries: pick rows, then one battery type for all of them.
+    const batSel = () => (this.batSel ||= new Set());
+    root.querySelectorAll("[data-bat-sel]").forEach(el => el.onchange = () => { this.pickRows("batteries", el.dataset.batSel, el.checked, batSel(), [...root.querySelectorAll("[data-bat-sel]")].map(x => x.dataset.batSel)); this.render(); });
+    const batPage = root.querySelector("[data-bat-page]");
+    if (batPage) { batPage.indeterminate = batPage.hasAttribute("data-partial"); batPage.onchange = ev => { root.querySelectorAll("[data-bat-sel]").forEach(x => (ev.target.checked ? batSel().add(x.dataset.batSel) : batSel().delete(x.dataset.batSel))); this.render(); }; }
+    root.querySelector("[data-bat-clear]")?.addEventListener("click", () => { batSel().clear(); this.batBulk = null; this.render(); });
+    root.querySelector("[data-bat-bulk]")?.addEventListener("click", () => { this.batBulk = { type: "" }; this.render(); });
+    root.querySelector("[data-bat-type]")?.addEventListener("change", ev => { this.batBulk.type = ev.target.value; this.render(); });
+    root.querySelector("[data-bat-cancel]")?.addEventListener("click", () => { this.batBulk = null; this.render(); });
+    root.querySelector("[data-bat-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitBatteryBulk(); });
     // The unreferenced entities: pick rows, then one object note for all of them.
     const unrefSel = () => (this.unrefSel ||= new Set());
     root.querySelectorAll("[data-unref-sel]").forEach(el => el.onchange = () => { this.pickRows("unreferenced", el.dataset.unrefSel, el.checked, unrefSel(), [...root.querySelectorAll("[data-unref-sel]")].map(x => x.dataset.unrefSel)); this.render(); });
