@@ -172,16 +172,52 @@ class SettingsMixin {
     const st = this.lvState("marks", "name", "asc");
     this.setExporter("marks", "marks", [this.t("hidColObject"), "ID", this.t("type"), this.t("markKind"), this.t("markReason"), this.t("markReview"), this.t("decColEffect")], () => refined.map(o => [o.name || o.object_id, o.object_id, this.t(o.object_type), this.t(`mark_${o.mark.kind}`), o.mark.reason || "", o.mark.until ? this.formatDate(o.mark.until) : "", effect(o)]));
     const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("marks", { sorts, filters }) : "";
-    const sorted = this.refine("marks", list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
+    const sorted = this.refine("marks", this.selOnly?.marks ? list.filter(o => (this.markSel ||= new Set()).has(keyOf(o))) : list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
     const refined = [...sorted.filter(o => o.mark_due), ...sorted.filter(o => !o.mark_due && isQuiet(o)), ...sorted.filter(o => !o.mark_due && !isQuiet(o))];
     const pg = this.paginate("marks", refined);
     st.shown = refined.length;
-    const row = o => {
-      const key = keyOf(o);
-      return `<div class="row${o.mark_due ? " duerow" : ""}">${this.tile(o.object_type, o.mark_due ? "warn" : "mute")}<span class="row-text"><button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(o.name || o.object_id)}</button><small>${this.esc(this.t(o.object_type))} · ${this.esc(this.markLine(o.mark))}</small></span><span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span><span class="rowacts"><button class="btn quiet" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}"><ha-icon icon="mdi:bookmark-remove-outline"></ha-icon>${this.t("markClear")}</button></span></div>`;
+    const sel = (this.markSel ||= new Set());
+    for (const key of [...sel]) if (!list.some(o => keyOf(o) === key)) sel.delete(key);
+    const visible = pg.rows.map(keyOf);
+    const menu = o => {
+      const key = keyOf(o), item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+      return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${item("mdi:open-in-new", "decOpenObject", `data-object="${this.esc(key)}"`)}${item(FSEL_ICONS.mark, "markChange", `data-watch-mark="${this.esc(key)}"`)}<hr class="menusep">${item("mdi:bookmark-remove-outline", "markClear", `data-mark-clear="${this.esc(key)}"`)}</div></details>`;
     };
-    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
-    return `<section class="panel" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
+    const columns = [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = visible.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-mark-page ${n && n === visible.length ? "checked" : ""} ${n && n < visible.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: o => `<input type="checkbox" class="selbox" data-mark-sel="${this.esc(keyOf(o))}" ${sel.has(keyOf(o)) ? "checked" : ""} aria-label="${this.esc(o.name || o.object_id)}">` },
+      { key: "name", label: "hidColObject", cell: o => `<div class="statcell">${this.tile(o.object_type, o.mark_due ? "warn" : "mute")}<div><button type="button" class="link strong" data-object="${this.esc(keyOf(o))}">${this.esc(o.name || o.object_id)}</button><small class="muted u-block">${this.esc(this.t(o.object_type))}</small></div></div>` },
+      { key: "kind", label: "markColKind", cell: o => `<strong>${this.esc(this.t(`mark_${o.mark.kind}`))}</strong>${o.mark.window || o.mark.target ? `<small class="muted u-block">${this.esc([o.mark.window ? this.windowLine(o.mark) : "", o.mark.target ? `→ ${o.mark.target}` : ""].filter(Boolean).join(" · "))}</small>` : ""}` },
+      { key: "reason", label: "markColReason", sortable: false, cell: o => (o.mark.reason ? this.esc(o.mark.reason) : "–") },
+      { key: "review", label: "markColReview", cell: o => (o.mark.until ? this.esc(this.formatDay(o.mark.until)) : this.t("markNever")) },
+      { key: "effect", label: "decColEffect", sortable: false, cell: o => `<span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span>` },
+      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+    ];
+    const table = refined.length ? this.listTable("marks", columns, pg.rows, { cls: "objs", rowAttrs: o => `class="static${o.mark_due ? " duerow" : ""}"` }) : "";
+    const n = sel.size, bulk = this.markBulk;
+    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("marks", n, "data-mark-selclear")}<span class="toolgap"></span>
+      <button type="button" class="btn" data-mark-bulk="review" ${n ? "" : "disabled"}><ha-icon icon="mdi:calendar-refresh-outline"></ha-icon>${this.t("marksReviewN", { n: this.formatNumber(n) })}</button>
+      <button type="button" class="btn" data-mark-bulk="kind" ${n ? "" : "disabled"}><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("marksKindN", { n: this.formatNumber(n) })}</button>
+      <button type="button" class="btn" data-mark-bulk-remove ${n ? "" : "disabled"}><ha-icon icon="mdi:bookmark-remove-outline"></ha-icon>${this.t("marksRemoveN", { n: this.formatNumber(n) })}</button></div>${n && bulk ? this.markBulkForm(bulk, n) : ""}` : "";
+    const body = refined.length ? table : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
+    const pickerOpen = this._picker?.name === "markadd" && this._picker.open;
+    return `<section class="panel${pickerOpen ? " ovvis" : ""}" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div><div class="apmanual">${this.pickerBox("markadd", this.t("marksSet"))}</div></div>${bar}${tools}${body}${pg.footer}</section>`;
+  }
+
+  // The form under the toolbar of the notes: a new review date or a new kind for all picked notes at once.
+  markBulkForm(b, n) {
+    const days = [30, 90, 180, 365, 0].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
+    if (b.kind === "review") {
+      return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksReviewTitle", { n: this.formatNumber(n) })}</strong>
+        <select data-mark-bulkdays aria-label="${this.esc(this.t("markReview"))}">${days}</select>
+        <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
+    }
+    const kinds = this.markKindsFor(new Map([...this.markSel].map(k => [k, k])));
+    const kind = b.markKind && kinds.includes(b.markKind) ? b.markKind : kinds[0];
+    return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksKindTitle", { n: this.formatNumber(n) })}</strong>
+      <select data-mark-bulkkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
+      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.

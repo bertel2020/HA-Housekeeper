@@ -5679,6 +5679,20 @@ test("the settings list the findings with a status and every mark, each in its o
   assert.ok(el.eventsCard().includes('class="evtable"') && !el.eventsCard().includes("style="));
 });
 
+test("the notes on objects are a table with picking: the picked ones get a new review date, keeping the rest of the note", async () => {
+  const { el } = panel("en");
+  const mark = { kind: "seasonal", reason: "winter", until: "2026-11-01T00:00:00+00:00", at: "2025-10-01T00:00:00+00:00", window: { mode: "time", from: "21:00", to: "06:00" }, grace: 15 };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "device", object_id: "d1", name: "Tree lights", mark }] };
+  el.markSel = new Set(["device:d1"]); el.markBulk = { kind: "review", days: 90, markKind: "" };
+  const html = el.marksCard();
+  assert.ok(html.includes('data-mark-sel="device:d1"') && html.includes("Change review date (1)") && html.includes("Set an object note") && !html.includes("21:00 –"), "rows are picked, the form and the picker show");
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg); return { marked: true }; };
+  el.refreshData = async () => {}; el.render = () => {};
+  await el.commitMarkBulkEdit();
+  assert.deepEqual(JSON.parse(JSON.stringify(calls[0])), { type: "ha_housekeeper/mark_set", object_type: "device", object_id: "d1", kind: "seasonal", reason: "winter", days: 90, window: { mode: "time", from: "21:00", to: "06:00" }, grace_minutes: 15 });
+});
+
 test("a long history of scans shows only the newest rows until asked, keeps the chosen base visible and has the choice in its head", () => {
   const { el, shadow } = panel("en");
   const days = Array.from({ length: 12 }, (_, i) => ({ id: `2026-09-${String(20 - i).padStart(2, "0")}T08:00:00+00:00`, at: `2026-09-${String(20 - i).padStart(2, "0")}T08:00:00+00:00`, objects: 5, findings: 1 }));

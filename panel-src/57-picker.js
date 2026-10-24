@@ -46,6 +46,10 @@ class PickerMixin {
         filter: o => (this.autoPause?.pausable || []).some(p => p.entry_id === o.object_id) && !this.apPausedItem(o.object_id),
         pick: o => { this.apPickText = ""; this.apStart(o.object_id); },
       },
+      markadd: {
+        get: () => this.markAddText || "", set: v => { this.markAddText = v; }, min: 1, types: MARK_TYPES, limit: 30, sub: o => `${this.t(o.object_type)} · ${o.object_type === "config_entry" ? o.domain : o.object_id}`,
+        filter: o => !o.mark, pick: o => { this.markAddText = ""; this.openMarkHere(this.objectKey(o)); },
+      },
       note: {
         get: () => this.noteDraft?.targetText ?? "", set: v => { if (this.noteDraft) { this.noteDraft.targetText = v; this.noteDraft.target = ""; } }, min: 2, types: null, limit: 15,
         pick: o => { this.noteDraft.target = this.objectKey(o); this.noteDraft.targetText = o.name; },

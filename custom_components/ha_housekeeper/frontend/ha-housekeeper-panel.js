@@ -1128,8 +1128,8 @@ Object.assign(TEXT.de, {
   decStatusKpi: "Befunde mit Status", decMarksKpi: "Objekt-Notizen", decRulesKpi: "Ausnahmeregeln", decLabelsKpi: "Objekte mit Label", decReviewDueShort: "Prüfdatum erreicht", decRuleHides: "{n} Befunde ausgeblendet",
   decStatusTitle: "Entscheidungen zu Befunden", decStatusHint: "Was du an einzelnen Befunden entschieden hast: ist so gewollt, später, Fehlalarm. Gilt nur für diesen Befund; ein neuer Befund am selben Objekt ist wieder offen. Entscheidungen, deren Frist abgelaufen ist, stehen oben. Ist der Befund gerade nicht da, wartet die Entscheidung und gilt wieder, sobald er zurückkommt.", decColNow: "Wirkung", decNowAll: "Wirkung: alle", decNowHides: "blendet aus", decNowDue: "wieder offen", decNowRests: "wartet", decNowQuiet: "seit {n} Tagen nicht aufgetreten – noch nötig?", decNowGone: "Objekt gibt es nicht mehr", decNowFilter_hides: "Blendet aus", decNowFilter_due: "Wieder offen", decNowFilter_rests: "Wartet", decNowFilter_quiet: "Noch nötig?", decNowFilter_gone: "Objekt fehlt", decLastSeen: "zuletzt am {when}", decOpenObject: "Objekt öffnen", decRemove: "Entscheidung entfernen", decRemoveN: "Entscheidung entfernen ({n})", decRestHead: "Wartend · Befund gerade nicht da ({n})", decStatusNone: "Du hast noch zu keinem Befund etwas entschieden.",
   decAllStates: "Alle", decColStatus: "Status", decColUntil: "Bis", decChange: "Status ändern", decColEffect: "Wirkung",
-  decMarksTitle: "Objekt-Notizen", decMarksHint: "Aussagen über ein Objekt: absichtlich offline, saisonal, Ersatz, nicht entfernen, ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jede Objekt-Notiz, auch wenn sie gerade nichts ausblendet.", decMarksNone: "Noch keine Objekt-Notiz. Du setzt sie an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
-  markEffDue: "Prüfdatum erreicht, blendet nichts mehr aus", markEffKeep: "sperrt Bereinigen", markEffHides: "{n} Befunde ausgeblendet", markEffNone: "blendet gerade nichts aus", markEffQuiet: "seit {n} Tagen ohne Ausfall – noch nötig?", markQuietFilter: "Noch nötig?",
+  decMarksTitle: "Objekt-Notizen", decMarksHint: "Aussagen über ein Objekt: Absichtlich offline, Saisonal, Reservegerät, Nicht entfernen oder Wird ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jede Objekt-Notiz, auch wenn sie gerade nichts ausblendet.", decMarksNone: "Noch keine Objekt-Notiz. Du setzt sie an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
+  markEffDue: "Prüfdatum erreicht, blendet nichts mehr aus", markEffKeep: "sperrt Bereinigen", markEffHides: "{n} Befunde ausgeblendet", markEffNone: "blendet nichts aus", markEffQuiet: "seit {n} Tagen ohne Ausfall – noch nötig?", markQuietFilter: "Noch nötig?",
   decAllLink: "Alle Entscheidungen",
   hidColObject: "Objekt", hidColFinding: "Befund",
   storeHintBytes: "Nur Art und Größe, nie Inhalte. Löschen ist hier nicht vorgesehen.",
@@ -1177,8 +1177,8 @@ Object.assign(TEXT.en, {
   decStatusKpi: "Findings with a status", decMarksKpi: "Object notes", decRulesKpi: "Exception rules", decLabelsKpi: "Objects with a label", decReviewDueShort: "Review date reached", decRuleHides: "{n} findings hidden",
   decStatusTitle: "Decisions on findings", decStatusHint: "What you decided about single findings: intended, later, false alarm. It applies to that finding only; a new finding on the same object is open again. Decisions whose time has run out come first. While the finding is away the decision waits and applies again as soon as it comes back.", decColNow: "Effect", decNowAll: "Effect: all", decNowHides: "hides", decNowDue: "open again", decNowRests: "waits", decNowQuiet: "not seen for {n} days – still needed?", decNowGone: "object is gone", decNowFilter_hides: "Hides", decNowFilter_due: "Open again", decNowFilter_rests: "Waits", decNowFilter_quiet: "Still needed?", decNowFilter_gone: "Object gone", decLastSeen: "last seen {when}", decOpenObject: "Open object", decRemove: "Remove decision", decRemoveN: "Remove decision ({n})", decRestHead: "Waiting · finding away right now ({n})", decStatusNone: "You haven’t decided anything about a finding yet.",
   decAllStates: "All", decColStatus: "Status", decColUntil: "Until", decChange: "Change status", decColEffect: "Effect",
-  decMarksTitle: "Object notes", decMarksHint: "Statements about an object: offline on purpose, seasonal, spare, do not remove, replaced. They also apply to future outages, on a device to its entities. Every object note is listed here, also one that hides nothing right now.", decMarksNone: "No object note yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
-  markEffDue: "review date reached, hides nothing any more", markEffKeep: "blocks cleanup", markEffHides: "{n} findings hidden", markEffNone: "hides nothing right now", markEffQuiet: "no outage for {n} days – still needed?", markQuietFilter: "Still needed?",
+  decMarksTitle: "Object notes", decMarksHint: "Statements about an object: Offline on purpose, Seasonal, Spare device, Do not remove or Being replaced. They also apply to future outages, on a device to its entities. Every object note is listed here, also one that hides nothing right now.", decMarksNone: "No object note yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
+  markEffDue: "review date reached, hides nothing any more", markEffKeep: "blocks cleanup", markEffHides: "{n} findings hidden", markEffNone: "hides nothing", markEffQuiet: "no outage for {n} days – still needed?", markQuietFilter: "Still needed?",
   decAllLink: "All decisions",
   hidColObject: "Object", hidColFinding: "Finding",
   storeHintBytes: "Only kind and size, never contents. Deleting is not offered here.",
@@ -1543,7 +1543,7 @@ class StylesMixin {
       .card-text{min-width:0;display:grid;gap:2px}.card-text small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.card-text strong{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2}.card-text em{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-overflow:ellipsis;white-space:nowrap}
       .tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 13%,transparent);flex:none}
       .tile.ok{color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.tile.warn{color:var(--hk-amber);background:color-mix(in srgb,var(--hk-amber) 15%,transparent)}.tile.red{color:var(--hk-red);background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.tile.mute{color:var(--hk-gray);background:color-mix(in srgb,var(--hk-gray) 15%,transparent)}.tile.violet{color:var(--hk-violet);background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
-      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apbar i{background:var(--hk-amber)}.apact{flex:none;padding-right:8px}.rowslot{width:34px;height:34px}.rowwrap>.row{flex:1;min-width:0;border-bottom:0}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding:12px 16px}.apmore .fold+.fold{border-top:1px solid var(--hk-border)}.apmore .foldbody{margin:0;border-left:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.apmore .foldbody .row:last-of-type{border-bottom:0}.apmore .foldbody .factnote{margin:0;padding:10px 16px 12px;border-top:1px solid var(--hk-border)}.apmore .row .unitrow{margin:0}.foldhead:focus-visible{outline-offset:-2px}.evtable th{padding:9px 16px;text-align:left;font-weight:600;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.apbtns{margin-left:auto}
+      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apbar i{background:var(--hk-amber)}.apact{flex:none;padding-right:8px}.rowslot{width:34px;height:34px}.rowwrap>.row{flex:1;min-width:0;border-bottom:0}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding:12px 16px}.panelhead .apmanual{padding:0}.apmore .fold+.fold{border-top:1px solid var(--hk-border)}.apmore .foldbody{margin:0;border-left:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.apmore .foldbody .row:last-of-type{border-bottom:0}.apmore .foldbody .factnote{margin:0;padding:10px 16px 12px;border-top:1px solid var(--hk-border)}.apmore .row .unitrow{margin:0}.foldhead:focus-visible{outline-offset:-2px}.evtable th{padding:9px 16px;text-align:left;font-weight:600;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.apbtns{margin-left:auto}
       .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.aboutintro{padding:12px 16px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted)}.aboutintro p{margin:0}.aboutintro p+p{margin-top:6px}.aboutintro strong{color:var(--hk-text)}
       .panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
@@ -3837,16 +3837,52 @@ class SettingsMixin {
     const st = this.lvState("marks", "name", "asc");
     this.setExporter("marks", "marks", [this.t("hidColObject"), "ID", this.t("type"), this.t("markKind"), this.t("markReason"), this.t("markReview"), this.t("decColEffect")], () => refined.map(o => [o.name || o.object_id, o.object_id, this.t(o.object_type), this.t(`mark_${o.mark.kind}`), o.mark.reason || "", o.mark.until ? this.formatDate(o.mark.until) : "", effect(o)]));
     const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("marks", { sorts, filters }) : "";
-    const sorted = this.refine("marks", list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
+    const sorted = this.refine("marks", this.selOnly?.marks ? list.filter(o => (this.markSel ||= new Set()).has(keyOf(o))) : list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
     const refined = [...sorted.filter(o => o.mark_due), ...sorted.filter(o => !o.mark_due && isQuiet(o)), ...sorted.filter(o => !o.mark_due && !isQuiet(o))];
     const pg = this.paginate("marks", refined);
     st.shown = refined.length;
-    const row = o => {
-      const key = keyOf(o);
-      return `<div class="row${o.mark_due ? " duerow" : ""}">${this.tile(o.object_type, o.mark_due ? "warn" : "mute")}<span class="row-text"><button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(o.name || o.object_id)}</button><small>${this.esc(this.t(o.object_type))} · ${this.esc(this.markLine(o.mark))}</small></span><span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span><span class="rowacts"><button class="btn quiet" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}"><ha-icon icon="mdi:bookmark-remove-outline"></ha-icon>${this.t("markClear")}</button></span></div>`;
+    const sel = (this.markSel ||= new Set());
+    for (const key of [...sel]) if (!list.some(o => keyOf(o) === key)) sel.delete(key);
+    const visible = pg.rows.map(keyOf);
+    const menu = o => {
+      const key = keyOf(o), item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+      return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${item("mdi:open-in-new", "decOpenObject", `data-object="${this.esc(key)}"`)}${item(FSEL_ICONS.mark, "markChange", `data-watch-mark="${this.esc(key)}"`)}<hr class="menusep">${item("mdi:bookmark-remove-outline", "markClear", `data-mark-clear="${this.esc(key)}"`)}</div></details>`;
     };
-    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
-    return `<section class="panel" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
+    const columns = [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = visible.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-mark-page ${n && n === visible.length ? "checked" : ""} ${n && n < visible.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: o => `<input type="checkbox" class="selbox" data-mark-sel="${this.esc(keyOf(o))}" ${sel.has(keyOf(o)) ? "checked" : ""} aria-label="${this.esc(o.name || o.object_id)}">` },
+      { key: "name", label: "hidColObject", cell: o => `<div class="statcell">${this.tile(o.object_type, o.mark_due ? "warn" : "mute")}<div><button type="button" class="link strong" data-object="${this.esc(keyOf(o))}">${this.esc(o.name || o.object_id)}</button><small class="muted u-block">${this.esc(this.t(o.object_type))}</small></div></div>` },
+      { key: "kind", label: "markColKind", cell: o => `<strong>${this.esc(this.t(`mark_${o.mark.kind}`))}</strong>${o.mark.window || o.mark.target ? `<small class="muted u-block">${this.esc([o.mark.window ? this.windowLine(o.mark) : "", o.mark.target ? `→ ${o.mark.target}` : ""].filter(Boolean).join(" · "))}</small>` : ""}` },
+      { key: "reason", label: "markColReason", sortable: false, cell: o => (o.mark.reason ? this.esc(o.mark.reason) : "–") },
+      { key: "review", label: "markColReview", cell: o => (o.mark.until ? this.esc(this.formatDay(o.mark.until)) : this.t("markNever")) },
+      { key: "effect", label: "decColEffect", sortable: false, cell: o => `<span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span>` },
+      { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+    ];
+    const table = refined.length ? this.listTable("marks", columns, pg.rows, { cls: "objs", rowAttrs: o => `class="static${o.mark_due ? " duerow" : ""}"` }) : "";
+    const n = sel.size, bulk = this.markBulk;
+    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("marks", n, "data-mark-selclear")}<span class="toolgap"></span>
+      <button type="button" class="btn" data-mark-bulk="review" ${n ? "" : "disabled"}><ha-icon icon="mdi:calendar-refresh-outline"></ha-icon>${this.t("marksReviewN", { n: this.formatNumber(n) })}</button>
+      <button type="button" class="btn" data-mark-bulk="kind" ${n ? "" : "disabled"}><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("marksKindN", { n: this.formatNumber(n) })}</button>
+      <button type="button" class="btn" data-mark-bulk-remove ${n ? "" : "disabled"}><ha-icon icon="mdi:bookmark-remove-outline"></ha-icon>${this.t("marksRemoveN", { n: this.formatNumber(n) })}</button></div>${n && bulk ? this.markBulkForm(bulk, n) : ""}` : "";
+    const body = refined.length ? table : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
+    const pickerOpen = this._picker?.name === "markadd" && this._picker.open;
+    return `<section class="panel${pickerOpen ? " ovvis" : ""}" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div><div class="apmanual">${this.pickerBox("markadd", this.t("marksSet"))}</div></div>${bar}${tools}${body}${pg.footer}</section>`;
+  }
+
+  // The form under the toolbar of the notes: a new review date or a new kind for all picked notes at once.
+  markBulkForm(b, n) {
+    const days = [30, 90, 180, 365, 0].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
+    if (b.kind === "review") {
+      return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksReviewTitle", { n: this.formatNumber(n) })}</strong>
+        <select data-mark-bulkdays aria-label="${this.esc(this.t("markReview"))}">${days}</select>
+        <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
+    }
+    const kinds = this.markKindsFor(new Map([...this.markSel].map(k => [k, k])));
+    const kind = b.markKind && kinds.includes(b.markKind) ? b.markKind : kinds[0];
+    return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksKindTitle", { n: this.formatNumber(n) })}</strong>
+      <select data-mark-bulkkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
+      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
@@ -9210,7 +9246,7 @@ class BlueprintsMixin {
 Object.assign(TEXT.de, {
   decideTabStatus: "Status", decideTabMark: "Objekt-Notiz",
   markTitle: "Objekt-Notiz", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
-  markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
+  markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
   mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht entfernen", mark_replaced: "Wird ersetzt",
   markWindowKind: "Wann gilt die Objekt-Notiz", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
@@ -9220,7 +9256,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
   markTitle: "Object note", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
-  markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
+  markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
   mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not remove", mark_replaced: "Being replaced",
   markWindowKind: "When the object note applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
@@ -9238,7 +9274,7 @@ class MarksMixin {
   }
 
   markLine(mark) {
-    const until = mark.until ? ` · ${this.t("markReviewOn", { date: this.formatDate(mark.until) })}` : "";
+    const until = mark.until ? ` · ${this.t("markReviewOn", { date: this.formatDay(mark.until) })}` : "";
     const window = mark.window ? ` · ${this.windowLine(mark)}` : "";
     return `${this.t(`mark_${mark.kind}`)}${window}${until}${mark.reason ? ` · ${mark.reason}` : ""}${mark.target ? ` → ${mark.target}` : ""}${mark.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
@@ -9351,6 +9387,29 @@ class MarksMixin {
       if (ctx) this.fcNotify(this.fcLogAdd({ stage: ctx.stage, key: ctx.keys[0], keys: ctx.keys, targets: [f.key], n: ctx.keys.length, action: "mark", name: ctx.name }));
       await this.refreshData();
     } catch (err) { f.error = this.t("markFailed", { reason: this.errText(err) }); }
+    this.render();
+  }
+
+  // Sends the picked notes again with a new review date or a new kind; everything else of a note stays as it was.
+  async commitMarkBulkEdit() {
+    const b = this.markBulk, sel = this.markSel;
+    if (!b || !sel?.size) return;
+    const kinds = this.markKindsFor(new Map([...sel].map(k => [k, k])));
+    const kind = b.markKind && kinds.includes(b.markKind) ? b.markKind : kinds[0];
+    const failed = await this.runBulk([...sel], async key => {
+      const mark = this.findObject(key)?.mark;
+      if (!mark) return;
+      const [object_type, ...rest] = key.split(":");
+      const to = b.kind === "kind" ? kind : mark.kind;
+      const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: to, reason: mark.reason || "" };
+      const days = b.kind === "review" ? Number(b.days) : mark.until ? Math.max(1, Math.ceil((Date.parse(mark.until) - Date.now()) / 864e5)) : 0;
+      if (days) msg.days = days;
+      if (to === "replaced" && mark.target) msg.target = mark.target;
+      if (to !== "keep" && mark.window) { msg.window = mark.window.mode === "sun" ? { mode: "sun" } : { mode: "time", from: mark.window.from, to: mark.window.to }; msg.grace_minutes = Number(mark.grace ?? 30); }
+      await this._hass.callWS(msg);
+    });
+    await this.refreshData();
+    if (!failed) this.markBulk = null;
     this.render();
   }
 
@@ -12635,6 +12694,10 @@ class PickerMixin {
         filter: o => (this.autoPause?.pausable || []).some(p => p.entry_id === o.object_id) && !this.apPausedItem(o.object_id),
         pick: o => { this.apPickText = ""; this.apStart(o.object_id); },
       },
+      markadd: {
+        get: () => this.markAddText || "", set: v => { this.markAddText = v; }, min: 1, types: MARK_TYPES, limit: 30, sub: o => `${this.t(o.object_type)} · ${o.object_type === "config_entry" ? o.domain : o.object_id}`,
+        filter: o => !o.mark, pick: o => { this.markAddText = ""; this.openMarkHere(this.objectKey(o)); },
+      },
       note: {
         get: () => this.noteDraft?.targetText ?? "", set: v => { if (this.noteDraft) { this.noteDraft.targetText = v; this.noteDraft.target = ""; } }, min: 2, types: null, limit: 15,
         pick: o => { this.noteDraft.target = this.objectKey(o); this.noteDraft.targetText = o.name; },
@@ -13740,7 +13803,7 @@ Object.assign(TEXT.de, {
   excPreview: "Vorschau", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
-  excOn: "Regel aktiv", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", exceptionsSubtitle: "Was Housekeeper still hält und wann es wieder nachfragt.", excTabRules: "Ausnahmeregeln", excTileRulesHint: "Was still bleibt oder später gemeldet wird.", excTileVacationHint: "Regeln nur für den Urlaub.", excTileFindingsHint: "Ist so gewollt, Später, Fehlalarm.", excTileObjectsHint: "Objekt-Notizen mit Prüfdatum.", excTabVacation: "Urlaubsmodus", excTabFindings: "Befunde", excTabObjects: "Objekte", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
+  excOn: "Regel aktiv", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", exceptionsSubtitle: "Was Housekeeper still hält und wann es wieder nachfragt.", excTabRules: "Ausnahmeregeln", excTileRulesHint: "Was still bleibt oder später gemeldet wird.", excTileVacationHint: "Regeln nur für den Urlaub.", excTileFindingsHint: "Ist so gewollt, Später, Fehlalarm.", excTileObjectsHint: "Objekt-Notizen mit Prüfdatum.", excTabVacation: "Urlaubsmodus", excTabFindings: "Entscheidungen", excTabObjects: "Objekt-Notizen", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
@@ -13783,7 +13846,7 @@ Object.assign(TEXT.en, {
   excPreview: "Preview", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
-  excOn: "Rule active", excDue: "Time has passed", exceptions: "Exceptions", exceptionsSubtitle: "What Housekeeper keeps quiet about, and when it asks again.", excTabRules: "Exception rules", excTileRulesHint: "What stays quiet or is reported later.", excTileVacationHint: "Rules for the vacation only.", excTileFindingsHint: "Intended, Later, False alarm.", excTileObjectsHint: "Object notes with a review date.", excTabVacation: "Vacation mode", excTabFindings: "Findings", excTabObjects: "Objects", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
+  excOn: "Rule active", excDue: "Time has passed", exceptions: "Exceptions", exceptionsSubtitle: "What Housekeeper keeps quiet about, and when it asks again.", excTabRules: "Exception rules", excTileRulesHint: "What stays quiet or is reported later.", excTileVacationHint: "Rules for the vacation only.", excTileFindingsHint: "Intended, Later, False alarm.", excTileObjectsHint: "Object notes with a review date.", excTabVacation: "Vacation mode", excTabFindings: "Decisions", excTabObjects: "Object notes", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
@@ -13921,6 +13984,11 @@ class ExceptionsMixin {
     return statusDue + marksDue + rulesDue;
   }
 
+  // How many decisions the list of statuses shows: the ones on findings and those resting while their finding is away.
+  statusCount() {
+    return (this.data?.findings || []).filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)).length + this.restingDecisions().length;
+  }
+
   // The page "Exceptions": the rules (with the labels), the vacation mode, the decisions about findings and the notes on objects.
   exceptionsView() {
     if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
@@ -13935,8 +14003,8 @@ class ExceptionsMixin {
     const tabs = [
       { id: "rules", icon: "mdi:filter-remove-outline", label: this.t("excTabRules"), hint: this.t("excTileRulesHint"), count: this.exc.rules.filter(rule => (rule.scope || "always") === "always").length, tone: rulesDue ? "warn" : "ok", pill: due(rulesDue), status: true },
       { id: "vacation", icon: "mdi:beach", label: this.t("excTabVacation"), hint: this.t("excTileVacationHint"), tone: vacTone, pill: this.t(state), status: true },
-      { id: "findings", icon: "mdi:checkbox-marked-circle-outline", label: this.t("excTabFindings"), hint: this.t("excTileFindingsHint"), tone: statusDue ? "warn" : "ok", pill: due(statusDue), status: true },
-      { id: "objects", icon: "mdi:note-text-outline", label: this.t("excTabObjects"), hint: this.t("excTileObjectsHint"), tone: marksDue ? "warn" : "ok", pill: due(marksDue), status: true },
+      { id: "findings", icon: "mdi:checkbox-marked-circle-outline", label: this.t("excTabFindings"), hint: this.t("excTileFindingsHint"), count: this.statusCount(), tone: statusDue ? "warn" : "ok", pill: due(statusDue), status: true },
+      { id: "objects", icon: "mdi:note-text-outline", label: this.t("excTabObjects"), hint: this.t("excTileObjectsHint"), count: (this.data?.objects || []).filter(o => o.mark).length, tone: marksDue ? "warn" : "ok", pill: due(marksDue), status: true },
     ];
     const open = this.viewTabOf("exceptions", tabs, "rules");
     const vacation = `<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section>`;
@@ -20645,6 +20713,13 @@ class HAHousekeeperPanel extends HTMLElement {
     catch (_) { return value; }
   }
 
+  // A date without the time of day: for review dates, which are a day long.
+  formatDay(value) {
+    if (!value) return "—";
+    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium" }).format(new Date(value)); }
+    catch (_) { return value; }
+  }
+
   formatNumber(value) { return new Intl.NumberFormat(this.lang).format(value ?? 0); }
 
   async load(fresh = false) {
@@ -21704,6 +21779,22 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindOften(root);
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); await this.openMarkHere(el.dataset.watchMark); });
+    // The list of object notes: pick rows, then change the review date or the kind of the picked notes, or take them away.
+    const markSel = () => (this.markSel ||= new Set());
+    root.querySelectorAll("[data-mark-sel]").forEach(el => el.onchange = () => { this.pickRows("marks", el.dataset.markSel, el.checked, markSel(), [...root.querySelectorAll("[data-mark-sel]")].map(x => x.dataset.markSel)); this.render(); });
+    const markPage = root.querySelector("[data-mark-page]");
+    if (markPage) { markPage.indeterminate = markPage.hasAttribute("data-partial"); markPage.onchange = ev => { root.querySelectorAll("[data-mark-sel]").forEach(x => (ev.target.checked ? markSel().add(x.dataset.markSel) : markSel().delete(x.dataset.markSel))); this.render(); }; }
+    root.querySelector("[data-mark-selclear]")?.addEventListener("click", () => { markSel().clear(); this.markBulk = null; this.render(); });
+    root.querySelectorAll("[data-mark-bulk]").forEach(el => el.onclick = () => { this.markBulk = { kind: el.dataset.markBulk, days: 365, markKind: "" }; this.render(); });
+    root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", async () => {
+      await this.runBulk([...markSel()], async key => { const [object_type, ...rest] = key.split(":"); await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); markSel().delete(key); });
+      await this.refreshData();
+      this.render();
+    });
+    root.querySelector("[data-mark-bulkdays]")?.addEventListener("change", ev => { this.markBulk.days = Number(ev.target.value); });
+    root.querySelector("[data-mark-bulkkind]")?.addEventListener("change", ev => { this.markBulk.markKind = ev.target.value; });
+    root.querySelector("[data-mark-bulkcancel]")?.addEventListener("click", () => { this.markBulk = null; this.render(); });
+    root.querySelector("[data-mark-bulkform]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitMarkBulkEdit(); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
     // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.
     const decSel = () => (this.decSel ||= new Set());

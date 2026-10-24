@@ -189,6 +189,13 @@ class HAHousekeeperPanel extends HTMLElement {
     catch (_) { return value; }
   }
 
+  // A date without the time of day: for review dates, which are a day long.
+  formatDay(value) {
+    if (!value) return "—";
+    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium" }).format(new Date(value)); }
+    catch (_) { return value; }
+  }
+
   formatNumber(value) { return new Intl.NumberFormat(this.lang).format(value ?? 0); }
 
   async load(fresh = false) {
@@ -1248,6 +1255,22 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindOften(root);
     root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); await this.openMarkHere(el.dataset.watchMark); });
+    // The list of object notes: pick rows, then change the review date or the kind of the picked notes, or take them away.
+    const markSel = () => (this.markSel ||= new Set());
+    root.querySelectorAll("[data-mark-sel]").forEach(el => el.onchange = () => { this.pickRows("marks", el.dataset.markSel, el.checked, markSel(), [...root.querySelectorAll("[data-mark-sel]")].map(x => x.dataset.markSel)); this.render(); });
+    const markPage = root.querySelector("[data-mark-page]");
+    if (markPage) { markPage.indeterminate = markPage.hasAttribute("data-partial"); markPage.onchange = ev => { root.querySelectorAll("[data-mark-sel]").forEach(x => (ev.target.checked ? markSel().add(x.dataset.markSel) : markSel().delete(x.dataset.markSel))); this.render(); }; }
+    root.querySelector("[data-mark-selclear]")?.addEventListener("click", () => { markSel().clear(); this.markBulk = null; this.render(); });
+    root.querySelectorAll("[data-mark-bulk]").forEach(el => el.onclick = () => { this.markBulk = { kind: el.dataset.markBulk, days: 365, markKind: "" }; this.render(); });
+    root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", async () => {
+      await this.runBulk([...markSel()], async key => { const [object_type, ...rest] = key.split(":"); await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); markSel().delete(key); });
+      await this.refreshData();
+      this.render();
+    });
+    root.querySelector("[data-mark-bulkdays]")?.addEventListener("change", ev => { this.markBulk.days = Number(ev.target.value); });
+    root.querySelector("[data-mark-bulkkind]")?.addEventListener("change", ev => { this.markBulk.markKind = ev.target.value; });
+    root.querySelector("[data-mark-bulkcancel]")?.addEventListener("click", () => { this.markBulk = null; this.render(); });
+    root.querySelector("[data-mark-bulkform]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitMarkBulkEdit(); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
     // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.
     const decSel = () => (this.decSel ||= new Set());
