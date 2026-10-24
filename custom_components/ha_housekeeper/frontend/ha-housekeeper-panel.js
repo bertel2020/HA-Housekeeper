@@ -3520,7 +3520,6 @@ class ChangesMixin {
   // One row per stored scan (newest first) with its totals; a click picks it as the comparison base.
   historyTimeline(c, baselines) {
     const rows = baselines.length >= 2 || baselines.some(b => b.pinned) ? [{ id: "", at: this.data?.meta?.scanned_at, ...c.current, now: true }, ...[...baselines].sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0))] : [];
-    const max = Math.max(1, ...rows.map(r => r.findings || 0));
     const scans = rows.map((r, i) => {
       const older = rows[i + 1], delta = older ? (r.findings || 0) - (older.findings || 0) : 0;
       const pill = delta ? `<span class="pill ${delta > 0 ? "red" : "ok"}">${delta > 0 ? "+" : ""}${delta}</span>` : "";
@@ -3529,7 +3528,7 @@ class ChangesMixin {
       const when = r.pinned ? this.formatDate(r.at) : label;
       const plain = !r.now && !r.pinned && r.id !== "previous";
       const title = plain ? this.esc(this.scanDay(r.at)) : r.now || !r.pinned ? `${label} · ${this.esc(this.formatDate(r.at))}` : `${this.esc(label)}`;
-      const inner = `<span class="tile ${selected ? "" : "mute"}"><ha-icon icon="${r.now ? "mdi:clock-check-outline" : r.pinned ? "mdi:pin-outline" : "mdi:history"}"></ha-icon></span><span class="row-text"><strong>${title}</strong><small>${r.pinned ? `${this.t("storedPin")} · ${this.esc(when)} · ` : plain ? `${this.esc(label)} · ` : ""}${this.t("historyCounts", { objects: this.formatNumber(r.objects || 0), findings: this.formatNumber(r.findings || 0) })}</small><span class="bar hist-bar"><i style="width:${Math.round(((r.findings || 0) / max) * 100)}%"></i></span></span>${r.pinned ? this.pinActions(r) : pill}`;
+      const inner = `<span class="tile ${selected ? "" : "mute"}"><ha-icon icon="${r.now ? "mdi:clock-check-outline" : r.pinned ? "mdi:pin-outline" : "mdi:history"}"></ha-icon></span><span class="row-text"><strong>${title}</strong><small>${r.pinned ? `${this.t("storedPin")} · ${this.esc(when)} · ` : ""}${this.t("historyCounts", { objects: this.formatNumber(r.objects || 0), findings: this.formatNumber(r.findings || 0) })}</small></span>${r.pinned ? this.pinActions(r) : pill}`;
       if (r.now) return { selected, html: `<div class="row rel">${inner}</div>` };
       if (r.pinned) return { selected, html: `<div class="row rel ${selected ? "sel" : ""}" role="button" tabindex="0" data-baseline="${this.esc(r.id)}">${inner}</div>` };
       return { selected, html: `<button class="row rel ${selected ? "sel" : ""}" data-baseline="${this.esc(r.id)}">${inner}</button>` };
