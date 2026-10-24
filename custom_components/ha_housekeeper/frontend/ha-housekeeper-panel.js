@@ -13706,7 +13706,7 @@ Object.assign(TEXT.de, {
   excPreview: "Vorschau", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
-  excOn: "Regel aktiv", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", exceptionsSubtitle: "Was Housekeeper still hält und wann es wieder nachfragt.", excTabRules: "Ausnahmeregeln", excTabVacation: "Urlaubsmodus", excTabFindings: "Befunde", excTabObjects: "Objekte", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
+  excOn: "Regel aktiv", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", exceptionsSubtitle: "Was Housekeeper still hält und wann es wieder nachfragt.", excTabRules: "Ausnahmeregeln", excTileRulesHint: "Was still bleibt oder später gemeldet wird.", excTileVacationHint: "Regeln nur für den Urlaub.", excTileFindingsHint: "Ist so gewollt, Später, Fehlalarm.", excTileObjectsHint: "Objekt-Notizen mit Prüfdatum.", excTabVacation: "Urlaubsmodus", excTabFindings: "Befunde", excTabObjects: "Objekte", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
@@ -13749,7 +13749,7 @@ Object.assign(TEXT.en, {
   excPreview: "Preview", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
-  excOn: "Rule active", excDue: "Time has passed", exceptions: "Exceptions", exceptionsSubtitle: "What Housekeeper keeps quiet about, and when it asks again.", excTabRules: "Exception rules", excTabVacation: "Vacation mode", excTabFindings: "Findings", excTabObjects: "Objects", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
+  excOn: "Rule active", excDue: "Time has passed", exceptions: "Exceptions", exceptionsSubtitle: "What Housekeeper keeps quiet about, and when it asks again.", excTabRules: "Exception rules", excTileRulesHint: "What stays quiet or is reported later.", excTileVacationHint: "Rules for the vacation only.", excTileFindingsHint: "Intended, Later, False alarm.", excTileObjectsHint: "Object notes with a review date.", excTabVacation: "Vacation mode", excTabFindings: "Findings", excTabObjects: "Objects", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
@@ -13891,19 +13891,22 @@ class ExceptionsMixin {
     if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
-    const pill = ` <span class="pill ${!v.entity ? "warn" : v.state === "on" ? "ok" : "mute"}">${this.t(state)}</span>`;
+    const vacTone = !v.entity ? "warn" : v.state === "on" ? "ok" : "mute";
+    const pill = ` <span class="pill ${vacTone}">${this.t(state)}</span>`;
     const statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length, marksDue = (this.data?.objects || []).filter(o => o.mark_due).length;
     const rulesDue = this.exc.rules.filter(rule => rule.enabled && this.excReviewDue(rule)).length;
+    // The same tiles as the other pages with areas: count, what is due as a pill, a short hint.
+    const due = n => (n ? this.t("navCount_exceptions", { n: this.formatNumber(n) }) : "");
     const tabs = [
-      { id: "rules", label: this.t("excTabRules"), count: this.exc.rules.filter(rule => (rule.scope || "always") === "always").length, tone: rulesDue ? "warn" : "" },
-      { id: "vacation", label: this.t("excTabVacation"), tone: v.entity ? "" : "warn" },
-      { id: "findings", label: this.t("excTabFindings"), tone: statusDue ? "warn" : "" },
-      { id: "objects", label: this.t("excTabObjects"), tone: marksDue ? "warn" : "" },
+      { id: "rules", icon: "mdi:filter-remove-outline", label: this.t("excTabRules"), hint: this.t("excTileRulesHint"), count: this.exc.rules.filter(rule => (rule.scope || "always") === "always").length, tone: rulesDue ? "warn" : "ok", pill: due(rulesDue), status: true },
+      { id: "vacation", icon: "mdi:beach", label: this.t("excTabVacation"), hint: this.t("excTileVacationHint"), tone: vacTone, pill: this.t(state), status: true },
+      { id: "findings", icon: "mdi:checkbox-marked-circle-outline", label: this.t("excTabFindings"), hint: this.t("excTileFindingsHint"), tone: statusDue ? "warn" : "ok", pill: due(statusDue), status: true },
+      { id: "objects", icon: "mdi:note-text-outline", label: this.t("excTabObjects"), hint: this.t("excTileObjectsHint"), tone: marksDue ? "warn" : "ok", pill: due(marksDue), status: true },
     ];
     const open = this.viewTabOf("exceptions", tabs, "rules");
     const vacation = `<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section>`;
     const body = { rules: () => `<div id="hk-sec-rules" class="stack">${this.excRulesCard("always")}</div><div id="hk-sec-labels">${this.labelsCard()}</div>`, vacation: () => `<div class="stack">${vacation}${this.excRulesCard("vacation")}</div>`, findings: () => this.statusCard(), objects: () => this.marksCard() }[open]();
-    return `<div class="stack">${this.viewTabBar("exceptions", tabs, open)}${body}</div>`;
+    return `<div class="stack">${this.navTiles("exceptions", tabs, open, this.t("exceptions"), true)}${body}</div>`;
   }
 
   vacationHtml() {
