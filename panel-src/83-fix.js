@@ -147,7 +147,7 @@ class FixMixin {
     // The exits decide one finding; for a missing target the selection below decides several.
     if (this.fixAll) return `${error}${list}`;
     const self = f.in_work ? `<button type="button" class="btn" data-fix-self-done><ha-icon icon="mdi:check"></ha-icon>${this.t("fixSelfDone")}</button>` : "";
-    return `${error}${list}<div class="fixexits"><small class="fceyebrow">${this.t("fixExits")}</small><div class="mbtns">${exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:eye-off-outline")}${self}</div></div>${this.rowDecide(f)}`;
+    return `${error}${list}<div class="fixexits"><small class="fceyebrow">${this.t("fixExits")}</small><div class="mbtns">${exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:bell-off-outline")}${self}</div></div>${this.rowDecide(f)}`;
   }
 
   // For a cause with several findings below it: pick which to include, then one way for all.
