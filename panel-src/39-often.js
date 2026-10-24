@@ -171,7 +171,7 @@ class OftenMixin {
         { key: "name", label: "oftenColObject", dir: "asc", cell: r => `<div class="statcell">${this.tile(r.type, "warn")}<div>${this.nameCell(r.title, r.id)}${r.note ? `<small class="muted">${this.esc(r.note)}</small>` : ""}</div></div>` },
         { key: "pattern", label: "oftenColPattern", dir: "asc", cell: r => this.esc(r.pattern) },
         { key: "hides", label: "oftenColFindings", dir: "desc", cell: r => this.formatNumber(r.hides) },
-        { key: "menu", label: "rowMenu", narrow: true, sortable: false, cell: menu },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
       ],
     });
     const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.t("oftenCount", { n: this.formatNumber(items.length) }))}</span></button>`;
