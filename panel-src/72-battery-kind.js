@@ -53,12 +53,7 @@ class BatteryKindMixin {
     return `<select ${attr}="${this.esc(o.object_id)}" aria-label="${this.esc(this.t("bkLabel", { name: this.batteryName(o).title }))}">${BATTERY_KINDS.map(k => `<option value="${k}" ${k === value ? "selected" : ""}>${this.t(`bkKind_${k}`)}</option>`).join("")}</select>`;
   }
 
-  // One small button after a row of the battery list; it opens the form below the row.
-  batteryKindControl(o) {
-    if (this.bkEdit !== o.object_id) return `<button class="btn quiet iconbtn" data-bk-open="${this.esc(o.object_id)}" title="${this.esc(this.t("bkSet"))}" aria-label="${this.esc(this.t("bkSet"))}"><ha-icon icon="mdi:battery-off-outline"></ha-icon></button>`;
-    return "";
-  }
-
+  // The form below a row of the battery list; the entry that opens it sits in the row menu.
   batteryKindForm(o) {
     if (this.bkEdit !== o.object_id) return "";
     const name = this.batteryName(o).title;
