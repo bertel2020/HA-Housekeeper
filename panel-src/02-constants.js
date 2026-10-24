@@ -170,8 +170,6 @@ const NAV_GROUPS = [
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],
   ["navGroupExplore", ["inventory", "components", "graph", "changes"]],
 ];
-// A line in a menu before these views: in Maintain the care of the house comes first, then cleaning up and repairing.
-const NAV_BREAKS = ["cleanup"];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
 

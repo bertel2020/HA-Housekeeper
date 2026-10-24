@@ -712,7 +712,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (st) return `<span class="pill ${st.tone} navst" title="${this.esc(st.hint)}" aria-label="${this.esc(st.hint)}">${this.esc(st.text)}</span>`;
       return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : "";
     };
-    const item = view => `${NAV_BREAKS.includes(view) ? '<span class="navsep" aria-hidden="true"></span>' : ""}<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
+    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;

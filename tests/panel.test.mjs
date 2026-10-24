@@ -1936,7 +1936,7 @@ test("the navigation groups every view once, with settings at the foot", () => {
   assert.equal(JSON.stringify(menus), JSON.stringify(["navGroupWatch", "navGroupMaintain", "navGroupOperation", "navGroupSecurity", "navGroupExplore"]), "five menus after the direct entries");
   assert.ok(html.includes('<nav class="topnav" id="topnav" aria-label="Main navigation">'));
   const order = ["overview", "findingsNav", "monitor", "autopause", "exceptions", "maintenance", "batteries", "cleanup", "repair", "journal", "reliability", "inventory", "changes", "settings"].map(v => html.indexOf(`data-view="${v}"`));
-  assert.ok(/<span class="navsep" aria-hidden="true"><\/span><button class="nav[^"]*" data-view="cleanup"/.test(html), "a line parts the care of the house from cleaning up");
+  assert.ok(!html.includes("navsep"), "no line inside a menu: every entry looks alike");
   assert.ok(order.every((at, i) => at > 0 && (i === 0 || at > order[i - 1])), "views keep their order and settings comes last");
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1, "one current entry");
   assert.ok(/data-view="cleanup"\s+aria-current="page"/.test(html));
