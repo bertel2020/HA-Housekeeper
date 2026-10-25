@@ -32,7 +32,7 @@ Object.assign(TEXT.de, {
   clUnmark: "Markierung entfernen", clOpenCheck: "Prüfung öffnen", clOnlyCheck: "Nur diese Prüfung zeigen", clOnlyCheckOn: "Nur: {what}", clOnlyCheckOff: "Alle Prüfungen zeigen",
   clDismissed: "Fehlalarm · {reason}", clReason_backup_running: "Backup lief gerade", clReason_restart: "Neustart", clReason_maintenance: "Wartung", clReason_test: "Test", clReason_expected: "ist so gewollt", clReason_other: "anderer Grund",
   clMarkFailed: "Die Markierung konnte nicht gespeichert werden.",
-  clExpName: "verlauf", clExpTitle: "Verlauf der Prüfungen", clExpAt: "Zeit", clExpArea: "Bereich", clExpCheck: "Prüfung", clExpFrom: "von", clExpTo: "nach", clExpCause: "Ursache", clExpLasted: "Dauer (Sekunden)", clExpDismissed: "Fehlalarm",
+  clExpName: "verlauf", clExpTitle: "Verlauf der Prüfungen", clExpAt: "Zeit", clExpKind: "Art", clExpArea: "Bereich", clExpCheck: "Prüfung", clExpFrom: "von", clExpTo: "nach", clExpCause: "Ursache", clExpLasted: "Dauer (Sekunden)", clExpDismissed: "Fehlalarm",
   clNoMatch: "Nichts gefunden.", clNoMatchNext: "Die Filter oder die Suche lassen keinen Eintrag übrig.",
   clMore: "{shown} von {total} Einträgen gezeigt, der Export enthält alle des Zeitraums.", clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
 });
@@ -62,7 +62,7 @@ Object.assign(TEXT.en, {
   clUnmark: "Remove the mark", clOpenCheck: "Open the check", clOnlyCheck: "Show only this check", clOnlyCheckOn: "Only: {what}", clOnlyCheckOff: "Show all checks",
   clDismissed: "False alarm · {reason}", clReason_backup_running: "a backup was running", clReason_restart: "restart", clReason_maintenance: "maintenance", clReason_test: "test", clReason_expected: "as intended", clReason_other: "other reason",
   clMarkFailed: "The mark could not be saved.",
-  clExpName: "history", clExpTitle: "History of the checks", clExpAt: "Time", clExpArea: "Area", clExpCheck: "Check", clExpFrom: "From", clExpTo: "To", clExpCause: "Cause", clExpLasted: "Lasted (seconds)", clExpDismissed: "False alarm",
+  clExpName: "history", clExpTitle: "History of the checks", clExpAt: "Time", clExpKind: "Kind", clExpArea: "Area", clExpCheck: "Check", clExpFrom: "From", clExpTo: "To", clExpCause: "Cause", clExpLasted: "Lasted (seconds)", clExpDismissed: "False alarm",
   clNoMatch: "Nothing found.", clNoMatchNext: "The filters or the search leave no entry.",
   clMore: "{shown} of {total} entries shown; the export holds all of the period.", clRetention: "Kept: {days} days, at most {max} entries.", clLoadError: "The history could not be read.",
 });
@@ -326,11 +326,21 @@ class CheckLogMixin {
     return `<div class="stack">${bar}${tiles}${recur}${flapStrip}${this.clStrips(log)}${list}</div>`;
   }
 
-  // What the export holds: every change of the period (ids and numbers only), also the ones the page does not draw.
+  // What the export holds: every line of the period (ids and numbers only), also the ones the page does not draw.
+  // Kind: change, start, gap, update or config; start and gap carry the reason, the downtime and what followed.
   clRegisterExport() {
-    const rows = () => (this.checkLog?.entries || []).filter(e => e.kind === "change").map(e => [e.at, e.area, e.check, e.from, e.to,
-      Object.entries(e.cause || {}).map(([k, v]) => `${k}=${v}`).join("; "), e.lasted_seconds ?? "", e.dismissed || ""]);
-    this.setExporter("checklog", this.t("clExpName"), ["clExpAt", "clExpArea", "clExpCheck", "clExpFrom", "clExpTo", "clExpCause", "clExpLasted", "clExpDismissed"].map(k => this.t(k)), rows);
+    const pairs = o => Object.entries(o || {}).map(([k, v]) => `${k}=${v}`).join("; ");
+    const row = e => {
+      if (e.kind === "change") return [e.at, "change", e.area, e.check, e.from, e.to, pairs(e.cause), e.lasted_seconds ?? "", e.dismissed || ""];
+      if (e.kind === "start") {
+        const ups = (e.updates || []).map(u => `${u.what}${u.domain ? `:${u.domain}` : ""} ${u.from}>${u.to}`).join(", ");
+        const cause = [e.first_check_seconds != null ? `first_check_seconds=${e.first_check_seconds}` : "", ...Object.entries(e.after || {}).map(([k, v]) => `after_${k}=${v}`), ups ? `updates=${ups}` : ""].filter(Boolean).join("; ");
+        return [e.at, e.gap ? "gap" : "start", e.updates?.length ? "updates" : "restarts", "", e.reason || "", "", cause, e.down_seconds ?? "", ""];
+      }
+      if (e.kind === "update") return [e.at, "update", "updates", e.domain ? `${e.what}:${e.domain}` : e.what, e.from || "", e.to || "", "", "", ""];
+      return [e.at, "config", e.area, e.key, "", "", "", "", ""];
+    };
+    this.setExporter("checklog", this.t("clExpName"), ["clExpAt", "clExpKind", "clExpArea", "clExpCheck", "clExpFrom", "clExpTo", "clExpCause", "clExpLasted", "clExpDismissed"].map(k => this.t(k)), () => (this.checkLog?.entries || []).map(row));
   }
 
   bindCheckLog(root) {

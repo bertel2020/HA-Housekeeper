@@ -7676,9 +7676,11 @@ test("the History page: the row menu marks a change as a false alarm, which dims
   el.exportList("checklog", "csv");
   const [name, header, rows] = saved[0];
   assert.equal(name, "history");
-  assert.equal(header.length, 8);
-  assert.equal(rows.length, 3, "only changes, not the start or the gap");
-  assert.ok(rows.some(r => r[5].includes("gap_minutes=1461") && r[7] === "restart"));
+  assert.equal(header.length, 9);
+  assert.equal(rows.length, 4, "every line of the page: the changes and the gap");
+  assert.deepEqual(rows.map(r => r[1]).sort(), ["change", "change", "change", "gap"]);
+  assert.ok(rows.some(r => r[6].includes("gap_minutes=1461") && r[8] === "restart"));
+  assert.equal(rows.find(r => r[1] === "gap")[7], 2460, "the gap holds its downtime in seconds");
 });
 
 test("the History page without entries says what it keeps, and a failed read says so", () => {
