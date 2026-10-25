@@ -453,8 +453,30 @@ def check_log(
                     (_parse(changes[indexes[position + 1]]["at"]) - at).total_seconds()
                 )
     entries: list[dict[str, Any]] = []
+    runs = [i for i, e in enumerate(changes) if e["area"] == "backup" and e["check"] == "run"]
+    run_end: dict[
+        int, int
+    ] = {}  # a backup run: the change that started it -> the one that ended it
+    for position, index in enumerate(runs):
+        following = runs[position + 1] if position + 1 < len(runs) else None
+        if (
+            changes[index]["to"] == "running"
+            and following is not None
+            and changes[following]["from"] == "running"
+        ):
+            run_end[index] = following
+    ended = {end for begin, end in run_end.items() if _parse(changes[begin]["at"]) >= since}
     for index, event in enumerate(changes):
-        if _parse(event["at"]) < since:
+        if _parse(event["at"]) < since or index in ended:
+            continue
+        is_run = event["area"] == "backup" and event["check"] == "run"
+        if is_run and event["to"] == "running":  # start and end of one backup are one line
+            end = changes[run_end[index]] if index in run_end else None
+            entry = {"at": event["at"], "kind": "backup_run", "id": change_id(event)}
+            if end is not None:
+                entry["ended"] = end["at"]
+                entry["seconds"] = int((_parse(end["at"]) - _parse(event["at"])).total_seconds())
+            entries.append(entry)
             continue
         entry = {key: event[key] for key in ("at", "area", "check", "from", "to") if key in event}
         entry["kind"] = "change"

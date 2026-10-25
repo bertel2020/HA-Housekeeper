@@ -7698,6 +7698,18 @@ test("the History list can be cut to the time since the last restart", () => {
   assert.ok(html.includes("Integration newer") && html.includes("Home Assistant started") && !html.includes("Integration older"));
 });
 
+test("the History shows a backup run as one line with its span, or as running", () => {
+  const { el } = panel("en");
+  const log = { ...CHECK_LOG, entries: [
+    { at: "2026-10-25T11:30:00+00:00", kind: "backup_run", id: "a|backup|run" },
+    { at: "2026-10-25T11:22:00+00:00", kind: "backup_run", id: "b|backup|run", ended: "2026-10-25T11:24:00+00:00", seconds: 120 },
+  ] };
+  el.data = DATA; el.view = "checklog"; el.checkLog = log; el._clRequested = true;
+  const html = el.checkLogView();
+  assert.ok(html.includes("2 min") && html.includes("running since") && html.includes(">Backup</button>"));
+  assert.equal((html.match(/Backup started/g) || []).length, 0);
+});
+
 test("the History page without entries says what it keeps, and a failed read says so", () => {
   const { el } = panel("de");
   el._hass.callWS = async () => ({});

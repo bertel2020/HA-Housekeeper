@@ -298,3 +298,20 @@ async def test_a_start_line_counts_what_turned_bad_right_after_it(hass: HomeAssi
         e for e in log.check_log(t0 + timedelta(hours=4), 7)["entries"] if e["kind"] == "start"
     )
     assert start["after"] == {"problem": 1, "note": 1}
+
+
+async def test_start_and_end_of_a_backup_are_one_line(hass: HomeAssistant) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    log.observe_backup_run(False, t0)
+    log.observe_backup_run(True, t0 + timedelta(minutes=10))
+    log.observe_backup_run(False, t0 + timedelta(minutes=12))
+    log.observe_backup_run(True, t0 + timedelta(minutes=30))  # still running
+    lines = [
+        e for e in log.check_log(t0 + timedelta(hours=1), 7)["entries"] if e["kind"] != "start"
+    ]
+    assert [(e["kind"], e.get("seconds")) for e in reversed(lines)] == [
+        ("backup_run", 120),
+        ("backup_run", None),
+    ]
+    assert "ended" in lines[1] and "ended" not in lines[0]
