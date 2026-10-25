@@ -39,6 +39,7 @@ FLAP_WINDOW = timedelta(hours=3)  # this many changes of one check in this time 
 FLAP_CHANGES = 4
 GAP_SECONDS = 300  # a restart after at least this long without a heartbeat is a gap in the record
 CAUSE_KEYS = 8
+DISMISS_REASONS = ("backup_running", "restart", "maintenance", "test", "expected", "other")
 
 
 def _parse(value: Any) -> datetime | None:
@@ -100,6 +101,8 @@ class EventLog:
         self.levels: dict[str, str] = {}
         self.backup_since: str | None = None  # when the backup that runs now began
         self.log_since: str | None = None  # since when changes of checks are written down
+        # Changes the person marked as a false alarm: id ("at|area|check") -> reason.
+        self.dismissed: dict[str, str] = {}
 
     async def async_load(self) -> None:
         data = await self._store.async_load()
@@ -134,6 +137,11 @@ class EventLog:
                 for key, level in levels.items()
                 if isinstance(level, str) and level in CHECK_LEVELS
             }
+        dismissed = data.get("dismissed")
+        if isinstance(dismissed, dict):
+            self.dismissed = {
+                str(key): reason for key, reason in dismissed.items() if reason in DISMISS_REASONS
+            }
         if _parse(data.get("log_since")):
             self.log_since = data["log_since"]
         if _parse(data.get("backup_since")):
@@ -164,6 +172,7 @@ class EventLog:
             "levels": self.levels,
             "backup_since": self.backup_since,
             "log_since": self.log_since,
+            "dismissed": self.dismissed,
         }
 
     def _trim_sizes(self) -> None:
@@ -205,6 +214,8 @@ class EventLog:
         horizon = (now - timedelta(days=CHECK_DAYS)).isoformat()
         self.events = [e for e in self.events if e["kind"] != "check_change" or e["at"] >= horizon]
         self.record("check_change", now, **fields)
+        known = {change_id(e) for e in self.events if e["kind"] == "check_change"}
+        self.dismissed = {key: why for key, why in self.dismissed.items() if key in known}
 
     def observe_checks(self, area: str, checks: list[dict[str, Any]], now: datetime) -> None:
         """Write down the checks of one area whose level differs from the last time.
@@ -318,7 +329,24 @@ class EventLog:
         return None
 
     def check_log(self, now: datetime, days: int = 7, limit: int = LIST_LIMIT) -> dict[str, Any]:
-        return check_log(self.events, self.levels, now, days, limit, self.log_since)
+        return check_log(self.events, self.levels, now, days, limit, self.log_since, self.dismissed)
+
+    def mark(self, change: str, reason: str | None) -> bool:
+        """Mark a change as a false alarm (``reason``) or take the mark away (``None``)."""
+        if reason is not None and reason not in DISMISS_REASONS:
+            raise ValueError(reason)
+        if not any(e["kind"] == "check_change" and change_id(e) == change for e in self.events):
+            return False
+        if reason is None:
+            self.dismissed.pop(change, None)
+        else:
+            self.dismissed[change] = reason
+        self._save()
+        return True
+
+    def flapping(self, now: datetime) -> list[str]:
+        """The checks that changed at least ``FLAP_CHANGES`` times lately, false alarms not counted."""
+        return flapping(self.events, self.dismissed, now)
 
     def recent(self, limit: int = LIST_LIMIT) -> list[dict[str, Any]]:
         return list(reversed(self.events[-limit:]))
@@ -337,6 +365,21 @@ def _cause(item: dict[str, Any]) -> dict[str, Any]:
     return cause
 
 
+def change_id(event: dict[str, Any]) -> str:
+    return f"{event['at']}|{event['area']}|{event['check']}"
+
+
+def flapping(events: list[dict[str, Any]], dismissed: dict[str, str], now: datetime) -> list[str]:
+    """Checks with at least ``FLAP_CHANGES`` changes within ``FLAP_WINDOW`` up to now."""
+    counts: dict[str, int] = {}
+    for event in _changes(events):
+        if change_id(event) in dismissed or now - _parse(event["at"]) > FLAP_WINDOW:
+            continue
+        key = f"{event['area']}/{event['check']}"
+        counts[key] = counts.get(key, 0) + 1
+    return sorted(key for key, count in counts.items() if count >= FLAP_CHANGES)
+
+
 def _changes(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(
         (e for e in events if e["kind"] == "check_change" and _parse(e["at"])),
@@ -351,15 +394,18 @@ def check_log(
     days: int = 7,
     limit: int = LIST_LIMIT,
     log_since: str | None = None,
+    dismissed: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """The changes of the checks, the restarts and gaps, a strip per area and a summary."""
     changes = _changes(events)
+    dismissed = dismissed or {}
     since = now - timedelta(days=days)
     flaps: dict[int, int] = {}
     lasted: dict[int, int] = {}
     by_key: dict[str, list[int]] = {}
     for index, event in enumerate(changes):
-        by_key.setdefault(f"{event['area']}/{event['check']}", []).append(index)
+        if change_id(event) not in dismissed:  # a false alarm is no part of "flapping"
+            by_key.setdefault(f"{event['area']}/{event['check']}", []).append(index)
     for indexes in by_key.values():
         for position, index in enumerate(indexes):
             at = _parse(changes[index]["at"])
@@ -378,6 +424,9 @@ def check_log(
             continue
         entry = {key: event[key] for key in ("at", "area", "check", "from", "to") if key in event}
         entry["kind"] = "change"
+        entry["id"] = change_id(event)
+        if entry["id"] in dismissed:
+            entry["dismissed"] = dismissed[entry["id"]]
         if event.get("cause"):
             entry["cause"] = event["cause"]
         if index in flaps:
@@ -410,12 +459,18 @@ def check_log(
     problems = [
         e
         for e in shown
-        if e["to"] == "problem" and not (e["area"] == "backup" and e["check"] == "run")
+        if e["to"] == "problem"
+        and change_id(e) not in dismissed
+        and not (e["area"] == "backup" and e["check"] == "run")
     ]
     recurring = {}
     week = now - timedelta(days=7)
     for event in changes:
-        if event["to"] == "problem" and _parse(event["at"]) >= week:
+        if (
+            event["to"] == "problem"
+            and change_id(event) not in dismissed
+            and _parse(event["at"]) >= week
+        ):
             key = f"{event['area']}/{event['check']}"
             recurring[key] = recurring.get(key, 0) + 1
     return {

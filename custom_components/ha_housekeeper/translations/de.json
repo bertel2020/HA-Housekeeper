@@ -85,6 +85,10 @@
     "auto_pause_exhausted": {
       "title": "{title} seit {days} Tagen pausiert",
       "description": "Housekeeper hat {title} nach wiederholten Einrichtungsfehlern pausiert und es {days} Tage lang ohne Erfolg wieder versucht. Die Pause bleibt, bis du sie beendest. [Auto-Pause öffnen]({link})"
+    },
+    "check_flapping": {
+      "title": "Eine Prüfung wechselt ständig ihre Stufe",
+      "description": "{count} Prüfung(en) haben in wenigen Stunden mehrmals die Stufe gewechselt. Oft ist eine Regel zu scharf oder etwas startet dauernd neu. [Verlauf öffnen]({link}). Es wird nichts automatisch geändert."
     }
   },
   "entity": {
@@ -185,6 +189,9 @@
       },
       "hint_orphaned_statistics": {
         "name": "Reparaturhinweis: verwaiste Statistiken"
+      },
+      "hint_check_flapping": {
+        "name": "Reparaturhinweis: Prüfung wechselt ständig"
       }
     },
     "number": {

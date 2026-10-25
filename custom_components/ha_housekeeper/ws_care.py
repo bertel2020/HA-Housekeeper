@@ -18,6 +18,7 @@ from .battery_care import BatteryError, noted_types
 from .battery_kind import excluded
 from .const import DOMAIN
 from .db_health import growth
+from .events import DISMISS_REASONS
 from .exceptions import ACTIONS as EXCEPTION_ACTIONS
 from .exceptions import DAYS_MAX as EXCEPTION_DAYS_MAX
 from .exceptions import GRACE_MAX as VACATION_GRACE_MAX
@@ -33,6 +34,7 @@ from .goals import evaluate as evaluate_goals
 from .goals import measure as measure_goals
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
 from .inventory import InventoryScanner
+from .issues import async_sync_flapping_issue
 from .lifecycle import timeline
 from .maintenance import check_configuration, preflight_report
 from .marks import GRACE_DEFAULT, GRACE_MAX
@@ -218,6 +220,7 @@ async def websocket_exposure(
     {
         vol.Required("type"): f"{DOMAIN}/check_log",
         vol.Optional("days", default=7): vol.In((7, 30, 90)),
+        vol.Optional("limit", default=200): vol.All(int, vol.Range(min=1, max=5000)),
     }
 )
 @websocket_api.async_response
@@ -229,8 +232,32 @@ async def websocket_check_log(
     scanner: InventoryScanner,
 ) -> None:
     """The changes of the checks over time; reads Housekeeper's own record only."""
-    result = scanner.events.check_log(datetime.now(UTC), msg["days"])
+    result = scanner.events.check_log(datetime.now(UTC), msg["days"], msg["limit"])
     connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/check_log_mark",
+        vol.Required("change"): vol.All(str, vol.Length(max=200)),
+        vol.Required("reason"): vol.Any(None, vol.In(DISMISS_REASONS)),
+    }
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_check_log_mark(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Mark a change in the log as a false alarm, or take the mark away."""
+    if not scanner.events.mark(msg["change"], msg["reason"]):
+        connection.send_error(msg["id"], "check_log_unknown", "That change is no longer in the log")
+        return
+    async_sync_flapping_issue(hass, scanner.events.flapping(datetime.now(UTC)))
+    connection.send_result(msg["id"], _versioned(scanner.events.check_log(datetime.now(UTC), 7)))
 
 
 @websocket_api.require_admin
@@ -1103,6 +1130,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_check_config)
     websocket_api.async_register_command(hass, websocket_backup_health)
     websocket_api.async_register_command(hass, websocket_check_log)
+    websocket_api.async_register_command(hass, websocket_check_log_mark)
     websocket_api.async_register_command(hass, websocket_policies)
     websocket_api.async_register_command(hass, websocket_set_policy)
     websocket_api.async_register_command(hass, websocket_set_policy_prefix)

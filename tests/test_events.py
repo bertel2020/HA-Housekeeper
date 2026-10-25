@@ -190,3 +190,32 @@ async def test_a_backup_run_is_logged_with_its_duration_and_flapping_is_counted(
     assert result["summary"]["flapping"] == 1
     assert any(e.get("flaps") == 4 for e in result["entries"])
     assert {s["area"] for s in result["strips"]} >= {"dienste"}
+
+
+async def test_a_false_alarm_leaves_the_counts_and_the_hint_and_the_mark_can_be_taken_back(
+    hass: HomeAssistant,
+) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    for step in range(4):
+        up = step % 2 == 0
+        log.record_change(
+            "backup",
+            "last_run",
+            "ok" if up else "problem",
+            "problem" if up else "ok",
+            t0 + timedelta(minutes=step * 10),
+        )
+    now = t0 + timedelta(hours=1)
+    assert log.flapping(now) == ["backup/last_run"]
+    first = log.check_log(now, 7)["entries"][-1]["id"]
+    assert log.mark(first, "restart") is True
+    assert log.flapping(now) == []  # one change less than the limit
+    result = log.check_log(now, 7)
+    assert result["summary"]["problems"] == 1
+    assert any(e.get("dismissed") == "restart" for e in result["entries"])
+    assert log.mark("nope|x|y", "test") is False
+    log.mark(first, None)
+    assert log.flapping(now) == ["backup/last_run"]
+    with pytest.raises(ValueError):
+        log.mark(first, "because")

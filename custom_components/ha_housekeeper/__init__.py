@@ -56,7 +56,7 @@ from .const import (
 )
 from .db_health import sample_size
 from .inventory import InventoryScanner
-from .issues import async_clear_issues
+from .issues import async_clear_issues, async_sync_flapping_issue
 from .maintenance import recorder_costs
 from .outage_levels import thresholds_from_options
 from .queries import REFRESH_AGE, REFRESH_TICK, next_reply
@@ -274,6 +274,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
             return
         try:
             await backup_health(hass, scanner.attest, scanner.journal.plans, scanner.events)
+            async_sync_flapping_issue(hass, scanner.events.flapping(datetime.now(UTC)))
         except Exception:  # noqa: BLE001 - a check that cannot be read is not worth a message here
             _LOGGER.debug("The central log could not read the backup check", exc_info=True)
 

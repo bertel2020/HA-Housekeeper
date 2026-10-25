@@ -24,6 +24,7 @@ HINT_KEYS = (
     "database_damaged",
     "backup_problem",
     "orphaned_statistics",
+    "check_flapping",
 )
 DEFAULT_ON = frozenset({"broken_automations", "scan_health", "database_damaged", "backup_problem"})
 # Shown by every version before the switches; an installation that already ran keeps them.

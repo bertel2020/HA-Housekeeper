@@ -85,6 +85,10 @@
     "auto_pause_exhausted": {
       "title": "{title} paused for {days} days",
       "description": "Housekeeper paused {title} after repeated failed setups and has tried it again for {days} days without success. It stays paused until you end the pause. [Open Auto-pause]({link})"
+    },
+    "check_flapping": {
+      "title": "A check keeps changing its level",
+      "description": "{count} check(s) changed their level several times in a few hours. That often means a rule is too sharp or something restarts all the time. [Open the history]({link}). Nothing is changed automatically."
     }
   },
   "entity": {
@@ -185,6 +189,9 @@
       },
       "hint_orphaned_statistics": {
         "name": "Repair hint: orphaned statistics"
+      },
+      "hint_check_flapping": {
+        "name": "Repair hint: a check keeps changing"
       }
     },
     "number": {
