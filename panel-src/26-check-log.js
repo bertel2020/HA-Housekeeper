@@ -26,6 +26,7 @@ Object.assign(TEXT.de, {
   clColEvent: "Ereignis", clColTime: "Zeit", clColArea: "Bereich", clColChange: "Wechsel", clAllAreas: "Alle Bereiche", clAllLevels: "Alle Stufen", clArea_updates: "Updates", clArea_restarts: "Neustarts", clOpenUpdates: "Zu den Updates", clOpenIntegration: "Zur Integration", clAfterStart: "kurz nach einem Neustart", clAfterUpdate: "kurz nach einem Update", clStripFilter: "Nur {area} in der Liste zeigen",
   clUpdate_core: "Home Assistant aktualisiert", clUpdate_os: "Betriebssystem aktualisiert", clUpdate_supervisor: "Supervisor aktualisiert", clUpdate_integration: "Integration {domain} aktualisiert", clUpdateText: "Version {from} auf {to}",
   clStart: "Home Assistant gestartet", clStartUnclean: "Home Assistant gestartet, nicht sauber gestoppt", clGap: "Keine Daten", clGapText: "Home Assistant war {span} nicht erreichbar, in dieser Zeit lief keine Prüfung",
+  clWhy_restart: "Ordentlich heruntergefahren und wieder gestartet", clWhy_update: "Nach einem Update",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
   clMarkAs_backup_running: "Fehlalarm: Backup lief gerade", clMarkAs_restart: "Fehlalarm: Neustart", clMarkAs_maintenance: "Fehlalarm: Wartung", clMarkAs_test: "Fehlalarm: Test", clMarkAs_expected: "Fehlalarm: ist so gewollt", clMarkAs_other: "Fehlalarm: anderer Grund",
   clUnmark: "Markierung entfernen", clOpenCheck: "Prüfung öffnen", clOnlyCheck: "Nur diese Prüfung zeigen", clOnlyCheckOn: "Nur: {what}", clOnlyCheckOff: "Alle Prüfungen zeigen",
@@ -55,6 +56,7 @@ Object.assign(TEXT.en, {
   clColEvent: "Event", clColTime: "Time", clColArea: "Area", clColChange: "Change", clAllAreas: "All areas", clAllLevels: "All levels", clArea_updates: "Updates", clArea_restarts: "Restarts", clOpenUpdates: "Go to the updates", clOpenIntegration: "Go to the integration", clAfterStart: "shortly after a restart", clAfterUpdate: "shortly after an update", clStripFilter: "Show only {area} in the list",
   clUpdate_core: "Home Assistant updated", clUpdate_os: "Operating system updated", clUpdate_supervisor: "Supervisor updated", clUpdate_integration: "Integration {domain} updated", clUpdateText: "Version {from} to {to}",
   clStart: "Home Assistant started", clStartUnclean: "Home Assistant started, not stopped cleanly", clGap: "No data", clGapText: "Home Assistant was unreachable for {span}, no check ran in that time",
+  clWhy_restart: "Shut down cleanly and started again", clWhy_update: "After an update",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
   clMarkAs_backup_running: "False alarm: a backup was running", clMarkAs_restart: "False alarm: restart", clMarkAs_maintenance: "False alarm: maintenance", clMarkAs_test: "False alarm: test", clMarkAs_expected: "False alarm: as intended", clMarkAs_other: "False alarm: other reason",
   clUnmark: "Remove the mark", clOpenCheck: "Open the check", clOnlyCheck: "Show only this check", clOnlyCheckOn: "Only: {what}", clOnlyCheckOff: "Show all checks",
@@ -122,6 +124,12 @@ class CheckLogMixin {
 
   clUpdateTitle(e) { return this.t(`clUpdate_${e.what}`, { domain: e.domain || "" }); }
 
+  // What a start line says below its title: the reason, later the downtime and what followed.
+  clStartSub(e) {
+    if (e.gap) return this.clText(e);
+    return [e.reason === "crash" ? "" : this.t(`clWhy_${e.reason || "restart"}`)].filter(Boolean).join(" · ");
+  }
+
   clText(e) {
     if (e.kind === "update") return this.t("clUpdateText", { from: e.from || "?", to: e.to || "?" });
     if (e.kind === "start") return e.gap ? this.t("clGapText", { span: this.clHours(e.down_seconds || 0) }) : this.t(e.unclean ? "clStartUnclean" : "clStart");
@@ -159,7 +167,7 @@ class CheckLogMixin {
     return log.entries.map((e, i) => {
       const row = { e, key: String(i), rank: 0 };
       if (e.kind === "start") {
-        Object.assign(row, { area: "restarts", title: this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart"), sub: e.gap ? this.clText(e) : "", tone: e.unclean ? "warn" : "mute", icon: e.gap ? "mdi:timer-sand-empty" : "mdi:restart", rank: e.unclean ? 2 : 0 });
+        Object.assign(row, { area: "restarts", title: this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart"), sub: this.clStartSub(e), tone: e.unclean ? "warn" : "mute", icon: e.gap ? "mdi:timer-sand-empty" : "mdi:restart", rank: e.unclean ? 2 : 0 });
       } else if (e.kind === "update") {
         const link = e.what === "integration" ? (this.findObject(`integration:${e.domain}`) ? `data-object="integration:${this.esc(e.domain)}"` : "") : 'data-jump="maintenance" data-jump-tab="updates"';
         Object.assign(row, { area: "updates", title: this.clUpdateTitle(e), sub: this.clText(e), tone: "mute", icon: "mdi:update", link });

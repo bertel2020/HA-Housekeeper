@@ -246,3 +246,16 @@ async def test_an_edited_automation_is_a_line_of_the_log(hass: HomeAssistant) ->
     }
     lines = [e for e in log.check_log(now, 7, config=config)["entries"] if e["kind"] == "config"]
     assert [e["key"] for e in lines] == ["automation.a"]
+
+
+async def test_a_start_says_why_it_happened(hass: HomeAssistant) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    log.record_start(t0)
+    log.mark_clean_stop()
+    log.observe("2026.10.0", {}, t0 + timedelta(hours=1), {})
+    log.observe("2026.10.1", {}, t0 + timedelta(hours=2), {})
+    log.record_start(t0 + timedelta(hours=2, minutes=1))
+    log.record_start(t0 + timedelta(hours=5))
+    starts = [e for e in log.check_log(t0 + timedelta(hours=6), 7)["entries"] if e["kind"] == "start"]
+    assert [e["reason"] for e in reversed(starts)] == ["restart", "update", "crash"]

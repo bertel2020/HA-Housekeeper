@@ -45,6 +45,7 @@ FLAP_WINDOW = timedelta(hours=3)  # this many changes of one check in this time 
 FLAP_CHANGES = 4
 GAP_SECONDS = 300  # a restart after at least this long without a heartbeat is a gap in the record
 CAUSE_KEYS = 8
+START_NEAR = timedelta(minutes=10)  # an update this close to a start is the reason for it; a change this soon follows it
 DISMISS_REASONS = ("backup_running", "restart", "maintenance", "test", "expected", "other")
 
 
@@ -450,36 +451,44 @@ def check_log(
             entry["lasted_seconds"] = lasted[index]
         entries.append(entry)
     gaps = []
+    updates = []
+    for event in events:
+        what = UPDATE_KINDS.get(event["kind"])
+        moment = _parse(event.get("at"))
+        if what is None or moment is None or moment < since:
+            continue
+        updates.append(
+            (
+                moment,
+                {
+                    "at": event["at"],
+                    "kind": "update",
+                    "what": what,
+                    "from": event.get("from"),
+                    "to": event.get("to"),
+                    **({"domain": event["domain"]} if event.get("domain") else {}),
+                },
+            )
+        )
     for event in events:
         moment = _parse(event.get("at"))
         if event["kind"] != "start" or moment is None or moment < since:
             continue
         down = int(event.get("down_seconds") or 0)
+        near = [u for at, u in updates if abs(at - moment) <= START_NEAR]
         entries.append(
             {
                 "at": event["at"],
                 "kind": "start",
                 "down_seconds": down,
                 "gap": down >= GAP_SECONDS,
+                "reason": "update" if near else "crash" if event.get("unclean") else "restart",
                 **({"unclean": True} if event.get("unclean") else {}),
             }
         )
         if down >= GAP_SECONDS:
             gaps.append((moment - timedelta(seconds=down), moment))
-    for event in events:
-        what = UPDATE_KINDS.get(event["kind"])
-        if what is None or (_parse(event.get("at")) or since) < since:
-            continue
-        entries.append(
-            {
-                "at": event["at"],
-                "kind": "update",
-                "what": what,
-                "from": event.get("from"),
-                "to": event.get("to"),
-                **({"domain": event["domain"]} if event.get("domain") else {}),
-            }
-        )
+    entries.extend(u for _, u in updates)
     for key, item in (config or {}).items():  # when an automation or script was last edited
         moment = _parse(item.get("at"))
         if moment is not None and moment >= since:
