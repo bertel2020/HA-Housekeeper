@@ -7683,6 +7683,21 @@ test("the History page: the row menu marks a change as a false alarm, which dims
   assert.equal(rows.find(r => r[1] === "gap")[7], 2460, "the gap holds its downtime in seconds");
 });
 
+test("the History list can be cut to the time since the last restart", () => {
+  const { el } = panel("en");
+  const now = Date.now(), iso = ms => new Date(now - ms).toISOString();
+  const log = { ...CHECK_LOG, entries: [
+    { at: iso(20 * 60e3), kind: "change", area: "auto_pause", check: "paused", from: "ok", to: "note", cause: { domain: "newer" } },
+    { at: iso(30 * 60e3), kind: "start", down_seconds: 20, gap: false, reason: "restart" },
+    { at: iso(40 * 60e3), kind: "change", area: "auto_pause", check: "paused", from: "ok", to: "note", cause: { domain: "older" } },
+  ] };
+  el.data = DATA; el.view = "checklog"; el.checkLog = log; el._clRequested = true;
+  el.checkLogView();
+  el.lv.checklog.f = { since: "start" };
+  const html = el.checkLogView();
+  assert.ok(html.includes("Integration newer") && html.includes("Home Assistant started") && !html.includes("Integration older"));
+});
+
 test("the History page without entries says what it keeps, and a failed read says so", () => {
   const { el } = panel("de");
   el._hass.callWS = async () => ({});

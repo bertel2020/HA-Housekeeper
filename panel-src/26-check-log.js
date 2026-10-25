@@ -9,7 +9,7 @@ const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: 
 Object.assign(TEXT.de, {
   checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter, dazu Neustarts, Updates und Änderungen an Automationen. Gespeichert werden nur Zeiten, Zahlen und Kennungen, nie Texte.",
   clDays_7: "7 Tage", clDays_30: "30 Tage", clDays_90: "90 Tage",
-  clToday: "Heute", clYesterday: "Gestern", clTileRestarts: "Neustarts", clTileRestartsSub: "ohne Update", clTileUpdates: "Updates", clTileUpdatesSub: "mit und ohne Neustart", clTileChanges: "Prüfungswechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
+  clAllTimes: "Ganzer Zeitraum", clSince_hour: "Letzte Stunde", clSince_today: "Heute", clSince_start: "Seit dem letzten Neustart", clToday: "Heute", clYesterday: "Gestern", clTileRestarts: "Neustarts", clTileRestartsSub: "ohne Update", clTileUpdates: "Updates", clTileUpdatesSub: "mit und ohne Neustart", clTileChanges: "Prüfungswechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
   clTileChangesSub: "in {days} Tagen", clTileProblemsSub: "Stufe „Problem“", clTileFlappingSub: "Prüfungen mit häufigem Wechsel", clTileLongestSub: "bis zur Rückkehr",
   clRecurring: "{what} wurde diese Woche {n}-mal zum Problem.", clRecurringMany: "{n} Prüfungen wurden diese Woche mindestens 3-mal zum Problem, zuletzt: {what}.", clRecurringOpen: "Zu den Zuverlässigkeits-Seiten", clFlapText_1: "1 Prüfung wechselt auffällig oft (mindestens 4 Wechsel in 3 Stunden). Ist das ein Fehlalarm, markiere die Zeilen im Menü.", clFlapText_n: "{n} Prüfungen wechseln auffällig oft (mindestens 4 Wechsel in 3 Stunden). Sind das Fehlalarme, markiere die Zeilen im Menü.", clFlapOnly: "Nur diese zeigen", clFlapAll: "Alle zeigen",
   clStrips: "Zustand je Bereich", clStripsHint: "Das Schlimmste aller Prüfungen eines Bereichs, über {days} Tage. Schraffiert: keine Daten (Home Assistant war aus oder der Verlauf noch nicht eingerichtet).",
@@ -39,7 +39,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it, plus restarts, updates and edits of automations. Only times, numbers and identifiers are kept, never texts.",
   clDays_7: "7 days", clDays_30: "30 days", clDays_90: "90 days",
-  clToday: "Today", clYesterday: "Yesterday", clTileRestarts: "Restarts", clTileRestartsSub: "without an update", clTileUpdates: "Updates", clTileUpdatesSub: "with or without a restart", clTileChanges: "Check changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
+  clAllTimes: "Whole period", clSince_hour: "Last hour", clSince_today: "Today", clSince_start: "Since the last restart", clToday: "Today", clYesterday: "Yesterday", clTileRestarts: "Restarts", clTileRestartsSub: "without an update", clTileUpdates: "Updates", clTileUpdatesSub: "with or without a restart", clTileChanges: "Check changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
   clTileChangesSub: "in {days} days", clTileProblemsSub: "level “Problem”", clTileFlappingSub: "checks that change often", clTileLongestSub: "until it was back",
   clRecurring: "{what} turned into a problem {n} times this week.", clRecurringMany: "{n} checks turned into a problem at least 3 times this week, latest: {what}.", clRecurringOpen: "To the reliability pages", clFlapText_1: "1 check changes level unusually often (at least 4 changes in 3 hours). If that is a false alarm, mark the rows in the menu.", clFlapText_n: "{n} checks change level unusually often (at least 4 changes in 3 hours). If those are false alarms, mark the rows in the menu.", clFlapOnly: "Show only these", clFlapAll: "Show all",
   clStrips: "State per area", clStripsHint: "The worst of all checks of an area, over {days} days. Hatched: no data (Home Assistant was off or the history was not yet running).",
@@ -250,14 +250,20 @@ class CheckLogMixin {
     ];
     const areas = [...new Set(rows.map(r => r.area))].sort((a, b) => this.clAreaName(a).localeCompare(this.clAreaName(b), this.lang));
     const levels = ["attention", "problem", "note", "ok"];
+    // Time filter inside the window: the last hour, today, since the newest start (the page keeps its own days window).
+    const lastStart = log.entries.filter(e => e.kind === "start").map(e => Date.parse(e.at)).sort((a, b) => b - a)[0];
+    const midnight = new Date().setHours(0, 0, 0, 0);
+    const since = { hour: Date.now() - 36e5, today: midnight, start: lastStart };
+    const sinceOptions = ["hour", "today", ...(lastStart ? ["start"] : [])];
     const bar = this.listBar(id, { table: true, dense: true, sorts, filters: [
       { name: "area", all: this.t("clAllAreas"), options: areas.map(a => [a, this.clAreaName(a)]) },
       { name: "level", all: this.t("clAllLevels"), options: levels.map(l => [l, l === "attention" ? this.t("clOnlyProblems") : this.t(`clLevel_${l}`)]) },
+      { name: "since", all: this.t("clAllTimes"), options: sinceOptions.map(k => [k, this.t(`clSince_${k}`)]) },
     ] });
     const attention = e => e.kind === "change" && (e.to === "problem" || e.to === "note");
     const refined = this.refine(id, rows, {
       text: r => `${r.areaName} ${r.title} ${r.sub}`,
-      filters: { area: (r, v) => r.area === v, level: (r, v) => (v === "attention" ? attention(r.e) : r.e.kind === "change" && r.e.to === v) },
+      filters: { area: (r, v) => r.area === v, level: (r, v) => (v === "attention" ? attention(r.e) : r.e.kind === "change" && r.e.to === v), since: (r, v) => since[v] != null && Date.parse(r.e.at) >= since[v] },
       sorts, tie: r => r.e.at + r.key,
     });
     const pg = this.paginate(id, refined);
