@@ -45,7 +45,9 @@ FLAP_WINDOW = timedelta(hours=3)  # this many changes of one check in this time 
 FLAP_CHANGES = 4
 GAP_SECONDS = 300  # a restart after at least this long without a heartbeat is a gap in the record
 CAUSE_KEYS = 8
-START_NEAR = timedelta(minutes=10)  # an update this close to a start is the reason for it; a change this soon follows it
+START_NEAR = timedelta(
+    minutes=10
+)  # an update this close to a start is the reason for it; a change this soon follows it
 DISMISS_REASONS = ("backup_running", "restart", "maintenance", "test", "expected", "other")
 
 
@@ -566,7 +568,9 @@ def check_log(
             ),
             "restarts": sum(1 for e in entries if e["kind"] == "start" and not e.get("updates")),
             "updates": sum(
-                1 for e in entries if e["kind"] == "update" or (e["kind"] == "start" and e.get("updates"))
+                1
+                for e in entries
+                if e["kind"] == "update" or (e["kind"] == "start" and e.get("updates"))
             ),
             "longest_problem_seconds": max(
                 (

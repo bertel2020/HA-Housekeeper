@@ -9,7 +9,7 @@ const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: 
 Object.assign(TEXT.de, {
   checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter, dazu Neustarts, Updates und Änderungen an Automationen. Gespeichert werden nur Zeiten, Zahlen und Kennungen, nie Texte.",
   clDays_7: "7 Tage", clDays_30: "30 Tage", clDays_90: "90 Tage",
-  clTileRestarts: "Neustarts", clTileRestartsSub: "ohne Update", clTileUpdates: "Updates", clTileUpdatesSub: "mit und ohne Neustart", clTileChanges: "Prüfungswechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
+  clToday: "Heute", clYesterday: "Gestern", clTileRestarts: "Neustarts", clTileRestartsSub: "ohne Update", clTileUpdates: "Updates", clTileUpdatesSub: "mit und ohne Neustart", clTileChanges: "Prüfungswechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
   clTileChangesSub: "in {days} Tagen", clTileProblemsSub: "Stufe „Problem“", clTileFlappingSub: "Prüfungen mit häufigem Wechsel", clTileLongestSub: "bis zur Rückkehr",
   clRecurring: "{what} wurde diese Woche {n}-mal zum Problem.", clRecurringMany: "{n} Prüfungen wurden diese Woche mindestens 3-mal zum Problem, zuletzt: {what}.", clRecurringOpen: "Zu den Zuverlässigkeits-Seiten", clFlapText_1: "1 Prüfung wechselt auffällig oft (mindestens 4 Wechsel in 3 Stunden). Ist das ein Fehlalarm, markiere die Zeilen im Menü.", clFlapText_n: "{n} Prüfungen wechseln auffällig oft (mindestens 4 Wechsel in 3 Stunden). Sind das Fehlalarme, markiere die Zeilen im Menü.", clFlapOnly: "Nur diese zeigen", clFlapAll: "Alle zeigen",
   clStrips: "Zustand je Bereich", clStripsHint: "Das Schlimmste aller Prüfungen eines Bereichs, über {days} Tage. Schraffiert: keine Daten (Home Assistant war aus oder der Verlauf noch nicht eingerichtet).",
@@ -39,7 +39,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it, plus restarts, updates and edits of automations. Only times, numbers and identifiers are kept, never texts.",
   clDays_7: "7 days", clDays_30: "30 days", clDays_90: "90 days",
-  clTileRestarts: "Restarts", clTileRestartsSub: "without an update", clTileUpdates: "Updates", clTileUpdatesSub: "with or without a restart", clTileChanges: "Check changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
+  clToday: "Today", clYesterday: "Yesterday", clTileRestarts: "Restarts", clTileRestartsSub: "without an update", clTileUpdates: "Updates", clTileUpdatesSub: "with or without a restart", clTileChanges: "Check changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
   clTileChangesSub: "in {days} days", clTileProblemsSub: "level “Problem”", clTileFlappingSub: "checks that change often", clTileLongestSub: "until it was back",
   clRecurring: "{what} turned into a problem {n} times this week.", clRecurringMany: "{n} checks turned into a problem at least 3 times this week, latest: {what}.", clRecurringOpen: "To the reliability pages", clFlapText_1: "1 check changes level unusually often (at least 4 changes in 3 hours). If that is a false alarm, mark the rows in the menu.", clFlapText_n: "{n} checks change level unusually often (at least 4 changes in 3 hours). If those are false alarms, mark the rows in the menu.", clFlapOnly: "Show only these", clFlapAll: "Show all",
   clStrips: "State per area", clStripsHint: "The worst of all checks of an area, over {days} days. Hatched: no data (Home Assistant was off or the history was not yet running).",
@@ -231,6 +231,13 @@ class CheckLogMixin {
     return `<span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.t(`clReason_${e.dismissed}`) })}</span>` : ""}${pills}</span>`;
   }
 
+  clDayName(iso) {
+    const day = new Date(iso), today = new Date(), ago = Math.round((new Date(today.getFullYear(), today.getMonth(), today.getDate()) - new Date(day.getFullYear(), day.getMonth(), day.getDate())) / 864e5);
+    if (ago === 0) return this.t("clToday");
+    if (ago === 1) return this.t("clYesterday");
+    return new Intl.DateTimeFormat(this.lang, { weekday: "long", day: "numeric", month: "long", year: day.getFullYear() === today.getFullYear() ? undefined : "numeric" }).format(day);
+  }
+
   // The list of the page: the standard table with search, filters, sorting and pages.
   clList(log, { flap }) {
     const id = "checklog";
@@ -268,7 +275,14 @@ class CheckLogMixin {
     const empty = !log.entries.length
       ? `<div class="emptymsg mute"><ha-icon icon="mdi:history"></ha-icon><strong>${this.t("clEmpty")}</strong>${this.t("clEmptyNext", { days: log.retention_days, max: this.formatNumber(log.max_events) })}</div>`
       : `<div class="emptymsg">${this.noMatches(id)}</div>`;
-    const table = refined.length ? this.listTable(id, columns, pg.rows, { cls: "cl", rowAttrs: r => `class="static${r.e.dismissed ? " cldim" : ""}"${tone(r)}` }) : empty;
+    // Under the time sort a heading row opens each day: today, yesterday, then the date.
+    const dayOf = r => new Date(r.e.at).toDateString(), grouped = this.lv[id].sort === "time";
+    const dayRow = (r, cols) => {
+      const i = pg.rows.indexOf(r);
+      if (!grouped || (i > 0 && dayOf(pg.rows[i - 1]) === dayOf(r))) return "";
+      return `<tr class="static daygroup"><td colspan="${cols}">${this.esc(this.clDayName(r.e.at))}</td></tr>`;
+    };
+    const table = refined.length ? this.listTable(id, columns, pg.rows, { cls: "cl", before: dayRow, rowAttrs: r => `class="static${r.e.dismissed ? " cldim" : ""}"${tone(r)}` }) : empty;
     const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}</small></div>`;
     return `<section class="panel">${note}${bar}${table}${pg.footer}${foot}</section>`;
   }

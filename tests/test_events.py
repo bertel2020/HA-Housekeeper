@@ -257,12 +257,16 @@ async def test_a_start_says_why_it_happened(hass: HomeAssistant) -> None:
     log.observe("2026.10.1", {}, t0 + timedelta(hours=2), {})
     log.record_start(t0 + timedelta(hours=2, minutes=1))
     log.record_start(t0 + timedelta(hours=5))
-    starts = [e for e in log.check_log(t0 + timedelta(hours=6), 7)["entries"] if e["kind"] == "start"]
+    starts = [
+        e for e in log.check_log(t0 + timedelta(hours=6), 7)["entries"] if e["kind"] == "start"
+    ]
     assert [e["reason"] for e in reversed(starts)] == ["restart", "update", "crash"]
     merged = starts[1]
     assert [(u["what"], u["to"]) for u in merged["updates"]] == [("core", "2026.10.1")]
     entries = log.check_log(t0 + timedelta(hours=6), 7)["entries"]
-    assert [e for e in entries if e["kind"] == "update"] == []  # the update is part of the start line
+    assert [
+        e for e in entries if e["kind"] == "update"
+    ] == []  # the update is part of the start line
     summary = log.check_log(t0 + timedelta(hours=6), 7)["summary"]
     assert (summary["restarts"], summary["updates"]) == (2, 1)
 
@@ -273,7 +277,9 @@ async def test_a_start_line_holds_when_the_first_check_looked(hass: HomeAssistan
     log.record_start(t0)
     log.observe_checks("scan", [{"id": "a", "level": "ok"}], t0 + timedelta(seconds=45))
     log.observe_checks("scan", [{"id": "a", "level": "ok"}], t0 + timedelta(seconds=90))
-    start = next(e for e in log.check_log(t0 + timedelta(hours=1), 7)["entries"] if e["kind"] == "start")
+    start = next(
+        e for e in log.check_log(t0 + timedelta(hours=1), 7)["entries"] if e["kind"] == "start"
+    )
     assert start["first_check_seconds"] == 45
 
 
@@ -288,5 +294,7 @@ async def test_a_start_line_counts_what_turned_bad_right_after_it(hass: HomeAssi
         t0 + timedelta(hours=1, minutes=2),
     )
     log.observe_checks("scan", [{"id": "a", "level": "ok"}], t0 + timedelta(hours=3))
-    start = next(e for e in log.check_log(t0 + timedelta(hours=4), 7)["entries"] if e["kind"] == "start")
+    start = next(
+        e for e in log.check_log(t0 + timedelta(hours=4), 7)["entries"] if e["kind"] == "start"
+    )
     assert start["after"] == {"problem": 1, "note": 1}

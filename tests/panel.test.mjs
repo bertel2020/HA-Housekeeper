@@ -7638,6 +7638,21 @@ test("the History page shows the strips, the changes with their causes and gaps,
   assert.ok(el.checkLogView().includes(el.t("noMatches")));
 });
 
+test("the History start lines say why, how long, what followed; days are headings; tiles filter by type", () => {
+  const { el } = panel("en");
+  const log = { ...CHECK_LOG, summary: { ...CHECK_LOG.summary, restarts: 1, updates: 1 }, entries: [
+    { at: "2026-10-25T04:00:00+00:00", kind: "start", down_seconds: 130, gap: false, reason: "update", first_check_seconds: 45, after: { problem: 2, note: 1 }, updates: [{ at: "2026-10-25T03:59:00+00:00", kind: "update", what: "core", from: "2026.10.3", to: "2026.10.4" }] },
+    { at: "2026-10-24T10:00:00+00:00", kind: "start", down_seconds: 20, gap: false, reason: "restart" },
+    { at: "2026-10-24T09:00:00+00:00", kind: "start", down_seconds: 2400, gap: true, reason: "restart" },
+  ] };
+  el.data = DATA; el.view = "checklog"; el.checkLog = log; el._clRequested = true;
+  const html = el.checkLogView();
+  assert.ok(html.includes("Home Assistant updated and restarted") && html.includes("Version 2026.10.3 to 2026.10.4") && html.includes("was off for 2 min 10 s") && html.includes("first check after 45 s") && html.includes("afterwards: 2× Problem, 1× Note"));
+  assert.ok(html.includes("Shut down cleanly and started again") && html.includes("Unreachable from"));
+  assert.equal((html.match(/class="static daygroup"/g) || []).length, 2, "one heading per day");
+  assert.ok(html.includes('data-lf-set="checklog|area|updates"') && html.includes('data-lf-set="checklog|area|restarts"'));
+});
+
 test("the History page: the row menu marks a change as a false alarm, which dims it, and the export holds the numbers", async () => {
   const { el } = panel("en");
   const calls = [];

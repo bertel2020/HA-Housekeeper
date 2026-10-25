@@ -269,8 +269,8 @@ class ListsMixin {
   }
 
   // A sortable table for a list built with lvState/refine: header buttons set sort and direction, the phone shows cards.
-  // columns: [{ key, label, cell(item) -> html, sortable, dir, narrow, allBox(rows) }]; narrow is a checkbox column with a fixed small width; allBox puts a box that ticks the page in its head; rowAttrs(item) adds attributes to the row.
-  listTable(id, columns, rows, { rowAttrs = () => "", cls = "", after = () => "" } = {}) {
+  // columns: [{ key, label, cell(item) -> html, sortable, dir, narrow, allBox(rows) }]; narrow is a checkbox column with a fixed small width; allBox puts a box that ticks the page in its head; rowAttrs(item) adds attributes to the row; before(item, columnCount) puts a row (a group heading) in front of it, after(item) one behind it.
+  listTable(id, columns, rows, { rowAttrs = () => "", cls = "", after = () => "", before = () => "" } = {}) {
     const st = this.lv[id];
     columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
@@ -280,7 +280,7 @@ class ListsMixin {
     }).join("");
     const body = rows.map(item => {
       const attrs = rowAttrs(item);
-      return `<tr ${attrs}>${columns.map((c, i) => `<td${c.narrow ? ' class="selcol"' : ""}${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("")}</tr>${after(item)}`;
+      return `${before(item, columns.length)}<tr ${attrs}>${columns.map((c, i) => `<td${c.narrow ? ' class="selcol"' : ""}${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("")}</tr>${after(item)}`;
     }).join("");
     return `<div class="${["tablewrap", "lt", cls, this.isDenseList(id) ? "dense-list" : ""].filter(Boolean).join(" ")}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
