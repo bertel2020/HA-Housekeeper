@@ -24,3 +24,29 @@ def test_a_failed_setup_is_a_problem_and_a_retry_a_hint() -> None:
         "entries": 2,
     }
     assert service_checks({"a": "setup_retry", "b": "setup_error"})[0]["level"] == "problem"
+
+
+def test_goals_become_checks_only_when_met_or_missed_and_a_scan_that_needs_repair_is_a_problem() -> (
+    None
+):
+    from custom_components.ha_housekeeper.system_checks import goal_checks, scan_check
+
+    goals = {
+        "goals": [
+            {"id": "a", "state": "met", "value": 0, "limit": 0},
+            {"id": "b", "state": "missed", "value": 7, "limit": 3},
+            {"id": "c", "state": "unknown", "value": None, "limit": 3},
+            {"id": "d", "state": "off", "value": 1, "limit": 3},
+        ]
+    }
+    levels = {c["id"]: c["level"] for c in goal_checks(goals)}
+    assert levels == {"a": "ok", "b": "note"}
+    assert scan_check({"state": "ok"})[0]["level"] == "ok"
+    assert (
+        scan_check({"state": "failed", "needs_repair": False, "consecutive_failures": 1})[0][
+            "level"
+        ]
+        == "note"
+    )
+    assert scan_check({"state": "failed", "needs_repair": True})[0]["level"] == "problem"
+    assert scan_check({"state": "preliminary"}) == []

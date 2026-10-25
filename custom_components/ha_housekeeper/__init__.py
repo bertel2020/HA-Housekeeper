@@ -66,7 +66,7 @@ from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, retryable_gaps
 from .scan_trigger import ScanRefused
 from .services import async_register_services
 from .start_times import integration_rows, process_started
-from .system_checks import system_checks
+from .system_checks import scan_check, system_checks
 from .system_usage import disk_usage, memory, system_light
 from .watch import UPDATE_ENTITIES
 from .websocket_api import async_register as async_register_websocket
@@ -279,6 +279,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
                 lambda: (disk_usage(hass.config.config_dir), memory())
             )
             scanner.events.observe_checks("system", system_checks(disk, ram), datetime.now(UTC))
+            scanner.events.observe_checks(
+                "scan", scan_check(scanner.health_report()), datetime.now(UTC)
+            )
             async_sync_flapping_issue(hass, scanner.events.flapping(datetime.now(UTC)))
         except Exception:  # noqa: BLE001 - a check that cannot be read is not worth a message here
             _LOGGER.debug("The central log could not read the backup check", exc_info=True)

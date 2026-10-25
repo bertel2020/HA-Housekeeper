@@ -53,3 +53,40 @@ def service_checks(states: dict[str, str]) -> list[dict[str, Any]]:
             "values": {"errors": errors, "retrying": retrying, "entries": len(values)},
         }
     ]
+
+
+def goal_checks(evaluated: dict[str, Any]) -> list[dict[str, Any]]:
+    """The goals the person set, as checks: met is ``ok``, missed a hint; unknown or off are left out.
+
+    Left out, so a goal whose figure is not known yet does not look like a change when it becomes known.
+    """
+    return [
+        {
+            "id": goal["id"],
+            "level": "ok" if goal["state"] == "met" else "note",
+            "values": {"value": goal["value"], "limit": goal["limit"]},
+        }
+        for goal in evaluated.get("goals", [])
+        if goal["state"] in ("met", "missed") and goal.get("value") is not None
+    ]
+
+
+def scan_check(report: dict[str, Any]) -> list[dict[str, Any]]:
+    """Whether the scans run: a failed or overdue scan is a hint, one that needs repair a problem."""
+    state = report.get("state")
+    if state not in ("ok", "failed", "stale"):
+        return []
+    level = (
+        "ok"
+        if state == "ok"
+        else "problem"
+        if report.get("needs_repair") or state == "stale"
+        else "note"
+    )
+    return [
+        {
+            "id": "scan",
+            "level": level,
+            "values": {"failures": report.get("consecutive_failures") or 0},
+        }
+    ]

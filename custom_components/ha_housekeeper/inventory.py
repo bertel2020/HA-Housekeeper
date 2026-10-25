@@ -90,6 +90,8 @@ from .exceptions import matches as _hits
 from .finding_topics import apply_topics
 from .first_cleanup import FirstCleanupStore
 from .goals import GoalStore
+from .goals import evaluate as evaluate_goals
+from .goals import measure as measure_goals
 from .hacs import hacs_by_domain, removed_issues, store_kind
 from .hints import HintStore
 from .history import ScanHistory
@@ -153,7 +155,7 @@ from .signals import SignalStore, situations
 from .signals import fire as signal_fire
 from .stale import StaleStore
 from .start_times import StartStore
-from .system_checks import service_checks
+from .system_checks import goal_checks, service_checks
 from .system_usage import supervisor_get, supervisor_token
 from .view_counts import view_counts
 from .visits import VisitStore
@@ -1240,6 +1242,7 @@ class InventoryScanner:
                         ),
                         datetime.now(UTC),
                     )
+                    self._observe_goals(snapshot)
                     try:
                         await self.auto_pause.check(datetime.now(UTC))
                     except Exception:  # a failing pause must not fail the scan
@@ -1329,6 +1332,25 @@ class InventoryScanner:
                 preliminary=bool(snapshot["meta"].get("preliminary")),
             )
         return result
+
+    def _observe_goals(self, snapshot: dict[str, Any]) -> None:
+        """Write down when a goal of the person is met or missed; only the goals the snapshot can tell."""
+        try:
+            month = (datetime.now(UTC) - timedelta(days=30)).date().isoformat()
+            errors = (
+                sum(
+                    key.startswith("automation.") and self.runs.errors_since(key, month) > 0
+                    for key in self.runs.items
+                )
+                if self.runs.since
+                else None
+            )
+            evaluated = evaluate_goals(
+                measure_goals(snapshot, None, None, None, errors), self.goals.items
+            )
+            self.events.observe_checks("goals", goal_checks(evaluated), datetime.now(UTC))
+        except Exception:  # noqa: BLE001 - the log must never fail a scan
+            _LOGGER.debug("The goals could not be written to the central log", exc_info=True)
 
     def health_report(self) -> dict[str, Any]:
         """The scan health as the panel and the sensor read it."""
