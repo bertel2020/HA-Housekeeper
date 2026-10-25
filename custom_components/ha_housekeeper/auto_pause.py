@@ -37,6 +37,12 @@ if TYPE_CHECKING:
 
 SAVE_DELAY = 5
 END_HOURS = 168
+AUTO_PAUSE_LEVELS = {  # step -> level before and after, for the central log
+    "paused": ("ok", "note"),
+    "exhausted": ("note", "problem"),
+    "back": ("note", "ok"),
+    "ended": ("note", "ok"),
+}
 GRACE_SECONDS = 60  # how long an enabled entry may take to load before it is paused again
 LOG_MAX = 40
 DATA_DOMAINS = frozenset(
@@ -223,6 +229,18 @@ class AutoPause:
         title = rec.get("title") or (entry.title if entry else entry_id)
         self.log.append([_now().isoformat(), action, str(title)])
         del self.log[:-LOG_MAX]
+        # The central log keeps the domain and the step, never the name.
+        change = AUTO_PAUSE_LEVELS.get(action)
+        events = getattr(self.scanner, "events", None)
+        if change is not None and events is not None:
+            events.record_change(
+                "auto_pause",
+                action,
+                change[0],
+                change[1],
+                _now(),
+                **({"domain": entry.domain} if entry else {}),
+            )
 
     # --- start and stop -------------------------------------------------------------------------
 

@@ -227,7 +227,11 @@ def _last_run_check(
         "attempted": config["last_attempted"],
         "completed": config["last_completed"],
         "failed_agents": failed_agents,
+        "running": bool(running),
+        "limit_minutes": ATTEMPT_GRACE_SECONDS // 60,
     }
+    if attempted is not None and completed is not None:
+        values["gap_minutes"] = round((attempted - completed).total_seconds() / 60)
     if failed_attempt or failed_agents:
         return _check("last_run", "problem", failed_attempt=failed_attempt, **values)
     if attempted is None and completed is None:
@@ -540,8 +544,16 @@ class AttestStore:
 
 
 async def backup_health(
-    hass: HomeAssistant, attest: AttestStore, journal_plans: list[dict[str, Any]]
+    hass: HomeAssistant,
+    attest: AttestStore,
+    journal_plans: list[dict[str, Any]],
+    events: Any = None,
 ) -> dict[str, Any]:
-    """The full report for the panel."""
+    """The full report for the panel; with ``events`` a change of a check is written down."""
     state = await collect(hass)
-    return evaluate(state, datetime.now(UTC), attest.record, executed_plan_backups(journal_plans))
+    now = datetime.now(UTC)
+    report = evaluate(state, now, attest.record, executed_plan_backups(journal_plans))
+    if events is not None and report.get("available"):
+        events.observe_backup_run(state.get("running"), now)
+        events.observe_checks("backup", report["checks"], now)
+    return report

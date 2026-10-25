@@ -740,6 +740,9 @@ async def _db_health(
             int(raw["db_bytes"]) + int(raw.get("wal_bytes") or 0),
         )
     result = evaluate(raw, names, events.sizes, events.events, datetime.now(UTC).date())
+    events.observe_findings(
+        "database", result.get("findings") or [], datetime.now(UTC), keep=("integrity",)
+    )
     dialect = str(raw.get("dialect") or "")
     tables = await cached_query(
         hass,

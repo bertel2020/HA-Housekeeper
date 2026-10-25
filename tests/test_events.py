@@ -144,3 +144,49 @@ def test_system_updates_are_found_and_an_unread_version_is_no_change() -> None:
     found = detect(previous, "1", {}, NOW, {"os": "15.1"})
     assert [(e["kind"], e["from"], e["to"]) for e in found] == [("os_version", "15.0", "15.1")]
     assert detect(previous, "1", {}, NOW, {}) == []
+
+
+async def test_a_changed_check_is_written_down_with_its_numbers_and_the_first_sight_is_not(
+    hass: HomeAssistant,
+) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    check = {"id": "last_run", "level": "ok", "values": {"gap_minutes": 0, "attempted": "text"}}
+    log.observe_checks("backup", [check], t0)
+    assert log.events == []  # the first sight only remembers
+    log.observe_checks(
+        "backup",
+        [
+            {
+                **check,
+                "level": "problem",
+                "values": {"gap_minutes": 1461, "running": True, "attempted": "text"},
+            }
+        ],
+        t0 + timedelta(minutes=3),
+    )
+    change = log.events[-1]
+    assert (change["from"], change["to"]) == ("ok", "problem")
+    assert change["cause"] == {"gap_minutes": 1461, "running": True}  # numbers only, no text
+    log.observe_checks("backup", [{**check, "level": "problem"}], t0 + timedelta(minutes=6))
+    assert len(log.events) == 1  # the same level again is no change
+
+
+async def test_a_backup_run_is_logged_with_its_duration_and_flapping_is_counted(
+    hass: HomeAssistant,
+) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    log.observe_backup_run(True, t0)
+    log.observe_backup_run(True, t0 + timedelta(minutes=5))
+    log.observe_backup_run(False, t0 + timedelta(minutes=38))
+    assert [(e["from"], e["to"]) for e in log.events] == [("ok", "running"), ("running", "ok")]
+    assert log.events[-1]["cause"] == {"seconds": 38 * 60}
+    for step in range(4):
+        level = "problem" if step % 2 == 0 else "ok"
+        old = "ok" if step % 2 == 0 else "problem"
+        log.record_change("dienste", "x", old, level, t0 + timedelta(hours=1, minutes=step * 10))
+    result = log.check_log(t0 + timedelta(hours=3), 7)
+    assert result["summary"]["flapping"] == 1
+    assert any(e.get("flaps") == 4 for e in result["entries"])
+    assert {s["area"] for s in result["strips"]} >= {"dienste"}

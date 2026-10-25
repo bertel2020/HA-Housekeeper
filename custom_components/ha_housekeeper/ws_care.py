@@ -68,7 +68,9 @@ async def websocket_preflight(
         snapshot = await scanner.async_get_snapshot()
         try:
             async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
-                backup = await backup_health(hass, scanner.attest, scanner.journal.plans)
+                backup = await backup_health(
+                    hass, scanner.attest, scanner.journal.plans, scanner.events
+                )
         except Exception:  # noqa: BLE001 - without the report the backup line only says "unknown"
             backup = None
         result = await preflight_report(hass, snapshot, backup)
@@ -212,6 +214,26 @@ async def websocket_exposure(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/check_log",
+        vol.Optional("days", default=7): vol.In((7, 30, 90)),
+    }
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_check_log(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """The changes of the checks over time; reads Housekeeper's own record only."""
+    result = scanner.events.check_log(datetime.now(UTC), msg["days"])
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/backup_health"})
 @websocket_api.async_response
 @with_scanner
@@ -224,7 +246,9 @@ async def websocket_backup_health(
     """Judge the backup strategy; reads the backup manager only."""
     try:
         async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
-            result = await backup_health(hass, scanner.attest, scanner.journal.plans)
+            result = await backup_health(
+                hass, scanner.attest, scanner.journal.plans, scanner.events
+            )
     except Exception as err:
         connection.send_error(msg["id"], "backup_health_failed", f"{type(err).__name__}: {err}")
         return
@@ -718,7 +742,9 @@ async def websocket_goals(
         snapshot = await scanner.async_get_snapshot()
         try:  # a missing source makes its goals unknown, it never fails the answer
             async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
-                backup = await backup_health(hass, scanner.attest, scanner.journal.plans)
+                backup = await backup_health(
+                    hass, scanner.attest, scanner.journal.plans, scanner.events
+                )
         except Exception:  # noqa: BLE001
             backup = None
         rules = policies(
@@ -1007,7 +1033,9 @@ async def websocket_backup_attest(
         scanner.attest.set(msg["kind"], day)
     try:
         async with asyncio.timeout(BACKUP_HEALTH_TIMEOUT):
-            result = await backup_health(hass, scanner.attest, scanner.journal.plans)
+            result = await backup_health(
+                hass, scanner.attest, scanner.journal.plans, scanner.events
+            )
     except Exception as err:
         connection.send_error(msg["id"], "backup_health_failed", f"{type(err).__name__}: {err}")
         return
@@ -1074,6 +1102,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_auto_pause_set)
     websocket_api.async_register_command(hass, websocket_check_config)
     websocket_api.async_register_command(hass, websocket_backup_health)
+    websocket_api.async_register_command(hass, websocket_check_log)
     websocket_api.async_register_command(hass, websocket_policies)
     websocket_api.async_register_command(hass, websocket_set_policy)
     websocket_api.async_register_command(hass, websocket_set_policy_prefix)

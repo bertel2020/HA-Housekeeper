@@ -7,6 +7,7 @@ installation, so the download is safe to attach to a bug report.
 from __future__ import annotations
 
 from collections import Counter
+from datetime import UTC, datetime
 from typing import Any
 
 from homeassistant.const import __version__ as HA_VERSION
@@ -32,6 +33,13 @@ async def async_get_config_entry_diagnostics(
     return {
         "home_assistant": HA_VERSION,
         "loaded": True,
+        # The central log of the checks: levels, the backup that runs, and the last changes (numbers only).
+        "check_log": {
+            "levels": dict(scanner.events.levels),
+            "backup_running": backups.get("running") if backups.get("available") else None,
+            "since": scanner.events.log_since,
+            "recent": scanner.events.check_log(datetime.now(UTC), 30, 50)["entries"],
+        },
         # Names of the saved data that could not be read at start and began empty (names of parts, no data).
         "storage_load_failures": list(getattr(scanner, "load_failures", [])),
         "scan_status": {**scanner.status, "last_error": error.split(":", 1)[0] if error else None},

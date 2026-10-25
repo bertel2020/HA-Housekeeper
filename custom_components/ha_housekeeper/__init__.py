@@ -28,6 +28,7 @@ from . import criteria as criteria_module
 from . import db_health as db_health_module
 from . import reliability as reliability_module
 from . import storms as storms_module
+from .backup_health import backup_health
 from .const import (
     CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
@@ -266,6 +267,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
             scanner.snapshot["meta"]["mcp"] = scanner.mcp.meta()
 
     entry.async_on_unload(async_track_time_interval(hass, _heartbeat, timedelta(minutes=5)))
+
+    async def _log_tick(_: Any) -> None:
+        # Passive: the central log only reads what a check says anyway, every five minutes.
+        if not hass.is_running:
+            return
+        try:
+            await backup_health(hass, scanner.attest, scanner.journal.plans, scanner.events)
+        except Exception:  # noqa: BLE001 - a check that cannot be read is not worth a message here
+            _LOGGER.debug("The central log could not read the backup check", exc_info=True)
+
+    entry.async_on_unload(async_track_time_interval(hass, _log_tick, timedelta(minutes=5)))
 
     async def _watch_tick(_: Any) -> None:
         await scanner.async_watch_tick()

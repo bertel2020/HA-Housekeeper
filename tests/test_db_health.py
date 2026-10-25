@@ -214,6 +214,9 @@ class FakeEvents:
     def record_size(self, day: str, size: int) -> None:
         self.sizes[day] = size
 
+    def observe_findings(self, *args, **kwargs) -> None:
+        pass
+
 
 async def test_without_a_recorder_there_is_no_result(hass: HomeAssistant) -> None:
     assert (await db_health(hass, {"objects": []}, FakeEvents()))["available"] is False

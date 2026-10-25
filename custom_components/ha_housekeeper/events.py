@@ -27,10 +27,18 @@ EVENT_KINDS = (
     "start",
     "plan",
     "purge",
+    "check_change",
 )
 SYSTEM_KINDS = (("os", "os_version"), ("supervisor", "supervisor_version"))
 INTEGRITY_STATES = ("ok", "damaged", "failed")
 LIST_LIMIT = 200  # events sent to the panel
+CHECK_DAYS = 90  # how long a change of a check is kept
+CHECK_LEVELS = ("ok", "note", "problem", "unknown", "running")
+_SEVERITY = {"ok": 0, "running": 0, "unknown": 1, "note": 2, "problem": 3}
+FLAP_WINDOW = timedelta(hours=3)  # this many changes of one check in this time is "flapping"
+FLAP_CHANGES = 4
+GAP_SECONDS = 300  # a restart after at least this long without a heartbeat is a gap in the record
+CAUSE_KEYS = 8
 
 
 def _parse(value: Any) -> datetime | None:
@@ -88,6 +96,10 @@ class EventLog:
         self.integrity: dict[str, Any] | None = None  # the last full database check
         # False while Home Assistant runs, True once it announced its stop; None before the first start.
         self.clean_stop: bool | None = None
+        # The last level of each check ("area/check"), so only a change is written down.
+        self.levels: dict[str, str] = {}
+        self.backup_since: str | None = None  # when the backup that runs now began
+        self.log_since: str | None = None  # since when changes of checks are written down
 
     async def async_load(self) -> None:
         data = await self._store.async_load()
@@ -115,6 +127,17 @@ class EventLog:
             self._trim_sizes()
         if isinstance(data.get("clean_stop"), bool):
             self.clean_stop = data["clean_stop"]
+        levels = data.get("levels")
+        if isinstance(levels, dict):
+            self.levels = {
+                str(key): level
+                for key, level in levels.items()
+                if isinstance(level, str) and level in CHECK_LEVELS
+            }
+        if _parse(data.get("log_since")):
+            self.log_since = data["log_since"]
+        if _parse(data.get("backup_since")):
+            self.backup_since = data["backup_since"]
         integrity = data.get("integrity")
         if (
             isinstance(integrity, dict)
@@ -138,6 +161,9 @@ class EventLog:
             "sizes": self.sizes,
             "integrity": self.integrity,
             "clean_stop": self.clean_stop,
+            "levels": self.levels,
+            "backup_since": self.backup_since,
+            "log_since": self.log_since,
         }
 
     def _trim_sizes(self) -> None:
@@ -155,6 +181,9 @@ class EventLog:
     def record_integrity(self, now: datetime, state: str, lines: list[str]) -> None:
         """The result of the last full database check; only the last one is kept."""
         self.integrity = {"at": now.isoformat(), "state": state, "lines": lines[:10]}
+        self.observe_checks(
+            "database", [{"id": "integrity", "level": "ok" if state == "ok" else "problem"}], now
+        )
         self._save()
 
     def record(self, kind: str, now: datetime, **fields: Any) -> None:
@@ -164,6 +193,74 @@ class EventLog:
         self.events.append({"at": now.isoformat(), "kind": kind, **fields})
         del self.events[:-MAX_EVENTS]
         self._save()
+
+    def record_change(
+        self, area: str, check: str, old: str, new: str, now: datetime, **cause: Any
+    ) -> None:
+        """A check changed its level; ``cause`` holds the numbers behind it, never texts or names."""
+        self.levels[f"{area}/{check}"] = new
+        fields = {"area": area, "check": check, "from": old, "to": new}
+        if cause:
+            fields["cause"] = cause
+        horizon = (now - timedelta(days=CHECK_DAYS)).isoformat()
+        self.events = [e for e in self.events if e["kind"] != "check_change" or e["at"] >= horizon]
+        self.record("check_change", now, **fields)
+
+    def observe_checks(self, area: str, checks: list[dict[str, Any]], now: datetime) -> None:
+        """Write down the checks of one area whose level differs from the last time.
+
+        The first sight of a check only remembers its level; it is no change.
+        """
+        if self.log_since is None:
+            self.log_since = now.isoformat()
+        for item in checks:
+            level = item.get("level")
+            if level not in CHECK_LEVELS:
+                continue
+            key = f"{area}/{item['id']}"
+            old = self.levels.get(key)
+            if old is None:
+                self.levels[key] = level
+                self._save()
+            elif old != level:
+                self.record_change(area, item["id"], old, level, now, **_cause(item))
+
+    def observe_findings(
+        self, area: str, findings: list[dict[str, Any]], now: datetime, keep: tuple[str, ...] = ()
+    ) -> None:
+        """Like ``observe_checks`` for a list of findings: a kind that is gone counts as ``ok``."""
+        found = {
+            str(f["kind"]): "problem" if f.get("level") == "problem" else "note" for f in findings
+        }
+        known = {
+            key.split("/", 1)[1]
+            for key in self.levels
+            if key.startswith(f"{area}/") and key.split("/", 1)[1] not in keep
+        }
+        self.observe_checks(
+            area,
+            [{"id": kind, "level": found.get(kind, "ok")} for kind in sorted(known | set(found))],
+            now,
+        )
+
+    def observe_backup_run(self, running: bool | None, now: datetime) -> None:
+        """Write down when a backup begins and ends, with its duration; ``None`` is not known."""
+        if running is None:
+            return
+        began = _parse(self.backup_since)
+        if running and began is None:
+            self.backup_since = now.isoformat()
+            self.record_change("backup", "run", "ok", "running", now)
+        elif not running and began is not None:
+            self.backup_since = None
+            self.record_change(
+                "backup",
+                "run",
+                "running",
+                "ok",
+                now,
+                seconds=max(0, int((now - began).total_seconds())),
+            )
 
     def record_start(self, now: datetime) -> None:
         """Home Assistant started; the last heartbeat tells for how long it had been down."""
@@ -220,5 +317,185 @@ class EventLog:
                 return moment if before - moment <= within else None
         return None
 
+    def check_log(self, now: datetime, days: int = 7, limit: int = LIST_LIMIT) -> dict[str, Any]:
+        return check_log(self.events, self.levels, now, days, limit, self.log_since)
+
     def recent(self, limit: int = LIST_LIMIT) -> list[dict[str, Any]]:
         return list(reversed(self.events[-limit:]))
+
+
+def _cause(item: dict[str, Any]) -> dict[str, Any]:
+    """The numbers behind a level; text and lists are left out (a list only as its length)."""
+    cause: dict[str, Any] = {}
+    for key, value in (item.get("values") or {}).items():
+        if isinstance(value, (bool, int, float)):
+            cause[key] = value
+        elif isinstance(value, list):
+            cause[f"{key}_count"] = len(value)
+        if len(cause) >= CAUSE_KEYS:
+            break
+    return cause
+
+
+def _changes(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(
+        (e for e in events if e["kind"] == "check_change" and _parse(e["at"])),
+        key=lambda e: e["at"],
+    )
+
+
+def check_log(
+    events: list[dict[str, Any]],
+    levels: dict[str, str],
+    now: datetime,
+    days: int = 7,
+    limit: int = LIST_LIMIT,
+    log_since: str | None = None,
+) -> dict[str, Any]:
+    """The changes of the checks, the restarts and gaps, a strip per area and a summary."""
+    changes = _changes(events)
+    since = now - timedelta(days=days)
+    flaps: dict[int, int] = {}
+    lasted: dict[int, int] = {}
+    by_key: dict[str, list[int]] = {}
+    for index, event in enumerate(changes):
+        by_key.setdefault(f"{event['area']}/{event['check']}", []).append(index)
+    for indexes in by_key.values():
+        for position, index in enumerate(indexes):
+            at = _parse(changes[index]["at"])
+            near = [
+                i for i in indexes[: position + 1] if at - _parse(changes[i]["at"]) <= FLAP_WINDOW
+            ]
+            if len(near) >= FLAP_CHANGES:
+                flaps[index] = len(near)
+            if changes[index]["to"] in ("problem", "note") and position + 1 < len(indexes):
+                lasted[index] = int(
+                    (_parse(changes[indexes[position + 1]]["at"]) - at).total_seconds()
+                )
+    entries: list[dict[str, Any]] = []
+    for index, event in enumerate(changes):
+        if _parse(event["at"]) < since:
+            continue
+        entry = {key: event[key] for key in ("at", "area", "check", "from", "to") if key in event}
+        entry["kind"] = "change"
+        if event.get("cause"):
+            entry["cause"] = event["cause"]
+        if index in flaps:
+            entry["flaps"] = flaps[index]
+        if index in lasted:
+            entry["lasted_seconds"] = lasted[index]
+        entries.append(entry)
+    gaps = []
+    for event in events:
+        moment = _parse(event.get("at"))
+        if event["kind"] != "start" or moment is None or moment < since:
+            continue
+        down = int(event.get("down_seconds") or 0)
+        entries.append(
+            {
+                "at": event["at"],
+                "kind": "start",
+                "down_seconds": down,
+                "gap": down >= GAP_SECONDS,
+                **({"unclean": True} if event.get("unclean") else {}),
+            }
+        )
+        if down >= GAP_SECONDS:
+            gaps.append((moment - timedelta(seconds=down), moment))
+    begun = _parse(log_since)
+    if begun is not None and begun > since:
+        gaps.append((since, begun))  # before the first look nothing is known
+    entries.sort(key=lambda e: e["at"], reverse=True)
+    shown = [e for e in changes if _parse(e["at"]) >= since]
+    problems = [
+        e
+        for e in shown
+        if e["to"] == "problem" and not (e["area"] == "backup" and e["check"] == "run")
+    ]
+    recurring = {}
+    week = now - timedelta(days=7)
+    for event in changes:
+        if event["to"] == "problem" and _parse(event["at"]) >= week:
+            key = f"{event['area']}/{event['check']}"
+            recurring[key] = recurring.get(key, 0) + 1
+    return {
+        "days": days,
+        "entries": entries[:limit],
+        "total": len(entries),
+        "strips": _strips(changes, levels, gaps, now, days),
+        "summary": {
+            "changes": len(shown),
+            "problems": len(problems),
+            "flapping": len(
+                {
+                    f"{changes[i]['area']}/{changes[i]['check']}"
+                    for i in flaps
+                    if _parse(changes[i]["at"]) >= since
+                }
+            ),
+            "longest_problem_seconds": max(
+                (
+                    lasted[i]
+                    for i in lasted
+                    if _parse(changes[i]["at"]) >= since and changes[i]["to"] == "problem"
+                ),
+                default=0,
+            ),
+        },
+        "recurring": [
+            {"area": key.split("/")[0], "check": key.split("/")[1], "count": count}
+            for key, count in sorted(recurring.items(), key=lambda kv: -kv[1])
+            if count >= 3
+        ],
+        "retention_days": CHECK_DAYS,
+        "max_events": MAX_EVENTS,
+    }
+
+
+def _strips(
+    changes: list[dict[str, Any]],
+    levels: dict[str, str],
+    gaps: list[tuple[datetime, datetime]],
+    now: datetime,
+    days: int,
+) -> list[dict[str, Any]]:
+    """Per area the worst level over the window as consecutive segments; ``none`` where nothing ran."""
+    start = now - timedelta(days=days)
+    span = (now - start).total_seconds()
+    areas: dict[str, dict[str, str]] = {}
+    for key, level in levels.items():
+        area, check = key.split("/", 1)
+        if area == "backup" and check == "run":
+            continue
+        areas.setdefault(area, {})[check] = level
+    strips = []
+    for area, current in sorted(areas.items()):
+        mine = [e for e in changes if e["area"] == area and e["check"] != "run"]
+        state = {}
+        for check in current:
+            first = next(
+                (e for e in mine if e["check"] == check and _parse(e["at"]) >= start), None
+            )
+            state[check] = first["from"] if first else current[check]
+        points = [(max(_parse(e["at"]), start), e) for e in mine if _parse(e["at"]) >= start]
+        marks = [(start, None)] + points + [(now, None)]
+        segments: list[dict[str, Any]] = []
+        for (left, event), (right, _) in zip(marks, marks[1:], strict=False):
+            if event is not None:
+                state[event["check"]] = event["to"]
+            worst = max(state.values(), key=lambda lv: _SEVERITY.get(lv, 0), default="ok")
+            cuts = sorted({left, right} | {t for g in gaps for t in g if left < t < right})
+            for a, b in zip(cuts, cuts[1:], strict=False):
+                inside = any(g0 <= a and b <= g1 for g0, g1 in gaps)
+                _add(segments, "none" if inside else worst, (b - a).total_seconds() / span)
+        strips.append({"area": area, "segments": segments})
+    return strips
+
+
+def _add(segments: list[dict[str, Any]], level: str, share: float) -> None:
+    if share <= 0:
+        return
+    if segments and segments[-1]["level"] == level:
+        segments[-1]["share"] += share
+    else:
+        segments.append({"level": level, "share": share})
