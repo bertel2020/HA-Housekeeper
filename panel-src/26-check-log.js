@@ -11,7 +11,7 @@ Object.assign(TEXT.de, {
   clDays_7: "7 Tage", clDays_30: "30 Tage", clDays_90: "90 Tage",
   clTileChanges: "Wechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
   clTileChangesSub: "in {days} Tagen", clTileProblemsSub: "Stufe „Problem“", clTileFlappingSub: "Prüfungen mit häufigem Wechsel", clTileLongestSub: "bis zur Rückkehr",
-  clRecurring: "{what} wurde diese Woche {n}-mal zum Problem.", clRecurringMany: "{n} Prüfungen wurden diese Woche mindestens 3-mal zum Problem, zuletzt: {what}.", clRecurringOpen: "Zu den Zuverlässigkeits-Seiten",
+  clRecurring: "{what} wurde diese Woche {n}-mal zum Problem.", clRecurringMany: "{n} Prüfungen wurden diese Woche mindestens 3-mal zum Problem, zuletzt: {what}.", clRecurringOpen: "Zu den Zuverlässigkeits-Seiten", clFlapText_1: "1 Prüfung wechselt auffällig oft (mindestens 4 Wechsel in 3 Stunden). Ist das ein Fehlalarm, markiere die Zeilen im Menü.", clFlapText_n: "{n} Prüfungen wechseln auffällig oft (mindestens 4 Wechsel in 3 Stunden). Sind das Fehlalarme, markiere die Zeilen im Menü.", clFlapOnly: "Nur diese zeigen", clFlapAll: "Alle zeigen",
   clStrips: "Zustand je Bereich", clStripsHint: "Das Schlimmste aller Prüfungen eines Bereichs, über {days} Tage. Schraffiert: keine Daten (Home Assistant war aus oder der Verlauf noch nicht eingerichtet).",
   clLegendOk: "in Ordnung", clLegendNote: "Hinweis", clLegendProblem: "Problem", clLegendUnknown: "unbekannt", clLegendNone: "keine Daten",
   clAreaAll: "Alle", clOnlyProblems: "Nur Probleme und Hinweise", clSearch: "Suchen nach Bereich, Prüfung oder Ursache",
@@ -38,7 +38,7 @@ Object.assign(TEXT.en, {
   clDays_7: "7 days", clDays_30: "30 days", clDays_90: "90 days",
   clTileChanges: "Changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
   clTileChangesSub: "in {days} days", clTileProblemsSub: "level “Problem”", clTileFlappingSub: "checks that change often", clTileLongestSub: "until it was back",
-  clRecurring: "{what} turned into a problem {n} times this week.", clRecurringMany: "{n} checks turned into a problem at least 3 times this week, latest: {what}.", clRecurringOpen: "To the reliability pages",
+  clRecurring: "{what} turned into a problem {n} times this week.", clRecurringMany: "{n} checks turned into a problem at least 3 times this week, latest: {what}.", clRecurringOpen: "To the reliability pages", clFlapText_1: "1 check changes level unusually often (at least 4 changes in 3 hours). If that is a false alarm, mark the rows in the menu.", clFlapText_n: "{n} checks change level unusually often (at least 4 changes in 3 hours). If those are false alarms, mark the rows in the menu.", clFlapOnly: "Show only these", clFlapAll: "Show all",
   clStrips: "State per area", clStripsHint: "The worst of all checks of an area, over {days} days. Hatched: no data (Home Assistant was off or the history was not yet running).",
   clLegendOk: "OK", clLegendNote: "Note", clLegendProblem: "Problem", clLegendUnknown: "unknown", clLegendNone: "no data",
   clAreaAll: "All", clOnlyProblems: "Only problems and notes", clSearch: "Search by area, check or cause",
@@ -183,6 +183,8 @@ class CheckLogMixin {
     const rec = log.recurring || [];
     const recText = rec.length === 1 ? this.t("clRecurring", { what: `${this.clAreaName(rec[0].area)} · ${this.clCheckName(rec[0].area, rec[0].check)}`, n: rec[0].count }) : rec.length ? this.t("clRecurringMany", { n: rec.length, what: `${this.clAreaName(rec[0].area)} · ${this.clCheckName(rec[0].area, rec[0].check)}` }) : "";
     const recur = rec.length ? `<div class="panel"><div class="row" data-rowtone="warn"><span class="tile warn"><ha-icon icon="mdi:repeat"></ha-icon></span><span class="row-text"><strong>${this.esc(recText)}</strong></span><button type="button" class="btn" data-jump="reliability">${this.t("clRecurringOpen")}</button></div></div>` : "";
+    const flapN = sum.flapping || 0, flap = Boolean(this.clFlap) && flapN > 0;
+    const flapStrip = flapN ? `<div class="panel"><div class="row" data-rowtone="warn"><span class="tile warn"><ha-icon icon="mdi:swap-vertical"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t(flapN === 1 ? "clFlapText_1" : "clFlapText_n", { n: flapN }))}</strong></span><button type="button" class="btn" data-cl-flap aria-pressed="${flap}">${this.t(flap ? "clFlapAll" : "clFlapOnly")}</button></div></div>` : "";
     const areas = [...new Set([...(log.strips || []).map(s => s.area), ...log.entries.filter(e => e.area).map(e => e.area)])];
     const only1 = this.clCheck || "";
     const area = areas.includes(this.clArea) ? this.clArea : "all", only = Boolean(this.clOnly), query = (this.clQuery || "").trim().toLowerCase();
@@ -191,6 +193,7 @@ class CheckLogMixin {
       + (only1 ? `<button type="button" class="chip active" data-cl-check-off aria-pressed="true" title="${this.esc(this.t("clOnlyCheckOff"))}">${this.esc(this.t("clOnlyCheckOn", { what: `${this.clAreaName(only1.split("/")[0])} · ${this.clCheckName(only1.split("/")[0], only1.split("/")[1])}` }))}<ha-icon icon="mdi:close"></ha-icon></button>` : "");
     const shown = log.entries.filter(e => (area === "all" || e.area === area)
       && (!only1 || (e.kind === "change" && `${e.area}/${e.check}` === only1))
+      && (!flap || (e.kind === "change" && e.flaps))
       && (!only || (e.kind === "change" && (e.to === "problem" || e.to === "note")))
       && (!query || this.clSearchText(e).includes(query)));
     const groups = [];
@@ -205,7 +208,7 @@ class CheckLogMixin {
       : `<div class="emptymsg mute"><ha-icon icon="mdi:filter-off-outline"></ha-icon><strong>${this.t("clNoMatch")}</strong>${this.t("clNoMatchNext")}</div>`;
     const tools = `<div class="pad acttools"><input type="search" class="actsearch" data-cl-q value="${this.esc(this.clQuery || "")}" placeholder="${this.esc(this.t("clSearch"))}" aria-label="${this.esc(this.t("clSearch"))}"><div class="chips bare" role="group">${chips}</div></div>`;
     const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}${shown.length > CL_SHOW ? ` ${this.t("clMore", { shown: this.formatNumber(CL_SHOW), total: this.formatNumber(shown.length) })}` : ""}</small></div>`;
-    return `<div class="stack">${bar}${tiles}${recur}${this.clStrips(log)}<section class="panel">${tools}${shown.length ? list : empty}${foot}</section></div>`;
+    return `<div class="stack">${bar}${tiles}${recur}${flapStrip}${this.clStrips(log)}<section class="panel">${tools}${shown.length ? list : empty}${foot}</section></div>`;
   }
 
   // What the export holds: every change of the period (ids and numbers only), also the ones the page does not draw.
@@ -222,6 +225,7 @@ class CheckLogMixin {
     root.querySelector("[data-cl-check-off]")?.addEventListener("click", () => { this.clCheck = ""; this.render(); });
     root.querySelectorAll("[data-cl-days]").forEach(el => el.onclick = () => { this.clDays = Number(el.dataset.clDays); this.loadCheckLog(); });
     root.querySelectorAll("[data-cl-area]").forEach(el => el.onclick = () => { this.clArea = el.dataset.clArea; this.render(); });
+    root.querySelector("[data-cl-flap]")?.addEventListener("click", () => { this.clFlap = !this.clFlap; this.render(); });
     root.querySelector("[data-cl-only]")?.addEventListener("click", () => { this.clOnly = !this.clOnly; this.render(); });
     root.querySelector("[data-cl-q]")?.addEventListener("change", ev => { this.clQuery = ev.target.value; this.render(); });
     root.querySelector("[data-cl-refresh]")?.addEventListener("click", () => this.loadCheckLog());

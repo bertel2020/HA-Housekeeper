@@ -1687,6 +1687,21 @@ const BACKUP_REPORT = {
   attest: { emergency_kit: null, restore_test: "2026-09-01T00:00:00+00:00" },
 };
 
+test("the history page tells when checks flap and can show only those", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA;
+  const entries = [
+    { at: "2026-10-25T03:41:00+00:00", kind: "change", id: "a", area: "backup", check: "last_run", from: "problem", to: "ok", flaps: 4 },
+    { at: "2026-10-25T01:00:00+00:00", kind: "change", id: "b", area: "database", check: "integrity", from: "ok", to: "problem" },
+  ];
+  el._hass = { language: "en", callWS: async () => ({ days: 7, entries, total: 2, strips: [], summary: { changes: 2, problems: 1, flapping: 1, longest_problem_seconds: 0 }, recurring: [], retention_days: 90, max_events: 5000 }) };
+  el.view = "checklog"; el.render();
+  await el.loadCheckLog();
+  assert.ok(shadow.innerHTML.includes("1 check changes level unusually often"));
+  el.clFlap = true; el.render();
+  assert.ok(shadow.innerHTML.includes("Show all") && !shadow.innerHTML.includes("Integrity check"));
+});
+
 test("the last run of the backup card jumps to the history of that check", async () => {
   const { el, shadow } = panel("en");
   el.data = DATA;
