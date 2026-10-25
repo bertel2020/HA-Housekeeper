@@ -170,7 +170,7 @@ class DetailActionsMixin {
     root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
     root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = el.dataset.replNew || this.findObject(`entity:${el.dataset.actReplace}`)?.duplicate_of || ""; }));
-    root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan([{ kind: "reload_integration", object_id: el.dataset.actReload }]); } catch (err) { this.failed(err); } this.render(); });
+    root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan(el.dataset.actReload.split(",").map(object_id => ({ kind: "reload_integration", object_id }))); } catch (err) { this.failed(err); } this.render(); });
     root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));

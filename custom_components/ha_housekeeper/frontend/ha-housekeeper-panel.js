@@ -6212,7 +6212,8 @@ class DiagnosisMixin {
     const moreInfo = (item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : "";
     const primary = moreInfo || ap.primary;
     const exportable = ["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type);
-    const menu = [["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"`], exportable ? ["mdi:export-variant", "xpButton", `data-xp-from="${this.esc(key)}"`] : null, null, ...ap.menu];
+    const reloadIds = item.object_type === "integration" && item.status === "problem" ? item.entries.filter(e => e.status === "problem").map(e => e.object_id) : [];
+    const menu = [reloadIds.length ? ["mdi:reload", "actReload", `data-act-reload="${this.esc(reloadIds.join(","))}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"`], exportable ? ["mdi:export-variant", "xpButton", `data-xp-from="${this.esc(key)}"`] : null, null, ...ap.menu];
     const summary = this.detailSummary(item, key).map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`).join("");
     const tablist = tabs.map(([id, label, count, tone]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}${tone ? `<i class="tabdot ${tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
@@ -12943,7 +12944,7 @@ class DetailActionsMixin {
     root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
     root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = el.dataset.replNew || this.findObject(`entity:${el.dataset.actReplace}`)?.duplicate_of || ""; }));
-    root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan([{ kind: "reload_integration", object_id: el.dataset.actReload }]); } catch (err) { this.failed(err); } this.render(); });
+    root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan(el.dataset.actReload.split(",").map(object_id => ({ kind: "reload_integration", object_id }))); } catch (err) { this.failed(err); } this.render(); });
     root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
