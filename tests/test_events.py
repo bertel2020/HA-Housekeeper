@@ -219,3 +219,18 @@ async def test_a_false_alarm_leaves_the_counts_and_the_hint_and_the_mark_can_be_
     assert log.flapping(now) == ["backup/last_run"]
     with pytest.raises(ValueError):
         log.mark(first, "because")
+
+
+async def test_updates_are_lines_of_the_log_next_to_the_restarts(hass: HomeAssistant) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    log.observe("2026.10.0", {"hue": "1.0"}, t0, {"os": "14.0"})
+    log.observe("2026.10.1", {"hue": "1.1"}, t0 + timedelta(hours=1), {"os": "14.1"})
+    updates = [
+        e for e in log.check_log(t0 + timedelta(hours=2), 7)["entries"] if e["kind"] == "update"
+    ]
+    assert {(e["what"], e["from"], e["to"]) for e in updates} == {
+        ("core", "2026.10.0", "2026.10.1"),
+        ("os", "14.0", "14.1"),
+        ("integration", "1.0", "1.1"),
+    }

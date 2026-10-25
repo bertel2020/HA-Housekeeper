@@ -7164,6 +7164,7 @@ Object.assign(TEXT.de, {
   clCauseGap: "Abstand {span}", clCauseGapLimit: "Abstand {span} (Grenze {limit})", clCauseRunning: "Backup läuft: {yes}", clCauseSeconds: "Dauer {span}", clCauseDomain: "Integration {domain}",
   clCauseUsed: "belegt {n} %", clCauseUsedLimit: "belegt {n} % (Grenze {limit} %)", clCauseValueLimit: "Wert {value} (Ziel höchstens {limit})", clCauseFailures: "{n} Fehlschläge in Folge", clCauseFailing: "{errors} mit Fehler, {retrying} versuchen es erneut", clCauseAge: "Alter {span}", clCauseAgeLimit: "Alter {span} (Grenze {limit})", clCauseCount: "{name}: {n}", clYes: "ja", clNo: "nein",
   clLasted: "dauerte {span}", clFlaps: "flattert ×{n}",
+  clUpdate_core: "Home Assistant aktualisiert", clUpdate_os: "Betriebssystem aktualisiert", clUpdate_supervisor: "Supervisor aktualisiert", clUpdate_integration: "Integration {domain} aktualisiert", clUpdateText: "Version {from} auf {to}",
   clStart: "Home Assistant gestartet", clStartUnclean: "Home Assistant gestartet, nicht sauber gestoppt", clGap: "Keine Daten", clGapText: "Home Assistant war {span} nicht erreichbar, in dieser Zeit lief keine Prüfung",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
   clMarkAs_backup_running: "Fehlalarm: Backup lief gerade", clMarkAs_restart: "Fehlalarm: Neustart", clMarkAs_maintenance: "Fehlalarm: Wartung", clMarkAs_test: "Fehlalarm: Test", clMarkAs_expected: "Fehlalarm: ist so gewollt", clMarkAs_other: "Fehlalarm: anderer Grund",
@@ -7191,6 +7192,7 @@ Object.assign(TEXT.en, {
   clCauseGap: "Gap {span}", clCauseGapLimit: "Gap {span} (limit {limit})", clCauseRunning: "Backup running: {yes}", clCauseSeconds: "Took {span}", clCauseDomain: "Integration {domain}",
   clCauseUsed: "{n} % used", clCauseUsedLimit: "{n} % used (limit {limit} %)", clCauseValueLimit: "Value {value} (goal at most {limit})", clCauseFailures: "{n} failures in a row", clCauseFailing: "{errors} with an error, {retrying} retrying", clCauseAge: "Age {span}", clCauseAgeLimit: "Age {span} (limit {limit})", clCauseCount: "{name}: {n}", clYes: "yes", clNo: "no",
   clLasted: "lasted {span}", clFlaps: "flapping ×{n}",
+  clUpdate_core: "Home Assistant updated", clUpdate_os: "Operating system updated", clUpdate_supervisor: "Supervisor updated", clUpdate_integration: "Integration {domain} updated", clUpdateText: "Version {from} to {to}",
   clStart: "Home Assistant started", clStartUnclean: "Home Assistant started, not stopped cleanly", clGap: "No data", clGapText: "Home Assistant was unreachable for {span}, no check ran in that time",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
   clMarkAs_backup_running: "False alarm: a backup was running", clMarkAs_restart: "False alarm: restart", clMarkAs_maintenance: "False alarm: maintenance", clMarkAs_test: "False alarm: test", clMarkAs_expected: "False alarm: as intended", clMarkAs_other: "False alarm: other reason",
@@ -7257,7 +7259,10 @@ class CheckLogMixin {
 
   clTime(iso) { return new Intl.DateTimeFormat(this.lang, { timeStyle: "short" }).format(new Date(iso)); }
 
+  clUpdateTitle(e) { return this.t(`clUpdate_${e.what}`, { domain: e.domain || "" }); }
+
   clText(e) {
+    if (e.kind === "update") return this.t("clUpdateText", { from: e.from || "?", to: e.to || "?" });
     if (e.kind === "start") return e.gap ? this.t("clGapText", { span: this.clHours(e.down_seconds || 0) }) : this.t(e.unclean ? "clStartUnclean" : "clStart");
     if (e.area === "backup" && e.check === "run") return e.to === "running" ? this.t("clBackupStarted") : typeof e.cause?.seconds === "number" ? this.t("clBackupDone", { span: this.clHours(e.cause.seconds) }) : this.t("clBackupDoneNoSpan");
     return this.clCause(e);
@@ -7279,10 +7284,13 @@ class CheckLogMixin {
     ]);
   }
 
-  clSearchText(e) { return e.kind === "start" ? `${this.t(e.gap ? "clGap" : "clStart")} ${this.clText(e)}` : `${this.clAreaName(e.area)} ${this.clCheckName(e.area, e.check)} ${this.clText(e)}`.toLowerCase(); }
+  clSearchText(e) { if (e.kind === "update") return `${this.clUpdateTitle(e)} ${this.clText(e)}`.toLowerCase(); return e.kind === "start" ? `${this.t(e.gap ? "clGap" : "clStart")} ${this.clText(e)}` : `${this.clAreaName(e.area)} ${this.clCheckName(e.area, e.check)} ${this.clText(e)}`.toLowerCase(); }
 
   clRow(e) {
     const time = this.clTime(e.at);
+    if (e.kind === "update") {
+      return `<div class="row clrow"><span class="tile mute"><ha-icon icon="mdi:update"></ha-icon></span><span class="row-text"><strong>${this.esc(this.clUpdateTitle(e))}</strong><small>${this.esc(time)} · ${this.esc(this.clText(e))}</small></span><span></span><span></span></div>`;
+    }
     if (e.kind === "start") {
       const tone = e.unclean ? ' data-rowtone="warn"' : "";
       return `<div class="row clrow"${tone}><span class="tile ${e.unclean ? "warn" : "mute"}"><ha-icon icon="${e.gap ? "mdi:timer-sand-empty" : "mdi:restart"}"></ha-icon></span><span class="row-text"><strong>${this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart")}</strong><small>${this.esc(time)}${e.gap ? ` · ${this.esc(this.clText(e))}` : ""}</small></span><span class="clstep">${e.gap ? `<span class="pill mute">${this.t("clGap")}</span>` : ""}</span><span></span></div>`;

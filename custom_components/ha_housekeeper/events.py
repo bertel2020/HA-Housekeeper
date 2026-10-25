@@ -29,6 +29,12 @@ EVENT_KINDS = (
     "purge",
     "check_change",
 )
+UPDATE_KINDS = {
+    "ha_version": "core",
+    "os_version": "os",
+    "supervisor_version": "supervisor",
+    "entry_version": "integration",
+}
 SYSTEM_KINDS = (("os", "os_version"), ("supervisor", "supervisor_version"))
 INTEGRITY_STATES = ("ok", "damaged", "failed")
 LIST_LIMIT = 200  # events sent to the panel
@@ -451,6 +457,20 @@ def check_log(
         )
         if down >= GAP_SECONDS:
             gaps.append((moment - timedelta(seconds=down), moment))
+    for event in events:
+        what = UPDATE_KINDS.get(event["kind"])
+        if what is None or (_parse(event.get("at")) or since) < since:
+            continue
+        entries.append(
+            {
+                "at": event["at"],
+                "kind": "update",
+                "what": what,
+                "from": event.get("from"),
+                "to": event.get("to"),
+                **({"domain": event["domain"]} if event.get("domain") else {}),
+            }
+        )
     begun = _parse(log_since)
     if begun is not None and begun > since:
         gaps.append((since, begun))  # before the first look nothing is known
