@@ -259,3 +259,13 @@ async def test_a_start_says_why_it_happened(hass: HomeAssistant) -> None:
     log.record_start(t0 + timedelta(hours=5))
     starts = [e for e in log.check_log(t0 + timedelta(hours=6), 7)["entries"] if e["kind"] == "start"]
     assert [e["reason"] for e in reversed(starts)] == ["restart", "update", "crash"]
+
+
+async def test_a_start_line_holds_when_the_first_check_looked(hass: HomeAssistant) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    log.record_start(t0)
+    log.observe_checks("scan", [{"id": "a", "level": "ok"}], t0 + timedelta(seconds=45))
+    log.observe_checks("scan", [{"id": "a", "level": "ok"}], t0 + timedelta(seconds=90))
+    start = next(e for e in log.check_log(t0 + timedelta(hours=1), 7)["entries"] if e["kind"] == "start")
+    assert start["first_check_seconds"] == 45

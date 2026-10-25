@@ -110,6 +110,7 @@ class EventLog:
         self.log_since: str | None = None  # since when changes of checks are written down
         # Changes the person marked as a false alarm: id ("at|area|check") -> reason.
         self.dismissed: dict[str, str] = {}
+        self._first_check_pending = False  # set at a start, cleared by the first look of any check
 
     async def async_load(self) -> None:
         data = await self._store.async_load()
@@ -224,6 +225,19 @@ class EventLog:
         known = {change_id(e) for e in self.events if e["kind"] == "check_change"}
         self.dismissed = {key: why for key, why in self.dismissed.items() if key in known}
 
+    def _note_first_check(self, now: datetime) -> None:
+        """How long after the start the first check looked; written onto the start line, once."""
+        if not self._first_check_pending:
+            return
+        self._first_check_pending = False
+        for event in reversed(self.events):
+            if event["kind"] == "start":
+                began = _parse(event.get("at"))
+                if began is not None and "first_check_seconds" not in event:
+                    event["first_check_seconds"] = max(0, int((now - began).total_seconds()))
+                    self._save()
+                return
+
     def observe_checks(self, area: str, checks: list[dict[str, Any]], now: datetime) -> None:
         """Write down the checks of one area whose level differs from the last time.
 
@@ -231,6 +245,7 @@ class EventLog:
         """
         if self.log_since is None:
             self.log_since = now.isoformat()
+        self._note_first_check(now)
         for item in checks:
             level = item.get("level")
             if level not in CHECK_LEVELS:
@@ -292,6 +307,7 @@ class EventLog:
             )
         self.clean_stop = False
         self.record("start", now, **fields)
+        self._first_check_pending = True
         self.beat(now)
 
     def mark_clean_stop(self) -> None:
@@ -483,6 +499,11 @@ def check_log(
                 "down_seconds": down,
                 "gap": down >= GAP_SECONDS,
                 "reason": "update" if near else "crash" if event.get("unclean") else "restart",
+                **(
+                    {"first_check_seconds": event["first_check_seconds"]}
+                    if isinstance(event.get("first_check_seconds"), int)
+                    else {}
+                ),
                 **({"unclean": True} if event.get("unclean") else {}),
             }
         )
