@@ -259,6 +259,10 @@ async def test_a_start_says_why_it_happened(hass: HomeAssistant) -> None:
     log.record_start(t0 + timedelta(hours=5))
     starts = [e for e in log.check_log(t0 + timedelta(hours=6), 7)["entries"] if e["kind"] == "start"]
     assert [e["reason"] for e in reversed(starts)] == ["restart", "update", "crash"]
+    merged = starts[1]
+    assert [(u["what"], u["to"]) for u in merged["updates"]] == [("core", "2026.10.1")]
+    entries = log.check_log(t0 + timedelta(hours=6), 7)["entries"]
+    assert [e for e in entries if e["kind"] == "update"] == []  # the update is part of the start line
 
 
 async def test_a_start_line_holds_when_the_first_check_looked(hass: HomeAssistant) -> None:

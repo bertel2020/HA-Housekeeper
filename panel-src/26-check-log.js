@@ -26,7 +26,7 @@ Object.assign(TEXT.de, {
   clColEvent: "Ereignis", clColTime: "Zeit", clColArea: "Bereich", clColChange: "Wechsel", clAllAreas: "Alle Bereiche", clAllLevels: "Alle Stufen", clArea_updates: "Updates", clArea_restarts: "Neustarts", clOpenUpdates: "Zu den Updates", clOpenIntegration: "Zur Integration", clAfterStart: "kurz nach einem Neustart", clAfterUpdate: "kurz nach einem Update", clStripFilter: "Nur {area} in der Liste zeigen",
   clUpdate_core: "Home Assistant aktualisiert", clUpdate_os: "Betriebssystem aktualisiert", clUpdate_supervisor: "Supervisor aktualisiert", clUpdate_integration: "Integration {domain} aktualisiert", clUpdateText: "Version {from} auf {to}",
   clStart: "Home Assistant gestartet", clStartUnclean: "Home Assistant gestartet, nicht sauber gestoppt", clGap: "Keine Daten", clGapText: "Home Assistant war {span} nicht erreichbar, in dieser Zeit lief keine Prüfung",
-  clWhy_restart: "Ordentlich heruntergefahren und wieder gestartet", clWhy_update: "Nach einem Update", clDown: "war {span} aus", clMinShort: "Min.", clFirstCheck: "erste Prüfung nach {span}", clAfterFindings: "danach: {what}",
+  clWhy_restart: "Ordentlich heruntergefahren und wieder gestartet", clWhy_update: "Nach einem Update", clDown: "war {span} aus", clMinShort: "Min.", clFirstCheck: "erste Prüfung nach {span}", clAfterFindings: "danach: {what}", clUpdateRestart: "{title} und neu gestartet", clUpdatesRestart: "{n} Updates, danach Neustart", clUpdName_core: "Home Assistant", clUpdName_os: "Betriebssystem", clUpdName_supervisor: "Supervisor", clUpdName_integration: "{domain}",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
   clMarkAs_backup_running: "Fehlalarm: Backup lief gerade", clMarkAs_restart: "Fehlalarm: Neustart", clMarkAs_maintenance: "Fehlalarm: Wartung", clMarkAs_test: "Fehlalarm: Test", clMarkAs_expected: "Fehlalarm: ist so gewollt", clMarkAs_other: "Fehlalarm: anderer Grund",
   clUnmark: "Markierung entfernen", clOpenCheck: "Prüfung öffnen", clOnlyCheck: "Nur diese Prüfung zeigen", clOnlyCheckOn: "Nur: {what}", clOnlyCheckOff: "Alle Prüfungen zeigen",
@@ -56,7 +56,7 @@ Object.assign(TEXT.en, {
   clColEvent: "Event", clColTime: "Time", clColArea: "Area", clColChange: "Change", clAllAreas: "All areas", clAllLevels: "All levels", clArea_updates: "Updates", clArea_restarts: "Restarts", clOpenUpdates: "Go to the updates", clOpenIntegration: "Go to the integration", clAfterStart: "shortly after a restart", clAfterUpdate: "shortly after an update", clStripFilter: "Show only {area} in the list",
   clUpdate_core: "Home Assistant updated", clUpdate_os: "Operating system updated", clUpdate_supervisor: "Supervisor updated", clUpdate_integration: "Integration {domain} updated", clUpdateText: "Version {from} to {to}",
   clStart: "Home Assistant started", clStartUnclean: "Home Assistant started, not stopped cleanly", clGap: "No data", clGapText: "Home Assistant was unreachable for {span}, no check ran in that time",
-  clWhy_restart: "Shut down cleanly and started again", clWhy_update: "After an update", clDown: "was off for {span}", clMinShort: "min", clFirstCheck: "first check after {span}", clAfterFindings: "afterwards: {what}",
+  clWhy_restart: "Shut down cleanly and started again", clWhy_update: "After an update", clDown: "was off for {span}", clMinShort: "min", clFirstCheck: "first check after {span}", clAfterFindings: "afterwards: {what}", clUpdateRestart: "{title} and restarted", clUpdatesRestart: "{n} updates, then restart", clUpdName_core: "Home Assistant", clUpdName_os: "Operating system", clUpdName_supervisor: "Supervisor", clUpdName_integration: "{domain}",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
   clMarkAs_backup_running: "False alarm: a backup was running", clMarkAs_restart: "False alarm: restart", clMarkAs_maintenance: "False alarm: maintenance", clMarkAs_test: "False alarm: test", clMarkAs_expected: "False alarm: as intended", clMarkAs_other: "False alarm: other reason",
   clUnmark: "Remove the mark", clOpenCheck: "Open the check", clOnlyCheck: "Show only this check", clOnlyCheckOn: "Only: {what}", clOnlyCheckOff: "Show all checks",
@@ -135,8 +135,19 @@ class CheckLogMixin {
   // What a start line says below its title: the reason, later the downtime and what followed.
   clStartSub(e) {
     if (e.gap) return this.clText(e);
-    return [e.reason === "crash" ? "" : this.t(`clWhy_${e.reason || "restart"}`), e.down_seconds > 0 ? this.t("clDown", { span: this.clSpan(e.down_seconds) }) : "", typeof e.first_check_seconds === "number" ? this.t("clFirstCheck", { span: this.clSpan(e.first_check_seconds) }) : "", this.clAfterText(e)].filter(Boolean).join(" · ");
+    const ups = e.updates || [];
+    const what = ups.length === 1 ? this.clText(ups[0]) : ups.map(u => `${this.t(`clUpdName_${u.what}`, { domain: u.domain || "" })} ${this.clText(u)}`).join("; ");
+    return [what, !ups.length && e.reason !== "crash" ? this.t(`clWhy_${e.reason || "restart"}`) : "", e.down_seconds > 0 ? this.t("clDown", { span: this.clSpan(e.down_seconds) }) : "", typeof e.first_check_seconds === "number" ? this.t("clFirstCheck", { span: this.clSpan(e.first_check_seconds) }) : "", this.clAfterText(e)].filter(Boolean).join(" · ");
   }
+
+  clStartTitle(e) {
+    const ups = e.updates || [];
+    if (!ups.length) return this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart");
+    return ups.length === 1 ? this.t("clUpdateRestart", { title: this.clUpdateTitle(ups[0]) }) : this.t("clUpdatesRestart", { n: ups.length });
+  }
+
+  // Where an update line leads: the integration's page, or the updates of the maintenance page.
+  clUpdateLink(u) { return u.what === "integration" ? (this.findObject(`integration:${u.domain}`) ? `data-object="integration:${this.esc(u.domain)}"` : "") : 'data-jump="maintenance" data-jump-tab="updates"'; }
 
   // "afterwards: 2× Problem, 1× Hinweis": the checks that turned bad within minutes after a start.
   clAfterText(e) {
@@ -160,6 +171,10 @@ class CheckLogMixin {
   clMenu(r) {
     const e = r.e;
     if (e.kind === "update") return this.rowMenuHtml([r.link ? ["mdi:open-in-new", e.what === "integration" ? "clOpenIntegration" : "clOpenUpdates", r.link] : null]);
+    if (e.kind === "start") {
+      const seen = new Set();
+      return this.rowMenuHtml((e.updates || []).map(u => [u, this.clUpdateLink(u)]).filter(([, link]) => link && !seen.has(link) && seen.add(link)).map(([u, link]) => ["mdi:open-in-new", u.what === "integration" ? "clOpenIntegration" : "clOpenUpdates", link]));
+    }
     if (e.kind === "config") return this.rowMenuHtml(r.object ? this.objectRowMenu({ key: r.object }) : []);
     if (e.kind !== "change") return "";
     const page = CL_AREA_PAGE[e.area];
@@ -173,7 +188,7 @@ class CheckLogMixin {
 
   // The entries as rows of the standard table: what happened, when, in which area, and the change of level.
   clRows(log) {
-    const marks = log.entries.filter(e => e.kind === "start" || e.kind === "update").map(e => ({ at: Date.parse(e.at), kind: e.kind }));
+    const marks = log.entries.filter(e => e.kind === "start" || e.kind === "update").map(e => ({ at: Date.parse(e.at), kind: e.kind }));  // an update merged into a start counts as the start
     const follows = e => {
       const at = Date.parse(e.at), near = marks.filter(m => m.at <= at && at - m.at <= CL_AFTER_MS).sort((a, b) => b.at - a.at)[0];
       return near ? this.t(near.kind === "start" ? "clAfterStart" : "clAfterUpdate") : "";
@@ -181,10 +196,10 @@ class CheckLogMixin {
     return log.entries.map((e, i) => {
       const row = { e, key: String(i), rank: 0 };
       if (e.kind === "start") {
-        Object.assign(row, { area: "restarts", title: this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart"), sub: this.clStartSub(e), tone: e.unclean ? "warn" : "mute", icon: e.gap ? "mdi:timer-sand-empty" : "mdi:restart", rank: e.unclean ? 2 : 0 });
+        const ups = e.updates || [];
+        Object.assign(row, { area: ups.length ? "updates" : "restarts", title: this.clStartTitle(e), sub: this.clStartSub(e), tone: e.unclean ? "warn" : "mute", icon: e.gap ? "mdi:timer-sand-empty" : ups.length ? "mdi:update" : "mdi:restart", rank: e.unclean ? 2 : 0, link: ups.length ? this.clUpdateLink(ups[0]) : "" });
       } else if (e.kind === "update") {
-        const link = e.what === "integration" ? (this.findObject(`integration:${e.domain}`) ? `data-object="integration:${this.esc(e.domain)}"` : "") : 'data-jump="maintenance" data-jump-tab="updates"';
-        Object.assign(row, { area: "updates", title: this.clUpdateTitle(e), sub: this.clText(e), tone: "mute", icon: "mdi:update", link });
+        Object.assign(row, { area: "updates", title: this.clUpdateTitle(e), sub: this.clText(e), tone: "mute", icon: "mdi:update", link: this.clUpdateLink(e) });
       } else if (e.kind === "config") {
         const object = e.key.replace(".", ":"), found = this.findObject(object);
         Object.assign(row, { area: "config", title: this.t("clConfigEdited"), sub: found?.name || e.key, tone: "mute", icon: "mdi:file-edit-outline", object: found ? object : "" });

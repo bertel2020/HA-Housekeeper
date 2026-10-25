@@ -468,6 +468,7 @@ def check_log(
         entries.append(entry)
     gaps = []
     updates = []
+    merged: set[int] = set()  # updates that a start line takes in: one line for update and restart
     for event in events:
         what = UPDATE_KINDS.get(event["kind"])
         moment = _parse(event.get("at"))
@@ -491,7 +492,8 @@ def check_log(
         if event["kind"] != "start" or moment is None or moment < since:
             continue
         down = int(event.get("down_seconds") or 0)
-        near = [u for at, u in updates if abs(at - moment) <= START_NEAR]
+        near = [u for at, u in updates if abs(at - moment) <= START_NEAR and id(u) not in merged]
+        merged.update(id(u) for u in near)
         after: dict[str, int] = {}
         for change in changes:  # what turned bad right after the start (false alarms not counted)
             at = _parse(change["at"])
@@ -508,6 +510,7 @@ def check_log(
                 "down_seconds": down,
                 "gap": down >= GAP_SECONDS,
                 "reason": "update" if near else "crash" if event.get("unclean") else "restart",
+                **({"updates": near} if near else {}),
                 **({"after": after} if after else {}),
                 **(
                     {"first_check_seconds": event["first_check_seconds"]}
@@ -519,7 +522,7 @@ def check_log(
         )
         if down >= GAP_SECONDS:
             gaps.append((moment - timedelta(seconds=down), moment))
-    entries.extend(u for _, u in updates)
+    entries.extend(u for _, u in updates if id(u) not in merged)
     for key, item in (config or {}).items():  # when an automation or script was last edited
         moment = _parse(item.get("at"))
         if moment is not None and moment >= since:
