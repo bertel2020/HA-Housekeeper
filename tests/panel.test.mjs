@@ -1687,6 +1687,16 @@ const BACKUP_REPORT = {
   attest: { emergency_kit: null, restore_test: "2026-09-01T00:00:00+00:00" },
 };
 
+test("the last run of the backup card jumps to the history of that check", async () => {
+  const { el, shadow } = panel("en");
+  el.data = DATA;
+  el._hass = { language: "en", callWS: async () => BACKUP_REPORT };
+  el.view = "maintenance"; el.render();
+  await el.loadBackup();
+  const found = shadow.innerHTML.match(/data-jump="checklog" data-jump-cl="[^"]+"/g) || [];
+  assert.deepEqual(found, ['data-jump="checklog" data-jump-cl="backup/last_run"']);
+});
+
 test("the backup card puts text and a word next to every level and escapes what comes from outside", async () => {
   const { el, shadow } = panel("en");
   el.data = DATA;

@@ -862,7 +862,7 @@ Object.assign(TEXT.de, {
   backupTitle: "Backup-Schutz", 
   backupRefresh: "Neu prüfen", backupLoading: "Backups werden geprüft …", backupUnavailable: "Die Backup-Komponente von Home Assistant ist nicht verfügbar.",
   bhLevel_ok: "In Ordnung", bhLevel_note: "Hinweis", bhLevel_problem: "Problem", bhLevel_unknown: "Unbekannt",
-  bh_setup: "Ziele und Zeitplan", bh_newest: "Letztes Backup", bh_last_run: "Letzter automatischer Lauf", bh_targets: "Ablageorte", bh_size: "Größe",
+  bhHistory: "Verlauf", bh_setup: "Ziele und Zeitplan", bh_newest: "Letztes Backup", bh_last_run: "Letzter automatischer Lauf", bh_targets: "Ablageorte", bh_size: "Größe",
   bh_retention: "Aufbewahrung", bh_encryption: "Verschlüsselung", bh_emergency_kit: "Emergency Kit", bh_restore_test: "Restore-Test", bh_plan_backups: "Backups vor Bereinigungen", bh_own_backups: "Housekeeper-Backups", bh_content: "Inhalt", bh_remote_age: "Alter pro Ablageort", bh_space: "Platz fürs nächste Backup", bhOwnOpen: "Aufräumen", bhSizesTitle: "Größe der letzten Backups", bhSizesLabel: "Größe der letzten {n} Backups, von {from} auf {to}", bhSizesNote: "Die letzten {n} Backups: von {from} auf {to}. Der Balken ganz rechts ist das neueste.",
   bhContentOk: "Datenbank enthalten, {apps} Apps, {folders} Ordner, keine Fehler", bhContentFailed: "Beim neuesten Backup sind Teile fehlgeschlagen: {items}", bhContentNoDb: "Die Datenbank fehlt im neuesten Backup, obwohl sie vorgesehen ist", bhContentNoDbSet: "Der Zeitplan nimmt die Datenbank nicht mit: eine Wiederherstellung hätte keinen Verlauf", bhContentUnknown: "Der Inhalt des neuesten Backups ist nicht zu lesen",
   bhRemoteOk: "Neueste Kopie: {items}", bhRemoteStale: "Zu alt (Grenze {limit}): {items}",
@@ -895,7 +895,7 @@ Object.assign(TEXT.en, {
   backupTitle: "Backup protection", 
   backupRefresh: "Check again", backupLoading: "Checking backups …", backupUnavailable: "The backup component of Home Assistant is not available.",
   bhLevel_ok: "OK", bhLevel_note: "Note", bhLevel_problem: "Problem", bhLevel_unknown: "Unknown",
-  bh_setup: "Targets and schedule", bh_newest: "Latest backup", bh_last_run: "Last automatic run", bh_targets: "Storage locations", bh_size: "Size",
+  bhHistory: "History", bh_setup: "Targets and schedule", bh_newest: "Latest backup", bh_last_run: "Last automatic run", bh_targets: "Storage locations", bh_size: "Size",
   bh_retention: "Retention", bh_encryption: "Encryption", bh_emergency_kit: "Emergency kit", bh_restore_test: "Restore test", bh_plan_backups: "Backups before cleanups", bh_own_backups: "Housekeeper backups", bh_content: "Content", bh_remote_age: "Age per target", bh_space: "Room for the next backup", bhOwnOpen: "Tidy up", bhSizesTitle: "Size of the last backups", bhSizesLabel: "Size of the last {n} backups, from {from} to {to}", bhSizesNote: "The last {n} backups: from {from} to {to}. The bar on the right is the newest.",
   bhContentOk: "Database included, {apps} apps, {folders} folders, no errors", bhContentFailed: "Parts of the newest backup failed: {items}", bhContentNoDb: "The database is missing in the newest backup although it is planned", bhContentNoDbSet: "The schedule leaves the database out: a restore would have no history", bhContentUnknown: "The content of the newest backup cannot be read",
   bhRemoteOk: "Newest copy: {items}", bhRemoteStale: "Too old (limit {limit}): {items}",
@@ -6773,9 +6773,10 @@ class BackupMixin {
     const tidy = c.id === "own_backups" ? `<button class="bhopen" data-bkc-open>${this.t("bhOwnOpen")}</button>` : "";
     const offer = this.bhOffersExternal(c), offerOpen = offer && this.bhForm === "external";
     const external = offer ? `<button class="bhopen" data-bh-open="external" aria-expanded="${offerOpen}">${this.t("bhExternalOpen")}</button>` : "";
+    const history = c.id === "last_run" ? `<button class="bhopen" data-jump="checklog" data-jump-cl="backup/${c.id}">${this.t("bhHistory")}</button>` : "";
     const open = attest && c.level !== "unknown" && this.bhForm === c.id;
     const opener = attest && c.level !== "unknown" ? `<button class="bhopen" data-bh-open="${c.id}" aria-expanded="${open}">${this.t(c.values?.at ? "bhAttestAgain" : c.id === "targets" ? "bhAttestTargets" : c.id === "encryption" ? "bhAttestEnc" : "bhAttestMark")}</button>` : "";
-    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}${offer ? ` ${this.t("bhExternalAsk")}` : ""}</small></span><span class="bhactions">${opener}${external}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}${offer ? ` ${this.t("bhExternalAsk")}` : ""}</small></span><span class="bhactions">${opener}${external}${tidy}${history}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
     if (offerOpen) return `${row}<div class="bhattest"><span class="factnote">${this.t("bhExternalForm")}</span><button class="btn small primary" data-bh-save="external">${this.t("bhExternalSave")}</button><button class="bhcancel" data-bh-cancel>${this.t("bhAttestCancel")}</button></div>`;
     if (!open) return row;
     const today = new Date().toISOString().slice(0, 10);
@@ -21916,6 +21917,7 @@ class HAHousekeeperPanel extends HTMLElement {
       // The outages of one level ("high", "medium") or all of them.
       this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;
       if (el.dataset.jumpCause) this.findingCause = el.dataset.jumpCause;
+      if (el.dataset.jumpCl) { this.clCheck = el.dataset.jumpCl; this.clArea = "all"; this.clOnly = false; } // the history, only the check the row speaks of
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       if (this.view === "settings" && el.dataset.jumpTab) this.settingsTab = el.dataset.jumpTab;
       // A list the jump counts starts without the search and filters kept from before; its own filter comes after.

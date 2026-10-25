@@ -131,9 +131,10 @@ class BackupMixin {
     const tidy = c.id === "own_backups" ? `<button class="bhopen" data-bkc-open>${this.t("bhOwnOpen")}</button>` : "";
     const offer = this.bhOffersExternal(c), offerOpen = offer && this.bhForm === "external";
     const external = offer ? `<button class="bhopen" data-bh-open="external" aria-expanded="${offerOpen}">${this.t("bhExternalOpen")}</button>` : "";
+    const history = c.id === "last_run" ? `<button class="bhopen" data-jump="checklog" data-jump-cl="backup/${c.id}">${this.t("bhHistory")}</button>` : "";
     const open = attest && c.level !== "unknown" && this.bhForm === c.id;
     const opener = attest && c.level !== "unknown" ? `<button class="bhopen" data-bh-open="${c.id}" aria-expanded="${open}">${this.t(c.values?.at ? "bhAttestAgain" : c.id === "targets" ? "bhAttestTargets" : c.id === "encryption" ? "bhAttestEnc" : "bhAttestMark")}</button>` : "";
-    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}${offer ? ` ${this.t("bhExternalAsk")}` : ""}</small></span><span class="bhactions">${opener}${external}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}${offer ? ` ${this.t("bhExternalAsk")}` : ""}</small></span><span class="bhactions">${opener}${external}${tidy}${history}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
     if (offerOpen) return `${row}<div class="bhattest"><span class="factnote">${this.t("bhExternalForm")}</span><button class="btn small primary" data-bh-save="external">${this.t("bhExternalSave")}</button><button class="bhcancel" data-bh-cancel>${this.t("bhAttestCancel")}</button></div>`;
     if (!open) return row;
     const today = new Date().toISOString().slice(0, 10);
