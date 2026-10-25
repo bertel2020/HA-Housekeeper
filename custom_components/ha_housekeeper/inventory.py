@@ -153,6 +153,7 @@ from .signals import SignalStore, situations
 from .signals import fire as signal_fire
 from .stale import StaleStore
 from .start_times import StartStore
+from .system_checks import service_checks
 from .system_usage import supervisor_get, supervisor_token
 from .view_counts import view_counts
 from .visits import VisitStore
@@ -1228,6 +1229,16 @@ class InventoryScanner:
                             e.entry_id: getattr(e, "_tries", None)
                             for e in self.hass.config_entries.async_entries()
                         },
+                    )
+                    self.events.observe_checks(
+                        "services",
+                        service_checks(
+                            {
+                                e.entry_id: getattr(e.state, "value", str(e.state))
+                                for e in self.hass.config_entries.async_entries()
+                            }
+                        ),
+                        datetime.now(UTC),
                     )
                     try:
                         await self.auto_pause.check(datetime.now(UTC))

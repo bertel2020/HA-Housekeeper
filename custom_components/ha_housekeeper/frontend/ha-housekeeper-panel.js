@@ -7145,7 +7145,7 @@ const CL_DAYS = [7, 30, 90];
 const CL_LEVEL_PILL = { ok: "ok", note: "warn", problem: "red", unknown: "mute", running: "blue" };
 const CL_REASONS = ["backup_running", "restart", "maintenance", "test", "expected", "other"];
 const CL_SHOW = 200; // rows drawn; the export holds everything that was read
-const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: "autopause" };
+const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: "autopause", system: "storage", services: "reliability" };
 Object.assign(TEXT.de, {
   checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter. Nur Zeiten und Zahlen, keine Namen und Texte.",
   clDays_7: "7 Tage", clDays_30: "30 Tage", clDays_90: "90 Tage",
@@ -7155,13 +7155,13 @@ Object.assign(TEXT.de, {
   clStrips: "Zustand je Bereich", clStripsHint: "Das Schlimmste aller Prüfungen eines Bereichs, über {days} Tage. Schraffiert: keine Daten (Home Assistant war aus oder der Verlauf noch nicht eingerichtet).",
   clLegendOk: "in Ordnung", clLegendNote: "Hinweis", clLegendProblem: "Problem", clLegendUnknown: "unbekannt", clLegendNone: "keine Daten",
   clAreaAll: "Alle", clOnlyProblems: "Nur Probleme und Hinweise", clSearch: "Suchen nach Bereich, Prüfung oder Ursache",
-  clArea_backup: "Backup-Schutz", clArea_database: "Datenbank", clArea_auto_pause: "Auto-Pause",
-  clCheck_backup_run: "Backup", clCheck_database_integrity: "Integritätsprüfung", clCheck_database_disk_low: "Plattenplatz", clCheck_database_wal_large: "WAL-Datei",
+  clArea_backup: "Backup-Schutz", clArea_database: "Datenbank", clArea_auto_pause: "Auto-Pause", clArea_system: "System", clArea_services: "Dienste",
+  clCheck_backup_run: "Backup", clCheck_database_integrity: "Integritätsprüfung", clCheck_database_disk_low: "Plattenplatz", clCheck_database_wal_large: "WAL-Datei", clCheck_system_disk: "Speicherplatz", clCheck_system_memory: "Arbeitsspeicher", clCheck_services_setup: "Einrichtung der Integrationen",
   clCheck_auto_pause_paused: "Pausiert", clCheck_auto_pause_exhausted: "Versuche aufgebraucht", clCheck_auto_pause_back: "Wieder aktiv", clCheck_auto_pause_ended: "Pause beendet",
   clLevel_ok: "in Ordnung", clLevel_note: "Hinweis", clLevel_problem: "Problem", clLevel_unknown: "unbekannt", clLevel_running: "läuft",
   clBackupStarted: "Backup gestartet", clBackupDone: "Backup beendet nach {span}", clBackupDoneNoSpan: "Backup beendet",
   clCauseGap: "Abstand {span}", clCauseGapLimit: "Abstand {span} (Grenze {limit})", clCauseRunning: "Backup läuft: {yes}", clCauseSeconds: "Dauer {span}", clCauseDomain: "Integration {domain}",
-  clCauseAge: "Alter {span}", clCauseAgeLimit: "Alter {span} (Grenze {limit})", clCauseCount: "{name}: {n}", clYes: "ja", clNo: "nein",
+  clCauseUsed: "belegt {n} %", clCauseUsedLimit: "belegt {n} % (Grenze {limit} %)", clCauseFailing: "{errors} mit Fehler, {retrying} versuchen es erneut", clCauseAge: "Alter {span}", clCauseAgeLimit: "Alter {span} (Grenze {limit})", clCauseCount: "{name}: {n}", clYes: "ja", clNo: "nein",
   clLasted: "dauerte {span}", clFlaps: "flattert ×{n}",
   clStart: "Home Assistant gestartet", clStartUnclean: "Home Assistant gestartet, nicht sauber gestoppt", clGap: "Keine Daten", clGapText: "Home Assistant war {span} nicht erreichbar, in dieser Zeit lief keine Prüfung",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
@@ -7182,13 +7182,13 @@ Object.assign(TEXT.en, {
   clStrips: "State per area", clStripsHint: "The worst of all checks of an area, over {days} days. Hatched: no data (Home Assistant was off or the history was not yet running).",
   clLegendOk: "OK", clLegendNote: "Note", clLegendProblem: "Problem", clLegendUnknown: "unknown", clLegendNone: "no data",
   clAreaAll: "All", clOnlyProblems: "Only problems and notes", clSearch: "Search by area, check or cause",
-  clArea_backup: "Backup protection", clArea_database: "Database", clArea_auto_pause: "Auto-pause",
-  clCheck_backup_run: "Backup", clCheck_database_integrity: "Integrity check", clCheck_database_disk_low: "Disk space", clCheck_database_wal_large: "WAL file",
+  clArea_backup: "Backup protection", clArea_database: "Database", clArea_auto_pause: "Auto-pause", clArea_system: "System", clArea_services: "Services",
+  clCheck_backup_run: "Backup", clCheck_database_integrity: "Integrity check", clCheck_database_disk_low: "Disk space", clCheck_database_wal_large: "WAL file", clCheck_system_disk: "Disk space", clCheck_system_memory: "Memory", clCheck_services_setup: "Setup of integrations",
   clCheck_auto_pause_paused: "Paused", clCheck_auto_pause_exhausted: "Attempts used up", clCheck_auto_pause_back: "Active again", clCheck_auto_pause_ended: "Pause ended",
   clLevel_ok: "OK", clLevel_note: "Note", clLevel_problem: "Problem", clLevel_unknown: "unknown", clLevel_running: "running",
   clBackupStarted: "Backup started", clBackupDone: "Backup finished after {span}", clBackupDoneNoSpan: "Backup finished",
   clCauseGap: "Gap {span}", clCauseGapLimit: "Gap {span} (limit {limit})", clCauseRunning: "Backup running: {yes}", clCauseSeconds: "Took {span}", clCauseDomain: "Integration {domain}",
-  clCauseAge: "Age {span}", clCauseAgeLimit: "Age {span} (limit {limit})", clCauseCount: "{name}: {n}", clYes: "yes", clNo: "no",
+  clCauseUsed: "{n} % used", clCauseUsedLimit: "{n} % used (limit {limit} %)", clCauseFailing: "{errors} with an error, {retrying} retrying", clCauseAge: "Age {span}", clCauseAgeLimit: "Age {span} (limit {limit})", clCauseCount: "{name}: {n}", clYes: "yes", clNo: "no",
   clLasted: "lasted {span}", clFlaps: "flapping ×{n}",
   clStart: "Home Assistant started", clStartUnclean: "Home Assistant started, not stopped cleanly", clGap: "No data", clGapText: "Home Assistant was unreachable for {span}, no check ran in that time",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
@@ -7240,6 +7240,9 @@ class CheckLogMixin {
       parts.push(typeof c.limit_hours === "number" ? this.t("clCauseAgeLimit", { span, limit: this.spanText(take("limit_hours")) }) : this.t("clCauseAge", { span }));
     }
     used.add("limit_hours");
+    if (typeof c.used_percent === "number") parts.push(typeof c.limit_percent === "number" ? this.t("clCauseUsedLimit", { n: take("used_percent"), limit: take("limit_percent") }) : this.t("clCauseUsed", { n: take("used_percent") }));
+    used.add("limit_percent"); used.add("free_bytes");
+    if (typeof c.errors === "number" && typeof c.retrying === "number") { parts.push(this.t("clCauseFailing", { errors: take("errors"), retrying: take("retrying") })); used.add("entries"); }
     if (typeof c.running === "boolean") parts.push(this.t("clCauseRunning", { yes: this.t(take("running") ? "clYes" : "clNo") }));
     if (typeof c.seconds === "number" && !(e.area === "backup" && e.check === "run")) parts.push(this.t("clCauseSeconds", { span: this.clHours(take("seconds")) }));
     used.add("seconds");
