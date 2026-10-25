@@ -429,7 +429,7 @@ class FirstCleanupMixin {
     const rows = items.slice(0, 8).map(x => { const k = this.findingKey(x), o = this.findObject(k); return `<li>${o ? `<button type="button" class="linkbtn" data-object="${this.esc(k)}">${this.esc(o.name)}</button>` : this.esc(x.object_id)} <small>${this.esc(this.findingTitle(x))}</small></li>`; }).join("");
     const more = items.length > 8 ? `<li><small>${this.t("fcFollowMore", { n: this.formatNumber(items.length - 8) })}</small></li>` : "";
     const head = this.t(follows === 1 ? "fcFollows1" : "fcFollows", { n: this.formatNumber(follows) });
-    return rows ? `<details class="fcfollows"><summary>${head}</summary><ul>${rows}${more}</ul></details>` : `<p class="fcfacts">${head}</p>`;
+    return rows ? `<details class="fcfollows"><summary><ha-icon icon="mdi:link-variant"></ha-icon><span>${head}</span><ha-icon class="fcchev" icon="mdi:chevron-down"></ha-icon></summary><ul>${rows}${more}</ul></details>` : `<p class="fcfacts">${head}</p>`;
   }
 
   // One card back: the last skip or decision of the stage is taken back, and the card shows once more.
