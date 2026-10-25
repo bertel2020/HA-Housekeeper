@@ -269,3 +269,18 @@ async def test_a_start_line_holds_when_the_first_check_looked(hass: HomeAssistan
     log.observe_checks("scan", [{"id": "a", "level": "ok"}], t0 + timedelta(seconds=90))
     start = next(e for e in log.check_log(t0 + timedelta(hours=1), 7)["entries"] if e["kind"] == "start")
     assert start["first_check_seconds"] == 45
+
+
+async def test_a_start_line_counts_what_turned_bad_right_after_it(hass: HomeAssistant) -> None:
+    log = EventLog(hass)
+    t0 = datetime(2026, 10, 25, 3, 0, tzinfo=UTC)
+    log.observe_checks("scan", [{"id": "a", "level": "ok"}, {"id": "b", "level": "ok"}], t0)
+    log.record_start(t0 + timedelta(hours=1))
+    log.observe_checks(
+        "scan",
+        [{"id": "a", "level": "problem"}, {"id": "b", "level": "note"}],
+        t0 + timedelta(hours=1, minutes=2),
+    )
+    log.observe_checks("scan", [{"id": "a", "level": "ok"}], t0 + timedelta(hours=3))
+    start = next(e for e in log.check_log(t0 + timedelta(hours=4), 7)["entries"] if e["kind"] == "start")
+    assert start["after"] == {"problem": 1, "note": 1}

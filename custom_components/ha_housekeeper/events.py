@@ -492,6 +492,15 @@ def check_log(
             continue
         down = int(event.get("down_seconds") or 0)
         near = [u for at, u in updates if abs(at - moment) <= START_NEAR]
+        after: dict[str, int] = {}
+        for change in changes:  # what turned bad right after the start (false alarms not counted)
+            at = _parse(change["at"])
+            if (
+                moment <= at <= moment + START_NEAR
+                and change["to"] in ("problem", "note")
+                and change_id(change) not in dismissed
+            ):
+                after[change["to"]] = after.get(change["to"], 0) + 1
         entries.append(
             {
                 "at": event["at"],
@@ -499,6 +508,7 @@ def check_log(
                 "down_seconds": down,
                 "gap": down >= GAP_SECONDS,
                 "reason": "update" if near else "crash" if event.get("unclean") else "restart",
+                **({"after": after} if after else {}),
                 **(
                     {"first_check_seconds": event["first_check_seconds"]}
                     if isinstance(event.get("first_check_seconds"), int)
