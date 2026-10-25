@@ -234,3 +234,15 @@ async def test_updates_are_lines_of_the_log_next_to_the_restarts(hass: HomeAssis
         ("os", "14.0", "14.1"),
         ("integration", "1.0", "1.1"),
     }
+
+
+async def test_an_edited_automation_is_a_line_of_the_log(hass: HomeAssistant) -> None:
+    log = EventLog(hass)
+    now = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
+    config = {
+        "automation.a": {"hash": "x", "at": (now - timedelta(days=1)).isoformat()},
+        "automation.b": {"hash": "y", "at": None},
+        "script.old": {"hash": "z", "at": (now - timedelta(days=30)).isoformat()},
+    }
+    lines = [e for e in log.check_log(now, 7, config=config)["entries"] if e["kind"] == "config"]
+    assert [e["key"] for e in lines] == ["automation.a"]

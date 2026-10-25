@@ -334,8 +334,16 @@ class EventLog:
                 return moment if before - moment <= within else None
         return None
 
-    def check_log(self, now: datetime, days: int = 7, limit: int = LIST_LIMIT) -> dict[str, Any]:
-        return check_log(self.events, self.levels, now, days, limit, self.log_since, self.dismissed)
+    def check_log(
+        self,
+        now: datetime,
+        days: int = 7,
+        limit: int = LIST_LIMIT,
+        config: dict[str, dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        return check_log(
+            self.events, self.levels, now, days, limit, self.log_since, self.dismissed, config
+        )
 
     def mark(self, change: str, reason: str | None) -> bool:
         """Mark a change as a false alarm (``reason``) or take the mark away (``None``)."""
@@ -401,6 +409,7 @@ def check_log(
     limit: int = LIST_LIMIT,
     log_since: str | None = None,
     dismissed: dict[str, str] | None = None,
+    config: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """The changes of the checks, the restarts and gaps, a strip per area and a summary."""
     changes = _changes(events)
@@ -471,6 +480,10 @@ def check_log(
                 **({"domain": event["domain"]} if event.get("domain") else {}),
             }
         )
+    for key, item in (config or {}).items():  # when an automation or script was last edited
+        moment = _parse(item.get("at"))
+        if moment is not None and moment >= since:
+            entries.append({"at": item["at"], "kind": "config", "area": "config", "key": key})
     begun = _parse(log_since)
     if begun is not None and begun > since:
         gaps.append((since, begun))  # before the first look nothing is known

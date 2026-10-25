@@ -7156,7 +7156,7 @@ Object.assign(TEXT.de, {
   clStrips: "Zustand je Bereich", clStripsHint: "Das Schlimmste aller Prüfungen eines Bereichs, über {days} Tage. Schraffiert: keine Daten (Home Assistant war aus oder der Verlauf noch nicht eingerichtet).",
   clLegendOk: "in Ordnung", clLegendNote: "Hinweis", clLegendProblem: "Problem", clLegendUnknown: "unbekannt", clLegendNone: "keine Daten",
   clAreaAll: "Alle", clOnlyProblems: "Nur Probleme und Hinweise", clSearch: "Suchen nach Bereich, Prüfung oder Ursache",
-  clArea_backup: "Backup-Schutz", clArea_database: "Datenbank", clArea_auto_pause: "Auto-Pause", clArea_system: "System", clArea_services: "Dienste", clArea_goals: "Ziele", clArea_scan: "Scan",
+  clArea_backup: "Backup-Schutz", clArea_database: "Datenbank", clArea_auto_pause: "Auto-Pause", clArea_system: "System", clArea_services: "Dienste", clArea_goals: "Ziele", clArea_scan: "Scan", clArea_config: "Konfiguration", clConfigEdited: "Konfiguration geändert",
   clCheck_backup_run: "Backup", clCheck_database_integrity: "Integritätsprüfung", clCheck_database_disk_low: "Plattenplatz", clCheck_database_wal_large: "WAL-Datei", clCheck_system_disk: "Speicherplatz", clCheck_system_memory: "Arbeitsspeicher", clCheck_services_setup: "Einrichtung der Integrationen", clCheck_scan_scan: "Läuft der Scan",
   clCheck_auto_pause_paused: "Pausiert", clCheck_auto_pause_exhausted: "Versuche aufgebraucht", clCheck_auto_pause_back: "Wieder aktiv", clCheck_auto_pause_ended: "Pause beendet",
   clLevel_ok: "in Ordnung", clLevel_note: "Hinweis", clLevel_problem: "Problem", clLevel_unknown: "unbekannt", clLevel_running: "läuft",
@@ -7184,7 +7184,7 @@ Object.assign(TEXT.en, {
   clStrips: "State per area", clStripsHint: "The worst of all checks of an area, over {days} days. Hatched: no data (Home Assistant was off or the history was not yet running).",
   clLegendOk: "OK", clLegendNote: "Note", clLegendProblem: "Problem", clLegendUnknown: "unknown", clLegendNone: "no data",
   clAreaAll: "All", clOnlyProblems: "Only problems and notes", clSearch: "Search by area, check or cause",
-  clArea_backup: "Backup protection", clArea_database: "Database", clArea_auto_pause: "Auto-pause", clArea_system: "System", clArea_services: "Services", clArea_goals: "Goals", clArea_scan: "Scan",
+  clArea_backup: "Backup protection", clArea_database: "Database", clArea_auto_pause: "Auto-pause", clArea_system: "System", clArea_services: "Services", clArea_goals: "Goals", clArea_scan: "Scan", clArea_config: "Configuration", clConfigEdited: "Configuration changed",
   clCheck_backup_run: "Backup", clCheck_database_integrity: "Integrity check", clCheck_database_disk_low: "Disk space", clCheck_database_wal_large: "WAL file", clCheck_system_disk: "Disk space", clCheck_system_memory: "Memory", clCheck_services_setup: "Setup of integrations", clCheck_scan_scan: "Scan runs",
   clCheck_auto_pause_paused: "Paused", clCheck_auto_pause_exhausted: "Attempts used up", clCheck_auto_pause_back: "Active again", clCheck_auto_pause_ended: "Pause ended",
   clLevel_ok: "OK", clLevel_note: "Note", clLevel_problem: "Problem", clLevel_unknown: "unknown", clLevel_running: "running",
@@ -7284,10 +7284,13 @@ class CheckLogMixin {
     ]);
   }
 
-  clSearchText(e) { if (e.kind === "update") return `${this.clUpdateTitle(e)} ${this.clText(e)}`.toLowerCase(); return e.kind === "start" ? `${this.t(e.gap ? "clGap" : "clStart")} ${this.clText(e)}` : `${this.clAreaName(e.area)} ${this.clCheckName(e.area, e.check)} ${this.clText(e)}`.toLowerCase(); }
+  clSearchText(e) { if (e.kind === "config") return `${this.t("clConfigEdited")} ${e.key}`.toLowerCase(); if (e.kind === "update") return `${this.clUpdateTitle(e)} ${this.clText(e)}`.toLowerCase(); return e.kind === "start" ? `${this.t(e.gap ? "clGap" : "clStart")} ${this.clText(e)}` : `${this.clAreaName(e.area)} ${this.clCheckName(e.area, e.check)} ${this.clText(e)}`.toLowerCase(); }
 
   clRow(e) {
     const time = this.clTime(e.at);
+    if (e.kind === "config") {
+      return `<div class="row clrow"><span class="tile mute"><ha-icon icon="mdi:file-edit-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("clConfigEdited"))}</strong><small>${this.esc(time)} · ${this.esc(e.key)}</small></span><span></span><span></span></div>`;
+    }
     if (e.kind === "update") {
       return `<div class="row clrow"><span class="tile mute"><ha-icon icon="mdi:update"></ha-icon></span><span class="row-text"><strong>${this.esc(this.clUpdateTitle(e))}</strong><small>${this.esc(time)} · ${this.esc(this.clText(e))}</small></span><span></span><span></span></div>`;
     }
