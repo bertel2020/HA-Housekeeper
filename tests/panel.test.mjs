@@ -7613,6 +7613,34 @@ test("the History page shows the strips, the changes with their causes and gaps,
   assert.ok(el.checkLogView().includes("Nothing found."));
 });
 
+test("the History page: the row menu marks a change as a false alarm, which dims it, and the export holds the numbers", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const log = { ...CHECK_LOG, entries: CHECK_LOG.entries.map((e, i) => (e.kind === "change" ? { ...e, id: `${e.at}|${e.area}|${e.check}` } : e)) };
+  el._hass.callWS = async msg => { calls.push(msg); return log; };
+  el.data = DATA; el.view = "checklog"; el.checkLog = log; el._clRequested = true;
+  let html = el.checkLogView();
+  assert.ok(html.includes("data-cl-mark=") && html.includes("False alarm: restart") && html.includes('data-cl-check="backup/last_run"') && html.includes('data-jump="maintenance"'));
+  assert.ok(!html.includes("data-cl-unmark"));
+  await el.clMark("2026-10-25T03:03:00+00:00|backup|last_run", "restart");
+  assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/check_log_mark", change: "2026-10-25T03:03:00+00:00|backup|last_run", reason: "restart" }));
+  el.checkLog = { ...log, entries: log.entries.map(e => (e.check === "last_run" && e.to === "problem" ? { ...e, dismissed: "restart" } : e)) };
+  html = el.checkLogView();
+  assert.ok(html.includes("False alarm · restart") && html.includes("data-cl-unmark=") && html.includes("row clrow dim"));
+  el.clCheck = "auto_pause/paused";
+  assert.ok(!el.checkLogView().includes("Backup running") && el.checkLogView().includes("Only: "));
+  el.clCheck = "";
+  const saved = [];
+  el.downloadRows = (name, header, rows) => saved.push([name, header, rows]);
+  el.checkLogView();
+  el.exportList("checklog", "csv");
+  const [name, header, rows] = saved[0];
+  assert.equal(name, "history");
+  assert.equal(header.length, 8);
+  assert.equal(rows.length, 3, "only changes, not the start or the gap");
+  assert.ok(rows.some(r => r[5].includes("gap_minutes=1461") && r[7] === "restart"));
+});
+
 test("the History page without entries says what it keeps, and a failed read says so", () => {
   const { el } = panel("de");
   el._hass.callWS = async () => ({});

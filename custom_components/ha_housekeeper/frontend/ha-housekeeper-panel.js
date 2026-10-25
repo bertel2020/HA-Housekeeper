@@ -1790,7 +1790,7 @@ class StylesMixin {
       .actpanel .actrow{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:center;padding:12px 16px}@media (min-width:760px){.actpanel .actrow{grid-template-columns:minmax(0,1fr) auto}}.actpanel .actrow .actctl{justify-content:flex-start}.actfold{display:flex;align-items:center;gap:6px;width:100%;border:0;border-top:1px solid var(--hk-border);text-align:left;cursor:pointer;font:inherit;font-size:calc(11.5px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}.actfold ha-icon{--mdc-icon-size:18px}.actpanel .actblock .finding{padding:8px 0;border-top:0}.fcopt{margin:12px 0;padding:12px 14px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-card)}.fcopt .markform{padding:0}.fcopt .statusform{padding:0}.fcchecklist{margin:6px 0 8px;padding-left:20px;display:grid;gap:6px}.dtabs{display:inline-flex;border:1px solid var(--hk-border);border-radius:10px;overflow:hidden;margin:0 0 12px}.dtabs button{border:0;background:var(--hk-card);padding:7px 18px;font:inherit;color:var(--hk-muted);cursor:pointer}.dtabs button+button{border-left:1px solid var(--hk-border)}.dtabs button.on{background:var(--hk-soft);color:var(--hk-text);font-weight:600}.fixsteps{display:flex;gap:6px;flex-wrap:wrap}.fixstep{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--hk-border);border-radius:999px;background:var(--hk-card);color:var(--hk-muted);font:inherit;cursor:pointer}.fixstep b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--hk-soft);font-size:calc(11px*var(--hk-fs,1))}.fixstep.past b{background:var(--hk-green-soft,var(--hk-soft));color:var(--hk-green,inherit)}.fixstep.on{border-color:var(--hk-blue);color:var(--hk-text);font-weight:600}.fixstep.on b{background:var(--hk-blue);color:#fff}.fixstep:disabled{opacity:.5;cursor:default}.fixrec{padding:4px 14px 2px;border-left:3px solid var(--hk-blue)}.fixmore{padding:0 14px}.fixmore summary{cursor:pointer;padding:10px 0;color:var(--hk-muted)}.fixexits{padding:8px 14px 12px}.fixexits .fceyebrow{display:block;margin:4px 0 8px}.fixexits .mbtns{display:flex;flex-wrap:wrap;gap:8px}.fixobjways{margin:8px 14px 12px}.fixrating{padding:0 14px 12px}.fcways{margin:12px 0 12px;padding:6px 14px 10px;border:1px solid var(--hk-blue);border-radius:12px}.fcways .fceyebrow{display:block;margin:4px 0 2px}.fcway{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--hk-border)}.fcways .fceyebrow+.fcway{border-top:0}.fcway .fctxt{display:grid;gap:2px}.fcway small{color:var(--hk-muted)}.fcii-mute{background:var(--hk-soft);color:var(--hk-muted)}.fcplan{border-color:var(--hk-blue)}.fcplanbtns{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}.fcplan h3{margin:2px 0 8px}.fcplanrows{list-style:none;margin:0 0 8px;padding:0;display:grid}.fcplanrows li{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--hk-border)}.fcplanrows li:first-child{border-top:0}.fcplanrows small{color:var(--hk-muted)}
       .fccard.fixcard .pad{padding:18px 20px}.fixcard h3{margin:4px 0 12px}.fixbody>.fixrec,.fixbody>.fixmore,.fixbody>.fixexits,.fixbody>.fixrating{padding-left:0;padding-right:0}.fixbody>.fixobjways{margin-left:0;margin-right:0}.fixbody>:last-child{margin-bottom:0}.fixbody>.fixrec{padding-top:0;padding-bottom:0;border-left:0}.fixbody .fixobjways{margin:0;padding:2px 12px;border-color:var(--hk-border);border-radius:10px;background:var(--hk-surface)}.fixbody>.fixrec .fixobjways{background:color-mix(in srgb,var(--hk-blue) 5%,var(--hk-surface))}.fixobjways .fceyebrow{margin:8px 0 4px}.fixbody>.fixexits{padding-top:0;padding-bottom:0;margin-top:18px}.fixexits .mbtns{gap:6px}.fixexits .btn{min-height:32px;padding:5px 12px;font-size:calc(13px*var(--hk-fs,1));font-weight:500}.fixsub{margin:20px 0 8px;font-size:calc(14px*var(--hk-fs,1));font-weight:600}.fixinfo{margin:0;height:auto}.fixinfo .fcirow{grid-template-columns:24px 110px minmax(0,1fr) 0;height:auto;min-height:40px;padding:9px 0;align-items:start}.fixinfo .fcirow>span:nth-child(3){white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.fixinfo .fcirow small{display:block;margin-top:2px;color:var(--hk-muted)}@media(max-width:600px){.fixinfo .fcirow{grid-template-columns:24px minmax(0,1fr)}.fixinfo .fcirow>span:nth-child(3){grid-column:2}}.fcstep:disabled{opacity:.5;cursor:default}.row.aprow{grid-template-columns:auto auto minmax(0,1fr) auto}.apsummary{margin:0;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.fixpickbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:12px 16px;border-top:1px solid var(--hk-border)}.fixpickact{display:flex;flex-wrap:wrap;gap:8px}.fixpickbar .btn:disabled{opacity:.45;box-shadow:none}@media(max-width:600px){.fixpickbar .btn,.fixpickact{flex:1 1 100%}.fixpickact .btn{flex:1}}
       .startint{display:grid;grid-template-columns:minmax(0,2fr) 110px 70px minmax(120px,1.3fr) minmax(80px,1fr);gap:6px 12px;align-items:center;font-size:13px;padding:6px 0;border-top:1px solid var(--hk-border)}.startint .sysshare{min-width:0}.remhist.startdet td{padding:0 16px 8px 44px;background:var(--hk-surface);border-top:1px solid var(--hk-border)}.startdet .sectionlabel{padding:12px 0 6px}.startdet .sectionlabel .pill{margin-left:6px;letter-spacing:0}.startdet .startint{padding:8px 0}.startdet .startint.starthead{padding:2px 0 6px;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1));font-weight:600;border-top:0;border-bottom:1px solid var(--hk-border)}.startdet .startint.starthead>:nth-child(3){text-align:right}.startdet .startint:last-of-type{border-bottom:0}.startname .id{font-family:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.startname .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.startname strong .pill{margin-left:6px;font-weight:500}.startok{display:inline-flex;align-items:center;gap:4px;color:var(--hk-muted)}.startok ha-icon{--mdc-icon-size:15px;color:var(--hk-green)}.startint.link{cursor:pointer;border-radius:6px}.startint.link:hover{background:var(--hk-surface)}.startint.link:focus-visible{outline:2px solid var(--hk-blue);outline-offset:0}.startint small{font-size:calc(11.5px*var(--hk-fs,1))}@media(max-width:700px){.startint{grid-template-columns:minmax(0,1fr) auto auto}.startint>:nth-child(4),.startint>:nth-child(5){display:none}}.startname{display:flex;flex-direction:column;min-width:0}.startint b{font-weight:500;text-align:right}
-      .clstrips{display:grid;gap:8px;padding:12px 16px}.clstripline{display:grid;grid-template-columns:minmax(90px,150px) minmax(0,1fr);gap:10px;align-items:center;font-size:calc(13px*var(--hk-fs,1));color:var(--hk-muted)}.clstrip{display:flex;height:12px;border-radius:4px;overflow:hidden;background:var(--hk-soft)}.clstrip i{display:block;height:100%;min-width:2px}.cl-ok{background:var(--hk-green)}.cl-note{background:var(--hk-amber)}.cl-problem{background:var(--hk-red)}.cl-unknown{background:var(--hk-gray)}.cl-running{background:var(--hk-blue)}.cl-none{background:repeating-linear-gradient(45deg,var(--hk-soft),var(--hk-soft) 4px,var(--hk-border) 4px,var(--hk-border) 8px)}.cllegend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:0 16px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.cllegend span{display:inline-flex;align-items:center;gap:6px}.cllegend i{display:inline-block;width:14px;height:9px;border-radius:2px}.clrow{grid-template-columns:auto minmax(0,1fr) auto}.clstep{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.clstep ha-icon{--mdc-icon-size:16px;color:var(--hk-muted)}@media(max-width:600px){.clstripline{grid-template-columns:minmax(0,1fr)}.clrow{grid-template-columns:auto minmax(0,1fr);grid-auto-flow:row}.clrow .clstep{grid-column:2;grid-row:2;flex-wrap:wrap}}
+      .clstrips{display:grid;gap:8px;padding:12px 16px}.clstripline{display:grid;grid-template-columns:minmax(90px,150px) minmax(0,1fr);gap:10px;align-items:center;font-size:calc(13px*var(--hk-fs,1));color:var(--hk-muted)}.clstrip{display:flex;height:12px;border-radius:4px;overflow:hidden;background:var(--hk-soft)}.clstrip i{display:block;height:100%;min-width:2px}.cl-ok{background:var(--hk-green)}.cl-note{background:var(--hk-amber)}.cl-problem{background:var(--hk-red)}.cl-unknown{background:var(--hk-gray)}.cl-running{background:var(--hk-blue)}.cl-none{background:repeating-linear-gradient(45deg,var(--hk-soft),var(--hk-soft) 4px,var(--hk-border) 4px,var(--hk-border) 8px)}.cllegend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:0 16px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.cllegend span{display:inline-flex;align-items:center;gap:6px}.cllegend i{display:inline-block;width:14px;height:9px;border-radius:2px}.clrow{grid-template-columns:auto minmax(0,1fr) auto auto}.clrow.dim{opacity:.75}.clrow .rowmenu{margin:0}.clstep{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.clstep ha-icon{--mdc-icon-size:16px;color:var(--hk-muted)}@media(max-width:600px){.clstripline{grid-template-columns:minmax(0,1fr)}.clrow{grid-template-columns:auto minmax(0,1fr) auto;grid-auto-flow:row}.clrow .clstep{grid-column:2;grid-row:2;flex-wrap:wrap}.clrow .rowmenu{grid-column:3;grid-row:1}}
       ${this.themeCss()}
 .acttools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.actsearch{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.actday{margin:14px 16px 4px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(11px*var(--hk-fs,1))}.actlist{list-style:none;margin:0;padding:0 16px}.actrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--hk-border)}.acttext{flex:1;min-width:0}.acttext small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.actrow time{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
 .fcinfo{margin:10px 0 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);height:140px;box-sizing:border-box;padding:0 12px;overflow:hidden}.fcirow{display:grid;grid-template-columns:24px 92px minmax(0,1fr) 16px;gap:10px;align-items:center;width:100%;height:34px;margin:0;padding:0;border:0;border-top:1px solid var(--hk-border);background:none;color:inherit;font:inherit;font-size:calc(13px*var(--hk-fs,1));text-align:left}.fcinfo>:first-child{border-top:0}.fcinfo.hasrec{height:auto;padding-bottom:6px}@media(max-width:600px){.fcirow.fcirec{grid-template-columns:24px minmax(0,1fr);row-gap:2px}.fcirow.fcirec>span:nth-child(3){grid-column:2}.fcirow.fcirec>i{display:none}}.fcirow>span:nth-child(2){color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase}.fcirow>span:nth-child(3){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fcirow>ha-icon{--mdc-icon-size:16px;color:var(--hk-muted);opacity:.45}.fcii{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%}.fcii ha-icon{--mdc-icon-size:15px}.fcii-blue{background:color-mix(in srgb,var(--hk-blue) 14%,transparent);color:var(--hk-blue-text,var(--hk-blue))}.fcii-amber{background:color-mix(in srgb,var(--hk-amber) 18%,transparent);color:var(--hk-amber)}.fcii-red{background:color-mix(in srgb,var(--hk-red) 14%,transparent);color:var(--hk-red)}.fcii-green{background:color-mix(in srgb,var(--hk-green) 16%,transparent);color:var(--hk-green-text,var(--hk-green))}.fcipill{display:inline-block;padding:1px 10px;border-radius:99px;background:color-mix(in srgb,var(--hk-green) 14%,transparent);color:var(--hk-green-text,var(--hk-green));font-size:calc(12px*var(--hk-fs,1))}button.fcirow{cursor:pointer}button.fcirow:hover,button.fcirow:focus-visible{background:var(--hk-soft)}button.fcirow:hover>ha-icon,button.fcirow:focus-visible>ha-icon{opacity:1}.fcino{color:var(--hk-muted)}.fciok{color:var(--hk-green-text,var(--hk-green))}.fcwhat{height:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle{min-height:56px}.fctitle h3,.fctitle .fcid{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fctitle>div:last-child{min-width:0}
@@ -7143,6 +7143,8 @@ class AutoPauseMixin {
 // Mixed into the panel in 99-register.js.
 const CL_DAYS = [7, 30, 90];
 const CL_LEVEL_PILL = { ok: "ok", note: "warn", problem: "red", unknown: "mute", running: "blue" };
+const CL_REASONS = ["backup_running", "restart", "maintenance", "test", "expected", "other"];
+const CL_SHOW = 200; // rows drawn; the export holds everything that was read
 const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: "autopause" };
 Object.assign(TEXT.de, {
   checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter. Nur Zeiten und Zahlen, keine Namen und Texte.",
@@ -7163,8 +7165,13 @@ Object.assign(TEXT.de, {
   clLasted: "dauerte {span}", clFlaps: "flattert ×{n}",
   clStart: "Home Assistant gestartet", clStartUnclean: "Home Assistant gestartet, nicht sauber gestoppt", clGap: "Keine Daten", clGapText: "Home Assistant war {span} nicht erreichbar, in dieser Zeit lief keine Prüfung",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
+  clMarkAs_backup_running: "Fehlalarm: Backup lief gerade", clMarkAs_restart: "Fehlalarm: Neustart", clMarkAs_maintenance: "Fehlalarm: Wartung", clMarkAs_test: "Fehlalarm: Test", clMarkAs_expected: "Fehlalarm: ist so gewollt", clMarkAs_other: "Fehlalarm: anderer Grund",
+  clUnmark: "Markierung entfernen", clOpenCheck: "Prüfung öffnen", clOnlyCheck: "Nur diese Prüfung zeigen", clOnlyCheckOn: "Nur: {what}", clOnlyCheckOff: "Alle Prüfungen zeigen",
+  clDismissed: "Fehlalarm · {reason}", clReason_backup_running: "Backup lief gerade", clReason_restart: "Neustart", clReason_maintenance: "Wartung", clReason_test: "Test", clReason_expected: "ist so gewollt", clReason_other: "anderer Grund",
+  clMarkFailed: "Die Markierung konnte nicht gespeichert werden.",
+  clExpName: "verlauf", clExpTitle: "Verlauf der Prüfungen", clExpAt: "Zeit", clExpArea: "Bereich", clExpCheck: "Prüfung", clExpFrom: "von", clExpTo: "nach", clExpCause: "Ursache", clExpLasted: "Dauer (Sekunden)", clExpDismissed: "Fehlalarm",
   clNoMatch: "Nichts gefunden.", clNoMatchNext: "Die Filter oder die Suche lassen keinen Eintrag übrig.",
-  clMore: "{shown} von {total} Einträgen gezeigt, die Filter ändern den Zeitraum nicht.", clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
+  clMore: "{shown} von {total} Einträgen gezeigt, der Export enthält alle des Zeitraums.", clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
 });
 Object.assign(TEXT.en, {
   checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it. Only times and numbers, no names and no texts.",
@@ -7185,14 +7192,19 @@ Object.assign(TEXT.en, {
   clLasted: "lasted {span}", clFlaps: "flapping ×{n}",
   clStart: "Home Assistant started", clStartUnclean: "Home Assistant started, not stopped cleanly", clGap: "No data", clGapText: "Home Assistant was unreachable for {span}, no check ran in that time",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
+  clMarkAs_backup_running: "False alarm: a backup was running", clMarkAs_restart: "False alarm: restart", clMarkAs_maintenance: "False alarm: maintenance", clMarkAs_test: "False alarm: test", clMarkAs_expected: "False alarm: as intended", clMarkAs_other: "False alarm: other reason",
+  clUnmark: "Remove the mark", clOpenCheck: "Open the check", clOnlyCheck: "Show only this check", clOnlyCheckOn: "Only: {what}", clOnlyCheckOff: "Show all checks",
+  clDismissed: "False alarm · {reason}", clReason_backup_running: "a backup was running", clReason_restart: "restart", clReason_maintenance: "maintenance", clReason_test: "test", clReason_expected: "as intended", clReason_other: "other reason",
+  clMarkFailed: "The mark could not be saved.",
+  clExpName: "history", clExpTitle: "History of the checks", clExpAt: "Time", clExpArea: "Area", clExpCheck: "Check", clExpFrom: "From", clExpTo: "To", clExpCause: "Cause", clExpLasted: "Lasted (seconds)", clExpDismissed: "False alarm",
   clNoMatch: "Nothing found.", clNoMatchNext: "The filters or the search leave no entry.",
-  clMore: "{shown} of {total} entries shown; the filters do not change the period.", clRetention: "Kept: {days} days, at most {max} entries.", clLoadError: "The history could not be read.",
+  clMore: "{shown} of {total} entries shown; the export holds all of the period.", clRetention: "Kept: {days} days, at most {max} entries.", clLoadError: "The history could not be read.",
 });
 
 class CheckLogMixin {
   async loadCheckLog() {
     this.clLoading = true;
-    try { this.checkLog = await this._hass.callWS({ type: "ha_housekeeper/check_log", days: this.clDays || 7 }); this.clError = ""; this.markLoaded("checklog"); }
+    try { this.checkLog = await this._hass.callWS({ type: "ha_housekeeper/check_log", days: this.clDays || 7, limit: 5000 }); this.clError = ""; this.markLoaded("checklog"); }
     catch (err) { this.clError = this.errText(err); }
     this.clLoading = false; this.render();
   }
@@ -7244,22 +7256,38 @@ class CheckLogMixin {
     return this.clCause(e);
   }
 
+  // Marks a change as a false alarm (reason) or takes the mark away (null); the page reads again afterwards.
+  async clMark(change, reason) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/check_log_mark", change, reason }); await this.loadCheckLog(); }
+    catch (err) { this.toast(this.errText(err) || this.t("clMarkFailed"), true); }
+  }
+
+  clMenu(e) {
+    const page = CL_AREA_PAGE[e.area];
+    return this.rowMenuHtml([
+      ...(e.dismissed ? [["mdi:flag-remove-outline", "clUnmark", `data-cl-unmark="${this.esc(e.id)}"`]] : CL_REASONS.map(r => ["mdi:flag-outline", `clMarkAs_${r}`, `data-cl-mark="${this.esc(e.id)}|${r}"`])),
+      null,
+      page ? ["mdi:open-in-new", "clOpenCheck", `data-jump="${page}"`] : null,
+      ["mdi:filter-outline", "clOnlyCheck", `data-cl-check="${this.esc(`${e.area}/${e.check}`)}"`],
+    ]);
+  }
+
   clSearchText(e) { return e.kind === "start" ? `${this.t(e.gap ? "clGap" : "clStart")} ${this.clText(e)}` : `${this.clAreaName(e.area)} ${this.clCheckName(e.area, e.check)} ${this.clText(e)}`.toLowerCase(); }
 
   clRow(e) {
     const time = this.clTime(e.at);
     if (e.kind === "start") {
       const tone = e.unclean ? ' data-rowtone="warn"' : "";
-      return `<div class="row clrow"${tone}><span class="tile ${e.unclean ? "warn" : "mute"}"><ha-icon icon="${e.gap ? "mdi:timer-sand-empty" : "mdi:restart"}"></ha-icon></span><span class="row-text"><strong>${this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart")}</strong><small>${this.esc(time)}${e.gap ? ` · ${this.esc(this.clText(e))}` : ""}</small></span><span class="clstep">${e.gap ? `<span class="pill mute">${this.t("clGap")}</span>` : ""}</span></div>`;
+      return `<div class="row clrow"${tone}><span class="tile ${e.unclean ? "warn" : "mute"}"><ha-icon icon="${e.gap ? "mdi:timer-sand-empty" : "mdi:restart"}"></ha-icon></span><span class="row-text"><strong>${this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart")}</strong><small>${this.esc(time)}${e.gap ? ` · ${this.esc(this.clText(e))}` : ""}</small></span><span class="clstep">${e.gap ? `<span class="pill mute">${this.t("clGap")}</span>` : ""}</span><span></span></div>`;
     }
-    const level = e.to, tone = level === "problem" ? ' data-rowtone="red"' : level === "note" ? ' data-rowtone="warn"' : "";
+    const level = e.to, tone = e.dismissed ? "" : level === "problem" ? ' data-rowtone="red"' : level === "note" ? ' data-rowtone="warn"' : "";
     const icon = { problem: "mdi:alert-circle-outline", note: "mdi:alert-outline", ok: "mdi:check", unknown: "mdi:help", running: "mdi:progress-clock" }[level] || "mdi:circle-small";
     const tile = { problem: "red", note: "warn", ok: "ok" }[level] || "mute";
     const page = CL_AREA_PAGE[e.area], title = `${this.esc(this.clAreaName(e.area))} · ${this.esc(this.clCheckName(e.area, e.check))}`;
     const name = page ? `<button type="button" class="linkbtn" data-jump="${page}">${title}</button>` : title;
     const pills = `<span class="pill ${CL_LEVEL_PILL[e.from] || "mute"}">${this.t(`clLevel_${e.from}`)}</span><ha-icon icon="mdi:arrow-right"></ha-icon><span class="pill ${CL_LEVEL_PILL[e.to] || "mute"}">${this.t(`clLevel_${e.to}`)}</span>`;
     const facts = [this.clText(e), typeof e.lasted_seconds === "number" ? this.t("clLasted", { span: this.clHours(e.lasted_seconds) }) : "", e.flaps ? this.t("clFlaps", { n: e.flaps }) : ""].filter(Boolean).join(" · ");
-    return `<div class="row clrow"${tone}><span class="tile ${tile}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${name}</strong><small>${this.esc(time)}${facts ? ` · ${this.esc(facts)}` : ""}</small></span><span class="clstep">${pills}</span></div>`;
+    return `<div class="row clrow${e.dismissed ? " dim" : ""}"${tone}><span class="tile ${tile}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${name}</strong><small>${this.esc(time)}${facts ? ` · ${this.esc(facts)}` : ""}</small></span><span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.t(`clReason_${e.dismissed}`) })}</span>` : ""}${pills}</span>${this.clMenu(e)}</div>`;
   }
 
   clStrips(log) {
@@ -7278,7 +7306,8 @@ class CheckLogMixin {
     const log = this.checkLog;
     const days = this.clDays || 7;
     const windows = CL_DAYS.map(d => `<button type="button" class="chip${days === d ? " active" : ""}" data-cl-days="${d}" aria-pressed="${days === d}">${this.t(`clDays_${d}`)}</button>`).join("");
-    const bar = this.pageBar({ left: windows, at: this.loadedAt("checklog"), loading: this.clLoading, attr: "data-cl-refresh" });
+    this.clRegisterExport();
+    const bar = this.pageBar({ left: windows, at: this.loadedAt("checklog"), loading: this.clLoading, attr: "data-cl-refresh", exportId: "checklog" });
     if (this.clError) return `<div class="stack">${bar}<div class="panel">${this.notice("err", this.t("clLoadError"))}<div class="pad"><small>${this.esc(this.clError)}</small></div></div></div>`;
     if (!log) return `<div class="stack">${bar}<div class="panel">${this.skeleton("loading")}</div></div>`;
     const sum = log.summary || {};
@@ -7292,14 +7321,17 @@ class CheckLogMixin {
     const recText = rec.length === 1 ? this.t("clRecurring", { what: `${this.clAreaName(rec[0].area)} · ${this.clCheckName(rec[0].area, rec[0].check)}`, n: rec[0].count }) : rec.length ? this.t("clRecurringMany", { n: rec.length, what: `${this.clAreaName(rec[0].area)} · ${this.clCheckName(rec[0].area, rec[0].check)}` }) : "";
     const recur = rec.length ? `<div class="panel"><div class="row" data-rowtone="warn"><span class="tile warn"><ha-icon icon="mdi:repeat"></ha-icon></span><span class="row-text"><strong>${this.esc(recText)}</strong></span><button type="button" class="btn" data-jump="reliability">${this.t("clRecurringOpen")}</button></div></div>` : "";
     const areas = [...new Set([...(log.strips || []).map(s => s.area), ...log.entries.filter(e => e.area).map(e => e.area)])];
+    const only1 = this.clCheck || "";
     const area = areas.includes(this.clArea) ? this.clArea : "all", only = Boolean(this.clOnly), query = (this.clQuery || "").trim().toLowerCase();
     const chips = [["all", this.t("clAreaAll")], ...areas.map(a => [a, this.clAreaName(a)])].map(([key, label]) => `<button type="button" class="chip${key === area ? " active" : ""}" data-cl-area="${this.esc(key)}" aria-pressed="${key === area}">${this.esc(label)}</button>`).join("")
-      + `<button type="button" class="chip${only ? " active" : ""}" data-cl-only aria-pressed="${only}">${this.t("clOnlyProblems")}</button>`;
+      + `<button type="button" class="chip${only ? " active" : ""}" data-cl-only aria-pressed="${only}">${this.t("clOnlyProblems")}</button>`
+      + (only1 ? `<button type="button" class="chip active" data-cl-check-off aria-pressed="true" title="${this.esc(this.t("clOnlyCheckOff"))}">${this.esc(this.t("clOnlyCheckOn", { what: `${this.clAreaName(only1.split("/")[0])} · ${this.clCheckName(only1.split("/")[0], only1.split("/")[1])}` }))}<ha-icon icon="mdi:close"></ha-icon></button>` : "");
     const shown = log.entries.filter(e => (area === "all" || e.area === area)
+      && (!only1 || (e.kind === "change" && `${e.area}/${e.check}` === only1))
       && (!only || (e.kind === "change" && (e.to === "problem" || e.to === "note")))
       && (!query || this.clSearchText(e).includes(query)));
     const groups = [];
-    for (const e of shown) {
+    for (const e of shown.slice(0, CL_SHOW)) {
       const label = this.activityDay(e.at);
       if (!groups.length || groups[groups.length - 1].label !== label) groups.push({ label, rows: [] });
       groups[groups.length - 1].rows.push(e);
@@ -7309,11 +7341,22 @@ class CheckLogMixin {
       ? `<div class="emptymsg mute"><ha-icon icon="mdi:history"></ha-icon><strong>${this.t("clEmpty")}</strong>${this.t("clEmptyNext", { days: log.retention_days, max: this.formatNumber(log.max_events) })}</div>`
       : `<div class="emptymsg mute"><ha-icon icon="mdi:filter-off-outline"></ha-icon><strong>${this.t("clNoMatch")}</strong>${this.t("clNoMatchNext")}</div>`;
     const tools = `<div class="pad acttools"><input type="search" class="actsearch" data-cl-q value="${this.esc(this.clQuery || "")}" placeholder="${this.esc(this.t("clSearch"))}" aria-label="${this.esc(this.t("clSearch"))}"><div class="chips bare" role="group">${chips}</div></div>`;
-    const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}${log.total > log.entries.length ? ` ${this.t("clMore", { shown: this.formatNumber(log.entries.length), total: this.formatNumber(log.total) })}` : ""}</small></div>`;
+    const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}${shown.length > CL_SHOW ? ` ${this.t("clMore", { shown: this.formatNumber(CL_SHOW), total: this.formatNumber(shown.length) })}` : ""}</small></div>`;
     return `<div class="stack">${bar}${tiles}${recur}${this.clStrips(log)}<section class="panel">${tools}${shown.length ? list : empty}${foot}</section></div>`;
   }
 
+  // What the export holds: every change of the period (ids and numbers only), also the ones the page does not draw.
+  clRegisterExport() {
+    const rows = () => (this.checkLog?.entries || []).filter(e => e.kind === "change").map(e => [e.at, e.area, e.check, e.from, e.to,
+      Object.entries(e.cause || {}).map(([k, v]) => `${k}=${v}`).join("; "), e.lasted_seconds ?? "", e.dismissed || ""]);
+    this.setExporter("checklog", this.t("clExpName"), ["clExpAt", "clExpArea", "clExpCheck", "clExpFrom", "clExpTo", "clExpCause", "clExpLasted", "clExpDismissed"].map(k => this.t(k)), rows);
+  }
+
   bindCheckLog(root) {
+    root.querySelectorAll("[data-cl-mark]").forEach(el => el.onclick = () => { const v = el.dataset.clMark, cut = v.lastIndexOf("|"); this.clMark(v.slice(0, cut), v.slice(cut + 1)); });
+    root.querySelectorAll("[data-cl-unmark]").forEach(el => el.onclick = () => this.clMark(el.dataset.clUnmark, null));
+    root.querySelectorAll("[data-cl-check]").forEach(el => el.onclick = () => { this.clCheck = el.dataset.clCheck; this.render(); });
+    root.querySelector("[data-cl-check-off]")?.addEventListener("click", () => { this.clCheck = ""; this.render(); });
     root.querySelectorAll("[data-cl-days]").forEach(el => el.onclick = () => { this.clDays = Number(el.dataset.clDays); this.loadCheckLog(); });
     root.querySelectorAll("[data-cl-area]").forEach(el => el.onclick = () => { this.clArea = el.dataset.clArea; this.render(); });
     root.querySelector("[data-cl-only]")?.addEventListener("click", () => { this.clOnly = !this.clOnly; this.render(); });
@@ -12784,6 +12827,7 @@ const ERR_MESSAGE_KEYS = {
   "Unknown automation": "err_unknown_automation",
   "Unknown device": "err_unknown_device",
   "Finding not found in the latest scan": "err_finding_not_found",
+  "That change is no longer in the log": "err_check_log_unknown",
   "The cleanup has not begun": "err_not_running",
   "A stage is needed": "err_stage_needed",
   "Object not found in the latest scan": "err_object_not_found",
@@ -12809,7 +12853,7 @@ const ERR_MESSAGE_KEYS = {
 
 Object.assign(TEXT.de, {
   err_plan_not_found: "Der Plan wurde nicht gefunden.", err_unknown_automation: "Diese Automation ist unbekannt.", err_unknown_device: "Dieses Gerät ist unbekannt.",
-  err_finding_not_found: "Der Befund ist im letzten Scan nicht mehr vorhanden.", err_object_not_found: "Das Objekt ist im letzten Scan nicht mehr vorhanden.",
+  err_check_log_unknown: "Die Änderung steht nicht mehr im Verlauf.", err_finding_not_found: "Der Befund ist im letzten Scan nicht mehr vorhanden.", err_object_not_found: "Das Objekt ist im letzten Scan nicht mehr vorhanden.",
   err_run_gone: "Dieser Lauf ist nicht mehr im Ablaufspeicher.", err_two_devices: "Es braucht zwei verschiedene bekannte Geräte.", err_two_plans: "Es braucht zwei oder mehr bekannte Pläne.",
   err_busy_starting: "Home Assistant startet noch, oder ein Plan oder eine Änderung läuft.", err_busy_change: "Es läuft bereits eine andere Änderung.",
   err_nothing_to_change: "Es gibt nichts zu ändern.", err_out_of_order: "Nicht angenommen: falsche Reihenfolge.", err_plan_not_run: "Nicht angenommen: der Plan ist nicht gelaufen.", err_invalid_window: "Das Zeitfenster ist ungültig.",
@@ -12823,7 +12867,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   err_plan_not_found: "The plan was not found.", err_unknown_automation: "This automation is unknown.", err_unknown_device: "This device is unknown.",
-  err_finding_not_found: "The finding is no longer in the latest scan.", err_object_not_found: "The object is no longer in the latest scan.",
+  err_check_log_unknown: "The change is no longer in the log.", err_finding_not_found: "The finding is no longer in the latest scan.", err_object_not_found: "The object is no longer in the latest scan.",
   err_run_gone: "This run is no longer in the trace buffer.", err_two_devices: "Two different known devices are needed.", err_two_plans: "Two or more known plans are needed.",
   err_busy_starting: "Home Assistant is still starting, or a plan or change is running.", err_busy_change: "Another change is already running.",
   err_nothing_to_change: "There is nothing to change.", err_out_of_order: "Not accepted: out of order.", err_plan_not_run: "Not accepted: the plan has not run.", err_invalid_window: "The time window is invalid.",

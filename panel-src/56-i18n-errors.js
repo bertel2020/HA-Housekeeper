@@ -5,6 +5,7 @@ const ERR_MESSAGE_KEYS = {
   "Unknown automation": "err_unknown_automation",
   "Unknown device": "err_unknown_device",
   "Finding not found in the latest scan": "err_finding_not_found",
+  "That change is no longer in the log": "err_check_log_unknown",
   "The cleanup has not begun": "err_not_running",
   "A stage is needed": "err_stage_needed",
   "Object not found in the latest scan": "err_object_not_found",
@@ -30,7 +31,7 @@ const ERR_MESSAGE_KEYS = {
 
 Object.assign(TEXT.de, {
   err_plan_not_found: "Der Plan wurde nicht gefunden.", err_unknown_automation: "Diese Automation ist unbekannt.", err_unknown_device: "Dieses Gerät ist unbekannt.",
-  err_finding_not_found: "Der Befund ist im letzten Scan nicht mehr vorhanden.", err_object_not_found: "Das Objekt ist im letzten Scan nicht mehr vorhanden.",
+  err_check_log_unknown: "Die Änderung steht nicht mehr im Verlauf.", err_finding_not_found: "Der Befund ist im letzten Scan nicht mehr vorhanden.", err_object_not_found: "Das Objekt ist im letzten Scan nicht mehr vorhanden.",
   err_run_gone: "Dieser Lauf ist nicht mehr im Ablaufspeicher.", err_two_devices: "Es braucht zwei verschiedene bekannte Geräte.", err_two_plans: "Es braucht zwei oder mehr bekannte Pläne.",
   err_busy_starting: "Home Assistant startet noch, oder ein Plan oder eine Änderung läuft.", err_busy_change: "Es läuft bereits eine andere Änderung.",
   err_nothing_to_change: "Es gibt nichts zu ändern.", err_out_of_order: "Nicht angenommen: falsche Reihenfolge.", err_plan_not_run: "Nicht angenommen: der Plan ist nicht gelaufen.", err_invalid_window: "Das Zeitfenster ist ungültig.",
@@ -44,7 +45,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   err_plan_not_found: "The plan was not found.", err_unknown_automation: "This automation is unknown.", err_unknown_device: "This device is unknown.",
-  err_finding_not_found: "The finding is no longer in the latest scan.", err_object_not_found: "The object is no longer in the latest scan.",
+  err_check_log_unknown: "The change is no longer in the log.", err_finding_not_found: "The finding is no longer in the latest scan.", err_object_not_found: "The object is no longer in the latest scan.",
   err_run_gone: "This run is no longer in the trace buffer.", err_two_devices: "Two different known devices are needed.", err_two_plans: "Two or more known plans are needed.",
   err_busy_starting: "Home Assistant is still starting, or a plan or change is running.", err_busy_change: "Another change is already running.",
   err_nothing_to_change: "There is nothing to change.", err_out_of_order: "Not accepted: out of order.", err_plan_not_run: "Not accepted: the plan has not run.", err_invalid_window: "The time window is invalid.",

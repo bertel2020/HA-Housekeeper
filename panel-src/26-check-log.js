@@ -3,6 +3,8 @@
 // Mixed into the panel in 99-register.js.
 const CL_DAYS = [7, 30, 90];
 const CL_LEVEL_PILL = { ok: "ok", note: "warn", problem: "red", unknown: "mute", running: "blue" };
+const CL_REASONS = ["backup_running", "restart", "maintenance", "test", "expected", "other"];
+const CL_SHOW = 200; // rows drawn; the export holds everything that was read
 const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: "autopause" };
 Object.assign(TEXT.de, {
   checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter. Nur Zeiten und Zahlen, keine Namen und Texte.",
@@ -23,8 +25,13 @@ Object.assign(TEXT.de, {
   clLasted: "dauerte {span}", clFlaps: "flattert ×{n}",
   clStart: "Home Assistant gestartet", clStartUnclean: "Home Assistant gestartet, nicht sauber gestoppt", clGap: "Keine Daten", clGapText: "Home Assistant war {span} nicht erreichbar, in dieser Zeit lief keine Prüfung",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
+  clMarkAs_backup_running: "Fehlalarm: Backup lief gerade", clMarkAs_restart: "Fehlalarm: Neustart", clMarkAs_maintenance: "Fehlalarm: Wartung", clMarkAs_test: "Fehlalarm: Test", clMarkAs_expected: "Fehlalarm: ist so gewollt", clMarkAs_other: "Fehlalarm: anderer Grund",
+  clUnmark: "Markierung entfernen", clOpenCheck: "Prüfung öffnen", clOnlyCheck: "Nur diese Prüfung zeigen", clOnlyCheckOn: "Nur: {what}", clOnlyCheckOff: "Alle Prüfungen zeigen",
+  clDismissed: "Fehlalarm · {reason}", clReason_backup_running: "Backup lief gerade", clReason_restart: "Neustart", clReason_maintenance: "Wartung", clReason_test: "Test", clReason_expected: "ist so gewollt", clReason_other: "anderer Grund",
+  clMarkFailed: "Die Markierung konnte nicht gespeichert werden.",
+  clExpName: "verlauf", clExpTitle: "Verlauf der Prüfungen", clExpAt: "Zeit", clExpArea: "Bereich", clExpCheck: "Prüfung", clExpFrom: "von", clExpTo: "nach", clExpCause: "Ursache", clExpLasted: "Dauer (Sekunden)", clExpDismissed: "Fehlalarm",
   clNoMatch: "Nichts gefunden.", clNoMatchNext: "Die Filter oder die Suche lassen keinen Eintrag übrig.",
-  clMore: "{shown} von {total} Einträgen gezeigt, die Filter ändern den Zeitraum nicht.", clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
+  clMore: "{shown} von {total} Einträgen gezeigt, der Export enthält alle des Zeitraums.", clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
 });
 Object.assign(TEXT.en, {
   checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it. Only times and numbers, no names and no texts.",
@@ -45,14 +52,19 @@ Object.assign(TEXT.en, {
   clLasted: "lasted {span}", clFlaps: "flapping ×{n}",
   clStart: "Home Assistant started", clStartUnclean: "Home Assistant started, not stopped cleanly", clGap: "No data", clGapText: "Home Assistant was unreachable for {span}, no check ran in that time",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
+  clMarkAs_backup_running: "False alarm: a backup was running", clMarkAs_restart: "False alarm: restart", clMarkAs_maintenance: "False alarm: maintenance", clMarkAs_test: "False alarm: test", clMarkAs_expected: "False alarm: as intended", clMarkAs_other: "False alarm: other reason",
+  clUnmark: "Remove the mark", clOpenCheck: "Open the check", clOnlyCheck: "Show only this check", clOnlyCheckOn: "Only: {what}", clOnlyCheckOff: "Show all checks",
+  clDismissed: "False alarm · {reason}", clReason_backup_running: "a backup was running", clReason_restart: "restart", clReason_maintenance: "maintenance", clReason_test: "test", clReason_expected: "as intended", clReason_other: "other reason",
+  clMarkFailed: "The mark could not be saved.",
+  clExpName: "history", clExpTitle: "History of the checks", clExpAt: "Time", clExpArea: "Area", clExpCheck: "Check", clExpFrom: "From", clExpTo: "To", clExpCause: "Cause", clExpLasted: "Lasted (seconds)", clExpDismissed: "False alarm",
   clNoMatch: "Nothing found.", clNoMatchNext: "The filters or the search leave no entry.",
-  clMore: "{shown} of {total} entries shown; the filters do not change the period.", clRetention: "Kept: {days} days, at most {max} entries.", clLoadError: "The history could not be read.",
+  clMore: "{shown} of {total} entries shown; the export holds all of the period.", clRetention: "Kept: {days} days, at most {max} entries.", clLoadError: "The history could not be read.",
 });
 
 class CheckLogMixin {
   async loadCheckLog() {
     this.clLoading = true;
-    try { this.checkLog = await this._hass.callWS({ type: "ha_housekeeper/check_log", days: this.clDays || 7 }); this.clError = ""; this.markLoaded("checklog"); }
+    try { this.checkLog = await this._hass.callWS({ type: "ha_housekeeper/check_log", days: this.clDays || 7, limit: 5000 }); this.clError = ""; this.markLoaded("checklog"); }
     catch (err) { this.clError = this.errText(err); }
     this.clLoading = false; this.render();
   }
@@ -104,22 +116,38 @@ class CheckLogMixin {
     return this.clCause(e);
   }
 
+  // Marks a change as a false alarm (reason) or takes the mark away (null); the page reads again afterwards.
+  async clMark(change, reason) {
+    try { await this._hass.callWS({ type: "ha_housekeeper/check_log_mark", change, reason }); await this.loadCheckLog(); }
+    catch (err) { this.toast(this.errText(err) || this.t("clMarkFailed"), true); }
+  }
+
+  clMenu(e) {
+    const page = CL_AREA_PAGE[e.area];
+    return this.rowMenuHtml([
+      ...(e.dismissed ? [["mdi:flag-remove-outline", "clUnmark", `data-cl-unmark="${this.esc(e.id)}"`]] : CL_REASONS.map(r => ["mdi:flag-outline", `clMarkAs_${r}`, `data-cl-mark="${this.esc(e.id)}|${r}"`])),
+      null,
+      page ? ["mdi:open-in-new", "clOpenCheck", `data-jump="${page}"`] : null,
+      ["mdi:filter-outline", "clOnlyCheck", `data-cl-check="${this.esc(`${e.area}/${e.check}`)}"`],
+    ]);
+  }
+
   clSearchText(e) { return e.kind === "start" ? `${this.t(e.gap ? "clGap" : "clStart")} ${this.clText(e)}` : `${this.clAreaName(e.area)} ${this.clCheckName(e.area, e.check)} ${this.clText(e)}`.toLowerCase(); }
 
   clRow(e) {
     const time = this.clTime(e.at);
     if (e.kind === "start") {
       const tone = e.unclean ? ' data-rowtone="warn"' : "";
-      return `<div class="row clrow"${tone}><span class="tile ${e.unclean ? "warn" : "mute"}"><ha-icon icon="${e.gap ? "mdi:timer-sand-empty" : "mdi:restart"}"></ha-icon></span><span class="row-text"><strong>${this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart")}</strong><small>${this.esc(time)}${e.gap ? ` · ${this.esc(this.clText(e))}` : ""}</small></span><span class="clstep">${e.gap ? `<span class="pill mute">${this.t("clGap")}</span>` : ""}</span></div>`;
+      return `<div class="row clrow"${tone}><span class="tile ${e.unclean ? "warn" : "mute"}"><ha-icon icon="${e.gap ? "mdi:timer-sand-empty" : "mdi:restart"}"></ha-icon></span><span class="row-text"><strong>${this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart")}</strong><small>${this.esc(time)}${e.gap ? ` · ${this.esc(this.clText(e))}` : ""}</small></span><span class="clstep">${e.gap ? `<span class="pill mute">${this.t("clGap")}</span>` : ""}</span><span></span></div>`;
     }
-    const level = e.to, tone = level === "problem" ? ' data-rowtone="red"' : level === "note" ? ' data-rowtone="warn"' : "";
+    const level = e.to, tone = e.dismissed ? "" : level === "problem" ? ' data-rowtone="red"' : level === "note" ? ' data-rowtone="warn"' : "";
     const icon = { problem: "mdi:alert-circle-outline", note: "mdi:alert-outline", ok: "mdi:check", unknown: "mdi:help", running: "mdi:progress-clock" }[level] || "mdi:circle-small";
     const tile = { problem: "red", note: "warn", ok: "ok" }[level] || "mute";
     const page = CL_AREA_PAGE[e.area], title = `${this.esc(this.clAreaName(e.area))} · ${this.esc(this.clCheckName(e.area, e.check))}`;
     const name = page ? `<button type="button" class="linkbtn" data-jump="${page}">${title}</button>` : title;
     const pills = `<span class="pill ${CL_LEVEL_PILL[e.from] || "mute"}">${this.t(`clLevel_${e.from}`)}</span><ha-icon icon="mdi:arrow-right"></ha-icon><span class="pill ${CL_LEVEL_PILL[e.to] || "mute"}">${this.t(`clLevel_${e.to}`)}</span>`;
     const facts = [this.clText(e), typeof e.lasted_seconds === "number" ? this.t("clLasted", { span: this.clHours(e.lasted_seconds) }) : "", e.flaps ? this.t("clFlaps", { n: e.flaps }) : ""].filter(Boolean).join(" · ");
-    return `<div class="row clrow"${tone}><span class="tile ${tile}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${name}</strong><small>${this.esc(time)}${facts ? ` · ${this.esc(facts)}` : ""}</small></span><span class="clstep">${pills}</span></div>`;
+    return `<div class="row clrow${e.dismissed ? " dim" : ""}"${tone}><span class="tile ${tile}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${name}</strong><small>${this.esc(time)}${facts ? ` · ${this.esc(facts)}` : ""}</small></span><span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.t(`clReason_${e.dismissed}`) })}</span>` : ""}${pills}</span>${this.clMenu(e)}</div>`;
   }
 
   clStrips(log) {
@@ -138,7 +166,8 @@ class CheckLogMixin {
     const log = this.checkLog;
     const days = this.clDays || 7;
     const windows = CL_DAYS.map(d => `<button type="button" class="chip${days === d ? " active" : ""}" data-cl-days="${d}" aria-pressed="${days === d}">${this.t(`clDays_${d}`)}</button>`).join("");
-    const bar = this.pageBar({ left: windows, at: this.loadedAt("checklog"), loading: this.clLoading, attr: "data-cl-refresh" });
+    this.clRegisterExport();
+    const bar = this.pageBar({ left: windows, at: this.loadedAt("checklog"), loading: this.clLoading, attr: "data-cl-refresh", exportId: "checklog" });
     if (this.clError) return `<div class="stack">${bar}<div class="panel">${this.notice("err", this.t("clLoadError"))}<div class="pad"><small>${this.esc(this.clError)}</small></div></div></div>`;
     if (!log) return `<div class="stack">${bar}<div class="panel">${this.skeleton("loading")}</div></div>`;
     const sum = log.summary || {};
@@ -152,14 +181,17 @@ class CheckLogMixin {
     const recText = rec.length === 1 ? this.t("clRecurring", { what: `${this.clAreaName(rec[0].area)} · ${this.clCheckName(rec[0].area, rec[0].check)}`, n: rec[0].count }) : rec.length ? this.t("clRecurringMany", { n: rec.length, what: `${this.clAreaName(rec[0].area)} · ${this.clCheckName(rec[0].area, rec[0].check)}` }) : "";
     const recur = rec.length ? `<div class="panel"><div class="row" data-rowtone="warn"><span class="tile warn"><ha-icon icon="mdi:repeat"></ha-icon></span><span class="row-text"><strong>${this.esc(recText)}</strong></span><button type="button" class="btn" data-jump="reliability">${this.t("clRecurringOpen")}</button></div></div>` : "";
     const areas = [...new Set([...(log.strips || []).map(s => s.area), ...log.entries.filter(e => e.area).map(e => e.area)])];
+    const only1 = this.clCheck || "";
     const area = areas.includes(this.clArea) ? this.clArea : "all", only = Boolean(this.clOnly), query = (this.clQuery || "").trim().toLowerCase();
     const chips = [["all", this.t("clAreaAll")], ...areas.map(a => [a, this.clAreaName(a)])].map(([key, label]) => `<button type="button" class="chip${key === area ? " active" : ""}" data-cl-area="${this.esc(key)}" aria-pressed="${key === area}">${this.esc(label)}</button>`).join("")
-      + `<button type="button" class="chip${only ? " active" : ""}" data-cl-only aria-pressed="${only}">${this.t("clOnlyProblems")}</button>`;
+      + `<button type="button" class="chip${only ? " active" : ""}" data-cl-only aria-pressed="${only}">${this.t("clOnlyProblems")}</button>`
+      + (only1 ? `<button type="button" class="chip active" data-cl-check-off aria-pressed="true" title="${this.esc(this.t("clOnlyCheckOff"))}">${this.esc(this.t("clOnlyCheckOn", { what: `${this.clAreaName(only1.split("/")[0])} · ${this.clCheckName(only1.split("/")[0], only1.split("/")[1])}` }))}<ha-icon icon="mdi:close"></ha-icon></button>` : "");
     const shown = log.entries.filter(e => (area === "all" || e.area === area)
+      && (!only1 || (e.kind === "change" && `${e.area}/${e.check}` === only1))
       && (!only || (e.kind === "change" && (e.to === "problem" || e.to === "note")))
       && (!query || this.clSearchText(e).includes(query)));
     const groups = [];
-    for (const e of shown) {
+    for (const e of shown.slice(0, CL_SHOW)) {
       const label = this.activityDay(e.at);
       if (!groups.length || groups[groups.length - 1].label !== label) groups.push({ label, rows: [] });
       groups[groups.length - 1].rows.push(e);
@@ -169,11 +201,22 @@ class CheckLogMixin {
       ? `<div class="emptymsg mute"><ha-icon icon="mdi:history"></ha-icon><strong>${this.t("clEmpty")}</strong>${this.t("clEmptyNext", { days: log.retention_days, max: this.formatNumber(log.max_events) })}</div>`
       : `<div class="emptymsg mute"><ha-icon icon="mdi:filter-off-outline"></ha-icon><strong>${this.t("clNoMatch")}</strong>${this.t("clNoMatchNext")}</div>`;
     const tools = `<div class="pad acttools"><input type="search" class="actsearch" data-cl-q value="${this.esc(this.clQuery || "")}" placeholder="${this.esc(this.t("clSearch"))}" aria-label="${this.esc(this.t("clSearch"))}"><div class="chips bare" role="group">${chips}</div></div>`;
-    const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}${log.total > log.entries.length ? ` ${this.t("clMore", { shown: this.formatNumber(log.entries.length), total: this.formatNumber(log.total) })}` : ""}</small></div>`;
+    const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}${shown.length > CL_SHOW ? ` ${this.t("clMore", { shown: this.formatNumber(CL_SHOW), total: this.formatNumber(shown.length) })}` : ""}</small></div>`;
     return `<div class="stack">${bar}${tiles}${recur}${this.clStrips(log)}<section class="panel">${tools}${shown.length ? list : empty}${foot}</section></div>`;
   }
 
+  // What the export holds: every change of the period (ids and numbers only), also the ones the page does not draw.
+  clRegisterExport() {
+    const rows = () => (this.checkLog?.entries || []).filter(e => e.kind === "change").map(e => [e.at, e.area, e.check, e.from, e.to,
+      Object.entries(e.cause || {}).map(([k, v]) => `${k}=${v}`).join("; "), e.lasted_seconds ?? "", e.dismissed || ""]);
+    this.setExporter("checklog", this.t("clExpName"), ["clExpAt", "clExpArea", "clExpCheck", "clExpFrom", "clExpTo", "clExpCause", "clExpLasted", "clExpDismissed"].map(k => this.t(k)), rows);
+  }
+
   bindCheckLog(root) {
+    root.querySelectorAll("[data-cl-mark]").forEach(el => el.onclick = () => { const v = el.dataset.clMark, cut = v.lastIndexOf("|"); this.clMark(v.slice(0, cut), v.slice(cut + 1)); });
+    root.querySelectorAll("[data-cl-unmark]").forEach(el => el.onclick = () => this.clMark(el.dataset.clUnmark, null));
+    root.querySelectorAll("[data-cl-check]").forEach(el => el.onclick = () => { this.clCheck = el.dataset.clCheck; this.render(); });
+    root.querySelector("[data-cl-check-off]")?.addEventListener("click", () => { this.clCheck = ""; this.render(); });
     root.querySelectorAll("[data-cl-days]").forEach(el => el.onclick = () => { this.clDays = Number(el.dataset.clDays); this.loadCheckLog(); });
     root.querySelectorAll("[data-cl-area]").forEach(el => el.onclick = () => { this.clArea = el.dataset.clArea; this.render(); });
     root.querySelector("[data-cl-only]")?.addEventListener("click", () => { this.clOnly = !this.clOnly; this.render(); });
