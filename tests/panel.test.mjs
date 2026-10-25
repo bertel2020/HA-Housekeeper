@@ -7629,13 +7629,13 @@ test("the History page shows the strips, the changes with their causes and gaps,
   assert.ok(html.includes("cl-none") && html.includes("cl-problem"));
   assert.ok(html.includes("Backup protection") && html.includes("Last automatic run") && html.includes("Backup running: yes") && html.includes("odd key: 4") && html.includes("Integration tibber"));
   assert.ok(html.includes('data-rowtone="red"') && html.includes('data-rowtone="warn"') && html.includes("No data") && html.includes("data-cl-refresh"));
-  el.clOnly = true;
+  el.lv.checklog.f = { level: "attention" };
   assert.ok(!el.checkLogView().includes("No data"), "only problems and notes leave out the gap");
-  el.clOnly = false; el.clArea = "auto_pause";
+  el.lv.checklog.f = { area: "auto_pause" };
   const one = el.checkLogView();
   assert.ok(one.includes("Integration tibber") && !one.includes("Backup running"));
-  el.clArea = "all"; el.clQuery = "nothing like this";
-  assert.ok(el.checkLogView().includes("Nothing found."));
+  el.lv.checklog.f = {}; el.lv.checklog.q = "nothing like this";
+  assert.ok(el.checkLogView().includes(el.t("noMatches")));
 });
 
 test("the History page: the row menu marks a change as a false alarm, which dims it, and the export holds the numbers", async () => {
@@ -7651,7 +7651,7 @@ test("the History page: the row menu marks a change as a false alarm, which dims
   assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/check_log_mark", change: "2026-10-25T03:03:00+00:00|backup|last_run", reason: "restart" }));
   el.checkLog = { ...log, entries: log.entries.map(e => (e.check === "last_run" && e.to === "problem" ? { ...e, dismissed: "restart" } : e)) };
   html = el.checkLogView();
-  assert.ok(html.includes("False alarm · restart") && html.includes("data-cl-unmark=") && html.includes("row clrow dim"));
+  assert.ok(html.includes("False alarm · restart") && html.includes("data-cl-unmark=") && html.includes("cldim"));
   el.clCheck = "auto_pause/paused";
   assert.ok(!el.checkLogView().includes("Backup running") && el.checkLogView().includes("Only: "));
   el.clCheck = "";
@@ -7674,4 +7674,23 @@ test("the History page without entries says what it keeps, and a failed read say
   assert.ok(el.checkLogView().includes("Noch keine Wechsel.") && el.checkLogView().includes("90 Tage"));
   el.clError = "boom";
   assert.ok(el.checkLogView().includes("konnte nicht gelesen werden"));
+});
+
+test("the History page is a standard table: updates and edits link to their pages, a change says it follows a restart, tiles and strips filter", () => {
+  const { el } = panel("en");
+  const log = {
+    days: 7, total: 4, retention_days: 90, max_events: 5000, recurring: [], summary: { changes: 1, problems: 1, flapping: 0, longest_problem_seconds: 0 },
+    strips: [{ area: "backup", segments: [{ level: "ok", share: 1 }] }],
+    entries: [
+      { at: "2026-10-25T07:55:00+00:00", kind: "change", id: "x", area: "database", check: "integrity", from: "ok", to: "problem" },
+      { at: "2026-10-25T07:51:00+00:00", kind: "update", what: "core", from: "2026.10.3", to: "2026.10.4" },
+      { at: "2026-10-25T07:50:00+00:00", kind: "start", down_seconds: 20 },
+      { at: "2026-10-25T07:00:00+00:00", kind: "config", area: "config", key: "automation.nope" },
+    ],
+  };
+  el.data = DATA; el.view = "checklog"; el.checkLog = log; el._clRequested = true;
+  const html = el.checkLogView();
+  assert.ok(html.includes("<table") && html.includes("shortly after an update") && html.includes('data-jump="maintenance" data-jump-tab="updates"'));
+  assert.ok(html.includes('data-lf-set="checklog|level|problem"') && html.includes('data-lf-set="checklog|area|backup"') && html.includes('data-cl-flap=""'));
+  assert.ok(html.includes("Restarts") && html.includes("Configuration changed") && html.includes("automation.nope"));
 });

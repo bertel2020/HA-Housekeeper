@@ -4,12 +4,12 @@
 const CL_DAYS = [7, 30, 90];
 const CL_LEVEL_PILL = { ok: "ok", note: "warn", problem: "red", unknown: "mute", running: "blue" };
 const CL_REASONS = ["backup_running", "restart", "maintenance", "test", "expected", "other"];
-const CL_SHOW = 200; // rows drawn; the export holds everything that was read
+const CL_AFTER_MS = 10 * 60 * 1000; // a change this soon after a restart or an update is said to follow it
 const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: "autopause", system: "storage", services: "reliability", goals: "policies", scan: "settings" };
 Object.assign(TEXT.de, {
-  checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter. Nur Zeiten und Zahlen, keine Namen und Texte.",
+  checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter, dazu Neustarts, Updates und Änderungen an Automationen. Gespeichert werden nur Zeiten, Zahlen und Kennungen, nie Texte.",
   clDays_7: "7 Tage", clDays_30: "30 Tage", clDays_90: "90 Tage",
-  clTileChanges: "Wechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
+  clTileChanges: "Prüfungswechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
   clTileChangesSub: "in {days} Tagen", clTileProblemsSub: "Stufe „Problem“", clTileFlappingSub: "Prüfungen mit häufigem Wechsel", clTileLongestSub: "bis zur Rückkehr",
   clRecurring: "{what} wurde diese Woche {n}-mal zum Problem.", clRecurringMany: "{n} Prüfungen wurden diese Woche mindestens 3-mal zum Problem, zuletzt: {what}.", clRecurringOpen: "Zu den Zuverlässigkeits-Seiten", clFlapText_1: "1 Prüfung wechselt auffällig oft (mindestens 4 Wechsel in 3 Stunden). Ist das ein Fehlalarm, markiere die Zeilen im Menü.", clFlapText_n: "{n} Prüfungen wechseln auffällig oft (mindestens 4 Wechsel in 3 Stunden). Sind das Fehlalarme, markiere die Zeilen im Menü.", clFlapOnly: "Nur diese zeigen", clFlapAll: "Alle zeigen",
   clStrips: "Zustand je Bereich", clStripsHint: "Das Schlimmste aller Prüfungen eines Bereichs, über {days} Tage. Schraffiert: keine Daten (Home Assistant war aus oder der Verlauf noch nicht eingerichtet).",
@@ -23,6 +23,7 @@ Object.assign(TEXT.de, {
   clCauseGap: "Abstand {span}", clCauseGapLimit: "Abstand {span} (Grenze {limit})", clCauseRunning: "Backup läuft: {yes}", clCauseSeconds: "Dauer {span}", clCauseDomain: "Integration {domain}",
   clCauseUsed: "belegt {n} %", clCauseUsedLimit: "belegt {n} % (Grenze {limit} %)", clCauseValueLimit: "Wert {value} (Ziel höchstens {limit})", clCauseFailures: "{n} Fehlschläge in Folge", clCauseFailing: "{errors} mit Fehler, {retrying} versuchen es erneut", clCauseAge: "Alter {span}", clCauseAgeLimit: "Alter {span} (Grenze {limit})", clCauseCount: "{name}: {n}", clYes: "ja", clNo: "nein",
   clLasted: "dauerte {span}", clFlaps: "flattert ×{n}",
+  clColEvent: "Ereignis", clColTime: "Zeit", clColArea: "Bereich", clColChange: "Wechsel", clAllAreas: "Alle Bereiche", clAllLevels: "Alle Stufen", clArea_updates: "Updates", clArea_restarts: "Neustarts", clOpenUpdates: "Zu den Updates", clOpenIntegration: "Zur Integration", clAfterStart: "kurz nach einem Neustart", clAfterUpdate: "kurz nach einem Update", clStripFilter: "Nur {area} in der Liste zeigen",
   clUpdate_core: "Home Assistant aktualisiert", clUpdate_os: "Betriebssystem aktualisiert", clUpdate_supervisor: "Supervisor aktualisiert", clUpdate_integration: "Integration {domain} aktualisiert", clUpdateText: "Version {from} auf {to}",
   clStart: "Home Assistant gestartet", clStartUnclean: "Home Assistant gestartet, nicht sauber gestoppt", clGap: "Keine Daten", clGapText: "Home Assistant war {span} nicht erreichbar, in dieser Zeit lief keine Prüfung",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
@@ -35,9 +36,9 @@ Object.assign(TEXT.de, {
   clMore: "{shown} von {total} Einträgen gezeigt, der Export enthält alle des Zeitraums.", clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
 });
 Object.assign(TEXT.en, {
-  checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it. Only times and numbers, no names and no texts.",
+  checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it, plus restarts, updates and edits of automations. Only times, numbers and identifiers are kept, never texts.",
   clDays_7: "7 days", clDays_30: "30 days", clDays_90: "90 days",
-  clTileChanges: "Changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
+  clTileChanges: "Check changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
   clTileChangesSub: "in {days} days", clTileProblemsSub: "level “Problem”", clTileFlappingSub: "checks that change often", clTileLongestSub: "until it was back",
   clRecurring: "{what} turned into a problem {n} times this week.", clRecurringMany: "{n} checks turned into a problem at least 3 times this week, latest: {what}.", clRecurringOpen: "To the reliability pages", clFlapText_1: "1 check changes level unusually often (at least 4 changes in 3 hours). If that is a false alarm, mark the rows in the menu.", clFlapText_n: "{n} checks change level unusually often (at least 4 changes in 3 hours). If those are false alarms, mark the rows in the menu.", clFlapOnly: "Show only these", clFlapAll: "Show all",
   clStrips: "State per area", clStripsHint: "The worst of all checks of an area, over {days} days. Hatched: no data (Home Assistant was off or the history was not yet running).",
@@ -51,6 +52,7 @@ Object.assign(TEXT.en, {
   clCauseGap: "Gap {span}", clCauseGapLimit: "Gap {span} (limit {limit})", clCauseRunning: "Backup running: {yes}", clCauseSeconds: "Took {span}", clCauseDomain: "Integration {domain}",
   clCauseUsed: "{n} % used", clCauseUsedLimit: "{n} % used (limit {limit} %)", clCauseValueLimit: "Value {value} (goal at most {limit})", clCauseFailures: "{n} failures in a row", clCauseFailing: "{errors} with an error, {retrying} retrying", clCauseAge: "Age {span}", clCauseAgeLimit: "Age {span} (limit {limit})", clCauseCount: "{name}: {n}", clYes: "yes", clNo: "no",
   clLasted: "lasted {span}", clFlaps: "flapping ×{n}",
+  clColEvent: "Event", clColTime: "Time", clColArea: "Area", clColChange: "Change", clAllAreas: "All areas", clAllLevels: "All levels", clArea_updates: "Updates", clArea_restarts: "Restarts", clOpenUpdates: "Go to the updates", clOpenIntegration: "Go to the integration", clAfterStart: "shortly after a restart", clAfterUpdate: "shortly after an update", clStripFilter: "Show only {area} in the list",
   clUpdate_core: "Home Assistant updated", clUpdate_os: "Operating system updated", clUpdate_supervisor: "Supervisor updated", clUpdate_integration: "Integration {domain} updated", clUpdateText: "Version {from} to {to}",
   clStart: "Home Assistant started", clStartUnclean: "Home Assistant started, not stopped cleanly", clGap: "No data", clGapText: "Home Assistant was unreachable for {span}, no check ran in that time",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
@@ -133,38 +135,105 @@ class CheckLogMixin {
     catch (err) { this.toast(this.errText(err) || this.t("clMarkFailed"), true); }
   }
 
-  clMenu(e) {
+  clMenu(r) {
+    const e = r.e;
+    if (e.kind === "update") return this.rowMenuHtml([r.link ? ["mdi:open-in-new", e.what === "integration" ? "clOpenIntegration" : "clOpenUpdates", r.link] : null]);
+    if (e.kind === "config") return this.rowMenuHtml(r.object ? this.objectRowMenu({ key: r.object }) : []);
+    if (e.kind !== "change") return "";
     const page = CL_AREA_PAGE[e.area];
     return this.rowMenuHtml([
-      ...(e.dismissed ? [["mdi:flag-remove-outline", "clUnmark", `data-cl-unmark="${this.esc(e.id)}"`]] : CL_REASONS.map(r => ["mdi:flag-outline", `clMarkAs_${r}`, `data-cl-mark="${this.esc(e.id)}|${r}"`])),
+      ...(e.dismissed ? [["mdi:flag-remove-outline", "clUnmark", `data-cl-unmark="${this.esc(e.id)}"`]] : CL_REASONS.map(x => ["mdi:flag-outline", `clMarkAs_${x}`, `data-cl-mark="${this.esc(e.id)}|${x}"`])),
       null,
       page ? ["mdi:open-in-new", "clOpenCheck", `data-jump="${page}"`] : null,
       ["mdi:filter-outline", "clOnlyCheck", `data-cl-check="${this.esc(`${e.area}/${e.check}`)}"`],
     ]);
   }
 
-  clSearchText(e) { if (e.kind === "config") return `${this.t("clConfigEdited")} ${e.key}`.toLowerCase(); if (e.kind === "update") return `${this.clUpdateTitle(e)} ${this.clText(e)}`.toLowerCase(); return e.kind === "start" ? `${this.t(e.gap ? "clGap" : "clStart")} ${this.clText(e)}` : `${this.clAreaName(e.area)} ${this.clCheckName(e.area, e.check)} ${this.clText(e)}`.toLowerCase(); }
+  // The entries as rows of the standard table: what happened, when, in which area, and the change of level.
+  clRows(log) {
+    const marks = log.entries.filter(e => e.kind === "start" || e.kind === "update").map(e => ({ at: Date.parse(e.at), kind: e.kind }));
+    const follows = e => {
+      const at = Date.parse(e.at), near = marks.filter(m => m.at <= at && at - m.at <= CL_AFTER_MS).sort((a, b) => b.at - a.at)[0];
+      return near ? this.t(near.kind === "start" ? "clAfterStart" : "clAfterUpdate") : "";
+    };
+    return log.entries.map((e, i) => {
+      const row = { e, key: String(i), rank: 0 };
+      if (e.kind === "start") {
+        Object.assign(row, { area: "restarts", title: this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart"), sub: e.gap ? this.clText(e) : "", tone: e.unclean ? "warn" : "mute", icon: e.gap ? "mdi:timer-sand-empty" : "mdi:restart", rank: e.unclean ? 2 : 0 });
+      } else if (e.kind === "update") {
+        const link = e.what === "integration" ? (this.findObject(`integration:${e.domain}`) ? `data-object="integration:${this.esc(e.domain)}"` : "") : 'data-jump="maintenance" data-jump-tab="updates"';
+        Object.assign(row, { area: "updates", title: this.clUpdateTitle(e), sub: this.clText(e), tone: "mute", icon: "mdi:update", link });
+      } else if (e.kind === "config") {
+        const object = e.key.replace(".", ":"), found = this.findObject(object);
+        Object.assign(row, { area: "config", title: this.t("clConfigEdited"), sub: found?.name || e.key, tone: "mute", icon: "mdi:file-edit-outline", object: found ? object : "" });
+      } else {
+        const level = e.to;
+        Object.assign(row, {
+          area: e.area, title: this.clCheckName(e.area, e.check), rank: { problem: 3, note: 2, unknown: 1 }[level] || 0,
+          tone: e.dismissed ? "mute" : { problem: "red", note: "warn", ok: "ok" }[level] || "mute",
+          icon: { problem: "mdi:alert-circle-outline", note: "mdi:alert-outline", ok: "mdi:check", unknown: "mdi:help", running: "mdi:progress-clock" }[level] || "mdi:circle-small",
+          sub: [this.clText(e), typeof e.lasted_seconds === "number" ? this.t("clLasted", { span: this.clHours(e.lasted_seconds) }) : "", e.flaps ? this.t("clFlaps", { n: e.flaps }) : "", follows(e)].filter(Boolean).join(" · "),
+        });
+      }
+      row.areaName = this.clAreaName(row.area);
+      return row;
+    });
+  }
 
-  clRow(e) {
-    const time = this.clTime(e.at);
-    if (e.kind === "config") {
-      return `<div class="row clrow"><span class="tile mute"><ha-icon icon="mdi:file-edit-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("clConfigEdited"))}</strong><small>${this.esc(time)} · ${this.esc(e.key)}</small></span><span></span><span></span></div>`;
-    }
-    if (e.kind === "update") {
-      return `<div class="row clrow"><span class="tile mute"><ha-icon icon="mdi:update"></ha-icon></span><span class="row-text"><strong>${this.esc(this.clUpdateTitle(e))}</strong><small>${this.esc(time)} · ${this.esc(this.clText(e))}</small></span><span></span><span></span></div>`;
-    }
-    if (e.kind === "start") {
-      const tone = e.unclean ? ' data-rowtone="warn"' : "";
-      return `<div class="row clrow"${tone}><span class="tile ${e.unclean ? "warn" : "mute"}"><ha-icon icon="${e.gap ? "mdi:timer-sand-empty" : "mdi:restart"}"></ha-icon></span><span class="row-text"><strong>${this.t(e.gap ? "clGap" : e.unclean ? "clStartUnclean" : "clStart")}</strong><small>${this.esc(time)}${e.gap ? ` · ${this.esc(this.clText(e))}` : ""}</small></span><span class="clstep">${e.gap ? `<span class="pill mute">${this.t("clGap")}</span>` : ""}</span><span></span></div>`;
-    }
-    const level = e.to, tone = e.dismissed ? "" : level === "problem" ? ' data-rowtone="red"' : level === "note" ? ' data-rowtone="warn"' : "";
-    const icon = { problem: "mdi:alert-circle-outline", note: "mdi:alert-outline", ok: "mdi:check", unknown: "mdi:help", running: "mdi:progress-clock" }[level] || "mdi:circle-small";
-    const tile = { problem: "red", note: "warn", ok: "ok" }[level] || "mute";
-    const page = CL_AREA_PAGE[e.area], title = `${this.esc(this.clAreaName(e.area))} · ${this.esc(this.clCheckName(e.area, e.check))}`;
-    const name = page ? `<button type="button" class="linkbtn" data-jump="${page}">${title}</button>` : title;
+  clNameCell(r) {
+    const e = r.e, page = e.kind === "change" ? CL_AREA_PAGE[e.area] : "";
+    const target = page ? `data-jump="${page}"` : r.link || (r.object ? `data-object="${this.esc(r.object)}"` : "");
+    const title = target ? `<button type="button" class="linkbtn" ${target}>${this.esc(r.title)}</button>` : this.esc(r.title);
+    return `<div class="statcell"><span class="tile ${r.tone}"><ha-icon icon="${r.icon}"></ha-icon></span><div><strong>${title}</strong>${r.sub ? `<small>${this.esc(r.sub)}</small>` : ""}</div></div>`;
+  }
+
+  clChangeCell(r) {
+    const e = r.e;
+    if (e.kind !== "change") return "";
     const pills = `<span class="pill ${CL_LEVEL_PILL[e.from] || "mute"}">${this.t(`clLevel_${e.from}`)}</span><ha-icon icon="mdi:arrow-right"></ha-icon><span class="pill ${CL_LEVEL_PILL[e.to] || "mute"}">${this.t(`clLevel_${e.to}`)}</span>`;
-    const facts = [this.clText(e), typeof e.lasted_seconds === "number" ? this.t("clLasted", { span: this.clHours(e.lasted_seconds) }) : "", e.flaps ? this.t("clFlaps", { n: e.flaps }) : ""].filter(Boolean).join(" · ");
-    return `<div class="row clrow${e.dismissed ? " dim" : ""}"${tone}><span class="tile ${tile}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${name}</strong><small>${this.esc(time)}${facts ? ` · ${this.esc(facts)}` : ""}</small></span><span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.t(`clReason_${e.dismissed}`) })}</span>` : ""}${pills}</span>${this.clMenu(e)}</div>`;
+    return `<span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.t(`clReason_${e.dismissed}`) })}</span>` : ""}${pills}</span>`;
+  }
+
+  // The list of the page: the standard table with search, filters, sorting and pages.
+  clList(log, { flap }) {
+    const id = "checklog";
+    const rows = this.clRows(log).filter(r => (!this.clCheck || (r.e.kind === "change" && `${r.e.area}/${r.e.check}` === this.clCheck)) && (!flap || (r.e.kind === "change" && r.e.flaps)));
+    const sorts = [
+      { key: "time", label: "clColTime", dir: "desc", get: r => r.e.at },
+      { key: "event", label: "clColEvent", dir: "asc", get: r => r.title },
+      { key: "area", label: "clColArea", dir: "asc", get: r => r.areaName },
+      { key: "level", label: "clColChange", dir: "desc", get: r => r.rank },
+    ];
+    const areas = [...new Set(rows.map(r => r.area))].sort((a, b) => this.clAreaName(a).localeCompare(this.clAreaName(b), this.lang));
+    const levels = ["attention", "problem", "note", "ok"];
+    const bar = this.listBar(id, { table: true, dense: true, sorts, filters: [
+      { name: "area", all: this.t("clAllAreas"), options: areas.map(a => [a, this.clAreaName(a)]) },
+      { name: "level", all: this.t("clAllLevels"), options: levels.map(l => [l, l === "attention" ? this.t("clOnlyProblems") : this.t(`clLevel_${l}`)]) },
+    ] });
+    const attention = e => e.kind === "change" && (e.to === "problem" || e.to === "note");
+    const refined = this.refine(id, rows, {
+      text: r => `${r.areaName} ${r.title} ${r.sub}`,
+      filters: { area: (r, v) => r.area === v, level: (r, v) => (v === "attention" ? attention(r.e) : r.e.kind === "change" && r.e.to === v) },
+      sorts, tie: r => r.e.at + r.key,
+    });
+    const pg = this.paginate(id, refined);
+    const menu = r => this.clMenu(r);
+    const columns = [
+      { key: "event", label: "clColEvent", dir: "asc", cell: r => this.clNameCell(r) },
+      { key: "time", label: "clColTime", dir: "desc", cell: r => this.esc(this.formatDate(r.e.at)) },
+      { key: "area", label: "clColArea", dir: "asc", cell: r => `<span class="pill mute">${this.esc(r.areaName)}</span>` },
+      { key: "level", label: "clColChange", dir: "desc", cell: r => this.clChangeCell(r) },
+      ...(refined.some(r => menu(r)) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu }] : []),
+    ];
+    const tone = r => (r.e.dismissed ? "" : r.tone === "red" ? ' data-rowtone="red"' : r.tone === "warn" ? ' data-rowtone="warn"' : "");
+    const [area, check] = (this.clCheck || "/").split("/");
+    const note = this.clCheck ? this.filterNote([this.t("clOnlyCheckOn", { what: `${this.clAreaName(area)} · ${this.clCheckName(area, check)}` })], "data-cl-check-off") : "";
+    const empty = !log.entries.length
+      ? `<div class="emptymsg mute"><ha-icon icon="mdi:history"></ha-icon><strong>${this.t("clEmpty")}</strong>${this.t("clEmptyNext", { days: log.retention_days, max: this.formatNumber(log.max_events) })}</div>`
+      : `<div class="emptymsg">${this.noMatches(id)}</div>`;
+    const table = refined.length ? this.listTable(id, columns, pg.rows, { cls: "cl", rowAttrs: r => `class="static${r.e.dismissed ? " cldim" : ""}"${tone(r)}` }) : empty;
+    const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}</small></div>`;
+    return `<section class="panel">${note}${bar}${table}${pg.footer}${foot}</section>`;
   }
 
   clStrips(log) {
@@ -172,7 +241,7 @@ class CheckLogMixin {
     const lines = log.strips.map(s => {
       const label = this.clAreaName(s.area);
       const bar = s.segments.map(g => `<i class="cl-${g.level}" style="flex:${Math.max(g.share, 0.001)}"></i>`).join("");
-      return `<div class="clstripline"><span>${this.esc(label)}</span><span class="clstrip" role="img" aria-label="${this.esc(label)}">${bar}</span></div>`;
+      return `<div class="clstripline"><button type="button" class="linkbtn" data-lf-set="checklog|area|${this.esc(s.area)}" title="${this.esc(this.t("clStripFilter", { area: label }))}">${this.esc(label)}</button><span class="clstrip" role="img" aria-label="${this.esc(label)}">${bar}</span></div>`;
     }).join("");
     const legend = [["ok", "clLegendOk"], ["note", "clLegendNote"], ["problem", "clLegendProblem"], ["unknown", "clLegendUnknown"], ["none", "clLegendNone"]].map(([k, key]) => `<span><i class="cl-${k}"></i>${this.t(key)}</span>`).join("");
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("clStrips")}</h2><p>${this.t("clStripsHint", { days: log.days })}</p></div></div><div class="clstrips">${lines}</div><div class="cllegend">${legend}</div></section>`;
@@ -183,15 +252,16 @@ class CheckLogMixin {
     const log = this.checkLog;
     const days = this.clDays || 7;
     const windows = CL_DAYS.map(d => `<button type="button" class="chip${days === d ? " active" : ""}" data-cl-days="${d}" aria-pressed="${days === d}">${this.t(`clDays_${d}`)}</button>`).join("");
+    this.lvState("checklog", "time", "desc"); // before the tiles: they set its filters
     this.clRegisterExport();
     const bar = this.pageBar({ left: windows, at: this.loadedAt("checklog"), loading: this.clLoading, attr: "data-cl-refresh", exportId: "checklog" });
     if (this.clError) return `<div class="stack">${bar}<div class="panel">${this.notice("err", this.t("clLoadError"))}<div class="pad"><small>${this.esc(this.clError)}</small></div></div></div>`;
     if (!log) return `<div class="stack">${bar}<div class="panel">${this.skeleton("loading")}</div></div>`;
     const sum = log.summary || {};
     const tiles = this.sumTiles([
-      { label: this.t("clTileChanges"), value: this.formatNumber(sum.changes || 0), sub: this.t("clTileChangesSub", { days: log.days }), tone: "mute" },
-      { label: this.t("clTileProblems"), value: this.formatNumber(sum.problems || 0), sub: this.t("clTileProblemsSub"), tone: sum.problems ? "red" : "ok" },
-      { label: this.t("clTileFlapping"), value: this.formatNumber(sum.flapping || 0), sub: this.t("clTileFlappingSub"), tone: sum.flapping ? "warn" : "ok" },
+      { label: this.t("clTileChanges"), value: this.formatNumber(sum.changes || 0), sub: this.t("clTileChangesSub", { days: log.days }), tone: "mute", lf: ["checklog", "", ""] },
+      { label: this.t("clTileProblems"), value: this.formatNumber(sum.problems || 0), sub: this.t("clTileProblemsSub"), tone: sum.problems ? "red" : "ok", lf: ["checklog", "level", "problem"] },
+      { label: this.t("clTileFlapping"), value: this.formatNumber(sum.flapping || 0), sub: this.t("clTileFlappingSub"), tone: sum.flapping ? "warn" : "ok", attr: ["data-cl-flap", ""], active: Boolean(this.clFlap) && Boolean(sum.flapping) },
       { label: this.t("clTileLongest"), value: sum.longest_problem_seconds ? this.esc(this.clHours(sum.longest_problem_seconds)) : "–", sub: this.t("clTileLongestSub"), tone: "mute" },
     ]);
     const rec = log.recurring || [];
@@ -199,30 +269,8 @@ class CheckLogMixin {
     const recur = rec.length ? `<div class="panel"><div class="row" data-rowtone="warn"><span class="tile warn"><ha-icon icon="mdi:repeat"></ha-icon></span><span class="row-text"><strong>${this.esc(recText)}</strong></span><button type="button" class="btn" data-jump="reliability">${this.t("clRecurringOpen")}</button></div></div>` : "";
     const flapN = sum.flapping || 0, flap = Boolean(this.clFlap) && flapN > 0;
     const flapStrip = flapN ? `<div class="panel"><div class="row" data-rowtone="warn"><span class="tile warn"><ha-icon icon="mdi:swap-vertical"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t(flapN === 1 ? "clFlapText_1" : "clFlapText_n", { n: flapN }))}</strong></span><button type="button" class="btn" data-cl-flap aria-pressed="${flap}">${this.t(flap ? "clFlapAll" : "clFlapOnly")}</button></div></div>` : "";
-    const areas = [...new Set([...(log.strips || []).map(s => s.area), ...log.entries.filter(e => e.area).map(e => e.area)])];
-    const only1 = this.clCheck || "";
-    const area = areas.includes(this.clArea) ? this.clArea : "all", only = Boolean(this.clOnly), query = (this.clQuery || "").trim().toLowerCase();
-    const chips = [["all", this.t("clAreaAll")], ...areas.map(a => [a, this.clAreaName(a)])].map(([key, label]) => `<button type="button" class="chip${key === area ? " active" : ""}" data-cl-area="${this.esc(key)}" aria-pressed="${key === area}">${this.esc(label)}</button>`).join("")
-      + `<button type="button" class="chip${only ? " active" : ""}" data-cl-only aria-pressed="${only}">${this.t("clOnlyProblems")}</button>`
-      + (only1 ? `<button type="button" class="chip active" data-cl-check-off aria-pressed="true" title="${this.esc(this.t("clOnlyCheckOff"))}">${this.esc(this.t("clOnlyCheckOn", { what: `${this.clAreaName(only1.split("/")[0])} · ${this.clCheckName(only1.split("/")[0], only1.split("/")[1])}` }))}<ha-icon icon="mdi:close"></ha-icon></button>` : "");
-    const shown = log.entries.filter(e => (area === "all" || e.area === area)
-      && (!only1 || (e.kind === "change" && `${e.area}/${e.check}` === only1))
-      && (!flap || (e.kind === "change" && e.flaps))
-      && (!only || (e.kind === "change" && (e.to === "problem" || e.to === "note")))
-      && (!query || this.clSearchText(e).includes(query)));
-    const groups = [];
-    for (const e of shown.slice(0, CL_SHOW)) {
-      const label = this.activityDay(e.at);
-      if (!groups.length || groups[groups.length - 1].label !== label) groups.push({ label, rows: [] });
-      groups[groups.length - 1].rows.push(e);
-    }
-    const list = groups.map(g => `<h3 class="actday">${this.esc(g.label)}</h3>${g.rows.map(e => this.clRow(e)).join("")}`).join("");
-    const empty = !log.entries.length
-      ? `<div class="emptymsg mute"><ha-icon icon="mdi:history"></ha-icon><strong>${this.t("clEmpty")}</strong>${this.t("clEmptyNext", { days: log.retention_days, max: this.formatNumber(log.max_events) })}</div>`
-      : `<div class="emptymsg mute"><ha-icon icon="mdi:filter-off-outline"></ha-icon><strong>${this.t("clNoMatch")}</strong>${this.t("clNoMatchNext")}</div>`;
-    const tools = `<div class="pad acttools"><input type="search" class="actsearch" data-cl-q value="${this.esc(this.clQuery || "")}" placeholder="${this.esc(this.t("clSearch"))}" aria-label="${this.esc(this.t("clSearch"))}"><div class="chips bare" role="group">${chips}</div></div>`;
-    const foot = `<div class="pad"><small class="mute">${this.t("clRetention", { days: log.retention_days, max: this.formatNumber(log.max_events) })}${shown.length > CL_SHOW ? ` ${this.t("clMore", { shown: this.formatNumber(CL_SHOW), total: this.formatNumber(shown.length) })}` : ""}</small></div>`;
-    return `<div class="stack">${bar}${tiles}${recur}${flapStrip}${this.clStrips(log)}<section class="panel">${tools}${shown.length ? list : empty}${foot}</section></div>`;
+    const list = this.clList(log, { flap });
+    return `<div class="stack">${bar}${tiles}${recur}${flapStrip}${this.clStrips(log)}${list}</div>`;
   }
 
   // What the export holds: every change of the period (ids and numbers only), also the ones the page does not draw.
@@ -238,10 +286,7 @@ class CheckLogMixin {
     root.querySelectorAll("[data-cl-check]").forEach(el => el.onclick = () => { this.clCheck = el.dataset.clCheck; this.render(); });
     root.querySelector("[data-cl-check-off]")?.addEventListener("click", () => { this.clCheck = ""; this.render(); });
     root.querySelectorAll("[data-cl-days]").forEach(el => el.onclick = () => { this.clDays = Number(el.dataset.clDays); this.loadCheckLog(); });
-    root.querySelectorAll("[data-cl-area]").forEach(el => el.onclick = () => { this.clArea = el.dataset.clArea; this.render(); });
     root.querySelector("[data-cl-flap]")?.addEventListener("click", () => { this.clFlap = !this.clFlap; this.render(); });
-    root.querySelector("[data-cl-only]")?.addEventListener("click", () => { this.clOnly = !this.clOnly; this.render(); });
-    root.querySelector("[data-cl-q]")?.addEventListener("change", ev => { this.clQuery = ev.target.value; this.render(); });
     root.querySelector("[data-cl-refresh]")?.addEventListener("click", () => this.loadCheckLog());
   }
 }
