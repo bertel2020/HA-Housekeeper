@@ -7583,3 +7583,42 @@ test("the selection bar offers each action only where it fits and says how many 
   await el.clearSelectedMarks();
   assert.deepEqual(calls.filter(c => c.type === "ha_housekeeper/mark_clear").map(c => c.object_id), ["sensor.a"]);
 });
+
+const CHECK_LOG = {
+  days: 7, total: 4, retention_days: 90, max_events: 5000, recurring: [],
+  summary: { changes: 3, problems: 1, flapping: 0, longest_problem_seconds: 2280 },
+  strips: [{ area: "backup", segments: [{ level: "ok", share: 0.9 }, { level: "problem", share: 0.05 }, { level: "none", share: 0.05 }] }],
+  entries: [
+    { at: "2026-10-25T03:41:00+00:00", kind: "change", area: "backup", check: "last_run", from: "problem", to: "ok", cause: { gap_minutes: 0, limit_minutes: 60 }, lasted_seconds: 2280 },
+    { at: "2026-10-25T03:03:00+00:00", kind: "change", area: "backup", check: "last_run", from: "ok", to: "problem", cause: { gap_minutes: 1461, limit_minutes: 60, running: true, odd_key: 4 } },
+    { at: "2026-10-24T23:50:00+00:00", kind: "start", down_seconds: 2460, gap: true },
+    { at: "2026-10-24T21:30:00+00:00", kind: "change", area: "auto_pause", check: "paused", from: "ok", to: "note", cause: { domain: "tibber" } },
+  ],
+};
+
+test("the History page shows the strips, the changes with their causes and gaps, and filters them", () => {
+  const { el } = panel("en");
+  el._hass.callWS = async () => CHECK_LOG;
+  el.data = DATA; el.view = "checklog"; el.checkLog = CHECK_LOG; el._clRequested = true;
+  const html = el.checkLogView();
+  assert.ok(html.includes("cl-none") && html.includes("cl-problem"));
+  assert.ok(html.includes("Backup protection") && html.includes("Last automatic run") && html.includes("Backup running: yes") && html.includes("odd key: 4") && html.includes("Integration tibber"));
+  assert.ok(html.includes('data-rowtone="red"') && html.includes('data-rowtone="warn"') && html.includes("No data") && html.includes("data-cl-refresh"));
+  el.clOnly = true;
+  assert.ok(!el.checkLogView().includes("No data"), "only problems and notes leave out the gap");
+  el.clOnly = false; el.clArea = "auto_pause";
+  const one = el.checkLogView();
+  assert.ok(one.includes("Integration tibber") && !one.includes("Backup running"));
+  el.clArea = "all"; el.clQuery = "nothing like this";
+  assert.ok(el.checkLogView().includes("Nothing found."));
+});
+
+test("the History page without entries says what it keeps, and a failed read says so", () => {
+  const { el } = panel("de");
+  el._hass.callWS = async () => ({});
+  el.data = DATA; el.view = "checklog"; el._clRequested = true;
+  el.checkLog = { ...CHECK_LOG, entries: [], strips: [], total: 0, summary: { changes: 0, problems: 0, flapping: 0, longest_problem_seconds: 0 } };
+  assert.ok(el.checkLogView().includes("Noch keine Wechsel.") && el.checkLogView().includes("90 Tage"));
+  el.clError = "boom";
+  assert.ok(el.checkLogView().includes("konnte nicht gelesen werden"));
+});

@@ -50,7 +50,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", firstcleanup: "view=firstcleanup", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", autopause: "view=autopause", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", autopause: "view=autopause", checklog: "view=checklog", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -141,6 +141,17 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
       if (t.endsWith("/status")) return { running: false };
       if (t.endsWith("/exceptions")) return { rules: [{ id: "r1", kind: "area", targets: ["garten"], action: "delay", days: 3, scope: "always", enabled: true, note: "", effect: { hold: 5, due: 0 } }], areas: [{ id: "garten", name: "Garten" }], labels: [], integrations: [], domains: [], devices: [], entities: [], vacation: {}, days_max: 365 };
       if (t.endsWith("/plan_list")) return { plans: [] };
+      if (t.endsWith("/check_log")) return { days: msg.days || 7, total: 6, retention_days: 90, max_events: 5000, recurring: [{ area: "backup", check: "last_run", count: 3 }],
+        summary: { changes: 5, problems: 2, flapping: 1, longest_problem_seconds: 11520 },
+        strips: [{ area: "backup", segments: [{ level: "ok", share: 0.55 }, { level: "problem", share: 0.05 }, { level: "ok", share: 0.2 }, { level: "none", share: 0.04 }, { level: "ok", share: 0.12 }, { level: "problem", share: 0.04 }] }, { area: "database", segments: [{ level: "none", share: 0.1 }, { level: "ok", share: 0.8 }, { level: "note", share: 0.1 }] }, { area: "auto_pause", segments: [{ level: "ok", share: 0.7 }, { level: "note", share: 0.3 }] }],
+        entries: [
+          { at: new Date(Date.now() - 1200000).toISOString(), kind: "change", area: "backup", check: "last_run", from: "problem", to: "ok", cause: { gap_minutes: 0, limit_minutes: 60 }, lasted_seconds: 2280 },
+          { at: new Date(Date.now() - 3480000).toISOString(), kind: "change", area: "backup", check: "last_run", from: "ok", to: "problem", cause: { gap_minutes: 1461, limit_minutes: 60, running: true } },
+          { at: new Date(Date.now() - 18000000).toISOString(), kind: "change", area: "database", check: "integrity", from: "ok", to: "unknown" },
+          { at: new Date(Date.now() - 90000000).toISOString(), kind: "start", down_seconds: 2460, gap: true },
+          { at: new Date(Date.now() - 96000000).toISOString(), kind: "change", area: "auto_pause", check: "paused", from: "ok", to: "note", cause: { domain: "waste_collection_schedule" } },
+          { at: new Date(Date.now() - 102000000).toISOString(), kind: "change", area: "backup", check: "run", from: "running", to: "ok", cause: { seconds: 2280 }, flaps: 4 },
+        ] };
       if (t.endsWith("/auto_pause") || t.endsWith("/auto_pause_set")) return { settings: { enabled: true, attempts: 20, hours: 6, house_functions: false }, exclude: [], schedule: { offsets: [1, 1, 1, 3, 3, 3, 6], end_hours: 168 },
         log: [[new Date(Date.now() - 7200000).toISOString(), "paused", "Waste Collection Schedule"]],
         paused: [{ entry_id: "wcs", title: "Waste Collection Schedule", domain: "waste_collection_schedule", since: new Date(Date.now() - 7200000).toISOString(), next: new Date(Date.now() + 3600000).toISOString(), reason: "auto", failures: 41, done: 1, exhausted: false }],

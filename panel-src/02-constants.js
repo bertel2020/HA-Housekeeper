@@ -152,6 +152,7 @@ const NAV = [
   ["reliability", "mdi:chart-timeline-variant"],
   ["monitor", "mdi:home-heart"],
   ["autopause", "mdi:pause-circle-outline"],
+  ["checklog", "mdi:timeline-clock-outline"],
   ["exceptions", "mdi:eye-off-outline"],
   ["runs", "mdi:robot-outline"],
   ["recorder", "mdi:database-clock-outline"],
@@ -164,7 +165,7 @@ const NAV = [
 // wants: see what is wrong, set up what runs by itself, do the work, understand how the house runs, then the rest.
 const NAV_GROUPS = [
   ["navGroupActions", ["overview", "findingsNav"]],
-  ["navGroupWatch", ["monitor", "autopause", "reminders", "policies", "exceptions"]],
+  ["navGroupWatch", ["monitor", "autopause", "checklog", "reminders", "policies", "exceptions"]],
   ["navGroupMaintain", ["maintenance", "batteries", "cleanup", "repair", "journal"]],
   ["navGroupOperation", ["reliability", "runs", "recorder", "storage"]],
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],

@@ -15,6 +15,7 @@ const SEARCH_WORDS = {
   reminders: "erinnerungen wartung filter reminders due",
   policies: "regeln ziele richtlinien grenzen verstöße rules goals policies limits violations",
   autopause: "auto-pause pausieren pause dauerfehler einrichtung fehlversuche wieder versuchen setup retry failing",
+  checklog: "verlauf wechsel prüfung stufe backup läuft datenbank auto-pause lücke flattert history changes check level gap flapping",
   reliability: "zuverlässigkeit ausfälle instabil reliability outages unstable",
   runs: "läufe automationen ausführungen runs automations traces",
   recorder: "recorder datenbank statistik größe database statistics size",

@@ -812,6 +812,7 @@ class HAHousekeeperPanel extends HTMLElement {
       reliability: [this.t("reliability"), this.t("reliabilitySubtitle")],
       monitor: [this.t("monitor"), this.t("monitorSubtitle")],
       autopause: [this.t("autopause"), this.t("autopauseSubtitle")],
+      checklog: [this.t("checklog"), this.t("checklogSubtitle")],
       runs: [this.t("runsHeading"), this.t("runsSubtitle")],
       recorder: [this.t("recorder"), this.t("recorderSubtitle")],
       exposure: [this.t("exposure"), this.t("exposureSubtitle")],
@@ -844,6 +845,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (this.view === "inventory") return this.inventory();
     if (this.view === "monitor") return this.monitorView();
     if (this.view === "autopause") return this.autoPausePage();
+    if (this.view === "checklog") return this.checkLogView();
     if (this.view === "findingsNav") return this.findingsView();
     if (this.view === "changes") return this.changesView();
     if (this.view === "components") return this.componentsView();
@@ -1232,6 +1234,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
     root.querySelector("[data-ap-refresh]")?.addEventListener("click", () => this.loadAutoPause());
     this.bindAutoPause(root);
+    this.bindCheckLog(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
