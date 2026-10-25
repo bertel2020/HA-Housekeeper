@@ -3,7 +3,7 @@
 // detail page behind it opens that tab of the object (the band on top leads back to the cleanup).
 const FC_INFO_LOOK = {
   duration: ["clock-outline", "blue"], state: ["pulse", "amber"], links: ["link-variant", "blue"], impact: ["eye-off-outline", "green"],
-  rec: ["lightbulb-on-outline", "blue"], pattern: ["chart-timeline-variant", "amber"], often: ["repeat", "red"], mean: ["clock-outline", "blue"], hides: ["eye-off-outline", "green"],
+  type: ["shape-outline", "blue"], assign: ["map-marker-outline", "blue"], rec: ["lightbulb-on-outline", "blue"], pattern: ["chart-timeline-variant", "amber"], often: ["repeat", "red"], mean: ["clock-outline", "blue"], hides: ["eye-off-outline", "green"],
 };
 class FcInfoMixin {
   // The first of the wanted tabs the object has, else its overview.
@@ -34,6 +34,30 @@ class FcInfoMixin {
       links || !outage ? row("links", "fcInfoLinks", links || this.t("fcInfoNothing"), ["relations", "used", "members", "overview"], links ? "" : "ok") : row("links", "fcInfoLinks", this.t("fcInfoNothing"), ["relations", "used", "members", "overview"], "ok"),
       row("impact", "fcInfoImpact", f.impact && f.impact !== "none" ? this.impactLine(f) : "", ["overview"]),
     ];
+  }
+
+  // What the object is and where it belongs, so nobody has to open the detail page to know which one it is.
+  fcObjectKind(obj) {
+    if (!obj) return "";
+    const kind = this.t(obj.object_type);
+    const sub = obj.object_type === "device" ? [obj.manufacturer, obj.model].filter(Boolean).join(" ") : obj.object_type === "entity" && String(obj.object_id).includes(".") ? String(obj.object_id).split(".")[0] : "";
+    return [kind, sub].filter(Boolean).join(" · ");
+  }
+
+  fcObjectPlace(obj) {
+    if (!obj) return "";
+    const device = obj.object_type === "device" ? obj : obj.device_id ? this.findObject(`device:${obj.device_id}`) : null;
+    const entries = obj.object_type === "config_entry" ? [obj] : [obj.config_entry_id, ...(device?.config_entry_ids || [])].filter(Boolean).map(id => this.findObject(`config_entry:${id}`)).filter(Boolean);
+    const names = [...new Set(entries.map(e => e.integration_name || e.name || e.domain).filter(Boolean))];
+    const integration = names.length ? names.slice(0, 2).join(", ") : obj.object_type === "entity" ? obj.platform || "" : "";
+    return [obj.object_type === "area" ? "" : this.areaName(obj), integration].filter(Boolean).join(" · ");
+  }
+
+  fcObjectBlock(key, obj) {
+    if (!obj) return "";
+    const none = this.t("fcInfoNone"), tab = this.fcTabFor(obj, key, ["overview"]);
+    const row = (id, label, text) => ({ id, label: this.t(label), text: text || none, empty: !text, tab: text ? tab : "" });
+    return this.fcInfoHtml([row("type", "fcInfoType", this.fcObjectKind(obj)), row("assign", "fcInfoAssign", this.fcObjectPlace(obj))], key).replace('class="fcinfo', 'class="fcinfo fcobj');
   }
 
   fcInfoBlock(f, key, obj, rec) { return this.fcInfoHtml([...this.fcInfoRows(f, key, obj), ...(rec ? [this.fcRecRow(rec)] : [])], key); }
@@ -75,11 +99,11 @@ Object.assign(TEXT.de, {
   fcInfoTitle: "Warum steht das hier?", fcInfoDuration: "Dauer", fcInfoState: "Zustand", fcInfoLinks: "Daran hängt", fcInfoImpact: "Wirkung",
   fcInfoPattern: "Muster", fcInfoOften: "Häufigkeit", fcInfoMean_: "Dauer", fcInfoEpisodes: "{n} Ausfälle in {days} Tagen", fcInfoMean: "Im Schnitt {span} pro Ausfall",
   fcInfoHides: "Die Objekt-Notiz blendet {n} Befunde aus", fcInfoHides1: "Die Objekt-Notiz blendet 1 Befund aus", fcInfoHidesNone: "Die Objekt-Notiz blendet keinen Befund aus",
-  fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
+  fcInfoType: "Typ", fcInfoAssign: "Zuordnung", fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
 });
 Object.assign(TEXT.en, {
   fcInfoTitle: "Why is this here?", fcInfoDuration: "Duration", fcInfoState: "State", fcInfoLinks: "Depends on it", fcInfoImpact: "Impact",
   fcInfoPattern: "Pattern", fcInfoOften: "Frequency", fcInfoMean_: "Duration", fcInfoEpisodes: "{n} outages in {days} days", fcInfoMean: "{span} per outage on average",
   fcInfoHides: "The object note hides {n} findings", fcInfoHides1: "The object note hides 1 finding", fcInfoHidesNone: "The object note hides no finding",
-  fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
+  fcInfoType: "Type", fcInfoAssign: "Belongs to", fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
 });
