@@ -564,6 +564,10 @@ def check_log(
                     if _parse(changes[i]["at"]) >= since
                 }
             ),
+            "restarts": sum(1 for e in entries if e["kind"] == "start" and not e.get("updates")),
+            "updates": sum(
+                1 for e in entries if e["kind"] == "update" or (e["kind"] == "start" and e.get("updates"))
+            ),
             "longest_problem_seconds": max(
                 (
                     lasted[i]
