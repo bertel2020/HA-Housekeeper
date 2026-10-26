@@ -46,7 +46,7 @@
   - „Alle n beheben“ und die Auswahl mit jedem Ort ohne einzelne Befunde zeigen die richtigen Einzahl-Texte.
   - Die Frage in Etappe 5 spricht nicht mehr von Löschen.
   - Die Seiten unterhalb der Befunde tragen keine falsche Gruppenüberschrift mehr.
-- **Schutzmodus mit drei Stufen:** Beobachten, Pflegen und Alles statt vier Stufen, in Auswahl, Pille und Statusleiste mit denselben Namen und je einer Zeile, was gesperrt ist.
+- **Schutzmodus mit drei Stufen:** Beobachten, Ändern und Alles statt vier Stufen, in Auswahl, Pille und Statusleiste mit denselben Namen und je einer Zeile, was gesperrt ist.
   - „Nur Quarantäne“ entfällt. Wer sie gewählt hatte, steht danach auf „Beobachten“ (nie auf einer höheren Stufe); eine Notiz sagt es, bis eine Stufe gewählt wird.
   - Ist die Stufe unbekannt, zeigt das Panel „Beobachten“ statt „Alles“.
 
@@ -96,7 +96,7 @@
   - “Fix all n” and a selection with every place but no single findings show the right singular texts.
   - The question of stage 5 no longer speaks of deleting.
   - The pages below the findings no longer carry a wrong group heading.
-- **Protection mode with three steps:** Watch, Maintain and Everything instead of four steps, with the same names in the choice, the pill and the status line and a line on what is blocked.
+- **Protection mode with three steps:** Watch, Change and Everything instead of four steps, with the same names in the choice, the pill and the status line and a line on what is blocked.
   - “Quarantine only” is gone. Whoever had chosen it is set to “Watch” (never to a higher step); a note says so until a step is chosen.
   - If the step is unknown, the panel shows “Watch” instead of “Everything”.
 

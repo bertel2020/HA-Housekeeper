@@ -85,10 +85,10 @@ Object.assign(TEXT.en, {
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards", causeN_entity1: "1 entity", causeN_automation1: "1 automation", causeN_script1: "1 script", causeN_dashboard1: "1 dashboard",
 });
 Object.assign(TEXT.de, {
-  modeBadge_full: "Alles", modeBadge_confirmed: "Pflegen", modeBadge_read_only: "Beobachten",
-  safeMode_full: "Schutzmodus: Alles", safeMode_confirmed: "Schutzmodus: Pflegen", safeMode_read_only: "Schutzmodus: Beobachten",
+  modeBadge_full: "Alles", modeBadge_confirmed: "Ändern", modeBadge_read_only: "Beobachten",
+  safeMode_full: "Schutzmodus: Alles", safeMode_confirmed: "Schutzmodus: Ändern", safeMode_read_only: "Schutzmodus: Beobachten",
   modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Seiten ansehen bleibt immer erlaubt. Ausnahmen, Notizen und der KI-Zugriff haben eigene Schalter.", modeLabel: "Was Housekeeper ändern darf",
-  mode_read_only: "Beobachten", mode_confirmed: "Pflegen", mode_full: "Alles",
+  mode_read_only: "Beobachten", mode_confirmed: "Ändern", mode_full: "Alles",
   modeText_read_only: "Housekeeper schaut nur. Gesperrt: alle Änderungen und Rückgängig.", modeText_confirmed: "Ändern mit Einzelbestätigung und Backup, auch Deaktivieren, Entfernen und Rückgängig. Gesperrt: endgültiges Löschen von Statistik, Verlauf und Backups sowie Reparaturen am Recorder.", modeText_full: "Alles, auch Endgültiges. Gesperrt: nichts.",
   modeMigrated: "Die Stufe „Nur Quarantäne“ gibt es nicht mehr. Housekeeper steht jetzt auf „Beobachten“. Wähle die Stufe, die du willst.",
   plan: "Plan", planPageSubtitle: "Vorschau, Prüfung und Ergebnis eines Plans. Nichts wird geändert, bevor du bestätigst.", planNone: "Dieser Plan ist nicht mehr geöffnet. Alle Pläne stehen im Journal.",
@@ -99,10 +99,10 @@ Object.assign(TEXT.de, {
   event_critical_finding: "neuer Befund mit hoher Auswirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen",
 });
 Object.assign(TEXT.en, {
-  modeBadge_full: "Everything", modeBadge_confirmed: "Maintain", modeBadge_read_only: "Watch",
-  safeMode_full: "Protection mode: Everything", safeMode_confirmed: "Protection mode: Maintain", safeMode_read_only: "Protection mode: Watch",
+  modeBadge_full: "Everything", modeBadge_confirmed: "Change", modeBadge_read_only: "Watch",
+  safeMode_full: "Protection mode: Everything", safeMode_confirmed: "Protection mode: Change", safeMode_read_only: "Protection mode: Watch",
   modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and looking at every page stay allowed. Exceptions, notes and AI access have their own switches.", modeLabel: "What Housekeeper may change",
-  mode_read_only: "Watch", mode_confirmed: "Maintain", mode_full: "Everything",
+  mode_read_only: "Watch", mode_confirmed: "Change", mode_full: "Everything",
   modeText_read_only: "Housekeeper only looks. Blocked: every change and undo.", modeText_confirmed: "Changes with one-by-one confirmation and backup, including disabling, removing and undo. Blocked: irreversible deletion of statistics, history and backups, and repairs in the recorder.", modeText_full: "Everything, including what cannot be undone. Blocked: nothing.",
   modeMigrated: "The step “Quarantine only” no longer exists. Housekeeper is now set to “Watch”. Choose the step you want.",
   plan: "Plan", planPageSubtitle: "Preview, check and result of a plan. Nothing changes before you confirm.", planNone: "This plan is no longer open. All plans are in the journal.",
