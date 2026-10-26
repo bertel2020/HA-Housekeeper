@@ -19,6 +19,7 @@ class ThemeMixin {
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
+    if (VIEWS.includes(saved.view)) prefs.view = saved.view;
     return prefs;
   }
 

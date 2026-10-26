@@ -31,7 +31,7 @@ const PREFS_KEY = "ha_housekeeper.prefs";
 const MARK_QUIET_DAYS = 30;
 // The page sizes every paged list offers, unless it has its own.
 const PAGE_SIZES = [20, 50, 100, 250];
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
@@ -172,6 +172,13 @@ const NAV_GROUPS = [
   ["navGroupOperation", ["reliability", "runs", "recorder", "storage"]],
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],
   ["navGroupExplore", ["inventory", "components", "graph", "changes"]],
+];
+// What the simple view shows in the bar; the full view shows NAV_GROUPS. A page that is open stays in the bar in either view,
+// so a jump (a goal, a notification, the search) never ends on a page the bar hides. Pages outside the bar are never hidden.
+const VIEWS = ["simple", "full"];
+const SIMPLE_NAV_GROUPS = [
+  ["navGroupActions", ["overview", "findingsNav"]],
+  ["navGroupMaintain", ["maintenance", "batteries", "reminders", "exceptions"]],
 ];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };

@@ -29,6 +29,7 @@ const SEARCH_WORDS = {
   changes: "änderungen vergleich scan-vergleich logbuch changes compare logbook",
   settings: "einstellungen optionen konfiguration settings options preferences",
   look: "darstellung theme dunkel hell schrift farbe appearance dark light font",
+  view: "ansicht einfach vollständig oberfläche view simple full interface",
   protection: "schutz schutzmodus sicherheit protection mode",
   exceptions: "ausgeblendet ignoriert fehlalarm objekt-notiz notiz vermerk nicht anfassen nicht entfernen geschützt ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",

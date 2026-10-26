@@ -10,6 +10,34 @@ class SettingsMixin {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
+  isSimple() { return this.prefs.view === "simple"; }
+
+  // The groups of the bar in the current view. The simple view lists fewer pages; the page that is open joins its own group.
+  navGroups() {
+    if (!this.isSimple()) return NAV_GROUPS;
+    const groups = SIMPLE_NAV_GROUPS.map(([label, views]) => [label, [...views]]);
+    const home = NAV_GROUPS.find(([, views]) => views.includes(this.view));
+    if (home && !groups.some(([, views]) => views.includes(this.view))) {
+      const own = groups.find(([label]) => label === home[0]);
+      if (own) own[1].push(this.view); else groups.push([home[0], [this.view]]);
+    }
+    return groups;
+  }
+
+  // The little button in the bar: the view that is on, a click turns to the other one.
+  viewPill() {
+    const other = this.isSimple() ? "full" : "simple", now = this.t(`view_${this.prefs.view}`);
+    return `<button type="button" class="pill mute viewpill" data-pref="view|${other}" title="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}" aria-label="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}"><ha-icon icon="mdi:eye-settings-outline"></ha-icon>${this.esc(now)}</button>`;
+  }
+
+  // The view of the settings: what each one shows. The view never changes rules, only what is on screen.
+  viewCard() {
+    const opt = view => `<div class="setrow"><div><strong>${this.t(`view_${view}`)}</strong><small>${this.t(`viewText_${view}`)}</small></div></div>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
+      <div class="setrow"><div>${this.t("viewLabel")}</div>${this.segment("view", VIEWS.map(v => [v, this.t(`view_${v}`)]))}</div>${VIEWS.map(opt).join("")}
+      <p class="factnote">${this.t("viewNote")}</p></section>`;
+  }
+
   // The tab ids of the settings page, in display order.
   // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
@@ -17,6 +45,7 @@ class SettingsMixin {
     const mcp = m.mcp || {};
     return [
       ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`modeBadge_${m.protection || "read_only"}`), (m.protection || "read_only") === "full" ? "ok" : "warn"],
+      ["view", "mdi:eye-settings-outline", "setTabView", "setHintView", this.t(`view_${this.prefs.view}`), "mute"],
       ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
       ["mcp", "mdi:robot-outline", "setTabMcp", "setHintMcp", !mcp.enabled ? this.t("setOff") : this.t(mcp.write ? "mcpFilterWrite" : "mcpFilterRead"), !mcp.enabled ? "mute" : mcp.write ? "warn" : "ok"],
       ["look", "mdi:palette-outline", "setTabLook", "setHintLook", this.t(`scheme${(this.prefs.scheme || "standard").replace(/^./, c => c.toUpperCase())}`), "mute"],
@@ -332,7 +361,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 

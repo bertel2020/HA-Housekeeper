@@ -926,7 +926,7 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
   const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope", graphMode: "cube" }) }) }).el;
-  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" }));
+  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full" }));
 });
 
 test("the start view preference applies unless a deep link says otherwise", () => {
@@ -7744,4 +7744,24 @@ test("the History page is a standard table: updates and edits link to their page
   assert.ok(html.includes("<table") && html.includes("shortly after an update") && html.includes('data-jump="maintenance" data-jump-tab="updates"'));
   assert.ok(html.includes('data-lf-set="checklog|level|problem"') && html.includes('data-lf-set="checklog|area|backup"') && html.includes('data-cl-flap=""'));
   assert.ok(html.includes("Restarts") && html.includes("Configuration changed") && html.includes("automation.nope"));
+});
+
+test("the simple view lists fewer pages, the full view all, and an open page is never missing from the bar", () => {
+  const { el, NAV, NAV_GROUPS } = panel("de");
+  assert.equal(el.prefs.view, "full");
+  assert.equal(el.navGroups(), NAV_GROUPS);
+  el.prefs = { ...el.prefs, view: "simple" };
+  const listed = () => el.navGroups().flatMap(([, views]) => views);
+  el.view = "overview";
+  assert.equal(listed().join(), "overview,findingsNav,maintenance,batteries,reminders,exceptions");
+  for (const [view] of NAV) {
+    if (view === "settings") continue;
+    el.view = view;
+    assert.ok(listed().includes(view), `${view} stays in the bar while it is open`);
+    assert.equal(el.navGroups()[0][0], "navGroupActions");
+  }
+  assert.ok(el.settingsTabs().some(([id]) => id === "view"));
+  el.view = "settings"; el.settingsTab = "view";
+  assert.ok(el.settingsView().includes("data-pref=\"view|full\""));
+  assert.ok(el.viewPill().includes("view|full"));
 });

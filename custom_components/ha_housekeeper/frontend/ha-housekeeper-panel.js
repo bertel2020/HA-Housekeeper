@@ -406,7 +406,7 @@ const PREFS_KEY = "ha_housekeeper.prefs";
 const MARK_QUIET_DAYS = 30;
 // The page sizes every paged list offers, unless it has its own.
 const PAGE_SIZES = [20, 50, 100, 250];
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
@@ -547,6 +547,13 @@ const NAV_GROUPS = [
   ["navGroupOperation", ["reliability", "runs", "recorder", "storage"]],
   ["navGroupSecurity", ["exposure", "dataflow", "secrets"]],
   ["navGroupExplore", ["inventory", "components", "graph", "changes"]],
+];
+// What the simple view shows in the bar; the full view shows NAV_GROUPS. A page that is open stays in the bar in either view,
+// so a jump (a goal, a notification, the search) never ends on a page the bar hides. Pages outside the bar are never hidden.
+const VIEWS = ["simple", "full"];
+const SIMPLE_NAV_GROUPS = [
+  ["navGroupActions", ["overview", "findingsNav"]],
+  ["navGroupMaintain", ["maintenance", "batteries", "reminders", "exceptions"]],
 ];
 const BUSY_RETRIES = 12, BUSY_WAIT_MS = 8000; // another recorder query holds the lock: ask again by itself
 const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-off" };
@@ -1359,6 +1366,7 @@ class ThemeMixin {
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
+    if (VIEWS.includes(saved.view)) prefs.view = saved.view;
     return prefs;
   }
 
@@ -1489,6 +1497,7 @@ function navCompactRules(compact) {
     [".nav.active", "box-shadow:none;background:linear-gradient(var(--hk-blue),var(--hk-blue)) left top/3px 100% no-repeat,color-mix(in srgb,var(--hk-blue) 8%,transparent)"],
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
+    [".viewpill", "align-self:center;cursor:pointer;border:0;font:inherit;display:inline-flex;align-items:center;gap:4px;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];
   const own = selector => (selector === ".top" || selector.startsWith(".top.") ? selector.replace(".top", ".top.compact") : `.top.compact ${selector}`);
@@ -3701,6 +3710,34 @@ class SettingsMixin {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
+  isSimple() { return this.prefs.view === "simple"; }
+
+  // The groups of the bar in the current view. The simple view lists fewer pages; the page that is open joins its own group.
+  navGroups() {
+    if (!this.isSimple()) return NAV_GROUPS;
+    const groups = SIMPLE_NAV_GROUPS.map(([label, views]) => [label, [...views]]);
+    const home = NAV_GROUPS.find(([, views]) => views.includes(this.view));
+    if (home && !groups.some(([, views]) => views.includes(this.view))) {
+      const own = groups.find(([label]) => label === home[0]);
+      if (own) own[1].push(this.view); else groups.push([home[0], [this.view]]);
+    }
+    return groups;
+  }
+
+  // The little button in the bar: the view that is on, a click turns to the other one.
+  viewPill() {
+    const other = this.isSimple() ? "full" : "simple", now = this.t(`view_${this.prefs.view}`);
+    return `<button type="button" class="pill mute viewpill" data-pref="view|${other}" title="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}" aria-label="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}"><ha-icon icon="mdi:eye-settings-outline"></ha-icon>${this.esc(now)}</button>`;
+  }
+
+  // The view of the settings: what each one shows. The view never changes rules, only what is on screen.
+  viewCard() {
+    const opt = view => `<div class="setrow"><div><strong>${this.t(`view_${view}`)}</strong><small>${this.t(`viewText_${view}`)}</small></div></div>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
+      <div class="setrow"><div>${this.t("viewLabel")}</div>${this.segment("view", VIEWS.map(v => [v, this.t(`view_${v}`)]))}</div>${VIEWS.map(opt).join("")}
+      <p class="factnote">${this.t("viewNote")}</p></section>`;
+  }
+
   // The tab ids of the settings page, in display order.
   // Each group has a tile with its state; the tile opens only that group's settings.
   settingsTabs() {
@@ -3708,6 +3745,7 @@ class SettingsMixin {
     const mcp = m.mcp || {};
     return [
       ["protection", "mdi:shield-lock-outline", "setTabProtection", "setHintProtection", this.t(`modeBadge_${m.protection || "read_only"}`), (m.protection || "read_only") === "full" ? "ok" : "warn"],
+      ["view", "mdi:eye-settings-outline", "setTabView", "setHintView", this.t(`view_${this.prefs.view}`), "mute"],
       ["scan", "mdi:radar", "setTabScan", "setHintScan", m.scan_interval_hours ? this.t("setEveryHours", { n: m.scan_interval_hours }) : this.t("setManual"), "mute"],
       ["mcp", "mdi:robot-outline", "setTabMcp", "setHintMcp", !mcp.enabled ? this.t("setOff") : this.t(mcp.write ? "mcpFilterWrite" : "mcpFilterRead"), !mcp.enabled ? "mute" : mcp.write ? "warn" : "ok"],
       ["look", "mdi:palette-outline", "setTabLook", "setHintLook", this.t(`scheme${(this.prefs.scheme || "standard").replace(/^./, c => c.toUpperCase())}`), "mute"],
@@ -4023,7 +4061,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
@@ -8699,6 +8737,7 @@ const SEARCH_WORDS = {
   changes: "änderungen vergleich scan-vergleich logbuch changes compare logbook",
   settings: "einstellungen optionen konfiguration settings options preferences",
   look: "darstellung theme dunkel hell schrift farbe appearance dark light font",
+  view: "ansicht einfach vollständig oberfläche view simple full interface",
   protection: "schutz schutzmodus sicherheit protection mode",
   exceptions: "ausgeblendet ignoriert fehlalarm objekt-notiz notiz vermerk nicht anfassen nicht entfernen geschützt ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
@@ -17571,6 +17610,24 @@ class SystemMixin {
   }
 }
 
+// Texts for the choice between the simple and the full view; merged into TEXT.
+Object.assign(TEXT.de, {
+  setTabView: "Ansicht", setHintView: "Einfach oder vollständig", view_simple: "Einfach", view_full: "Vollständig",
+  viewTitle: "Ansicht", viewHint: "Wie viel von Housekeeper du siehst. Gilt für dein Benutzerprofil.", viewLabel: "Ansicht wählen",
+  viewText_simple: "Befunde, Wartung und Ausnahmen. Alles andere ist ausgeblendet und über die Suche oder „Beheben“ erreichbar.",
+  viewText_full: "Die ganze Oberfläche mit allen Seiten, Spalten und Menüpunkten.",
+  viewNote: "Die Ansicht ändert nur, was du siehst. Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.",
+  viewPillHint: "Ansicht wechseln zu: {to}",
+});
+Object.assign(TEXT.en, {
+  setTabView: "View", setHintView: "Simple or full", view_simple: "Simple", view_full: "Full",
+  viewTitle: "View", viewHint: "How much of Housekeeper you see. Applies to your user profile.", viewLabel: "Choose a view",
+  viewText_simple: "Findings, maintenance and exceptions. Everything else is hidden and reachable through the search or \"Fix\".",
+  viewText_full: "The whole interface with every page, column and menu entry.",
+  viewNote: "The view only changes what you see. The protection mode, confirmations, backups and checks stay the same.",
+  viewPillHint: "Switch view to: {to}",
+});
+
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
@@ -21818,7 +21875,7 @@ class HAHousekeeperPanel extends HTMLElement {
       return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : "";
     };
     const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
-    const [direct, ...menus] = NAV_GROUPS;
+    const [direct, ...menus] = this.navGroups();
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
       const sum = views.reduce((n, v) => n + (typeof counts[v] === "number" ? counts[v] : 0), 0);
@@ -21826,7 +21883,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
-      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${item("settings")}</div></nav></header>`;
+      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${this.viewPill()}${item("settings")}</div></nav></header>`;
   }
 
   // The words beside the views of Monitoring: what is due or impaired, or that a function is switched off.
@@ -21879,7 +21936,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (view === "settings") return this.t("title");
     if (view === "overview") return this.t("navGroupOverview");
     if (["fix", "round", "firstcleanup"].includes(view)) return ""; // pages below the findings carry no group heading
-    const group = NAV_GROUPS.find(([, views]) => views.includes(view));
+    const group = NAV_GROUPS.find(([, views]) => views.includes(view)); // the simple view only lists fewer pages; the heading stays
     // The first group holds the entries that stand alone in the bar; it is no heading.
     return group ? (group === NAV_GROUPS[0] ? "" : this.t(group[0])) : this.t("navGroupOverview");
   }

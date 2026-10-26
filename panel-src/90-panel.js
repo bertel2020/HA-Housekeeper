@@ -713,7 +713,7 @@ class HAHousekeeperPanel extends HTMLElement {
       return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : "";
     };
     const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
-    const [direct, ...menus] = NAV_GROUPS;
+    const [direct, ...menus] = this.navGroups();
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
       const sum = views.reduce((n, v) => n + (typeof counts[v] === "number" ? counts[v] : 0), 0);
@@ -721,7 +721,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
-      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${item("settings")}</div></nav></header>`;
+      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${this.viewPill()}${item("settings")}</div></nav></header>`;
   }
 
   // The words beside the views of Monitoring: what is due or impaired, or that a function is switched off.
@@ -774,7 +774,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (view === "settings") return this.t("title");
     if (view === "overview") return this.t("navGroupOverview");
     if (["fix", "round", "firstcleanup"].includes(view)) return ""; // pages below the findings carry no group heading
-    const group = NAV_GROUPS.find(([, views]) => views.includes(view));
+    const group = NAV_GROUPS.find(([, views]) => views.includes(view)); // the simple view only lists fewer pages; the heading stays
     // The first group holds the entries that stand alone in the bar; it is no heading.
     return group ? (group === NAV_GROUPS[0] ? "" : this.t(group[0])) : this.t("navGroupOverview");
   }
