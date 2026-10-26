@@ -19,15 +19,13 @@ def test_the_mode_decides_what_may_run_and_what_may_be_undone() -> None:
     purge, with_data = {"kind": "purge_statistics"}, {"kind": "remove_entity", "recorder": "states"}
     table = {
         "read_only": (False, False, False, False),
-        "quarantine": (True, False, False, False),
         "confirmed": (True, True, False, False),
         "full": (True, True, True, True),
     }
     for mode, expected in table.items():
         assert tuple(allows(mode, a) for a in (disable, remove, purge, with_data)) == expected
-    assert not allows_undo("read_only", [disable])
-    assert allows_undo("quarantine", [disable]) and not allows_undo("quarantine", [remove])
-    assert allows_undo("confirmed", [remove])
+    assert not allows_undo("read_only")
+    assert allows_undo("confirmed") and allows_undo("full")
 
 
 async def test_a_situation_is_announced_once_and_again_after_it_ended(hass) -> None:

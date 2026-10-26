@@ -2111,13 +2111,7 @@ class CleanupRunner:
         """Revert steps that are still exactly as Housekeeper left them."""
         if self.running:
             raise CleanupError("busy")
-        done = [
-            a
-            for a in self._plan(plan_id)["actions"]
-            if (a.get("result") or {}).get("state") == "done"
-            and (object_ids is None or a["object_id"] in object_ids)
-        ]
-        if not allows_undo(self.scanner.protection.mode, done):
+        if not allows_undo(self.scanner.protection.mode):
             raise CleanupError("protection_mode")
         try:
             acquire_write(self.hass, "undo")

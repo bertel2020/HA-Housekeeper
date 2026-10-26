@@ -1939,6 +1939,7 @@ class InventoryScanner:
                 "notify": self.notify.enabled,
                 "mcp": self.mcp.meta(),
                 "protection": self.protection.mode,
+                "protection_migrated": self.protection.migrated_from,
                 "protection_rules": protection_rules(),
                 "recorder_available": self._recorder_available,
                 "orphaned_statistics": len(orphaned_statistics),

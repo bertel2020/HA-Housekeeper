@@ -650,6 +650,7 @@ def websocket_protection_set(
     scanner.protection.set_mode(msg["mode"])
     if scanner._snapshot is not None:
         scanner._snapshot["meta"]["protection"] = scanner.protection.mode
+        scanner._snapshot["meta"]["protection_migrated"] = None
     connection.send_result(msg["id"], {"mode": scanner.protection.mode})
 
 

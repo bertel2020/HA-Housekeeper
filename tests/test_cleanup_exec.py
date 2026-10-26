@@ -598,20 +598,20 @@ async def test_the_protection_mode_limits_confirming_starting_and_undoing(
     with pytest.raises(CleanupError, match="protection_mode"):
         scanner.cleanup.confirm(plan["plan_id"], [], "user-1")
 
-    scanner.protection.mode = "quarantine"  # disabling is the one thing allowed
+    scanner.protection.mode = "confirmed"  # a confirmed change with a backup is allowed
     confirmation = scanner.cleanup.confirm(plan["plan_id"], [], "user-1")
     scanner.protection.mode = "read_only"  # lowered after confirming: the start refuses
     with pytest.raises(CleanupError, match="protection_mode"):
         scanner.cleanup.start(plan["plan_id"], confirmation["token"], "user-1")
 
-    scanner.protection.mode = "quarantine"
+    scanner.protection.mode = "confirmed"
     plan = await make_plan(scanner, hass, entry.entity_id)
     await run(scanner, plan)
     assert plan["actions"][0]["result"]["state"] == "done"
     scanner.protection.mode = "read_only"
     with pytest.raises(CleanupError, match="protection_mode"):
         await scanner.cleanup.undo(plan["plan_id"], None)
-    scanner.protection.mode = "quarantine"
+    scanner.protection.mode = "confirmed"
     assert (await scanner.cleanup.undo(plan["plan_id"], None))["results"][0]["outcome"] == "undone"
 
 
@@ -918,6 +918,26 @@ async def test_a_new_install_starts_read_only_and_one_with_scan_data_keeps_full(
     old = InventoryScanner(hass)
     await old.protection.async_load()
     assert old.protection.mode == "full"
+
+
+async def test_a_saved_quarantine_mode_becomes_read_only_and_never_full(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers.storage import Store
+
+    from custom_components.ha_housekeeper.const import STORAGE_KEY, STORAGE_VERSION
+
+    await Store(hass, STORAGE_VERSION, STORAGE_KEY).async_save(
+        {"items": {}}
+    )  # an install with scan data
+    scanner = InventoryScanner(hass)
+    await scanner.protection._store.async_save({"mode": "quarantine"})
+    await scanner.protection.async_load()
+    assert (
+        scanner.protection.mode == "read_only" and scanner.protection.migrated_from == "quarantine"
+    )
+    scanner.protection.set_mode("confirmed")
+    assert scanner.protection.migrated_from is None
 
 
 async def test_a_damaged_database_stops_a_plan_before_anything_is_deleted(
