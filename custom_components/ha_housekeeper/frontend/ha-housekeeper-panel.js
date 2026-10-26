@@ -1508,6 +1508,12 @@ function navCompactRules(compact) {
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
     [".nodetails .tech", "display:none!important"],
+    [".viewchips", "display:flex;flex-wrap:wrap;gap:5px;margin:2px 0"],
+    [".viewchips i", "font-style:normal;font-size:calc(11.5px*var(--hk-fs,1));padding:2px 8px;border-radius:99px;border:1px solid var(--hk-border);color:var(--hk-muted);background:var(--hk-soft)"],
+    [".sect", "padding:12px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.05em;text-transform:uppercase;color:var(--hk-muted);font-weight:700"],
+    [".viewdet", "margin:4px 16px 12px;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface)"],
+    [".viewcmp", "margin:4px 16px 12px"],
+    [".viewcmp td:first-child", "font-weight:600;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];
   const own = selector => (selector === ".top" || selector.startsWith(".top.") ? selector.replace(".top", ".top.compact") : `.top.compact ${selector}`);
@@ -3779,12 +3785,20 @@ class SettingsMixin {
     return groups;
   }
 
-  // The view of the settings: what each one shows. The view never changes rules, only what is on screen.
+  // The view of the settings, built like the protection mode: one option card per view with its pages, what it leaves out, the switch for the technical details, and what changes.
   viewCard() {
-    const opt = view => `<div class="setrow"><div><strong>${this.t(`view_${view}`)}</strong><small>${this.t(`viewText_${view}`)}</small></div></div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
-      <div class="setrow"><div>${this.t("viewLabel")}</div>${this.segment("view", VIEWS.map(v => [v, this.t(`view_${v}`)]))}</div>${VIEWS.map(opt).join("")}
-      <label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
+    const simple = SIMPLE_NAV_GROUPS.flatMap(([, views]) => views), all = NAV_GROUPS.flatMap(([, views]) => views);
+    const left = NAV_GROUPS.filter(([, views]) => views.some(v => !simple.includes(v))).map(([label]) => this.t(label));
+    const icons = { simple: "mdi:eye-outline", full: "mdi:view-dashboard-outline" };
+    const chips = views => `<span class="viewchips">${views.map(v => `<i>${this.esc(this.t(v))}</i>`).join("")}</span>`;
+    const options = VIEWS.map(v => `<label class="modeopt${v === this.prefs.view ? " on" : ""}"><input type="radio" name="hk-view" value="${v}" data-view-radio ${v === this.prefs.view ? "checked" : ""}><span class="tile ${v === this.prefs.view ? "ok" : "mute"}"><ha-icon icon="${icons[v]}"></ha-icon></span><span class="row-text"><strong>${this.t(`view_${v}`)}</strong><small>${this.t(`viewText_${v}`)}</small>${chips(v === "simple" ? simple : ["viewAllPages", "viewAllColumns", "viewAllMenus"])}<small>${this.t(`viewLeft_${v}`, { list: left.join(", ") })}</small></span></label>`).join("");
+    const row = key => `<tr><td>${this.t(`viewCmp_${key}`)}</td><td>${this.t(`viewCmpS_${key}`, { n: simple.length, g: SIMPLE_NAV_GROUPS.length })}</td><td>${this.t(`viewCmpF_${key}`, { n: all.length, g: NAV_GROUPS.length })}</td></tr>`;
+    return `<section class="panel modepanel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
+      <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("viewLabel"))}">${options}</div>
+      <p class="sect">${this.t("detailsSect")}</p>
+      <label class="optswitch viewdet"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
+      <p class="sect">${this.t("viewCmpTitle")}</p>
+      <div class="tablewrap lt viewcmp"><table><thead><tr><th scope="col"></th><th scope="col">${this.t("view_simple")}</th><th scope="col">${this.t("view_full")}</th></tr></thead><tbody>${["bar", "overview", "findings", "menu", "detail"].map(row).join("")}</tbody></table></div>
       <p class="factnote">${this.t("viewNote")}</p></section>`;
   }
 
@@ -17711,6 +17725,26 @@ Object.assign(TEXT.en, {
   viewAskFull: "Show full view", viewAskStay: "Stay with simple",
   viewMoreTitle: "You often show more.", viewMoreText: "The full view always shows it.", viewMoreNever: "Do not ask again",
 });
+Object.assign(TEXT.de, {
+  detailsSect: "Technische Details", viewCmpTitle: "Was sich ändert",
+  viewAllPages: "alle Seiten", viewAllColumns: "alle Spalten", viewAllMenus: "alle Menüpunkte",
+  viewLeft_simple: "Ausgeblendet: {list}. Erreichbar über die Suche, „Beheben“ und die Hinweise der Übersicht.", viewLeft_full: "Ausgeblendet: nichts.",
+  viewCmp_bar: "Leiste", viewCmpS_bar: "{n} Seiten in {g} Gruppen", viewCmpF_bar: "{n} Seiten in {g} Gruppen",
+  viewCmp_overview: "Übersicht", viewCmpS_overview: "Status, To-do, Backup und „Weitere Hinweise“ aus ausgeblendeten Seiten", viewCmpF_overview: "zusätzlich Aufräumen, Verlauf, Inventar, System, Datenbank",
+  viewCmp_findings: "Befunde-Tabelle", viewCmpS_findings: "Name, Thema, Wirkung, seit", viewCmpF_findings: "zusätzlich Gewissheit, Objekt-ID, Regel-ID",
+  viewCmp_menu: "Zeilenmenü", viewCmpS_menu: "Beheben, Status, Öffnen", viewCmpF_menu: "zusätzlich Ausnahme, Label, Markieren, Graph",
+  viewCmp_detail: "Export, Detailseite", viewCmpS_detail: "CSV, Markdown; Übersicht, Aktionen", viewCmpF_detail: "zusätzlich JSON, Beziehungen, Diagnose, Technisch",
+});
+Object.assign(TEXT.en, {
+  detailsSect: "Technical details", viewCmpTitle: "What changes",
+  viewAllPages: "all pages", viewAllColumns: "all columns", viewAllMenus: "all menu entries",
+  viewLeft_simple: "Hidden: {list}. Reachable through the search, \"Fix\" and the notes of the overview.", viewLeft_full: "Hidden: nothing.",
+  viewCmp_bar: "Bar", viewCmpS_bar: "{n} pages in {g} groups", viewCmpF_bar: "{n} pages in {g} groups",
+  viewCmp_overview: "Overview", viewCmpS_overview: "Status, to-do, backup and \"More notes\" from hidden pages", viewCmpF_overview: "plus clean-up, history, inventory, system, database",
+  viewCmp_findings: "Findings table", viewCmpS_findings: "Name, topic, impact, since", viewCmpF_findings: "plus certainty, object ID, rule ID",
+  viewCmp_menu: "Row menu", viewCmpS_menu: "Fix, status, open", viewCmpF_menu: "plus exception, label, mark, graph",
+  viewCmp_detail: "Export, detail page", viewCmpS_detail: "CSV, Markdown; overview, actions", viewCmpF_detail: "plus JSON, relations, diagnosis, technical",
+});
 
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
@@ -22417,6 +22451,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diag-copy]")?.addEventListener("click", () => this.copyIssueText());
     root.querySelector("[data-diagnostics]")?.addEventListener("click", () => this.downloadText("diagnostics.json", JSON.stringify(this.diagnosticsData(), null, 2), "application/json"));
+    root.querySelectorAll("[data-view-radio]").forEach(el => el.addEventListener("change", ev => this.setPref("view", ev.target.value)));
     root.querySelectorAll("[data-protection]").forEach(el => el.addEventListener("change", ev => this.setProtection(ev.target.value)));
     root.querySelector("[data-notify]")?.addEventListener("change", async ev => {
       try { await this._hass.callWS({ type: "ha_housekeeper/notify_set", enabled: ev.target.checked }); this.data.meta.notify = ev.target.checked; }

@@ -7762,7 +7762,9 @@ test("the simple view lists fewer pages, the full view all, and an open page is 
   }
   assert.ok(el.settingsTabs().some(([id]) => id === "view"));
   el.view = "settings"; el.settingsTab = "view";
-  assert.ok(el.settingsView().includes("data-pref=\"view|full\""));
+  const card = el.settingsView();
+  assert.ok(card.includes('value="full"') && card.includes("data-view-radio") && card.includes("data-pref-switch=\"details\""));
+  assert.ok(card.includes("6 Seiten in 2 Gruppen") && card.includes("Ausgeblendet: nichts.") && card.includes("Ausgeblendet: Überwachen"));
 });
 
 test("the technical details follow the view, stay changeable, and are marked so one rule hides them", () => {

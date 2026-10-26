@@ -39,3 +39,23 @@ Object.assign(TEXT.en, {
   viewAskFull: "Show full view", viewAskStay: "Stay with simple",
   viewMoreTitle: "You often show more.", viewMoreText: "The full view always shows it.", viewMoreNever: "Do not ask again",
 });
+Object.assign(TEXT.de, {
+  detailsSect: "Technische Details", viewCmpTitle: "Was sich ändert",
+  viewAllPages: "alle Seiten", viewAllColumns: "alle Spalten", viewAllMenus: "alle Menüpunkte",
+  viewLeft_simple: "Ausgeblendet: {list}. Erreichbar über die Suche, „Beheben“ und die Hinweise der Übersicht.", viewLeft_full: "Ausgeblendet: nichts.",
+  viewCmp_bar: "Leiste", viewCmpS_bar: "{n} Seiten in {g} Gruppen", viewCmpF_bar: "{n} Seiten in {g} Gruppen",
+  viewCmp_overview: "Übersicht", viewCmpS_overview: "Status, To-do, Backup und „Weitere Hinweise“ aus ausgeblendeten Seiten", viewCmpF_overview: "zusätzlich Aufräumen, Verlauf, Inventar, System, Datenbank",
+  viewCmp_findings: "Befunde-Tabelle", viewCmpS_findings: "Name, Thema, Wirkung, seit", viewCmpF_findings: "zusätzlich Gewissheit, Objekt-ID, Regel-ID",
+  viewCmp_menu: "Zeilenmenü", viewCmpS_menu: "Beheben, Status, Öffnen", viewCmpF_menu: "zusätzlich Ausnahme, Label, Markieren, Graph",
+  viewCmp_detail: "Export, Detailseite", viewCmpS_detail: "CSV, Markdown; Übersicht, Aktionen", viewCmpF_detail: "zusätzlich JSON, Beziehungen, Diagnose, Technisch",
+});
+Object.assign(TEXT.en, {
+  detailsSect: "Technical details", viewCmpTitle: "What changes",
+  viewAllPages: "all pages", viewAllColumns: "all columns", viewAllMenus: "all menu entries",
+  viewLeft_simple: "Hidden: {list}. Reachable through the search, \"Fix\" and the notes of the overview.", viewLeft_full: "Hidden: nothing.",
+  viewCmp_bar: "Bar", viewCmpS_bar: "{n} pages in {g} groups", viewCmpF_bar: "{n} pages in {g} groups",
+  viewCmp_overview: "Overview", viewCmpS_overview: "Status, to-do, backup and \"More notes\" from hidden pages", viewCmpF_overview: "plus clean-up, history, inventory, system, database",
+  viewCmp_findings: "Findings table", viewCmpS_findings: "Name, topic, impact, since", viewCmpF_findings: "plus certainty, object ID, rule ID",
+  viewCmp_menu: "Row menu", viewCmpS_menu: "Fix, status, open", viewCmpF_menu: "plus exception, label, mark, graph",
+  viewCmp_detail: "Export, detail page", viewCmpS_detail: "CSV, Markdown; overview, actions", viewCmpF_detail: "plus JSON, relations, diagnosis, technical",
+});

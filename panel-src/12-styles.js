@@ -16,6 +16,12 @@ function navCompactRules(compact) {
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
     [".nodetails .tech", "display:none!important"],
+    [".viewchips", "display:flex;flex-wrap:wrap;gap:5px;margin:2px 0"],
+    [".viewchips i", "font-style:normal;font-size:calc(11.5px*var(--hk-fs,1));padding:2px 8px;border-radius:99px;border:1px solid var(--hk-border);color:var(--hk-muted);background:var(--hk-soft)"],
+    [".sect", "padding:12px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.05em;text-transform:uppercase;color:var(--hk-muted);font-weight:700"],
+    [".viewdet", "margin:4px 16px 12px;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface)"],
+    [".viewcmp", "margin:4px 16px 12px"],
+    [".viewcmp td:first-child", "font-weight:600;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];
   const own = selector => (selector === ".top" || selector.startsWith(".top.") ? selector.replace(".top", ".top.compact") : `.top.compact ${selector}`);

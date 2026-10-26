@@ -54,12 +54,20 @@ class SettingsMixin {
     return groups;
   }
 
-  // The view of the settings: what each one shows. The view never changes rules, only what is on screen.
+  // The view of the settings, built like the protection mode: one option card per view with its pages, what it leaves out, the switch for the technical details, and what changes.
   viewCard() {
-    const opt = view => `<div class="setrow"><div><strong>${this.t(`view_${view}`)}</strong><small>${this.t(`viewText_${view}`)}</small></div></div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
-      <div class="setrow"><div>${this.t("viewLabel")}</div>${this.segment("view", VIEWS.map(v => [v, this.t(`view_${v}`)]))}</div>${VIEWS.map(opt).join("")}
-      <label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
+    const simple = SIMPLE_NAV_GROUPS.flatMap(([, views]) => views), all = NAV_GROUPS.flatMap(([, views]) => views);
+    const left = NAV_GROUPS.filter(([, views]) => views.some(v => !simple.includes(v))).map(([label]) => this.t(label));
+    const icons = { simple: "mdi:eye-outline", full: "mdi:view-dashboard-outline" };
+    const chips = views => `<span class="viewchips">${views.map(v => `<i>${this.esc(this.t(v))}</i>`).join("")}</span>`;
+    const options = VIEWS.map(v => `<label class="modeopt${v === this.prefs.view ? " on" : ""}"><input type="radio" name="hk-view" value="${v}" data-view-radio ${v === this.prefs.view ? "checked" : ""}><span class="tile ${v === this.prefs.view ? "ok" : "mute"}"><ha-icon icon="${icons[v]}"></ha-icon></span><span class="row-text"><strong>${this.t(`view_${v}`)}</strong><small>${this.t(`viewText_${v}`)}</small>${chips(v === "simple" ? simple : ["viewAllPages", "viewAllColumns", "viewAllMenus"])}<small>${this.t(`viewLeft_${v}`, { list: left.join(", ") })}</small></span></label>`).join("");
+    const row = key => `<tr><td>${this.t(`viewCmp_${key}`)}</td><td>${this.t(`viewCmpS_${key}`, { n: simple.length, g: SIMPLE_NAV_GROUPS.length })}</td><td>${this.t(`viewCmpF_${key}`, { n: all.length, g: NAV_GROUPS.length })}</td></tr>`;
+    return `<section class="panel modepanel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
+      <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("viewLabel"))}">${options}</div>
+      <p class="sect">${this.t("detailsSect")}</p>
+      <label class="optswitch viewdet"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
+      <p class="sect">${this.t("viewCmpTitle")}</p>
+      <div class="tablewrap lt viewcmp"><table><thead><tr><th scope="col"></th><th scope="col">${this.t("view_simple")}</th><th scope="col">${this.t("view_full")}</th></tr></thead><tbody>${["bar", "overview", "findings", "menu", "detail"].map(row).join("")}</tbody></table></div>
       <p class="factnote">${this.t("viewNote")}</p></section>`;
   }
 
