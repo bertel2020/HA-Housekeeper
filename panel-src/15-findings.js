@@ -374,7 +374,9 @@ class FindingsMixin {
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
-    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>${exc}`;
+    const onPage = this._findPage.filter(key => this.findSel.has(key)).length, whole = this._findPage.length;
+    const pageBox = `<label class="selall"><input type="checkbox" class="selbox" data-fsel-page ${whole && onPage === whole ? "checked" : ""} ${onPage && onPage < whole ? "data-partial" : ""}> ${this.t("selectPage")}</label>`;
+    if (!n) return `<div class="toolbar selhead">${pageBox}<span class="toolgap"></span>${total}</div>${exc}`;
     const decidable = facts.open.length + facts.user.length, one = set => [...set][0];
     const buttons = [
       facts.user.length ? btn("mdi:eye-outline", "findUnhide", `class="btn${facts.open.length ? "" : " accent"}" data-fsel-unhide`, part(facts.user.length)) : "",
@@ -387,7 +389,7 @@ class FindingsMixin {
       excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : "",
       labels ? btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels)) : "",
     ].join("");
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${buttons || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
+    return `<div class="toolbar selhead">${pageBox}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><button class="btn quiet selclear" data-fsel-clear>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns">${buttons || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
