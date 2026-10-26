@@ -405,9 +405,9 @@ class FirstCleanupMixin {
     const acts = [
       obj && this.fcFixable(f, key) ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix", chosen === "fix", sObj)
         : obj && OUTAGE_RULES.includes(f.rule_id) ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcCheck"), this.t("fcCheckHint"), false, "mdi:clipboard-check-outline", "blue", false, chosen === "fix", sObj) : "",
-      this.fcAct(opt("keep"), this.t("fcKeep"), this.t("fcKeepHint"), false, "mdi:check-circle-outline", "green", false, chosen === "keep", sFind),
-      this.fcAct(opt("snooze"), this.t("fcLater"), this.t("fcLaterHint"), false, "mdi:clock-outline", "amber", rec?.act === "later", chosen === "snooze", sFind),
-      this.fcAct(opt("ignore"), this.t("decideKind_ignore"), this.t("fcIgnoreHint"), false, "mdi:eye-off-outline", "", false, chosen === "ignore", sFind),
+      this.fcAct(opt("keep"), this.t("fcKeep"), this.t("fcKeepHint"), false, STATUS_TONES.keep.icon, STATUS_TONES.keep.tone, false, chosen === "keep", sFind),
+      this.fcAct(opt("snooze"), this.t("fcLater"), this.t("fcLaterHint"), false, STATUS_TONES.snooze.icon, STATUS_TONES.snooze.tone, rec?.act === "later", chosen === "snooze", sFind),
+      this.fcAct(opt("ignore"), this.t("decideKind_ignore"), this.t("fcIgnoreHint"), false, STATUS_TONES.ignore.icon, STATUS_TONES.ignore.tone, false, chosen === "ignore", sFind),
       this.fcCanMark(obj) ? this.fcAct(`data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), this.t("fcMarkHint"), false, FSEL_ICONS.mark, "blue", rec?.act === "mark", chosen === "mark", sObj) : "",
     ].join("");
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;

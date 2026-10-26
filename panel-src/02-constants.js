@@ -132,6 +132,8 @@ const LABEL_TYPES = ["entity", "automation", "script", "scene"];
 const HK_LABELS = ["housekeeper_keep", "housekeeper_ignore", "housekeeper_critical"];
 // One icon per action, the same in the selection bar and in the menu of a row.
 const FSEL_ICONS = { status: "mdi:checkbox-marked-circle-outline", mark: "mdi:bookmark-plus-outline", exc: "mdi:filter-remove-outline", label: "mdi:label-outline" };
+// Icon and tone of the three statuses, the same in the first clean-up and in the status form.
+const STATUS_TONES = { keep: { tone: "green", icon: "mdi:check-circle-outline" }, snooze: { tone: "amber", icon: "mdi:clock-outline" }, ignore: { tone: "", icon: "mdi:eye-off-outline" } };
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],

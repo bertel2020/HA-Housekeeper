@@ -475,7 +475,7 @@ class FindingsMixin {
 
   // The status of one finding or of the selection: intended, later or hidden, each with what it means. Row and bar share it.
   statusFields(d, p, kind = d.kind) {
-    const opt = k => `<label class="statusopt${kind === k ? " on" : ""}"><input type="radio" name="${p}-kind" value="${k}" data-${p}-kind ${kind === k ? "checked" : ""}><span><b>${this.t(`decideKind_${k}`)}</b><small>${this.t(`decideKindHint_${k}`)}</small></span></label>`;
+    const opt = k => `<label class="statusopt${STATUS_TONES[k].tone ? ` ${STATUS_TONES[k].tone}` : ""}${kind === k ? " on" : ""}"><input type="radio" name="${p}-kind" value="${k}" data-${p}-kind ${kind === k ? "checked" : ""}><i class="stico"><ha-icon icon="${STATUS_TONES[k].icon}"></ha-icon></i><span><b>${this.t(`decideKind_${k}`)}</b><small>${this.t(`decideKindHint_${k}`)}</small></span></label>`;
     const days = [...(kind === "snooze" || (kind === "keep" && d.critical) ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
     return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideKind"))}">${["keep", "snooze", "ignore"].map(opt).join("")}</div>
       <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
