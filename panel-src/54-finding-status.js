@@ -458,6 +458,7 @@ class FindingStatusMixin {
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     root.querySelectorAll("[data-due-keep]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.keepOn(el.dataset.dueKeep); });
     root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());
+    root.querySelectorAll("[data-bulk-cancel]").forEach(el => el.onclick = () => { this.bulk = null; this.render(); });
     const form = root.querySelector("[data-bulk-form]");
     if (form) {
       form.onsubmit = ev => { ev.preventDefault(); this.commitBulk(); };
@@ -474,7 +475,6 @@ class FindingStatusMixin {
       form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = this.defaultDays(b.state); this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
-      form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };
     }
   }
 }
