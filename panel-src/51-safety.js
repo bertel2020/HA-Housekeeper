@@ -9,7 +9,7 @@ class SafetyMixin {
   // Nothing is invented when data is missing.
   safetyItems() {
     const items = [], plans = this.journal || [];
-    const mode = this.data?.meta?.protection || "full";
+    const mode = this.data?.meta?.protection || "read_only";
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
@@ -33,10 +33,11 @@ class SafetyMixin {
 
   // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
   protectionCard() {
-    const mode = this.data?.meta?.protection || "full";
-    const icons = { read_only: "mdi:eye-outline", quarantine: "mdi:archive-lock-outline", confirmed: "mdi:shield-check-outline", full: "mdi:shield-lock-outline" };
-    const options = ["read_only", "quarantine", "confirmed", "full"].map(m => `<label class="modeopt${m === mode ? " on" : ""}"><input type="radio" name="hk-protection" value="${m}" data-protection ${m === mode ? "checked" : ""}><span class="tile ${m === mode ? (m === "full" ? "ok" : "warn") : "mute"}"><ha-icon icon="${icons[m]}"></ha-icon></span><span class="row-text"><strong>${this.t(`mode_${m}`)}</strong><small>${this.t(`modeText_${m}`)}</small></span></label>`).join("");
+    const mode = this.data?.meta?.protection || "read_only";
+    const icons = { read_only: "mdi:eye-outline", confirmed: "mdi:shield-check-outline", full: "mdi:shield-lock-outline" };
+    const options = ["read_only", "confirmed", "full"].map(m => `<label class="modeopt${m === mode ? " on" : ""}"><input type="radio" name="hk-protection" value="${m}" data-protection ${m === mode ? "checked" : ""}><span class="tile ${m === mode ? (m === "full" ? "ok" : "warn") : "mute"}"><ha-icon icon="${icons[m]}"></ha-icon></span><span class="row-text"><strong>${this.t(`mode_${m}`)}</strong><small>${this.t(`modeText_${m}`)}</small></span></label>`).join("");
     return `<section class="panel modepanel"><div class="panelhead"><div><h2>${this.t("modeTitle")}</h2><p>${this.t("modeHint")}</p></div><span class="pill ${mode === "full" ? "ok" : "warn"}">${this.t(`modeBadge_${mode}`)}</span></div>
+      ${this.data?.meta?.protection_migrated ? `<p class="factnote" role="status">${this.t("modeMigrated")}</p>` : ""}
       <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("modeLabel"))}">${options}</div></section>`;
   }
 
@@ -75,11 +76,12 @@ Object.assign(TEXT.en, {
   causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards", causeN_entity1: "1 entity", causeN_automation1: "1 automation", causeN_script1: "1 script", causeN_dashboard1: "1 dashboard",
 });
 Object.assign(TEXT.de, {
-  modeBadge_full: "Alles erlaubt", modeBadge_read_only: "Nur lesen", modeBadge_quarantine: "Nur Quarantäne", modeBadge_confirmed: "Ohne endgültiges Löschen",
-  safeMode_full: "Schutzmodus: Standard", safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne endgültiges Löschen",
-  modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Ansichten bleiben immer erlaubt.", modeLabel: "Was Housekeeper ändern darf",
-  mode_read_only: "1 · Nur lesen", mode_quarantine: "2 · Quarantäne erlaubt", mode_confirmed: "3 · Bestätigte Änderungen mit Backup", mode_full: "4 · Voller Wartungsmodus",
-  modeText_read_only: "Nichts wird geändert, auch kein Rückgängig.", modeText_quarantine: "Nur Deaktivieren (und dessen Rückgängig) ist erlaubt.", modeText_confirmed: "Alles mit Einzelbestätigung und Backup außer unumkehrbarem Löschen von Recorder-Daten.", modeText_full: "Alles, wie bisher.",
+  modeBadge_full: "Alles", modeBadge_confirmed: "Pflegen", modeBadge_read_only: "Beobachten",
+  safeMode_full: "Schutzmodus: Alles", safeMode_confirmed: "Schutzmodus: Pflegen", safeMode_read_only: "Schutzmodus: Beobachten",
+  modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Seiten ansehen bleibt immer erlaubt. Ausnahmen, Notizen und der KI-Zugriff haben eigene Schalter.", modeLabel: "Was Housekeeper ändern darf",
+  mode_read_only: "Beobachten", mode_confirmed: "Pflegen", mode_full: "Alles",
+  modeText_read_only: "Housekeeper schaut nur. Gesperrt: alle Änderungen und Rückgängig.", modeText_confirmed: "Ändern mit Einzelbestätigung und Backup, auch Deaktivieren, Entfernen und Rückgängig. Gesperrt: endgültiges Löschen von Statistik, Verlauf und Backups sowie Reparaturen am Recorder.", modeText_full: "Alles, auch Endgültiges. Gesperrt: nichts.",
+  modeMigrated: "Die Stufe „Nur Quarantäne“ gibt es nicht mehr. Housekeeper steht jetzt auf „Beobachten“. Wähle die Stufe, die du willst.",
   plan: "Plan", planPageSubtitle: "Vorschau, Prüfung und Ergebnis eines Plans. Nichts wird geändert, bevor du bestätigst.", planNone: "Dieser Plan ist nicht mehr geöffnet. Alle Pläne stehen im Journal.",
   nothingToRun: "Noch nichts zum Ausführen: Hake darunter an, dass du die zu prüfenden Einträge gesehen hast.",
   modeBlockTitle: "Der Schutzmodus „{mode}“ erlaubt diesen Plan nicht", modeBlockText: "{count} Schritt(e) darf Housekeeper in diesem Modus nicht ausführen. Du kannst den Plan ansehen, aber erst nach einer Änderung des Modus bestätigen.", modeBlockLink: "Schutzmodus ändern",
@@ -88,11 +90,12 @@ Object.assign(TEXT.de, {
   event_critical_finding: "neuer Befund mit hoher Auswirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen",
 });
 Object.assign(TEXT.en, {
-  modeBadge_full: "Everything allowed", modeBadge_read_only: "Read only", modeBadge_quarantine: "Quarantine only", modeBadge_confirmed: "No irreversible deletions",
-  safeMode_full: "Protection mode: standard", safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
-  modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and every view stay allowed.", modeLabel: "What Housekeeper may change",
-  mode_read_only: "1 · Read only", mode_quarantine: "2 · Quarantine allowed", mode_confirmed: "3 · Confirmed changes with backup", mode_full: "4 · Full maintenance",
-  modeText_read_only: "Nothing is changed, not even an undo.", modeText_quarantine: "Only disabling (and undoing it) is allowed.", modeText_confirmed: "Everything with one-by-one confirmation and backup except irreversible deletion of recorder data.", modeText_full: "Everything, as before.",
+  modeBadge_full: "Everything", modeBadge_confirmed: "Maintain", modeBadge_read_only: "Watch",
+  safeMode_full: "Protection mode: Everything", safeMode_confirmed: "Protection mode: Maintain", safeMode_read_only: "Protection mode: Watch",
+  modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and looking at every page stay allowed. Exceptions, notes and AI access have their own switches.", modeLabel: "What Housekeeper may change",
+  mode_read_only: "Watch", mode_confirmed: "Maintain", mode_full: "Everything",
+  modeText_read_only: "Housekeeper only looks. Blocked: every change and undo.", modeText_confirmed: "Changes with one-by-one confirmation and backup, including disabling, removing and undo. Blocked: irreversible deletion of statistics, history and backups, and repairs in the recorder.", modeText_full: "Everything, including what cannot be undone. Blocked: nothing.",
+  modeMigrated: "The step “Quarantine only” no longer exists. Housekeeper is now set to “Watch”. Choose the step you want.",
   plan: "Plan", planPageSubtitle: "Preview, check and result of a plan. Nothing changes before you confirm.", planNone: "This plan is no longer open. All plans are in the journal.",
   nothingToRun: "Nothing to run yet: tick the box below this line to say you have seen the entries to review.",
   modeBlockTitle: "The protection mode “{mode}” does not allow this plan", modeBlockText: "Housekeeper may not run {count} step(s) in this mode. You can look at the plan, but only confirm it after changing the mode.", modeBlockLink: "Change protection mode",

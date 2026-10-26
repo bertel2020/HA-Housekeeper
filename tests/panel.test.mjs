@@ -4064,12 +4064,12 @@ test("the protection mode shows in the safety line and the settings, and is set 
   const { el, shadow } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, protection: "read_only" } };
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return {}; } };
-  assert.ok(el.safetyBar().includes("Protection mode: read only"));
+  assert.ok(el.safetyBar().includes("Protection mode: Watch"));
   assert.ok(el.eventsCard().includes("ha_housekeeper_backup_overdue") && el.protectionCard().includes('value="read_only" data-protection checked'));
   await el.setProtection("full");
   assert.equal(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/protection_set")), JSON.stringify({ type: "ha_housekeeper/protection_set", mode: "full" }));
   assert.equal(el.data.meta.protection, "full");
-  assert.ok(el.safetyBar().includes("Protection mode: standard"));
+  assert.ok(el.safetyBar().includes("Protection mode: Everything"));
   void shadow;
 });
 

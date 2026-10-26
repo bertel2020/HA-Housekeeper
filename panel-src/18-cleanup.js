@@ -114,11 +114,11 @@ class CleanupMixin {
   modeBlocked(plan) {
     const rules = this.data?.meta?.protection_rules, rank = rules?.modes?.indexOf(this.data?.meta?.protection);
     if (!rules || rank === undefined || rank < 0) return [];
-    const need = a => rules.quarantine.includes(a.kind) ? 1 : rules.full_only.includes(a.kind) || a.recorder ? 3 : 2;
+    const need = a => (rules.full_only.includes(a.kind) || a.recorder ? 2 : 1);
     return this.runActions(plan).filter(a => rank < need(a));
   }
 
-  modeName() { return this.t(`mode_${this.data.meta.protection}`).replace(/^\d · /, ""); }
+  modeName() { return this.t(`mode_${this.data.meta.protection}`); }
 
   modeHint(blocked) {
     return `<div class="factnote"><strong>${this.t("modeBlockTitle", { mode: this.modeName() })}</strong><small>${this.t("modeBlockText", { count: blocked.length })}</small><button class="linkbtn" data-goto-protection>${this.t("modeBlockLink")}</button></div>`;
