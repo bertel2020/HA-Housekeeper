@@ -379,8 +379,23 @@ class OverviewMixin {
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
       <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openObjects", openObjects, "", "findingsNav", "", "affected", "bad", [this.t(open.length === 1 ? "tileFindings1" : "tileFindings", { n: this.formatNumber(open.length) }), quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""].filter(Boolean).join(" · ")], ...TOPIC_ORDER.map(topicKpi)].map(kpi).join("")}</div>${fresh || due ? `<p class="kpiline">${[fresh ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="new">${this.esc(this.t("overviewNew", { n: this.formatNumber(fresh) }))}</button>` : "", due ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="due">${this.esc(this.t("overviewDue", { n: this.formatNumber(due) }))}</button>` : ""].filter(Boolean).join(" · ")}</p>` : ""}</section>${why}${this.watchBand()}
-      ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
-      <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
+      ${this.scanCoverageLine()}${this.todoCard()}${this.isSimple() ? `${this.hiddenNotesCard()}<div class="ovzone">${this.backupSummaryCard()}</div>` : `<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
+      <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`}`;
+  }
+
+  // The simple view leaves pages out of the bar; what they would have shown in the bar (a failing function, a paused check, a rule violated) is listed here,
+  // so the severity does not depend on the view. A click opens the page; it stays in the bar while it is open.
+  hiddenNotesCard() {
+    if (!this.data) return "";
+    const { counts, status } = this.navFigures();
+    const listed = new Set(SIMPLE_NAV_GROUPS.flatMap(([, views]) => views));
+    const rows = Object.keys({ ...counts, ...status }).filter(view => NAV_ICONS[view] && !listed.has(view) && view !== "settings").flatMap(view => {
+      const st = status[view];
+      if (st) return st.tone === "red" || st.tone === "warn" ? [[view, st.tone, st.text, st.hint]] : [];
+      return typeof counts[view] === "number" && counts[view] > 0 ? [[view, "warn", this.formatNumber(counts[view]), this.navCountHint(view, counts[view])]] : [];
+    });
+    if (!rows.length) return "";
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenNotesTitle")}</h2><p>${this.t("hiddenNotesHint")}</p></div></div>${rows.map(([view, tone, text, hint]) => `<button class="row" data-jump="${view}"><span class="tile ${tone}"><ha-icon icon="${NAV_ICONS[view]}"></ha-icon></span><span class="row-text"><strong>${this.t(view)}</strong><small>${this.esc(hint)}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>`).join("")}</section>`;
   }
 
   // The backup in three lines: the newest backup, the last automatic run and the overall result. The rest is in Maintenance.

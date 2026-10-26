@@ -698,13 +698,19 @@ class HAHousekeeperPanel extends HTMLElement {
     return this.t(key, { n: this.formatNumber(n) });
   }
 
-  topbar() {
+  // The figures the bar shows next to its pages: the counts and the words (a view of Monitoring says what is due or off).
+  navFigures() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
     const impaired = (this.monitorFunctions?.() || []).filter(f => f.enabled !== false && (f.state === "problem" || f.incident_open)).length;
     const paused = this.autoPause?.paused?.length || 0;
     const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, monitor: impaired || undefined, autopause: paused || undefined, policies: violations + missedGoals || undefined, exceptions: this.exceptionsDue() || undefined, ...this.viewCounts() } : {};
     const status = this.data ? this.navStatus(counts, violations, missedGoals) : {};
+    return { counts, status };
+  }
+
+  topbar() {
+    const { counts, status } = this.navFigures();
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
     // A view of Monitoring says its state in words ("2 due", "off"); the others show their number.
     const mark = view => {

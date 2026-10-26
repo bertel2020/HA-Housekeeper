@@ -95,7 +95,7 @@ class SearchPagesMixin {
   quickEntries() {
     const query = this.quickQuery;
     if (query.trim().length < 2) return [];
-    const pages = this.searchMatch(this.searchPages(), query, SEARCH_PAGE_LIMIT).map(e => ({ ...e, kind: "page" }));
+    const pages = this.searchMatch(this.searchPages(), query, SEARCH_PAGE_LIMIT).map(e => ({ ...e, kind: "page", hiddenInSimple: this.isSimple() && e.view !== "settings" && !SIMPLE_NAV_GROUPS.some(([, views]) => views.includes(e.view)) }));
     const filters = this.searchMatch(this.searchFilters(), query, SEARCH_FILTER_LIMIT).map(e => ({ ...e, kind: "filter" }));
     const objects = this.quickResults().map(item => ({ kind: "object", item }));
     const filtersFirst = filters.length && (!pages.length || filters[0].rank < pages[0].rank);

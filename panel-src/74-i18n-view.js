@@ -23,3 +23,11 @@ Object.assign(TEXT.en, {
   detailsTitle: "Show technical details",
   detailsHint: "Rule ID, object ID, certainty, relations, raw data, JSON export and menu entries such as exception, label and graph. On with the Full view, off with the Simple view.",
 });
+Object.assign(TEXT.de, {
+  hiddenNotesTitle: "Weitere Hinweise", hiddenNotesHint: "Aus Seiten, die diese Ansicht nicht in der Leiste zeigt. Ein Klick öffnet die Seite.",
+  searchFullOnly: "nur in Vollständig in der Leiste", showMore: "Mehr anzeigen", showMoreHint: "Zeigt Gewissheit, IDs und weitere technische Angaben.",
+});
+Object.assign(TEXT.en, {
+  hiddenNotesTitle: "More notes", hiddenNotesHint: "From pages this view does not show in the bar. A click opens the page.",
+  searchFullOnly: "in the bar only in Full", showMore: "Show more", showMoreHint: "Shows certainty, IDs and further technical details.",
+});

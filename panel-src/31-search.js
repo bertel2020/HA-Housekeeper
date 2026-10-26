@@ -40,7 +40,7 @@ class SearchMixin {
         return `${head}<li ${attrs}>${this.tile(item.object_type)}<span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(this.t(item.object_type))} · ${this.esc(item.object_id)}</small></span></li>`;
       }
       const icon = entry.kind === "filter" ? "mdi:filter-outline" : NAV_ICONS[entry.view] || "mdi:compass-outline";
-      const note = entry.kind === "filter" ? `${this.t("quickFilterHint")} · ${this.formatNumber(entry.count)}` : entry.path;
+      const note = entry.kind === "filter" ? `${this.t("quickFilterHint")} · ${this.formatNumber(entry.count)}` : entry.hiddenInSimple ? [entry.path, this.t("searchFullOnly")].filter(Boolean).join(" · ") : entry.path;
       return `${head}<li ${attrs}><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(entry.label)}</strong>${note ? `<small>${this.esc(note)}</small>` : ""}</span></li>`;
     }).join("");
     const list = this.quickOpen && this.quickQuery.trim().length >= 2

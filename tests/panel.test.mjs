@@ -7785,3 +7785,20 @@ test("the technical details follow the view, stay changeable, and are marked so 
   assert.equal(el.showTech(), false);
   assert.ok(el.detailTabs({ object_type: "entity", object_id: "sensor.a" }, "entity:sensor.a").every(([id]) => !["relations", "technical", "diagnosis"].includes(id)));
 });
+
+test("the simple view lists what hidden pages would show in the bar, and the search says a page is only in the full bar", () => {
+  const { el } = panel("de");
+  el.data = DATA;
+  el.navFigures = () => ({ counts: { findingsNav: 3, monitor: 2, policies: 1, batteries: 4 }, status: { monitor: { tone: "red", text: "2 gestört", hint: "h1" }, autopause: { tone: "mute", text: "aus", hint: "h2" } } });
+  const card = el.hiddenNotesCard();
+  assert.ok(card.includes('data-jump="monitor"') && card.includes('data-jump="policies"'));
+  assert.ok(!card.includes('data-jump="batteries"') && !card.includes('data-jump="findingsNav"') && !card.includes('data-jump="autopause"'));
+  el.prefs = { ...el.prefs, view: "simple" };
+  el.quickQuery = "ausfälle";
+  const hidden = el.quickEntries().filter(e => e.kind === "page");
+  for (const e of hidden) assert.equal(e.hiddenInSimple, !["overview", "findingsNav", "maintenance", "batteries", "reminders", "exceptions", "settings"].includes(e.view));
+  el.view = "findingsNav"; el.lvState("findings", "impact", "desc");
+  assert.ok(el.findingsTable([]).includes('data-pref="details|true"') === false);
+  el.prefs = { ...el.prefs, details: false };
+  assert.ok(el.findingsTable([]).includes('data-pref="details|true"'));
+});

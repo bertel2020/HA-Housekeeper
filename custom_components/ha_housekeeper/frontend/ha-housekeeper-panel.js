@@ -2751,8 +2751,23 @@ class OverviewMixin {
     return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
       <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openObjects", openObjects, "", "findingsNav", "", "affected", "bad", [this.t(open.length === 1 ? "tileFindings1" : "tileFindings", { n: this.formatNumber(open.length) }), quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""].filter(Boolean).join(" · ")], ...TOPIC_ORDER.map(topicKpi)].map(kpi).join("")}</div>${fresh || due ? `<p class="kpiline">${[fresh ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="new">${this.esc(this.t("overviewNew", { n: this.formatNumber(fresh) }))}</button>` : "", due ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="due">${this.esc(this.t("overviewDue", { n: this.formatNumber(due) }))}</button>` : ""].filter(Boolean).join(" · ")}</p>` : ""}</section>${why}${this.watchBand()}
-      ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
-      <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
+      ${this.scanCoverageLine()}${this.todoCard()}${this.isSimple() ? `${this.hiddenNotesCard()}<div class="ovzone">${this.backupSummaryCard()}</div>` : `<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
+      <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`}`;
+  }
+
+  // The simple view leaves pages out of the bar; what they would have shown in the bar (a failing function, a paused check, a rule violated) is listed here,
+  // so the severity does not depend on the view. A click opens the page; it stays in the bar while it is open.
+  hiddenNotesCard() {
+    if (!this.data) return "";
+    const { counts, status } = this.navFigures();
+    const listed = new Set(SIMPLE_NAV_GROUPS.flatMap(([, views]) => views));
+    const rows = Object.keys({ ...counts, ...status }).filter(view => NAV_ICONS[view] && !listed.has(view) && view !== "settings").flatMap(view => {
+      const st = status[view];
+      if (st) return st.tone === "red" || st.tone === "warn" ? [[view, st.tone, st.text, st.hint]] : [];
+      return typeof counts[view] === "number" && counts[view] > 0 ? [[view, "warn", this.formatNumber(counts[view]), this.navCountHint(view, counts[view])]] : [];
+    });
+    if (!rows.length) return "";
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenNotesTitle")}</h2><p>${this.t("hiddenNotesHint")}</p></div></div>${rows.map(([view, tone, text, hint]) => `<button class="row" data-jump="${view}"><span class="tile ${tone}"><ha-icon icon="${NAV_ICONS[view]}"></ha-icon></span><span class="row-text"><strong>${this.t(view)}</strong><small>${this.esc(hint)}</small></span><span class="pill ${tone}">${this.esc(text)}</span></button>`).join("")}</section>`;
   }
 
   // The backup in three lines: the newest backup, the last automatic run and the overall result. The rest is in Maintenance.
@@ -2992,7 +3007,7 @@ class FindingsMixin {
     const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc", "tech")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
     // In the grouped view every row is a head of an object; in the flat one every row is a finding.
     const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
-    return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
+    return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>${this.showTech() ? "" : `<p class="factnote moreline"><button type="button" class="btn quiet" data-pref="details|true"><ha-icon icon="mdi:unfold-more-horizontal"></ha-icon>${this.t("showMore")}</button><span>${this.t("showMoreHint")}</span></p>`}`;
   }
 
   // One finding as a row of the table; below a head (depth) it is indented and keeps the room of the fold arrow.
@@ -8810,7 +8825,7 @@ class SearchPagesMixin {
   quickEntries() {
     const query = this.quickQuery;
     if (query.trim().length < 2) return [];
-    const pages = this.searchMatch(this.searchPages(), query, SEARCH_PAGE_LIMIT).map(e => ({ ...e, kind: "page" }));
+    const pages = this.searchMatch(this.searchPages(), query, SEARCH_PAGE_LIMIT).map(e => ({ ...e, kind: "page", hiddenInSimple: this.isSimple() && e.view !== "settings" && !SIMPLE_NAV_GROUPS.some(([, views]) => views.includes(e.view)) }));
     const filters = this.searchMatch(this.searchFilters(), query, SEARCH_FILTER_LIMIT).map(e => ({ ...e, kind: "filter" }));
     const objects = this.quickResults().map(item => ({ kind: "object", item }));
     const filtersFirst = filters.length && (!pages.length || filters[0].rank < pages[0].rank);
@@ -8881,7 +8896,7 @@ class SearchMixin {
         return `${head}<li ${attrs}>${this.tile(item.object_type)}<span class="row-text"><strong>${this.esc(item.name)}</strong><small>${this.esc(this.t(item.object_type))} · ${this.esc(item.object_id)}</small></span></li>`;
       }
       const icon = entry.kind === "filter" ? "mdi:filter-outline" : NAV_ICONS[entry.view] || "mdi:compass-outline";
-      const note = entry.kind === "filter" ? `${this.t("quickFilterHint")} · ${this.formatNumber(entry.count)}` : entry.path;
+      const note = entry.kind === "filter" ? `${this.t("quickFilterHint")} · ${this.formatNumber(entry.count)}` : entry.hiddenInSimple ? [entry.path, this.t("searchFullOnly")].filter(Boolean).join(" · ") : entry.path;
       return `${head}<li ${attrs}><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.esc(entry.label)}</strong>${note ? `<small>${this.esc(note)}</small>` : ""}</span></li>`;
     }).join("");
     const list = this.quickOpen && this.quickQuery.trim().length >= 2
@@ -17642,6 +17657,14 @@ Object.assign(TEXT.en, {
   detailsTitle: "Show technical details",
   detailsHint: "Rule ID, object ID, certainty, relations, raw data, JSON export and menu entries such as exception, label and graph. On with the Full view, off with the Simple view.",
 });
+Object.assign(TEXT.de, {
+  hiddenNotesTitle: "Weitere Hinweise", hiddenNotesHint: "Aus Seiten, die diese Ansicht nicht in der Leiste zeigt. Ein Klick öffnet die Seite.",
+  searchFullOnly: "nur in Vollständig in der Leiste", showMore: "Mehr anzeigen", showMoreHint: "Zeigt Gewissheit, IDs und weitere technische Angaben.",
+});
+Object.assign(TEXT.en, {
+  hiddenNotesTitle: "More notes", hiddenNotesHint: "From pages this view does not show in the bar. A click opens the page.",
+  searchFullOnly: "in the bar only in Full", showMore: "Show more", showMoreHint: "Shows certainty, IDs and further technical details.",
+});
 
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
@@ -21875,13 +21898,19 @@ class HAHousekeeperPanel extends HTMLElement {
     return this.t(key, { n: this.formatNumber(n) });
   }
 
-  topbar() {
+  // The figures the bar shows next to its pages: the counts and the words (a view of Monitoring says what is due or off).
+  navFigures() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
     const impaired = (this.monitorFunctions?.() || []).filter(f => f.enabled !== false && (f.state === "problem" || f.incident_open)).length;
     const paused = this.autoPause?.paused?.length || 0;
     const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, monitor: impaired || undefined, autopause: paused || undefined, policies: violations + missedGoals || undefined, exceptions: this.exceptionsDue() || undefined, ...this.viewCounts() } : {};
     const status = this.data ? this.navStatus(counts, violations, missedGoals) : {};
+    return { counts, status };
+  }
+
+  topbar() {
+    const { counts, status } = this.navFigures();
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
     // A view of Monitoring says its state in words ("2 due", "off"); the others show their number.
     const mark = view => {
