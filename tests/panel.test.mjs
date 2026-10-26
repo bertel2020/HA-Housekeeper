@@ -3973,7 +3973,7 @@ test("the health card names the score and the count; the safety line shows backu
   assert.ok(/of \d+ objects with a finding/.test(html));
   assert.ok(html.includes("Last backup: 5 h ago") && html.includes("undo available") && html.includes("1 plan is being watched") && html.includes("1 regression after a change"));
   el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
-  assert.ok(el.safetyBar().includes("Last plan: ") && el.safetyBar().includes("no longer undoable"));
+  assert.ok(el.safetyBar().includes("Last plan: ") && el.safetyBar().includes("· final"));
   el.data = { ...DATA, causes: [{ id: "integration_down:x", kind: "integration_down", object_type: "config_entry", object_id: "x", name: "Zigbee", follower_count: 47, consumers: { automation: 12, dashboard: 2 } }] };
   assert.ok(entriesOf(el).includes("47 entities, 12 automations, 2 dashboards affected"));
 });
@@ -7763,7 +7763,6 @@ test("the simple view lists fewer pages, the full view all, and an open page is 
   assert.ok(el.settingsTabs().some(([id]) => id === "view"));
   el.view = "settings"; el.settingsTab = "view";
   assert.ok(el.settingsView().includes("data-pref=\"view|full\""));
-  assert.ok(el.viewPill().includes("view|full"));
 });
 
 test("the technical details follow the view, stay changeable, and are marked so one rule hides them", () => {
@@ -7833,4 +7832,16 @@ test("a young installation starts in the simple view and asks once; an old one o
   el.answerViewAsk("never");
   assert.equal(el.viewAskCard(), "");
   assert.equal(el.prefs.moreUses, -1);
+});
+
+test("the info bar names the view next to the protection mode and keeps the last plan short", () => {
+  const { el } = panel("de");
+  el.data = { meta: { protection: "full" } };
+  el.journal = [{ finished_at: new Date(Date.now() - 5 * 864e5).toISOString(), undoable: false }];
+  const items = el.safetyItems();
+  assert.equal(items.find(i => i[0] === "view")[2], "Ansicht: Vollständig");
+  assert.equal(items.find(i => i[0] === "view")[3], "settings");
+  const last = items.find(i => i[0] === "last");
+  assert.ok(last[2].endsWith("· endgültig") && !/\d{4}|\d:\d/.test(last[2]), last[2]);
+  assert.ok(last[4].includes(":"));
 });

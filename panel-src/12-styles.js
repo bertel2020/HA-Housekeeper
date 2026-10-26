@@ -16,7 +16,6 @@ function navCompactRules(compact) {
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
     [".nodetails .tech", "display:none!important"],
-    [".viewpill", "align-self:center;cursor:pointer;border:0;font:inherit;display:inline-flex;align-items:center;gap:4px;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];
   const own = selector => (selector === ".top" || selector.startsWith(".top.") ? selector.replace(".top", ".top.compact") : `.top.compact ${selector}`);

@@ -54,12 +54,6 @@ class SettingsMixin {
     return groups;
   }
 
-  // The little button in the bar: the view that is on, a click turns to the other one.
-  viewPill() {
-    const other = this.isSimple() ? "full" : "simple", now = this.t(`view_${this.prefs.view}`);
-    return `<button type="button" class="pill mute viewpill" data-pref="view|${other}" title="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}" aria-label="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}"><ha-icon icon="mdi:eye-settings-outline"></ha-icon>${this.esc(now)}</button>`;
-  }
-
   // The view of the settings: what each one shows. The view never changes rules, only what is on screen.
   viewCard() {
     const opt = view => `<div class="setrow"><div><strong>${this.t(`view_${view}`)}</strong><small>${this.t(`viewText_${view}`)}</small></div></div>`;

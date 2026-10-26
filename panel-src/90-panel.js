@@ -728,7 +728,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
-      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${this.viewPill()}${item("settings")}</div></nav></header>`;
+      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${item("settings")}</div></nav></header>`;
   }
 
   // The words beside the views of Monitoring: what is due or impaired, or that a function is switched off.
@@ -830,8 +830,6 @@ class HAHousekeeperPanel extends HTMLElement {
       exceptions: [this.t("exceptions"), this.t("exceptionsSubtitle")],
     };
     const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
-    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor", "exceptions", "autopause"].includes(this.view);
-    const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
     const from = this.fcWizOn() && !this.selected ? this.wizardBackTarget() : this.viewTrail[this.viewTrail.length - 1];
@@ -840,7 +838,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" && !this.fcWizOn() ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
-      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
+      <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
   }
 
   content() {
@@ -985,6 +983,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-goto-protection]").forEach(el => el.onclick = () => { this.settingsTab = "protection"; this.noteJump?.("settings"); this.view = "settings"; this.pages = {}; this.selected = null; this.render(); });
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
+      if (el.dataset.safeKey === "view") this.settingsTab = "view";
       if (el.dataset.safeKey === "coverage") this.settingsTab = "info";
       if (el.dataset.safeKey === "ai") this.settingsTab = "mcp";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;

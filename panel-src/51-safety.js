@@ -11,11 +11,12 @@ class SafetyMixin {
     const items = [], plans = this.journal || [];
     const mode = this.data?.meta?.protection || "read_only";
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
+    items.push(["view", "mute", this.t("safeView", { view: this.t(`view_${this.prefs.view}`) }), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours, true) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
-    if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal"]);
+    if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.shortDay(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndoTip" : "safeNoUndoTip")}`]);
     if (this.scanCoverageComplete()) items.push(["coverage", "ok", this.t("covBar"), "settings"]);
     // AI access while it is on, so it is not forgotten; yellow while it may change the list.
     const mcp = this.data?.meta?.mcp;
@@ -29,6 +30,14 @@ class SafetyMixin {
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
     const rank = tone => ({ red: 0, warn: 1 })[tone] ?? 2;
     return items.map((item, i) => [item, i]).sort((a, b) => rank(a[0][1]) - rank(b[0][1]) || a[1] - b[1]).map(([item]) => item);
+  }
+
+  // "16 Oct", with the year once it is not this year's any more: the bar needs the day, the journal has the rest.
+  shortDay(value) {
+    const at = new Date(value);
+    if (Number.isNaN(at.getTime())) return "—";
+    try { return new Intl.DateTimeFormat(this.lang, { day: "numeric", month: this.lang === "de" ? "numeric" : "short", ...(Date.now() - at.getTime() > 330 * 864e5 ? { year: "numeric" } : {}) }).format(at); }
+    catch (_) { return String(value); }
   }
 
   // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
@@ -56,12 +65,12 @@ class SafetyMixin {
     if (!this.data) return "";
     const items = this.safetyItems();
     if (!items.length) return "";
-    return `<div class="safebar" role="region" aria-label="${this.esc(this.t("safeLabel"))}">${items.map(([key, tone, text, view]) => `<button class="safeitem ${tone}" data-safe="${view}" data-safe-key="${key}"${key === "watch" ? ` title="${this.esc(this.t("safeWatchingTip"))}"` : ""}><span class="dot ${tone}" aria-hidden="true"></span>${this.esc(text)}</button>`).join("")}</div>`;
+    return `<div class="safebar" role="region" aria-label="${this.esc(this.t("safeLabel"))}">${items.map(([key, tone, text, view, tip]) => `<button class="safeitem ${tone}" data-safe="${view}" data-safe-key="${key}"${key === "watch" ? ` title="${this.esc(this.t("safeWatchingTip"))}"` : tip ? ` title="${this.esc(tip)}"` : ""}><span class="dot ${tone}" aria-hidden="true"></span>${this.esc(text)}</button>`).join("")}</div>`;
   }
 }
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
-  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "nicht mehr rückgängig", safeAi: "KI-Zugriff: {mode}",
+  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "endgültig", safeUndoTip: "Mit dem Backup lässt sich der Plan zurücknehmen. Klick öffnet das Journal.", safeNoUndoTip: "Nicht mehr rückgängig: das Backup dazu ist weg oder zu alt. Klick öffnet das Journal.", safeView: "Ansicht: {view}", safeAi: "KI-Zugriff: {mode}",
   safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeWatchingTip: "Bis 24 Stunden nach der Ausführung prüft Housekeeper bei jedem Scan, ob neue Befunde dazugekommen sind.", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
@@ -69,7 +78,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
-  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "no longer undoable", safeAi: "AI access: {mode}",
+  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "final", safeUndoTip: "The plan can be rolled back with its backup. A click opens the journal.", safeNoUndoTip: "No longer undoable: the backup for it is gone or too old. A click opens the journal.", safeView: "View: {view}", safeAi: "AI access: {mode}",
   safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeWatchingTip: "For up to 24 hours after the run, Housekeeper checks at every scan whether new findings appeared.", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",

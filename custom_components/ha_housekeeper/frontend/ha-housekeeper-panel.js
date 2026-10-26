@@ -1508,7 +1508,6 @@ function navCompactRules(compact) {
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
     [".nodetails .tech", "display:none!important"],
-    [".viewpill", "align-self:center;cursor:pointer;border:0;font:inherit;display:inline-flex;align-items:center;gap:4px;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];
   const own = selector => (selector === ".top" || selector.startsWith(".top.") ? selector.replace(".top", ".top.compact") : `.top.compact ${selector}`);
@@ -3778,12 +3777,6 @@ class SettingsMixin {
       if (own) own[1].push(this.view); else groups.push([home[0], [this.view]]);
     }
     return groups;
-  }
-
-  // The little button in the bar: the view that is on, a click turns to the other one.
-  viewPill() {
-    const other = this.isSimple() ? "full" : "simple", now = this.t(`view_${this.prefs.view}`);
-    return `<button type="button" class="pill mute viewpill" data-pref="view|${other}" title="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}" aria-label="${this.esc(this.t("viewPillHint", { to: this.t(`view_${other}`) }))}"><ha-icon icon="mdi:eye-settings-outline"></ha-icon>${this.esc(now)}</button>`;
   }
 
   // The view of the settings: what each one shows. The view never changes rules, only what is on screen.
@@ -11697,11 +11690,12 @@ class SafetyMixin {
     const items = [], plans = this.journal || [];
     const mode = this.data?.meta?.protection || "read_only";
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
+    items.push(["view", "mute", this.t("safeView", { view: this.t(`view_${this.prefs.view}`) }), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
     if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours, true) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
-    if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal"]);
+    if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.shortDay(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndoTip" : "safeNoUndoTip")}`]);
     if (this.scanCoverageComplete()) items.push(["coverage", "ok", this.t("covBar"), "settings"]);
     // AI access while it is on, so it is not forgotten; yellow while it may change the list.
     const mcp = this.data?.meta?.mcp;
@@ -11715,6 +11709,14 @@ class SafetyMixin {
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
     const rank = tone => ({ red: 0, warn: 1 })[tone] ?? 2;
     return items.map((item, i) => [item, i]).sort((a, b) => rank(a[0][1]) - rank(b[0][1]) || a[1] - b[1]).map(([item]) => item);
+  }
+
+  // "16 Oct", with the year once it is not this year's any more: the bar needs the day, the journal has the rest.
+  shortDay(value) {
+    const at = new Date(value);
+    if (Number.isNaN(at.getTime())) return "—";
+    try { return new Intl.DateTimeFormat(this.lang, { day: "numeric", month: this.lang === "de" ? "numeric" : "short", ...(Date.now() - at.getTime() > 330 * 864e5 ? { year: "numeric" } : {}) }).format(at); }
+    catch (_) { return String(value); }
   }
 
   // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
@@ -11742,12 +11744,12 @@ class SafetyMixin {
     if (!this.data) return "";
     const items = this.safetyItems();
     if (!items.length) return "";
-    return `<div class="safebar" role="region" aria-label="${this.esc(this.t("safeLabel"))}">${items.map(([key, tone, text, view]) => `<button class="safeitem ${tone}" data-safe="${view}" data-safe-key="${key}"${key === "watch" ? ` title="${this.esc(this.t("safeWatchingTip"))}"` : ""}><span class="dot ${tone}" aria-hidden="true"></span>${this.esc(text)}</button>`).join("")}</div>`;
+    return `<div class="safebar" role="region" aria-label="${this.esc(this.t("safeLabel"))}">${items.map(([key, tone, text, view, tip]) => `<button class="safeitem ${tone}" data-safe="${view}" data-safe-key="${key}"${key === "watch" ? ` title="${this.esc(this.t("safeWatchingTip"))}"` : tip ? ` title="${this.esc(tip)}"` : ""}><span class="dot ${tone}" aria-hidden="true"></span>${this.esc(text)}</button>`).join("")}</div>`;
   }
 }
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
-  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "nicht mehr rückgängig", safeAi: "KI-Zugriff: {mode}",
+  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "endgültig", safeUndoTip: "Mit dem Backup lässt sich der Plan zurücknehmen. Klick öffnet das Journal.", safeNoUndoTip: "Nicht mehr rückgängig: das Backup dazu ist weg oder zu alt. Klick öffnet das Journal.", safeView: "Ansicht: {view}", safeAi: "KI-Zugriff: {mode}",
   safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeWatchingTip: "Bis 24 Stunden nach der Ausführung prüft Housekeeper bei jedem Scan, ob neue Befunde dazugekommen sind.", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
@@ -11755,7 +11757,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
-  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "no longer undoable", safeAi: "AI access: {mode}",
+  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "final", safeUndoTip: "The plan can be rolled back with its backup. A click opens the journal.", safeNoUndoTip: "No longer undoable: the backup for it is gone or too old. A click opens the journal.", safeView: "View: {view}", safeAi: "AI access: {mode}",
   safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeWatchingTip: "For up to 24 hours after the run, Housekeeper checks at every scan whether new findings appeared.", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
@@ -17675,7 +17677,6 @@ Object.assign(TEXT.de, {
   viewText_simple: "Befunde, Wartung und Ausnahmen. Alles andere ist ausgeblendet und über die Suche oder „Beheben“ erreichbar.",
   viewText_full: "Die ganze Oberfläche mit allen Seiten, Spalten und Menüpunkten.",
   viewNote: "Die Ansicht ändert nur, was du siehst. Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.",
-  viewPillHint: "Ansicht wechseln zu: {to}",
 });
 Object.assign(TEXT.en, {
   setTabView: "View", setHintView: "Simple or full", view_simple: "Simple", view_full: "Full",
@@ -17683,7 +17684,6 @@ Object.assign(TEXT.en, {
   viewText_simple: "Findings, maintenance and exceptions. Everything else is hidden and reachable through the search or \"Fix\".",
   viewText_full: "The whole interface with every page, column and menu entry.",
   viewNote: "The view only changes what you see. The protection mode, confirmations, backups and checks stay the same.",
-  viewPillHint: "Switch view to: {to}",
 });
 Object.assign(TEXT.de, {
   detailsTitle: "Technische Details anzeigen",
@@ -21974,7 +21974,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
-      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${this.viewPill()}${item("settings")}</div></nav></header>`;
+      <nav class="topnav" id="topnav" aria-label="${this.esc(this.t("navMain"))}">${direct[1].filter(view => view !== "overview").map(item).join("")}${menus.map(menu).join("")}<div class="navend">${this.quickSearchBox()}${item("settings")}</div></nav></header>`;
   }
 
   // The words beside the views of Monitoring: what is due or impaired, or that a function is switched off.
@@ -22076,8 +22076,6 @@ class HAHousekeeperPanel extends HTMLElement {
       exceptions: [this.t("exceptions"), this.t("exceptionsSubtitle")],
     };
     const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
-    const writes = ["cleanup", "repair", "plan", "maintenance", "policies", "monitor", "exceptions", "autopause"].includes(this.view);
-    const modePill = this.view === "overview" || this.view === "settings" ? "" : `<span class="pill ${writes ? "warn" : "mute"} modepill" title="${this.esc(this.t(writes ? "canChangeHint" : "readOnlyHint"))}"><ha-icon icon="${writes ? "mdi:pencil-outline" : "mdi:eye-outline"}"></ha-icon>${this.t(writes ? "canChange" : "readOnly")}</span>`;
     const scanned = this.data?.meta?.scanned_at;
     const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
     const from = this.fcWizOn() && !this.selected ? this.wizardBackTarget() : this.viewTrail[this.viewTrail.length - 1];
@@ -22086,7 +22084,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" && !this.fcWizOn() ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
-      <div class="head-actions">${modePill}${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
+      <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
   }
 
   content() {
@@ -22231,6 +22229,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-goto-protection]").forEach(el => el.onclick = () => { this.settingsTab = "protection"; this.noteJump?.("settings"); this.view = "settings"; this.pages = {}; this.selected = null; this.render(); });
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
+      if (el.dataset.safeKey === "view") this.settingsTab = "view";
       if (el.dataset.safeKey === "coverage") this.settingsTab = "info";
       if (el.dataset.safeKey === "ai") this.settingsTab = "mcp";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
