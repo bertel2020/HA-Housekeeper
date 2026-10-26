@@ -38,8 +38,12 @@ def test_manifest_version_matches_latest_changelog_entry() -> None:
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     base, _, beta = manifest["version"].partition("-")
     if beta:
-        # A beta belongs to the section that is still open.
-        assert re.search(rf"^## Unreleased \({re.escape(base)}\)", changelog, re.MULTILINE)
+        # A beta belongs to the open section of its version, or has a section of its own once it is out.
+        assert re.search(
+            rf"^## (Unreleased \({re.escape(base)}\)|{re.escape(manifest['version'])} - )",
+            changelog,
+            re.MULTILINE,
+        )
         return
     match = re.search(r"^## (\d+\.\d+\.\d+)", changelog, re.MULTILINE)
     assert match is not None
