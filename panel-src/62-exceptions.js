@@ -215,7 +215,7 @@ class ExceptionsMixin {
   }
 
   // How many decisions the list of statuses shows: the ones on findings and those resting while their finding is away.
-  statusCount() {
+  decisionCount() {
     return (this.data?.findings || []).filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)).length + this.restingDecisions().length;
   }
 
@@ -233,7 +233,7 @@ class ExceptionsMixin {
     const tabs = [
       { id: "rules", icon: "mdi:filter-remove-outline", label: this.t("excTabRules"), hint: this.t("excTileRulesHint"), count: this.exc.rules.filter(rule => (rule.scope || "always") === "always").length, tone: rulesDue ? "warn" : "ok", pill: due(rulesDue), status: true },
       { id: "vacation", icon: "mdi:beach", label: this.t("excTabVacation"), hint: this.t("excTileVacationHint"), tone: vacTone, pill: this.t(state), status: true },
-      { id: "findings", icon: "mdi:checkbox-marked-circle-outline", label: this.t("excTabFindings"), hint: this.t("excTileFindingsHint"), count: this.statusCount(), tone: statusDue ? "warn" : "ok", pill: due(statusDue), status: true },
+      { id: "findings", icon: "mdi:checkbox-marked-circle-outline", label: this.t("excTabFindings"), hint: this.t("excTileFindingsHint"), count: this.decisionCount(), tone: statusDue ? "warn" : "ok", pill: due(statusDue), status: true },
       { id: "objects", icon: "mdi:note-text-outline", label: this.t("excTabObjects"), hint: this.t("excTileObjectsHint"), count: (this.data?.objects || []).filter(o => o.mark).length, tone: marksDue ? "warn" : "ok", pill: due(marksDue), status: true },
     ];
     const open = this.viewTabOf("exceptions", tabs, "rules");
