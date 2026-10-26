@@ -209,7 +209,8 @@ class AutoPauseMixin {
     const manualFold = this.fold("ap_manual", { tone: "mute", title: this.t("apManual"), sub: this.t("apManualHint") }, `<div class="apmanual">${this.pickerBox("autopause", this.t("apPick"))}</div>`, false);
     const logTable = `<div class="tablewrap"><table class="evtable"><thead><tr><th>${this.t("apLogWhen")}</th><th>${this.t("apLogWho")}</th><th>${this.t("apLogWhat")}</th></tr></thead><tbody>${a.log.map(l => `<tr><td>${this.esc(this.formatDate(l[0]))}</td><td>${this.esc(l[2])}</td><td><span class="pill ${{ paused: "warn", back: "ok", exhausted: "red" }[l[1]] || "mute"}">${this.esc(this.t(`apLog_${l[1]}`))}</span></td></tr>`).join("")}</tbody></table></div>`;
     const logFold = a.log.length ? this.fold("ap_log", { tone: "mute", title: this.t("apLog"), sub: this.t("apLogHint"), count: this.formatNumber(a.log.length) }, logTable, false) : "";
-    return `<div class="stack"><section class="panel apmore">${mainTop}${settingsFold}</section>${paused}${services}<section class="panel apmore${this._picker?.name === "autopause" && this._picker.open ? " ovvis" : ""}">${manualFold}${logFold}</section></div>`;
+    const pickerOpen = this._picker?.name === "autopause" && this._picker.open ? " ovvis" : "";
+    return `<div class="stack"><section class="panel apmore${pickerOpen}">${mainTop}${settingsFold}${manualFold}</section>${paused}${logFold ? `<section class="panel apmore">${logFold}</section>` : ""}${services}</div>`;
   }
 
   bindAutoPause(root) {
