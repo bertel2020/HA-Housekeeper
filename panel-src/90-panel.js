@@ -486,13 +486,17 @@ class HAHousekeeperPanel extends HTMLElement {
         if (attr.name.startsWith("data-")) { selector = `${el.localName}[${attr.name}="${String(attr.value).replace(/["\\]/g, "\\$&")}"]`; break; }
       }
     }
-    return selector ? { selector, start: el.selectionStart ?? null, end: el.selectionEnd ?? null } : null;
+    if (!selector) return null;
+    // Radios of one group share a valueless data attribute: the selector then matches all of them, so the position tells which one had the focus.
+    let at = null;
+    try { const same = this.shadowRoot.querySelectorAll?.(selector); if (same && same.length > 1) at = [...same].indexOf(el); } catch (_) { /* keep the first match */ }
+    return { selector, ...(at !== null && at >= 0 ? { at } : {}), start: el.selectionStart ?? null, end: el.selectionEnd ?? null };
   }
 
   restoreFocus(saved) {
     if (!saved) return;
     let next = null;
-    try { next = this.shadowRoot.querySelector(saved.selector); } catch (_) { return; }
+    try { next = saved.at !== undefined ? this.shadowRoot.querySelectorAll(saved.selector)[saved.at] : this.shadowRoot.querySelector(saved.selector); } catch (_) { return; }
     if (!next || next.disabled) return;
     next.focus({ preventScroll: true });
     if (saved.start !== null && next.setSelectionRange) {

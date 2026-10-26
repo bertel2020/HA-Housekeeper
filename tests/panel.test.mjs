@@ -1878,6 +1878,17 @@ test("a re-render puts the focus back on the same control", () => {
   el.restoreFocus({ selector: "#gone", start: null, end: null });
   el.restoreFocus(null);
   assert.deepEqual(calls, []);
+
+  const radios = [{ localName: "input", attributes: [{ name: "data-protection", value: "" }] }, { localName: "input", attributes: [{ name: "data-protection", value: "" }] }];
+  shadow.querySelectorAll = () => radios;
+  shadow.activeElement = Object.assign({ getAttribute() {} }, radios[1]);
+  radios[1].getAttribute = () => {};
+  shadow.activeElement = radios[1];
+  const saved = el.captureFocus();
+  assert.equal(saved.at, 1, "radios with the same selector are told apart by position");
+  radios[1].focus = () => calls.push(["radio", 1]);
+  el.restoreFocus(saved);
+  assert.deepEqual(calls, [["radio", 1]]);
 });
 
 test("scan progress updates the button and the status line without rebuilding the page", () => {
