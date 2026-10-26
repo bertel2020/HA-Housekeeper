@@ -4070,6 +4070,13 @@ test("the protection mode shows in the safety line and the settings, and is set 
   assert.equal(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/protection_set")), JSON.stringify({ type: "ha_housekeeper/protection_set", mode: "full" }));
   assert.equal(el.data.meta.protection, "full");
   assert.ok(el.safetyBar().includes("Protection mode: Everything"));
+  const card = el.protectionCard();
+  assert.equal((card.match(/data-protection/g) || []).length, 3);
+  assert.ok(!card.includes("quarantine") && !card.includes("class=\"factnote\""));
+  el.data = { ...DATA, meta: { ...DATA.meta, protection: "read_only", protection_migrated: "quarantine" } };
+  assert.ok(el.protectionCard().includes("no longer exists"));
+  el.data = { ...DATA, meta: { ...DATA.meta, protection: undefined } };
+  assert.ok(el.protectionCard().includes('value="read_only" data-protection checked'), "an unknown mode is shown as the strictest, not as everything");
   void shadow;
 });
 
