@@ -2,7 +2,11 @@
 class ThemeMixin {
   // Display preferences live in this browser only; storage may be unavailable.
   loadPrefs() {
-    try { return this.sanitizePrefs(JSON.parse(globalThis.localStorage?.getItem(PREFS_KEY) || "{}")); } catch (_) { return { ...DEFAULT_PREFS }; }
+    try {
+      const raw = globalThis.localStorage?.getItem(PREFS_KEY);
+      this._freshPrefs = Boolean(globalThis.localStorage) && raw == null; // nothing saved in this browser yet; the user profile may still have something
+      return this.sanitizePrefs(JSON.parse(raw || "{}"));
+    } catch (_) { return { ...DEFAULT_PREFS }; }
   }
 
   // Keep only known, valid values; anything else falls back to the default.
@@ -20,6 +24,8 @@ class ThemeMixin {
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
     if (VIEWS.includes(saved.view)) prefs.view = saved.view;
+    prefs.viewAsked = typeof saved.viewAsked === "boolean" ? saved.viewAsked : true; // saved preferences without the answer belong to someone who was never asked
+    if (Number.isInteger(saved.moreUses) && saved.moreUses >= -1 && saved.moreUses <= 99) prefs.moreUses = saved.moreUses;
     prefs.details = typeof saved.details === "boolean" ? saved.details : prefs.view === "full"; // the technical details follow the view until they are set by hand
     return prefs;
   }
@@ -28,13 +34,14 @@ class ThemeMixin {
   async loadUserPrefs() {
     try {
       const result = await this._hass?.callWS?.({ type: "frontend/get_user_data", key: USER_DATA_KEY });
-      if (!result?.value) return;
+      if (!result?.value) { this._userPrefsEmpty = true; this.firstContact(); return; }
+      this._freshPrefs = false;
       const prefs = this.sanitizePrefs(result.value);
       if (JSON.stringify(prefs) === JSON.stringify(this.prefs)) return;
       this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {};
       this.savePrefs(false);
       this.render();
-    } catch (_) { /* no user data available; local preferences stay */ }
+    } catch (_) { this._userPrefsEmpty = true; this.firstContact(); /* no user data available; local preferences stay */ }
   }
 
   savePrefs(sync = true) {
@@ -67,6 +74,7 @@ class ThemeMixin {
     const value = key === "pageSize" ? Number(raw) : raw;
     this.prefs = { ...this.prefs, [key]: key === "details" ? raw === true || raw === "true" : value };
     if (key === "view") this.prefs.details = value === "full"; // a change of the view sets the technical details; they stay changeable
+    if (key === "details" && this.prefs.details && this.isSimple() && this.prefs.moreUses >= 0) this.prefs.moreUses = Math.min(99, this.prefs.moreUses + 1); // counts how often the simple view is widened by hand
     if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
     this.savePrefs();
     this.render();

@@ -31,3 +31,13 @@ Object.assign(TEXT.en, {
   hiddenNotesTitle: "More notes", hiddenNotesHint: "From pages this view does not show in the bar. A click opens the page.",
   searchFullOnly: "in the bar only in Full", showMore: "Show more", showMoreHint: "Shows certainty, IDs and further technical details.",
 });
+Object.assign(TEXT.de, {
+  viewAskTitle: "Einfache Ansicht.", viewAskText: "Du siehst das Wichtigste. Soll es mehr sein? Das lässt sich jederzeit unter Einstellungen, Ansicht ändern.",
+  viewAskFull: "Vollständig zeigen", viewAskStay: "Bei Einfach bleiben",
+  viewMoreTitle: "Du blendest oft mehr ein.", viewMoreText: "Die vollständige Ansicht zeigt das immer.", viewMoreNever: "Nicht mehr fragen",
+});
+Object.assign(TEXT.en, {
+  viewAskTitle: "Simple view.", viewAskText: "You see the essentials. Should it be more? You can change this any time under Settings, View.",
+  viewAskFull: "Show full view", viewAskStay: "Stay with simple",
+  viewMoreTitle: "You often show more.", viewMoreText: "The full view always shows it.", viewMoreNever: "Do not ask again",
+});

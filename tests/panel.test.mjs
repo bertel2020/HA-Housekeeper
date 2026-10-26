@@ -926,7 +926,7 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
   const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope", graphMode: "cube" }) }) }).el;
-  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full", details: true }));
+  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full", details: true, viewAsked: true, moreUses: 0 }));
 });
 
 test("the start view preference applies unless a deep link says otherwise", () => {
@@ -7801,4 +7801,36 @@ test("the simple view lists what hidden pages would show in the bar, and the sea
   assert.ok(el.findingsTable([]).includes('data-pref="details|true"') === false);
   el.prefs = { ...el.prefs, details: false };
   assert.ok(el.findingsTable([]).includes('data-pref="details|true"'));
+});
+
+test("a young installation starts in the simple view and asks once; an old one or a saved profile keeps the full view; widening by hand three times brings a hint", () => {
+  const store = {}, storage = { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; } };
+  const young = () => { const el = panel("de", { localStorage: storage }).el; el.render = () => {}; el._userPrefsEmpty = true; return el; };
+  const recent = new Date(Date.now() - 864e5).toISOString(), old = new Date(Date.now() - 30 * 864e5).toISOString();
+  let el = young();
+  el.data = { meta: { scanned_at: recent }, findings: [{ first_detected_at: recent }] };
+  el.firstContact();
+  assert.equal(el.prefs.view, "simple");
+  assert.equal(el.prefs.details, false);
+  assert.ok(el.viewAskCard().includes('data-view-ask="stay"'));
+  el.answerViewAsk("stay");
+  assert.equal(el.viewAskCard(), "");
+  assert.equal(JSON.parse(store["ha_housekeeper.prefs"]).viewAsked, true);
+  // a browser that saved something before is not asked
+  el = panel("de", { localStorage: storage }).el; el.render = () => {}; el._userPrefsEmpty = true;
+  el.data = { meta: { scanned_at: recent }, findings: [] };
+  el.firstContact();
+  assert.equal(el._freshPrefs, false);
+  // an installation with old findings keeps the full view
+  for (const k of Object.keys(store)) delete store[k];
+  el = young(); el.data = { meta: { scanned_at: old }, findings: [{ first_detected_at: old }] };
+  el.firstContact();
+  assert.equal(el.prefs.view, "full");
+  // the hint after three manual widenings, and "do not ask again"
+  el.setPref("view", "simple");
+  for (let i = 0; i < 3; i++) { el.setPref("details", false); el.setPref("details", true); }
+  assert.ok(el.viewAskCard().includes('data-view-ask="never"'));
+  el.answerViewAsk("never");
+  assert.equal(el.viewAskCard(), "");
+  assert.equal(el.prefs.moreUses, -1);
 });

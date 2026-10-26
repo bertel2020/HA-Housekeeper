@@ -207,6 +207,7 @@ class HAHousekeeperPanel extends HTMLElement {
     try {
       const scannedBefore = this.data?.meta?.scanned_at;
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
+      this.firstContact();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();
       this.details = new Map();
       this.compare = null;
@@ -1165,6 +1166,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-more-info]").forEach(el => el.onclick = () => this.moreInfo(el.dataset.moreInfo));
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
+    root.querySelectorAll("[data-view-ask]").forEach(el => el.onclick = () => this.answerViewAsk(el.dataset.viewAsk));
     root.querySelectorAll("[data-pref-switch]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSwitch, el.checked));
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });

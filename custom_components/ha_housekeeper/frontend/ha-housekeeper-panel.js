@@ -406,7 +406,7 @@ const PREFS_KEY = "ha_housekeeper.prefs";
 const MARK_QUIET_DAYS = 30;
 // The page sizes every paged list offers, unless it has its own.
 const PAGE_SIZES = [20, 50, 100, 250];
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full", details: true };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full", details: true, viewAsked: true, moreUses: 0 };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
@@ -1349,7 +1349,11 @@ Object.assign(TEXT.en, {
 class ThemeMixin {
   // Display preferences live in this browser only; storage may be unavailable.
   loadPrefs() {
-    try { return this.sanitizePrefs(JSON.parse(globalThis.localStorage?.getItem(PREFS_KEY) || "{}")); } catch (_) { return { ...DEFAULT_PREFS }; }
+    try {
+      const raw = globalThis.localStorage?.getItem(PREFS_KEY);
+      this._freshPrefs = Boolean(globalThis.localStorage) && raw == null; // nothing saved in this browser yet; the user profile may still have something
+      return this.sanitizePrefs(JSON.parse(raw || "{}"));
+    } catch (_) { return { ...DEFAULT_PREFS }; }
   }
 
   // Keep only known, valid values; anything else falls back to the default.
@@ -1367,6 +1371,8 @@ class ThemeMixin {
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
     if (VIEWS.includes(saved.view)) prefs.view = saved.view;
+    prefs.viewAsked = typeof saved.viewAsked === "boolean" ? saved.viewAsked : true; // saved preferences without the answer belong to someone who was never asked
+    if (Number.isInteger(saved.moreUses) && saved.moreUses >= -1 && saved.moreUses <= 99) prefs.moreUses = saved.moreUses;
     prefs.details = typeof saved.details === "boolean" ? saved.details : prefs.view === "full"; // the technical details follow the view until they are set by hand
     return prefs;
   }
@@ -1375,13 +1381,14 @@ class ThemeMixin {
   async loadUserPrefs() {
     try {
       const result = await this._hass?.callWS?.({ type: "frontend/get_user_data", key: USER_DATA_KEY });
-      if (!result?.value) return;
+      if (!result?.value) { this._userPrefsEmpty = true; this.firstContact(); return; }
+      this._freshPrefs = false;
       const prefs = this.sanitizePrefs(result.value);
       if (JSON.stringify(prefs) === JSON.stringify(this.prefs)) return;
       this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {};
       this.savePrefs(false);
       this.render();
-    } catch (_) { /* no user data available; local preferences stay */ }
+    } catch (_) { this._userPrefsEmpty = true; this.firstContact(); /* no user data available; local preferences stay */ }
   }
 
   savePrefs(sync = true) {
@@ -1414,6 +1421,7 @@ class ThemeMixin {
     const value = key === "pageSize" ? Number(raw) : raw;
     this.prefs = { ...this.prefs, [key]: key === "details" ? raw === true || raw === "true" : value };
     if (key === "view") this.prefs.details = value === "full"; // a change of the view sets the technical details; they stay changeable
+    if (key === "details" && this.prefs.details && this.isSimple() && this.prefs.moreUses >= 0) this.prefs.moreUses = Math.min(99, this.prefs.moreUses + 1); // counts how often the simple view is widened by hand
     if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
     this.savePrefs();
     this.render();
@@ -2748,7 +2756,7 @@ class OverviewMixin {
     const kpi = ([label, value, tone, view, status, key, rising, extra, filter, bar]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small class="kpilabel">${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small class="kpisub">${this.esc(extra)}</small>` : ""}${bar || ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
     const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
-    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
+    return `${this.viewAskCard()}${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
       <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
       <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openObjects", openObjects, "", "findingsNav", "", "affected", "bad", [this.t(open.length === 1 ? "tileFindings1" : "tileFindings", { n: this.formatNumber(open.length) }), quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""].filter(Boolean).join(" · ")], ...TOPIC_ORDER.map(topicKpi)].map(kpi).join("")}</div>${fresh || due ? `<p class="kpiline">${[fresh ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="new">${this.esc(this.t("overviewNew", { n: this.formatNumber(fresh) }))}</button>` : "", due ? `<button type="button" class="link" data-jump="findingsNav" data-jump-status="due">${this.esc(this.t("overviewDue", { n: this.formatNumber(due) }))}</button>` : ""].filter(Boolean).join(" · ")}</p>` : ""}</section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}${this.isSimple() ? `${this.hiddenNotesCard()}<div class="ovzone">${this.backupSummaryCard()}</div>` : `<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
@@ -3220,7 +3228,7 @@ class FindingsMixin {
     const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
     const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
     const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
-    return `<div class="stack">${wiz ? "" : `${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}`}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+    return `<div class="stack">${wiz ? "" : `${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${this.viewAskCard()}${this.decisionNotice()}${this.firstCleanupOffer()}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}`}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
       ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
   }
 
@@ -3726,6 +3734,34 @@ class SettingsMixin {
 
   segment(pref, options) {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
+  }
+
+  // A browser and a user profile with nothing saved, and a young installation with a first scan: it starts in the simple view and asks once.
+  // An installation with older findings keeps the full view, whoever never saved a preference.
+  firstContact() {
+    if (!this._freshPrefs || !this._userPrefsEmpty || this._contactDone || !this.data?.meta?.scanned_at) return;
+    this._contactDone = true;
+    const week = 7 * 864e5, old = (this.data.findings || []).some(f => { const at = Date.parse(f.first_detected_at || f.first_seen_at); return Number.isFinite(at) && Date.now() - at > week; });
+    if (old) return;
+    this.prefs = { ...this.prefs, view: "simple", details: false, viewAsked: false };
+    this.savePrefs();
+    this.render();
+  }
+
+  // The question after the first scan, and later the hint when the simple view is widened by hand again and again.
+  viewAskCard() {
+    if (!this.isSimple()) return "";
+    const first = !this.prefs.viewAsked;
+    if (!first && !(this.prefs.moreUses >= 3)) return "";
+    const btn = (kind, label, cls = "btn") => `<button type="button" class="${cls}" data-view-ask="${kind}">${this.t(label)}</button>`;
+    return `<div class="panel fcoffer viewask" role="status"><ha-icon icon="mdi:eye-settings-outline"></ha-icon><span class="fctext"><strong>${this.t(first ? "viewAskTitle" : "viewMoreTitle")}</strong> ${this.t(first ? "viewAskText" : "viewMoreText")}</span>${btn("full", "viewAskFull", "btn primary")}${btn(first ? "stay" : "never", first ? "viewAskStay" : "viewMoreNever")}</div>`;
+  }
+
+  answerViewAsk(kind) {
+    if (kind === "full") this.setPref("view", "full");
+    this.prefs = { ...this.prefs, viewAsked: true, moreUses: kind === "stay" ? this.prefs.moreUses : -1 };
+    this.savePrefs();
+    this.render();
   }
 
   showTech() { return this.prefs.details !== false; }
@@ -17665,6 +17701,16 @@ Object.assign(TEXT.en, {
   hiddenNotesTitle: "More notes", hiddenNotesHint: "From pages this view does not show in the bar. A click opens the page.",
   searchFullOnly: "in the bar only in Full", showMore: "Show more", showMoreHint: "Shows certainty, IDs and further technical details.",
 });
+Object.assign(TEXT.de, {
+  viewAskTitle: "Einfache Ansicht.", viewAskText: "Du siehst das Wichtigste. Soll es mehr sein? Das lässt sich jederzeit unter Einstellungen, Ansicht ändern.",
+  viewAskFull: "Vollständig zeigen", viewAskStay: "Bei Einfach bleiben",
+  viewMoreTitle: "Du blendest oft mehr ein.", viewMoreText: "Die vollständige Ansicht zeigt das immer.", viewMoreNever: "Nicht mehr fragen",
+});
+Object.assign(TEXT.en, {
+  viewAskTitle: "Simple view.", viewAskText: "You see the essentials. Should it be more? You can change this any time under Settings, View.",
+  viewAskFull: "Show full view", viewAskStay: "Stay with simple",
+  viewMoreTitle: "You often show more.", viewMoreText: "The full view always shows it.", viewMoreNever: "Do not ask again",
+});
 
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
@@ -21407,6 +21453,7 @@ class HAHousekeeperPanel extends HTMLElement {
     try {
       const scannedBefore = this.data?.meta?.scanned_at;
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
+      this.firstContact();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();
       this.details = new Map();
       this.compare = null;
@@ -22365,6 +22412,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-more-info]").forEach(el => el.onclick = () => this.moreInfo(el.dataset.moreInfo));
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
+    root.querySelectorAll("[data-view-ask]").forEach(el => el.onclick = () => this.answerViewAsk(el.dataset.viewAsk));
     root.querySelectorAll("[data-pref-switch]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSwitch, el.checked));
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });

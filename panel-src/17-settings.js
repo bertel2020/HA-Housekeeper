@@ -10,6 +10,34 @@ class SettingsMixin {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
+  // A browser and a user profile with nothing saved, and a young installation with a first scan: it starts in the simple view and asks once.
+  // An installation with older findings keeps the full view, whoever never saved a preference.
+  firstContact() {
+    if (!this._freshPrefs || !this._userPrefsEmpty || this._contactDone || !this.data?.meta?.scanned_at) return;
+    this._contactDone = true;
+    const week = 7 * 864e5, old = (this.data.findings || []).some(f => { const at = Date.parse(f.first_detected_at || f.first_seen_at); return Number.isFinite(at) && Date.now() - at > week; });
+    if (old) return;
+    this.prefs = { ...this.prefs, view: "simple", details: false, viewAsked: false };
+    this.savePrefs();
+    this.render();
+  }
+
+  // The question after the first scan, and later the hint when the simple view is widened by hand again and again.
+  viewAskCard() {
+    if (!this.isSimple()) return "";
+    const first = !this.prefs.viewAsked;
+    if (!first && !(this.prefs.moreUses >= 3)) return "";
+    const btn = (kind, label, cls = "btn") => `<button type="button" class="${cls}" data-view-ask="${kind}">${this.t(label)}</button>`;
+    return `<div class="panel fcoffer viewask" role="status"><ha-icon icon="mdi:eye-settings-outline"></ha-icon><span class="fctext"><strong>${this.t(first ? "viewAskTitle" : "viewMoreTitle")}</strong> ${this.t(first ? "viewAskText" : "viewMoreText")}</span>${btn("full", "viewAskFull", "btn primary")}${btn(first ? "stay" : "never", first ? "viewAskStay" : "viewMoreNever")}</div>`;
+  }
+
+  answerViewAsk(kind) {
+    if (kind === "full") this.setPref("view", "full");
+    this.prefs = { ...this.prefs, viewAsked: true, moreUses: kind === "stay" ? this.prefs.moreUses : -1 };
+    this.savePrefs();
+    this.render();
+  }
+
   showTech() { return this.prefs.details !== false; }
 
   isSimple() { return this.prefs.view === "simple"; }
