@@ -3786,18 +3786,19 @@ class SettingsMixin {
   viewCard() {
     const simple = SIMPLE_NAV_GROUPS.flatMap(([, views]) => views), all = NAV_GROUPS.flatMap(([, views]) => views);
     // a group that goes entirely is named, of a group that stays in part only the pages that go
-    const left = NAV_GROUPS.flatMap(([label, views]) => views.every(v => !simple.includes(v)) ? [this.t(label)] : views.filter(v => !simple.includes(v)).map(v => this.t(v)));
+    const left = NAV_GROUPS.flatMap(([label, views]) => views.every(v => !simple.includes(v)) ? [label] : views.filter(v => !simple.includes(v)));
     const icons = { simple: "mdi:eye-outline", full: "mdi:view-dashboard-outline" };
-    const chips = views => `<span class="viewchips">${views.map(v => `<i>${this.esc(this.t(v))}</i>`).join("")}</span>`;
-    const options = VIEWS.map(v => `<label class="modeopt${v === this.prefs.view ? " on" : ""}"><input type="radio" name="hk-view" value="${v}" data-view-radio ${v === this.prefs.view ? "checked" : ""}><span class="tile ${v === this.prefs.view ? "ok" : "mute"}"><ha-icon icon="${icons[v]}"></ha-icon></span><span class="row-text"><strong>${this.t(`view_${v}`)}</strong><small>${this.t(`viewText_${v}`)}</small>${chips(v === "simple" ? simple : ["viewAllPages", "viewAllColumns", "viewAllMenus"])}<small>${this.t(`viewLeft_${v}`, { list: left.join(", ") })}</small></span></label>`).join("");
+    const chips = (keys, cls) => `<span class="viewchips">${keys.length ? keys.map(k => `<i class="${cls}">${this.esc(this.t(k))}</i>`).join("") : `<i>${this.t("modeNothing")}</i>`}</span>`;
+    const shows = { simple, full: ["viewAllPages", "viewAllColumns", "viewAllMenus"] }, hides = { simple: left, full: [] };
+    const options = VIEWS.map(v => `<label class="modeopt${v === this.prefs.view ? " on" : ""}"><input type="radio" name="hk-view" value="${v}" data-view-radio ${v === this.prefs.view ? "checked" : ""}><span class="tile ${v === this.prefs.view ? "ok" : "mute"}"><ha-icon icon="${icons[v]}"></ha-icon></span><span class="row-text"><strong>${this.t(`view_${v}`)}</strong><small>${this.t(`viewText_${v}`)}</small><span class="modelbl">${this.t("viewShows")}</span>${chips(shows[v], "okchip")}<span class="modelbl">${this.t("viewHidden")}</span>${chips(hides[v], "nochip")}${v === "simple" ? `<small>${this.t("viewReach")}</small>` : ""}</span></label>`).join("");
     const row = key => `<tr><td>${this.t(`viewCmp_${key}`)}</td><td>${this.t(`viewCmpS_${key}`, { n: simple.length, g: SIMPLE_NAV_GROUPS.length })}</td><td>${this.t(`viewCmpF_${key}`, { n: all.length, g: NAV_GROUPS.length })}</td></tr>`;
     return `<section class="panel modepanel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
       <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("viewLabel"))}">${options}</div>
       <p class="sect">${this.t("detailsSect")}</p>
-      <label class="optswitch viewdet"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
+      <label class="optswitch viewdet"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small><span class="modelbl">${this.t("detailsFor")}</span>${chips(["detRule", "detObject", "detCertainty", "detRelations", "detRaw", "detJson", "detMenu"], "")}</span></label>
       <p class="sect">${this.t("viewCmpTitle")}</p>
       <div class="tablewrap lt viewcmp"><table><thead><tr><th scope="col"></th><th scope="col">${this.t("view_simple")}</th><th scope="col">${this.t("view_full")}</th></tr></thead><tbody>${["bar", "overview", "findings", "menu", "detail"].map(row).join("")}</tbody></table></div>
-      <p class="factnote">${this.t("viewNote")}</p></section>`;
+      <p class="modefoot"><ha-icon icon="mdi:information-outline"></ha-icon><span>${this.t("viewFoot")}</span></p></section>`;
   }
 
   // The tab ids of the settings page, in display order.
@@ -17712,16 +17713,16 @@ class SystemMixin {
 // Texts for the choice between the simple and the full view; merged into TEXT.
 Object.assign(TEXT.de, {
   setTabView: "Ansicht", setHintView: "Einfach oder vollständig", view_simple: "Einfach", view_full: "Vollständig",
-  viewTitle: "Ansicht", viewHint: "Wie viel von Housekeeper du siehst. Gilt für dein Benutzerprofil.", viewLabel: "Ansicht wählen",
-  viewText_simple: "Befunde, Wartung und Ausnahmen. Alles andere ist ausgeblendet und über die Suche oder „Beheben“ erreichbar.",
-  viewText_full: "Die ganze Oberfläche mit allen Seiten, Spalten und Menüpunkten.",
+  viewTitle: "Ansicht", viewHint: "Wie viel von Housekeeper du siehst. Gilt für dein Benutzerprofil. Die Ansicht ändert nur, was du siehst: Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.", viewLabel: "Ansicht wählen",
+  viewText_simple: "Das Wichtigste: was zu tun ist und was zu warten ist.",
+  viewText_full: "Die ganze Oberfläche, wie bisher.",
   viewNote: "Die Ansicht ändert nur, was du siehst. Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.",
 });
 Object.assign(TEXT.en, {
   setTabView: "View", setHintView: "Simple or full", view_simple: "Simple", view_full: "Full",
-  viewTitle: "View", viewHint: "How much of Housekeeper you see. Applies to your user profile.", viewLabel: "Choose a view",
-  viewText_simple: "Findings, maintenance and exceptions. Everything else is hidden and reachable through the search or \"Fix\".",
-  viewText_full: "The whole interface with every page, column and menu entry.",
+  viewTitle: "View", viewHint: "How much of Housekeeper you see. Applies to your user profile. The view only changes what you see: the protection mode, confirmations, backups and checks stay the same.", viewLabel: "Choose a view",
+  viewText_simple: "The essentials: what to do and what to maintain.",
+  viewText_full: "The whole interface, as before.",
   viewNote: "The view only changes what you see. The protection mode, confirmations, backups and checks stay the same.",
 });
 Object.assign(TEXT.de, {
@@ -17769,6 +17770,16 @@ Object.assign(TEXT.en, {
   viewCmp_findings: "Findings table", viewCmpS_findings: "Name, topic, impact, since", viewCmpF_findings: "plus certainty, object ID, rule ID",
   viewCmp_menu: "Row menu", viewCmpS_menu: "Fix, status, open", viewCmpF_menu: "plus exception, label, mark, graph",
   viewCmp_detail: "Export, detail page", viewCmpS_detail: "CSV, Markdown; overview, actions", viewCmpF_detail: "plus JSON, relations, diagnosis, technical",
+});
+Object.assign(TEXT.de, {
+  viewShows: "Zeigt", viewHidden: "Ausgeblendet", viewReach: "Alles Ausgeblendete bleibt erreichbar: über die Suche, „Beheben“ und die Hinweise der Übersicht.",
+  detailsFor: "Betrifft", detRule: "Regel-ID", detObject: "Objekt-ID", detCertainty: "Gewissheit", detRelations: "Beziehungen", detRaw: "Rohdaten", detJson: "JSON-Export", detMenu: "Menü: Ausnahme, Label, Graph",
+  viewFoot: "Eine neue Installation beginnt in „Einfach“ und fragt nach dem ersten Scan, ob es mehr sein soll. Eine geöffnete Seite bleibt in der Leiste, auch wenn Einfach sie sonst ausblendet; die Suche findet jede Seite.",
+});
+Object.assign(TEXT.en, {
+  viewShows: "Shows", viewHidden: "Hidden", viewReach: "Everything hidden stays reachable: through the search, \"Fix\" and the notes of the overview.",
+  detailsFor: "Applies to", detRule: "Rule ID", detObject: "Object ID", detCertainty: "Certainty", detRelations: "Relations", detRaw: "Raw data", detJson: "JSON export", detMenu: "Menu: exception, label, graph",
+  viewFoot: "A new installation starts in \"Simple\" and asks after the first scan whether it should be more. An open page stays in the bar even if Simple would hide it; the search finds every page.",
 });
 
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give

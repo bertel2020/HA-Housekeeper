@@ -1,16 +1,16 @@
 // Texts for the choice between the simple and the full view; merged into TEXT.
 Object.assign(TEXT.de, {
   setTabView: "Ansicht", setHintView: "Einfach oder vollständig", view_simple: "Einfach", view_full: "Vollständig",
-  viewTitle: "Ansicht", viewHint: "Wie viel von Housekeeper du siehst. Gilt für dein Benutzerprofil.", viewLabel: "Ansicht wählen",
-  viewText_simple: "Befunde, Wartung und Ausnahmen. Alles andere ist ausgeblendet und über die Suche oder „Beheben“ erreichbar.",
-  viewText_full: "Die ganze Oberfläche mit allen Seiten, Spalten und Menüpunkten.",
+  viewTitle: "Ansicht", viewHint: "Wie viel von Housekeeper du siehst. Gilt für dein Benutzerprofil. Die Ansicht ändert nur, was du siehst: Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.", viewLabel: "Ansicht wählen",
+  viewText_simple: "Das Wichtigste: was zu tun ist und was zu warten ist.",
+  viewText_full: "Die ganze Oberfläche, wie bisher.",
   viewNote: "Die Ansicht ändert nur, was du siehst. Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.",
 });
 Object.assign(TEXT.en, {
   setTabView: "View", setHintView: "Simple or full", view_simple: "Simple", view_full: "Full",
-  viewTitle: "View", viewHint: "How much of Housekeeper you see. Applies to your user profile.", viewLabel: "Choose a view",
-  viewText_simple: "Findings, maintenance and exceptions. Everything else is hidden and reachable through the search or \"Fix\".",
-  viewText_full: "The whole interface with every page, column and menu entry.",
+  viewTitle: "View", viewHint: "How much of Housekeeper you see. Applies to your user profile. The view only changes what you see: the protection mode, confirmations, backups and checks stay the same.", viewLabel: "Choose a view",
+  viewText_simple: "The essentials: what to do and what to maintain.",
+  viewText_full: "The whole interface, as before.",
   viewNote: "The view only changes what you see. The protection mode, confirmations, backups and checks stay the same.",
 });
 Object.assign(TEXT.de, {
@@ -58,4 +58,14 @@ Object.assign(TEXT.en, {
   viewCmp_findings: "Findings table", viewCmpS_findings: "Name, topic, impact, since", viewCmpF_findings: "plus certainty, object ID, rule ID",
   viewCmp_menu: "Row menu", viewCmpS_menu: "Fix, status, open", viewCmpF_menu: "plus exception, label, mark, graph",
   viewCmp_detail: "Export, detail page", viewCmpS_detail: "CSV, Markdown; overview, actions", viewCmpF_detail: "plus JSON, relations, diagnosis, technical",
+});
+Object.assign(TEXT.de, {
+  viewShows: "Zeigt", viewHidden: "Ausgeblendet", viewReach: "Alles Ausgeblendete bleibt erreichbar: über die Suche, „Beheben“ und die Hinweise der Übersicht.",
+  detailsFor: "Betrifft", detRule: "Regel-ID", detObject: "Objekt-ID", detCertainty: "Gewissheit", detRelations: "Beziehungen", detRaw: "Rohdaten", detJson: "JSON-Export", detMenu: "Menü: Ausnahme, Label, Graph",
+  viewFoot: "Eine neue Installation beginnt in „Einfach“ und fragt nach dem ersten Scan, ob es mehr sein soll. Eine geöffnete Seite bleibt in der Leiste, auch wenn Einfach sie sonst ausblendet; die Suche findet jede Seite.",
+});
+Object.assign(TEXT.en, {
+  viewShows: "Shows", viewHidden: "Hidden", viewReach: "Everything hidden stays reachable: through the search, \"Fix\" and the notes of the overview.",
+  detailsFor: "Applies to", detRule: "Rule ID", detObject: "Object ID", detCertainty: "Certainty", detRelations: "Relations", detRaw: "Raw data", detJson: "JSON export", detMenu: "Menu: exception, label, graph",
+  viewFoot: "A new installation starts in \"Simple\" and asks after the first scan whether it should be more. An open page stays in the bar even if Simple would hide it; the search finds every page.",
 });
