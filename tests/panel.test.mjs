@@ -7847,3 +7847,15 @@ test("the info bar names the view next to the protection mode and keeps the last
   assert.ok(last[2].endsWith("· endgültig") && !/\d{4}|\d:\d/.test(last[2]), last[2]);
   assert.ok(last[4].includes(":"));
 });
+
+test("the protection card lists what each step allows and blocks, and a table that follows the order of the steps", () => {
+  const { el } = panel("de");
+  el.data = { ...DATA, meta: { ...DATA.meta, protection: "confirmed" } };
+  const card = el.protectionCard();
+  assert.equal((card.match(/class="okchip"/g) || []).length, 4 + 3 + 5);
+  assert.equal((card.match(/class="nochip"/g) || []).length, 2 + 4);
+  assert.ok(card.includes("Was bei welcher Stufe geht") && card.includes("Schutzmodus"));
+  const rows = card.match(/<tr><td>[^<]*<\/td>(<td class="(yes|no)"[^>]*>[^<]*<\/td>){3}<\/tr>/g) || [];
+  assert.equal(rows.length, 5);
+  assert.ok(rows[1].match(/class="no"/g).length === 1 && rows[3].match(/class="no"/g).length === 2);
+});

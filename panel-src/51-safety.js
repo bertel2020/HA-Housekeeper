@@ -1,4 +1,13 @@
 // SafetyMixin: the thin status line under the navigation that says how safe the writing parts are.
+const MODES = ["read_only", "confirmed", "full"];
+// What each step allows and blocks, as text keys; and the table: [text key, index of the first step that allows it].
+const MODE_INFO = {
+  read_only: { allow: ["modeA_view", "modeA_plan", "modeA_notes"], block: ["modeB_run", "modeB_undo"] },
+  confirmed: { allow: ["modeA_disable", "modeA_rebuild", "modeA_undo", "modeA_backup"], block: ["modeB_purge", "modeB_trim", "modeB_backups", "modeB_recorder"] },
+  full: { allow: ["modeA_same", "modeB_purge", "modeB_trim", "modeB_backups", "modeB_recorder"], block: [] },
+};
+const MODE_TABLE = [["modeR_view", 0], ["modeR_run", 1], ["modeR_undo", 1], ["modeR_final", 2], ["modeR_recorder", 2]];
+
 class SafetyMixin {
   ensureSafetyData() {
     if (this.journal === null && !this._journalRequested) { this._journalRequested = true; this.loadJournal(); }
@@ -41,13 +50,19 @@ class SafetyMixin {
   }
 
   // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
+  // The protection mode: one card per step with what it allows and what it blocks, then a table of the same by kind of change.
   protectionCard() {
     const mode = this.data?.meta?.protection || "read_only";
     const icons = { read_only: "mdi:eye-outline", confirmed: "mdi:shield-check-outline", full: "mdi:shield-lock-outline" };
-    const options = ["read_only", "confirmed", "full"].map(m => `<label class="modeopt${m === mode ? " on" : ""}"><input type="radio" name="hk-protection" value="${m}" data-protection ${m === mode ? "checked" : ""}><span class="tile ${m === mode ? (m === "full" ? "ok" : "warn") : "mute"}"><ha-icon icon="${icons[m]}"></ha-icon></span><span class="row-text"><strong>${this.t(`mode_${m}`)}</strong><small>${this.t(`modeText_${m}`)}</small></span></label>`).join("");
+    const chips = (keys, cls) => keys.length ? keys.map(k => `<i class="${cls}">${this.t(k)}</i>`).join("") : `<i>${this.t("modeNothing")}</i>`;
+    const options = MODES.map(m => `<label class="modeopt${m === mode ? " on" : ""}"><input type="radio" name="hk-protection" value="${m}" data-protection ${m === mode ? "checked" : ""}><span class="tile ${m === mode ? (m === "full" ? "ok" : "warn") : "mute"}"><ha-icon icon="${icons[m]}"></ha-icon></span><span class="row-text"><strong>${this.t(`mode_${m}`)}</strong><small>${this.t(`modeText_${m}`)}</small><span class="modelbl">${this.t("modeAllowed")}</span><span class="viewchips">${chips(MODE_INFO[m].allow, "okchip")}</span><span class="modelbl">${this.t("modeBlockedLbl")}</span><span class="viewchips">${chips(MODE_INFO[m].block, "nochip")}</span>${m === "full" ? `<small>${this.t("modeFullNote")}</small>` : ""}</span></label>`).join("");
+    const cell = (row, m) => (MODES.indexOf(m) >= row[1] ? `<td class="yes" aria-label="${this.esc(this.t("modeYes"))}">✓</td>` : `<td class="no">${this.t("modeLocked")}</td>`);
+    const table = `<div class="tablewrap lt viewcmp"><table><thead><tr><th scope="col"></th>${MODES.map(m => `<th scope="col">${this.t(`mode_${m}`)}</th>`).join("")}</tr></thead><tbody>${MODE_TABLE.map(row => `<tr><td>${this.t(row[0])}</td>${MODES.map(m => cell(row, m)).join("")}</tr>`).join("")}</tbody></table></div>`;
     return `<section class="panel modepanel"><div class="panelhead"><div><h2>${this.t("modeTitle")}</h2><p>${this.t("modeHint")}</p></div><span class="pill ${mode === "full" ? "ok" : "warn"}">${this.t(`modeBadge_${mode}`)}</span></div>
       ${this.data?.meta?.protection_migrated ? `<p class="factnote" role="status">${this.t("modeMigrated")}</p>` : ""}
-      <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("modeLabel"))}">${options}</div></section>`;
+      <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("modeLabel"))}">${options}</div>
+      <p class="sect">${this.t("modeTableTitle")}</p>${table}
+      <p class="modefoot"><ha-icon icon="mdi:information-outline"></ha-icon><span>${this.t("modeFoot")}</span></p></section>`;
   }
 
   eventsCard() {
@@ -89,7 +104,13 @@ Object.assign(TEXT.de, {
   safeMode_full: "Schutzmodus: Alles", safeMode_confirmed: "Schutzmodus: Ändern", safeMode_read_only: "Schutzmodus: Beobachten",
   modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Seiten ansehen bleibt immer erlaubt. Ausnahmen, Notizen und der KI-Zugriff haben eigene Schalter.", modeLabel: "Was Housekeeper ändern darf",
   mode_read_only: "Beobachten", mode_confirmed: "Ändern", mode_full: "Alles",
-  modeText_read_only: "Housekeeper schaut nur. Gesperrt: alle Änderungen und Rückgängig.", modeText_confirmed: "Ändern mit Einzelbestätigung und Backup, auch Deaktivieren, Entfernen und Rückgängig. Gesperrt: endgültiges Löschen von Statistik, Verlauf und Backups sowie Reparaturen am Recorder.", modeText_full: "Alles, auch Endgültiges. Gesperrt: nichts.",
+  modeText_read_only: "Housekeeper schaut nur. Für den Einstieg und für alle, die nichts ändern lassen wollen.", modeText_confirmed: "Ändern mit Einzelbestätigung und Backup. Der Alltag für die meisten.", modeText_full: "Auch Endgültiges. Nur wenn du weißt, was es kostet.",
+  modeAllowed: "Erlaubt", modeBlockedLbl: "Gesperrt", modeNothing: "nichts", modeYes: "erlaubt", modeLocked: "gesperrt", modeTableTitle: "Was bei welcher Stufe geht",
+  modeA_view: "Alle Seiten ansehen", modeA_plan: "Pläne anlegen und prüfen", modeA_notes: "Ausnahmen und Notizen", modeA_disable: "Deaktivieren und Entfernen", modeA_rebuild: "Umbauen, Ersetzen, Tauschen", modeA_undo: "Rückgängig", modeA_backup: "Backup vor jedem Plan", modeA_same: "Alles aus „Ändern“",
+  modeB_run: "Plan bestätigen und starten", modeB_undo: "Rückgängig", modeB_purge: "Statistik löschen", modeB_trim: "Verlauf kürzen", modeB_backups: "Backups löschen", modeB_recorder: "Recorder-Reparaturen",
+  modeR_view: "Seiten ansehen, Pläne anlegen und prüfen", modeR_run: "Plan bestätigen und starten (deaktivieren, entfernen, umbauen)", modeR_undo: "Rückgängig", modeR_final: "Statistik löschen, Verlauf kürzen, Backups löschen", modeR_recorder: "Recorder-Reparaturen (Zähler, Bereich)",
+  modeFullNote: "Endgültiges lässt sich nicht rückgängig machen, auch nicht mit einem Backup von Housekeeper.",
+  modeFoot: "Eine neue Installation beginnt in „Beobachten“. Eine frühere Stufe „Quarantäne“ gilt jetzt als „Beobachten“, nie als „Alles“. Die Stufe wird auf dem Server geprüft, nicht nur im Panel.",
   modeMigrated: "Die Stufe „Nur Quarantäne“ gibt es nicht mehr. Housekeeper steht jetzt auf „Beobachten“. Wähle die Stufe, die du willst.",
   plan: "Plan", planPageSubtitle: "Vorschau, Prüfung und Ergebnis eines Plans. Nichts wird geändert, bevor du bestätigst.", planNone: "Dieser Plan ist nicht mehr geöffnet. Alle Pläne stehen im Journal.",
   nothingToRun: "Noch nichts zum Ausführen: Hake darunter an, dass du die zu prüfenden Einträge gesehen hast.",
@@ -103,7 +124,13 @@ Object.assign(TEXT.en, {
   safeMode_full: "Protection mode: Everything", safeMode_confirmed: "Protection mode: Change", safeMode_read_only: "Protection mode: Watch",
   modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and looking at every page stay allowed. Exceptions, notes and AI access have their own switches.", modeLabel: "What Housekeeper may change",
   mode_read_only: "Watch", mode_confirmed: "Change", mode_full: "Everything",
-  modeText_read_only: "Housekeeper only looks. Blocked: every change and undo.", modeText_confirmed: "Changes with one-by-one confirmation and backup, including disabling, removing and undo. Blocked: irreversible deletion of statistics, history and backups, and repairs in the recorder.", modeText_full: "Everything, including what cannot be undone. Blocked: nothing.",
+  modeText_read_only: "Housekeeper only looks. For getting started and for anyone who wants nothing changed.", modeText_confirmed: "Changes with one-by-one confirmation and a backup. Everyday use for most.", modeText_full: "Including what cannot be undone. Only if you know what it costs.",
+  modeAllowed: "Allowed", modeBlockedLbl: "Blocked", modeNothing: "nothing", modeYes: "allowed", modeLocked: "blocked", modeTableTitle: "What each step can do",
+  modeA_view: "Look at every page", modeA_plan: "Make and check plans", modeA_notes: "Exceptions and notes", modeA_disable: "Disable and remove", modeA_rebuild: "Rebuild, replace, swap", modeA_undo: "Undo", modeA_backup: "Backup before every plan", modeA_same: "Everything from \"Change\"",
+  modeB_run: "Confirm and start a plan", modeB_undo: "Undo", modeB_purge: "Delete statistics", modeB_trim: "Trim history", modeB_backups: "Delete backups", modeB_recorder: "Recorder repairs",
+  modeR_view: "Look at pages, make and check plans", modeR_run: "Confirm and start a plan (disable, remove, rebuild)", modeR_undo: "Undo", modeR_final: "Delete statistics, trim history, delete backups", modeR_recorder: "Recorder repairs (counter, range)",
+  modeFullNote: "What cannot be undone stays gone, even with a backup from Housekeeper.",
+  modeFoot: "A new installation starts in \"Watch\". The former step \"Quarantine\" now counts as \"Watch\", never as \"Everything\". The step is checked on the server, not only in the panel.",
   modeMigrated: "The step “Quarantine only” no longer exists. Housekeeper is now set to “Watch”. Choose the step you want.",
   plan: "Plan", planPageSubtitle: "Preview, check and result of a plan. Nothing changes before you confirm.", planNone: "This plan is no longer open. All plans are in the journal.",
   nothingToRun: "Nothing to run yet: tick the box below this line to say you have seen the entries to review.",
