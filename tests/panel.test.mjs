@@ -926,7 +926,7 @@ test("display preferences are saved, validated, and turned into theme CSS", () =
   // a fresh panel reads them back; invalid values fall back to defaults
   assert.equal(panel("en", { localStorage: storage }).el.prefs.mode, "dark");
   const broken = panel("en", { localStorage: fakeStorage({ "ha_housekeeper.prefs": JSON.stringify({ size: "huge", mode: "x", scheme: "neon", pageSize: 7, startView: "nope", graphMode: "cube" }) }) }).el;
-  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full" }));
+  assert.equal(JSON.stringify(broken.prefs), JSON.stringify({ size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full", details: true }));
 });
 
 test("the start view preference applies unless a deep link says otherwise", () => {
@@ -7764,4 +7764,24 @@ test("the simple view lists fewer pages, the full view all, and an open page is 
   el.view = "settings"; el.settingsTab = "view";
   assert.ok(el.settingsView().includes("data-pref=\"view|full\""));
   assert.ok(el.viewPill().includes("view|full"));
+});
+
+test("the technical details follow the view, stay changeable, and are marked so one rule hides them", () => {
+  const { el } = panel("de");
+  assert.equal(el.prefs.details, true);
+  el.setPref("view", "simple");
+  assert.equal(el.prefs.details, false);
+  el.setPref("details", true);
+  assert.equal(el.prefs.view, "simple");
+  assert.equal(el.prefs.details, true);
+  el.setPref("view", "full");
+  assert.equal(el.prefs.details, true);
+  assert.equal(el.sanitizePrefs({ view: "simple" }).details, false);
+  assert.equal(el.sanitizePrefs({ view: "simple", details: true }).details, true);
+  const finding = { key: "k", rule_id: "entity.state_unavailable", object_id: "sensor.a", classification: "unavailable", impact: "high", confidence: 0.9, first_detected_at: "2026-10-01T00:00:00+00:00" };
+  const row = el.findingTableRow(finding);
+  assert.ok(row.includes('class="id tech"') && row.includes('class="tech" data-label') && row.includes("finding-rule tech"));
+  el.prefs = { ...el.prefs, details: false };
+  assert.equal(el.showTech(), false);
+  assert.ok(el.detailTabs({ object_type: "entity", object_id: "sensor.a" }, "entity:sensor.a").every(([id]) => !["relations", "technical", "diagnosis"].includes(id)));
 });

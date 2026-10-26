@@ -20,6 +20,7 @@ class ThemeMixin {
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
     if (VIEWS.includes(saved.view)) prefs.view = saved.view;
+    prefs.details = typeof saved.details === "boolean" ? saved.details : prefs.view === "full"; // the technical details follow the view until they are set by hand
     return prefs;
   }
 
@@ -64,7 +65,8 @@ class ThemeMixin {
 
   setPref(key, raw) {
     const value = key === "pageSize" ? Number(raw) : raw;
-    this.prefs = { ...this.prefs, [key]: value };
+    this.prefs = { ...this.prefs, [key]: key === "details" ? raw === true || raw === "true" : value };
+    if (key === "view") this.prefs.details = value === "full"; // a change of the view sets the technical details; they stay changeable
     if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
     this.savePrefs();
     this.render();

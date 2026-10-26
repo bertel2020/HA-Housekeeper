@@ -337,7 +337,8 @@ class DiagnosisMixin {
     if (this.reliabilityRow(item)) tabs.push(["reliability", "relTab"]);
     if (this.diagRow(item)) tabs.splice(tabs.findIndex(([id]) => id === "technical"), 0, ["diagnosis", "diagTab"]);
     if (item.object_type === "config_entry") tabs.push(["access", "accTab", null, this.accessTone(item)]);
-    return tabs;
+    // Without the technical details the relations, the diagnosis and the raw data are left out; an open one falls back to the overview.
+    return this.showTech() ? tabs : tabs.filter(([id]) => !["relations", "diagnosis", "technical"].includes(id));
   }
 
   detail() {

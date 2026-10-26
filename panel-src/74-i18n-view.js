@@ -15,3 +15,11 @@ Object.assign(TEXT.en, {
   viewNote: "The view only changes what you see. The protection mode, confirmations, backups and checks stay the same.",
   viewPillHint: "Switch view to: {to}",
 });
+Object.assign(TEXT.de, {
+  detailsTitle: "Technische Details anzeigen",
+  detailsHint: "Regel-ID, Objekt-ID, Gewissheit, Beziehungen, Rohdaten, JSON-Export und Menüeinträge wie Ausnahme, Label und Graph. Mit der Ansicht „Vollständig“ an, mit „Einfach“ aus.",
+});
+Object.assign(TEXT.en, {
+  detailsTitle: "Show technical details",
+  detailsHint: "Rule ID, object ID, certainty, relations, raw data, JSON export and menu entries such as exception, label and graph. On with the Full view, off with the Simple view.",
+});

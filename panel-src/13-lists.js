@@ -111,7 +111,7 @@ class ListsMixin {
   rowMenuHtml(entries) {
     const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
     if (!list.some(Boolean)) return "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem${e[3] ? " tech" : ""}" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem${e[3] ? " tech" : ""}" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
   }
 
   selTools(id, count, clearAttr) {
@@ -237,8 +237,8 @@ class ListsMixin {
     const ex = this._exporters?.[id];
     if (!ex) return "";
     const open = this._expOpen === id, parts = this.exportParts(ex).length;
-    const item = (attr, label, hint) => `<button type="button" class="expitem" role="menuitem" ${attr}><strong>${label}</strong><small>${hint}</small></button>`;
-    const menu = open ? `<span class="colpop exppop" role="menu">${item(`data-exp-fmt="${id}|csv"`, this.t("xpFmtCsv"), parts > 1 ? this.t("expCsvMulti", { n: parts }) : this.t("exportCsvHint"))}${item(`data-exp-fmt="${id}|md"`, this.t("xpFmtMd"), this.t("expMdD"))}${item(`data-exp-fmt="${id}|json"`, this.t("xpFmtJson"), this.t("xpFmtJsonD"))}${GUIDED_EXPORT_LISTS.includes(id) ? item("data-exp-guided", this.t("xpGuided"), this.t("xpGuidedHint")) : ""}</span>` : "";
+    const item = (attr, label, hint, cls = "") => `<button type="button" class="expitem${cls}" role="menuitem" ${attr}><strong>${label}</strong><small>${hint}</small></button>`;
+    const menu = open ? `<span class="colpop exppop" role="menu">${item(`data-exp-fmt="${id}|csv"`, this.t("xpFmtCsv"), parts > 1 ? this.t("expCsvMulti", { n: parts }) : this.t("exportCsvHint"))}${item(`data-exp-fmt="${id}|md"`, this.t("xpFmtMd"), this.t("expMdD"))}${item(`data-exp-fmt="${id}|json"`, this.t("xpFmtJson"), this.t("xpFmtJsonD"), " tech")}${GUIDED_EXPORT_LISTS.includes(id) ? item("data-exp-guided", this.t("xpGuided"), this.t("xpGuidedHint")) : ""}</span>` : "";
     return `<span class="colwrap"><button type="button" class="btn expbtn ${open ? "on" : ""}" data-exp-menu="${id}" aria-haspopup="menu" aria-expanded="${open}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}<ha-icon icon="mdi:chevron-down"></ha-icon></button>${menu}</span>`;
   }
 
@@ -328,7 +328,7 @@ class ListsMixin {
   objectRowMenu(r) {
     const obj = r.open === false ? null : this.findObject(r.key), path = obj ? this.haPath(obj) : null;
     if (!obj) return [];
-    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`]];
+    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`, true]];
   }
 
   // The arrow of a row that unfolds in place (a history, a detail): the look of a fold's arrow, as a button of its own; attr is the data attribute the click handler listens to.

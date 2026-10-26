@@ -144,7 +144,7 @@ class CausesMixin {
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);
-    const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
+    const item = (icon, label, attr, sub = "", cls = "") => `<button type="button" class="menuitem${cls}" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
     const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
@@ -161,12 +161,12 @@ class CausesMixin {
       : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
       : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
     const objectKey = this.findingKey(f), object = this.findObject(objectKey);
-    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : "";
-    const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`) : "";
-    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))}` : "";
+    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "", " tech") : "";
+    const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
+    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
     const about = mark + exc;
     const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}<hr class="menusep">`;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 
   // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.

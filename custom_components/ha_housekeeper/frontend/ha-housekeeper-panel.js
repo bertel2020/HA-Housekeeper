@@ -406,7 +406,7 @@ const PREFS_KEY = "ha_housekeeper.prefs";
 const MARK_QUIET_DAYS = 30;
 // The page sizes every paged list offers, unless it has its own.
 const PAGE_SIZES = [20, 50, 100, 250];
-const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full" };
+const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full", details: true };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
@@ -1367,6 +1367,7 @@ class ThemeMixin {
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
     if (VIEWS.includes(saved.view)) prefs.view = saved.view;
+    prefs.details = typeof saved.details === "boolean" ? saved.details : prefs.view === "full"; // the technical details follow the view until they are set by hand
     return prefs;
   }
 
@@ -1411,7 +1412,8 @@ class ThemeMixin {
 
   setPref(key, raw) {
     const value = key === "pageSize" ? Number(raw) : raw;
-    this.prefs = { ...this.prefs, [key]: value };
+    this.prefs = { ...this.prefs, [key]: key === "details" ? raw === true || raw === "true" : value };
+    if (key === "view") this.prefs.details = value === "full"; // a change of the view sets the technical details; they stay changeable
     if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
     this.savePrefs();
     this.render();
@@ -1497,6 +1499,7 @@ function navCompactRules(compact) {
     [".nav.active", "box-shadow:none;background:linear-gradient(var(--hk-blue),var(--hk-blue)) left top/3px 100% no-repeat,color-mix(in srgb,var(--hk-blue) 8%,transparent)"],
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
+    [".nodetails .tech", "display:none!important"],
     [".viewpill", "align-self:center;cursor:pointer;border:0;font:inherit;display:inline-flex;align-items:center;gap:4px;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];
@@ -1973,7 +1976,7 @@ class ListsMixin {
   rowMenuHtml(entries) {
     const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
     if (!list.some(Boolean)) return "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem${e[3] ? " tech" : ""}" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem${e[3] ? " tech" : ""}" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
   }
 
   selTools(id, count, clearAttr) {
@@ -2099,8 +2102,8 @@ class ListsMixin {
     const ex = this._exporters?.[id];
     if (!ex) return "";
     const open = this._expOpen === id, parts = this.exportParts(ex).length;
-    const item = (attr, label, hint) => `<button type="button" class="expitem" role="menuitem" ${attr}><strong>${label}</strong><small>${hint}</small></button>`;
-    const menu = open ? `<span class="colpop exppop" role="menu">${item(`data-exp-fmt="${id}|csv"`, this.t("xpFmtCsv"), parts > 1 ? this.t("expCsvMulti", { n: parts }) : this.t("exportCsvHint"))}${item(`data-exp-fmt="${id}|md"`, this.t("xpFmtMd"), this.t("expMdD"))}${item(`data-exp-fmt="${id}|json"`, this.t("xpFmtJson"), this.t("xpFmtJsonD"))}${GUIDED_EXPORT_LISTS.includes(id) ? item("data-exp-guided", this.t("xpGuided"), this.t("xpGuidedHint")) : ""}</span>` : "";
+    const item = (attr, label, hint, cls = "") => `<button type="button" class="expitem${cls}" role="menuitem" ${attr}><strong>${label}</strong><small>${hint}</small></button>`;
+    const menu = open ? `<span class="colpop exppop" role="menu">${item(`data-exp-fmt="${id}|csv"`, this.t("xpFmtCsv"), parts > 1 ? this.t("expCsvMulti", { n: parts }) : this.t("exportCsvHint"))}${item(`data-exp-fmt="${id}|md"`, this.t("xpFmtMd"), this.t("expMdD"))}${item(`data-exp-fmt="${id}|json"`, this.t("xpFmtJson"), this.t("xpFmtJsonD"), " tech")}${GUIDED_EXPORT_LISTS.includes(id) ? item("data-exp-guided", this.t("xpGuided"), this.t("xpGuidedHint")) : ""}</span>` : "";
     return `<span class="colwrap"><button type="button" class="btn expbtn ${open ? "on" : ""}" data-exp-menu="${id}" aria-haspopup="menu" aria-expanded="${open}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}<ha-icon icon="mdi:chevron-down"></ha-icon></button>${menu}</span>`;
   }
 
@@ -2190,7 +2193,7 @@ class ListsMixin {
   objectRowMenu(r) {
     const obj = r.open === false ? null : this.findObject(r.key), path = obj ? this.haPath(obj) : null;
     if (!obj) return [];
-    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`]];
+    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`, true]];
   }
 
   // The arrow of a row that unfolds in place (a history, a detail): the look of a fold's arrow, as a button of its own; attr is the data attribute the click handler listens to.
@@ -2981,12 +2984,12 @@ class FindingsMixin {
 
   // `body`: rows already rendered, as a grouped list pages them.
   findingsTable(items, body = null) {
-    const st = this.lv.findings, header = (key, label, dir = "asc") => {
+    const st = this.lv.findings, header = (key, label, dir = "asc", cls = "") => {
       const on = st.sort === key;
-      return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
+      return `<th scope="col"${cls ? ` class="${cls}"` : ""} aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
     };
-    const idSort = `<button type="button" class="thbtn th-alt" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
+    const idSort = `<button type="button" class="thbtn th-alt tech" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
+    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc", "tech")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
     // In the grouped view every row is a head of an object; in the flat one every row is a finding.
     const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
@@ -2996,10 +2999,10 @@ class FindingsMixin {
   findingTableRow(f, depth = 0, inGroup = false, gap = false) {
     const { key, object, title, subtitle } = this.findingRowContent(f, inGroup);
     const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
-    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
+    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id tech">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
     const name = depth || gap ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
     const detail = this.rowDecide(f);
-    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `<span title="${this.esc(this.certaintyText(f))}">${Math.round(f.confidence * 100)} %</span>`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
+    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td class="tech" data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `<span title="${this.esc(this.certaintyText(f))}">${Math.round(f.confidence * 100)} %</span>`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule tech">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
   }
 
   findingSorts() {
@@ -3710,6 +3713,8 @@ class SettingsMixin {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
+  showTech() { return this.prefs.details !== false; }
+
   isSimple() { return this.prefs.view === "simple"; }
 
   // The groups of the bar in the current view. The simple view lists fewer pages; the page that is open joins its own group.
@@ -3735,6 +3740,7 @@ class SettingsMixin {
     const opt = view => `<div class="setrow"><div><strong>${this.t(`view_${view}`)}</strong><small>${this.t(`viewText_${view}`)}</small></div></div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
       <div class="setrow"><div>${this.t("viewLabel")}</div>${this.segment("view", VIEWS.map(v => [v, this.t(`view_${v}`)]))}</div>${VIEWS.map(opt).join("")}
+      <label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
       <p class="factnote">${this.t("viewNote")}</p></section>`;
   }
 
@@ -6228,7 +6234,8 @@ class DiagnosisMixin {
     if (this.reliabilityRow(item)) tabs.push(["reliability", "relTab"]);
     if (this.diagRow(item)) tabs.splice(tabs.findIndex(([id]) => id === "technical"), 0, ["diagnosis", "diagTab"]);
     if (item.object_type === "config_entry") tabs.push(["access", "accTab", null, this.accessTone(item)]);
-    return tabs;
+    // Without the technical details the relations, the diagnosis and the raw data are left out; an open one falls back to the overview.
+    return this.showTech() ? tabs : tabs.filter(([id]) => !["relations", "diagnosis", "technical"].includes(id));
   }
 
   detail() {
@@ -10407,7 +10414,7 @@ class CausesMixin {
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);
-    const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
+    const item = (icon, label, attr, sub = "", cls = "") => `<button type="button" class="menuitem${cls}" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
     const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
@@ -10424,12 +10431,12 @@ class CausesMixin {
       : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
       : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
     const objectKey = this.findingKey(f), object = this.findObject(objectKey);
-    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : "";
-    const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`) : "";
-    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))}` : "";
+    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "", " tech") : "";
+    const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
+    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
     const about = mark + exc;
     const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}<hr class="menusep">`;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 
   // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.
@@ -17627,6 +17634,14 @@ Object.assign(TEXT.en, {
   viewNote: "The view only changes what you see. The protection mode, confirmations, backups and checks stay the same.",
   viewPillHint: "Switch view to: {to}",
 });
+Object.assign(TEXT.de, {
+  detailsTitle: "Technische Details anzeigen",
+  detailsHint: "Regel-ID, Objekt-ID, Gewissheit, Beziehungen, Rohdaten, JSON-Export und Menüeinträge wie Ausnahme, Label und Graph. Mit der Ansicht „Vollständig“ an, mit „Einfach“ aus.",
+});
+Object.assign(TEXT.en, {
+  detailsTitle: "Show technical details",
+  detailsHint: "Rule ID, object ID, certainty, relations, raw data, JSON export and menu entries such as exception, label and graph. On with the Full view, off with the Simple view.",
+});
 
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
@@ -21766,7 +21781,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.fcBand() + (this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`); } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.prefs.details ? "" : " nodetails"}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;
@@ -22321,6 +22336,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-more-info]").forEach(el => el.onclick = () => this.moreInfo(el.dataset.moreInfo));
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
+    root.querySelectorAll("[data-pref-switch]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSwitch, el.checked));
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diag-copy]")?.addEventListener("click", () => this.copyIssueText());

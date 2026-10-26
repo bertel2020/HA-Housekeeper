@@ -15,6 +15,7 @@ function navCompactRules(compact) {
     [".nav.active", "box-shadow:none;background:linear-gradient(var(--hk-blue),var(--hk-blue)) left top/3px 100% no-repeat,color-mix(in srgb,var(--hk-blue) 8%,transparent)"],
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
+    [".nodetails .tech", "display:none!important"],
     [".viewpill", "align-self:center;cursor:pointer;border:0;font:inherit;display:inline-flex;align-items:center;gap:4px;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];

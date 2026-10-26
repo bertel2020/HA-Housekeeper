@@ -604,7 +604,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.fcBand() + (this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`); } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.prefs.details ? "" : " nodetails"}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;
@@ -1159,6 +1159,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-more-info]").forEach(el => el.onclick = () => this.moreInfo(el.dataset.moreInfo));
     root.querySelectorAll("[data-ha-path]").forEach(el => el.onclick = () => this.navigateHA(el.dataset.haPath));
     root.querySelectorAll("[data-pref]").forEach(el => el.onclick = () => { const [key, value] = el.dataset.pref.split("|"); this.setPref(key, value); });
+    root.querySelectorAll("[data-pref-switch]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSwitch, el.checked));
     root.querySelectorAll("[data-pref-select]").forEach(el => el.onchange = () => this.setPref(el.dataset.prefSelect, el.value));
     root.querySelectorAll("[data-unref-tab]").forEach(el => el.onclick = () => { this.unrefTab = el.dataset.unrefTab; if (this.view === "cleanup") (this.viewTab ||= {}).cleanup = this.unrefTab === "statistics" ? "stats" : "unused"; this.retryOrphanLast(); this.pages = {}; this.render(); });
     root.querySelector("[data-diag-copy]")?.addEventListener("click", () => this.copyIssueText());

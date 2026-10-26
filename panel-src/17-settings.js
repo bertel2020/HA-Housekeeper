@@ -10,6 +10,8 @@ class SettingsMixin {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
+  showTech() { return this.prefs.details !== false; }
+
   isSimple() { return this.prefs.view === "simple"; }
 
   // The groups of the bar in the current view. The simple view lists fewer pages; the page that is open joins its own group.
@@ -35,6 +37,7 @@ class SettingsMixin {
     const opt = view => `<div class="setrow"><div><strong>${this.t(`view_${view}`)}</strong><small>${this.t(`viewText_${view}`)}</small></div></div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
       <div class="setrow"><div>${this.t("viewLabel")}</div>${this.segment("view", VIEWS.map(v => [v, this.t(`view_${v}`)]))}</div>${VIEWS.map(opt).join("")}
+      <label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
       <p class="factnote">${this.t("viewNote")}</p></section>`;
   }
 
