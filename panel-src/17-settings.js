@@ -57,7 +57,8 @@ class SettingsMixin {
   // The view of the settings, built like the protection mode: one option card per view with its pages, what it leaves out, the switch for the technical details, and what changes.
   viewCard() {
     const simple = SIMPLE_NAV_GROUPS.flatMap(([, views]) => views), all = NAV_GROUPS.flatMap(([, views]) => views);
-    const left = NAV_GROUPS.filter(([, views]) => views.some(v => !simple.includes(v))).map(([label]) => this.t(label));
+    // a group that goes entirely is named, of a group that stays in part only the pages that go
+    const left = NAV_GROUPS.flatMap(([label, views]) => views.every(v => !simple.includes(v)) ? [this.t(label)] : views.filter(v => !simple.includes(v)).map(v => this.t(v)));
     const icons = { simple: "mdi:eye-outline", full: "mdi:view-dashboard-outline" };
     const chips = views => `<span class="viewchips">${views.map(v => `<i>${this.esc(this.t(v))}</i>`).join("")}</span>`;
     const options = VIEWS.map(v => `<label class="modeopt${v === this.prefs.view ? " on" : ""}"><input type="radio" name="hk-view" value="${v}" data-view-radio ${v === this.prefs.view ? "checked" : ""}><span class="tile ${v === this.prefs.view ? "ok" : "mute"}"><ha-icon icon="${icons[v]}"></ha-icon></span><span class="row-text"><strong>${this.t(`view_${v}`)}</strong><small>${this.t(`viewText_${v}`)}</small>${chips(v === "simple" ? simple : ["viewAllPages", "viewAllColumns", "viewAllMenus"])}<small>${this.t(`viewLeft_${v}`, { list: left.join(", ") })}</small></span></label>`).join("");

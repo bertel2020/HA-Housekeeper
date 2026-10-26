@@ -15,13 +15,6 @@ function navCompactRules(compact) {
     [".nav.active", "box-shadow:none;background:linear-gradient(var(--hk-blue),var(--hk-blue)) left top/3px 100% no-repeat,color-mix(in srgb,var(--hk-blue) 8%,transparent)"],
     [".navend", "margin:0;display:block"],
     [".navend .nav", "width:100%"],
-    [".nodetails .tech", "display:none!important"],
-    [".viewchips", "display:flex;flex-wrap:wrap;gap:5px;margin:2px 0"],
-    [".viewchips i", "font-style:normal;font-size:calc(11.5px*var(--hk-fs,1));padding:2px 8px;border-radius:99px;border:1px solid var(--hk-border);color:var(--hk-muted);background:var(--hk-soft)"],
-    [".sect", "padding:12px 16px 4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.05em;text-transform:uppercase;color:var(--hk-muted);font-weight:700"],
-    [".viewdet", "margin:4px 16px 12px;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface)"],
-    [".viewcmp", "margin:4px 16px 12px"],
-    [".viewcmp td:first-child", "font-weight:600;white-space:nowrap"],
     [".nav.iconly span", "display:inline"],
   ];
   const own = selector => (selector === ".top" || selector.startsWith(".top.") ? selector.replace(".top", ".top.compact") : `.top.compact ${selector}`);
@@ -38,6 +31,8 @@ class StylesMixin {
       *{box-sizing:border-box} button,input,select{font:inherit;color:inherit} button{cursor:pointer} h1,h2,h3,h4,p{margin:0}
       ha-icon{--mdc-icon-size:20px}
       .shell{min-height:100vh;display:block}
+      .nodetails .tech{display:none!important}.modeopt .row-text small{white-space:normal;overflow:visible;text-overflow:clip}.viewchips{display:flex;flex-wrap:wrap;gap:5px;margin:3px 0}.viewchips i{font-style:normal;font-size:calc(11.5px*var(--hk-fs,1));padding:2px 8px;border-radius:99px;border:1px solid var(--hk-border);color:var(--hk-muted);background:var(--hk-soft)}
+      .sect{padding:14px 16px 6px;margin:0;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.05em;text-transform:uppercase;color:var(--hk-muted);font-weight:700}.viewdet{margin:4px 16px 12px;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);box-shadow:var(--hk-sh1),var(--hk-hi)}.viewcmp{margin:4px 16px 12px}.viewcmp td:first-child{font-weight:600;white-space:nowrap}
       .stickyhead{position:sticky;top:0;z-index:30}.modeopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:12px 16px 16px}.modeopt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);cursor:pointer}.modeopt.on{border-color:var(--hk-blue);box-shadow:0 0 0 1px var(--hk-blue)}.modeopt input{position:absolute;opacity:0;pointer-events:none}.modeopt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.modepanel{border-left:4px solid var(--hk-blue)}.bulkform{padding:0 14px 10px}.safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
       .vacbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--hk-soft,#e6f0f8);border-bottom:1px solid var(--hk-border);border-left:4px solid #2f6fa3;font-size:14px}.vacbar b{color:#2f6fa3}.vacbar .sp{flex:1}.vacbar a{color:#2f6fa3;font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}.vacbar.warn{border-left-color:var(--hk-amber,#b57a0c)}.vacbar.warn b{color:var(--hk-amber,#b57a0c)}.vacbar.after{border-left-color:var(--hk-accent,#1d4a3f)}.vacbar.after b{color:var(--hk-accent,#1d4a3f)}
       .excform{display:grid;gap:14px;padding:14px 16px;border-top:2px solid var(--hk-blue);border-bottom:1px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface))}.excform .mfield{display:grid;gap:6px;min-width:0}.excform .mfield>span{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.excform .chip{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.excform .chip ha-icon{--mdc-icon-size:14px}.excform input[data-exc-search],.excform input[data-exc-note]{width:100%;box-sizing:border-box}.excact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.excact input{width:5em}.excprev{padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.excnum{display:flex;gap:8px;align-items:center}.excnum input{width:6em}
