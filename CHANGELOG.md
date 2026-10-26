@@ -23,6 +23,11 @@
   - Der Schluss zeigt, was offen bleibt, mit Weg dorthin, und wann Zurückgestelltes wiederkommt.
   - Der Rest in Etappe 5 kann gesammelt auf „Später“ gelegt werden.
 - **KI-Zugriff:** Neue Dienste `finding_fix_options` (lesend) und `finding_fix_plan` hinter dem neuen Schalter „Befunde beheben“ (standardmäßig aus). Der Plan ist nur eine Vorschau, bestätigen kann ihn nur ein Administrator im Panel. Befunde lassen sich nach Thema filtern; der kopierbare Anweisungstext ist angepasst.
+- **Ansicht: Einfach und Vollständig:** Du wählst unter Einstellungen, Ansicht, wie viel von Housekeeper du siehst; die Wahl gilt für dein Benutzerprofil. Vollständig ist die bisherige Oberfläche.
+  - Einfach zeigt Übersicht, Befunde, Wartung, Batterien, Erinnerungen und Ausnahmen. Alles andere bleibt über die Suche, „Beheben“ und die Hinweise der Übersicht erreichbar; eine geöffnete Seite bleibt in der Leiste.
+  - „Technische Details anzeigen“ blendet Regel-ID, Objekt-ID, Gewissheit, Beziehungen, Rohdaten, JSON-Export und einzelne Menüeinträge aus. Der Schalter folgt der Ansicht und lässt sich einzeln ändern.
+  - Die Ansicht steht in der Infoleiste neben dem Schutzmodus. Eine neue Installation beginnt in Einfach und fragt nach dem ersten Scan, ob es mehr sein soll.
+  - Die Ansicht ändert keine Regeln: Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.
 
 ### Geändert
 
@@ -46,7 +51,7 @@
   - „Alle n beheben“ und die Auswahl mit jedem Ort ohne einzelne Befunde zeigen die richtigen Einzahl-Texte.
   - Die Frage in Etappe 5 spricht nicht mehr von Löschen.
   - Die Seiten unterhalb der Befunde tragen keine falsche Gruppenüberschrift mehr.
-- **Schutzmodus mit drei Stufen:** Beobachten, Ändern und Alles statt vier Stufen, in Auswahl, Pille und Statusleiste mit denselben Namen und je einer Zeile, was gesperrt ist.
+- **Schutzmodus mit drei Stufen:** Beobachten, Ändern und Alles statt vier Stufen, in Auswahl, Pille und Statusleiste mit denselben Namen; die Karte nennt je Stufe, was erlaubt und was gesperrt ist, und zeigt eine Tabelle.
   - „Nur Quarantäne“ entfällt. Wer sie gewählt hatte, steht danach auf „Beobachten“ (nie auf einer höheren Stufe); eine Notiz sagt es, bis eine Stufe gewählt wird.
   - Ist die Stufe unbekannt, zeigt das Panel „Beobachten“ statt „Alles“.
 
@@ -73,6 +78,11 @@
   - The end shows what stays open, with a way to it, and when what was put off comes back.
   - The rest in stage 5 can be put off together to “Later”.
 - **AI access:** New services `finding_fix_options` (read) and `finding_fix_plan` behind the new switch “Fix findings” (off by default). The plan is only a preview that only an administrator can confirm in the panel. Findings can be filtered by topic; the copyable instruction is updated.
+- **View: Simple and Full:** Under Settings, View, you choose how much of Housekeeper you see; the choice applies to your user profile. Full is the interface as it was.
+  - Simple shows overview, findings, maintenance, batteries, reminders and exceptions. Everything else stays reachable through the search, “Fix” and the notes of the overview; an open page stays in the bar.
+  - “Show technical details” hides rule ID, object ID, certainty, relations, raw data, JSON export and some menu entries. The switch follows the view and can be changed on its own.
+  - The view stands in the info bar next to the protection mode. A new installation starts in Simple and asks after the first scan whether it should be more.
+  - The view changes no rules: protection mode, confirmations, backups and checks stay the same.
 
 #### Changed
 
@@ -96,7 +106,7 @@
   - “Fix all n” and a selection with every place but no single findings show the right singular texts.
   - The question of stage 5 no longer speaks of deleting.
   - The pages below the findings no longer carry a wrong group heading.
-- **Protection mode with three steps:** Watch, Change and Everything instead of four steps, with the same names in the choice, the pill and the status line and a line on what is blocked.
+- **Protection mode with three steps:** Watch, Change and Everything instead of four steps, with the same names in the choice, the pill and the status line; the card names what each step allows and blocks and shows a table.
   - “Quarantine only” is gone. Whoever had chosen it is set to “Watch” (never to a higher step); a note says so until a step is chosen.
   - If the step is unknown, the panel shows “Watch” instead of “Everything”.
 
