@@ -47,12 +47,12 @@ class AreaAssignMixin {
   areaForm() {
     const b = this.bulk;
     const areas = (this.data.objects || []).filter(o => o.object_type === "area").sort((x, y) => String(x.name).localeCompare(String(y.name)));
-    if (!areas.length) return `<div class="polform bulkform"><small>${this.t("areaNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
-    return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_area")}</strong>
-      <select data-bulk-area aria-label="${this.esc(this.t("areaChoose"))}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${b.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
-      <button type="submit" class="btn primary" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
+    const cancel = "data-bulk-cancel";
+    if (!areas.length) return `<div class="actionarea">${this.actionHead(this.t("state_area"), cancel)}<small>${this.t("areaNone")}</small></div>`;
+    return `<form class="actionarea" data-bulk-form>${this.actionHead(this.t("state_area"), cancel)}
+      <div class="statusrow"><select data-bulk-area aria-label="${this.esc(this.t("areaChoose"))}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${b.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select></div>
       <small class="factnote">${this.t("areaNote")}</small>
-      ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}</form>`;
+      ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}${this.actionFoot(cancel, `<button type="submit" class="btn primary" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("refactorPlan")}</button>`)}</form>`;
   }
 
   async makeAreaPlan() {

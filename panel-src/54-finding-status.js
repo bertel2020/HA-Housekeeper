@@ -291,37 +291,39 @@ class FindingStatusMixin {
   bulkForm() {
     const b = this.bulk;
     if (!b) return "";
+    const cancel = "data-bulk-cancel", err = b.error ? this.notice("err", this.t(b.error)) : "";
+    const form = (title, body, submit) => `<form class="actionarea" data-bulk-form>${this.actionHead(title, cancel)}${body}${err}${this.actionFoot(cancel, submit)}</form>`;
+    const save = `<button type="submit" class="btn primary">${this.t("saveOptions")}</button>`;
     if (b.kind === "mark") {
       const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
       const objects = new Set(targets.values()).size;
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
-      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(objects)})</strong>${onDevice}
+      return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${onDevice}<div class="statusrow">
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
-        <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
-        <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></form>`;
+        <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select></div>`, save);
     }
     if (b.kind === "area") return this.areaForm();
-    if (b.kind === "status") {
-      return `<form class="polform bulkform statusform" data-bulk-form><strong>${this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) })}</strong>${this.statusFields(b, "bulk", b.state)}
-        <div class="mbtns"><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
-        ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}</form>`;
-    }
+    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
-      if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
-      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("state_label")}</strong>
-        <select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select>
-        <button type="submit" class="btn primary" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("refactorPlan")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
-        ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}</form>`;
+      if (!labels.length) return `<div class="actionarea">${this.actionHead(this.t("state_label"), cancel)}<small>${this.t("labelNone")}</small></div>`;
+      return form(this.t("state_label"), `<div class="statusrow"><select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select></div>`,
+        `<button type="submit" class="btn primary" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("refactorPlan")}</button>`);
     }
     const days = [7, 30, 90, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("decideDays", { n })}</option>`).join("");
-    return `<form class="polform bulkform" data-bulk-form><strong>${this.t(`state_${b.kind}`)}</strong>
-      <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(b.kind === "known" ? "decideReasonNeeded" : "decideReason"))}">
-      ${b.kind === "snoozed" ? `<select data-bulk-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>` : ""}
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button>
-      ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}</form>`;
+    return form(this.t(`state_${b.kind}`), `<div class="statusrow"><input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(b.kind === "known" ? "decideReasonNeeded" : "decideReason"))}">
+      ${b.kind === "snoozed" ? `<select data-bulk-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>` : ""}</div>`, save);
+  }
+
+  // The frame every action under the selection bar shares: a title with a close button above, cancel and save below.
+  actionHead(title, cancel) {
+    return `<header class="acthead"><strong>${title}</strong><button type="button" class="iconbtn" ${cancel} aria-label="${this.esc(this.t("cancelRun"))}" title="${this.esc(this.t("cancelRun"))}"><ha-icon icon="mdi:close"></ha-icon></button></header>`;
+  }
+
+  actionFoot(cancel, submit) {
+    return `<div class="mbtns"><button type="button" class="btn quiet" ${cancel}>${this.t("cancelRun")}</button>${submit}</div>`;
   }
 
   // Adding a label is a plan like any other: it opens under Cleanup with a preview and an undo.
@@ -452,7 +454,7 @@ class FindingStatusMixin {
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.bulk = { kind, state: "keep", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? 0 : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? 0 : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     root.querySelectorAll("[data-due-keep]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.keepOn(el.dataset.dueKeep); });
     root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());

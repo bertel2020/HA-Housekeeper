@@ -327,8 +327,8 @@ class ExceptionsMixin {
       : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
       <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
     const more = f.scopes ? `<small class="factnote">${this.t("excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
-    return `<form class="excform markform" data-exc-form>
-      <strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>
+    return `<form class="excform markform${f.here ? " actionarea" : ""}" data-exc-form>
+      ${f.here ? `<header class="acthead"><strong>${this.t("excFormNew")}</strong><button type="button" class="iconbtn" data-exc-cancel aria-label="${this.esc(this.t("excCancel"))}" title="${this.esc(this.t("excCancel"))}"><ha-icon icon="mdi:close"></ha-icon></button></header>` : `<strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>`}
       ${what}
       ${action}
       ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}
@@ -379,6 +379,7 @@ class ExceptionsMixin {
     ].filter(([, picks], i, all) => picks.length && !all.slice(0, i).some(([, other]) => other.length === picks.length && other.every(p => picks.some(q => q.kind === p.kind && q.id === p.id))))
       .map(([id, picks]) => ({ id, picks }));
     if (!scopes.length) return;
+    this.bulk = null;
     this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id };
     this.render();
     this.shadowRoot?.querySelector?.("[data-exc-form]")?.scrollIntoView?.({ block: "nearest" });

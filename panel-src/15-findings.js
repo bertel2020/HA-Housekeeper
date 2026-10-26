@@ -371,7 +371,7 @@ class FindingsMixin {
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     // The same actions in the same order as the menu of a row: first about the findings, then about their objects.
     const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon>${this.t(label)}${extra}</button>`;
-    const exc = this.excForm?.here && this.exc ? `<div class="pad">${this.excFormHtml(this.excForm)}</div>` : "";
+    const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
     if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>${exc}`;
