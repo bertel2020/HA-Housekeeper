@@ -489,7 +489,7 @@ class FindingsMixin {
   reasonChips(kind = "keep") {
     const chips = kind === "ignore" ? ["f1", "f2", "f3"] : kind === "keep" ? ["1", "2", "3", "4"] : [];
     if (!chips.length) return "";
-    return `<div class="reasonchips" role="group" aria-label="${this.esc(this.t("reasonChipsLabel"))}">${chips.map(n => `<button type="button" class="btn quiet" data-reason-chip="${this.esc(this.t(`reasonChip${n}`))}">${this.t(`reasonChip${n}`)}</button>`).join("")}</div>`;
+    return `<div class="reasonchips" role="group" aria-label="${this.esc(this.t("reasonChipsLabel"))}">${chips.map(n => `<button type="button" class="chip" data-reason-chip="${this.esc(this.t(`reasonChip${n}`))}">${this.t(`reasonChip${n}`)}</button>`).join("")}</div>`;
   }
 
   // A status on the finding of an outage ends the outage: its follow-ups then count one by one. When the object can carry

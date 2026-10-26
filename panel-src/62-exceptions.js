@@ -317,7 +317,8 @@ class ExceptionsMixin {
     const kinds = ["any", "area", "label", "integration", "domain", "device", "entity"].map(k => `<button type="button" class="chip${f.kind === k ? " active" : ""}" data-exc-kind="${k}" aria-pressed="${f.kind === k}">${this.t(`excKind_${k}`)}</button>`).join("");
     const pv = f.preview;
     const preview = pv ? `<div class="excprev" role="status"><strong>${this.t("excPreview")}:</strong> ${f.action === "delay" ? this.t("excPreviewDelay", { hold: pv.hold, due: pv.due }) : this.t("excPreviewHide", { objects: pv.objects, n: pv.hide })}
-        ${pv.overlap?.length ? `<br><small class="factnote">${this.esc(this.t("excOverlap", { rules: pv.overlap.map(id => { const r = this.exc.rules.find(x => x.id === id); return r ? this.excRuleName(r) : id; }).join(", ") }))}</small>` : ""}</div>${pv.important?.length ? this.notice("warn", this.t("excImportant", { names: pv.important.map(x => x.name).join(", ") })) : ""}` : "";
+        ${pv.overlap?.length ? `<br><small class="factnote">${this.esc(this.t("excOverlap", { rules: pv.overlap.map(id => { const r = this.exc.rules.find(x => x.id === id); return r ? this.excRuleName(r) : id; }).join(", ") }))}</small>` : ""}</div>` : "";
+    const important = pv?.important?.length ? this.notice("warn", this.t("excImportant", { names: pv.important.map(x => x.name).join(", ") })) : "";
     const action = f.scope === "vacation" ? `<small class="factnote">${this.t("excScopeHint")}</small>`
       : `<div class="mfield"><span>${this.t("excAction")}</span><div class="excact"><button type="button" class="chip${f.action === "hide" ? " active" : ""}" data-exc-action="hide" aria-pressed="${f.action === "hide"}">${this.t("excAction_hide")}</button><button type="button" class="chip${f.action === "delay" ? " active" : ""}" data-exc-action="delay" aria-pressed="${f.action === "delay"}">${this.t("excAction_delay")}</button>
         ${f.action === "delay" ? `<input type="number" min="1" max="${this.exc.days_max || 365}" data-exc-days value="${this.esc(f.days)}" aria-label="${this.esc(this.t("excDays"))}"> <span>${this.t("excDays")}</span>` : ""}</div>
@@ -330,11 +331,11 @@ class ExceptionsMixin {
     return `<form class="excform markform${f.here ? " actionarea" : ""}" data-exc-form>
       ${f.here ? `<header class="acthead"><strong>${this.t("excFormNew")}</strong><button type="button" class="iconbtn" data-exc-cancel aria-label="${this.esc(this.t("excCancel"))}" title="${this.esc(this.t("excCancel"))}"><ha-icon icon="mdi:close"></ha-icon></button></header>` : `<strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>`}
       ${what}
-      ${action}
-      ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}
+      <div class="excgrid">${action}
+      ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}</div>
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
-      ${preview}${more}${f.error ? this.notice("err", f.error) : ""}
-      <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
+      ${f.here ? "" : preview}${important}${more}${f.error ? this.notice("err", f.error) : ""}
+      <div class="mbtns">${f.here ? preview : ""}<button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
   }
 
   // The rules a form makes: one, or with "all types" one per kind of the objects picked.
