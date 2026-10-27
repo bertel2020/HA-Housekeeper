@@ -1748,7 +1748,12 @@ class InventoryScanner:
         for finding in findings:
             finding["key"] = finding_key(finding)
             self._mark_ignored(finding, entity_registry_entries)
-        self._apply_marks(objects, findings)
+        covered = self._apply_marks(objects, findings)
+        # A preliminary scan misses findings: a mark must not read that as "back".
+        if "app" in self._unchecked:  # no answer from Supervisor is no sign of a running app
+            covered |= {key for key in self.marks.items if key.startswith("app:")}
+        if not preliminary and self.marks.settle(covered, datetime.now(UTC)):
+            self._apply_marks(objects, findings)
         blocked = blocked_automation_findings(automations, findings)
         blocked += dead_effect_findings(automations, findings)
         for finding in blocked:
@@ -2069,11 +2074,14 @@ class InventoryScanner:
         by: str | None = None,
         window: dict[str, str] | None = None,
         grace: int = GRACE_DEFAULT,
+        auto_clear: bool = False,
         via: str | None = None,
     ) -> str | None:
         """Mark an entity, device, integration or app; the reason it failed, or None."""
         if kind not in KINDS_OF.get(object_type, KINDS):
             return "kind_not_allowed"
+        if auto_clear and (kind not in HIDING_KINDS or window is not None):
+            return "auto_clear_invalid"
         if window is not None and (kind not in HIDING_KINDS or clean_window(window) is None):
             return "window_invalid"
         snapshot = self._snapshot or {}
@@ -2094,6 +2102,7 @@ class InventoryScanner:
             by=by,
             window=window,
             grace=grace,
+            auto_clear=auto_clear,
             via=via,
         ):
             return "too_many"
@@ -2165,11 +2174,14 @@ class InventoryScanner:
             if mark.get("window")
         }
 
-    def _apply_marks(self, objects: list[dict[str, Any]], findings: list[dict[str, Any]]) -> None:
+    def _apply_marks(
+        self, objects: list[dict[str, Any]], findings: list[dict[str, Any]]
+    ) -> set[str]:
         sun = self._sun()
-        apply_marks(objects, findings, self.marks.items, sun=sun)
+        covered = apply_marks(objects, findings, self.marks.items, sun=sun)
         self._mark_excepted(objects)
         self._window_seen = self._window_states(sun)
+        return covered
 
     @callback
     def refresh_marks_on_window_change(self) -> bool:

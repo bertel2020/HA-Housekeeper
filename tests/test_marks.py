@@ -229,3 +229,54 @@ def test_a_mark_of_an_integration_covers_its_outages_only_while_it_is_down() -> 
     findings[0]["ignored"] = False
     apply_marks(objects, [*findings, {**down, "ignored": False}], marks, NOW)
     assert findings[0]["ignored_by"] == "mark"
+
+
+def test_a_mark_that_ends_by_itself_goes_when_the_object_has_reported_for_the_grace_period() -> (
+    None
+):
+    from custom_components.ha_housekeeper.marks import MarkStore
+
+    store = MarkStore.__new__(MarkStore)
+    store._save = lambda: None  # noqa: SLF001
+    mark = {
+        **_mark("seasonal"),
+        "grace": 30,
+        "auto_clear": True,
+        "armed": False,
+        "back_since": None,
+    }
+    store.items = {"entity:sensor.b": _clean(mark)}
+    key, down = "entity:sensor.b", {"entity:sensor.b"}
+
+    assert store.settle(set(), NOW) == [], "set in advance: nothing to end before the first outage"
+    store.settle(down, NOW)
+    assert store.items[key]["armed"]
+    assert store.settle(set(), NOW + timedelta(minutes=5)) == [], "back, but the wait has begun"
+    store.settle(down, NOW + timedelta(minutes=20))
+    assert store.items[key]["back_since"] is None, "a new outage starts the wait anew"
+    store.settle(set(), NOW + timedelta(minutes=25))
+    assert store.settle(set(), NOW + timedelta(minutes=54)) == []
+    assert store.settle(set(), NOW + timedelta(minutes=56)) == [key]
+    assert key not in store.items
+
+
+def test_a_mark_is_not_over_while_the_object_is_down_without_a_finding_and_an_edit_keeps_its_state() -> (
+    None
+):
+    from custom_components.ha_housekeeper.marks import MarkStore
+
+    objects, _ = _world()
+    marks = {"device:d1": _clean({**_mark("seasonal"), "auto_clear": True})}
+    assert apply_marks(objects, [], marks, NOW) == {"device:d1"}, "its entity is still down"
+    for item in objects:
+        item["status"] = "active"
+    assert apply_marks(objects, [], marks, NOW) == set()
+
+    store = MarkStore.__new__(MarkStore)
+    store._save = lambda: None  # noqa: SLF001
+    store.items = {"entity:sensor.b": {**marks["device:d1"], "armed": True, "back_since": "x"}}
+    store.set("entity:sensor.b", "seasonal", NOW, auto_clear=True, reason="new")
+    assert (
+        store.items["entity:sensor.b"]["armed"]
+        and store.items["entity:sensor.b"]["back_since"] == "x"
+    )

@@ -222,6 +222,7 @@ class FindingStatusMixin {
       const [object_type, ...rest] = objectKey.split(":");
       const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
+      if (b.autoClear && msg.kind !== "keep") msg.auto_clear = true;
       await this._hass.callWS(msg);
       targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
@@ -243,6 +244,7 @@ class FindingStatusMixin {
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
+        ${(b.markKind || kinds[0]) === "keep" ? "" : `<label class="nw"><input type="checkbox" data-bulk-auto ${b.autoClear ? "checked" : ""}> ${this.esc(this.t("markAutoClear"))}</label>`}
         <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></form>`;
     }
     if (b.kind === "area") return this.areaForm();
@@ -363,7 +365,9 @@ class FindingStatusMixin {
       const onDevice = form.querySelector("[data-bulk-ondevice]");
       if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
-      if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
+      if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; this.render(); };
+      const autoClear = form.querySelector("[data-bulk-auto]");
+      if (autoClear) autoClear.onchange = ev => { this.bulk.autoClear = ev.target.checked; };
       form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = b.state === "snooze" ? 30 : 0; this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };

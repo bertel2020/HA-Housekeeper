@@ -3631,6 +3631,21 @@ test("a mark can be set and cleared on the detail page and hides nothing in the 
   assert.equal(sent.at(-2).type, "ha_housekeeper/mark_clear");
 });
 
+test("a mark that ends when the object reports again sends its wait and says so in its line", async () => {
+  const { el } = panel("en");
+  const sent = [];
+  el.data = { ...DATA, objects: DATA.objects.map(o => ({ ...o })) };
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("/inventory") ? DATA : {}; } };
+  el.openMark("entity:sensor.b");
+  el.markForm.kind = "seasonal"; el.markForm.autoClear = true; el.markForm.grace = 60;
+  assert.ok(el.markFormHtml(el.markForm, "entity:sensor.b").includes("Wait after it reports again"));
+  await el.commitMark();
+  const msg = sent.find(m => m.type === "ha_housekeeper/mark_set");
+  assert.equal(msg.auto_clear, true);
+  assert.equal(msg.grace_minutes, 60);
+  assert.ok(el.markLine({ kind: "seasonal", auto_clear: true }).includes("ends when it reports again"));
+});
+
 test("findings sort by impact first, then certainty, and say why", () => {
   const { el } = panel("en");
   const f = (id, impact, confidence, facts = []) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence, impact, impact_facts: facts, key: id, ignored: false });

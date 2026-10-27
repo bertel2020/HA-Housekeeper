@@ -6,6 +6,7 @@ Object.assign(TEXT.de, {
   markWindowKind: "Wann gilt der Vermerk", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Vermerk gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
+  markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit nach der Rückmeldung", markAutoClearHint: "Der Vermerk verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Ein Vermerk, der vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
   markHiddenHint: "Ausgeblendet durch einen Vermerk am Objekt.", reason_marked_keep: "Trägt den Vermerk „Nicht entfernen“ oder das Label housekeeper_keep.",
 });
 Object.assign(TEXT.en, {
@@ -15,6 +16,7 @@ Object.assign(TEXT.en, {
   markWindowKind: "When the mark applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Mark does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
+  markAutoClear: "Remove automatically once the object reports again", markGraceBack: "Wait after it reports again", markAutoClearHint: "The mark disappears by itself when the object reports again after an outage and stays fine for the whole wait. A mark set in advance on an object that works stays until its first outage.", markAutoClearLine: "ends when it reports again",
   markHiddenHint: "Hidden by a mark on the object.", reason_marked_keep: "Carries the mark “Do not remove” or the label housekeeper_keep.",
 });
 
@@ -30,7 +32,8 @@ class MarksMixin {
   markLine(mark) {
     const until = mark.until ? ` · ${this.t("markReviewOn", { date: this.formatDate(mark.until) })}` : "";
     const window = mark.window ? ` · ${this.windowLine(mark)}` : "";
-    return `${this.t(`mark_${mark.kind}`)}${window}${until}${mark.reason ? ` · ${mark.reason}` : ""}${mark.target ? ` → ${mark.target}` : ""}${mark.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
+    const auto = mark.auto_clear ? ` · ${this.t("markAutoClearLine")}` : "";
+    return `${this.t(`mark_${mark.kind}`)}${window}${auto}${until}${mark.reason ? ` · ${mark.reason}` : ""}${mark.target ? ` → ${mark.target}` : ""}${mark.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
 
   // The form to set or change a mark: labelled fields in two rows (what and why, then when it applies and when to review).
@@ -42,16 +45,18 @@ class MarksMixin {
     const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
     const modes = ["", "time", "sun"].map(m => `<option value="${m}" ${f.wmode === m ? "selected" : ""}>${this.t(m === "time" ? "markWindowTime" : m === "sun" ? "markWindowSun" : "markWindowAlways")}</option>`).join("");
     const graces = [0, 15, 30, 60, 120].map(n => `<option value="${n}" ${Number(f.grace) === n ? "selected" : ""}>${this.t("markGraceMin", { n })}</option>`).join("");
-    const windowed = f.kind !== "keep" && f.wmode;
+    const windowed = f.kind !== "keep" && f.wmode, auto = f.kind !== "keep" && f.autoClear;
     const noSun = f.wmode === "sun" && this._hass?.states && !this._hass.states["sun.sun"];
     const row1 = field("markKind", `<select data-mark-kind>${kinds}</select>`)
       + (f.kind === "replaced" ? field("markTarget", `<input data-mark-target maxlength="255" autocomplete="off" value="${this.esc(f.target)}">`) : "")
       + field("markReason", `<input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}">`, "grow");
     const row2 = (f.kind === "keep" ? "" : field("markWindowKind", `<select data-mark-wmode>${modes}</select>`))
       + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-mark-from value="${this.esc(f.from)}">`) + field("markTo", `<input type="time" data-mark-to value="${this.esc(f.to)}">`) : "")
-      + (windowed ? field("markGrace", `<select data-mark-grace>${graces}</select>`) : "")
+      + (windowed || auto ? field(windowed ? "markGrace" : "markGraceBack", `<select data-mark-grace>${graces}</select>`) : "")
       + field("markReview", `<select data-mark-days>${days}</select>`);
-    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>
+    const row3 = f.kind === "keep" || f.wmode ? "" : `<label class="nw"><input type="checkbox" data-mark-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label>`;
+    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}
+        ${auto ? `<small class="factnote">${this.t("markAutoClearHint")}</small>` : ""}
         ${windowed ? `<small class="factnote">${this.t("markWindowHint")}</small>` : ""}${noSun ? `${this.notice("err", this.t("markNoSun"))}` : ""}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
         <div class="mbtns"><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div></form>`;
@@ -79,7 +84,7 @@ class MarksMixin {
 
   openMark(key) {
     const item = this.findObject(key), mark = item?.mark;
-    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: 0, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30 };
+    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: 0, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30, autoClear: Boolean(mark?.auto_clear) };
     this.render();
     this.shadowRoot?.querySelector?.("[data-mark-kind]")?.focus?.();
   }
@@ -121,6 +126,10 @@ class MarksMixin {
       msg.window = f.wmode === "sun" ? { mode: "sun" } : { mode: "time", from: f.from, to: f.to };
       msg.grace_minutes = Number(f.grace);
     }
+    if (f.kind !== "keep" && !f.wmode && f.autoClear) {
+      msg.auto_clear = true;
+      msg.grace_minutes = Number(f.grace);
+    }
     try {
       await this._hass.callWS(msg);
       this.markForm = null;
@@ -148,8 +157,10 @@ class MarksMixin {
       form.querySelector("[data-mark-reason]").oninput = ev => { this.markForm.reason = ev.target.value; };
       form.querySelector("[data-mark-days]").onchange = ev => { this.markForm.days = Number(ev.target.value); };
       const wmode = form.querySelector("[data-mark-wmode]");
-      if (wmode) wmode.onchange = ev => { this.markForm.wmode = ev.target.value; this.render(); };
+      if (wmode) wmode.onchange = ev => { this.markForm.wmode = ev.target.value; if (ev.target.value) this.markForm.autoClear = false; this.render(); };
       [["from", "from"], ["to", "to"]].forEach(([name, field]) => { const el = form.querySelector(`[data-mark-${name}]`); if (el) el.oninput = ev => { this.markForm[field] = ev.target.value; }; });
+      const auto = form.querySelector("[data-mark-auto]");
+      if (auto) auto.onchange = ev => { this.markForm.autoClear = ev.target.checked; this.render(); };
       const grace = form.querySelector("[data-mark-grace]");
       if (grace) grace.onchange = ev => { this.markForm.grace = Number(ev.target.value); };
       const target = form.querySelector("[data-mark-target]");
