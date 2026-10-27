@@ -9829,6 +9829,7 @@ Object.assign(TEXT.de, {
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Objekt-Notiz gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
   markHiddenHint: "Ausgeblendet durch eine Objekt-Notiz am Objekt.", markScopeHint: "Gilt für das Objekt und künftige Ausfälle. Für einen einzelnen Befund: Ist so gewollt.", markEffect_expected_offline: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_seasonal: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_spare: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_replaced: "Blendet den Ausfall aus; das Objekt darf später aufgeräumt werden.", markEffect_keep: "Der Ausfall wird weiter gemeldet. Housekeeper schlägt das Objekt nie zum Aufräumen vor.", reason_marked_keep: "Trägt eine Objekt-Notiz, die das Aufräumen ausschließt, oder das Label housekeeper_keep.",
+  markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit nach der Rückmeldung", markAutoClearHint: "Die Objekt-Notiz verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Eine Objekt-Notiz, die vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
 });
 Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
@@ -9839,6 +9840,7 @@ Object.assign(TEXT.en, {
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Object note does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
   markHiddenHint: "Hidden by an object note on the object.", markScopeHint: "Applies to the object and future outages. For a single finding: Intended.", markEffect_expected_offline: "Hides the outage and keeps cleanup away at the same time.", markEffect_seasonal: "Hides the outage and keeps cleanup away at the same time.", markEffect_spare: "Hides the outage and keeps cleanup away at the same time.", markEffect_replaced: "Hides the outage; the object may be cleaned up later.", markEffect_keep: "The outage is still reported. Housekeeper never proposes the object for cleanup.", reason_marked_keep: "Carries an object note that rules out cleanup, or the label housekeeper_keep.",
+  markAutoClear: "Remove automatically once the object reports again", markGraceBack: "Wait after it reports again", markAutoClearHint: "The object note disappears by itself when the object reports again after an outage and stays fine for the whole wait. An object note set in advance on an object that works stays until its first outage.", markAutoClearLine: "ends when it reports again",
 });
 
 class MarksMixin {
@@ -9853,7 +9855,8 @@ class MarksMixin {
   markLine(mark) {
     const until = mark.until ? ` · ${this.t("markReviewOn", { date: this.formatDay(mark.until) })}` : "";
     const window = mark.window ? ` · ${this.windowLine(mark)}` : "";
-    return `${this.t(`mark_${mark.kind}`)}${window}${until}${mark.reason ? ` · ${mark.reason}` : ""}${mark.target ? ` → ${mark.target}` : ""}${mark.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
+    const auto = mark.auto_clear ? ` · ${this.t("markAutoClearLine")}` : "";
+    return `${this.t(`mark_${mark.kind}`)}${window}${auto}${until}${mark.reason ? ` · ${mark.reason}` : ""}${mark.target ? ` → ${mark.target}` : ""}${mark.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
 
   // The form to set or change a mark: labelled fields in two rows (what and why, then when it applies and when to review).
@@ -9865,17 +9868,19 @@ class MarksMixin {
     const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
     const modes = ["", "time", "sun"].map(m => `<option value="${m}" ${f.wmode === m ? "selected" : ""}>${this.t(m === "time" ? "markWindowTime" : m === "sun" ? "markWindowSun" : "markWindowAlways")}</option>`).join("");
     const graces = [0, 15, 30, 60, 120].map(n => `<option value="${n}" ${Number(f.grace) === n ? "selected" : ""}>${this.t("markGraceMin", { n })}</option>`).join("");
-    const windowed = f.kind !== "keep" && f.wmode;
+    const windowed = f.kind !== "keep" && f.wmode, auto = f.kind !== "keep" && f.autoClear;
     const noSun = f.wmode === "sun" && this._hass?.states && !this._hass.states["sun.sun"];
     const row1 = field("markKind", `<select data-mark-kind>${kinds}</select>`)
       + (f.kind === "replaced" ? field("markTarget", `<input data-mark-target maxlength="255" autocomplete="off" value="${this.esc(f.target)}">`) : "")
       + field("markReason", `<input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}">`, "grow");
     const row2 = (f.kind === "keep" ? "" : field("markWindowKind", `<select data-mark-wmode>${modes}</select>`))
       + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-mark-from value="${this.esc(f.from)}">`) + field("markTo", `<input type="time" data-mark-to value="${this.esc(f.to)}">`) : "")
-      + (windowed ? field("markGrace", `<select data-mark-grace>${graces}</select>`) : "")
+      + (windowed || auto ? field(windowed ? "markGrace" : "markGraceBack", `<select data-mark-grace>${graces}</select>`) : "")
       + field("markReview", `<select data-mark-days>${days}</select>`);
-    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>
+    const row3 = f.kind === "keep" || f.wmode ? "" : `<label class="nw"><input type="checkbox" data-mark-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label>`;
+    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}
         <small class="factnote">${this.t(`markEffect_${f.kind}`)} ${this.t("markScopeHint")}</small>
+        ${auto ? `<small class="factnote">${this.t("markAutoClearHint")}</small>` : ""}
         ${windowed ? `<small class="factnote">${this.t("markWindowHint")}</small>` : ""}${noSun ? `${this.notice("err", this.t("markNoSun"))}` : ""}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
         <div class="mbtns"><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div></form>`;
@@ -9914,7 +9919,7 @@ class MarksMixin {
 
   openMark(key) {
     const item = this.findObject(key), mark = item?.mark;
-    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: mark ? 0 : 365, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30 };
+    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: mark ? 0 : 365, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30, autoClear: Boolean(mark?.auto_clear) };
     this.render();
     this.shadowRoot?.querySelector?.("[data-mark-kind]")?.focus?.();
   }
@@ -9954,6 +9959,10 @@ class MarksMixin {
     if (f.kind !== "keep" && f.wmode) {
       if (f.wmode === "time" && f.from === f.to) { f.error = this.t("markWindowSame"); this.render(); return; }
       msg.window = f.wmode === "sun" ? { mode: "sun" } : { mode: "time", from: f.from, to: f.to };
+      msg.grace_minutes = Number(f.grace);
+    }
+    if (f.kind !== "keep" && !f.wmode && f.autoClear) {
+      msg.auto_clear = true;
       msg.grace_minutes = Number(f.grace);
     }
     try {
@@ -10022,8 +10031,10 @@ class MarksMixin {
       form.querySelector("[data-mark-reason]").oninput = ev => { this.markForm.reason = ev.target.value; };
       form.querySelector("[data-mark-days]").onchange = ev => { this.markForm.days = Number(ev.target.value); };
       const wmode = form.querySelector("[data-mark-wmode]");
-      if (wmode) wmode.onchange = ev => { this.markForm.wmode = ev.target.value; this.render(); };
+      if (wmode) wmode.onchange = ev => { this.markForm.wmode = ev.target.value; if (ev.target.value) this.markForm.autoClear = false; this.render(); };
       [["from", "from"], ["to", "to"]].forEach(([name, field]) => { const el = form.querySelector(`[data-mark-${name}]`); if (el) el.oninput = ev => { this.markForm[field] = ev.target.value; }; });
+      const auto = form.querySelector("[data-mark-auto]");
+      if (auto) auto.onchange = ev => { this.markForm.autoClear = ev.target.checked; this.render(); };
       const grace = form.querySelector("[data-mark-grace]");
       if (grace) grace.onchange = ev => { this.markForm.grace = Number(ev.target.value); };
       const target = form.querySelector("[data-mark-target]");
@@ -12698,6 +12709,7 @@ class FindingStatusMixin {
       const [object_type, ...rest] = objectKey.split(":");
       const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
+      if (b.autoClear && msg.kind !== "keep") msg.auto_clear = true;
       await this._hass.callWS(msg);
       targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
@@ -12721,7 +12733,8 @@ class FindingStatusMixin {
       return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${onDevice}<div class="statusrow">
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
-        <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select></div>`, save);
+        <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
+        ${(b.markKind || kinds[0]) === "keep" ? "" : `<label class="nw"><input type="checkbox" data-bulk-auto ${b.autoClear ? "checked" : ""}> ${this.esc(this.t("markAutoClear"))}</label>`}</div>`, save);
     }
     if (b.kind === "area") return this.areaForm();
     if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
@@ -12890,7 +12903,9 @@ class FindingStatusMixin {
       const onDevice = form.querySelector("[data-bulk-ondevice]");
       if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
-      if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
+      if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; this.render(); };
+      const autoClear = form.querySelector("[data-bulk-auto]");
+      if (autoClear) autoClear.onchange = ev => { this.bulk.autoClear = ev.target.checked; };
       form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = this.defaultDays(b.state); this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
