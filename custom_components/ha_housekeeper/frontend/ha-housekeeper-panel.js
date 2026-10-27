@@ -9829,7 +9829,7 @@ Object.assign(TEXT.de, {
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Objekt-Notiz gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
   markHiddenHint: "Ausgeblendet durch eine Objekt-Notiz am Objekt.", markScopeHint: "Gilt für das Objekt und künftige Ausfälle. Für einen einzelnen Befund: Ist so gewollt.", markEffect_expected_offline: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_seasonal: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_spare: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_replaced: "Blendet den Ausfall aus; das Objekt darf später aufgeräumt werden.", markEffect_keep: "Der Ausfall wird weiter gemeldet. Housekeeper schlägt das Objekt nie zum Aufräumen vor.", reason_marked_keep: "Trägt eine Objekt-Notiz, die das Aufräumen ausschließt, oder das Label housekeeper_keep.",
-  markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit nach der Rückmeldung", markAutoClearHint: "Die Objekt-Notiz verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Eine Objekt-Notiz, die vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
+  markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit", markAutoClearHint: "Die Objekt-Notiz verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Eine Objekt-Notiz, die vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
 });
 Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
@@ -9840,7 +9840,7 @@ Object.assign(TEXT.en, {
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Object note does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
   markHiddenHint: "Hidden by an object note on the object.", markScopeHint: "Applies to the object and future outages. For a single finding: Intended.", markEffect_expected_offline: "Hides the outage and keeps cleanup away at the same time.", markEffect_seasonal: "Hides the outage and keeps cleanup away at the same time.", markEffect_spare: "Hides the outage and keeps cleanup away at the same time.", markEffect_replaced: "Hides the outage; the object may be cleaned up later.", markEffect_keep: "The outage is still reported. Housekeeper never proposes the object for cleanup.", reason_marked_keep: "Carries an object note that rules out cleanup, or the label housekeeper_keep.",
-  markAutoClear: "Remove automatically once the object reports again", markGraceBack: "Wait after it reports again", markAutoClearHint: "The object note disappears by itself when the object reports again after an outage and stays fine for the whole wait. An object note set in advance on an object that works stays until its first outage.", markAutoClearLine: "ends when it reports again",
+  markAutoClear: "Remove automatically once the object reports again", markGraceBack: "Wait", markAutoClearHint: "The object note disappears by itself when the object reports again after an outage and stays fine for the whole wait. An object note set in advance on an object that works stays until its first outage.", markAutoClearLine: "ends when it reports again",
 });
 
 class MarksMixin {
@@ -9875,10 +9875,10 @@ class MarksMixin {
       + field("markReason", `<input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}">`, "grow");
     const row2 = (f.kind === "keep" ? "" : field("markWindowKind", `<select data-mark-wmode>${modes}</select>`))
       + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-mark-from value="${this.esc(f.from)}">`) + field("markTo", `<input type="time" data-mark-to value="${this.esc(f.to)}">`) : "")
-      + (windowed || auto ? field(windowed ? "markGrace" : "markGraceBack", `<select data-mark-grace>${graces}</select>`) : "")
+      + (windowed ? field("markGrace", `<select data-mark-grace>${graces}</select>`) : "")
       + field("markReview", `<select data-mark-days>${days}</select>`);
-    const row3 = f.kind === "keep" || f.wmode ? "" : `<label class="nw"><input type="checkbox" data-mark-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label>`;
-    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}
+    const row3 = f.kind === "keep" || f.wmode ? "" : `<label class="nw"><input type="checkbox" data-mark-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label>${auto ? `<label class="nw">${this.t("markGraceBack")} <select data-mark-grace>${graces}</select></label>` : ""}`;
+    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3 ? `<div class="mrow">${row3}</div>` : ""}
         <small class="factnote">${this.t(`markEffect_${f.kind}`)} ${this.t("markScopeHint")}</small>
         ${auto ? `<small class="factnote">${this.t("markAutoClearHint")}</small>` : ""}
         ${windowed ? `<small class="factnote">${this.t("markWindowHint")}</small>` : ""}${noSun ? `${this.notice("err", this.t("markNoSun"))}` : ""}
