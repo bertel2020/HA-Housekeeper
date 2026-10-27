@@ -3638,7 +3638,7 @@ test("a mark that ends when the object reports again sends its wait and says so 
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type.endsWith("/inventory") ? DATA : {}; } };
   el.openMark("entity:sensor.b");
   el.markForm.kind = "seasonal"; el.markForm.autoClear = true; el.markForm.grace = 60;
-  assert.ok(el.markFormHtml(el.markForm, "entity:sensor.b").includes("Wait after it reports again"));
+  assert.ok(el.markFormHtml(el.markForm, "entity:sensor.b").includes("Wait"));
   await el.commitMark();
   const msg = sent.find(m => m.type === "ha_housekeeper/mark_set");
   assert.equal(msg.auto_clear, true);

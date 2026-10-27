@@ -9120,7 +9120,7 @@ Object.assign(TEXT.de, {
   markWindowKind: "Wann gilt der Vermerk", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Vermerk gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
-  markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit nach der Rückmeldung", markAutoClearHint: "Der Vermerk verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Ein Vermerk, der vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
+  markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit", markAutoClearHint: "Der Vermerk verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Ein Vermerk, der vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
   markHiddenHint: "Ausgeblendet durch einen Vermerk am Objekt.", reason_marked_keep: "Trägt den Vermerk „Nicht entfernen“ oder das Label housekeeper_keep.",
 });
 Object.assign(TEXT.en, {
@@ -9130,7 +9130,7 @@ Object.assign(TEXT.en, {
   markWindowKind: "When the mark applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Mark does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
-  markAutoClear: "Remove automatically once the object reports again", markGraceBack: "Wait after it reports again", markAutoClearHint: "The mark disappears by itself when the object reports again after an outage and stays fine for the whole wait. A mark set in advance on an object that works stays until its first outage.", markAutoClearLine: "ends when it reports again",
+  markAutoClear: "Remove automatically once the object reports again", markGraceBack: "Wait", markAutoClearHint: "The mark disappears by itself when the object reports again after an outage and stays fine for the whole wait. A mark set in advance on an object that works stays until its first outage.", markAutoClearLine: "ends when it reports again",
   markHiddenHint: "Hidden by a mark on the object.", reason_marked_keep: "Carries the mark “Do not remove” or the label housekeeper_keep.",
 });
 
@@ -9166,10 +9166,10 @@ class MarksMixin {
       + field("markReason", `<input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}">`, "grow");
     const row2 = (f.kind === "keep" ? "" : field("markWindowKind", `<select data-mark-wmode>${modes}</select>`))
       + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-mark-from value="${this.esc(f.from)}">`) + field("markTo", `<input type="time" data-mark-to value="${this.esc(f.to)}">`) : "")
-      + (windowed || auto ? field(windowed ? "markGrace" : "markGraceBack", `<select data-mark-grace>${graces}</select>`) : "")
+      + (windowed ? field("markGrace", `<select data-mark-grace>${graces}</select>`) : "")
       + field("markReview", `<select data-mark-days>${days}</select>`);
-    const row3 = f.kind === "keep" || f.wmode ? "" : `<label class="nw"><input type="checkbox" data-mark-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label>`;
-    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}
+    const row3 = f.kind === "keep" || f.wmode ? "" : `<label class="nw"><input type="checkbox" data-mark-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label>${auto ? `<label class="nw">${this.t("markGraceBack")} <select data-mark-grace>${graces}</select></label>` : ""}`;
+    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3 ? `<div class="mrow">${row3}</div>` : ""}
         ${auto ? `<small class="factnote">${this.t("markAutoClearHint")}</small>` : ""}
         ${windowed ? `<small class="factnote">${this.t("markWindowHint")}</small>` : ""}${noSun ? `${this.notice("err", this.t("markNoSun"))}` : ""}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
