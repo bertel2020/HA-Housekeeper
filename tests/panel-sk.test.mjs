@@ -23,6 +23,10 @@ const vars = text => [...String(text).matchAll(/\{(\w+)\}/g)].map(match => match
 test("Slovak panel strings keep available placeholders and fallback to English", () => {
   const { PanelClass, TEXT } = loadPanel();
   assert.equal(typeof TEXT.sk.title, "string");
+  // Detect untranslated new UI keys as soon as upstream extends the English dictionary.
+  for (const key of Object.keys(TEXT.en)) {
+    assert.ok(Object.hasOwn(TEXT.sk, key), `Missing Slovak translation: ${key}`);
+  }
   for (const [key, translation] of Object.entries(TEXT.sk)) {
     if (!(key in TEXT.en)) continue;
     const baseline = TEXT.en[key];
